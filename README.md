@@ -1,6 +1,6 @@
 <h1>MK Editor</h1>
 
-This program is intended to be an editor program for the <a href="https://github.com/Marin-MK/MK-Editor"><b>MK Starter Kit</b></a>. It's currently still in the early stages of developing some basic controls - currently intended to mimic native Windows UI. The UI is subject to change to custom UI in the future.
+This program is intended to be an editor program for the <a href="https://github.com/Marin-MK/MK-Starter-Kit"><b>MK Starter Kit</b></a>. It's currently still in the early stages of developing some basic controls - currently intended to mimic native Windows UI. The UI is subject to change to custom UI in the future.
 
 <h2>Dependencies</h2>
 
