@@ -115,7 +115,7 @@ namespace MKEditor.Widgets
                 if (this.Index == i + TopIndex)
                 {
                     this.Sprites["text"].Bitmap.FillRect(2, 2 + 13 * i, this.Size.Width - extra - 4, 13, new Color(0, 120, 215));
-                    c = new Color(255, 255, 255);
+                    c.Set(255, 255, 255);
                 }
                 this.Sprites["text"].Bitmap.DrawText(o.ToString(), 4, 13 * i, c);
             }
@@ -133,7 +133,12 @@ namespace MKEditor.Widgets
 
         public override void MouseMoving(object sender, MouseEventArgs e)
         {
-            UpdateMouse(e);
+            if (this.ScrollBar != null && this.ScrollBar.DownArrowIM.ClickedInArea != true &&
+                this.ScrollBar.UpArrowIM.ClickedInArea != true &&
+                this.ScrollBar.SliderIM.ClickedInArea != true || this.ScrollBar == null)
+            {
+                UpdateMouse(e);
+            }
         }
 
         private void UpdateMouse(MouseEventArgs e)
@@ -147,6 +152,7 @@ namespace MKEditor.Widgets
                 {
                     if (ry > 1 && ry < this.Size.Height - 2)
                     {
+                        this.WidgetSelect(this, e);
                         int idx = this.TopIndex + (int) Math.Floor((ry - 2) / 13d);
                         if (idx < this.Items.Count) this.SetIndex(idx);
                     }

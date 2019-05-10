@@ -11,7 +11,7 @@ namespace MKEditor
     public class MouseInputManager
     {
         public readonly Widget Widget;
-        public MKWindow Window { get { return this.Widget.Window; } }
+        public WidgetWindow Window { get { return this.Widget.Window; } }
 
         public EventHandler<MouseEventArgs> OnMouseMoving;
         public EventHandler<MouseEventArgs> OnMouseDown;
@@ -54,6 +54,10 @@ namespace MKEditor
             {
                 this.Clicked = true;
                 this.ClickedInArea = e.InArea(this.Area);
+                if (this.ClickedInArea == true)
+                {
+                    if (this.Widget.OnWidgetSelect != null) this.Widget.OnWidgetSelect.Invoke(this, e);
+                }
             }
             if (this.OnMouseDown != null) this.OnMouseDown.Invoke(this, e);
         }
@@ -91,7 +95,10 @@ namespace MKEditor
             bool oldhover = this.Hovering;
             this.Hovering = e.InArea(this.Area);
             if (this.OnMouseMoving != null) this.OnMouseMoving.Invoke(this, e);
-            if (oldhover != this.Hovering && this.OnHoverChanged != null) this.OnHoverChanged.Invoke(this, e);
+            if (oldhover != this.Hovering && this.OnHoverChanged != null)
+            {
+                this.OnHoverChanged.Invoke(this, e);
+            }
         }
     }
 }

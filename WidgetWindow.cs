@@ -5,11 +5,11 @@ using ODL;
 
 namespace MKEditor
 {
-    public class MKWindow : Window
+    public class WidgetWindow : Window
     {
         public UIManager UI;
 
-        public MKWindow()
+        public WidgetWindow()
         {
             this.Initialize();
 
@@ -45,11 +45,16 @@ namespace MKEditor
             vsbar.SetPosition(260, 20);
             vsbar.SetSize(17, 120);
 
+            TextBox txt = new TextBox(box);
+            txt.SetPosition(10, 150);
+            txt.SetSize(100, 20);
+
             this.OnMouseDown += UI.MouseDown;
             this.OnMousePress += UI.MousePress;
             this.OnMouseUp += UI.MouseUp;
             this.OnMouseMoving += UI.MouseMoving;
             this.OnMouseWheel += UI.MouseWheel;
+            this.OnTextInput += UI.TextInput;
 
             this.OnTick += Tick;
 

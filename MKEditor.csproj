@@ -46,7 +46,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MKWindow.cs" />
+    <Compile Include="WidgetWindow.cs" />
     <Compile Include="MouseInputManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="UIManager.cs" />
@@ -56,6 +56,7 @@
     <Compile Include="Widgets\IContainer.cs" />
     <Compile Include="Widgets\ListBox.cs" />
     <Compile Include="Widgets\ProgressBar.cs" />
+    <Compile Include="Widgets\TextBox.cs" />
     <Compile Include="Widgets\TextWidget.cs" />
     <Compile Include="Widgets\VScrollBar.cs" />
     <Compile Include="Widgets\Widget.cs" />

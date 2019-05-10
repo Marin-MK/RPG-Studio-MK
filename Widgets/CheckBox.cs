@@ -17,6 +17,7 @@ namespace MKEditor.Widgets
             {
                 this.SetChecked(!this.Checked);
             };
+            this.OnWidgetSelect += WidgetSelect;
             this.MinimumSize = new Size(1, 15);
             this.MaximumSize = new Size(9999, 15);
             this.Sprites["box"] = new Sprite(this.Viewport);

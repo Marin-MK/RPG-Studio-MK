@@ -7,28 +7,21 @@ namespace MKEditor
 {
     public class UIManager : IContainer
     {
-        protected Window _Window;
-        public Window Window { get { return _Window; } }
-
+        public Window Window { get; protected set; }
         public int RealX { get { return 0; } }
         public int RealY { get { return 0; } }
-
         public Size Size { get { return new Size(this.Window.Width, this.Window.Height); } }
-
         public Viewport Viewport { get { return this.Window.Viewport; } }
-
-        protected List<Widget> _Widgets = new List<Widget>();
-        public List<Widget> Widgets { get { return _Widgets; } }
-        
+        public List<Widget> Widgets { get; protected set; } = new List<Widget>();
         public Color BackgroundColor { get { return this.Window.BackgroundColor; } }
+        public Widget SelectedWidget { get; protected set; }
 
         private Sprite BGSprite;
-
         private List<MouseInputManager> IMs = new List<MouseInputManager>();
 
         public UIManager(Window Window)
         {
-            _Window = Window;
+            this.Window = Window;
             BGSprite = new Sprite(this.Viewport, this.Size);
             BGSprite.Bitmap.FillRect(0, 0, this.Size, this.BackgroundColor);
         }
@@ -108,6 +101,16 @@ namespace MKEditor
                 }
                 IMs[i].MouseUp(e);
             }
+            for (int i = 0; i < IMs.Count; i++)
+            {
+                if (IMs[i].Widget.Disposed)
+                {
+                    IMs.RemoveAt(i);
+                    i--;
+                    continue;
+                }
+                if (IMs[i].OnHoverChanged != null) IMs[i].OnHoverChanged.Invoke(sender, e);
+            }
         }
 
         public void MouseMoving(object sender, MouseEventArgs e)
@@ -143,6 +146,28 @@ namespace MKEditor
             for (int i = 0; i < this.Widgets.Count; i++)
             {
                 this.Widgets[i].Update();
+            }
+        }
+
+        public void SetSelectedWidget(Widget w)
+        {
+            if (this.SelectedWidget != null)
+            {
+                this.SelectedWidget.Selected = false;
+                this.SelectedWidget.OnDeselected.Invoke(this, new EventArgs());
+                this.SelectedWidget.Redraw();
+            }
+            this.SelectedWidget = w;
+            this.SelectedWidget.Selected = true;
+            this.SelectedWidget.OnSelected(this, new EventArgs());
+            this.SelectedWidget.Redraw();
+        }
+
+        public void TextInput(object sender, TextInputEventArgs e)
+        {
+            if (this.SelectedWidget != null)
+            {
+                this.SelectedWidget.OnTextInput.Invoke(sender, e);
             }
         }
     }

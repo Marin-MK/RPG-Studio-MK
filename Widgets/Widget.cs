@@ -13,7 +13,7 @@ namespace MKEditor.Widgets
         public Size                         Size            { get; protected set; } = new Size(20, 20);
         public Point                        Position        { get; protected set; } = new Point(0, 0);
         public Rect                         RealRect        { get; protected set; } = new Rect(0, 0, 0, 0);
-        public MKWindow                     Window          { get; protected set; }
+        public WidgetWindow                 Window          { get; protected set; }
         public bool                         AutoResize      { get; protected set; } = false;
         public Size                         MinimumSize     { get; protected set; } = new Size(1, 1);
         public Size                         MaximumSize     { get; protected set; } = new Size(9999, 9999);
@@ -23,6 +23,7 @@ namespace MKEditor.Widgets
         public MouseInputManager            WidgetIM        { get; protected set; }
         public IContainer                   Parent          { get; protected set; }
         public bool                         Disposed        { get; protected set; } = false;
+        public bool                         Selected        = false;
 
         protected bool Drawn        = false;
         protected bool SizeChanged  = false;
@@ -33,12 +34,16 @@ namespace MKEditor.Widgets
         public EventHandler<MouseEventArgs> OnMouseUp;
         public EventHandler<MouseEventArgs> OnMouseWheel;
         public EventHandler<MouseEventArgs> OnMouseMoving;
+        public EventHandler<MouseEventArgs> OnWidgetSelect;
+        public EventHandler<EventArgs> OnSelected;
+        public EventHandler<EventArgs> OnDeselected;
+        public EventHandler<TextInputEventArgs> OnTextInput;
 
         public Widget(object Parent, string Name = "widget")
         {
-            if (Parent is MKWindow)
+            if (Parent is WidgetWindow)
             {
-                this.Window = Parent as MKWindow;
+                this.Window = Parent as WidgetWindow;
                 this.Parent = this.Window.UI;
             }
             else if (Parent is Widget)
@@ -51,6 +56,9 @@ namespace MKEditor.Widgets
             this.Name = this.Parent.GetName(Name);
             this.OnLeftClick = new EventHandler<MouseEventArgs>(this.LeftClick);
             this.OnMouseMoving = new EventHandler<MouseEventArgs>(this.MouseMoving);
+            this.OnSelected = new EventHandler<EventArgs>(this.WidgetSelected);
+            this.OnDeselected = new EventHandler<EventArgs>(this.WidgetDeselected);
+            this.OnTextInput = new EventHandler<TextInputEventArgs>(this.TextInput);
             this.WidgetIM = new MouseInputManager(this);
             this.Parent.Add(this);
         }
@@ -63,6 +71,8 @@ namespace MKEditor.Widgets
                 sprite.Dispose();
             }
             this.Viewport.Dispose();
+            this.Viewport = null;
+            this.Sprites = null;
             this.Disposed = true;
         }
 
@@ -117,6 +127,13 @@ namespace MKEditor.Widgets
             Redraw();
         }
         public virtual void LeftClick(object sender, MouseEventArgs e) { }
+        public virtual void WidgetSelect(object sender, MouseEventArgs e)
+        {
+            this.Window.UI.SetSelectedWidget(this);
+        }
+        public virtual void WidgetSelected(object sender, EventArgs e) { }
+        public virtual void WidgetDeselected(object sender, EventArgs e) { }
+        public virtual void TextInput(object sender, TextInputEventArgs e) { }
 
         protected void UpdateBounds()
         {

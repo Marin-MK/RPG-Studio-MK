@@ -8,7 +8,7 @@ namespace MKEditor
         static void Main(params string[] args)
         {
             Graphics.Start();
-            MKWindow w = new MKWindow();
+            WidgetWindow w = new WidgetWindow();
             w.Show();
             while (Graphics.CanUpdate())
             {

@@ -12,9 +12,9 @@ namespace MKEditor.Widgets
 
         private bool RedrawArrows;
 
-        private MouseInputManager SliderIM;
-        private MouseInputManager UpArrowIM;
-        private MouseInputManager DownArrowIM;
+        public MouseInputManager SliderIM;
+        public MouseInputManager UpArrowIM;
+        public MouseInputManager DownArrowIM;
 
         private Rect SliderRect;
         private int SliderRY = 0;
@@ -91,12 +91,12 @@ namespace MKEditor.Widgets
                 Color c = new Color(96, 96, 96);
                 if (this.UpArrowIM.ClickAnim())
                 {
-                    c = new Color(255, 255, 255);
+                    c.Set(255, 255, 255);
                     this.Sprites["bar"].Bitmap.FillRect(1, 0, 15, 17, new Color(96, 96, 96));
                 }
                 else if (this.UpArrowIM.HoverAnim())
                 {
-                    c = new Color(0, 0, 0);
+                    c.Set(0, 0, 0);
                     this.Sprites["bar"].Bitmap.FillRect(1, 0, 15, 17, new Color(218, 218, 218));
                 }
                 this.Sprites["bar"].Bitmap.DrawLine(rx + 0, ry + 3, rx + 3, ry + 0, c);
@@ -110,12 +110,12 @@ namespace MKEditor.Widgets
                 c = new Color(96, 96, 96);
                 if (this.DownArrowIM.ClickAnim())
                 {
-                    c = new Color(255, 255, 255);
+                    c.Set(255, 255, 255);
                     this.Sprites["bar"].Bitmap.FillRect(1, this.Size.Height - 17, 15, 17, new Color(96, 96, 96));
                 }
                 else if (this.DownArrowIM.HoverAnim())
                 {
-                    c = new Color(0, 0, 0);
+                    c.Set(0, 0, 0);
                     this.Sprites["bar"].Bitmap.FillRect(1, this.Size.Height - 17, 15, 17, new Color(218, 218, 218));
                 }
                 this.Sprites["bar"].Bitmap.DrawLine(rx + 0, ry + 0, rx + 3, ry + 3, c);
@@ -132,11 +132,11 @@ namespace MKEditor.Widgets
             Color sc = new Color(205, 205, 205);
             if (this.SliderIM.ClickedInArea == true)
             {
-                sc = new Color(96, 96, 96);
+                sc.Set(96, 96, 96);
             }
             else if (this.SliderIM.HoverAnim() || this.UpArrowIM.HoverAnim() || this.DownArrowIM.HoverAnim())
             {
-                sc = new Color(192, 192, 192);
+                sc.Set(192, 192, 192);
             }
             this.Sprites["slider"].Bitmap.FillRect(
                 new Rect(1,
