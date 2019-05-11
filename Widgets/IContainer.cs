@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ODL;
 
 namespace MKEditor.Widgets
@@ -8,6 +9,7 @@ namespace MKEditor.Widgets
         int RealX { get; }
         int RealY { get; }
         Size Size { get; }
+        List<Widget> Widgets { get; }
 
         void Add(Widget w);
         void Get(string Name);

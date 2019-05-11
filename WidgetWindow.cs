@@ -17,7 +17,7 @@ namespace MKEditor
 
             this.UI = new UIManager(this);
 
-            GroupBox box = new GroupBox(this);
+            /*GroupBox box = new GroupBox(this);
             box.SetPosition(130, 10);
             box.SetSize(300, 300);
 
@@ -48,6 +48,22 @@ namespace MKEditor
             TextBox txt = new TextBox(box);
             txt.SetPosition(10, 150);
             txt.SetSize(100, 20);
+
+            RadioButton rbtn1 = new RadioButton(box);
+            rbtn1.SetPosition(10, 180);
+
+            RadioButton rbtn2 = new RadioButton(box);
+            rbtn2.SetPosition(10, 200);*/
+
+            GroupBox panel = new GroupBox(this);
+            panel.SetPosition(100, 100);
+            panel.SetSize(90, 90);
+
+            Button btn = new Button(panel);
+            btn.SetPosition(-5, -5);
+            btn.SetSize(100, 100);
+
+            Console.WriteLine(btn.Viewport.ToString());
 
             this.OnMouseDown += UI.MouseDown;
             this.OnMousePress += UI.MousePress;

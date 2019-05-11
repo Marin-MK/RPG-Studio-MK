@@ -25,7 +25,7 @@ namespace MKEditor.Widgets
         public VScrollBar(object Parent, string Name = "vscrollBar")
             : base(Parent, Name)
         {
-            this.SetSize(17, 60);
+            this.Size = new Size(17, 60);
             this.WidgetIM.OnMouseWheel += MouseWheel;
             this.Sprites["bar"] = new Sprite(this.Viewport);
             this.Sprites["slider"] = new Sprite(this.Viewport);
@@ -154,14 +154,14 @@ namespace MKEditor.Widgets
             int height = this.Size.Height - 34;
             int sliderheight = (int) Math.Round(height * this.SliderSize);
             int sy = (int) Math.Round((height - sliderheight) * this.Value);
-            this.SliderRect = new Rect(this.RealRect.X, this.RealRect.Y + 17 + sy, 17, sliderheight);
+            this.SliderRect = new Rect(this.Viewport.X, this.Viewport.Y + 17 + sy, 17, sliderheight);
             this.SliderIM.Update(this.SliderRect);
 
             // Up Arrow Input management
-            this.UpArrowIM.Update(new Rect(this.RealRect.X, this.RealRect.Y, 17, 17));
+            this.UpArrowIM.Update(new Rect(this.Viewport.X, this.Viewport.Y, 17, 17));
 
             // Down Arrow Input management
-            this.DownArrowIM.Update(new Rect(this.RealRect.X, this.RealRect.Y + this.Size.Height - 17, 17, 17));
+            this.DownArrowIM.Update(new Rect(this.Viewport.X, this.Viewport.Y + this.Size.Height - 17, 17, 17));
 
             base.Update();
         }
@@ -179,7 +179,7 @@ namespace MKEditor.Widgets
         {
             if (e.LeftButton && !e.OldLeftButton && this.SliderIM.Hovering)
             {
-                this.SliderRY = e.Y - this.RealRect.Y - 17 - (this.SliderRect.Y - 17 - this.RealRect.Y);
+                this.SliderRY = e.Y - this.Viewport.Y - 17 - (this.SliderRect.Y - 17 - this.Viewport.Y);
                 UpdateSlider(e);
             }
         }
@@ -203,7 +203,7 @@ namespace MKEditor.Widgets
             int height = this.Size.Height - 34;
             int sliderheight = (int) Math.Round(height * this.SliderSize);
             height -= sliderheight;
-            int newy = (e.Y - this.RealRect.Y - 17 - this.SliderRY);
+            int newy = (e.Y - this.Viewport.Y - 17 - this.SliderRY);
             newy = Math.Max(Math.Min(newy, height), 0);
             this.SetValue((double) newy / height);
             if (this.Parent is ListBox)
@@ -328,7 +328,7 @@ namespace MKEditor.Widgets
 
         public override void MouseWheel(object sender, MouseEventArgs e)
         {
-            if (!(this.Parent is ListBox) && this.RealRect.Contains(e.X, e.Y))
+            if (!(this.Parent is ListBox) && this.Viewport.Contains(e.X, e.Y))
             {
                 int downcount = 0;
                 int upcount = 0;

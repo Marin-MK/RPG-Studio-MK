@@ -17,6 +17,7 @@ namespace MKEditor.Widgets
         public ListBox(object Parent, string Name = "listBox")
             : base(Parent, Name)
         {
+            this.Size = new Size(120, 69);
             this.WidgetIM.OnMouseDown += this.MouseDown;
             this.WidgetIM.OnMouseWheel += this.MouseWheel;
             this.WidgetIM.OnMouseMoving += this.MouseMoving;
@@ -25,7 +26,6 @@ namespace MKEditor.Widgets
             this.Items = new ArrayList();
             this.Index = 0;
             this.TopIndex = 0;
-            this.SetSize(120, 69);
         }
 
         public void AddItem(object o)
@@ -145,8 +145,8 @@ namespace MKEditor.Widgets
         {
             if (this.WidgetIM.ClickedInArea == true)
             {
-                int rx = e.X - this.RealRect.X;
-                int ry = e.Y - this.RealRect.Y;
+                int rx = e.X - this.Viewport.X;
+                int ry = e.Y - this.Viewport.Y;
                 int extra = this.Items.Count > this.VisibleItems ? 17 : 0;
                 if (rx > 1 && rx < this.Size.Width - extra - 2)
                 {
@@ -162,7 +162,7 @@ namespace MKEditor.Widgets
 
         public override void MouseWheel(object sender, MouseEventArgs e)
         {
-            if (this.ScrollBar != null && this.RealRect.Contains(e.X, e.Y))
+            if (this.ScrollBar != null && this.Viewport.Contains(e.X, e.Y))
             {
                 int downcount = 0;
                 int upcount = 0;

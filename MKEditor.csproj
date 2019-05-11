@@ -46,6 +46,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Widgets\RadioButton.cs" />
+    <Compile Include="Widgets\StackPanel.cs" />
     <Compile Include="WidgetWindow.cs" />
     <Compile Include="MouseInputManager.cs" />
     <Compile Include="Program.cs" />

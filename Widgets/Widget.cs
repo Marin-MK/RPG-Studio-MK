@@ -10,9 +10,8 @@ namespace MKEditor.Widgets
         public int                          RealX           { get { return this.Position.X + this.Parent.RealX; } }
         public int                          RealY           { get { return this.Position.Y + this.Parent.RealY; } }
         public Viewport                     Viewport        { get; protected set; }
-        public Size                         Size            { get; protected set; } = new Size(20, 20);
+        public Size                         Size            { get; protected set; } = new Size(50, 50);
         public Point                        Position        { get; protected set; } = new Point(0, 0);
-        public Rect                         RealRect        { get; protected set; } = new Rect(0, 0, 0, 0);
         public WidgetWindow                 Window          { get; protected set; }
         public bool                         AutoResize      { get; protected set; } = false;
         public Size                         MinimumSize     { get; protected set; } = new Size(1, 1);
@@ -100,7 +99,7 @@ namespace MKEditor.Widgets
         public virtual void Update()
         {
             AssertUndisposed();
-            this.WidgetIM.Update(this.RealRect);
+            this.WidgetIM.Update(this.Viewport.Rect);
             if (!this.Drawn) this.Draw();
             for (int i = 0; i < this.Widgets.Count; i++)
             {
@@ -138,46 +137,35 @@ namespace MKEditor.Widgets
         protected void UpdateBounds()
         {
             AssertUndisposed();
-            int DiffX = 0, DiffY = 0;
+            foreach (Sprite s in this.Sprites.Values) s.OX = s.OY = 0;
+            this.Viewport.X = this.Position.X + this.Parent.RealX;
+            this.Viewport.Y = this.Position.Y + this.Parent.RealY;
+            this.Viewport.Width = this.Size.Width;
+            this.Viewport.Height = this.Size.Height;
             if (this.Viewport.X < this.Parent.RealX)
             {
-                DiffX = this.Parent.RealX - this.Viewport.X;
-                foreach (Sprite s in this.Sprites.Values) s.OX = DiffX;
-                this.Viewport.X += DiffX;
+                int DiffX = this.Parent.RealX - this.Viewport.X;
+                foreach (Sprite s in this.Sprites.Values) s.OX += DiffX;
+                this.Viewport.X = this.Position.X + this.Parent.RealX + DiffX;
+                this.Viewport.Width = this.Size.Width - DiffX;
             }
-            else if (this.Viewport.X + this.Viewport.Width > this.Parent.RealX + this.Parent.Size.Width)
+            if (this.Viewport.X + this.Viewport.Width > this.Parent.RealX + this.Parent.Size.Width)
             {
-                DiffX = this.Viewport.X + this.Viewport.Width - this.Parent.RealX - this.Parent.Size.Width;
-                DiffX *= -1;
-                foreach (Sprite s in this.Sprites.Values) s.OX = DiffX;
-                this.Viewport.X += DiffX;
+                int DiffX = this.Viewport.X + this.Viewport.Width - this.Parent.RealX - this.Parent.Size.Width;
+                this.Viewport.Width -= DiffX;
             }
             if (this.Viewport.Y < this.Parent.RealY)
             {
-                DiffY = this.Parent.RealY - this.Viewport.Y;
-                foreach (Sprite s in this.Sprites.Values) s.OY = DiffY;
-                this.Viewport.Y += DiffY;
+                int DiffY = this.Parent.RealY - this.Viewport.Y;
+                foreach (Sprite s in this.Sprites.Values) s.OY += DiffY;
+                this.Viewport.Y = this.Position.Y + this.Parent.RealY + DiffY;
+                this.Viewport.Height = this.Size.Height - DiffY;
             }
-            else if (this.Viewport.Y + this.Viewport.Height > this.Parent.RealY + this.Parent.Size.Height)
+            if (this.Viewport.Y + this.Viewport.Height > this.Parent.RealY + this.Parent.Size.Height)
             {
-                DiffY = this.Viewport.Y + this.Viewport.Height - this.Parent.RealY - this.Parent.Size.Height;
-                DiffY *= -1;
-                foreach (Sprite s in this.Sprites.Values) s.OY = DiffY;
-                this.Viewport.Y += DiffY;
+                int DiffY = this.Viewport.Y + this.Viewport.Height - this.Parent.RealY - this.Parent.Size.Height;
+                this.Viewport.Height -= DiffY;
             }
-
-            int x = this.RealX;
-            int y = this.RealY;
-            int w = this.Size.Width;
-            int h = this.Size.Height;
-            // Viewport is left/above the parent container
-            if (DiffX < 0) w += DiffX;
-            if (DiffY < 0) h += DiffY;
-            // Viewport is right/under the parent container
-            if (DiffX > 0) { x += DiffX; w -= DiffX; }
-            if (DiffY > 0) { y += DiffY; h -= DiffY; }
-            // Actual rect of this Widget on the screen (used for mouse input)
-            this.RealRect = new Rect(x, y, w, h);
         }
 
         public void SetPosition(int X, int Y)
