@@ -24,8 +24,14 @@ namespace MKEditor.Widgets
         public bool                         Disposed        { get; protected set; } = false;
         public bool                         Selected        = false;
 
-        protected bool Drawn        = false;
-        protected bool SizeChanged  = false;
+        public Margin Margin { get; protected set; } = new Margin();
+        public int GridRowStart     = 0;
+        public int GridRowEnd       = 0;
+        public int GridColumnStart  = 0;
+        public int GridColumnEnd    = 0;
+
+        protected bool Drawn      = false;
+        protected bool RedrawSize = false;
         
         public EventHandler<MouseEventArgs> OnLeftClick;
         public EventHandler<MouseEventArgs> OnMouseDown;
@@ -37,6 +43,8 @@ namespace MKEditor.Widgets
         public EventHandler<EventArgs> OnSelected;
         public EventHandler<EventArgs> OnDeselected;
         public EventHandler<TextInputEventArgs> OnTextInput;
+        public EventHandler<SizeEventArgs> OnSizeChanged;
+        public EventHandler<SizeEventArgs> OnParentSizeChanged;
 
         public Widget(object Parent, string Name = "widget")
         {
@@ -50,15 +58,19 @@ namespace MKEditor.Widgets
                 this.Window = (Parent as Widget).Window;
                 this.Parent = Parent as IContainer;
             }
+            this.Name = this.Parent.GetName(Name);
             this.Viewport = new Viewport(this.Window.Renderer, 0, 0, this.Size);
             this.Sprites["_bg"] = new Sprite(this.Viewport);
-            this.Name = this.Parent.GetName(Name);
+            this.Sprites["_bg"].Z = -999999999;
             this.OnLeftClick = new EventHandler<MouseEventArgs>(this.LeftClick);
             this.OnMouseMoving = new EventHandler<MouseEventArgs>(this.MouseMoving);
             this.OnSelected = new EventHandler<EventArgs>(this.WidgetSelected);
             this.OnDeselected = new EventHandler<EventArgs>(this.WidgetDeselected);
             this.OnTextInput = new EventHandler<TextInputEventArgs>(this.TextInput);
+            this.OnSizeChanged = new EventHandler<SizeEventArgs>(this.SizeChanged);
+            this.OnParentSizeChanged = new EventHandler<SizeEventArgs>(this.ParentSizeChanged);
             this.WidgetIM = new MouseInputManager(this);
+            this.WidgetIM.OnHoverChanged += HoverChanged;
             this.Parent.Add(this);
         }
 
@@ -93,7 +105,7 @@ namespace MKEditor.Widgets
         {
             AssertUndisposed();
             this.Drawn = true;
-            this.SizeChanged = false;
+            this.RedrawSize = false;
         }
 
         public virtual void Update()
@@ -133,6 +145,11 @@ namespace MKEditor.Widgets
         public virtual void WidgetSelected(object sender, EventArgs e) { }
         public virtual void WidgetDeselected(object sender, EventArgs e) { }
         public virtual void TextInput(object sender, TextInputEventArgs e) { }
+        public virtual void SizeChanged(object sender, SizeEventArgs e)
+        {
+            UpdateLayout();
+        }
+        public virtual void ParentSizeChanged(object sender, SizeEventArgs e) { }
 
         protected void UpdateBounds()
         {
@@ -168,24 +185,33 @@ namespace MKEditor.Widgets
             }
         }
 
-        public void SetPosition(int X, int Y)
+        public Widget SetPosition(int X, int Y)
         {
-            this.SetPosition(new Point(X, Y));
+            return this.SetPosition(new Point(X, Y));
         }
-        public virtual void SetPosition(Point p)
+        public virtual Widget SetPosition(Point p)
         {
             AssertUndisposed();
             this.Position = p;
             this.Viewport.X = p.X + this.Parent.RealX;
             this.Viewport.Y = p.Y + this.Parent.RealY;
             UpdateBounds();
+            return this;
         }
 
-        public void SetSize(int Width, int Height)
+        public Widget SetWidth(int Width)
         {
-            SetSize(new Size(Width, Height));
+            return this.SetSize(Width, this.Size.Height);
         }
-        public virtual void SetSize(Size size)
+        public Widget SetHeight(int Height)
+        {
+            return this.SetSize(this.Size.Width, Height);
+        }
+        public Widget SetSize(int Width, int Height)
+        {
+            return SetSize(new Size(Width, Height));
+        }
+        public virtual Widget SetSize(Size size)
         {
             AssertUndisposed();
             Size oldsize = this.Size;
@@ -198,44 +224,48 @@ namespace MKEditor.Widgets
                 this.Sprites["_bg"].Bitmap.FillRect(0, 0, this.Size, this.BackgroundColor);
                 this.Viewport.Width = this.Size.Width;
                 this.Viewport.Height = this.Size.Height;
-                this.SizeChanged = true;
+                this.RedrawSize = true;
                 this.SetPosition(this.Position);
+                this.OnSizeChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));
                 Redraw();
             }
+            return this;
         }
 
-        public void SetBackgroundColor(byte r, byte g, byte b, byte a = 255)
+        public Widget SetBackgroundColor(byte r, byte g, byte b, byte a = 255)
         {
-            this.SetBackgroundColor(new Color(r, g, b, a));
+            return this.SetBackgroundColor(new Color(r, g, b, a));
         }
-        public void SetBackgroundColor(Color c)
+        public Widget SetBackgroundColor(Color c)
         {
             AssertUndisposed();
             this.BackgroundColor = c;
             this.Sprites["_bg"].Bitmap = new Bitmap(this.Size);
             this.Sprites["_bg"].Bitmap.FillRect(0, 0, this.Size, this.BackgroundColor);
+            return this;
         }
 
-        public void Add(Widget w)
+        public virtual IContainer Add(Widget w)
         {
             if (this.Widgets.Exists(wgt => wgt.Name == w.Name))
             {
                 throw new Exception("Already existing widget by the name of '" + w.Name + "'");
             }
             this.Widgets.Add(w);
+            return this;
         }
 
-        public void Get(string Name)
+        public virtual IContainer Get(string Name)
         {
             throw new NotImplementedException();
         }
 
-        public void Remove(Widget w)
+        public virtual IContainer Remove(Widget w)
         {
             throw new NotImplementedException();
         }
 
-        public string GetName(string Name)
+        public virtual string GetName(string Name)
         {
             int i = 1;
             while (true)
@@ -243,6 +273,67 @@ namespace MKEditor.Widgets
                 Widget w = this.Widgets.Find(wgt => wgt.Name == Name + i.ToString());
                 if (w == null) return Name + i.ToString();
                 i++;
+            }
+        }
+
+        public Widget SetMargin(int all)
+        {
+            return this.SetMargin(all, all, all, all);
+        }
+        public Widget SetMargin(int horizontal, int vertical)
+        {
+            return this.SetMargin(horizontal, vertical, horizontal, vertical);
+        }
+        public Widget SetMargin(int left, int up, int right, int down)
+        {
+            this.Margin = new Margin(left, up, right, down);
+            this.UpdateLayout();
+            return this;
+        }
+
+        public Widget SetGridRow(int Row)
+        {
+            return this.SetGridRow(Row, Row);
+        }
+        public Widget SetGridRow(int RowStart, int RowEnd)
+        {
+            this.GridRowStart = RowStart;
+            this.GridRowEnd = RowEnd;
+            this.UpdateLayout();
+            return this;
+        }
+
+        public Widget SetGridColumn(int Column)
+        {
+            return this.SetGridColumn(Column, Column);
+        }
+        public Widget SetGridColumn(int ColumnStart, int ColumnEnd)
+        {
+            this.GridColumnStart = ColumnStart;
+            this.GridColumnEnd = ColumnEnd;
+            this.UpdateLayout();
+            return this;
+        }
+
+        public Widget SetGrid(int Row, int Column)
+        {
+            return this.SetGrid(Row, Row, Column, Column);
+        }
+        public Widget SetGrid(int RowStart, int RowEnd, int ColumnStart, int ColumnEnd)
+        {
+            this.GridRowStart = RowStart;
+            this.GridRowEnd = RowEnd;
+            this.GridColumnStart = ColumnStart;
+            this.GridColumnEnd = ColumnEnd;
+            this.UpdateLayout();
+            return this;
+        }
+
+        public void UpdateLayout()
+        {
+            if (this.Parent is ILayout)
+            {
+                (this.Parent as ILayout).NeedUpdate = true;
             }
         }
     }

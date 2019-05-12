@@ -7,8 +7,8 @@ namespace MKEditor.Widgets
     {
         public double Value { get; protected set; } = 0;
 
-        public ProgressBar(object Parent, string Name = "progressBar")
-            : base(Parent, Name)
+        public ProgressBar(object Parent)
+            : base(Parent, "progressBar")
         {
             this.Sprites["bar"] = new Sprite(this.Viewport);
             this.Value = 0;

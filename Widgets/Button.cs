@@ -3,19 +3,30 @@ using ODL;
 
 namespace MKEditor.Widgets
 {
-    public class Button : TextWidget
+    public class Button : Widget
     {
-        public Button(object Parent, string Name = "button")
-            : base(Parent, Name)
+        public string Text { get; protected set; } = "";
+
+        public Button(object Parent)
+            : base(Parent, "button")
         {
             this.WidgetIM.OnMouseDown += this.MouseDown;
             this.WidgetIM.OnMouseUp += this.MouseUp;
             this.WidgetIM.OnHoverChanged += this.HoverChanged;
-            this.WidgetIM.OnLeftClick += this.LeftClick;
+            this.OnLeftClick += this.LeftClick;
             this.OnWidgetSelect += this.WidgetSelect;
             this.SetSize(100, 20);
             this.Sprites["button"] = new Sprite(this.Viewport);
-            this.Text = "Button";
+            this.Text = this.Name;
+        }
+        
+        public void SetText(string text)
+        {
+            if (this.Text != text)
+            {
+                this.Text = text;
+                Redraw();
+            }
         }
 
         protected override void Draw()

@@ -14,12 +14,11 @@ namespace MKEditor.Widgets
         private Dictionary<char, int> CharWidths = new Dictionary<char, int>();
         private bool TextChanged = true;
         private int TextWidth = 0;
-        private int TextX = 0;
 
         private DateTime? CaretAnim;
 
-        public TextBox(object Parent, string Name = "textBox")
-            : base(Parent, Name)
+        public TextBox(object Parent)
+            : base(Parent, "textBox")
         {
             this.WidgetIM.OnHoverChanged += HoverChanged;
             this.OnWidgetSelect += WidgetSelect;

@@ -26,21 +26,22 @@ namespace MKEditor
             BGSprite.Bitmap.FillRect(0, 0, this.Size, this.BackgroundColor);
         }
 
-        public void Add(Widget w)
+        public IContainer Add(Widget w)
         {
             if (this.Widgets.Exists(wgt => wgt.Name == w.Name))
             {
                 throw new Exception("Already existing widget by the name of '" + w.Name + "'");
             }
             this.Widgets.Add(w);
+            return this;
         }
 
-        public void Get(string Name)
+        public IContainer Get(string Name)
         {
             throw new NotImplementedException();
         }
 
-        public void Remove(Widget w)
+        public IContainer Remove(Widget w)
         {
             throw new NotImplementedException();
         }
@@ -139,6 +140,14 @@ namespace MKEditor
                 }
                 IMs[i].MouseWheel(e);
             }
+        }
+
+        public void WindowResized(object sender, WindowEventArgs e)
+        {
+            this.Widgets.ForEach(w =>
+            {
+                w.OnParentSizeChanged.Invoke(sender, new SizeEventArgs(e.Width, e.Height));
+            });
         }
 
         public void Update()

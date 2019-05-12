@@ -8,15 +8,15 @@ namespace MKEditor.Widgets
         public bool Checked { get; protected set; } = false;
         public string Text { get; protected set; } = "";
 
-        public RadioButton(object Parent, string Name = "radioButton")
-            : base(Parent, Name)
+        public RadioButton(object Parent)
+            : base(Parent, "radioButton")
         {
             this.Size = new Size(85, 17);
             this.MinimumSize = new Size(14, 17);
             this.WidgetIM.OnHoverChanged += HoverChanged;
             this.WidgetIM.OnMouseDown += MouseDown;
             this.WidgetIM.OnMouseUp += MouseUp;
-            this.WidgetIM.OnLeftClick += LeftClick;
+            this.OnLeftClick += LeftClick;
             this.OnWidgetSelect += WidgetSelect;
             this.Sprites["btn"] = new Sprite(this.Viewport);
             this.AutoResize = true;

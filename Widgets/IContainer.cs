@@ -11,9 +11,9 @@ namespace MKEditor.Widgets
         Size Size { get; }
         List<Widget> Widgets { get; }
 
-        void Add(Widget w);
-        void Get(string Name);
-        void Remove(Widget w);
+        IContainer Add(Widget w);
+        IContainer Get(string Name);
+        IContainer Remove(Widget w);
         string GetName(string Name);
     }
 }

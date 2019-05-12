@@ -22,8 +22,8 @@ namespace MKEditor.Widgets
         private DateTime? UpArrowCount;
         private DateTime? DownArrowCount;
 
-        public VScrollBar(object Parent, string Name = "vscrollBar")
-            : base(Parent, Name)
+        public VScrollBar(object Parent)
+            : base(Parent, "vScrollBar")
         {
             this.Size = new Size(17, 60);
             this.WidgetIM.OnMouseWheel += MouseWheel;
@@ -80,7 +80,7 @@ namespace MKEditor.Widgets
 
         protected override void Draw()
         {
-            if (this.SizeChanged || this.RedrawArrows)
+            if (this.RedrawSize || this.RedrawArrows)
             {
                 if (this.Sprites["bar"].Bitmap != null) this.Sprites["bar"].Bitmap.Dispose();
                 this.Sprites["bar"].Bitmap = new Bitmap(this.Size);

@@ -14,8 +14,8 @@ namespace MKEditor.Widgets
 
         public int TopIndex { get; protected set; }
 
-        public ListBox(object Parent, string Name = "listBox")
-            : base(Parent, Name)
+        public ListBox(object Parent)
+            : base(Parent, "listBox")
         {
             this.Size = new Size(120, 69);
             this.WidgetIM.OnMouseDown += this.MouseDown;
@@ -42,11 +42,11 @@ namespace MKEditor.Widgets
             Redraw();
         }
 
-        public override void SetSize(Size size)
+        public override Widget SetSize(Size size)
         {
             int height = (int) Math.Floor((size.Height - 4) / 13f) * 13 + 4;
             size.Clamp(10, 9999, 15, height);
-            base.SetSize(size);
+            return base.SetSize(size);
         }
 
         public void SetIndex(int index)
@@ -85,12 +85,12 @@ namespace MKEditor.Widgets
             {
                 if (this.ScrollBar == null)
                 {
-                    this.SizeChanged = true;
+                    this.RedrawSize = true;
                     this.ScrollBar = new VScrollBar(this);
                     this.ScrollBar.SetSliderSize((double) this.VisibleItems / this.Items.Count);
                 }
             }
-            if (this.SizeChanged)
+            if (this.RedrawSize)
             {
                 if (this.Sprites["box"].Bitmap != null) this.Sprites["box"].Bitmap.Dispose();
                 this.Sprites["box"].Bitmap = new Bitmap(this.Size);

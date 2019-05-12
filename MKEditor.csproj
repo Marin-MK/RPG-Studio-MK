@@ -46,8 +46,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Margin.cs" />
+    <Compile Include="Widgets\Container.cs" />
+    <Compile Include="Widgets\Grid.cs" />
+    <Compile Include="Widgets\GridSize.cs" />
+    <Compile Include="Widgets\HStackPanel.cs" />
+    <Compile Include="Widgets\ILayout.cs" />
+    <Compile Include="Widgets\LayoutElement.cs" />
     <Compile Include="Widgets\RadioButton.cs" />
-    <Compile Include="Widgets\StackPanel.cs" />
+    <Compile Include="Widgets\VStackPanel.cs" />
     <Compile Include="WidgetWindow.cs" />
     <Compile Include="MouseInputManager.cs" />
     <Compile Include="Program.cs" />
@@ -59,7 +66,6 @@
     <Compile Include="Widgets\ListBox.cs" />
     <Compile Include="Widgets\ProgressBar.cs" />
     <Compile Include="Widgets\TextBox.cs" />
-    <Compile Include="Widgets\TextWidget.cs" />
     <Compile Include="Widgets\VScrollBar.cs" />
     <Compile Include="Widgets\Widget.cs" />
   </ItemGroup>

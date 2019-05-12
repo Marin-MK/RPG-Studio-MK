@@ -3,17 +3,18 @@ using ODL;
 
 namespace MKEditor.Widgets
 {
-    public class CheckBox : TextWidget
+    public class CheckBox : Widget
     {
         public bool Checked { get; protected set; } = false;
+        public string Text { get; protected set; } = "";
 
-        public CheckBox(object Parent, string Name = "checkBox")
-            : base(Parent, Name)
+        public CheckBox(object Parent)
+            : base(Parent, "checkBox")
         {
             this.WidgetIM.OnMouseDown += this.MouseDown;
             this.WidgetIM.OnMouseUp += this.MouseUp;
             this.WidgetIM.OnHoverChanged += this.HoverChanged;
-            this.WidgetIM.OnLeftClick += delegate (object sender, MouseEventArgs e)
+            this.OnLeftClick += delegate (object sender, MouseEventArgs e)
             {
                 this.SetChecked(!this.Checked);
             };
@@ -29,6 +30,15 @@ namespace MKEditor.Widgets
             if (this.Checked != Value)
             {
                 this.Checked = Value;
+                Redraw();
+            }
+        }
+
+        public void SetText(string text)
+        {
+            if (this.Text != text)
+            {
+                this.Text = text;
                 Redraw();
             }
         }

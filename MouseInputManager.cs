@@ -19,7 +19,6 @@ namespace MKEditor
         public EventHandler<MouseEventArgs> OnMouseUp;
         public EventHandler<MouseEventArgs> OnMouseWheel;
         public EventHandler<MouseEventArgs> OnHoverChanged;
-        public EventHandler<MouseEventArgs> OnLeftClick;
 
         private Rect Area;
 
@@ -74,7 +73,7 @@ namespace MKEditor
                 if (this.OnMouseUp != null) this.OnMouseUp.Invoke(this, e);
                 if (ClickedInArea == true && Hovering)
                 {
-                    if (this.OnLeftClick != null) this.OnLeftClick.Invoke(this, e);
+                    if (this.Widget.OnLeftClick != null) this.Widget.OnLeftClick.Invoke(this, e);
                 }
                 this.Clicked = false;
                 this.ClickedInArea = null;

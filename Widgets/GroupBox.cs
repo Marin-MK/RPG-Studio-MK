@@ -3,12 +3,12 @@ using ODL;
 
 namespace MKEditor.Widgets
 {
-    public class GroupBox : Widget
+    public class GroupBox : Container
     {
         public string Text { get; protected set; } = "";
 
-        public GroupBox(object Parent, string Name = "groupBox")
-            : base(Parent, Name)
+        public GroupBox(object Parent)
+            : base(Parent, "groupBox")
         {
             this.Text = this.Name;
             this.Sprites["panel"] = new Sprite(this.Viewport);

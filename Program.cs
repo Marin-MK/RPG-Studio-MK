@@ -12,7 +12,6 @@ namespace MKEditor
             w.Show();
             while (Graphics.CanUpdate())
             {
-
                 Graphics.Update();
             }
             Graphics.Stop();

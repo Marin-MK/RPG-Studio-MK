@@ -55,15 +55,48 @@ namespace MKEditor
             RadioButton rbtn2 = new RadioButton(box);
             rbtn2.SetPosition(10, 200);*/
 
-            GroupBox panel = new GroupBox(this);
-            panel.SetPosition(100, 100);
-            panel.SetSize(90, 90);
+            Grid layout = new Grid(this);
+            layout.SetRows(
+                new GridSize(37, Unit.Pixels),
+                new GridSize(33, Unit.Pixels),
+                new GridSize(1, Unit.Pixels),
+                new GridSize(1)
+            );
+            layout.SetColumns(
+                new GridSize(234, Unit.Pixels),
+                new GridSize(1),
+                new GridSize(333, Unit.Pixels)
+            );
 
-            Button btn = new Button(panel);
-            btn.SetPosition(-5, -5);
-            btn.SetSize(100, 100);
+            new Widget(layout)
+                .SetBackgroundColor(40, 44, 52)
+                .SetGridRow(0)
+                .SetGridColumn(0, 2);
 
-            Console.WriteLine(btn.Viewport.ToString());
+            new Widget(layout)
+                .SetBackgroundColor(27, 28, 32)
+                .SetGridRow(1)
+                .SetGridColumn(0, 2);
+
+            new Widget(layout)
+                .SetBackgroundColor(255, 191, 31)
+                .SetGridRow(2)
+                .SetGridColumn(0, 2);
+
+            new Widget(layout)
+                .SetBackgroundColor(27, 28, 32)
+                .SetGridRow(3)
+                .SetGridColumn(0);
+
+            new Widget(layout)
+                .SetBackgroundColor(40, 44, 52)
+                .SetGridRow(3)
+                .SetGridColumn(1);
+
+            new Widget(layout)
+                .SetBackgroundColor(27, 28, 32)
+                .SetGridRow(3)
+                .SetGridColumn(2);
 
             this.OnMouseDown += UI.MouseDown;
             this.OnMousePress += UI.MousePress;
@@ -71,6 +104,7 @@ namespace MKEditor
             this.OnMouseMoving += UI.MouseMoving;
             this.OnMouseWheel += UI.MouseWheel;
             this.OnTextInput += UI.TextInput;
+            this.OnWindowResized += UI.WindowResized;
 
             this.OnTick += Tick;
 
