@@ -34,6 +34,9 @@
   <PropertyGroup>
     <StartupObject>MKEditor.Program</StartupObject>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>logo-64x64.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
@@ -47,13 +50,26 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Margin.cs" />
+    <Compile Include="MKD\Event.cs" />
+    <Compile Include="MKD\EventCommands.cs" />
+    <Compile Include="MKD\EventConditions.cs" />
+    <Compile Include="MKD\Map.cs" />
+    <Compile Include="MKD\Tileset.cs" />
     <Compile Include="Widgets\Container.cs" />
     <Compile Include="Widgets\Grid.cs" />
     <Compile Include="Widgets\GridSize.cs" />
     <Compile Include="Widgets\HStackPanel.cs" />
     <Compile Include="Widgets\ILayout.cs" />
-    <Compile Include="Widgets\LayoutElement.cs" />
+    <Compile Include="Widgets\IMenuItem.cs" />
+    <Compile Include="Widgets\LayerTab.cs" />
+    <Compile Include="Widgets\MapViewer.cs" />
+    <Compile Include="Widgets\MenuItem.cs" />
+    <Compile Include="Widgets\MenuSeparator.cs" />
+    <Compile Include="Widgets\MenuStrip.cs" />
+    <Compile Include="Widgets\MinimalVScrollBar.cs" />
+    <Compile Include="Widgets\PictureBox.cs" />
     <Compile Include="Widgets\RadioButton.cs" />
+    <Compile Include="Widgets\TilesetTab.cs" />
     <Compile Include="Widgets\VStackPanel.cs" />
     <Compile Include="WidgetWindow.cs" />
     <Compile Include="MouseInputManager.cs" />
@@ -69,6 +85,8 @@
     <Compile Include="Widgets\VScrollBar.cs" />
     <Compile Include="Widgets\Widget.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="logo-64x64.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

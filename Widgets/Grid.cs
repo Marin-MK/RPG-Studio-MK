@@ -44,6 +44,14 @@ namespace MKEditor.Widgets
                 Widget w = this.Widgets[i];
                 int width = 0;
                 int height = 0;
+                if (w.GridRowStart >= this.Rows.Count || w.GridRowEnd >= this.Rows.Count)
+                {
+                    throw new Exception("Widget GridRow value exceeds amount of defined rows");
+                }
+                if (w.GridColumnStart >= this.Columns.Count || w.GridColumnEnd >= this.Columns.Count)
+                {
+                    throw new Exception("Widget GridColumn value exceeds amount of defined columns");
+                }
                 for (int j = w.GridRowStart; j <= w.GridRowEnd; j++)
                 {
                     height += this.Sizes[j * this.Columns.Count + w.GridColumnStart].Height;

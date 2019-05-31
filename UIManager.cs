@@ -10,6 +10,8 @@ namespace MKEditor
         public Window Window { get; protected set; }
         public int RealX { get { return 0; } }
         public int RealY { get { return 0; } }
+        public double ScrollPercentageX { get { return 0; } set { throw new MethodNotSupportedException(this); } }
+        public double ScrollPercentageY { get { return 0; } set { throw new MethodNotSupportedException(this); } }
         public Size Size { get { return new Size(this.Window.Width, this.Window.Height); } }
         public Viewport Viewport { get { return this.Window.Viewport; } }
         public List<Widget> Widgets { get; protected set; } = new List<Widget>();
@@ -22,8 +24,8 @@ namespace MKEditor
         public UIManager(Window Window)
         {
             this.Window = Window;
-            BGSprite = new Sprite(this.Viewport, this.Size);
-            BGSprite.Bitmap.FillRect(0, 0, this.Size, this.BackgroundColor);
+            BGSprite = new Sprite(this.Viewport);
+            BGSprite.Bitmap = new SolidBitmap(this.Size, this.BackgroundColor);
         }
 
         public IContainer Add(Widget w)
@@ -144,9 +146,14 @@ namespace MKEditor
 
         public void WindowResized(object sender, WindowEventArgs e)
         {
+            Console.WriteLine("win_resized");
+            BGSprite.Bitmap.Unlock();
+            (BGSprite.Bitmap as SolidBitmap).SetSize(this.Size);
+            BGSprite.Bitmap.Lock();
             this.Widgets.ForEach(w =>
             {
                 w.OnParentSizeChanged.Invoke(sender, new SizeEventArgs(e.Width, e.Height));
+                w.Redraw();
             });
         }
 

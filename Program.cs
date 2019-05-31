@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using ODL;
+using static SDL2.SDL;
 
 namespace MKEditor
 {
@@ -8,8 +12,8 @@ namespace MKEditor
         static void Main(params string[] args)
         {
             Graphics.Start();
-            WidgetWindow w = new WidgetWindow();
-            w.Show();
+            WidgetWindow win = new WidgetWindow();
+            win.Show();
             while (Graphics.CanUpdate())
             {
                 Graphics.Update();

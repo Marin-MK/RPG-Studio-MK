@@ -6,6 +6,7 @@ namespace MKEditor.Widgets
     public class Button : Widget
     {
         public string Text { get; protected set; } = "";
+        public bool RedrawText { get; protected set; } = true;
 
         public Button(object Parent)
             : base(Parent, "button")
@@ -16,28 +17,27 @@ namespace MKEditor.Widgets
             this.OnLeftClick += this.LeftClick;
             this.OnWidgetSelect += this.WidgetSelect;
             this.SetSize(100, 20);
-            this.Sprites["button"] = new Sprite(this.Viewport);
+            this.Sprites["rect"] = new RectSprite(this.Viewport);
+            this.Sprites["text"] = new Sprite(this.Viewport);
             this.Text = this.Name;
         }
-        
-        public void SetText(string text)
+
+        public Widget SetText(string text)
         {
             if (this.Text != text)
             {
                 this.Text = text;
+                this.RedrawText = true;
                 Redraw();
             }
+            return this;
         }
 
         protected override void Draw()
         {
-            if (this.Sprites["button"].Bitmap != null) this.Sprites["button"].Bitmap.Dispose();
-            Bitmap bmp = new Bitmap(this.Size);
-            this.Sprites["button"].Bitmap = bmp;
-            bmp.Font = new Font("Fonts/Segoe UI");
             Color OuterColor = new Color(173, 173, 173);
             Color InnerColor = new Color(225, 225, 225);
-            bool Thick = false;
+            int Thickness = 1;
             if (this.WidgetIM.ClickAnim())
             {
                 OuterColor.Set(0, 84, 153);
@@ -51,19 +51,26 @@ namespace MKEditor.Widgets
             else if (this.Selected)
             {
                 OuterColor.Set(0, 120, 215);
-                Thick = true;
+                Thickness = 2;
             }
-            bmp.DrawRect(0, 0, this.Size, OuterColor);
-            if (Thick)
+
+            RectSprite r = Sprites["rect"] as RectSprite;
+            r.SetSize(this.Size, Thickness);
+            r.SetColor(OuterColor, InnerColor);
+
+            Font f = Font.Get("Fonts/Segoe UI", 12);
+            Size s = f.TextSize(this.Text);
+            this.Sprites["text"].X = this.Size.Width / 2 - s.Width / 2;
+            this.Sprites["text"].Y = this.Size.Height / 2 - 9;
+            if (this.RedrawText)
             {
-                bmp.DrawRect(1, 1, this.Size.Width - 2, this.Size.Height - 2, OuterColor);
-                bmp.FillRect(2, 2, this.Size.Width - 4, this.Size.Height - 4, InnerColor);
+                if (this.Sprites["text"].Bitmap != null) this.Sprites["text"].Bitmap.Dispose();
+                this.Sprites["text"].Bitmap = new Bitmap(s);
+                this.Sprites["text"].Bitmap.Unlock();
+                this.Sprites["text"].Bitmap.Font = f;
+                this.Sprites["text"].Bitmap.DrawText(this.Text, 0, 0, Color.BLACK);
+                this.Sprites["text"].Bitmap.Lock();
             }
-            else
-            {
-                bmp.FillRect(1, 1, this.Size.Width - 2, this.Size.Height - 2, InnerColor);
-            }
-            bmp.DrawText(this.Text, this.Size.Width / 2, this.Size.Height / 2 - 9, Color.BLACK, DrawOptions.CenterAlign);
             base.Draw();
         }
     }

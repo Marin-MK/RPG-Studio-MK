@@ -8,6 +8,8 @@ namespace MKEditor.Widgets
         public bool Checked { get; protected set; } = false;
         public string Text { get; protected set; } = "";
 
+        private bool RedrawText = true;
+
         public CheckBox(object Parent)
             : base(Parent, "checkBox")
         {
@@ -21,42 +23,45 @@ namespace MKEditor.Widgets
             this.OnWidgetSelect += WidgetSelect;
             this.MinimumSize = new Size(1, 15);
             this.MaximumSize = new Size(9999, 15);
-            this.Sprites["box"] = new Sprite(this.Viewport);
+            this.Sprites["rect"] = new RectSprite(this.Viewport);
+            this.Sprites["text"] = new Sprite(this.Viewport);
+            this.Sprites["text"].X = 18;
+            this.Sprites["text"].Y = -2;
+            this.Sprites["check"] = new Sprite(this.Viewport);
+            this.Sprites["check"].X = 1;
+            this.Sprites["check"].Y = 1;
             this.AutoResize = true;
         }
 
-        public void SetChecked(bool Value)
+        public Widget SetChecked(bool Value)
         {
             if (this.Checked != Value)
             {
                 this.Checked = Value;
                 Redraw();
             }
+            return this;
         }
 
-        public void SetText(string text)
+        public Widget SetText(string text)
         {
             if (this.Text != text)
             {
                 this.Text = text;
+                this.RedrawText = true;
                 Redraw();
             }
+            return this;
         }
 
         protected override void Draw()
         {
-            if (this.Sprites["box"].Bitmap != null) this.Sprites["box"].Bitmap.Dispose();
-
-            Font font = new Font("Fonts/Segoe UI");
+            Font f = Font.Get("Fonts/Segoe UI", 12);
+            Size textsize = f.TextSize(this.Text);
             if (this.AutoResize)
             {
-                Size size = font.TextSize(this.Text);
-                this.SetSize(size.Width + 24, size.Height);
+                this.SetSize(textsize.Width + 24, textsize.Height);
             }
-
-            Bitmap bmp = new Bitmap(this.Size);
-            bmp.Font = font;
-            this.Sprites["box"].Bitmap = bmp;
 
             Color Outer = new Color(51, 51, 51);
             Color Inner = new Color(255, 255, 255);
@@ -70,14 +75,26 @@ namespace MKEditor.Widgets
                 Outer.Set(0, 120, 215);
             }
 
-            bmp.DrawRect(0, 1, 13, 13, Outer);
-            bmp.FillRect(1, 2, 11, 11, Inner);
+            RectSprite r = Sprites["rect"] as RectSprite;
+            r.SetSize(13, 13);
+            r.SetColor(Outer, Inner);
+            if (Sprites["check"].Bitmap != null) Sprites["check"].Bitmap.Dispose();
             if (this.Checked)
             {
-                bmp.Build(1, 2, GetCheckBitmap(this.WidgetIM.ClickAnim() ? 2 : this.WidgetIM.HoverAnim() ? 1 : 0));
+                Sprites["check"].Bitmap = GetCheckBitmap(this.WidgetIM.ClickAnim() ? 2 : this.WidgetIM.HoverAnim() ? 1 : 0);
             }
 
-            bmp.DrawText(this.Text, 18, 0, Color.BLACK);
+            if (this.RedrawText)
+            {
+                if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
+                Sprites["text"].Bitmap = new Bitmap(textsize);
+                Sprites["text"].Bitmap.Font = f;
+                Sprites["text"].Bitmap.Unlock();
+                Sprites["text"].Bitmap.DrawText(this.Text, 0, 0, Color.BLACK);
+                Sprites["text"].Bitmap.Lock();
+            }
+
+            this.RedrawText = false;
             base.Draw();
         }
 
@@ -88,6 +105,7 @@ namespace MKEditor.Widgets
             // 1 = hover
             // 2 = click
             Bitmap bmp = new Bitmap(11, 11);
+            bmp.Unlock();
             if (state == 0)
             {
                 bmp.DrawLine(1, 5, 3, 7, 72, 72, 72);
@@ -135,6 +153,7 @@ namespace MKEditor.Widgets
                 bmp.SetPixel(10, 2, outer5);
                 bmp.SetPixel(0, 5, outer6);
             }
+            bmp.Lock();
             return bmp;
         }
     }

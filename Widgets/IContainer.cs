@@ -11,6 +11,9 @@ namespace MKEditor.Widgets
         Size Size { get; }
         List<Widget> Widgets { get; }
 
+        double ScrollPercentageX { get; set; }
+        double ScrollPercentageY { get; set; }
+
         IContainer Add(Widget w);
         IContainer Get(string Name);
         IContainer Remove(Widget w);

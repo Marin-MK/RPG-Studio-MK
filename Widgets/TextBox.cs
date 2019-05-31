@@ -98,7 +98,6 @@ namespace MKEditor.Widgets
             if (TextWidth > this.Size.Width - 8)
             {
                 int diffx = TextWidth - (this.Size.Width - 8);
-                Console.WriteLine(diffx);
                 this.Sprites["text"].X = -diffx;
             }
             else

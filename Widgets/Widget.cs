@@ -17,12 +17,18 @@ namespace MKEditor.Widgets
         public Size                         MinimumSize     { get; protected set; } = new Size(1, 1);
         public Size                         MaximumSize     { get; protected set; } = new Size(9999, 9999);
         public Color                        BackgroundColor { get; protected set; } = new Color(255, 255, 255, 0);
-        public Dictionary<string, Sprite>   Sprites         { get; protected set; } = new Dictionary<string, Sprite>();
+        public Dictionary<string, ISprite>  Sprites         { get; protected set; } = new Dictionary<string, ISprite>();
         public List<Widget>                 Widgets         { get; protected set; } = new List<Widget>();
         public MouseInputManager            WidgetIM        { get; protected set; }
         public IContainer                   Parent          { get; protected set; }
         public bool                         Disposed        { get; protected set; } = false;
         public bool                         Selected        = false;
+
+        public  bool   AutoScroll        = false;
+        private double _ScrollStep       = 0;
+        public  double ScrollStep        { get { return _ScrollStep; } set { _ScrollStep = value; if (this.ScrollBar != null) this.ScrollBar.ScrollStep = value; } }
+        public  double ScrollPercentageX { get; set; } = 0;
+        public  double ScrollPercentageY { get; set; } = 0;
 
         public Margin Margin { get; protected set; } = new Margin();
         public int GridRowStart     = 0;
@@ -45,6 +51,9 @@ namespace MKEditor.Widgets
         public EventHandler<TextInputEventArgs> OnTextInput;
         public EventHandler<SizeEventArgs> OnSizeChanged;
         public EventHandler<SizeEventArgs> OnParentSizeChanged;
+        public EventHandler<SizeEventArgs> OnChildSizeChanged;
+
+        public MinimalVScrollBar ScrollBar;
 
         public Widget(object Parent, string Name = "widget")
         {
@@ -69,8 +78,8 @@ namespace MKEditor.Widgets
             this.OnTextInput = new EventHandler<TextInputEventArgs>(this.TextInput);
             this.OnSizeChanged = new EventHandler<SizeEventArgs>(this.SizeChanged);
             this.OnParentSizeChanged = new EventHandler<SizeEventArgs>(this.ParentSizeChanged);
+            this.OnChildSizeChanged = new EventHandler<SizeEventArgs>(this.ChildSizeChanged);
             this.WidgetIM = new MouseInputManager(this);
-            this.WidgetIM.OnHoverChanged += HoverChanged;
             this.Parent.Add(this);
         }
 
@@ -147,14 +156,59 @@ namespace MKEditor.Widgets
         public virtual void TextInput(object sender, TextInputEventArgs e) { }
         public virtual void SizeChanged(object sender, SizeEventArgs e)
         {
+            if (ScrollBar != null)
+            {
+                ScrollBar.SetPosition(this.Size.Width - 9, 2);
+                ScrollBar.SetSize(11, this.Size.Height - 4);
+                ScrollBar.MouseInputRect = this.Viewport.Rect;
+            }
             UpdateLayout();
         }
         public virtual void ParentSizeChanged(object sender, SizeEventArgs e) { }
+        public virtual void ChildSizeChanged(object sender, SizeEventArgs e)
+        {
+            if (!AutoScroll) return;
+            int maxheight = 0;
+            this.Widgets.ForEach(w =>
+            {
+                if (w.Position.Y + w.Size.Height > maxheight) maxheight = w.Position.Y + w.Size.Height;
+            });
+            if (maxheight > this.Size.Height)
+            {
+                if (ScrollBar == null)
+                {
+                    ScrollBar = new MinimalVScrollBar(this);
+                    ScrollBar.Name = "ContainerScrollBar";
+                    ScrollBar.MouseInputRect = this.Viewport.Rect;
+                    ScrollBar.ScrollStep = this.ScrollStep == 0 ? (this.Size.Height / (double) maxheight) / 10d : this.ScrollStep;
+                    ScrollBar.OnValueChanged += delegate (object sender2, EventArgs e2)
+                    {
+                        this.ScrollPercentageY = ScrollBar.Value;
+                        this.Widgets.ForEach(w =>
+                        {
+                            if (w.Name != "ContainerScrollBar") w.UpdateBounds();
+                        });
+                    };
+                }
+                ScrollBar.SetPosition(this.Size.Width - 9, 2);
+                ScrollBar.SetSize(11, this.Size.Height - 4);
+            }
+            else
+            {
+                ScrollBar.Dispose();
+                ScrollBar = null;
+            }
+        }
 
         protected void UpdateBounds()
         {
             AssertUndisposed();
-            foreach (Sprite s in this.Sprites.Values) s.OX = s.OY = 0;
+            foreach (ISprite s in this.Sprites.Values)
+            {
+                if (s is MultiSprite) foreach (Sprite ms in (s as MultiSprite).SpriteList.Values) ms.OX = ms.OY = 0; 
+                else s.OX = s.OY = 0;
+            }
+            if (this is PictureBox) Console.WriteLine((int) Math.Round(this.Size.Height * this.Parent.ScrollPercentageY));
             this.Viewport.X = this.Position.X + this.Parent.RealX;
             this.Viewport.Y = this.Position.Y + this.Parent.RealY;
             this.Viewport.Width = this.Size.Width;
@@ -162,7 +216,11 @@ namespace MKEditor.Widgets
             if (this.Viewport.X < this.Parent.RealX)
             {
                 int DiffX = this.Parent.RealX - this.Viewport.X;
-                foreach (Sprite s in this.Sprites.Values) s.OX += DiffX;
+                foreach (ISprite s in this.Sprites.Values)
+                {
+                    if (s is MultiSprite) foreach (Sprite ms in (s as MultiSprite).SpriteList.Values) ms.OX += DiffX;
+                    else s.OX += DiffX;
+                }
                 this.Viewport.X = this.Position.X + this.Parent.RealX + DiffX;
                 this.Viewport.Width = this.Size.Width - DiffX;
             }
@@ -174,7 +232,11 @@ namespace MKEditor.Widgets
             if (this.Viewport.Y < this.Parent.RealY)
             {
                 int DiffY = this.Parent.RealY - this.Viewport.Y;
-                foreach (Sprite s in this.Sprites.Values) s.OY += DiffY;
+                foreach (ISprite s in this.Sprites.Values)
+                {
+                    if (s is MultiSprite) foreach (Sprite ms in (s as MultiSprite).SpriteList.Values) ms.OY += DiffY;
+                    else s.OY += DiffY;
+                }
                 this.Viewport.Y = this.Position.Y + this.Parent.RealY + DiffY;
                 this.Viewport.Height = this.Size.Height - DiffY;
             }
@@ -182,6 +244,11 @@ namespace MKEditor.Widgets
             {
                 int DiffY = this.Viewport.Y + this.Viewport.Height - this.Parent.RealY - this.Parent.Size.Height;
                 this.Viewport.Height -= DiffY;
+            }
+            foreach (ISprite s in this.Sprites.Values)
+            {
+                s.OX += (int) Math.Round((this.Size.Width - this.Viewport.Width) * this.Parent.ScrollPercentageX);
+                s.OY += (int) Math.Round((this.Size.Height - this.Viewport.Height) * this.Parent.ScrollPercentageY);
             }
         }
 
@@ -193,9 +260,11 @@ namespace MKEditor.Widgets
         {
             AssertUndisposed();
             this.Position = p;
-            this.Viewport.X = p.X + this.Parent.RealX;
-            this.Viewport.Y = p.Y + this.Parent.RealY;
             UpdateBounds();
+            for (int i = 0; i < this.Widgets.Count; i++)
+            {
+                this.Widgets[i].SetPosition(this.Widgets[i].Position);
+            }
             return this;
         }
 
@@ -220,13 +289,17 @@ namespace MKEditor.Widgets
             {
                 this.Size = size;
                 if (this.Sprites["_bg"].Bitmap != null) this.Sprites["_bg"].Bitmap.Dispose();
-                this.Sprites["_bg"].Bitmap = new Bitmap(this.Size);
-                this.Sprites["_bg"].Bitmap.FillRect(0, 0, this.Size, this.BackgroundColor);
+                this.Sprites["_bg"].Bitmap = new SolidBitmap(this.Size, this.BackgroundColor);
                 this.Viewport.Width = this.Size.Width;
                 this.Viewport.Height = this.Size.Height;
                 this.RedrawSize = true;
                 this.SetPosition(this.Position);
                 this.OnSizeChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));
+                this.Widgets.ForEach(w =>
+                {
+                    w.OnParentSizeChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));
+                });
+                if (this.Parent is Widget) (this.Parent as Widget).OnChildSizeChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));
                 Redraw();
             }
             return this;
@@ -240,8 +313,7 @@ namespace MKEditor.Widgets
         {
             AssertUndisposed();
             this.BackgroundColor = c;
-            this.Sprites["_bg"].Bitmap = new Bitmap(this.Size);
-            this.Sprites["_bg"].Bitmap.FillRect(0, 0, this.Size, this.BackgroundColor);
+            this.Sprites["_bg"].Bitmap = new SolidBitmap(this.Size, this.BackgroundColor);
             return this;
         }
 

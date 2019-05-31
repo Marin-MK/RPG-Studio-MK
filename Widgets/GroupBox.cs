@@ -11,35 +11,48 @@ namespace MKEditor.Widgets
             : base(Parent, "groupBox")
         {
             this.Text = this.Name;
-            this.Sprites["panel"] = new Sprite(this.Viewport);
+            this.Sprites["text"] = new Sprite(this.Viewport);
+            this.Sprites["text"].X = 8;
+            this.Sprites["text"].Y = -3;
+            this.Sprites["text"].Z = 2;
+            this.Sprites["rect"] = new RectSprite(this.Viewport);
+            this.Sprites["rect"].Y = 6;
+            this.Sprites["line"] = new Sprite(this.Viewport);
+            this.Sprites["line"].Bitmap = new SolidBitmap(1, 1);
+            this.Sprites["line"].X = 6;
+            this.Sprites["line"].Y = 6;
+            this.Sprites["line"].Z = 1;
         }
 
-        public void SetText(string text)
+        public Widget SetText(string text)
         {
             if (this.Text != text)
             {
                 this.Text = text;
                 Redraw();
             }
+            return this;
         }
 
         protected override void Draw()
         {
-            if (this.Sprites["panel"].Bitmap != null) this.Sprites["panel"].Bitmap.Dispose();
-            this.Sprites["panel"].Bitmap = new Bitmap(this.Size);
-            this.Sprites["panel"].Bitmap.Font = new Font("Fonts/Segoe UI", 12);
-            this.Sprites["panel"].Bitmap.DrawLines(220, 220, 220,
-                new Point(6, 6),
-                new Point(0, 6),
-                new Point(0, this.Size.Height - 1),
-                new Point(this.Size.Width - 1, this.Size.Height - 1),
-                new Point(this.Size.Width - 1, 6));
-            this.Sprites["panel"].Bitmap.DrawText(this.Text, 8, -3, Color.BLACK);
-            int width = this.Sprites["panel"].Bitmap.TextSize(this.Text).Width;
-            this.Sprites["panel"].Bitmap.DrawLine(
-                new Point(width + 10, 6),
-                new Point(this.Size.Width - 1, 6),
-                220, 220, 220);
+            Font f = Font.Get("Fonts/Segoe UI", 12);
+            Size s = f.TextSize(this.Text);
+            if (this.Sprites["text"].Bitmap != null) this.Sprites["text"].Bitmap.Dispose();
+            this.Sprites["text"].Bitmap = new Bitmap(s);
+            this.Sprites["text"].Bitmap.Font = f;
+            this.Sprites["text"].Bitmap.Unlock();
+            this.Sprites["text"].Bitmap.DrawText(this.Text, 0, 0, Color.BLACK);
+            this.Sprites["text"].Bitmap.Lock();
+
+            RectSprite r = Sprites["rect"] as RectSprite;
+            r.SetSize(this.Size.Width, this.Size.Height - 6);
+            r.SetOuterColor(220, 220, 220);
+            this.Sprites["line"].Bitmap.Unlock();
+            (this.Sprites["line"].Bitmap as SolidBitmap).SetSize(s.Width + 4, 1);
+            (this.Sprites["line"].Bitmap as SolidBitmap).SetColor(240, 240, 240);
+            this.Sprites["line"].Bitmap.Lock();
+
             base.Draw();
         }
     }
