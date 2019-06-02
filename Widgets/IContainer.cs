@@ -6,13 +6,16 @@ namespace MKEditor.Widgets
 {
     public interface IContainer
     {
-        int RealX { get; }
-        int RealY { get; }
+        Viewport Viewport { get; }
+        Point Position { get; }
         Size Size { get; }
         List<Widget> Widgets { get; }
+        Point AdjustedPosition { get; }
+        Size AdjustedSize { get; }
 
         double ScrollPercentageX { get; set; }
         double ScrollPercentageY { get; set; }
+        Point ScrolledPosition { get; }
 
         IContainer Add(Widget w);
         IContainer Get(string Name);

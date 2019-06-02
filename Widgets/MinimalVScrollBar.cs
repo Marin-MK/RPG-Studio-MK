@@ -8,7 +8,6 @@ namespace MKEditor.Widgets
     {
         public double SliderSize { get; protected set; }
         public double Value { get; protected set; }
-        public double ScrollStep = 0;
 
         public Rect MouseInputRect { get; set; }
 
@@ -27,8 +26,10 @@ namespace MKEditor.Widgets
             this.Size = new Size(17, 60);
             this.WidgetIM.OnMouseWheel += MouseWheel;
             this.Sprites["bar"] = new Sprite(this.Viewport);
+            this.Sprites["bar"].X = 5;
+            this.Sprites["bar"].Bitmap = new SolidBitmap(1, 1, new Color(186, 186, 186));
             this.Sprites["slider"] = new Sprite(this.Viewport);
-            this.Sprites["slider"].X = 5;
+            this.Sprites["slider"].X = 2;
             this.Sprites["slider"].Bitmap = new SolidBitmap(1, 1, new Color(186, 186, 186));
             this.SliderSize = 0.25;
             this.Value = 0;
@@ -65,7 +66,7 @@ namespace MKEditor.Widgets
 
         protected override void Draw()
         {
-            int height = this.Size.Height;
+            int height = this.Size.Height - 4;
             int sliderheight = (int) Math.Round(height * this.SliderSize);
             Color sc = new Color(205, 205, 205);
             if (this.SliderIM.ClickedInArea == true)
@@ -77,21 +78,25 @@ namespace MKEditor.Widgets
                 sc.Set(192, 192, 192);
             }
 
+            this.Sprites["bar"].Bitmap.Unlock();
+            (this.Sprites["bar"].Bitmap as SolidBitmap).SetSize(2, this.Size.Height);
+            this.Sprites["bar"].Bitmap.Lock();
+
             this.Sprites["slider"].Bitmap.Unlock();
-            (this.Sprites["slider"].Bitmap as SolidBitmap).SetSize(2, sliderheight);
+            (this.Sprites["slider"].Bitmap as SolidBitmap).SetSize(8, sliderheight);
             (this.Sprites["slider"].Bitmap as SolidBitmap).SetColor(sc);
             this.Sprites["slider"].Bitmap.Lock();
-            this.Sprites["slider"].Y = (int) Math.Round((height - sliderheight) * this.Value);
+            this.Sprites["slider"].Y = 2 + (int) Math.Round((height - sliderheight) * this.Value);
             base.Draw();
         }
 
         public override void Update()
         {
             // Slider Input management
-            int height = this.Size.Height;
+            int height = this.Size.Height - 4;
             int sliderheight = (int) Math.Round(height * this.SliderSize);
             int sy = (int) Math.Round((height - sliderheight) * this.Value);
-            this.SliderRect = new Rect(this.Viewport.X, this.Viewport.Y + sy, 13, sliderheight);
+            this.SliderRect = new Rect(this.Viewport.X, this.Viewport.Y + sy + 2, 13, sliderheight);
 
             this.SliderIM.Update(this.SliderRect);
 
@@ -130,10 +135,10 @@ namespace MKEditor.Widgets
 
         private void UpdateSlider(MouseEventArgs e)
         {
-            int height = this.Size.Height;
+            int height = this.Size.Height - 4;
             int sliderheight = (int) Math.Round(height * this.SliderSize);
             height -= sliderheight;
-            int newy = (e.Y - this.Viewport.Y - this.SliderRY);
+            int newy = (e.Y - this.Viewport.Y - 2 - this.SliderRY);
             newy = Math.Max(Math.Min(newy, height), 0);
             this.SetValue((double) newy / height);
             if (this.Parent is ListBox)
@@ -159,15 +164,7 @@ namespace MKEditor.Widgets
             }
             else
             {
-                if (this.ScrollStep > 0)
-                {
-                    this.SetValue(this.Value - this.ScrollStep);
-                }
-                else
-                {
-                    this.SetValue(this.Value - this.SliderSize / 10f);
-
-                }
+                this.SetValue(this.Value - 2f / this.Parent.Size.Height);
             }
         }
 
@@ -183,15 +180,7 @@ namespace MKEditor.Widgets
             }
             else
             {
-                if (this.ScrollStep > 0)
-                {
-                    this.SetValue(this.Value + this.ScrollStep);
-                }
-                else
-                {
-                    this.SetValue(this.Value + this.SliderSize / 10f);
-
-                }
+                this.SetValue(this.Value + 2f / this.Parent.Size.Height);
             }
         }
 

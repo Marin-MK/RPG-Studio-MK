@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using ODL;
 
@@ -7,28 +7,38 @@ namespace MKEditor.Widgets
     public class Widget : IDisposable, IContainer
     {
         public string                       Name;
-        public int                          RealX           { get { return this.Position.X + this.Parent.RealX; } }
-        public int                          RealY           { get { return this.Position.Y + this.Parent.RealY; } }
-        public Viewport                     Viewport        { get; protected set; }
-        public Size                         Size            { get; protected set; } = new Size(50, 50);
-        public Point                        Position        { get; protected set; } = new Point(0, 0);
-        public WidgetWindow                 Window          { get; protected set; }
-        public bool                         AutoResize      { get; protected set; } = false;
-        public Size                         MinimumSize     { get; protected set; } = new Size(1, 1);
-        public Size                         MaximumSize     { get; protected set; } = new Size(9999, 9999);
-        public Color                        BackgroundColor { get; protected set; } = new Color(255, 255, 255, 0);
-        public Dictionary<string, ISprite>  Sprites         { get; protected set; } = new Dictionary<string, ISprite>();
-        public List<Widget>                 Widgets         { get; protected set; } = new List<Widget>();
-        public MouseInputManager            WidgetIM        { get; protected set; }
-        public IContainer                   Parent          { get; protected set; }
-        public bool                         Disposed        { get; protected set; } = false;
-        public bool                         Selected        = false;
+        public Viewport                     Viewport         { get; set; }
+        public Size                         Size             { get; protected set; } = new Size(50, 50);
+        public Point                        Position         { get; protected set; } = new Point(0, 0);
+        public WidgetWindow                 Window           { get; protected set; }
+        public bool                         AutoResize       { get; protected set; } = false;
+        public Size                         MinimumSize      { get; protected set; } = new Size(1, 1);
+        public Size                         MaximumSize      { get; protected set; } = new Size(9999, 9999);
+        public Color                        BackgroundColor  { get; protected set; } = new Color(255, 255, 255, 0);
+        public Dictionary<string, ISprite>  Sprites          { get; protected set; } = new Dictionary<string, ISprite>();
+        public List<Widget>                 Widgets          { get; protected set; } = new List<Widget>();
+        public MouseInputManager            WidgetIM         { get; protected set; }
+        public IContainer                   Parent           { get; set; }
+        public bool                         Disposed         { get; protected set; } = false;
+        public Point                        AdjustedPosition { get; protected set; } = new Point(0, 0);
+        public Size                         AdjustedSize     { get; protected set; } = new Size(50, 50);
+        public bool                         Selected         = false;
 
         public  bool   AutoScroll        = false;
         private double _ScrollStep       = 0;
         public  double ScrollStep        { get { return _ScrollStep; } set { _ScrollStep = value; if (this.ScrollBar != null) this.ScrollBar.ScrollStep = value; } }
         public  double ScrollPercentageX { get; set; } = 0;
         public  double ScrollPercentageY { get; set; } = 0;
+        public  Point  ScrolledPosition
+        {
+            get
+            {
+                return new Point(
+                    this.Position.X - (int) Math.Round((this.Size.Width - this.Viewport.Width) * this.Parent.ScrollPercentageX),
+                    this.Position.Y - (int) Math.Round((this.Size.Height - this.Viewport.Height) * this.Parent.ScrollPercentageY)
+                );
+            }
+        }
 
         public Margin Margin { get; protected set; } = new Margin();
         public int GridRowStart     = 0;
@@ -57,18 +67,16 @@ namespace MKEditor.Widgets
 
         public Widget(object Parent, string Name = "widget")
         {
-            if (Parent is WidgetWindow)
+            if (Parent is Grid && !(this is GridContainer))
             {
-                this.Window = Parent as WidgetWindow;
-                this.Parent = this.Window.UI;
+                (Parent as Grid).Add(this);
             }
-            else if (Parent is Widget)
+            else
             {
-                this.Window = (Parent as Widget).Window;
-                this.Parent = Parent as IContainer;
+                this.SetParent(Parent);
+                this.Viewport = new Viewport(this.Window.Renderer, 0, 0, this.Size);
             }
             this.Name = this.Parent.GetName(Name);
-            this.Viewport = new Viewport(this.Window.Renderer, 0, 0, this.Size);
             this.Sprites["_bg"] = new Sprite(this.Viewport);
             this.Sprites["_bg"].Z = -999999999;
             this.OnLeftClick = new EventHandler<MouseEventArgs>(this.LeftClick);
@@ -80,6 +88,21 @@ namespace MKEditor.Widgets
             this.OnParentSizeChanged = new EventHandler<SizeEventArgs>(this.ParentSizeChanged);
             this.OnChildSizeChanged = new EventHandler<SizeEventArgs>(this.ChildSizeChanged);
             this.WidgetIM = new MouseInputManager(this);
+        }
+
+        public void SetParent(object Parent)
+        {
+            if (this.Parent != null) this.Parent.Remove(this);
+            if (Parent is WidgetWindow)
+            {
+                this.Window = Parent as WidgetWindow;
+                this.Parent = this.Window.UI;
+            }
+            else if (Parent is Widget)
+            {
+                this.Window = (Parent as Widget).Window;
+                this.Parent = Parent as IContainer;
+            }
             this.Parent.Add(this);
         }
 
@@ -158,7 +181,7 @@ namespace MKEditor.Widgets
         {
             if (ScrollBar != null)
             {
-                ScrollBar.SetPosition(this.Size.Width - 9, 2);
+                ScrollBar.SetPosition(this.Size.Width - 10, 2);
                 ScrollBar.SetSize(11, this.Size.Height - 4);
                 ScrollBar.MouseInputRect = this.Viewport.Rect;
             }
@@ -190,10 +213,10 @@ namespace MKEditor.Widgets
                         });
                     };
                 }
-                ScrollBar.SetPosition(this.Size.Width - 9, 2);
+                ScrollBar.SetPosition(this.Size.Width - 10, 2);
                 ScrollBar.SetSize(11, this.Size.Height - 4);
             }
-            else
+            else if (ScrollBar != null)
             {
                 ScrollBar.Dispose();
                 ScrollBar = null;
@@ -205,50 +228,62 @@ namespace MKEditor.Widgets
             AssertUndisposed();
             foreach (ISprite s in this.Sprites.Values)
             {
-                if (s is MultiSprite) foreach (Sprite ms in (s as MultiSprite).SpriteList.Values) ms.OX = ms.OY = 0; 
+                if (s is MultiSprite) foreach (Sprite ms in (s as MultiSprite).SpriteList.Values) ms.OX = ms.OY = 0;
                 else s.OX = s.OY = 0;
             }
-            if (this is PictureBox) Console.WriteLine((int) Math.Round(this.Size.Height * this.Parent.ScrollPercentageY));
-            this.Viewport.X = this.Position.X + this.Parent.RealX;
-            this.Viewport.Y = this.Position.Y + this.Parent.RealY;
+
+            int ScrolledX = this.Position.X - this.ScrolledPosition.X;
+            int ScrolledY = this.Position.Y - this.ScrolledPosition.Y;
+            int ParentScrolledX = (this.Parent.Position.X - this.Parent.ScrolledPosition.X);
+            int ParentScrolledY = (this.Parent.Position.Y - this.Parent.ScrolledPosition.Y);
+
+            this.Viewport.X = this.Position.X + this.Parent.Viewport.X - Parent.AdjustedPosition.X - ScrolledX;
+            this.Viewport.Y = this.Position.Y + this.Parent.Viewport.Y - Parent.AdjustedPosition.Y - ScrolledY;
             this.Viewport.Width = this.Size.Width;
             this.Viewport.Height = this.Size.Height;
-            if (this.Viewport.X < this.Parent.RealX)
+            int DiffX = 0;
+            int DiffY = 0;
+            int DiffWidth = 0;
+            int DiffHeight = 0;
+            /* Handles X positioning */
+            if (this.Viewport.X < this.Parent.Viewport.X)
             {
-                int DiffX = this.Parent.RealX - this.Viewport.X;
+                DiffX = this.Parent.Viewport.X - this.Viewport.X;
                 foreach (ISprite s in this.Sprites.Values)
                 {
                     if (s is MultiSprite) foreach (Sprite ms in (s as MultiSprite).SpriteList.Values) ms.OX += DiffX;
                     else s.OX += DiffX;
                 }
-                this.Viewport.X = this.Position.X + this.Parent.RealX + DiffX;
-                this.Viewport.Width = this.Size.Width - DiffX;
+                this.Viewport.X = this.Position.X + this.Parent.Viewport.X + DiffX - ScrolledX - Parent.AdjustedPosition.X;
             }
-            if (this.Viewport.X + this.Viewport.Width > this.Parent.RealX + this.Parent.Size.Width)
+            /* Handles width manipulation */
+            if (this.Viewport.X + this.Size.Width > this.Parent.Viewport.X + this.Parent.Viewport.Width)
             {
-                int DiffX = this.Viewport.X + this.Viewport.Width - this.Parent.RealX - this.Parent.Size.Width;
-                this.Viewport.Width -= DiffX;
+                DiffWidth = this.Viewport.X + this.Size.Width - (this.Parent.Viewport.X + this.Parent.Viewport.Width);
+                this.Viewport.Width -= DiffWidth;
             }
-            if (this.Viewport.Y < this.Parent.RealY)
+            /* Handles Y positioning */
+            if (this.Viewport.Y < this.Parent.Viewport.Y)
             {
-                int DiffY = this.Parent.RealY - this.Viewport.Y;
+                DiffY = this.Parent.Viewport.Y - this.Viewport.Y;
                 foreach (ISprite s in this.Sprites.Values)
                 {
                     if (s is MultiSprite) foreach (Sprite ms in (s as MultiSprite).SpriteList.Values) ms.OY += DiffY;
                     else s.OY += DiffY;
                 }
-                this.Viewport.Y = this.Position.Y + this.Parent.RealY + DiffY;
-                this.Viewport.Height = this.Size.Height - DiffY;
+                this.Viewport.Y = this.Position.Y + this.Parent.Viewport.Y + DiffY - ScrolledY - Parent.AdjustedPosition.Y;
             }
-            if (this.Viewport.Y + this.Viewport.Height > this.Parent.RealY + this.Parent.Size.Height)
+            /* Handles height manipulation */
+            if (this.Viewport.Y + this.Size.Height > this.Parent.Viewport.Y + this.Parent.Viewport.Height)
             {
-                int DiffY = this.Viewport.Y + this.Viewport.Height - this.Parent.RealY - this.Parent.Size.Height;
-                this.Viewport.Height -= DiffY;
+                DiffHeight = this.Viewport.Y + this.Size.Height - (this.Parent.Viewport.Y + this.Parent.Viewport.Height);
+                this.Viewport.Height -= DiffHeight;
             }
-            foreach (ISprite s in this.Sprites.Values)
+            this.AdjustedPosition = new Point(DiffX, DiffY);
+            this.AdjustedSize = new Size(DiffWidth, DiffHeight);
+            foreach (Widget w in this.Widgets)
             {
-                s.OX += (int) Math.Round((this.Size.Width - this.Viewport.Width) * this.Parent.ScrollPercentageX);
-                s.OY += (int) Math.Round((this.Size.Height - this.Viewport.Height) * this.Parent.ScrollPercentageY);
+                w.UpdateBounds();
             }
         }
 
@@ -261,10 +296,6 @@ namespace MKEditor.Widgets
             AssertUndisposed();
             this.Position = p;
             UpdateBounds();
-            for (int i = 0; i < this.Widgets.Count; i++)
-            {
-                this.Widgets[i].SetPosition(this.Widgets[i].Position);
-            }
             return this;
         }
 
@@ -329,12 +360,24 @@ namespace MKEditor.Widgets
 
         public virtual IContainer Get(string Name)
         {
-            throw new NotImplementedException();
+            foreach (Widget w in this.Widgets)
+            {
+                if (w.Name == Name) return w;
+            }
+            return null;
         }
 
         public virtual IContainer Remove(Widget w)
         {
-            throw new NotImplementedException();
+            for (int i = 0; i < this.Widgets.Count; i++)
+            {
+                if (this.Widgets[i] == w)
+                {
+                    this.Widgets.RemoveAt(i);
+                    return w;
+                }
+            }
+            return null;
         }
 
         public virtual string GetName(string Name)

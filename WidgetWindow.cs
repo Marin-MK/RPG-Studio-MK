@@ -11,7 +11,7 @@ namespace MKEditor
 
         public WidgetWindow()
         {
-            this.SetSize(800, 400);
+            this.SetSize(1080, 720);
 
             this.Initialize();
 
@@ -44,7 +44,7 @@ namespace MKEditor
                 .SetBackgroundColor(255, 191, 31)
                 .SetGrid(2, 2, 0, 2);
 
-            new Widget(layout)
+            Widget w = new Widget(layout)
                 .SetBackgroundColor(27, 28, 32)
                 .SetGrid(3, 0);
 
@@ -57,6 +57,8 @@ namespace MKEditor
             TilesetTab tt = new TilesetTab(rightcontainer);
             tt.SetBackgroundColor(27, 28, 32);
             tt.SetTileset(tileset);
+
+            new Widget(rightcontainer).SetBackgroundColor(40, 44, 52).SetGrid(1, 0);
 
             LayerTab lt = new LayerTab(rightcontainer);
             lt.SetGrid(2, 0);

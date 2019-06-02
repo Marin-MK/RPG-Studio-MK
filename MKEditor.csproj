@@ -55,6 +55,7 @@
     <Compile Include="MKD\EventConditions.cs" />
     <Compile Include="MKD\Map.cs" />
     <Compile Include="MKD\Tileset.cs" />
+    <Compile Include="Widgets\CollapsibleContainer.cs" />
     <Compile Include="Widgets\Container.cs" />
     <Compile Include="Widgets\Grid.cs" />
     <Compile Include="Widgets\GridSize.cs" />

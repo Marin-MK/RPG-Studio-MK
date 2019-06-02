@@ -8,10 +8,12 @@ namespace MKEditor
     public class UIManager : IContainer
     {
         public Window Window { get; protected set; }
-        public int RealX { get { return 0; } }
-        public int RealY { get { return 0; } }
+        public Point AdjustedPosition { get { return new Point(0, 0); } set { throw new MethodNotSupportedException(this); } }
+        public Size AdjustedSize { get { return new Size(0, 0); } }
+        public Point Position { get { return new Point(0, 0); } }
         public double ScrollPercentageX { get { return 0; } set { throw new MethodNotSupportedException(this); } }
         public double ScrollPercentageY { get { return 0; } set { throw new MethodNotSupportedException(this); } }
+        public Point ScrolledPosition { get { return new Point(0, 0); } }
         public Size Size { get { return new Size(this.Window.Width, this.Window.Height); } }
         public Viewport Viewport { get { return this.Window.Viewport; } }
         public List<Widget> Widgets { get; protected set; } = new List<Widget>();
@@ -40,12 +42,24 @@ namespace MKEditor
 
         public IContainer Get(string Name)
         {
-            throw new NotImplementedException();
+            foreach (Widget w in this.Widgets)
+            {
+                if (w.Name == Name) return w;
+            }
+            return null;
         }
 
         public IContainer Remove(Widget w)
         {
-            throw new NotImplementedException();
+            for (int i = 0; i < this.Widgets.Count; i++)
+            {
+                if (this.Widgets[i] == w)
+                {
+                    this.Widgets.RemoveAt(i);
+                    return w;
+                }
+            }
+            return null;
         }
 
         public string GetName(string Name)
@@ -146,7 +160,6 @@ namespace MKEditor
 
         public void WindowResized(object sender, WindowEventArgs e)
         {
-            Console.WriteLine("win_resized");
             BGSprite.Bitmap.Unlock();
             (BGSprite.Bitmap as SolidBitmap).SetSize(this.Size);
             BGSprite.Bitmap.Lock();
