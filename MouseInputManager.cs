@@ -17,14 +17,18 @@ namespace MKEditor
         public EventHandler<MouseEventArgs> OnMouseDown;
         public EventHandler<MouseEventArgs> OnMousePress;
         public EventHandler<MouseEventArgs> OnMouseUp;
+        public EventHandler<MouseEventArgs> OnLeftClick;
         public EventHandler<MouseEventArgs> OnMouseWheel;
         public EventHandler<MouseEventArgs> OnHoverChanged;
 
         private Rect Area;
 
-        public bool Clicked = false;
-        public bool? ClickedInArea = null;
-        public bool Hovering = false;
+        private bool _Clicked = false;
+        public bool Clicked { get { return Widget.Visible ? _Clicked : false; } set { _Clicked = value; } }
+        private bool? _ClickedInArea = null;
+        public bool? ClickedInArea { get { return Widget.Visible ? _ClickedInArea : false; } set { _ClickedInArea = value; } }
+        private bool _Hovering = false;
+        public bool Hovering { get { return Widget.Visible ? _Hovering : false; } set { _Hovering = value; } }
 
         public MouseInputManager(Widget Widget)
         {
@@ -34,11 +38,13 @@ namespace MKEditor
 
         public bool ClickAnim()
         {
+            if (!Widget.Visible) return false;
             return ClickedInArea == true && Hovering;
         }
 
         public bool HoverAnim()
         {
+            if (!Widget.Visible) return false;
             return Hovering && ClickedInArea != false || ClickedInArea == true;
         }
 
@@ -49,6 +55,7 @@ namespace MKEditor
 
         public void MouseDown(MouseEventArgs e)
         {
+            if (!Widget.Visible) return;
             if (e.LeftButton && !e.OldLeftButton)
             {
                 this.Clicked = true;
@@ -63,17 +70,19 @@ namespace MKEditor
 
         public void MousePress(MouseEventArgs e)
         {
+            if (!Widget.Visible) return;
             if (this.OnMousePress != null) this.OnMousePress.Invoke(this, e);
         }
 
         public void MouseUp(MouseEventArgs e)
         {
+            if (!Widget.Visible) return;
             if (!e.LeftButton && e.OldLeftButton)
             {
                 if (this.OnMouseUp != null) this.OnMouseUp.Invoke(this, e);
                 if (ClickedInArea == true && Hovering)
                 {
-                    if (this.Widget.OnLeftClick != null) this.Widget.OnLeftClick.Invoke(this, e);
+                    if (this.OnLeftClick != null) this.OnLeftClick.Invoke(this, e);
                 }
                 this.Clicked = false;
                 this.ClickedInArea = null;
@@ -86,11 +95,13 @@ namespace MKEditor
 
         public void MouseWheel(MouseEventArgs e)
         {
+            if (!Widget.Visible) return;
             if (e.WheelY != 0 && this.OnMouseWheel != null) this.OnMouseWheel.Invoke(this, e);
         }
 
         public void MouseMoving(MouseEventArgs e)
         {
+            if (!Widget.Visible) return;
             bool oldhover = this.Hovering;
             this.Hovering = e.InArea(this.Area);
             if (this.OnMouseMoving != null) this.OnMouseMoving.Invoke(this, e);

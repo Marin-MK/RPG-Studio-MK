@@ -38,40 +38,39 @@ namespace MKEditor.Widgets
 
         public new void UpdateLayout()
         {
-            //Random r = new Random();
             if (this.Sizes == null || this.Sizes.Length == 0) UpdateContainers();
             for (int i = 0; i < this.Widgets.Count; i++)
             {
-                GridContainer gc = this.Widgets[i] as GridContainer;
+                LayoutContainer lc = this.Widgets[i] as LayoutContainer;
                 int width = 0;
                 int height = 0;
-                if (gc.GridRowStart >= this.Rows.Count || gc.GridRowEnd >= this.Rows.Count)
+                if (lc.GridRowStart >= this.Rows.Count || lc.GridRowEnd >= this.Rows.Count)
                 {
                     throw new Exception("Widget GridRow value exceeds amount of defined rows");
                 }
-                if (gc.GridColumnStart >= this.Columns.Count || gc.GridColumnEnd >= this.Columns.Count)
+                if (lc.GridColumnStart >= this.Columns.Count || lc.GridColumnEnd >= this.Columns.Count)
                 {
                     throw new Exception("Widget GridColumn value exceeds amount of defined columns");
                 }
-                for (int j = gc.GridRowStart; j <= gc.GridRowEnd; j++)
+                for (int j = lc.GridRowStart; j <= lc.GridRowEnd; j++)
                 {
-                    height += this.Sizes[j * this.Columns.Count + gc.GridColumnStart].Height;
+                    height += this.Sizes[j * this.Columns.Count + lc.GridColumnStart].Height;
                 }
-                for (int j = gc.GridColumnStart; j <= gc.GridColumnEnd; j++)
+                for (int j = lc.GridColumnStart; j <= lc.GridColumnEnd; j++)
                 {
-                    width += this.Sizes[gc.GridRowStart * this.Columns.Count + j].Width;
+                    width += this.Sizes[lc.GridRowStart * this.Columns.Count + j].Width;
                 }
-                Point p = this.Positions[gc.GridRowStart * this.Columns.Count + gc.GridColumnStart];
+                Point p = this.Positions[lc.GridRowStart * this.Columns.Count + lc.GridColumnStart];
                 int x = p.X;
                 int y = p.Y;
-                x += gc.Margin.Left;
-                width -= gc.Margin.Left + gc.Margin.Right;
-                y += gc.Margin.Up;
-                height -= gc.Margin.Up + gc.Margin.Down;
-                gc.SetPosition(x, y);
-                gc.SetSize(width, height);
+                x += lc.Margin.Left;
+                width -= lc.Margin.Left + lc.Margin.Right;
+                y += lc.Margin.Up;
+                height -= lc.Margin.Up + lc.Margin.Down;
+                lc.SetPosition(x, y);
+                lc.SetSize(width, height);
 
-                gc.Widget.SetSize(width, height);
+                lc.Widget.SetSize(width, height);
 
                 //if (w is Grid) (w as Grid).UpdateContainers();
                 //else if (w is ILayout) (w as ILayout).UpdateLayout();
@@ -80,17 +79,16 @@ namespace MKEditor.Widgets
 
         public override IContainer Add(Widget w)
         {
-            if (w is GridContainer)
+            if (w is LayoutContainer)
             {
                 this.Widgets.Add(w);
             }
             else
             {
-                GridContainer c = new GridContainer(this);
+                LayoutContainer c = new LayoutContainer(this);
                 c.Widget = w;
                 w.SetParent(c);
                 w.Viewport = c.Viewport;
-                this.Widgets.Add(c);
             }
             return w;
         }
@@ -180,21 +178,6 @@ namespace MKEditor.Widgets
         {
             this.Size = new Size(e.Width, e.Height);
             this.RedrawContainers = true;
-        }
-    }
-
-    public class GridContainer : Container
-    {
-        public Widget Widget;
-        public new int GridRowStart { get { return Widget.GridRowStart; } }
-        public new int GridRowEnd { get { return Widget.GridRowEnd; } }
-        public new int GridColumnStart { get { return Widget.GridColumnStart; } }
-        public new int GridColumnEnd { get { return Widget.GridColumnEnd; } }
-
-        public GridContainer(object Parent, string Name = "gridContainer")
-            : base(Parent, Name)
-        {
-
         }
     }
 }

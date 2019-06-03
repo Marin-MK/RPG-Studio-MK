@@ -22,6 +22,7 @@ namespace MKEditor.Widgets
         public bool                         Disposed         { get; protected set; } = false;
         public Point                        AdjustedPosition { get; protected set; } = new Point(0, 0);
         public Size                         AdjustedSize     { get; protected set; } = new Size(50, 50);
+        public bool                         Visible          { get; protected set; } = true;
         public bool                         Selected         = false;
 
         public  bool   AutoScroll        = false;
@@ -40,11 +41,11 @@ namespace MKEditor.Widgets
             }
         }
 
-        public Margin Margin { get; protected set; } = new Margin();
-        public int GridRowStart     = 0;
-        public int GridRowEnd       = 0;
-        public int GridColumnStart  = 0;
-        public int GridColumnEnd    = 0;
+        public Margin Margin          { get; protected set; } = new Margin();
+        public int    GridRowStart    = 0;
+        public int    GridRowEnd      = 0;
+        public int    GridColumnStart = 0;
+        public int    GridColumnEnd   = 0;
 
         protected bool Drawn      = false;
         protected bool RedrawSize = false;
@@ -67,9 +68,9 @@ namespace MKEditor.Widgets
 
         public Widget(object Parent, string Name = "widget")
         {
-            if (Parent is Grid && !(this is GridContainer))
+            if (Parent is ILayout && !(this is LayoutContainer))
             {
-                (Parent as Grid).Add(this);
+                (Parent as Widget).Add(this);
             }
             else
             {
@@ -78,6 +79,7 @@ namespace MKEditor.Widgets
             }
             this.Name = this.Parent.GetName(Name);
             this.Sprites["_bg"] = new Sprite(this.Viewport);
+            this.Sprites["_bg"].Bitmap = new SolidBitmap(this.Size, this.BackgroundColor);
             this.Sprites["_bg"].Z = -999999999;
             this.OnLeftClick = new EventHandler<MouseEventArgs>(this.LeftClick);
             this.OnMouseMoving = new EventHandler<MouseEventArgs>(this.MouseMoving);
@@ -106,14 +108,23 @@ namespace MKEditor.Widgets
             this.Parent.Add(this);
         }
 
+        public void SetVisible(bool Visible)
+        {
+            if (this.Visible != Visible)
+            {
+                this.Visible = Visible;
+                foreach (ISprite s in this.Sprites.Values)
+                {
+                    s.Visible = this.Visible;
+                }
+            }
+        }
+
         public void Dispose()
         {
             AssertUndisposed();
-            foreach (Sprite sprite in Sprites.Values)
-            {
-                sprite.Dispose();
-            }
             this.Viewport.Dispose();
+            this.Parent.Widgets.Remove(this);
             this.Viewport = null;
             this.Sprites = null;
             this.Disposed = true;
@@ -220,6 +231,7 @@ namespace MKEditor.Widgets
             {
                 ScrollBar.Dispose();
                 ScrollBar = null;
+                this.ScrollPercentageY = 0;
             }
         }
 
@@ -319,8 +331,9 @@ namespace MKEditor.Widgets
             if (oldsize.Width != size.Width || oldsize.Height != size.Height)
             {
                 this.Size = size;
-                if (this.Sprites["_bg"].Bitmap != null) this.Sprites["_bg"].Bitmap.Dispose();
-                this.Sprites["_bg"].Bitmap = new SolidBitmap(this.Size, this.BackgroundColor);
+                this.Sprites["_bg"].Bitmap.Unlock();
+                (this.Sprites["_bg"].Bitmap as SolidBitmap).SetSize(this.Size);
+                this.Sprites["_bg"].Bitmap.Lock();
                 this.Viewport.Width = this.Size.Width;
                 this.Viewport.Height = this.Size.Height;
                 this.RedrawSize = true;
@@ -344,7 +357,9 @@ namespace MKEditor.Widgets
         {
             AssertUndisposed();
             this.BackgroundColor = c;
-            this.Sprites["_bg"].Bitmap = new SolidBitmap(this.Size, this.BackgroundColor);
+            this.Sprites["_bg"].Bitmap.Unlock();
+            (this.Sprites["_bg"].Bitmap as SolidBitmap).SetColor(c);
+            this.Sprites["_bg"].Bitmap.Lock();
             return this;
         }
 

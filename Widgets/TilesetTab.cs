@@ -10,14 +10,11 @@ namespace MKEditor.Widgets
         Container alltilesets;
         CollapsibleContainer tbox;
         PictureBox tileset;
-        double decr = 0;
+        VStackPanel stack;
 
         public TilesetTab(object Parent, string Name = "tilesetViewer")
             : base(Parent, Name)
         {
-            //this.Sprites["rect"] = new RectSprite(this.Viewport);
-            //this.Sprites["rect"].X = 26;
-            //this.Sprites["rect"].Y = 44;
             this.Sprites["text"] = new Sprite(this.Viewport);
             this.Sprites["text"].X = 6;
             this.Sprites["text"].Y = 14;
@@ -32,11 +29,24 @@ namespace MKEditor.Widgets
             alltilesets = new Container(this);
             alltilesets.SetPosition(10, 47);
             alltilesets.AutoScroll = true;
+            alltilesets.SetBackgroundColor(Color.RED);
 
-            tbox = new CollapsibleContainer(alltilesets, "ccontainer");
+            stack = new VStackPanel(alltilesets);
+            stack.SetWidth(this.Size.Width - 37);
+            stack.SetBackgroundColor(Color.BLUE);
+
+            for (int i = 0; i < 10; i++)
+            {
+                Button b = new Button(stack);
+                b.SetHeight(40);
+                b.SetText("button" + (i + 1).ToString());
+            }
+
+            tbox = new CollapsibleContainer(stack);
             tbox.SetText("Outside");
+            tbox.SetBackgroundColor(Color.GREEN);
 
-            tileset = new PictureBox(tbox, "pbox");
+            tileset = new PictureBox(tbox);
             tileset.SetPosition(20, 33);
         }
 
@@ -50,15 +60,13 @@ namespace MKEditor.Widgets
         public override void Update()
         {
             base.Update();
+            Console.WriteLine(stack.Size);
         }
 
         protected override void Draw()
         {
-            //RectSprite r = Sprites["rect"] as RectSprite;
-            //r.SetSize(280, this.Size.Height - 70);
-            //r.SetColor(186, 186, 186, 30, 32, 36);
-            //tilesetcontainer.SetSize(273, this.Size.Height - 78);
             alltilesets.SetSize(this.Size.Width - 37, this.Size.Height - 57);
+            stack.SetWidth(this.Size.Width - 50);
             tbox.SetSize(alltilesets.Size.Width - 13, tileset.Size.Height + tileset.Position.Y);
             base.Draw();
         }
