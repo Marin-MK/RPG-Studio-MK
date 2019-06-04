@@ -11,8 +11,8 @@ namespace MKEditor
         public Point AdjustedPosition { get { return new Point(0, 0); } set { throw new MethodNotSupportedException(this); } }
         public Size AdjustedSize { get { return new Size(0, 0); } }
         public Point Position { get { return new Point(0, 0); } }
-        public double ScrollPercentageX { get { return 0; } set { throw new MethodNotSupportedException(this); } }
-        public double ScrollPercentageY { get { return 0; } set { throw new MethodNotSupportedException(this); } }
+        public int ScrolledX { get { return 0; } set { throw new MethodNotSupportedException(this); } }
+        public int ScrolledY { get { return 0; } set { throw new MethodNotSupportedException(this); } }
         public Point ScrolledPosition { get { return new Point(0, 0); } }
         public Size Size { get { return new Size(this.Window.Width, this.Window.Height); } }
         public Viewport Viewport { get { return this.Window.Viewport; } }

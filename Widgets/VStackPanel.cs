@@ -29,13 +29,13 @@ namespace MKEditor.Widgets
             for (int i = 0; i < this.Widgets.Count; i++)
             {
                 LayoutContainer w = this.Widgets[i] as LayoutContainer;
-                y += w.Margin.Up;
-                int x = w.Margin.Left;
-                int width = this.Size.Width - x - w.Margin.Right;
+                y += w.Widget.Margin.Up;
+                int x = w.Widget.Margin.Left;
+                int width = this.Size.Width - x - w.Widget.Margin.Right;
                 w.SetWidth(width);
                 w.SetPosition(x, y);
                 y += w.Size.Height;
-                y += w.Margin.Down;
+                y += w.Widget.Margin.Down;
                 w.Widget.SetPosition(0, 0);
                 w.Widget.SetWidth(width);
             }
@@ -49,16 +49,17 @@ namespace MKEditor.Widgets
                 Widget w = this.Widgets[i];
                 w.SetWidth(size.Width);
             }
-            this.UpdateLayout();
             return this;
         }
 
         public void UpdateHeight()
         {
+            this.UpdateLayout();
             int maxheight = 0;
             foreach (LayoutContainer lc in this.Widgets)
             {
-                if (lc.Position.Y + lc.Size.Height > maxheight) maxheight = lc.Position.Y + lc.Size.Height;
+                int h = lc.Position.Y + lc.Size.Height;
+                if (h > maxheight) maxheight = h;
             }
             this.SetHeight(maxheight);
         }

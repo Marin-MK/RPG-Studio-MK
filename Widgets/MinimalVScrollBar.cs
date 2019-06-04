@@ -48,6 +48,12 @@ namespace MKEditor.Widgets
             {
                 this.Value = value;
                 if (this.OnValueChanged != null) this.OnValueChanged.Invoke(this, new EventArgs());
+                if (this is AutoScrollBar)
+                {
+                    Widget w = this.Parent as Widget;
+                    w.ScrolledY = (int) Math.Round((w.MaxChildHeight - w.Viewport.Height) * this.Value);
+                    w.UpdateBounds();
+                }
                 Redraw();
             }
         }
@@ -133,7 +139,7 @@ namespace MKEditor.Widgets
             Redraw();
         }
 
-        private void UpdateSlider(MouseEventArgs e)
+        public void UpdateSlider(MouseEventArgs e)
         {
             int height = this.Size.Height - 4;
             int sliderheight = (int) Math.Round(height * this.SliderSize);
@@ -148,7 +154,9 @@ namespace MKEditor.Widgets
             }
             else if (this.Parent is Widget && (this.Parent as Widget).AutoScroll)
             {
-                this.Parent.ScrollPercentageY = this.Value;
+                Widget w = this.Parent as Widget;
+                w.ScrolledY = (int) Math.Round((w.MaxChildHeight - w.Viewport.Height) * this.Value);
+                w.UpdateBounds();
             }
         }
 
@@ -164,7 +172,8 @@ namespace MKEditor.Widgets
             }
             else
             {
-                this.SetValue(this.Value - 2f / this.Parent.Size.Height);
+                Widget w = this.Parent as Widget;
+                this.SetValue((w.ScrolledY - 11d) / (w.MaxChildHeight - w.Viewport.Height));
             }
         }
 
@@ -180,7 +189,8 @@ namespace MKEditor.Widgets
             }
             else
             {
-                this.SetValue(this.Value + 2f / this.Parent.Size.Height);
+                Widget w = this.Parent as Widget;
+                this.SetValue((w.ScrolledY + 11d) / (w.MaxChildHeight - w.Viewport.Height));
             }
         }
 
@@ -198,6 +208,15 @@ namespace MKEditor.Widgets
                 for (int i = 0; i < downcount * 3; i++) this.ScrollDown();
                 for (int i = 0; i < upcount * 3; i++) this.ScrollUp();
             }
+        }
+    }
+
+    public class AutoScrollBar : MinimalVScrollBar
+    {
+        public AutoScrollBar(object Parent, string Name = "autoScrollBar")
+            : base(Parent, Name)
+        {
+
         }
     }
 }

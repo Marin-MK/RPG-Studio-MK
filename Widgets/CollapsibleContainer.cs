@@ -71,6 +71,7 @@ namespace MKEditor.Widgets
 
         public void SetCollapsed(bool Collapsed)
         {
+            Console.WriteLine($"Collapse {Name}: {Collapsed}");
             if (this.Collapsed != Collapsed)
             {
                 this.Collapsed = Collapsed;
@@ -80,7 +81,7 @@ namespace MKEditor.Widgets
                 });
                 if (this.Collapsed)
                 {
-                    this.SetSize(this.Size.Width, 32);
+                    this.SetSize(this.Size.Width, 20);
                 }
                 else
                 {

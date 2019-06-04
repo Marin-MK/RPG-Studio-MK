@@ -14,6 +14,7 @@ namespace MKEditor.Widgets
             this.WidgetIM.OnMouseDown += this.MouseDown;
             this.WidgetIM.OnMouseUp += this.MouseUp;
             this.WidgetIM.OnHoverChanged += this.HoverChanged;
+            this.WidgetIM.OnLeftClick += this.LeftClick;
             this.OnLeftClick += this.LeftClick;
             this.OnWidgetSelect += this.WidgetSelect;
             this.SetSize(100, 20);

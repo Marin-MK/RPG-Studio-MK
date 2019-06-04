@@ -13,8 +13,8 @@ namespace MKEditor.Widgets
         Point AdjustedPosition { get; }
         Size AdjustedSize { get; }
 
-        double ScrollPercentageX { get; set; }
-        double ScrollPercentageY { get; set; }
+        int ScrolledX { get; set; }
+        int ScrolledY { get; set; }
         Point ScrolledPosition { get; }
 
         IContainer Add(Widget w);

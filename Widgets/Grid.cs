@@ -44,29 +44,29 @@ namespace MKEditor.Widgets
                 LayoutContainer lc = this.Widgets[i] as LayoutContainer;
                 int width = 0;
                 int height = 0;
-                if (lc.GridRowStart >= this.Rows.Count || lc.GridRowEnd >= this.Rows.Count)
+                if (lc.Widget.GridRowStart >= this.Rows.Count || lc.Widget.GridRowEnd >= this.Rows.Count)
                 {
                     throw new Exception("Widget GridRow value exceeds amount of defined rows");
                 }
-                if (lc.GridColumnStart >= this.Columns.Count || lc.GridColumnEnd >= this.Columns.Count)
+                if (lc.Widget.GridColumnStart >= this.Columns.Count || lc.Widget.GridColumnEnd >= this.Columns.Count)
                 {
                     throw new Exception("Widget GridColumn value exceeds amount of defined columns");
                 }
-                for (int j = lc.GridRowStart; j <= lc.GridRowEnd; j++)
+                for (int j = lc.Widget.GridRowStart; j <= lc.Widget.GridRowEnd; j++)
                 {
-                    height += this.Sizes[j * this.Columns.Count + lc.GridColumnStart].Height;
+                    height += this.Sizes[j * this.Columns.Count + lc.Widget.GridColumnStart].Height;
                 }
-                for (int j = lc.GridColumnStart; j <= lc.GridColumnEnd; j++)
+                for (int j = lc.Widget.GridColumnStart; j <= lc.Widget.GridColumnEnd; j++)
                 {
-                    width += this.Sizes[lc.GridRowStart * this.Columns.Count + j].Width;
+                    width += this.Sizes[lc.Widget.GridRowStart * this.Columns.Count + j].Width;
                 }
-                Point p = this.Positions[lc.GridRowStart * this.Columns.Count + lc.GridColumnStart];
+                Point p = this.Positions[lc.Widget.GridRowStart * this.Columns.Count + lc.Widget.GridColumnStart];
                 int x = p.X;
                 int y = p.Y;
-                x += lc.Margin.Left;
-                width -= lc.Margin.Left + lc.Margin.Right;
-                y += lc.Margin.Up;
-                height -= lc.Margin.Up + lc.Margin.Down;
+                x += lc.Widget.Margin.Left;
+                width -= lc.Widget.Margin.Left + lc.Widget.Margin.Right;
+                y += lc.Widget.Margin.Up;
+                height -= lc.Widget.Margin.Up + lc.Widget.Margin.Down;
                 lc.SetPosition(x, y);
                 lc.SetSize(width, height);
 
