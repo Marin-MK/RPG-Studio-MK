@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using MKEditor.Widgets;
 using ODL;
+using YamlDotNet.Core;
+using YamlDotNet.RepresentationModel;
 
 namespace MKEditor
 {
@@ -60,7 +63,7 @@ namespace MKEditor
 
             new Widget(rightcontainer).SetBackgroundColor(40, 44, 52).SetGrid(1, 0);
 
-            LayerTab lt = new LayerTab(rightcontainer);
+            LayersTab lt = new LayersTab(rightcontainer);
             lt.SetGrid(2, 0);
             lt.SetBackgroundColor(27, 28, 32);
 
@@ -79,6 +82,25 @@ namespace MKEditor
             this.OnWindowResized += UI.WindowResized;
 
             this.OnTick += Tick;
+
+            /*StreamReader sr = new StreamReader(File.OpenRead("tilesets.mkd"));
+            YamlStream yaml = new YamlStream();
+            yaml.Load(sr);
+
+            var mapping = (YamlMappingNode) yaml.Documents[0].RootNode;
+            var items = (YamlSequenceNode) mapping.Children[new YamlScalarNode(":data")];
+            foreach (var item in items)
+            {
+                if (item.NodeType == YamlNodeType.Scalar)
+                {
+                    Console.WriteLine("scalar : " + (item as YamlScalarNode).ToString());
+                }
+                else if (item.NodeType == YamlNodeType.Mapping)
+                {
+                    Console.WriteLine("mapping: " + (item as YamlMappingNode).ToString());
+                }
+            }
+            sr.Close();*/
 
             this.UI.Update();
 

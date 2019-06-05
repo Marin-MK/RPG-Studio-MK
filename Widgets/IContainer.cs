@@ -17,6 +17,8 @@ namespace MKEditor.Widgets
         int ScrolledY { get; set; }
         Point ScrolledPosition { get; }
 
+        IContainer Parent { get; }
+
         IContainer Add(Widget w);
         IContainer Get(string Name);
         IContainer Remove(Widget w);

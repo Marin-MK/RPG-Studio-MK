@@ -39,6 +39,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="odl">
@@ -46,6 +47,9 @@
     </Reference>
     <Reference Include="SDL2-CS">
       <HintPath>..\..\..\..\Documents\Visual Studio 2015\Projects\odl\odl\bin\Debug\SDL2-CS.dll</HintPath>
+    </Reference>
+    <Reference Include="YamlDotNet, Version=6.0.0.0, Culture=neutral, PublicKeyToken=ec19458f3c15af5e, processorArchitecture=MSIL">
+      <HintPath>..\packages\YamlDotNet.6.1.1\lib\net45\YamlDotNet.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -62,15 +66,16 @@
     <Compile Include="Widgets\HStackPanel.cs" />
     <Compile Include="Widgets\ILayout.cs" />
     <Compile Include="Widgets\IMenuItem.cs" />
-    <Compile Include="Widgets\LayerTab.cs" />
-    <Compile Include="Widgets\MapViewer.cs" />
+    <Compile Include="MK Widgets\LayersTab.cs" />
+    <Compile Include="MK Widgets\LayerWidget.cs" />
+    <Compile Include="MK Widgets\MapViewer.cs" />
     <Compile Include="Widgets\MenuItem.cs" />
     <Compile Include="Widgets\MenuSeparator.cs" />
     <Compile Include="Widgets\MenuStrip.cs" />
     <Compile Include="Widgets\MinimalVScrollBar.cs" />
     <Compile Include="Widgets\PictureBox.cs" />
     <Compile Include="Widgets\RadioButton.cs" />
-    <Compile Include="Widgets\TilesetTab.cs" />
+    <Compile Include="MK Widgets\TilesetTab.cs" />
     <Compile Include="Widgets\VStackPanel.cs" />
     <Compile Include="WidgetWindow.cs" />
     <Compile Include="MouseInputManager.cs" />
@@ -89,5 +94,6 @@
   <ItemGroup>
     <Content Include="logo-64x64.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

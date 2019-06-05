@@ -71,7 +71,6 @@ namespace MKEditor.Widgets
 
         public void SetCollapsed(bool Collapsed)
         {
-            Console.WriteLine($"Collapse {Name}: {Collapsed}");
             if (this.Collapsed != Collapsed)
             {
                 this.Collapsed = Collapsed;
@@ -81,6 +80,7 @@ namespace MKEditor.Widgets
                 });
                 if (this.Collapsed)
                 {
+                    this.MaximumSize = new Size(9999, 20);
                     this.SetSize(this.Size.Width, 20);
                 }
                 else
@@ -91,6 +91,7 @@ namespace MKEditor.Widgets
                         int h = w.Position.Y + w.Size.Height;
                         if (h > maxheight) maxheight = h;
                     }
+                    this.MaximumSize = new Size(9999, 9999);
                     this.SetSize(this.Size.Width, maxheight);
                 }
                 this.UpdateCollapsed();

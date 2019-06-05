@@ -23,6 +23,8 @@ namespace MKEditor
         private Sprite BGSprite;
         private List<MouseInputManager> IMs = new List<MouseInputManager>();
 
+        public IContainer Parent { get { throw new MethodNotSupportedException(this); } }
+
         public UIManager(Window Window)
         {
             this.Window = Window;
