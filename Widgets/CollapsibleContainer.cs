@@ -59,7 +59,6 @@ namespace MKEditor.Widgets
 
         public override void Update()
         {
-            base.Update();
             int DiffX = this.Position.X - this.ScrolledPosition.X;
             int DiffY = this.Position.Y - this.ScrolledPosition.Y;
             int x = this.Viewport.X - DiffX;
@@ -67,6 +66,7 @@ namespace MKEditor.Widgets
             int w = 13 - DiffX;
             int h = 13 - DiffY;
             ArrowIM.Update(new Rect(x, y, w, h));
+            base.Update();
         }
 
         public void SetCollapsed(bool Collapsed)
