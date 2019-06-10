@@ -7,16 +7,15 @@ namespace MKEditor.Widgets
     {
         public MKD.Map Map;
 
-        Bitmap MapBmp;
         Bitmap CursorBmp;
         Point CursorPos = new Point(0, 0);
 
         public MapViewer(object Parent, string Name = "mapViewer")
             : base(Parent, Name)
         {
-            this.Sprites["map"] = new Sprite(this.Viewport);
             this.Sprites["cursor"] = new Sprite(this.Viewport);
             this.CreateCursorBitmap();
+            this.Sprites["cursor"].Z = 1;
             this.Sprites["cursor"].Bitmap = this.CursorBmp;
             this.WidgetIM.OnMouseMoving += this.MouseMoving;
         }
@@ -27,37 +26,47 @@ namespace MKEditor.Widgets
             this.CreateMapBitmap();
         }
 
-        protected override void Draw()
-        {
-            if (this.MapBmp != null)
-            {
-                this.Sprites["map"].Bitmap = this.MapBmp;
-            }
-            base.Draw();
-        }
-
         public void CreateMapBitmap()
         {
-            if (MapBmp != null) MapBmp.Dispose();
-            MapBmp = new Bitmap(this.Map.Width * 32, this.Map.Height * 32);
-            MapBmp.Unlock();
+            foreach (string s in this.Sprites.Keys)
+            {
+                if (s == "cursor") continue;
+                this.Sprites[s].Dispose();
+            }
+            int layercount = this.Map.Layers.Count;
+            for (int i = 0; i < layercount; i++)
+            {
+                this.Sprites[i.ToString()] = new Sprite(this.Viewport, this.Map.Width * 32, this.Map.Height * 32);
+                this.Sprites[i.ToString()].Bitmap.Unlock();
+            }
             MKD.Tileset t = MKD.Tileset.GetTileset();
             Bitmap tbmp = new Bitmap(t.GraphicName);
-            for (int y = 0; y < this.Map.Height; y++)
+            for (int layer = 0; layer < this.Map.Layers.Count; layer++)
             {
-                for (int x = 0; x < this.Map.Width; x++)
+                Bitmap layerbmp = this.Sprites[layer.ToString()].Bitmap as Bitmap;
+                for (int y = 0; y < this.Map.Height; y++)
                 {
-                    int mapx = x * 32;
-                    int mapy = y * 32;
-                    int tile_id = this.Map.Tiles[y * this.Map.Width + x].TileID;
-                    int tilesetx = tile_id % 8;
-                    int tilesety = (int) Math.Floor(tile_id / 8d);
-                    MapBmp.Build(new Rect(mapx, mapy, 32, 32), tbmp, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
+                    for (int x = 0; x < this.Map.Width; x++)
+                    {
+                        if (this.Map.Layers[layer] == null || this.Map.Layers[layer].Tiles == null ||
+                            y * this.Map.Width + x >= this.Map.Layers[layer].Tiles.Count ||
+                            this.Map.Layers[layer].Tiles[y * this.Map.Width + x] == null) continue;
+                        int tileset_index = this.Map.Layers[layer].Tiles[y * this.Map.Width + x].TilesetIndex;
+                        int tileset_id = this.Map.Tilesets[tileset_index];
+                        int mapx = x * 32;
+                        int mapy = y * 32;
+                        int tile_id = this.Map.Layers[layer].Tiles[y * this.Map.Width + x].TileID;
+                        int tilesetx = tile_id % 8;
+                        int tilesety = (int) Math.Floor(tile_id / 8d);
+                        layerbmp.Build(new Rect(mapx, mapy, 32, 32), tbmp, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
+                    }
                 }
             }
-            MapBmp.Lock();
-            this.SetSize(MapBmp.Width, MapBmp.Height);
-            this.Redraw();
+            for (int i = 0; i < layercount; i++)
+            {
+                this.Sprites[i.ToString()].Bitmap.Lock();
+            }
+            this.SetSize(this.Map.Width * 32, this.Map.Height * 32);
         }
 
         public void CreateCursorBitmap()

@@ -6,10 +6,11 @@ namespace MKEditor.Widgets
 {
     public class LayerWidget : Widget
     {
-        public string Text { get; protected set; }
-        public bool LayerVisible { get; protected set; } = true;
-        public bool LayerSelected { get; protected set; } = false;
-        public int LayerIndex { get; protected set; }
+        public string    Text          { get; protected set; }
+        public bool      LayerVisible  { get; protected set; } = true;
+        public bool      LayerSelected { get; protected set; } = false;
+        public int       LayerIndex    { get; protected set; }
+        public MapViewer MapViewer     { get { return (Parent.Parent.Parent.Parent as LayersTab).MapViewer; } }
 
         private bool RedrawText = true;
         private bool RedrawVisible = true;
@@ -54,6 +55,7 @@ namespace MKEditor.Widgets
                 else this.Sprites["visible"].X = 9;
                 this.LayerVisible = Visible;
                 this.RedrawVisible = true;
+                this.MapViewer.Sprites[(this.MapViewer.Map.Layers.Count - LayerIndex).ToString()].Visible = this.LayerVisible;
                 this.Redraw();
             }
         }
@@ -99,6 +101,8 @@ namespace MKEditor.Widgets
             int y = this.Viewport.Y + 9 - DiffY;
             int w = 26 - Parent.AdjustedSize.Width;
             int h = 24 - Parent.AdjustedSize.Height;
+            if (x < this.Viewport.X) { w -= this.Viewport.X - x; x = this.Viewport.X; }
+            if (y < this.Viewport.Y) { h -= this.Viewport.Y - y; y = this.Viewport.Y; }
             if (this.Viewport.Width < 0) w = 0;
             if (this.Viewport.Height < 0) h = 0;
             VisibleRect = new Rect(x, y, w, h);

@@ -12,9 +12,7 @@ namespace MKEditor.MKD
         public string Name;
         public int Width;
         public int Height;
-        public List<TileData> Tiles;
-        public List<Passability> Passabilities;
-        public List<int> Tags;
+        public List<Layer> Layers;
         public List<int> Tilesets;
         public List<Event> Events;
 
@@ -25,19 +23,34 @@ namespace MKEditor.MKD
             m.Width = 25;
             m.Height = 25;
             m.Tilesets = new List<int>() { 1 };
-            m.Tiles = new List<TileData>();
+            m.Layers = new List<Layer>() { new Layer(), new Layer(), new Layer(), new Layer(), new Layer() };
+            m.Layers[0].Tiles = new List<TileData>();
             for (int i = 0; i < m.Width * m.Height; i++)
             {
-                int tileid = 0;
-                // Temporary condition to make a diagonal line of grass
-                if ((i - (int) Math.Floor((double) i / m.Width)) % m.Width == 0) tileid = 9;
-                m.Tiles.Add(new TileData { TilesetIndex = 0, TileID = tileid });
+                m.Layers[0].Tiles.Add(new TileData { TilesetIndex = 0, TileID = 0 });
             }
-            m.Passabilities = new List<Passability>();
-            m.Tags = new List<int>();
+            // Makes a diagonal line of grass on the second layer
+            m.Layers[1].Tiles = new List<TileData>();
+            for (int i = 0; i < m.Width * m.Height; i++)
+            {
+                if ((i - (int) Math.Floor((double) i / m.Width)) % m.Width == 0)
+                {
+                    m.Layers[1].Tiles.Add(new TileData { TilesetIndex = 0, TileID = 9 });
+                }
+                else
+                {
+                    m.Layers[1].Tiles.Add(null);
+                }
+            }
             m.Events = new List<Event>();
             return m;
         }
+    }
+
+    public class Layer
+    {
+        public string Name = "Unnamed Layer";
+        public List<TileData> Tiles;
     }
 
     public class TileData
