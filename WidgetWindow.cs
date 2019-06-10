@@ -34,44 +34,58 @@ namespace MKEditor
                 new GridSize(1),
                 new GridSize(333, Unit.Pixels)
             );
-
+            // Header
             new Widget(layout)
                 .SetBackgroundColor(40, 44, 52)
                 .SetGrid(0, 0, 0, 2);
 
+            // Toolbar
             new Widget(layout)
                 .SetBackgroundColor(27, 28, 32)
                 .SetGrid(1, 1, 0, 2);
 
+            // Orange separator
             new Widget(layout)
                 .SetBackgroundColor(255, 191, 31)
                 .SetGrid(2, 2, 0, 2);
 
-            Widget w = new Widget(layout)
+            // Left sidebar
+            new Widget(layout)
                 .SetBackgroundColor(27, 28, 32)
                 .SetGrid(3, 0);
-
+            // Right sidebar
             Grid rightcontainer = new Grid(layout).SetGrid(3, 2) as Grid;
             rightcontainer.SetRows(new GridSize(2), new GridSize(4, Unit.Pixels), new GridSize(1));
             rightcontainer.SetColumns(new GridSize(1));
             rightcontainer.SetBackgroundColor(40, 44, 52);
 
+            // Tileset part of right sidebar
             MKD.Tileset tileset = MKD.Tileset.GetTileset();
             TilesetTab tt = new TilesetTab(rightcontainer);
             tt.SetBackgroundColor(27, 28, 32);
             tt.SetTileset(tileset);
 
-            new Widget(rightcontainer).SetBackgroundColor(40, 44, 52).SetGrid(1, 0);
+            // Fixed empty space in right sidebar
+            new Widget(rightcontainer)
+                .SetBackgroundColor(40, 44, 52)
+                .SetGrid(1, 0);
 
+            // Layers part of right sidebar
             LayersTab lt = new LayersTab(rightcontainer);
             lt.SetGrid(2, 0);
             lt.SetBackgroundColor(27, 28, 32);
 
+            // Center map viewer
+            Container mapcontainer = new Container(layout);
+            mapcontainer.SetGrid(3, 1);
+            mapcontainer.AutoScroll = true;
+            mapcontainer.SetBackgroundColor(40, 44, 52);
+
             MKD.Map map = MKD.Map.CreateTemp();
-            MapViewer mv = new MapViewer(layout);
-            mv.SetBackgroundColor(40, 44, 52);
-            mv.SetGrid(3, 1);
+            MapViewer mv = new MapViewer(mapcontainer);
             mv.SetMap(map);
+            mv.SetSize(mv.Size.Width + 14, mv.Size.Height + 14);
+            lt.SetMapViewer(mv);
 
             this.OnMouseDown += UI.MouseDown;
             this.OnMousePress += UI.MousePress;

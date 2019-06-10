@@ -28,7 +28,10 @@ namespace MKEditor.MKD
             m.Tiles = new List<TileData>();
             for (int i = 0; i < m.Width * m.Height; i++)
             {
-                m.Tiles.Add(new TileData { TilesetIndex = 0, TileID = 0 });
+                int tileid = 0;
+                // Temporary condition to make a diagonal line of grass
+                if ((i - (int) Math.Floor((double) i / m.Width)) % m.Width == 0) tileid = 9;
+                m.Tiles.Add(new TileData { TilesetIndex = 0, TileID = tileid });
             }
             m.Passabilities = new List<Passability>();
             m.Tags = new List<int>();

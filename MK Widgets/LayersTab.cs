@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using ODL;
 
 namespace MKEditor.Widgets
 {
     public class LayersTab : Widget
     {
-        Container layercontainer;
-        VStackPanel layerstack;
+        public MapViewer MapViewer;
+
+        private Container layercontainer;
+        private VStackPanel layerstack;
+
+        public List<LayerWidget> Layers = new List<LayerWidget>();
 
         public LayersTab(object Parent, string Name = "layersTab")
             : base(Parent, Name)
@@ -27,20 +32,28 @@ namespace MKEditor.Widgets
             layercontainer.AutoScroll = true;
 
             layerstack = new VStackPanel(layercontainer);
-            layerstack.SetWidth(280);
 
-            LayerWidget layer1 = new LayerWidget(layerstack);
-            LayerWidget layer2 = new LayerWidget(layerstack);
-            LayerWidget layer3 = new LayerWidget(layerstack);
-            LayerWidget layer4 = new LayerWidget(layerstack);
-            LayerWidget layer5 = new LayerWidget(layerstack);
+            Layers = new List<LayerWidget>()
+            {
+                new LayerWidget(layerstack),
+                new LayerWidget(layerstack),
+                new LayerWidget(layerstack),
+                new LayerWidget(layerstack),
+                new LayerWidget(layerstack)
+            };
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            layercontainer.SetSize(293, this.Size.Height - 55);
-            layerstack.SetWidth(280);
+            layercontainer.SetSize(279, this.Size.Height - 55);
+            layerstack.SetWidth(263);
+        }
+
+        public void SetMapViewer(MapViewer mv)
+        {
+            this.MapViewer = mv;
+            Layers[Layers.Count - 1].SetLayerSelected(true);
         }
     }
 }

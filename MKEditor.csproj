@@ -72,6 +72,7 @@
     <Compile Include="Widgets\MenuItem.cs" />
     <Compile Include="Widgets\MenuSeparator.cs" />
     <Compile Include="Widgets\MenuStrip.cs" />
+    <Compile Include="Widgets\MinimalHScrollBar.cs" />
     <Compile Include="Widgets\MinimalVScrollBar.cs" />
     <Compile Include="Widgets\PictureBox.cs" />
     <Compile Include="Widgets\RadioButton.cs" />

@@ -24,10 +24,9 @@ namespace MKEditor.Widgets
         public Size                         AdjustedSize     { get; protected set; } = new Size(50, 50);
         public bool                         Visible          { get; protected set; } = true;
         public bool                         Selected         = false;
+        public bool                         Dock             = false;
 
         public  bool   AutoScroll        = false;
-        private double _ScrollStep       = 0;
-        public  double ScrollStep        { get { return _ScrollStep; } set { _ScrollStep = value; if (this.ScrollBar != null) this.ScrollBar.ScrollStep = value; } }
         public  int    ScrolledX         { get; set; } = 0;
         public  int    ScrolledY         { get; set; } = 0;
         public  Point  ScrolledPosition
@@ -40,6 +39,7 @@ namespace MKEditor.Widgets
                 );
             }
         }
+        public  int    MaxChildWidth     = 0;
         public  int    MaxChildHeight    = 0;
 
         public Margin Margin          { get; protected set; } = new Margin();
@@ -65,7 +65,8 @@ namespace MKEditor.Widgets
         public EventHandler<SizeEventArgs> OnParentSizeChanged;
         public EventHandler<SizeEventArgs> OnChildSizeChanged;
 
-        public MinimalVScrollBar ScrollBar { get { return this.Widgets.Find(w => w is AutoScrollBar) as MinimalVScrollBar; } }
+        public MinimalHScrollBar ScrollBarX { get; protected set; }
+        public MinimalVScrollBar ScrollBarY { get; protected set; }
 
         public Widget(object Parent, string Name = "widget")
         {
@@ -192,8 +193,20 @@ namespace MKEditor.Widgets
         public virtual void TextInput(object sender, TextInputEventArgs e) { }
         public virtual void SizeChanged(object sender, SizeEventArgs e)
         {
+            // As size is recalculated here, we first have to make sure the sliders are in
+            // the correct position, otherwise its old position will exceed the old container size
+            // (because it's directly on the edge)
+            if (ScrollBarX != null) ScrollBarX.SetPosition(2, this.Size.Height - 13);
+            if (ScrollBarY != null) ScrollBarY.SetPosition(this.Size.Width - 13, 2);
+            // Now that they're in the proper place, calculate for the remaining child widgets
             UpdateAutoScroll();
             UpdateLayout();
+            for (int i = 0; i < this.Widgets.Count;i ++)
+            {
+                Widget w = this.Widgets[i];
+                // Docking; to do
+                // if (!(w is AutoVScrollBar) && w.Dock) w.SetSize(this.Size);
+            }
         }
         public virtual void ParentSizeChanged(object sender, SizeEventArgs e) { }
         public virtual void ChildSizeChanged(object sender, SizeEventArgs e)
@@ -204,6 +217,17 @@ namespace MKEditor.Widgets
         public void UpdateAutoScroll()
         {
             if (!AutoScroll) return;
+            // Calculate total child width
+            int OldMaxChildWidth = MaxChildWidth;
+            MaxChildWidth = 0;
+            this.Widgets.ForEach(wdgt =>
+            {
+                int w = wdgt.Size.Width;
+                if (wdgt.Parent is LayoutContainer) w += (wdgt.Parent as LayoutContainer).Position.X;
+                else w += wdgt.Position.X;
+                if (w > MaxChildWidth) MaxChildWidth = w;
+            });
+            // Calculate total child height
             int OldMaxChildHeight = MaxChildHeight;
             MaxChildHeight = 0;
             this.Widgets.ForEach(w =>
@@ -213,28 +237,57 @@ namespace MKEditor.Widgets
                 else h += w.Position.Y;
                 if (h > MaxChildHeight) MaxChildHeight = h;
             });
+            // ScrollBarX
+            if (MaxChildWidth > this.Size.Width)
+            {
+                if (ScrollBarX == null)
+                {
+                    ScrollBarX = new AutoHScrollBar(this);
+                }
+                ScrollBarX.SetPosition(2, this.Size.Height - 13);
+                // 13 if ScrollBarY is present, 0 if not.
+                int extra = (MaxChildHeight > this.Size.Height) ? 13 : 0;
+                ScrollBarX.SetSize(this.Size.Width - 4 - extra, 11);
+                if (OldMaxChildWidth - this.Viewport.Width > 0 && this.ScrolledX > OldMaxChildWidth - this.Viewport.Width)
+                {
+                    this.ScrolledX = OldMaxChildWidth - this.Viewport.Width;
+                }
+                ScrollBarX.SetValue((double) this.ScrolledX / (MaxChildWidth - this.Viewport.Width));
+                ScrollBarX.SetSliderSize((double) this.Viewport.Width / MaxChildWidth);
+                ScrollBarX.MouseInputRect = this.Viewport.Rect;
+            }
+            else if (ScrollBarX != null)
+            {
+                this.ScrollBarX.Dispose();
+                this.ScrollBarX = null;
+                this.ScrolledX = 0;
+            }
+            // ScrollBarY
             if (MaxChildHeight > this.Size.Height)
             {
-                if (ScrollBar == null)
+                if (ScrollBarY == null)
                 {
-                    AutoScrollBar ScrollBar = new AutoScrollBar(this);
-                    ScrollBar.MouseInputRect = this.Viewport.Rect;
+                    ScrollBarY = new AutoVScrollBar(this);
                 }
-                ScrollBar.SetPosition(this.Size.Width - 10, 2);
-                ScrollBar.SetSize(11, this.Size.Height - 4);
+                ScrollBarY.SetPosition(this.Size.Width - 13, 2);
+                // 13 if ScrollBarX is present, 0 if not.
+                int extra = (MaxChildWidth > this.Size.Width) ? 13 : 0;
+                ScrollBarY.SetSize(11, this.Size.Height - 4 - extra);
                 if (OldMaxChildHeight - this.Viewport.Height > 0 && this.ScrolledY > OldMaxChildHeight - this.Viewport.Height)
                 {
                     this.ScrolledY = OldMaxChildHeight - this.Viewport.Height;
                 }
-                ScrollBar.SetValue((double) this.ScrolledY / (MaxChildHeight - this.Viewport.Height));
-                ScrollBar.SetSliderSize((double) this.Viewport.Height / MaxChildHeight);
-                ScrollBar.MouseInputRect = this.Viewport.Rect;
+                ScrollBarY.SetValue((double) this.ScrolledY / (MaxChildHeight - this.Viewport.Height));
+                ScrollBarY.SetSliderSize((double) this.Viewport.Height / MaxChildHeight);
+                ScrollBarY.MouseInputRect = this.Viewport.Rect;
             }
-            else if (ScrollBar != null)
+            else if (ScrollBarY != null)
             {
-                this.ScrollBar.Dispose();
+                this.ScrollBarY.Dispose();
+                this.ScrollBarY = null;
                 this.ScrolledY = 0;
             }
+            // Update positions
             this.UpdateBounds();
         }
 
@@ -249,7 +302,7 @@ namespace MKEditor.Widgets
 
             int ScrolledX = this.Position.X - this.ScrolledPosition.X;
             int ScrolledY = this.Position.Y - this.ScrolledPosition.Y;
-            if (this is AutoScrollBar) ScrolledY = 0;
+            if (this is AutoHScrollBar || this is AutoVScrollBar) ScrolledX = ScrolledY = 0;
 
             this.Viewport.X = this.Position.X + this.Parent.Viewport.X - Parent.AdjustedPosition.X - ScrolledX;
             this.Viewport.Y = this.Position.Y + this.Parent.Viewport.Y - Parent.AdjustedPosition.Y - ScrolledY;
@@ -339,7 +392,7 @@ namespace MKEditor.Widgets
                 this.Viewport.Width = this.Size.Width;
                 this.Viewport.Height = this.Size.Height;
                 this.RedrawSize = true;
-                this.SetPosition(this.Position);
+                this.UpdateBounds();
                 this.OnSizeChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));
                 this.Widgets.ForEach(w =>
                 {
@@ -349,7 +402,7 @@ namespace MKEditor.Widgets
                     wdgt.OnSizeChanged.Invoke(this, new SizeEventArgs(this.Size));
                 });
                 Redraw();
-                if (this.Parent is Widget)
+                if (this.Parent is Widget && !(this is AutoHScrollBar) && !(this is AutoVScrollBar))
                 {
                     Widget prnt = this.Parent as Widget;
                     prnt.OnChildSizeChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));

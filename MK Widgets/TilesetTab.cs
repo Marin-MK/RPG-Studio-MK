@@ -32,7 +32,7 @@ namespace MKEditor.Widgets
             alltilesets.AutoScroll = true;
 
             stack = new VStackPanel(alltilesets);
-            stack.SetWidth(this.Size.Width - 37);
+            stack.SetWidth(this.Size.Width - 33);
 
             tbox = new CollapsibleContainer(stack);
             tbox.SetText("Outside");
@@ -57,7 +57,7 @@ namespace MKEditor.Widgets
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            alltilesets.SetSize(this.Size.Width - 37, this.Size.Height - 57);
+            alltilesets.SetSize(this.Size.Width - 34, this.Size.Height - 57);
             stack.SetWidth(this.Size.Width - 50);
             tbox.SetSize(alltilesets.Size.Width - 13, tileset.Size.Height + tileset.Position.Y);
         }

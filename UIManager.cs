@@ -19,6 +19,8 @@ namespace MKEditor
         public List<Widget> Widgets { get; protected set; } = new List<Widget>();
         public Color BackgroundColor { get { return this.Window.BackgroundColor; } }
         public Widget SelectedWidget { get; protected set; }
+        public MinimalHScrollBar ScrollBarX { get { return null; } }
+        public MinimalVScrollBar ScrollBarY { get { return null; } }
 
         private Sprite BGSprite;
         private List<MouseInputManager> IMs = new List<MouseInputManager>();

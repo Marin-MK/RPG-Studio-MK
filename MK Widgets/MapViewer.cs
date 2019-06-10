@@ -52,10 +52,11 @@ namespace MKEditor.Widgets
                     int tile_id = this.Map.Tiles[y * this.Map.Width + x].TileID;
                     int tilesetx = tile_id % 8;
                     int tilesety = (int) Math.Floor(tile_id / 8d);
-                    MapBmp.Build(new Rect(mapx, mapy, 32, 32), tbmp, new Rect(tilesetx, tilesety, 32, 32));
+                    MapBmp.Build(new Rect(mapx, mapy, 32, 32), tbmp, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
                 }
             }
             MapBmp.Lock();
+            this.SetSize(MapBmp.Width, MapBmp.Height);
             this.Redraw();
         }
 
@@ -84,14 +85,20 @@ namespace MKEditor.Widgets
         public override void MouseMoving(object sender, MouseEventArgs e)
         {
             base.MouseMoving(sender, e);
+            if (Parent.ScrollBarX != null && (Parent.ScrollBarX.Dragging || Parent.ScrollBarX.Hovering)) return;
+            if (Parent.ScrollBarY != null && (Parent.ScrollBarY.Dragging || Parent.ScrollBarY.Hovering)) return;
             int rx = e.X - this.Viewport.X;
             int ry = e.Y - this.Viewport.Y;
             if (rx < 0 || ry < 0 || rx >= this.Viewport.Width || ry >= this.Viewport.Height) return; // Off the widget
+            int movedx = this.Position.X - this.ScrolledPosition.X;
+            int movedy = this.Position.Y - this.ScrolledPosition.Y;
+            rx += movedx;
+            ry += movedy;
             int tilex = (int) Math.Floor(rx / 32d);
             int tiley = (int) Math.Floor(ry / 32d);
             if (tilex >= this.Map.Width || tilex < 0 || tiley >= this.Map.Height || tiley < 0) return;
-            int cx = tilex * 32;
-            int cy = tiley * 32;
+            int cx = tilex * 32 + this.ScrolledX;
+            int cy = tiley * 32 + this.ScrolledY;
             if (this.Sprites["cursor"].X != cx || this.Sprites["cursor"].Y != cy) // Tile changed
             {
                 this.Sprites["cursor"].X = cx;
