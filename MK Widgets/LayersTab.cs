@@ -6,7 +6,9 @@ namespace MKEditor.Widgets
 {
     public class LayersTab : Widget
     {
+        public TilesetTab TilesetTab;
         public MapViewer MapViewer;
+        public MKD.Map Map { get { return this.MapViewer.Map; } }
 
         private Container layercontainer;
         private VStackPanel layerstack;
@@ -32,15 +34,6 @@ namespace MKEditor.Widgets
             layercontainer.AutoScroll = true;
 
             layerstack = new VStackPanel(layercontainer);
-
-            Layers = new List<LayerWidget>()
-            {
-                new LayerWidget(layerstack),
-                new LayerWidget(layerstack),
-                new LayerWidget(layerstack),
-                new LayerWidget(layerstack),
-                new LayerWidget(layerstack)
-            };
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
@@ -50,10 +43,20 @@ namespace MKEditor.Widgets
             layerstack.SetWidth(263);
         }
 
-        public void SetMapViewer(MapViewer mv)
+        public void CreateLayers()
         {
-            this.MapViewer = mv;
-            Layers[Layers.Count - 1].SetLayerSelected(true);
+            for (int i = 0; i < Layers.Count; i++)
+            {
+                Layers[i].Dispose();
+            }
+            Layers.Clear();
+            for (int layer = this.Map.Layers.Count - 1; layer >= 0; layer--)
+            {
+                LayerWidget layerwidget = new LayerWidget(layerstack);
+                layerwidget.SetText(this.Map.Layers[layer].Name);
+                this.Layers.Add(layerwidget);
+            }
+            this.Layers[this.Map.Layers.Count - 1].SetLayerSelected(true);
         }
     }
 }

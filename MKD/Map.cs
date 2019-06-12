@@ -23,13 +23,14 @@ namespace MKEditor.MKD
             m.Width = 25;
             m.Height = 25;
             m.Tilesets = new List<int>() { 1 };
-            m.Layers = new List<Layer>() { new Layer(), new Layer(), new Layer(), new Layer(), new Layer() };
+            m.Layers = new List<Layer>() { new Layer("Layer 1"), new Layer("Layer 2"), new Layer("Layer 3"), new Layer("Layer 4"), new Layer("Layer 5") };
             m.Layers[0].Tiles = new List<TileData>();
+            // Fills layer 1 with grass (tile id 0)
             for (int i = 0; i < m.Width * m.Height; i++)
             {
                 m.Layers[0].Tiles.Add(new TileData { TilesetIndex = 0, TileID = 0 });
             }
-            // Makes a diagonal line of grass on the second layer
+            // Draws a diagonal line of tall grass on layer 2 (tile id 9)
             m.Layers[1].Tiles = new List<TileData>();
             for (int i = 0; i < m.Width * m.Height; i++)
             {
@@ -51,6 +52,11 @@ namespace MKEditor.MKD
     {
         public string Name = "Unnamed Layer";
         public List<TileData> Tiles;
+
+        public Layer(string Name)
+        {
+            this.Name = Name;
+        }
     }
 
     public class TileData

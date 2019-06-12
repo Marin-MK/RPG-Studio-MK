@@ -60,10 +60,7 @@ namespace MKEditor
             rightcontainer.SetBackgroundColor(40, 44, 52);
 
             // Tileset part of right sidebar
-            MKD.Tileset tileset = MKD.Tileset.GetTileset();
             TilesetTab tt = new TilesetTab(rightcontainer);
-            tt.SetBackgroundColor(27, 28, 32);
-            tt.SetTileset(tileset);
 
             // Fixed empty space in right sidebar
             new Widget(rightcontainer)
@@ -83,9 +80,16 @@ namespace MKEditor
 
             MKD.Map map = MKD.Map.CreateTemp();
             MapViewer mv = new MapViewer(mapcontainer);
+
+            mv.LayersTab = lt;
+            mv.TilesetTab = tt;
+            lt.TilesetTab = tt;
+            lt.MapViewer = mv;
+            tt.LayersTab = lt;
+            tt.MapViewer = mv;
+
             mv.SetMap(map);
             mv.SetSize(mv.Size.Width + 14, mv.Size.Height + 14);
-            lt.SetMapViewer(mv);
 
             this.OnMouseDown += UI.MouseDown;
             this.OnMousePress += UI.MousePress;

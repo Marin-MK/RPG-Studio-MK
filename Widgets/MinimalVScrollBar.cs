@@ -9,7 +9,7 @@ namespace MKEditor.Widgets
         public double SliderSize     { get; protected set; }
         public double Value          { get; protected set; }
         public bool   Hovering       { get { return SliderIM.Hovering; } }
-        public bool   Dragging       { get { return SliderIM.Clicked; } }
+        public bool   Dragging       { get { return SliderIM.ClickedInArea == true; } }
         public Rect   MouseInputRect { get; set; }
 
         public int MinSliderHeight = 8;
@@ -196,6 +196,12 @@ namespace MKEditor.Widgets
 
         public override void MouseWheel(object sender, MouseEventArgs e)
         {
+            // If a HScrollBar exists
+            if (Parent.ScrollBarX != null)
+            {
+                // Return if pressing shift (i.e. HScrollBar will scroll instead)
+                if (Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LSHIFT)) return;
+            }
             bool inside = false;
             if (this.MouseInputRect != null) inside = this.MouseInputRect.Contains(e.X, e.Y);
             else inside = this.Viewport.Contains(e.X, e.Y);

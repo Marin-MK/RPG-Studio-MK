@@ -8,6 +8,8 @@ namespace MKEditor.Widgets
         public string Text { get; protected set; }
         public bool Collapsed { get; protected set; }
 
+        public EventHandler<EventArgs> OnCollapsedChanged;
+
         private MouseInputManager ArrowIM;
 
         public CollapsibleContainer(object Parent, string Name = "collapsibleContainer")
@@ -95,6 +97,7 @@ namespace MKEditor.Widgets
                     this.SetSize(this.Size.Width, maxheight);
                 }
                 this.UpdateCollapsed();
+                if (this.OnCollapsedChanged != null) this.OnCollapsedChanged.Invoke(this, new EventArgs());
             }
         }
 

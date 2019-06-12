@@ -9,7 +9,7 @@ namespace MKEditor.Widgets
         public double SliderSize { get; protected set; }
         public double Value { get; protected set; }
         public bool Hovering { get { return SliderIM.Hovering; } }
-        public bool Dragging { get { return SliderIM.Clicked; } }
+        public bool Dragging { get { return SliderIM.ClickedInArea == true; } }
         public Rect MouseInputRect { get; set; }
 
         public int MinSliderSize = 8;
@@ -35,8 +35,8 @@ namespace MKEditor.Widgets
             this.Value = 0;
             this.SliderIM = new MouseInputManager(this);
             this.SliderIM.OnMouseMoving += SliderMouseMoving;
-            this.SliderIM.OnMouseDown += SliderMouseDown;
-            this.SliderIM.OnMouseUp += SliderMouseUp;
+            this.SliderIM.OnMouseDown += SliderMouseRight;
+            this.SliderIM.OnMouseUp += SliderMouseLeft;
             this.SliderIM.OnHoverChanged += SliderHoverChanged;
         }
 
@@ -117,7 +117,7 @@ namespace MKEditor.Widgets
             }
         }
 
-        private void SliderMouseDown(object sender, MouseEventArgs e)
+        private void SliderMouseRight(object sender, MouseEventArgs e)
         {
             if (e.LeftButton && !e.OldLeftButton && this.SliderIM.Hovering)
             {
@@ -126,7 +126,7 @@ namespace MKEditor.Widgets
             }
         }
 
-        private void SliderMouseUp(object sender, MouseEventArgs e)
+        private void SliderMouseLeft(object sender, MouseEventArgs e)
         {
             if (!e.LeftButton && e.OldLeftButton && this.SliderIM.ClickedInArea == true)
             {
@@ -169,7 +169,12 @@ namespace MKEditor.Widgets
 
         public override void MouseWheel(object sender, MouseEventArgs e)
         {
-            if (Parent.ScrollBarY != null) return;
+            // If a VScrollBar exists
+            if (Parent.ScrollBarY != null)
+            {
+                // Return if NOT pressing shift (i.e. VScrollBar will scroll instead)
+                if (!Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LSHIFT)) return;
+            }
             bool inside = false;
             if (this.MouseInputRect != null) inside = this.MouseInputRect.Contains(e.X, e.Y);
             else inside = this.Viewport.Contains(e.X, e.Y);

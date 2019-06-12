@@ -25,6 +25,7 @@ namespace MKEditor.Widgets
         public bool                         Visible          { get; protected set; } = true;
         public bool                         Selected         = false;
         public bool                         Dock             = false;
+        public int                          ZIndex           { get; protected set; } = 0;
 
         public  bool   AutoScroll        = false;
         public  int    ScrolledX         { get; set; } = 0;
@@ -119,6 +120,15 @@ namespace MKEditor.Widgets
                 {
                     s.Visible = this.Visible;
                 }
+            }
+        }
+
+        public void SetZIndex(int ZIndex)
+        {
+            if (this.ZIndex != ZIndex)
+            {
+                this.ZIndex = ZIndex;
+                this.Viewport.Z = this.ZIndex;
             }
         }
 
@@ -243,6 +253,7 @@ namespace MKEditor.Widgets
                 if (ScrollBarX == null)
                 {
                     ScrollBarX = new AutoHScrollBar(this);
+                    ScrollBarX.SetZIndex(999);
                 }
                 ScrollBarX.SetPosition(2, this.Size.Height - 13);
                 // 13 if ScrollBarY is present, 0 if not.
@@ -268,6 +279,7 @@ namespace MKEditor.Widgets
                 if (ScrollBarY == null)
                 {
                     ScrollBarY = new AutoVScrollBar(this);
+                    ScrollBarY.SetZIndex(999);
                 }
                 ScrollBarY.SetPosition(this.Size.Width - 13, 2);
                 // 13 if ScrollBarX is present, 0 if not.
