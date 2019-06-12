@@ -10,6 +10,14 @@ namespace MKEditor.Widgets
         public MapViewer MapViewer;
         public MKD.Map Map { get { return this.MapViewer.Map; } }
 
+        public int SelectedLayer
+        {
+            get
+            {
+                return Layers.Count - Layers.Find(lw => lw.LayerSelected).LayerIndex;
+            }
+        }
+
         private Container layercontainer;
         private VStackPanel layerstack;
 

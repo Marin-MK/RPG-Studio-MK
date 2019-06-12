@@ -13,7 +13,6 @@ namespace MKEditor.MKD
         public List<int> Priorities;
         public List<int> Tags;
 
-        public List<Bitmap> TileBitmaps = new List<Bitmap>();
         public Bitmap ResultBitmap;
 
         public static Tileset GetTileset()

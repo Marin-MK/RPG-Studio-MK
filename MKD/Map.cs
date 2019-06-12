@@ -43,6 +43,9 @@ namespace MKEditor.MKD
                     m.Layers[1].Tiles.Add(null);
                 }
             }
+            for (int i = 0; i < m.Width * m.Height; i++) m.Layers[2].Tiles.Add(null);
+            for (int i = 0; i < m.Width * m.Height; i++) m.Layers[3].Tiles.Add(null);
+            for (int i = 0; i < m.Width * m.Height; i++) m.Layers[4].Tiles.Add(null);
             m.Events = new List<Event>();
             return m;
         }
@@ -51,7 +54,7 @@ namespace MKEditor.MKD
     public class Layer
     {
         public string Name = "Unnamed Layer";
-        public List<TileData> Tiles;
+        public List<TileData> Tiles = new List<TileData>();
 
         public Layer(string Name)
         {
