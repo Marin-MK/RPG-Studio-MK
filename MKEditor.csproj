@@ -55,6 +55,8 @@
   <ItemGroup>
     <Compile Include="Margin.cs" />
     <Compile Include="MK Widgets\CursorWidget.cs" />
+    <Compile Include="MK Widgets\MapSelectTab.cs" />
+    <Compile Include="MK Widgets\TreeView.cs" />
     <Compile Include="MKD\Event.cs" />
     <Compile Include="MKD\EventCommands.cs" />
     <Compile Include="MKD\EventConditions.cs" />

@@ -50,9 +50,10 @@ namespace MKEditor
                 .SetGrid(2, 2, 0, 2);
 
             // Left sidebar
-            new Widget(layout)
-                .SetBackgroundColor(27, 28, 32)
-                .SetGrid(3, 0);
+            MapSelectTab mst = new MapSelectTab(layout);
+            mst.SetGrid(3, 0);
+            mst.SetBackgroundColor(27, 28, 32);
+
             // Right sidebar
             Grid rightcontainer = new Grid(layout).SetGrid(3, 2) as Grid;
             rightcontainer.SetRows(new GridSize(2), new GridSize(4, Unit.Pixels), new GridSize(1));
