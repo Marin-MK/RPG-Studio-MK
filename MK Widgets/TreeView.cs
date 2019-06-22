@@ -65,6 +65,7 @@ namespace MKEditor.Widgets
             this.Sprites["selection"] = new Sprite(this.Viewport, new SolidBitmap(205, 24, new Color(0, 120, 215)));
             this.Sprites["list"] = new Sprite(this.Viewport);
             this.WidgetIM.OnMouseDown += MouseDown;
+            this.OnWidgetSelect += WidgetSelect;
         }
 
         protected override void Draw()
@@ -132,7 +133,7 @@ namespace MKEditor.Widgets
         public override void MouseDown(object sender, MouseEventArgs e)
         {
             base.MouseDown(sender, e);
-            if (this.WidgetIM.Hovering)
+            if (this.WidgetIM.Hovering && e.LeftButton && !e.OldLeftButton)
             {
                 int rx = e.X - this.Viewport.X;
                 int ry = e.Y - this.Viewport.Y;

@@ -18,15 +18,22 @@ namespace MKEditor
         public EventHandler<MouseEventArgs> OnMousePress;
         public EventHandler<MouseEventArgs> OnMouseUp;
         public EventHandler<MouseEventArgs> OnLeftClick;
+        public EventHandler<MouseEventArgs> OnRightClick;
         public EventHandler<MouseEventArgs> OnMouseWheel;
         public EventHandler<MouseEventArgs> OnHoverChanged;
 
         private Rect Area;
 
-        private bool _Clicked = false;
-        public bool Clicked { get { return Widget.Visible ? _Clicked : false; } set { _Clicked = value; } }
-        private bool? _ClickedInArea = null;
-        public bool? ClickedInArea { get { return Widget.Visible ? _ClickedInArea : false; } set { _ClickedInArea = value; } }
+        private bool _ClickedLeft = false;
+        public bool ClickedLeft { get { return Widget.Visible ? _ClickedLeft : false; } set { _ClickedLeft = value; } }
+        private bool _ClickedRight = false;
+        public bool ClickedRight { get { return Widget.Visible ? _ClickedRight : false; } set { _ClickedRight = value; } }
+
+        private bool? _ClickedLeftInArea = null;
+        public bool? ClickedLeftInArea { get { return Widget.Visible ? _ClickedLeftInArea : false; } set { _ClickedLeftInArea = value; } }
+        private bool? _ClickedRightInArea = null;
+        public bool? ClickedRightInArea { get { return Widget.Visible ? _ClickedRightInArea : false; } set { _ClickedRightInArea = value; } }
+
         private bool _Hovering = false;
         public bool Hovering { get { return Widget.Visible ? _Hovering : false; } set { _Hovering = value; } }
 
@@ -39,13 +46,13 @@ namespace MKEditor
         public bool ClickAnim()
         {
             if (!Widget.Visible) return false;
-            return ClickedInArea == true && Hovering;
+            return ClickedLeftInArea == true && Hovering;
         }
 
         public bool HoverAnim()
         {
             if (!Widget.Visible) return false;
-            return Hovering && ClickedInArea != false || ClickedInArea == true;
+            return Hovering && ClickedLeftInArea != false || ClickedLeftInArea == true;
         }
 
         public void Update(Rect Area)
@@ -53,55 +60,88 @@ namespace MKEditor
             this.Area = Area;
         }
 
+        public bool OverContextMenu()
+        {
+            if (Widget.Window.UI.OverContextMenu != null && Widget.Window.UI.OverContextMenu != Widget && Widget.Window.UI.OverContextMenu.WidgetIM.Hovering)
+                return true;
+            return false;
+        }
+
         public void MouseDown(MouseEventArgs e)
         {
             if (!Widget.Visible) return;
+            if (OverContextMenu()) return;
+            
+            if (Widget.Window.UI.OverContextMenu != null && Widget.Window.UI.OverContextMenu != Widget)
+            {
+                Widget.Window.UI.OverContextMenu.Dispose();
+            }
+
             if (e.LeftButton && !e.OldLeftButton)
             {
-                this.Clicked = true;
-                this.ClickedInArea = e.InArea(this.Area);
-                if (this.ClickedInArea == true)
+                this.ClickedLeft = true;
+                this.ClickedLeftInArea = e.InArea(this.Area);
+                if (this.ClickedLeftInArea == true)
                 {
                     if (this.Widget.OnWidgetSelect != null) this.Widget.OnWidgetSelect.Invoke(this, e);
                 }
             }
+
+            if (e.RightButton && !e.OldRightButton)
+            {
+                this.ClickedRight = true;
+                this.ClickedRightInArea = e.InArea(this.Area);
+            }
+
             if (this.OnMouseDown != null) this.OnMouseDown.Invoke(this, e);
         }
 
         public void MousePress(MouseEventArgs e)
         {
             if (!Widget.Visible) return;
+            if (OverContextMenu()) return;
             if (this.OnMousePress != null) this.OnMousePress.Invoke(this, e);
         }
 
         public void MouseUp(MouseEventArgs e)
         {
             if (!Widget.Visible) return;
+            if (OverContextMenu()) return;
+
             if (!e.LeftButton && e.OldLeftButton)
             {
-                if (this.OnMouseUp != null) this.OnMouseUp.Invoke(this, e);
-                if (ClickedInArea == true && Hovering)
+                if (ClickedLeftInArea == true && Hovering)
                 {
                     if (this.OnLeftClick != null) this.OnLeftClick.Invoke(this, e);
                 }
-                this.Clicked = false;
-                this.ClickedInArea = null;
+                this.ClickedLeft = false;
+                this.ClickedLeftInArea = null;
             }
-            else
+
+            if (!e.RightButton && e.OldRightButton)
             {
-                if (this.OnMouseUp != null) this.OnMouseUp.Invoke(this, e);
+                if (ClickedRightInArea == true && Hovering)
+                {
+                    if (this.OnRightClick != null) this.OnRightClick.Invoke(this, e);
+                }
+                this.ClickedRight = false;
+                this.ClickedRightInArea = null;
             }
+
+            if (this.OnMouseUp != null) this.OnMouseUp.Invoke(this, e);
         }
 
         public void MouseWheel(MouseEventArgs e)
         {
             if (!Widget.Visible) return;
+            if (OverContextMenu()) return;
             if (e.WheelY != 0 && this.OnMouseWheel != null) this.OnMouseWheel.Invoke(this, e);
         }
 
         public void MouseMoving(MouseEventArgs e)
         {
             if (!Widget.Visible) return;
+            if (OverContextMenu()) return;
             bool oldhover = this.Hovering;
             this.Hovering = e.InArea(this.Area);
             if (this.OnMouseMoving != null) this.OnMouseMoving.Invoke(this, e);

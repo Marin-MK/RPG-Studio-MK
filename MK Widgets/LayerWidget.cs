@@ -34,6 +34,7 @@ namespace MKEditor.Widgets
             this.VisibleIM = new MouseInputManager(this);
             this.VisibleIM.OnLeftClick += LayerVisibleClicked;
             this.WidgetIM.OnLeftClick += LayerClicked;
+            this.WidgetIM.OnRightClick += LayerClicked;
         }
 
         public Widget SetText(string Text)

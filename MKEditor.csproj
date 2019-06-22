@@ -53,9 +53,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Keycodes.cs" />
     <Compile Include="Margin.cs" />
+    <Compile Include="MK Widgets\ContextMenu.cs" />
     <Compile Include="MK Widgets\CursorWidget.cs" />
     <Compile Include="MK Widgets\MapSelectTab.cs" />
+    <Compile Include="MK Widgets\MenuItem.cs" />
     <Compile Include="MK Widgets\TreeView.cs" />
     <Compile Include="MKD\Event.cs" />
     <Compile Include="MKD\EventCommands.cs" />
@@ -68,12 +71,9 @@
     <Compile Include="Widgets\GridSize.cs" />
     <Compile Include="Widgets\HStackPanel.cs" />
     <Compile Include="Widgets\ILayout.cs" />
-    <Compile Include="Widgets\IMenuItem.cs" />
     <Compile Include="MK Widgets\LayersTab.cs" />
     <Compile Include="MK Widgets\LayerWidget.cs" />
     <Compile Include="MK Widgets\MapViewer.cs" />
-    <Compile Include="Widgets\MenuItem.cs" />
-    <Compile Include="Widgets\MenuSeparator.cs" />
     <Compile Include="Widgets\MenuStrip.cs" />
     <Compile Include="Widgets\MinimalHScrollBar.cs" />
     <Compile Include="Widgets\MinimalVScrollBar.cs" />

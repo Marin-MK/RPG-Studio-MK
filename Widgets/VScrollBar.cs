@@ -130,7 +130,7 @@ namespace MKEditor.Widgets
             int height = this.Size.Height - 34;
             int sliderheight = (int) Math.Round(height * this.SliderSize);
             Color sc = new Color(205, 205, 205);
-            if (this.SliderIM.ClickedInArea == true)
+            if (this.SliderIM.ClickedLeftInArea == true)
             {
                 sc.Set(96, 96, 96);
             }
@@ -169,7 +169,7 @@ namespace MKEditor.Widgets
         #region Handles Slider
         private void SliderMouseMoving(object sender, MouseEventArgs e)
         {
-            if (this.SliderIM.ClickedInArea == true)
+            if (this.SliderIM.ClickedLeftInArea == true)
             {
                 UpdateSlider(e);
             }
@@ -186,7 +186,7 @@ namespace MKEditor.Widgets
 
         private void SliderMouseUp(object sender, MouseEventArgs e)
         {
-            if (!e.LeftButton && e.OldLeftButton && this.SliderIM.ClickedInArea == true)
+            if (!e.LeftButton && e.OldLeftButton && this.SliderIM.ClickedLeftInArea == true)
             {
                 this.RedrawArrows = true;
                 Redraw();
@@ -239,7 +239,7 @@ namespace MKEditor.Widgets
 
         private void UpArrowUp(object sender, MouseEventArgs e)
         {
-            if (!e.LeftButton && e.OldLeftButton && this.UpArrowIM.ClickedInArea == true)
+            if (!e.LeftButton && e.OldLeftButton && this.UpArrowIM.ClickedLeftInArea == true)
             {
                 UpArrowCount = null;
                 this.RedrawArrows = true;
@@ -295,7 +295,7 @@ namespace MKEditor.Widgets
 
         private void DownArrowUp(object sender, MouseEventArgs e)
         {
-            if (!e.LeftButton && e.OldLeftButton && this.DownArrowIM.ClickedInArea == true)
+            if (!e.LeftButton && e.OldLeftButton && this.DownArrowIM.ClickedLeftInArea == true)
             {
                 DownArrowCount = null;
                 this.RedrawArrows = true;

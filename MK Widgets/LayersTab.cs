@@ -37,11 +37,62 @@ namespace MKEditor.Widgets
             this.Sprites["text"].Bitmap.DrawText("Layers", 0, 0, Color.WHITE);
             this.Sprites["text"].Bitmap.Lock();
 
+            this.OnWidgetSelect += WidgetSelect;
+
             layercontainer = new Container(this);
             layercontainer.SetPosition(30, 45);
             layercontainer.AutoScroll = true;
 
             layerstack = new VStackPanel(layercontainer);
+            layerstack.SetContextMenuList(new List<IMenuItem>()
+            {
+                new MenuItem("New Layer") { OnLeftClick = NewLayer },
+                new MenuItem("Rename Layer") { Shortcut = "F2", OnLeftClick = RenameLayer },
+                new MenuItem("Toggle Visibility") { Shortcut = "Ctrl+H", OnLeftClick = ToggleVisibilityLayer },
+                new MenuItem("Move Layer Up") { OnLeftClick = MoveLayerUp },
+                new MenuItem("Move Layer Down") { OnLeftClick = MoveLayerDown },
+                new MenuSeparator(),
+                new MenuItem("Delete Layer") { Shortcut = "Del", OnLeftClick = DeleteLayer }
+            });
+
+            RegisterShortcuts(new Dictionary<Key, EventHandler<EventArgs>>()
+            {
+                { new Key(Keycode.F2), new EventHandler<EventArgs>(RenameLayer) },
+                { new Key(Keycode.H, Keycode.CTRL), new EventHandler<EventArgs>(ToggleVisibilityLayer) },
+                { new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer) }
+            });
+        }
+
+        public void NewLayer(object sender, EventArgs e)
+        {
+            Console.WriteLine("New");
+        }
+
+        public void RenameLayer(object sender, EventArgs e)
+        {
+            Console.WriteLine("Rename");
+        }
+
+        public void MoveLayerUp(object sender, EventArgs e)
+        {
+            Console.WriteLine("Move Up");
+        }
+
+        public void MoveLayerDown(object sender, EventArgs e)
+        {
+            Console.WriteLine("Move Down");
+        }
+
+        public void ToggleVisibilityLayer(object sender, EventArgs e)
+        {
+            Console.WriteLine("Toggle Visibility");
+            int layeridx = this.Map.Layers.Count - SelectedLayer - 1;
+            this.Layers[layeridx].SetLayerVisible(!this.Layers[layeridx].LayerVisible);
+        }
+
+        public void DeleteLayer(object sender, EventArgs e)
+        {
+            Console.WriteLine("Delete");
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)

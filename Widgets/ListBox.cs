@@ -133,9 +133,9 @@ namespace MKEditor.Widgets
 
         public override void MouseMoving(object sender, MouseEventArgs e)
         {
-            if (this.ScrollBar != null && this.ScrollBar.DownArrowIM.ClickedInArea != true &&
-                this.ScrollBar.UpArrowIM.ClickedInArea != true &&
-                this.ScrollBar.SliderIM.ClickedInArea != true || this.ScrollBar == null)
+            if (this.ScrollBar != null && this.ScrollBar.DownArrowIM.ClickedLeftInArea != true &&
+                this.ScrollBar.UpArrowIM.ClickedLeftInArea != true &&
+                this.ScrollBar.SliderIM.ClickedLeftInArea != true || this.ScrollBar == null)
             {
                 UpdateMouse(e);
             }
@@ -143,7 +143,7 @@ namespace MKEditor.Widgets
 
         private void UpdateMouse(MouseEventArgs e)
         {
-            if (this.WidgetIM.ClickedInArea == true)
+            if (this.WidgetIM.ClickedLeftInArea == true)
             {
                 int rx = e.X - this.Viewport.X;
                 int ry = e.Y - this.Viewport.Y;

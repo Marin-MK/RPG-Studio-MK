@@ -9,7 +9,7 @@ namespace MKEditor.Widgets
         public double SliderSize     { get; protected set; }
         public double Value          { get; protected set; }
         public bool   Hovering       { get { return SliderIM.Hovering; } }
-        public bool   Dragging       { get { return SliderIM.ClickedInArea == true; } }
+        public bool   Dragging       { get { return SliderIM.ClickedLeftInArea == true; } }
         public Rect   MouseInputRect { get; set; }
 
         public int MinSliderHeight = 8;
@@ -75,7 +75,7 @@ namespace MKEditor.Widgets
             int height = this.Size.Height - 4;
             int sliderheight = (int) Math.Round(height * this.SliderSize);
             Color sc = new Color(205, 205, 205);
-            if (this.SliderIM.ClickedInArea == true)
+            if (this.SliderIM.ClickedLeftInArea == true)
             {
                 sc.Set(96, 96, 96);
             }
@@ -111,7 +111,7 @@ namespace MKEditor.Widgets
         
         private void SliderMouseMoving(object sender, MouseEventArgs e)
         {
-            if (this.SliderIM.ClickedInArea == true)
+            if (this.SliderIM.ClickedLeftInArea == true)
             {
                 UpdateSlider(e);
             }
@@ -128,7 +128,7 @@ namespace MKEditor.Widgets
 
         private void SliderMouseUp(object sender, MouseEventArgs e)
         {
-            if (!e.LeftButton && e.OldLeftButton && this.SliderIM.ClickedInArea == true)
+            if (!e.LeftButton && e.OldLeftButton && this.SliderIM.ClickedLeftInArea == true)
             {
                 Redraw();
             }

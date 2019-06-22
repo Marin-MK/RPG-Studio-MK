@@ -7,7 +7,7 @@ namespace MKEditor
 {
     public class UIManager : IContainer
     {
-        public Window Window { get; protected set; }
+        public WidgetWindow Window { get; protected set; }
         public Point AdjustedPosition { get { return new Point(0, 0); } set { throw new MethodNotSupportedException(this); } }
         public Size AdjustedSize { get { return new Size(0, 0); } }
         public Point Position { get { return new Point(0, 0); } }
@@ -21,13 +21,14 @@ namespace MKEditor
         public Widget SelectedWidget { get; protected set; }
         public MinimalHScrollBar ScrollBarX { get { return null; } }
         public MinimalVScrollBar ScrollBarY { get { return null; } }
+        public ContextMenu OverContextMenu;
 
         private Sprite BGSprite;
         private List<MouseInputManager> IMs = new List<MouseInputManager>();
 
         public IContainer Parent { get { throw new MethodNotSupportedException(this); } }
 
-        public UIManager(Window Window)
+        public UIManager(WidgetWindow Window)
         {
             this.Window = Window;
             BGSprite = new Sprite(this.Viewport);

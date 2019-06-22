@@ -40,9 +40,32 @@ namespace MKEditor
                 .SetGrid(0, 0, 0, 2);
 
             // Toolbar
-            new Widget(layout)
+            Widget w = new Widget(layout)
                 .SetBackgroundColor(27, 28, 32)
                 .SetGrid(1, 1, 0, 2);
+
+            Button b = new Button(w).SetText("ContextMenu").SetPosition(4, 4) as Button;
+            b.WidgetIM.OnLeftClick += delegate (object sender, MouseEventArgs e)
+            {
+                ContextMenu cm = new ContextMenu(this);
+                cm.SetPosition(e.X, e.Y);
+                cm.Items = new List<IMenuItem>()
+                {
+                    new MenuItem("Mark as spoiler")
+                    {
+                        OnLeftClick = new EventHandler<MouseEventArgs>(delegate (object sndr, MouseEventArgs ev)
+                        {
+                            Console.WriteLine("Spoiler!");
+                        })
+                    },
+                    new MenuSeparator(),
+                    new MenuItem("Spellcheck") { Checkable = true },
+                    new MenuItem("Languages"),
+                    new MenuSeparator(),
+                    new MenuItem("Paste") { Shortcut = "Ctrl+V" }
+                };
+            };
+            b.SetVisible(false);
 
             // Orange separator
             new Widget(layout)

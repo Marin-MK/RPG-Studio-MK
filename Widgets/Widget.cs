@@ -26,6 +26,10 @@ namespace MKEditor.Widgets
         public bool                         Selected         = false;
         public bool                         Dock             = false;
         public int                          ZIndex           { get; protected set; } = 0;
+        public List<IMenuItem>              ContextMenuList  { get; protected set; }
+        public bool                         ShowContextMenu  { get; protected set; } = false;
+
+        public Dictionary<Key, EventHandler<EventArgs>> Shortcuts { get; protected set; } = new Dictionary<Key, EventHandler<EventArgs>>();
 
         public  bool   AutoScroll        = false;
         public  int    ScrolledX         { get; set; } = 0;
@@ -93,6 +97,7 @@ namespace MKEditor.Widgets
             this.OnParentSizeChanged = new EventHandler<SizeEventArgs>(this.ParentSizeChanged);
             this.OnChildSizeChanged = new EventHandler<SizeEventArgs>(this.ChildSizeChanged);
             this.WidgetIM = new MouseInputManager(this);
+            this.WidgetIM.OnRightClick += RightClick_ContextMenu;
         }
 
         public void SetParent(object Parent)
@@ -102,6 +107,11 @@ namespace MKEditor.Widgets
             {
                 this.Window = Parent as WidgetWindow;
                 this.Parent = this.Window.UI;
+            }
+            else if (Parent is UIManager)
+            {
+                this.Window = (Parent as UIManager).Window;
+                this.Parent = Parent as UIManager;
             }
             else if (Parent is Widget)
             {
@@ -132,7 +142,18 @@ namespace MKEditor.Widgets
             }
         }
 
-        public void Dispose()
+        public void SetContextMenuList(List<IMenuItem> Items)
+        {
+            this.ContextMenuList = Items;
+            this.ShowContextMenu = Items.Count > 0;
+        }
+
+        public void RegisterShortcuts(Dictionary<Key, EventHandler<EventArgs>> Shortcuts)
+        {
+            this.Shortcuts = Shortcuts;
+        }
+
+        public virtual void Dispose()
         {
             AssertUndisposed();
             this.Viewport.Dispose();
@@ -167,6 +188,47 @@ namespace MKEditor.Widgets
         public virtual void Update()
         {
             AssertUndisposed();
+
+            if (this.Selected)
+            {
+                foreach (KeyValuePair<Key, EventHandler<EventArgs>> kvp in this.Shortcuts)
+                {
+                    Key k = kvp.Key;
+                    bool Valid = Input.Trigger((SDL2.SDL.SDL_Keycode) k.MainKey);
+                    if (!Valid) continue;
+
+                    // Modifiers
+                    foreach (Keycode mod in k.Modifiers)
+                    {
+                        bool onefound = false;
+                        List<SDL2.SDL.SDL_Keycode> codes = new List<SDL2.SDL.SDL_Keycode>();
+                        if (mod == Keycode.CTRL) { codes.Add(SDL2.SDL.SDL_Keycode.SDLK_LCTRL); codes.Add(SDL2.SDL.SDL_Keycode.SDLK_RCTRL); }
+                        else if (mod == Keycode.SHIFT) { codes.Add(SDL2.SDL.SDL_Keycode.SDLK_LSHIFT); codes.Add(SDL2.SDL.SDL_Keycode.SDLK_RSHIFT); }
+                        else if (mod == Keycode.ALT) { codes.Add(SDL2.SDL.SDL_Keycode.SDLK_LALT); codes.Add(SDL2.SDL.SDL_Keycode.SDLK_RALT); }
+                        else codes.Add((SDL2.SDL.SDL_Keycode) mod);
+
+                        for (int i = 0; i < codes.Count; i++)
+                        {
+                            if (Input.Press(codes[i]))
+                            {
+                                onefound = true;
+                                break;
+                            }
+                        }
+
+                        if (!onefound)
+                        {
+                            Valid = false;
+                            break;
+                        }
+                    }
+
+                    if (!Valid) continue;
+
+                    kvp.Value.Invoke(this, new EventArgs());
+                }
+            }
+
             this.WidgetIM.Update(this.Viewport.Rect);
             if (!this.Drawn) this.Draw();
             for (int i = 0; i < this.Widgets.Count; i++)
@@ -175,6 +237,22 @@ namespace MKEditor.Widgets
             }
         }
 
+        private void RightClick_ContextMenu(object sender, MouseEventArgs e)
+        {
+            if (ShowContextMenu && ContextMenuList != null && ContextMenuList.Count > 0)
+            {
+                ContextMenu cm = new ContextMenu(this.Window);
+                cm.Items = ContextMenuList;
+                Size s = cm.CalcSize();
+                int x = e.X;
+                int y = e.Y;
+                if (e.X + s.Width >= Window.Width) x -= s.Width;
+                if (e.Y + s.Height >= Window.Height) y -= s.Height;
+                x = Math.Max(0, x);
+                y = Math.Max(0, y);
+                cm.SetPosition(x, y);
+            }
+        }
         public virtual void MouseDown(object sender, MouseEventArgs e)
         {
             if (e.LeftButton != e.OldLeftButton && this.WidgetIM.Hovering)
@@ -185,7 +263,7 @@ namespace MKEditor.Widgets
         public virtual void MousePress(object sender, MouseEventArgs e) { }
         public virtual void MouseUp(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton != e.OldLeftButton && this.WidgetIM.ClickedInArea == true) Redraw();
+            if (e.LeftButton != e.OldLeftButton && this.WidgetIM.ClickedLeftInArea == true) Redraw();
         }
         public virtual void MouseWheel(object sender, MouseEventArgs e) { }
         public virtual void MouseMoving(object sender, MouseEventArgs e) { }

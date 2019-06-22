@@ -40,6 +40,8 @@ namespace MKEditor.Widgets
 
             this.SetBackgroundColor(27, 28, 32);
 
+            this.OnWidgetSelect += WidgetSelect;
+
             CursorIM = new MouseInputManager(this);
             CursorIM.OnMouseDown += MouseDown;
 
@@ -110,6 +112,7 @@ namespace MKEditor.Widgets
         public override void MouseDown(object sender, MouseEventArgs e)
         {
             base.MouseMoving(sender, e);
+            if (e.LeftButton == e.OldLeftButton) return; // A button other than the left mouse button was pressed
             if (Parent.ScrollBarY != null && (Parent.ScrollBarY.Dragging || Parent.ScrollBarY.Hovering)) return;
             int rx = e.X - this.AllTilesetContainer.Viewport.X;
             int ry = e.Y - this.AllTilesetContainer.Viewport.Y;
