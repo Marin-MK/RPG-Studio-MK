@@ -55,11 +55,11 @@ namespace MKEditor.Widgets
                 new MenuItem("Delete Layer") { Shortcut = "Del", OnLeftClick = DeleteLayer }
             });
 
-            RegisterShortcuts(new Dictionary<Key, EventHandler<EventArgs>>()
+            RegisterShortcuts(new List<Shortcut>()
             {
-                { new Key(Keycode.F2), new EventHandler<EventArgs>(RenameLayer) },
-                { new Key(Keycode.H, Keycode.CTRL), new EventHandler<EventArgs>(ToggleVisibilityLayer) },
-                { new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer) }
+                new Shortcut(new Key(Keycode.F2), new EventHandler<EventArgs>(RenameLayer)),
+                new Shortcut(new Key(Keycode.H, Keycode.CTRL), new EventHandler<EventArgs>(ToggleVisibilityLayer), true),
+                new Shortcut(new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer))
             });
         }
 
@@ -116,6 +116,22 @@ namespace MKEditor.Widgets
                 this.Layers.Add(layerwidget);
             }
             this.Layers[this.Map.Layers.Count - 1].SetLayerSelected(true);
+        }
+
+        public override void Update()
+        {
+            if (this.Selected)
+            {
+                if (SelectedLayer > 0 && Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_DOWN))
+                {
+                    this.Layers[this.Map.Layers.Count - SelectedLayer].SetLayerSelected(true);
+                }
+                if (SelectedLayer < this.Map.Layers.Count - 1 && Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_UP))
+                {
+                    this.Layers[this.Map.Layers.Count - SelectedLayer - 2].SetLayerSelected(true);
+                }
+            }
+            base.Update();
         }
     }
 }

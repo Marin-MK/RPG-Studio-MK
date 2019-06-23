@@ -22,6 +22,7 @@ namespace MKEditor
         public MinimalHScrollBar ScrollBarX { get { return null; } }
         public MinimalVScrollBar ScrollBarY { get { return null; } }
         public ContextMenu OverContextMenu;
+        public List<Shortcut> Shortcuts { get; protected set; } = new List<Shortcut>();
 
         private Sprite BGSprite;
         private List<MouseInputManager> IMs = new List<MouseInputManager>();
@@ -177,6 +178,45 @@ namespace MKEditor
 
         public void Update()
         {
+            foreach (Shortcut s in this.Shortcuts)
+            {
+                if (!s.GlobalShortcut) continue; // Handled by the Widget it's bound to
+
+                Key k = s.Key;
+                bool Valid = Input.Trigger((SDL2.SDL.SDL_Keycode) k.MainKey);
+                if (!Valid) continue;
+
+                // Modifiers
+                foreach (Keycode mod in k.Modifiers)
+                {
+                    bool onefound = false;
+                    List<SDL2.SDL.SDL_Keycode> codes = new List<SDL2.SDL.SDL_Keycode>();
+                    if (mod == Keycode.CTRL) { codes.Add(SDL2.SDL.SDL_Keycode.SDLK_LCTRL); codes.Add(SDL2.SDL.SDL_Keycode.SDLK_RCTRL); }
+                    else if (mod == Keycode.SHIFT) { codes.Add(SDL2.SDL.SDL_Keycode.SDLK_LSHIFT); codes.Add(SDL2.SDL.SDL_Keycode.SDLK_RSHIFT); }
+                    else if (mod == Keycode.ALT) { codes.Add(SDL2.SDL.SDL_Keycode.SDLK_LALT); codes.Add(SDL2.SDL.SDL_Keycode.SDLK_RALT); }
+                    else codes.Add((SDL2.SDL.SDL_Keycode) mod);
+
+                    for (int i = 0; i < codes.Count; i++)
+                    {
+                        if (Input.Press(codes[i]))
+                        {
+                            onefound = true;
+                            break;
+                        }
+                    }
+
+                    if (!onefound)
+                    {
+                        Valid = false;
+                        break;
+                    }
+                }
+
+                if (!Valid) continue;
+
+                s.Event.Invoke(this, new EventArgs());
+            }
+
             for (int i = 0; i < this.Widgets.Count; i++)
             {
                 this.Widgets[i].Update();
@@ -203,6 +243,16 @@ namespace MKEditor
             {
                 this.SelectedWidget.OnTextInput.Invoke(sender, e);
             }
+        }
+
+        public void RegisterShortcut(Shortcut s)
+        {
+            this.Shortcuts.Add(s);
+        }
+
+        public void DeregisterShortcut(Shortcut s)
+        {
+            this.Shortcuts.Remove(s);
         }
     }
 }

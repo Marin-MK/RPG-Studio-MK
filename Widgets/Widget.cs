@@ -28,8 +28,7 @@ namespace MKEditor.Widgets
         public int                          ZIndex           { get; protected set; } = 0;
         public List<IMenuItem>              ContextMenuList  { get; protected set; }
         public bool                         ShowContextMenu  { get; protected set; } = false;
-
-        public Dictionary<Key, EventHandler<EventArgs>> Shortcuts { get; protected set; } = new Dictionary<Key, EventHandler<EventArgs>>();
+        public List<Shortcut>               Shortcuts        { get; protected set; } = new List<Shortcut>();
 
         public  bool   AutoScroll        = false;
         public  int    ScrolledX         { get; set; } = 0;
@@ -148,9 +147,17 @@ namespace MKEditor.Widgets
             this.ShowContextMenu = Items.Count > 0;
         }
 
-        public void RegisterShortcuts(Dictionary<Key, EventHandler<EventArgs>> Shortcuts)
+        public void RegisterShortcuts(List<Shortcut> Shortcuts)
         {
+            foreach (Shortcut s in this.Shortcuts)
+            {
+                if (s.GlobalShortcut) this.Window.UI.DeregisterShortcut(s);
+            }
             this.Shortcuts = Shortcuts;
+            foreach (Shortcut s in this.Shortcuts)
+            {
+                if (s.GlobalShortcut) this.Window.UI.RegisterShortcut(s);
+            }
         }
 
         public virtual void Dispose()
@@ -191,9 +198,11 @@ namespace MKEditor.Widgets
 
             if (this.Selected)
             {
-                foreach (KeyValuePair<Key, EventHandler<EventArgs>> kvp in this.Shortcuts)
+                foreach (Shortcut s in this.Shortcuts)
                 {
-                    Key k = kvp.Key;
+                    if (s.GlobalShortcut) continue; // Handled by the UIManager
+
+                    Key k = s.Key;
                     bool Valid = Input.Trigger((SDL2.SDL.SDL_Keycode) k.MainKey);
                     if (!Valid) continue;
 
@@ -225,7 +234,7 @@ namespace MKEditor.Widgets
 
                     if (!Valid) continue;
 
-                    kvp.Value.Invoke(this, new EventArgs());
+                    s.Event.Invoke(this, new EventArgs());
                 }
             }
 
@@ -617,6 +626,20 @@ namespace MKEditor.Widgets
             {
                 (this.Parent as ILayout).NeedUpdate = true;
             }
+        }
+    }
+
+    public class Shortcut
+    {
+        public Key Key;
+        public EventHandler<EventArgs> Event;
+        public bool GlobalShortcut = false;
+
+        public Shortcut(Key Key, EventHandler<EventArgs> Event, bool GlobalShortcut = false)
+        {
+            this.Key = Key;
+            this.Event = Event;
+            this.GlobalShortcut = GlobalShortcut;
         }
     }
 }
