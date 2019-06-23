@@ -6,7 +6,7 @@ namespace MKEditor.Widgets
 {
     public class MapViewer : Widget
     {
-        public MKD.Map Map;
+        public Data.Map Map;
         public TilesetTab TilesetTab;
         public LayersTab LayersTab;
 
@@ -15,7 +15,7 @@ namespace MKEditor.Widgets
         public int MapTileX = 0;
         public int MapTileY = 0;
 
-        MKD.Tileset MTileset;
+        Data.Tileset MTileset;
 
         CursorWidget Cursor;
 
@@ -37,10 +37,10 @@ namespace MKEditor.Widgets
             Sprites["bg"].Bitmap.Lock();
         }
 
-        public void SetMap(MKD.Map Map)
+        public void SetMap(Data.Map Map)
         {
             this.Map = Map;
-            MTileset = MKD.Tileset.GetTileset();
+            MTileset = Data.Tileset.GetTileset();
             this.CreateLayerBitmaps();
         }
 
@@ -56,7 +56,7 @@ namespace MKEditor.Widgets
                 this.Sprites[i.ToString()] = new Sprite(this.Viewport, this.Map.Width * 32, this.Map.Height * 32);
                 this.Sprites[i.ToString()].Bitmap.Unlock();
             }
-            MKD.Tileset t = MKD.Tileset.GetTileset();
+            Data.Tileset t = Data.Tileset.GetTileset();
             Bitmap tbmp = new Bitmap(t.GraphicName);
             for (int layer = 0; layer < this.Map.Layers.Count; layer++)
             {
@@ -177,7 +177,7 @@ namespace MKEditor.Widgets
                     int MapTileX = TempCoords[i].X;
                     int MapTileY = TempCoords[i].Y;
                     int MapTileIndex = MapTileY * this.Map.Width + MapTileX;
-                    this.Map.Layers[Layer].Tiles[MapTileIndex] = new MKD.TileData
+                    this.Map.Layers[Layer].Tiles[MapTileIndex] = new Data.TileData
                     {
                         TilesetIndex = this.TilesetTab.TilesetIndex,
                         TileID = TileID

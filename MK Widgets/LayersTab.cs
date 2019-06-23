@@ -8,7 +8,7 @@ namespace MKEditor.Widgets
     {
         public TilesetTab TilesetTab;
         public MapViewer MapViewer;
-        public MKD.Map Map { get { return this.MapViewer.Map; } }
+        public Data.Map Map { get { return this.MapViewer.Map; } }
 
         public int SelectedLayer
         {

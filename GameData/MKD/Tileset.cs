@@ -2,18 +2,56 @@
 using System.Collections.Generic;
 using ODL;
 
-namespace MKEditor.MKD
+namespace MKEditor.Data
 {
-    public class Tileset
+    public class Tileset : Serializable
     {
         public int ID;
         public string Name;
         public string GraphicName;
         public List<Passability> Passabilities;
-        public List<int> Priorities;
-        public List<int> Tags;
+        public List<int?> Priorities;
+        public List<int?> Tags;
 
         public Bitmap ResultBitmap;
+
+        public Tileset()
+        {
+
+        }
+
+        public Tileset(string path)
+            : base(path)
+        {
+            this.ID = GetVar<int>("id");
+            this.Name = GetVar<string>("name");
+            this.GraphicName = GetVar<string>("graphic_name");
+            List<int> _Passabilities = GetList<int>("passabilities");
+            this.Passabilities = new List<Passability>();
+            for (int i = 0; i < _Passabilities.Count; i++)
+            {
+                this.Passabilities.Add((Passability) _Passabilities[i]);
+            }
+            List<object> _priorities = GetList<object>("priorities");
+            this.Priorities = new List<int?>();
+            for (int i = 0; i < _priorities.Count; i++)
+            {
+                if (_priorities[i] is int) this.Priorities.Add((int)_priorities[i]);
+                else this.Priorities.Add(null);
+            }
+            List<object> _tags = GetList<object>("tags");
+            this.Tags = new List<int?>();
+            for (int i = 0; i < _tags.Count; i++)
+            {
+                if (_tags[i] is int) this.Tags.Add((int) _tags[i]);
+                else this.Tags.Add(null);
+            }
+            // Make sure the three arrays are just as big
+            int maxcount = Math.Max(Math.Max(Passabilities.Count, Priorities.Count), Tags.Count);
+            this.Passabilities.AddRange(new Passability[maxcount - Passabilities.Count]);
+            this.Priorities.AddRange(new int?[maxcount - Priorities.Count]);
+            this.Tags.AddRange(new int?[maxcount - Tags.Count]);
+        }
 
         public static Tileset GetTileset()
         {
@@ -31,8 +69,8 @@ namespace MKEditor.MKD
                 Passability.None, Passability.All, Passability.All, Passability.None, Passability.All, Passability.None, Passability.None, Passability.None,
                 Passability.None, Passability.All, Passability.All, Passability.None, Passability.All, Passability.All, Passability.None, Passability.None
             };
-            t.Priorities = new List<int>();
-            t.Tags = new List<int>();
+            t.Priorities = new List<int?>();
+            t.Tags = new List<int?>();
 
             Bitmap bmp = new Bitmap(t.GraphicName);
             int tileycount = (int) Math.Floor(bmp.Height / 32d);

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MKEditor.MKD
+namespace MKEditor.Data
 {
     public class Map
     {
@@ -75,6 +75,18 @@ namespace MKEditor.MKD
         Left = 2,
         Right = 4,
         Up = 8,
-        All = Down | Left | Right | Up
+        All = Down | Left | Right | Up,
+
+        DownLeft = Down | Left,
+        DownRight = Down | Right,
+        LeftRight = Left | Right,
+        DownLeftRight = Down | Left | Right,
+        DownUp = Down | Up,
+        LeftUp = Left | Up,
+        DownLeftUp = Down | Left | Up,
+        RightUp = Right | Up,
+        DownRightUp = Down | Right | Up,
+        LeftRightUp = Left | Right | Up,
+        DownLeftRightUp = Down | Left | Right | Up
     }
 }

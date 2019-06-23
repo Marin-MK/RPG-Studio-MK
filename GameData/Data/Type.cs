@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MKEditor.MKD
+namespace MKEditor.Data
 {
-    public interface IEventCommand
+    public class Type
     {
-        
+
     }
 }

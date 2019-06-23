@@ -6,7 +6,7 @@ namespace MKEditor.Widgets
 {
     public class TilesetTab : Widget
     {
-        public MKD.Tileset  Tileset         { get; protected set; }
+        public Data.Tileset  Tileset        { get; protected set; }
         public int          TilesetIndex    { get; protected set; } = 0;
         public int          TileX           { get; protected set; } = 0;
         public int          TileY           { get; protected set; } = 0;
@@ -57,11 +57,11 @@ namespace MKEditor.Widgets
             TilesetStackPanel = new VStackPanel(AllTilesetContainer);
             TilesetStackPanel.SetWidth(283);
 
-            this.AddTileset(MKD.Tileset.GetTileset(), 0);
-            this.AddTileset(MKD.Tileset.GetTileset(), 1);
+            this.AddTileset(Data.Tileset.GetTileset(), 0);
+            this.AddTileset(Data.Tileset.GetTileset(), 1);
         }
 
-        public void AddTileset(MKD.Tileset Tileset, int Index)
+        public void AddTileset(Data.Tileset Tileset, int Index)
         {
             this.Tileset = Tileset;
             if (Index >= this.TilesetContainers.Count)
