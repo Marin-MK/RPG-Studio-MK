@@ -56,9 +56,33 @@ namespace MKEditor.Widgets
 
             TilesetStackPanel = new VStackPanel(AllTilesetContainer);
             TilesetStackPanel.SetWidth(283);
+        }
 
-            this.AddTileset(Data.Tileset.GetTileset(), 0);
-            this.AddTileset(Data.Tileset.GetTileset(), 1);
+        public void SetTilesets(List<int> TilesetIDs)
+        {
+            for (int i = 0; i < this.TilesetContainers.Count; i++)
+            {
+                this.TilesetContainers[i].Dispose();
+            }
+            this.TilesetContainers.Clear();
+            this.TilesetImages.Clear();
+            for (int i = 0; i < TilesetIDs.Count; i++)
+            {
+                int tilesetid = TilesetIDs[i];
+                Data.Tileset tileset = Data.GameData.Tilesets[tilesetid];
+                tileset.EnsureBitmap();
+                CollapsibleContainer c = new CollapsibleContainer(TilesetStackPanel);
+                c.SetText(tileset.Name);
+                c.SetMargin(0, 0, 0, 8);
+                c.OnCollapsedChanged += delegate (object sender, EventArgs e) { UpdateCursorPosition(); };
+                c.SetSize(AllTilesetContainer.Size.Width - 13, tileset.TilesetListBitmap.Height + 33);
+                TilesetContainers.Add(c);
+                PictureBox image = new PictureBox(c);
+                image.SetPosition(20, 33);
+                image.Sprite.Bitmap = tileset.TilesetListBitmap;
+                image.SetSize(tileset.TilesetListBitmap.Width, tileset.TilesetListBitmap.Height);
+                TilesetImages.Add(image);
+            }
         }
 
         public void AddTileset(Data.Tileset Tileset, int Index)
@@ -76,7 +100,7 @@ namespace MKEditor.Widgets
                 t.SetPosition(20, 33);
                 TilesetImages.Add(t);
             }
-            TilesetImages[Index].Sprite.Bitmap = this.Tileset.ResultBitmap;
+            TilesetImages[Index].Sprite.Bitmap = this.Tileset.TilesetBitmap;
             TilesetImages[Index].SetSize(TilesetImages[Index].Sprite.Bitmap.Width, TilesetImages[Index].Sprite.Bitmap.Height);
             TilesetContainers[Index].SetSize(AllTilesetContainer.Size.Width - 13, TilesetImages[Index].Size.Height + TilesetImages[Index].Position.Y);
         }
@@ -101,6 +125,7 @@ namespace MKEditor.Widgets
             {
                 Cursor.SetPosition(0, 0);
                 Cursor.SetVisible(false);
+                AllTilesetContainer.UpdateAutoScroll();
             }
             else
             {

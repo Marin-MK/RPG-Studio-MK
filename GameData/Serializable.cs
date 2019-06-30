@@ -27,6 +27,7 @@ namespace MKEditor.Data
             else if (VarType == VariableType.Struct) return $"{path}.{Variable}";
             else if (VarType == VariableType.HashSymbol) return $"{path}[:{Variable}]";
             else if (VarType == VariableType.HashString) return $"{path}[\"{Variable}\"]";
+            else if (VarType == VariableType.ArrayElement) return $"{path}[{Variable}]";
             return null;
         }
 
@@ -37,6 +38,7 @@ namespace MKEditor.Data
 
         public dynamic GetVar<T>(string Variable, VariableType VarType = VariableType.Normal)
         {
+            if (Nil(Variable, VarType)) return null;
             dynamic obj = GameData.Exec(GetPath(Variable, VarType));
             System.Type type = typeof(T);
             if (type == typeof(string))
@@ -56,6 +58,10 @@ namespace MKEditor.Data
             else if (type == typeof(byte))
             {
                 return Convert.ToByte(obj);
+            }
+            else if (type == typeof(bool))
+            {
+                return Convert.ToBoolean(obj.ToString());
             }
             else if (type.IsEnum)
             {
@@ -90,6 +96,7 @@ namespace MKEditor.Data
             else if (type == typeof(object))
             {
                 List<object> obj = new List<object>();
+                if (Nil(Variable, VarType)) return null;
                 foreach (object o in GetVar<object[]>(Variable, VarType).ToArray())
                 {
                     obj.Add(o);
@@ -132,6 +139,7 @@ namespace MKEditor.Data
         Normal,
         Struct,
         HashSymbol,
-        HashString
+        HashString,
+        ArrayElement
     }
 }

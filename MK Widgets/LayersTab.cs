@@ -48,6 +48,7 @@ namespace MKEditor.Widgets
             {
                 new MenuItem("New Layer") { OnLeftClick = NewLayer },
                 new MenuItem("Rename Layer") { Shortcut = "F2", OnLeftClick = RenameLayer },
+                new MenuSeparator(),
                 new MenuItem("Toggle Visibility") { Shortcut = "Ctrl+H", OnLeftClick = ToggleVisibilityLayer },
                 new MenuItem("Move Layer Up") { OnLeftClick = MoveLayerUp },
                 new MenuItem("Move Layer Down") { OnLeftClick = MoveLayerDown },

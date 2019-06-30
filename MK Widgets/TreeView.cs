@@ -6,8 +6,10 @@ namespace MKEditor.Widgets
 {
     public class TreeView : Widget
     {
-        public List<TreeNode> Nodes = new List<TreeNode>();
-        public TreeNode SelectedNode;
+        public List<TreeNode> Nodes        { get; protected set; } = new List<TreeNode>();
+        public TreeNode       SelectedNode { get; protected set; }
+
+        public EventHandler<MouseEventArgs> OnSelectedNodeChanged;
 
         public TreeNode NewNode(string Name, List<TreeNode> Nodes = null)
         {
@@ -17,55 +19,61 @@ namespace MKEditor.Widgets
         public TreeView(object Parent, string Name = "treeView")
             : base(Parent, Name)
         {
-            this.Nodes = new List<TreeNode>()
-            {
-                NewNode("Intro"),
-                NewNode("Lappet Town", new List<TreeNode>()
-                {
-                    NewNode("\\PN's house"),
-                    NewNode("Daisy's house"),
-                    NewNode("Pokémon Lab")
-                }),
-                NewNode("Route 1", new List<TreeNode>()
-                {
-                    NewNode("Kurt's house")
-                }),
-                NewNode("Cedolan City", new List<TreeNode>()
-                {
-                    NewNode("Cedolan City Poké Center"),
-                    NewNode("Cedolan Gym"),
-                    NewNode("Pokémon Insitute"),
-                    NewNode("Cedolan City Condo"),
-                    NewNode("Game Corner"),
-                    NewNode("Cedolan Dept. 1F", new List<TreeNode>()
-                    {
-                        NewNode("Cedolan Dept. 2F"),
-                        NewNode("Cedolan Dept. 3F"),
-                        NewNode("Cedolan Dept. 4F"),
-                        NewNode("Cedolan Dept. 5F"),
-                        NewNode("Cedolan Dept. Rooftop"),
-                        NewNode("Cedolan Dept. Elevator"),
-                    })
-                }),
-                NewNode("Route 2"),
-                NewNode("Lerucean Town", new List<TreeNode>()
-                {
-                    NewNode("Lerucean Town Poké Center"),
-                    NewNode("Lerucean Town Mart"),
-                    NewNode("Pokémon Fan Club"),
-                    NewNode("Pokémon Day Care")
-                }),
-                NewNode("Natural Park", new List<TreeNode>()
-                {
-                    NewNode("Natural Park Entrance"),
-                    NewNode("Natural Park Pavillion")
-                })
-            };
+            //this.Nodes = new List<TreeNode>()
+            //{
+            //    NewNode("Intro"),
+            //    NewNode("Lappet Town", new List<TreeNode>()
+            //    {
+            //        NewNode("\\PN's house"),
+            //        NewNode("Daisy's house"),
+            //        NewNode("Pokémon Lab")
+            //    }),
+            //    NewNode("Route 1", new List<TreeNode>()
+            //    {
+            //        NewNode("Kurt's house")
+            //    }),
+            //    NewNode("Cedolan City", new List<TreeNode>()
+            //    {
+            //        NewNode("Cedolan City Poké Center"),
+            //        NewNode("Cedolan Gym"),
+            //        NewNode("Pokémon Insitute"),
+            //        NewNode("Cedolan City Condo"),
+            //        NewNode("Game Corner"),
+            //        NewNode("Cedolan Dept. 1F", new List<TreeNode>()
+            //        {
+            //            NewNode("Cedolan Dept. 2F"),
+            //            NewNode("Cedolan Dept. 3F"),
+            //            NewNode("Cedolan Dept. 4F"),
+            //            NewNode("Cedolan Dept. 5F"),
+            //            NewNode("Cedolan Dept. Rooftop"),
+            //            NewNode("Cedolan Dept. Elevator"),
+            //        })
+            //    }),
+            //    NewNode("Route 2"),
+            //    NewNode("Lerucean Town", new List<TreeNode>()
+            //    {
+            //        NewNode("Lerucean Town Poké Center"),
+            //        NewNode("Lerucean Town Mart"),
+            //        NewNode("Pokémon Fan Club"),
+            //        NewNode("Pokémon Day Care")
+            //    }),
+            //    NewNode("Natural Park", new List<TreeNode>()
+            //    {
+            //        NewNode("Natural Park Entrance"),
+            //        NewNode("Natural Park Pavillion")
+            //    })
+            //};
 
             this.Sprites["selection"] = new Sprite(this.Viewport, new SolidBitmap(205, 24, new Color(0, 120, 215)));
             this.Sprites["list"] = new Sprite(this.Viewport);
             this.WidgetIM.OnMouseDown += MouseDown;
             this.OnWidgetSelect += WidgetSelect;
+        }
+
+        public void SetNodes(List<TreeNode> Nodes)
+        {
+            this.Nodes = Nodes;
+            this.Redraw();
         }
 
         protected override void Draw()
@@ -133,6 +141,7 @@ namespace MKEditor.Widgets
         public override void MouseDown(object sender, MouseEventArgs e)
         {
             base.MouseDown(sender, e);
+            TreeNode oldselected = this.SelectedNode;
             if (this.WidgetIM.Hovering && e.LeftButton && !e.OldLeftButton)
             {
                 int rx = e.X - this.Viewport.X;
@@ -183,6 +192,10 @@ namespace MKEditor.Widgets
                         this.Sprites["selection"].Y = globalindex * 24;
                     }
                 }
+            }
+            if (SelectedNode != oldselected)
+            {
+                if (OnSelectedNodeChanged != null) OnSelectedNodeChanged.Invoke(this, e);
             }
         }
     }

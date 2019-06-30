@@ -27,7 +27,7 @@ namespace MKEditor.Widgets
         protected override void Draw()
         {
             if (this.Sprites["items"].Bitmap != null) this.Sprites["items"].Bitmap.Dispose();
-            this.Sprites["items"].Bitmap = new Bitmap(this.Size);
+            this.Sprites["items"].Bitmap = new Bitmap(CalcSize());
             Font f = Font.Get("Fonts/Quicksand Bold", 14);
             this.Sprites["items"].Bitmap.Unlock();
             this.Sprites["items"].Bitmap.Font = f;
@@ -48,7 +48,6 @@ namespace MKEditor.Widgets
                 }
                 else if (item is MenuSeparator)
                 {
-                    Console.WriteLine(y);
                     this.Sprites["items"].Bitmap.DrawLine(1, y, Size.Width - 2, y, 38, 39, 42);
                     y += 6;
                 }

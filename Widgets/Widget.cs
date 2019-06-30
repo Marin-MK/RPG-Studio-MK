@@ -65,9 +65,11 @@ namespace MKEditor.Widgets
         public EventHandler<EventArgs> OnSelected;
         public EventHandler<EventArgs> OnDeselected;
         public EventHandler<TextInputEventArgs> OnTextInput;
+        public EventHandler<EventArgs> OnPositionChanged;
         public EventHandler<SizeEventArgs> OnSizeChanged;
         public EventHandler<SizeEventArgs> OnParentSizeChanged;
-        public EventHandler<SizeEventArgs> OnChildSizeChanged;
+        public EventHandler<SizeEventArgs> OnChildBoundsChanged;
+        public EventHandler<EventArgs> OnDisposed;
 
         public MinimalHScrollBar ScrollBarX { get; protected set; }
         public MinimalVScrollBar ScrollBarY { get; protected set; }
@@ -92,9 +94,10 @@ namespace MKEditor.Widgets
             this.OnSelected = new EventHandler<EventArgs>(this.WidgetSelected);
             this.OnDeselected = new EventHandler<EventArgs>(this.WidgetDeselected);
             this.OnTextInput = new EventHandler<TextInputEventArgs>(this.TextInput);
+            this.OnPositionChanged = new EventHandler<EventArgs>(this.PositionChanged);
             this.OnSizeChanged = new EventHandler<SizeEventArgs>(this.SizeChanged);
             this.OnParentSizeChanged = new EventHandler<SizeEventArgs>(this.ParentSizeChanged);
-            this.OnChildSizeChanged = new EventHandler<SizeEventArgs>(this.ChildSizeChanged);
+            this.OnChildBoundsChanged = new EventHandler<SizeEventArgs>(this.ChildBoundsChanged);
             this.WidgetIM = new MouseInputManager(this);
             this.WidgetIM.OnRightClick += RightClick_ContextMenu;
         }
@@ -163,12 +166,20 @@ namespace MKEditor.Widgets
         public virtual void Dispose()
         {
             AssertUndisposed();
+            this.Disposed = true;
             this.Viewport.Dispose();
-            this.Widgets.ForEach(w => w.Dispose());
+            for (int i = 0; i < this.Widgets.Count; i++)
+            {
+                if (this.Widgets[i] != null)
+                {
+                    this.Widgets[i].Dispose();
+                    i--;
+                }
+            }
             this.Parent.Widgets.Remove(this);
             this.Viewport = null;
             this.Sprites = null;
-            this.Disposed = true;
+            if (this.OnDisposed != null) this.OnDisposed.Invoke(this, new EventArgs());
         }
 
         private void AssertUndisposed()
@@ -288,6 +299,10 @@ namespace MKEditor.Widgets
         public virtual void WidgetSelected(object sender, EventArgs e) { }
         public virtual void WidgetDeselected(object sender, EventArgs e) { }
         public virtual void TextInput(object sender, TextInputEventArgs e) { }
+        public virtual void PositionChanged(object sender, EventArgs e)
+        {
+            UpdateAutoScroll();
+        }
         public virtual void SizeChanged(object sender, SizeEventArgs e)
         {
             // As size is recalculated here, we first have to make sure the sliders are in
@@ -306,7 +321,7 @@ namespace MKEditor.Widgets
             }
         }
         public virtual void ParentSizeChanged(object sender, SizeEventArgs e) { }
-        public virtual void ChildSizeChanged(object sender, SizeEventArgs e)
+        public virtual void ChildBoundsChanged(object sender, SizeEventArgs e)
         {
             UpdateAutoScroll();
         }
@@ -319,6 +334,7 @@ namespace MKEditor.Widgets
             MaxChildWidth = 0;
             this.Widgets.ForEach(wdgt =>
             {
+                if (!wdgt.Visible) return;
                 int w = wdgt.Size.Width;
                 if (wdgt.Parent is LayoutContainer) w += (wdgt.Parent as LayoutContainer).Position.X;
                 else w += wdgt.Position.X;
@@ -329,6 +345,7 @@ namespace MKEditor.Widgets
             MaxChildHeight = 0;
             this.Widgets.ForEach(w =>
             {
+                if (!w.Visible) return;
                 int h = w.Size.Height;
                 if (w.Parent is LayoutContainer) h += (w.Parent as LayoutContainer).Position.Y;
                 else h += w.Position.Y;
@@ -375,6 +392,10 @@ namespace MKEditor.Widgets
                 if (OldMaxChildHeight - this.Viewport.Height > 0 && this.ScrolledY > OldMaxChildHeight - this.Viewport.Height)
                 {
                     this.ScrolledY = OldMaxChildHeight - this.Viewport.Height;
+                }
+                if (this.ScrolledY > MaxChildHeight - this.Viewport.Height)
+                {
+                    this.ScrolledY = MaxChildHeight - this.Viewport.Height;
                 }
                 ScrollBarY.SetValue((double) this.ScrolledY / (MaxChildHeight - this.Viewport.Height));
                 ScrollBarY.SetSliderSize((double) this.Viewport.Height / MaxChildHeight);
@@ -462,6 +483,7 @@ namespace MKEditor.Widgets
             AssertUndisposed();
             this.Position = p;
             UpdateBounds();
+            this.OnPositionChanged.Invoke(this, new EventArgs());
             return this;
         }
 
@@ -504,7 +526,7 @@ namespace MKEditor.Widgets
                 if (this.Parent is Widget && !(this is AutoHScrollBar) && !(this is AutoVScrollBar))
                 {
                     Widget prnt = this.Parent as Widget;
-                    prnt.OnChildSizeChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));
+                    prnt.OnChildBoundsChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));
                 }
             }
             return this;

@@ -45,29 +45,6 @@ namespace MKEditor
                 .SetBackgroundColor(27, 28, 32)
                 .SetGrid(1, 1, 0, 2);
 
-            Button b = new Button(w).SetText("ContextMenu").SetPosition(4, 4) as Button;
-            b.WidgetIM.OnLeftClick += delegate (object sender, MouseEventArgs e)
-            {
-                ContextMenu cm = new ContextMenu(this);
-                cm.SetPosition(e.X, e.Y);
-                cm.Items = new List<IMenuItem>()
-                {
-                    new MenuItem("Mark as spoiler")
-                    {
-                        OnLeftClick = new EventHandler<MouseEventArgs>(delegate (object sndr, MouseEventArgs ev)
-                        {
-                            Console.WriteLine("Spoiler!");
-                        })
-                    },
-                    new MenuSeparator(),
-                    new MenuItem("Spellcheck") { Checkable = true },
-                    new MenuItem("Languages"),
-                    new MenuSeparator(),
-                    new MenuItem("Paste") { Shortcut = "Ctrl+V" }
-                };
-            };
-            b.SetVisible(false);
-
             // Orange separator
             new Widget(layout)
                 .SetBackgroundColor(255, 191, 31)
@@ -103,7 +80,6 @@ namespace MKEditor
             mapcontainer.AutoScroll = true;
             mapcontainer.SetBackgroundColor(40, 44, 52);
 
-            Map map = Map.CreateTemp();
             MapViewer mv = new MapViewer(mapcontainer);
 
             mv.LayersTab = lt;
@@ -112,9 +88,11 @@ namespace MKEditor
             lt.MapViewer = mv;
             tt.LayersTab = lt;
             tt.MapViewer = mv;
+            mst.MapViewer = mv;
 
+            Map map = null;
+            foreach (Map m in GameData.Maps.Values) { map = m; break; }
             mv.SetMap(map);
-            mv.SetSize(mv.Size.Width + 14, mv.Size.Height + 14);
 
             this.OnMouseDown += UI.MouseDown;
             this.OnMousePress += UI.MousePress;

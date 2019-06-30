@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using ODL;
 
 namespace MKEditor.Widgets
 {
     public class MapSelectTab : Widget
     {
+        public MapViewer MapViewer;
+
         Container allmapcontainer;
         TreeView mapview;
 
@@ -29,6 +32,16 @@ namespace MKEditor.Widgets
 
             mapview = new TreeView(allmapcontainer);
             mapview.SetWidth(205);
+            List<TreeNode> Nodes = new List<TreeNode>();
+            foreach (KeyValuePair<int, Data.Map> kvp in Data.GameData.Maps)
+            {
+                Nodes.Add(new TreeNode() { Object = kvp.Value });
+            }
+            mapview.SetNodes(Nodes);
+            mapview.OnSelectedNodeChanged += delegate (object sender, MouseEventArgs e)
+            {
+                MapViewer.SetMap(mapview.SelectedNode.Object as Data.Map);
+            };
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)

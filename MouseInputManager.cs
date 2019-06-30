@@ -69,6 +69,7 @@ namespace MKEditor
 
         public void MouseDown(MouseEventArgs e)
         {
+            if (!Ready()) return;
             if (!Widget.Visible) return;
             if (OverContextMenu()) return;
             
@@ -98,6 +99,7 @@ namespace MKEditor
 
         public void MousePress(MouseEventArgs e)
         {
+            if (!Ready()) return;
             if (!Widget.Visible) return;
             if (OverContextMenu()) return;
             if (this.OnMousePress != null) this.OnMousePress.Invoke(this, e);
@@ -105,6 +107,7 @@ namespace MKEditor
 
         public void MouseUp(MouseEventArgs e)
         {
+            if (!Ready()) return;
             if (!Widget.Visible) return;
             if (OverContextMenu()) return;
 
@@ -133,6 +136,7 @@ namespace MKEditor
 
         public void MouseWheel(MouseEventArgs e)
         {
+            if (!Ready()) return;
             if (!Widget.Visible) return;
             if (OverContextMenu()) return;
             if (e.WheelY != 0 && this.OnMouseWheel != null) this.OnMouseWheel.Invoke(this, e);
@@ -140,6 +144,7 @@ namespace MKEditor
 
         public void MouseMoving(MouseEventArgs e)
         {
+            if (!Ready()) return;
             if (!Widget.Visible) return;
             if (OverContextMenu()) return;
             bool oldhover = this.Hovering;
@@ -149,6 +154,12 @@ namespace MKEditor
             {
                 this.OnHoverChanged.Invoke(this, e);
             }
+        }
+
+        public bool Ready()
+        {
+            if (this.Area == null) return false;
+            return true;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using ODL;
 
 namespace MKEditor.Data
@@ -13,7 +14,8 @@ namespace MKEditor.Data
         public List<int?> Priorities;
         public List<int?> Tags;
 
-        public Bitmap ResultBitmap;
+        public Bitmap TilesetBitmap;
+        public Bitmap TilesetListBitmap;
 
         public Tileset()
         {
@@ -53,11 +55,36 @@ namespace MKEditor.Data
             this.Tags.AddRange(new int?[maxcount - Tags.Count]);
         }
 
+        public void EnsureBitmap(bool Redraw = false)
+        {
+            if (this.TilesetBitmap == null || Redraw)
+            {
+                if (this.TilesetBitmap != null) this.TilesetBitmap.Dispose();
+                
+                string GfxFolder = Directory.GetParent(GameData.DataPath).FullName + "\\gfx";
+                Bitmap bmp = new Bitmap($"{GfxFolder}\\tilesets\\{this.GraphicName}.png");
+                this.TilesetBitmap = bmp;
+                int tileycount = (int) Math.Floor(bmp.Height / 32d);
+
+                this.TilesetListBitmap = new Bitmap(bmp.Width + 7, bmp.Height + tileycount - 1);
+                this.TilesetListBitmap.Unlock();
+
+                for (int tiley = 0; tiley < tileycount; tiley++)
+                {
+                    for (int tilex = 0; tilex < 8; tilex++)
+                    {
+                        this.TilesetListBitmap.Build(tilex * 32 + tilex, tiley * 32 + tiley, bmp, tilex * 32, tiley * 32, 32, 32);
+                    }
+                }
+                this.TilesetListBitmap.Lock();
+            }
+        }
+
         public static Tileset GetTileset()
         {
             Tileset t = new Tileset();
             t.Name = "Common";
-            t.GraphicName = "common.png";
+            t.GraphicName = "common";
             t.Passabilities = new List<Passability>()
             {
                 Passability.All, Passability.All, Passability.All, Passability.All, Passability.All, Passability.All, Passability.All, Passability.All,
@@ -72,20 +99,7 @@ namespace MKEditor.Data
             t.Priorities = new List<int?>();
             t.Tags = new List<int?>();
 
-            Bitmap bmp = new Bitmap(t.GraphicName);
-            int tileycount = (int) Math.Floor(bmp.Height / 32d);
-
-            t.ResultBitmap = new Bitmap(bmp.Width + 7, bmp.Height + tileycount - 1);
-            t.ResultBitmap.Unlock();
-
-            for (int tiley = 0; tiley < tileycount; tiley++)
-            {
-                for (int tilex = 0; tilex < 8; tilex++)
-                {
-                    t.ResultBitmap.Build(tilex * 32 + tilex, tiley * 32 + tiley, bmp, tilex * 32, tiley * 32, 32, 32);
-                }
-            }
-            t.ResultBitmap.Lock();
+            t.EnsureBitmap();
 
             return t;
         }

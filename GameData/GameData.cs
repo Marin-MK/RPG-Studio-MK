@@ -12,7 +12,7 @@ namespace MKEditor.Data
     {
         public static ScriptEngine Engine;
         public static string DataPath;
-        public static List<Map> Maps = new List<Map>();
+        public static Dictionary<int, Map> Maps = new Dictionary<int, Map>();
         public static List<Tileset> Tilesets = new List<Tileset>();
         public static Dictionary<string, Species> Species = new Dictionary<string, Species>();
 
@@ -24,6 +24,8 @@ namespace MKEditor.Data
             Engine.Execute(Utilities.GetRubyRequirements());
             LoadSpecies();
             LoadTilesets();
+            LoadMaps(); // TODO: Event commands/conditions
+            // TODO: Map Connections
         }
 
         public static void LoadFile(string Filename, string GlobalVar)
@@ -45,21 +47,43 @@ namespace MKEditor.Data
             {
                 Species[key] = new Species($"$species[:{key}]");
             }
-            GameData.Exec($"$species = nil");
+            Exec($"$species = nil");
         }
 
         public static void LoadTilesets()
         {
             LoadFile($"tilesets.mkd", "$tilesets");
-            int tilesets = GameData.Exec($"$tilesets.size");
+            int tilesets = Exec($"$tilesets.size");
             for (int i = 0; i < tilesets; i++)
             {
-                bool nil = GameData.Exec($"$tilesets[{i}].nil?");
+                bool nil = Exec($"$tilesets[{i}].nil?");
                 if (nil) Tilesets.Add(null);
                 else
                 {
                     Tilesets.Add(new Tileset($"$tilesets[{i}]"));
                 }
+            }
+            Exec("$tilesets = nil");
+        }
+
+        public static void LoadMaps()
+        {
+            List<int> maps = Array.ConvertAll(
+                (object[]) Exec(
+                    $"Dir.glob(\"{DataPath}/maps/*\")" +
+                    $".select {{ |f| f =~ /#{{\"{DataPath}/maps/\"}}map\\d+.mkd/ }}" +
+                    $".map {{ |f| f.sub(\"{DataPath}/maps/map\", \"\")" +
+                                 $".sub(/.mkd/, \"\")" +
+                    $"}}").ToArray(),
+                x => Convert.ToInt32(x.ToString())
+            ).ToList();
+            for (int i = 0; i < maps.Count; i++)
+            {
+                string n = maps[i].ToString();
+                if (n.Length == 1) n = '0' + n;
+                if (n.Length == 2) n = '0' + n;
+                LoadFile($"maps/map{n}.mkd", $"$map{n}");
+                Maps[maps[i]] = new Map($"$map{n}");
             }
         }
     }

@@ -23,32 +23,26 @@ namespace MKEditor.Widgets
             : base(Parent, Name)
         {
             Cursor = new CursorWidget(this);
-            Sprites["bg"] = new Sprite(this.Viewport, new SolidBitmap(this.Size, Color.BLACK));
+            this.SetBackgroundColor(Color.BLACK);
             this.WidgetIM.OnMouseMoving += this.MouseMoving;
             this.WidgetIM.OnMouseDown += this.MouseDown;
             this.OnWidgetSelect += WidgetSelect;
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
-        {
-            base.SizeChanged(sender, e);
-            Sprites["bg"].Bitmap.Unlock();
-            (Sprites["bg"].Bitmap as SolidBitmap).SetSize(this.Size.Width - 14, this.Size.Height - 14);
-            Sprites["bg"].Bitmap.Lock();
-        }
-
         public void SetMap(Data.Map Map)
         {
             this.Map = Map;
+            TilesetTab.SetTilesets(Map.TilesetIDs);
             MTileset = Data.Tileset.GetTileset();
             this.CreateLayerBitmaps();
+            this.LayersTab.CreateLayers();
         }
 
         public void CreateLayerBitmaps()
         {
             foreach (string s in this.Sprites.Keys)
             {
-                if (s != "bg") this.Sprites[s].Dispose();
+                if (s != "_bg") this.Sprites[s].Dispose();
             }
             int layercount = this.Map.Layers.Count;
             for (int i = 0; i < layercount; i++)
@@ -56,26 +50,29 @@ namespace MKEditor.Widgets
                 this.Sprites[i.ToString()] = new Sprite(this.Viewport, this.Map.Width * 32, this.Map.Height * 32);
                 this.Sprites[i.ToString()].Bitmap.Unlock();
             }
-            Data.Tileset t = Data.Tileset.GetTileset();
-            Bitmap tbmp = new Bitmap(t.GraphicName);
+            // Iterate through all the layers
             for (int layer = 0; layer < this.Map.Layers.Count; layer++)
             {
                 Bitmap layerbmp = this.Sprites[layer.ToString()].Bitmap as Bitmap;
+                // Iterate through all vertical tiles
                 for (int y = 0; y < this.Map.Height; y++)
                 {
+                    // Iterate through all horizontal tiles
                     for (int x = 0; x < this.Map.Width; x++)
                     {
+                        // Each individual tile
                         if (this.Map.Layers[layer] == null || this.Map.Layers[layer].Tiles == null ||
                             y * this.Map.Width + x >= this.Map.Layers[layer].Tiles.Count ||
                             this.Map.Layers[layer].Tiles[y * this.Map.Width + x] == null) continue;
                         int tileset_index = this.Map.Layers[layer].Tiles[y * this.Map.Width + x].TilesetIndex;
-                        int tileset_id = this.Map.Tilesets[tileset_index];
+                        int tileset_id = this.Map.TilesetIDs[tileset_index];
+                        Bitmap tilesetimage = Data.GameData.Tilesets[tileset_id].TilesetBitmap;
                         int mapx = x * 32;
                         int mapy = y * 32;
                         int tile_id = this.Map.Layers[layer].Tiles[y * this.Map.Width + x].TileID;
                         int tilesetx = tile_id % 8;
                         int tilesety = (int) Math.Floor(tile_id / 8d);
-                        layerbmp.Build(new Rect(mapx, mapy, 32, 32), tbmp, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
+                        layerbmp.Build(new Rect(mapx, mapy, 32, 32), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
                     }
                 }
             }
@@ -84,7 +81,6 @@ namespace MKEditor.Widgets
                 this.Sprites[i.ToString()].Bitmap.Lock();
             }
             this.SetSize(this.Map.Width * 32, this.Map.Height * 32);
-            this.LayersTab.CreateLayers();
         }
 
         public override void MouseMoving(object sender, MouseEventArgs e)
@@ -96,14 +92,23 @@ namespace MKEditor.Widgets
             if (Parent.ScrollBarY != null && (Parent.ScrollBarY.Dragging || Parent.ScrollBarY.Hovering)) return;
             int rx = e.X - this.Viewport.X;
             int ry = e.Y - this.Viewport.Y;
-            if (rx < 0 || ry < 0 || rx >= this.Viewport.Width || ry >= this.Viewport.Height) return; // Off the widget
+            if (rx < 0 || ry < 0 || rx >= this.Viewport.Width || ry >= this.Viewport.Height) // Off the widget
+            {
+                Cursor.SetVisible(false);
+                return;
+            }
             int movedx = this.Position.X - this.ScrolledPosition.X;
             int movedy = this.Position.Y - this.ScrolledPosition.Y;
             rx += movedx;
             ry += movedy;
             int tilex = (int) Math.Floor(rx / 32d);
             int tiley = (int) Math.Floor(ry / 32d);
-            if (tilex >= this.Map.Width || tilex < 0 || tiley >= this.Map.Height || tiley < 0) return;
+            if (tilex >= this.Map.Width || tilex < 0 || tiley >= this.Map.Height || tiley < 0)
+            {
+                Cursor.SetVisible(false);
+                return;
+            }
+            Cursor.SetVisible(true);
             int cx = tilex * 32 + this.ScrolledX;
             int cy = tiley * 32 + this.ScrolledY;
             RelativeMouseX = cx;
@@ -183,10 +188,12 @@ namespace MKEditor.Widgets
                         TileID = TileID
                     };
 
+                    this.Sprites[Layer.ToString()].Bitmap.FillRect(MapTileX * 32, MapTileY * 32, 32, 32, Color.ALPHA);
+
                     this.Sprites[Layer.ToString()].Bitmap.Build(
                         MapTileX * 32, MapTileY * 32,
-                        MTileset.ResultBitmap,
-                        new Rect(this.TilesetTab.TileX * 33, this.TilesetTab.TileY * 33, 32, 32)
+                        Data.GameData.Tilesets[Map.TilesetIDs[this.TilesetTab.TilesetIndex]].TilesetBitmap,
+                        new Rect(this.TilesetTab.TileX * 32, this.TilesetTab.TileY * 32, 32, 32)
                     );
                 }
 

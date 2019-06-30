@@ -20,6 +20,11 @@ Stats = Struct.new(:hp, :attack, :defense, :spatk, :spdef, :speed)
 
 module MKD
   class Tileset; end
+  class Map; end
+  class Event
+    class Page; end
+    class Settings; end
+  end
 end
 
 def validate_mkd(data, filename = nil)
