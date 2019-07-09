@@ -6,10 +6,9 @@ namespace MKEditor.Widgets
 {
     public class TilesetTab : Widget
     {
-        public Data.Tileset  Tileset        { get; protected set; }
-        public int          TilesetIndex    { get; protected set; } = 0;
-        public int          TileX           { get; protected set; } = 0;
-        public int          TileY           { get; protected set; } = 0;
+        public int           TilesetIndex    { get; protected set; } = 0;
+        public int           TileX           { get; protected set; } = 0;
+        public int           TileY           { get; protected set; } = 0;
 
         public LayersTab LayersTab;
         public MapViewer MapViewer;
@@ -60,6 +59,10 @@ namespace MKEditor.Widgets
 
         public void SetTilesets(List<int> TilesetIDs)
         {
+            Cursor.SetPosition(20, 33);
+            TilesetIndex = 0;
+            TileX = 0;
+            TileY = 0;
             for (int i = 0; i < this.TilesetContainers.Count; i++)
             {
                 this.TilesetContainers[i].Dispose();
@@ -83,26 +86,6 @@ namespace MKEditor.Widgets
                 image.SetSize(tileset.TilesetListBitmap.Width, tileset.TilesetListBitmap.Height);
                 TilesetImages.Add(image);
             }
-        }
-
-        public void AddTileset(Data.Tileset Tileset, int Index)
-        {
-            this.Tileset = Tileset;
-            if (Index >= this.TilesetContainers.Count)
-            {
-                Index = this.TilesetContainers.Count;
-                CollapsibleContainer c = new CollapsibleContainer(TilesetStackPanel);
-                c.SetText(this.Tileset.Name);
-                c.SetMargin(0, 0, 0, 8);
-                c.OnCollapsedChanged += delegate (object sender, EventArgs e) { UpdateCursorPosition(); };
-                TilesetContainers.Add(c);
-                PictureBox t = new PictureBox(c);
-                t.SetPosition(20, 33);
-                TilesetImages.Add(t);
-            }
-            TilesetImages[Index].Sprite.Bitmap = this.Tileset.TilesetBitmap;
-            TilesetImages[Index].SetSize(TilesetImages[Index].Sprite.Bitmap.Width, TilesetImages[Index].Sprite.Bitmap.Height);
-            TilesetContainers[Index].SetSize(AllTilesetContainer.Size.Width - 13, TilesetImages[Index].Size.Height + TilesetImages[Index].Position.Y);
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)

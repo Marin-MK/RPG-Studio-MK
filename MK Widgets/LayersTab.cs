@@ -46,7 +46,7 @@ namespace MKEditor.Widgets
             layerstack = new VStackPanel(layercontainer);
             layerstack.SetContextMenuList(new List<IMenuItem>()
             {
-                new MenuItem("New Layer") { OnLeftClick = NewLayer },
+                new MenuItem("New Layer") { OnLeftClick = NewLayer, IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = false; } },
                 new MenuItem("Rename Layer") { Shortcut = "F2", OnLeftClick = RenameLayer },
                 new MenuSeparator(),
                 new MenuItem("Toggle Visibility") { Shortcut = "Ctrl+H", OnLeftClick = ToggleVisibilityLayer },

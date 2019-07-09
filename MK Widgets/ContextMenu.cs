@@ -40,9 +40,18 @@ namespace MKEditor.Widgets
                 IMenuItem item = this.Items[i];
                 if (item is MenuItem)
                 {
-                    string text = (item as MenuItem).Text;
+                    MenuItem menuitem = item as MenuItem;
+                    string text = menuitem.Text;
                     Size s = f.TextSize(text);
-                    this.Sprites["items"].Bitmap.DrawText(text, 15, y, Color.WHITE);
+                    Color c = Color.WHITE;
+                    if (menuitem.IsClickable != null)
+                    {
+                        ConditionEventArgs e = new ConditionEventArgs();
+                        menuitem.IsClickable.Invoke(this, e);
+                        if (!e.ConditionValue) c = new Color(64, 64, 64);
+                        menuitem.LastClickable = e.ConditionValue;
+                    }
+                    this.Sprites["items"].Bitmap.DrawText(text, 15, y, c);
                     y += 20;
                     if (15 + s.Width >= this.Size.Width) this.SetWidth(15 + s.Width + 4);
                 }
@@ -96,15 +105,20 @@ namespace MKEditor.Widgets
         {
             this.Window.UI.OverContextMenu = this;
             base.HoverChanged(sender, e);
+            this.MouseMoving(sender, e);
         }
 
         public override void MouseMoving(object sender, MouseEventArgs e)
         {
             base.MouseMoving(sender, e);
-            if (!WidgetIM.Hovering) return;
             int rx = e.X - this.Viewport.X;
             int ry = e.Y - this.Viewport.Y;
-            if (rx == 0 || rx == this.Size.Width - 1) return;
+            if (!WidgetIM.Hovering || rx < 0 || rx > this.Size.Width)
+            {
+                this.Sprites["selection"].Visible = false;
+                this.SelectedItem = null;
+                return;
+            }
             int y = 0;
             for (int i = 0; i < this.Items.Count; i++)
             {
@@ -128,13 +142,16 @@ namespace MKEditor.Widgets
         public override void MouseDown(object sender, MouseEventArgs e)
         {
             base.MouseDown(sender, e);
-            if (WidgetIM.Hovering && this.SelectedItem != null)
+            if (WidgetIM.Hovering && this.SelectedItem != null && this.SelectedItem is MenuItem)
             {
-                if ((SelectedItem as MenuItem).OnLeftClick != null)
+                if ((this.SelectedItem as MenuItem).LastClickable)
                 {
-                    (SelectedItem as MenuItem).OnLeftClick.Invoke(sender, e);
+                    if ((SelectedItem as MenuItem).OnLeftClick != null)
+                    {
+                        (SelectedItem as MenuItem).OnLeftClick.Invoke(sender, e);
+                    }
+                    this.Dispose();
                 }
-                this.Dispose();
             }
         }
     }
