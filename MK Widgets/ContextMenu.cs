@@ -12,29 +12,50 @@ namespace MKEditor.Widgets
         public ContextMenu(object Parent, string Name = "contextMenu")
             : base(Parent, Name)
         {
-            this.Sprites["bg"] = new RectSprite(this.Viewport, this.Size, new Color(255, 191, 31), new Color(24, 25, 28));
             this.SetZIndex(999);
-            this.SetWidth(200);
-            this.Sprites["selection"] = new Sprite(this.Viewport, new SolidBitmap(this.Size.Width - 2, 20, new Color(4, 4, 5)));
-            this.Sprites["selection"].X = 1;
+            this.SetWidth(260);
+            this.Sprites["bg"] = new Sprite(this.Viewport);
+            this.Sprites["selection"] = new Sprite(this.Viewport, new Bitmap(this.Size.Width, 31));
             this.Sprites["selection"].Visible = false;
             this.Sprites["items"] = new Sprite(this.Viewport);
+            this.Sprites["items"].Z = 1;
             this.WidgetIM.OnHoverChanged += HoverChanged;
             this.WidgetIM.OnMouseMoving += MouseMoving;
             this.WidgetIM.OnMouseDown += MouseDown;
         }
 
+        public void SetItems(List<IMenuItem> Items)
+        {
+            this.Items = new List<IMenuItem>(Items);
+            this.SetSize(CalcSize());
+        }
+
         protected override void Draw()
         {
+            if (this.Sprites["bg"].Bitmap != null) this.Sprites["bg"].Bitmap.Dispose();
+            Color bgc = new Color(47, 49, 54);
+            this.Sprites["bg"].Bitmap = new Bitmap(this.Size);
+            this.Sprites["bg"].Bitmap.Unlock();
+            this.Sprites["bg"].Bitmap.FillQuadrant(9, 9, 10, Quadrant.TopLeft, bgc);
+            this.Sprites["bg"].Bitmap.FillQuadrant(this.Size.Width - 10, 9, 10, Quadrant.TopRight, bgc);
+            this.Sprites["bg"].Bitmap.FillQuadrant(9, this.Size.Height - 10, 10, Quadrant.BottomLeft, bgc);
+            this.Sprites["bg"].Bitmap.FillQuadrant(this.Size.Width - 10, this.Size.Height - 10, 10, Quadrant.BottomRight, bgc);
+
+            this.Sprites["bg"].Bitmap.FillRect(10, 0, this.Size.Width - 20, this.Size.Height, bgc);
+            this.Sprites["bg"].Bitmap.FillRect(0, 10, 10, this.Size.Height - 20, bgc);
+            this.Sprites["bg"].Bitmap.FillRect(this.Size.Width - 10, 10, 10, this.Size.Height - 20, bgc);
+
+            this.Sprites["bg"].Bitmap.Lock();
+
             if (this.Sprites["items"].Bitmap != null) this.Sprites["items"].Bitmap.Dispose();
             this.Sprites["items"].Bitmap = new Bitmap(CalcSize());
-            Font f = Font.Get("Fonts/Quicksand Bold", 14);
+            Font f = Font.Get("Fonts/Ubuntu-B", 13);
+            Font fa = Font.Get("Fonts/FontAwesome Solid", 13);
             this.Sprites["items"].Bitmap.Unlock();
-            this.Sprites["items"].Bitmap.Font = f;
 
             int oldwidth = Size.Width;
             int oldheight = Size.Height;
-            int y = 5;
+            int y = 0;
             for (int i = 0; i < this.Items.Count; i++)
             {
                 IMenuItem item = this.Items[i];
@@ -48,17 +69,23 @@ namespace MKEditor.Widgets
                     {
                         ConditionEventArgs e = new ConditionEventArgs();
                         menuitem.IsClickable.Invoke(this, e);
-                        if (!e.ConditionValue) c = new Color(64, 64, 64);
+                        if (!e.ConditionValue) c = new Color(131, 137, 151);
                         menuitem.LastClickable = e.ConditionValue;
                     }
-                    this.Sprites["items"].Bitmap.DrawText(text, 15, y, c);
-                    y += 20;
-                    if (15 + s.Width >= this.Size.Width) this.SetWidth(15 + s.Width + 4);
+                    if (menuitem.Icon != Icon.NONE)
+                    {
+                        this.Sprites["items"].Bitmap.Font = fa;
+                        this.Sprites["items"].Bitmap.DrawGlyph((char) menuitem.Icon, 9, y + 8, c);
+                    }
+                    this.Sprites["items"].Bitmap.Font = f;
+                    this.Sprites["items"].Bitmap.DrawText(text, 30, y + 7, c);
+                    y += 31;
+                    if (30 + s.Width >= this.Size.Width) this.SetWidth(30 + s.Width + 4);
                 }
                 else if (item is MenuSeparator)
                 {
                     this.Sprites["items"].Bitmap.DrawLine(1, y, Size.Width - 2, y, 38, 39, 42);
-                    y += 6;
+                    y += 1;
                 }
             }
 
@@ -71,19 +98,19 @@ namespace MKEditor.Widgets
 
         public Size CalcSize()
         {
-            int w = 200;
-            int h = 5;
-            Font f = Font.Get("Fonts/Quicksand Bold", 16);
+            int w = 260;
+            int h = 0;
+            Font f = Font.Get("Fonts/Ubuntu-B", 13);
             for (int i = 0; i < this.Items.Count; i++)
             {
                 IMenuItem item = this.Items[i];
                 if (item is MenuSeparator)
-                    h += 6;
+                    h += 1;
                 else
                 {
-                    h += 20;
+                    h += 31;
                     Size s = f.TextSize((item as MenuItem).Text);
-                    if (15 + s.Width >= w) w = 15 + s.Width + 4;
+                    if (30 + s.Width >= w) w = 30 + s.Width + 4;
                 }
             }
             return new Size(w, h);
@@ -97,7 +124,6 @@ namespace MKEditor.Widgets
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
-            (this.Sprites["bg"] as RectSprite).SetSize(this.Size);
             base.SizeChanged(sender, e);
         }
 
@@ -122,7 +148,7 @@ namespace MKEditor.Widgets
             int y = 0;
             for (int i = 0; i < this.Items.Count; i++)
             {
-                y += (Items[i] is MenuSeparator) ? 6 : 20;
+                y += (Items[i] is MenuSeparator) ? 1 : 31;
                 if (ry > y) continue;
                 if (this.Items[i] is MenuSeparator)
                 {
@@ -131,8 +157,30 @@ namespace MKEditor.Widgets
                 }
                 else
                 {
+                    this.Sprites["selection"].Bitmap.Unlock();
+                    this.Sprites["selection"].Bitmap.Clear();
+                    Color c = new Color(79, 82, 91);
+                    if (i == 0)
+                    {
+                        this.Sprites["selection"].Bitmap.FillQuadrant(9, 9, 10, Quadrant.TopLeft, c);
+                        this.Sprites["selection"].Bitmap.FillQuadrant(this.Size.Width - 10, 9, 10, Quadrant.TopRight, c);
+                        this.Sprites["selection"].Bitmap.FillRect(10, 0, this.Size.Width - 20, 10, c);
+                        this.Sprites["selection"].Bitmap.FillRect(0, 10, this.Size.Width, 21, c);
+                    }
+                    else if (i == this.Items.Count - 1)
+                    {
+                        this.Sprites["selection"].Bitmap.FillQuadrant(9, 21, 10, Quadrant.BottomLeft, c);
+                        this.Sprites["selection"].Bitmap.FillQuadrant(this.Size.Width - 10, 21, 10, Quadrant.BottomRight, c);
+                        this.Sprites["selection"].Bitmap.FillRect(10, 21, this.Size.Width - 20, 10, c);
+                        this.Sprites["selection"].Bitmap.FillRect(0, 0, this.Size.Width, 21, c);
+                    }
+                    else
+                    {
+                        this.Sprites["selection"].Bitmap.FillRect(0, 0, this.Size.Width, 31, c);
+                    }
+                    this.Sprites["selection"].Bitmap.Lock();
                     this.Sprites["selection"].Visible = true;
-                    this.Sprites["selection"].Y = y - 18;
+                    this.Sprites["selection"].Y = y - 31;
                     this.SelectedItem = Items[i];
                 }
                 break;

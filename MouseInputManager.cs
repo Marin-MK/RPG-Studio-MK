@@ -22,7 +22,7 @@ namespace MKEditor
         public EventHandler<MouseEventArgs> OnMouseWheel;
         public EventHandler<MouseEventArgs> OnHoverChanged;
 
-        private Rect Area;
+        public Rect Area;
 
         private bool _ClickedLeft = false;
         public bool ClickedLeft { get { return Widget.Visible ? _ClickedLeft : false; } set { _ClickedLeft = value; } }

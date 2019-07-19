@@ -9,7 +9,7 @@ namespace MKEditor.Widgets
         public string    Text          { get; protected set; }
         public bool      LayerVisible  { get; protected set; } = true;
         public bool      LayerSelected { get; protected set; } = false;
-        public int       LayerIndex    { get; protected set; }
+        public int       LayerIndex    { get; set; }
         public MapViewer MapViewer     { get { return (Parent.Parent.Parent.Parent as LayersTab).MapViewer; } }
 
         private bool RedrawText = true;
@@ -18,18 +18,17 @@ namespace MKEditor.Widgets
 
         MouseInputManager VisibleIM;
 
-        public LayerWidget(object Parent, string Name = "layerWidget")
-            : base(Parent, Name)
+        public LayerWidget(object Parent, string Name = "layerWidget", int Index = -1)
+            : base(Parent, Name, Index)
         {
-            this.SetSize(263, 32);
-            this.LayerIndex = this.Parent.Parent.Widgets.FindAll(w => (w as LayoutContainer).Widget is LayerWidget).Count;
-            this.SetBackgroundColor(this.LayerIndex % 2 == 0 ? new Color(36, 38, 41) : new Color(48, 50, 53));
-            this.Text = $"Layer {6 - LayerIndex}";
+            this.SetSize(293, 32);
+            this.Sprites["bar"] = new Sprite(this.Viewport, new SolidBitmap(this.Size.Width - 30, 32));
+            this.Sprites["bar"].X = 30;
             this.Sprites["text"] = new Sprite(this.Viewport);
-            this.Sprites["text"].X = 44;
-            this.Sprites["text"].Y = 9;
+            this.Sprites["text"].X = 40;
+            this.Sprites["text"].Y = 8;
             this.Sprites["visible"] = new Sprite(this.Viewport);
-            this.Sprites["visible"].X = 10;
+            this.Sprites["visible"].X = 5;
             this.Sprites["visible"].Y = 9;
             this.VisibleIM = new MouseInputManager(this);
             this.VisibleIM.OnLeftClick += LayerVisibleClicked;
@@ -52,8 +51,8 @@ namespace MKEditor.Widgets
         {
             if (this.LayerVisible != Visible)
             {
-                if (Visible) this.Sprites["visible"].X = 10;
-                else this.Sprites["visible"].X = 9;
+                if (Visible) this.Sprites["visible"].X = 5;
+                else this.Sprites["visible"].X = 4;
                 this.LayerVisible = Visible;
                 this.RedrawVisible = true;
                 this.MapViewer.Sprites[(this.MapViewer.Map.Layers.Count - LayerIndex).ToString()].Visible = this.LayerVisible;
@@ -74,14 +73,18 @@ namespace MKEditor.Widgets
                         if (lw != this) lw.SetLayerSelected(false);
                     }
                 }
+                this.Sprites["bar"].Bitmap.Unlock();
                 if (this.LayerSelected)
                 {
-                    this.SetBackgroundColor(new Color(0, 120, 215));
+                    (this.Sprites["bar"].Bitmap as SolidBitmap).SetColor(new Color(255, 168, 54));
+                    this.Sprites["text"].Color = Color.BLACK;
                 }
                 else
                 {
-                    this.SetBackgroundColor(this.LayerIndex % 2 == 0 ? new Color(36, 38, 41) : new Color(48, 50, 53));
+                    (this.Sprites["bar"].Bitmap as SolidBitmap).SetColor(Color.ALPHA);
+                    this.Sprites["text"].Color = Color.WHITE;
                 }
+                this.Sprites["bar"].Bitmap.Lock();
             }
         }
 
@@ -90,7 +93,6 @@ namespace MKEditor.Widgets
             if (this.LayerIndex != Index)
             {
                 this.LayerIndex = Index;
-                this.SetBackgroundColor(this.LayerIndex % 2 == 0 ? new Color(36, 38, 41) : new Color(48, 50, 53));
             }
         }
 
@@ -98,10 +100,10 @@ namespace MKEditor.Widgets
         {
             int DiffX = this.Parent.AdjustedPosition.X;
             int DiffY = this.Parent.AdjustedPosition.Y;
-            int x = this.Viewport.X + 6 - DiffX;
-            int y = this.Viewport.Y + 9 - DiffY;
-            int w = 26 - Parent.AdjustedSize.Width;
-            int h = 24 - Parent.AdjustedSize.Height;
+            int x = this.Viewport.X - DiffX;
+            int y = this.Viewport.Y - DiffY + 4;
+            int w = 30 - Parent.AdjustedSize.Width;
+            int h = 28 - Parent.AdjustedSize.Height;
             if (x < this.Viewport.X) { w -= this.Viewport.X - x; x = this.Viewport.X; }
             if (y < this.Viewport.Y) { h -= this.Viewport.Y - y; y = this.Viewport.Y; }
             if (this.Viewport.Width < 0) w = 0;
@@ -115,7 +117,7 @@ namespace MKEditor.Widgets
         {
             if (this.RedrawText)
             {
-                Font f = Font.Get("Fonts/Quicksand Bold", 16);
+                Font f = Font.Get("Fonts/Ubuntu-R", 16);
                 Size s = f.TextSize(this.Text);
                 if (this.Sprites["text"].Bitmap != null) this.Sprites["text"].Bitmap.Dispose();
                 this.Sprites["text"].Bitmap = new Bitmap(s);

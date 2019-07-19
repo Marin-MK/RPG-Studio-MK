@@ -15,6 +15,8 @@ namespace MKEditor
         {
             GameData.Initialize("D:\\Desktop\\MK\\MK\\data");
 
+            Widget.Setup();
+
             this.SetSize(1080, 720);
 
             this.Initialize();
@@ -33,31 +35,37 @@ namespace MKEditor
             layout.SetColumns(
                 new GridSize(234, Unit.Pixels),
                 new GridSize(1),
-                new GridSize(333, Unit.Pixels)
+                new GridSize(2, Unit.Pixels),
+                new GridSize(314, Unit.Pixels)
             );
             // Header
             new Widget(layout)
                 .SetBackgroundColor(40, 44, 52)
-                .SetGrid(0, 0, 0, 2);
+                .SetGrid(0, 0, 0, 3);
 
             // Toolbar
             Widget w = new Widget(layout)
                 .SetBackgroundColor(27, 28, 32)
-                .SetGrid(1, 1, 0, 2);
+                .SetGrid(1, 1, 0, 3);
 
             // Orange separator
             new Widget(layout)
                 .SetBackgroundColor(255, 191, 31)
-                .SetGrid(2, 2, 0, 2);
+                .SetGrid(2, 2, 0, 3);
 
             // Left sidebar
             MapSelectTab mst = new MapSelectTab(layout);
             mst.SetGrid(3, 0);
             mst.SetBackgroundColor(27, 28, 32);
 
+            // Black separator
+            new Widget(layout)
+                .SetGrid(3, 2)
+                .SetBackgroundColor(Color.BLACK);
+
             // Right sidebar
-            Grid rightcontainer = new Grid(layout).SetGrid(3, 2) as Grid;
-            rightcontainer.SetRows(new GridSize(2), new GridSize(4, Unit.Pixels), new GridSize(1));
+            Grid rightcontainer = new Grid(layout).SetGrid(3, 3) as Grid;
+            rightcontainer.SetRows(new GridSize(2), new GridSize(2, Unit.Pixels), new GridSize(1));
             rightcontainer.SetColumns(new GridSize(1));
             rightcontainer.SetBackgroundColor(40, 44, 52);
 
@@ -66,13 +74,12 @@ namespace MKEditor
 
             // Fixed empty space in right sidebar
             new Widget(rightcontainer)
-                .SetBackgroundColor(40, 44, 52)
+                .SetBackgroundColor(Color.BLACK)
                 .SetGrid(1, 0);
 
             // Layers part of right sidebar
             LayersTab lt = new LayersTab(rightcontainer);
             lt.SetGrid(2, 0);
-            lt.SetBackgroundColor(27, 28, 32);
 
             // Center map viewer
             Container mapcontainer = new Container(layout);

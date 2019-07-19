@@ -17,6 +17,7 @@ namespace MKEditor.Widgets
         {
             this.Sprites["text"] = new Sprite(this.Viewport);
             this.Sprites["text"].X = 20;
+            this.Sprites["text"].Y = -3;
             this.Sprites["line"] = new Sprite(this.Viewport);
             this.Sprites["line"].X = 20;
             this.Sprites["line"].Y = 19;
@@ -43,7 +44,7 @@ namespace MKEditor.Widgets
             if (this.Sprites["text"].Bitmap != null) this.Sprites["text"].Bitmap.Dispose();
             if (this.Text != null)
             {
-                Font f = Font.Get("Fonts/Quicksand Bold", 16);
+                Font f = Font.Get("Fonts/Ubuntu-B", 16);
                 Size s = f.TextSize(this.Text);
                 this.Sprites["text"].Bitmap = new Bitmap(s);
                 this.Sprites["text"].Bitmap.Unlock();

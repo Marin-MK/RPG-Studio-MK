@@ -6,6 +6,14 @@ namespace MKEditor.Widgets
 {
     public class Widget : IDisposable, IContainer
     {
+        public static Bitmap IconSheet;
+
+        public static void Setup()
+        {
+            IconSheet = new Bitmap("icons.png");
+        }
+
+
         public string                       Name;
         public Viewport                     Viewport         { get; set; }
         public Size                         Size             { get; protected set; } = new Size(50, 50);
@@ -31,6 +39,7 @@ namespace MKEditor.Widgets
         public List<Shortcut>               Shortcuts        { get; protected set; } = new List<Shortcut>();
 
         public  bool   AutoScroll        = false;
+        public  bool   ShowScrollBars    = false;
         public  int    ScrolledX         { get; set; } = 0;
         public  int    ScrolledY         { get; set; } = 0;
         public  Point  ScrolledPosition
@@ -74,15 +83,16 @@ namespace MKEditor.Widgets
         public MinimalHScrollBar ScrollBarX { get; protected set; }
         public MinimalVScrollBar ScrollBarY { get; protected set; }
 
-        public Widget(object Parent, string Name = "widget")
+        public Widget(object Parent, string Name = "widget", int Index = -1)
         {
             if (Parent is ILayout && !(this is LayoutContainer))
             {
-                (Parent as Widget).Add(this);
+                if (Parent is VStackPanel && Index != -1) (Parent as VStackPanel).Insert(Index, this);
+                else (Parent as Widget).Add(this);
             }
             else
             {
-                this.SetParent(Parent);
+                this.SetParent(Parent, Index);
                 this.Viewport = new Viewport(this.Window.Renderer, 0, 0, this.Size);
             }
             this.Name = this.Parent.GetName(Name);
@@ -102,7 +112,7 @@ namespace MKEditor.Widgets
             this.WidgetIM.OnRightClick += RightClick_ContextMenu;
         }
 
-        public void SetParent(object Parent)
+        public void SetParent(object Parent, int Index = -1)
         {
             if (this.Parent != null) this.Parent.Remove(this);
             if (Parent is WidgetWindow)
@@ -120,7 +130,8 @@ namespace MKEditor.Widgets
                 this.Window = (Parent as Widget).Window;
                 this.Parent = Parent as IContainer;
             }
-            this.Parent.Add(this);
+            if (Index != -1 && this.Parent is VStackPanel) (this.Parent as VStackPanel).Insert(Index, this);
+            else this.Parent.Add(this);
         }
 
         public void SetVisible(bool Visible)
@@ -128,11 +139,16 @@ namespace MKEditor.Widgets
             if (this.Visible != Visible)
             {
                 this.Visible = Visible;
-                foreach (ISprite s in this.Sprites.Values)
-                {
-                    s.Visible = this.Visible;
-                }
+                this.Viewport.Visible = Visible;
+                this.Widgets.ForEach(w => w.SetVisible(Visible));
             }
+        }
+
+        public bool IsVisible()
+        {
+            if (!this.Visible) return false;
+            if (Parent is Widget) return (Parent as Widget).IsVisible();
+            return true;
         }
 
         public void SetZIndex(int ZIndex)
@@ -262,8 +278,8 @@ namespace MKEditor.Widgets
             if (ShowContextMenu && ContextMenuList != null && ContextMenuList.Count > 0)
             {
                 ContextMenu cm = new ContextMenu(this.Window);
-                cm.Items = ContextMenuList;
-                Size s = cm.CalcSize();
+                cm.SetItems(ContextMenuList);
+                Size s = cm.Size;
                 int x = e.X;
                 int y = e.Y;
                 if (e.X + s.Width >= Window.Width) x -= s.Width;
@@ -334,7 +350,7 @@ namespace MKEditor.Widgets
             MaxChildWidth = 0;
             this.Widgets.ForEach(wdgt =>
             {
-                if (!wdgt.Visible) return;
+                if (!wdgt.Visible || wdgt is AutoVScrollBar || wdgt is AutoHScrollBar) return;
                 int w = wdgt.Size.Width;
                 if (wdgt.Parent is LayoutContainer) w += (wdgt.Parent as LayoutContainer).Position.X;
                 else w += wdgt.Position.X;
@@ -345,7 +361,7 @@ namespace MKEditor.Widgets
             MaxChildHeight = 0;
             this.Widgets.ForEach(w =>
             {
-                if (!w.Visible) return;
+                if (!w.Visible || w is AutoVScrollBar || w is AutoHScrollBar) return;
                 int h = w.Size.Height;
                 if (w.Parent is LayoutContainer) h += (w.Parent as LayoutContainer).Position.Y;
                 else h += w.Position.Y;
@@ -359,9 +375,9 @@ namespace MKEditor.Widgets
                     ScrollBarX = new AutoHScrollBar(this);
                     ScrollBarX.SetZIndex(999);
                 }
-                ScrollBarX.SetPosition(2, this.Size.Height - 13);
-                // 13 if ScrollBarY is present, 0 if not.
-                int extra = (MaxChildHeight > this.Size.Height) ? 13 : 0;
+                ScrollBarX.SetPosition(0, this.Size.Height - 17);
+                // 17 if ScrollBarY is present, 0 if not.
+                int extra = (MaxChildHeight > this.Size.Height) ? 17 : 0;
                 ScrollBarX.SetSize(this.Size.Width - 4 - extra, 11);
                 if (OldMaxChildWidth - this.Viewport.Width > 0 && this.ScrolledX > OldMaxChildWidth - this.Viewport.Width)
                 {
@@ -378,28 +394,33 @@ namespace MKEditor.Widgets
                 this.ScrolledX = 0;
             }
             // ScrollBarY
-            if (MaxChildHeight > this.Size.Height)
+            if (MaxChildHeight > this.Size.Height || ShowScrollBars)
             {
+                bool ActuallyVisible = MaxChildHeight > this.Size.Height;
                 if (ScrollBarY == null)
                 {
                     ScrollBarY = new AutoVScrollBar(this);
                     ScrollBarY.SetZIndex(999);
                 }
-                ScrollBarY.SetPosition(this.Size.Width - 13, 2);
-                // 13 if ScrollBarX is present, 0 if not.
-                int extra = (MaxChildWidth > this.Size.Width) ? 13 : 0;
-                ScrollBarY.SetSize(11, this.Size.Height - 4 - extra);
-                if (OldMaxChildHeight - this.Viewport.Height > 0 && this.ScrolledY > OldMaxChildHeight - this.Viewport.Height)
+                ScrollBarY.SetPosition(this.Size.Width - 17, 0);
+                // 17 if ScrollBarX is present, 0 if not.
+                int extra = (MaxChildWidth > this.Size.Width) ? 17 : 0;
+                ScrollBarY.SetSize(11, this.Size.Height - extra);
+                if (ActuallyVisible)
                 {
-                    this.ScrolledY = OldMaxChildHeight - this.Viewport.Height;
-                }
-                if (this.ScrolledY > MaxChildHeight - this.Viewport.Height)
-                {
-                    this.ScrolledY = MaxChildHeight - this.Viewport.Height;
+                    if (OldMaxChildHeight - this.Viewport.Height > 0 && this.ScrolledY > OldMaxChildHeight - this.Viewport.Height)
+                    {
+                        this.ScrolledY = OldMaxChildHeight - this.Viewport.Height;
+                    }
+                    if (this.ScrolledY > MaxChildHeight - this.Viewport.Height)
+                    {
+                        this.ScrolledY = MaxChildHeight - this.Viewport.Height;
+                    }
                 }
                 ScrollBarY.SetValue((double) this.ScrolledY / (MaxChildHeight - this.Viewport.Height));
                 ScrollBarY.SetSliderSize((double) this.Viewport.Height / MaxChildHeight);
                 ScrollBarY.MouseInputRect = this.Viewport.Rect;
+                ScrollBarY.SetSliderVisible(ActuallyVisible);
             }
             else if (ScrollBarY != null)
             {
@@ -663,5 +684,26 @@ namespace MKEditor.Widgets
             this.Event = Event;
             this.GlobalShortcut = GlobalShortcut;
         }
+    }
+
+    public enum Icon
+    {
+        NONE,
+
+        Plus = '\uf067',
+        New = Plus,
+        Add = Plus,
+
+        Eye = '\uf06e',
+        Visible = Eye,
+
+        TrashCan = '\uf2ed',
+        Delete = TrashCan,
+        Remove = TrashCan,
+
+        Down = '\uf063',
+        Up = '\uf062',
+
+        Eraser = '\uf12d'
     }
 }

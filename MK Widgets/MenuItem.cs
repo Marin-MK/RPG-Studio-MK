@@ -10,7 +10,7 @@ namespace MKEditor.Widgets
         public string Text;
         public List<IMenuItem> Items;
         public bool Checkable;
-        public string Image;
+        public Icon Icon = Icon.NONE;
         public string Shortcut;
         public EventHandler<ODL.MouseEventArgs> OnLeftClick;
         public EventHandler<ODL.ConditionEventArgs> IsClickable;

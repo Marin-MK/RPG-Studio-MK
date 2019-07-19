@@ -15,6 +15,8 @@ namespace MKEditor.Widgets
         public int MapTileX = 0;
         public int MapTileY = 0;
 
+        public int LayerCount = 0;
+
         Data.Tileset MTileset;
 
         CursorWidget Cursor;
@@ -44,10 +46,11 @@ namespace MKEditor.Widgets
             {
                 if (s != "_bg") this.Sprites[s].Dispose();
             }
-            int layercount = this.Map.Layers.Count;
-            for (int i = 0; i < layercount; i++)
+            LayerCount = this.Map.Layers.Count;
+            for (int i = 0; i < LayerCount; i++)
             {
                 this.Sprites[i.ToString()] = new Sprite(this.Viewport, this.Map.Width * 32, this.Map.Height * 32);
+                this.Sprites[i.ToString()].Z = i;
                 this.Sprites[i.ToString()].Bitmap.Unlock();
             }
             // Iterate through all the layers
@@ -76,11 +79,27 @@ namespace MKEditor.Widgets
                     }
                 }
             }
-            for (int i = 0; i < layercount; i++)
+            for (int i = 0; i < LayerCount; i++)
             {
                 this.Sprites[i.ToString()].Bitmap.Lock();
             }
             this.SetSize(this.Map.Width * 32, this.Map.Height * 32);
+        }
+
+        public void AddEmptyLayer(int Index)
+        {
+            if (Index < LayerCount) // Not a new layer at the end, so we need to change keys higher than Index to all be 1 higher.
+            {
+                for (int i = LayerCount - 1; i >= Index; i--)
+                {
+                    ISprite s = Sprites[i.ToString()];
+                    Sprites.Remove(i.ToString());
+                    Sprites[(i + 1).ToString()] = s;
+                    Sprites[(i + 1).ToString()].Z = i + 1;
+                }
+            }
+            this.Sprites[Index.ToString()] = new Sprite(this.Viewport, this.Map.Width * 32, this.Map.Height * 32);
+            this.Sprites[Index.ToString()].Z = Index;
         }
 
         public override void MouseMoving(object sender, MouseEventArgs e)

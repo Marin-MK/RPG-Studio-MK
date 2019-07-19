@@ -7,8 +7,8 @@ namespace MKEditor.Widgets
     {
         public bool NeedUpdate { get; set; } = true;
 
-        public VStackPanel(object Parent)
-            : base(Parent, "vStackPanel")
+        public VStackPanel(object Parent, string Name = "vStackPanel")
+            : base(Parent, Name)
         {
             this.Size = new Size(this.Parent.Size.Width, 1);
         }
@@ -66,13 +66,18 @@ namespace MKEditor.Widgets
 
         public override IContainer Add(Widget w)
         {
+            return this.Insert(this.Widgets.Count, w);
+        }
+
+        public IContainer Insert(int Index, Widget w)
+        {
             if (w is LayoutContainer)
             {
-                this.Widgets.Add(w);
+                this.Widgets.Insert(Index, w);
             }
             else
             {
-                LayoutContainer c = new LayoutContainer(this);
+                LayoutContainer c = new LayoutContainer(this, "layoutContainer", Index);
                 c.Widget = w;
                 w.SetParent(c);
                 c.OnChildBoundsChanged += delegate (object sender, SizeEventArgs e)

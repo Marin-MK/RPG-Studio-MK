@@ -74,8 +74,10 @@
     <Compile Include="Margin.cs" />
     <Compile Include="MK Widgets\ContextMenu.cs" />
     <Compile Include="MK Widgets\CursorWidget.cs" />
+    <Compile Include="MK Widgets\IconButton.cs" />
     <Compile Include="MK Widgets\MapSelectTab.cs" />
     <Compile Include="MK Widgets\MenuItem.cs" />
+    <Compile Include="MK Widgets\TabView.cs" />
     <Compile Include="MK Widgets\TreeView.cs" />
     <Compile Include="GameData\MKD\Event.cs" />
     <Compile Include="GameData\MKD\EventCommands.cs" />

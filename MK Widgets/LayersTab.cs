@@ -26,39 +26,64 @@ namespace MKEditor.Widgets
         public LayersTab(object Parent, string Name = "layersTab")
             : base(Parent, Name)
         {
-            this.Sprites["text"] = new Sprite(this.Viewport);
-            this.Sprites["text"].X = 6;
-            this.Sprites["text"].Y = 14;
-            Font f = Font.Get("Fonts/Quicksand Bold", 16);
-            Size s = f.TextSize("Layers");
-            this.Sprites["text"].Bitmap = new Bitmap(s);
-            this.Sprites["text"].Bitmap.Unlock();
-            this.Sprites["text"].Bitmap.Font = f;
-            this.Sprites["text"].Bitmap.DrawText("Layers", 0, 0, Color.WHITE);
-            this.Sprites["text"].Bitmap.Lock();
+            this.Sprites["header"] = new Sprite(this.Viewport, new Bitmap(314, 22));
+            this.Sprites["header"].Bitmap.Unlock();
+            this.Sprites["header"].Bitmap.FillRect(0, 0, 314, 22, new Color(135, 135, 135));
+            this.Sprites["header"].Bitmap.Font = Font.Get("Fonts/Ubuntu-R", 16);
+            this.Sprites["header"].Bitmap.DrawText("Layers", 6, 0, Color.WHITE);
+            this.Sprites["header"].Bitmap.Lock();
+
+            SetBackgroundColor(47, 49, 54);
 
             this.OnWidgetSelect += WidgetSelect;
 
             layercontainer = new Container(this);
-            layercontainer.SetPosition(30, 45);
+            layercontainer.SetPosition(0, 26);
+            layercontainer.SetSize(314, this.Size.Height - 30);
             layercontainer.AutoScroll = true;
+            layercontainer.ShowScrollBars = true;
 
             layerstack = new VStackPanel(layercontainer);
+            layerstack.SetWidth(293);
             layerstack.SetContextMenuList(new List<IMenuItem>()
             {
-                new MenuItem("New Layer") { OnLeftClick = NewLayer, IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = false; } },
-                new MenuItem("Rename Layer") { Shortcut = "F2", OnLeftClick = RenameLayer },
+                new MenuItem("New Layer")
+                {
+                    Icon = Icon.New,
+                    OnLeftClick = NewLayer
+                },
                 new MenuSeparator(),
-                new MenuItem("Toggle Visibility") { Shortcut = "Ctrl+H", OnLeftClick = ToggleVisibilityLayer },
-                new MenuItem("Move Layer Up") { OnLeftClick = MoveLayerUp },
-                new MenuItem("Move Layer Down") { OnLeftClick = MoveLayerDown },
+                new MenuItem("Toggle Visibility")
+                {
+                    Icon = Icon.Eye,
+                    Shortcut = "Ctrl+H",
+                    OnLeftClick = ToggleVisibilityLayer
+                },
+                new MenuItem("Move Layer Up")
+                {
+                    Icon = Icon.Up,
+                    OnLeftClick = MoveLayerUp,
+                    IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = SelectedLayer < this.Map.Layers.Count - 1; }
+                },
+                new MenuItem("Move Layer Down")
+                {
+                    Icon = Icon.Down,
+                    OnLeftClick = MoveLayerDown,
+                    IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = SelectedLayer > 0; }
+                },
                 new MenuSeparator(),
-                new MenuItem("Delete Layer") { Shortcut = "Del", OnLeftClick = DeleteLayer }
+                new MenuItem("Delete Layer")
+                {
+                    Icon = Icon.Delete,
+                    Shortcut = "Del",
+                    OnLeftClick = DeleteLayer,
+                    IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Layers.Count > 1; }
+                }
             });
 
             RegisterShortcuts(new List<Shortcut>()
             {
-                new Shortcut(new Key(Keycode.F2), new EventHandler<EventArgs>(RenameLayer)),
+                //new Shortcut(new Key(Keycode.F2), new EventHandler<EventArgs>(RenameLayer)),
                 new Shortcut(new Key(Keycode.H, Keycode.CTRL), new EventHandler<EventArgs>(ToggleVisibilityLayer), true),
                 new Shortcut(new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer))
             });
@@ -66,13 +91,35 @@ namespace MKEditor.Widgets
 
         public void NewLayer(object sender, EventArgs e)
         {
+            int Index = Layers.Count - SelectedLayer - 1;
             Console.WriteLine("New");
+            LayerWidget lw = new LayerWidget(layerstack, "layerWidget", Index);
+            lw.LayerIndex = Index + 1;
+
+            for (int i = 0; i < this.Layers.Count; i++)
+            {
+                if (i >= Index)
+                {
+                    this.Layers[i].LayerIndex++;
+                }
+            }
+
+            lw.SetText("Random layer " + new Random().Next().ToString());
+            this.Layers.Insert(Index, lw);
+            Data.Layer emptylayer = new Data.Layer("Random layer");
+            emptylayer.Tiles = new List<Data.TileData>();
+            for (int i = 0; i < this.Map.Width * this.Map.Height; i++) emptylayer.Tiles.Add(new Data.TileData());
+            this.Map.Layers.Insert(Layers.Count - Index - 1, emptylayer);
+            this.MapViewer.AddEmptyLayer(Layers.Count - Index - 1);
+            layerstack.Redraw();
+            layerstack.Update();
+            layerstack.UpdateLayout();
         }
 
-        public void RenameLayer(object sender, EventArgs e)
-        {
-            Console.WriteLine("Rename");
-        }
+        //public void RenameLayer(object sender, EventArgs e)
+        //{
+        //    Console.WriteLine("Rename");
+        //}
 
         public void MoveLayerUp(object sender, EventArgs e)
         {
@@ -98,9 +145,8 @@ namespace MKEditor.Widgets
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
+            layercontainer.SetHeight(this.Size.Height - 30);
             base.SizeChanged(sender, e);
-            layercontainer.SetSize(279, this.Size.Height - 55);
-            layerstack.SetWidth(263);
         }
 
         public void CreateLayers()
@@ -113,6 +159,7 @@ namespace MKEditor.Widgets
             for (int layer = this.Map.Layers.Count - 1; layer >= 0; layer--)
             {
                 LayerWidget layerwidget = new LayerWidget(layerstack);
+                layerwidget.LayerIndex = this.Map.Layers.Count - layer;
                 layerwidget.SetText(this.Map.Layers[layer].Name);
                 this.Layers.Add(layerwidget);
             }
