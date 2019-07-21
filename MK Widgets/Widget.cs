@@ -376,10 +376,21 @@ namespace MKEditor.Widgets
                     ScrollBarX = new AutoHScrollBar(this);
                     ScrollBarX.SetZIndex(999);
                 }
-                ScrollBarX.SetPosition(0, this.Size.Height - 17);
-                // 17 if ScrollBarY is present, 0 if not.
-                int extra = (MaxChildHeight > this.Size.Height) ? 17 : 0;
-                ScrollBarX.SetSize(this.Size.Width - 4 - extra, 11);
+                bool mv = Name == "mapViewerContainer";
+                if (mv)
+                {
+                    ScrollBarX.SetPosition(4, this.Size.Height - 14);
+                    // 7 if ScrollBarY is present, 0 if not.
+                    int extra = (MaxChildHeight > this.Size.Height) ? 7 : 0;
+                    ScrollBarX.SetSize(this.Size.Width - 8 - extra, 11);
+                }
+                else
+                {
+                    ScrollBarX.SetPosition(0, this.Size.Height - 17);
+                    // 17 if ScrollBarY is present, 0 if not.
+                    int extra = (MaxChildHeight > this.Size.Height) ? 17 : 0;
+                    ScrollBarX.SetSize(this.Size.Width - 4 - extra, 11);
+                }
                 if (OldMaxChildWidth - this.Viewport.Width > 0 && this.ScrolledX > OldMaxChildWidth - this.Viewport.Width)
                 {
                     this.ScrolledX = OldMaxChildWidth - this.Viewport.Width;
@@ -403,10 +414,21 @@ namespace MKEditor.Widgets
                     ScrollBarY = new AutoVScrollBar(this);
                     ScrollBarY.SetZIndex(999);
                 }
-                ScrollBarY.SetPosition(this.Size.Width - 17, 0);
-                // 17 if ScrollBarX is present, 0 if not.
-                int extra = (MaxChildWidth > this.Size.Width) ? 17 : 0;
-                ScrollBarY.SetSize(11, this.Size.Height - extra);
+                bool mv = Name == "mapViewerContainer";
+                if (mv)
+                {
+                    ScrollBarY.SetPosition(this.Size.Width - 14, 4);
+                    // 7 if ScrollBarX is present, 0 if not.
+                    int extra = (MaxChildWidth > this.Size.Width) ? 7 : 0;
+                    ScrollBarY.SetSize(11, this.Size.Height - 8 - extra);
+                }
+                else
+                {
+                    ScrollBarY.SetPosition(this.Size.Width - 17, 0);
+                    // 17 if ScrollBarX is present, 0 if not.
+                    int extra = (MaxChildWidth > this.Size.Width) ? 17 : 0;
+                    ScrollBarY.SetSize(11, this.Size.Height - extra);
+                }
                 if (ActuallyVisible)
                 {
                     if (OldMaxChildHeight - this.Viewport.Height > 0 && this.ScrolledY > OldMaxChildHeight - this.Viewport.Height)

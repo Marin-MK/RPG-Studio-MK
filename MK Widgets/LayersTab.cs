@@ -83,7 +83,6 @@ namespace MKEditor.Widgets
 
             RegisterShortcuts(new List<Shortcut>()
             {
-                //new Shortcut(new Key(Keycode.F2), new EventHandler<EventArgs>(RenameLayer)),
                 new Shortcut(new Key(Keycode.H, Keycode.CTRL), new EventHandler<EventArgs>(ToggleVisibilityLayer), true),
                 new Shortcut(new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer))
             });
@@ -91,37 +90,9 @@ namespace MKEditor.Widgets
 
         public void NewLayer(object sender, EventArgs e)
         {
+            // Temporarily opens map properties window for debugging purposes.
             MapPropertiesWindow mpw = new MapPropertiesWindow(Window);
-            return;
-            int Index = Layers.Count - SelectedLayer - 1;
-            Console.WriteLine("New");
-            LayerWidget lw = new LayerWidget(layerstack, "layerWidget", Index);
-            lw.LayerIndex = Index + 1;
-
-            for (int i = 0; i < this.Layers.Count; i++)
-            {
-                if (i >= Index)
-                {
-                    this.Layers[i].LayerIndex++;
-                }
-            }
-
-            lw.SetText("Random layer " + new Random().Next().ToString());
-            this.Layers.Insert(Index, lw);
-            Data.Layer emptylayer = new Data.Layer("Random layer");
-            emptylayer.Tiles = new List<Data.TileData>();
-            for (int i = 0; i < this.Map.Width * this.Map.Height; i++) emptylayer.Tiles.Add(new Data.TileData());
-            this.Map.Layers.Insert(Layers.Count - Index - 1, emptylayer);
-            this.MapViewer.AddEmptyLayer(Layers.Count - Index - 1);
-            layerstack.Redraw();
-            layerstack.Update();
-            layerstack.UpdateLayout();
         }
-
-        //public void RenameLayer(object sender, EventArgs e)
-        //{
-        //    Console.WriteLine("Rename");
-        //}
 
         public void MoveLayerUp(object sender, EventArgs e)
         {

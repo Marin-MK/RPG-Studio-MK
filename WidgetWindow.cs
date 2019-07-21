@@ -83,12 +83,8 @@ namespace MKEditor
             lt.SetGrid(2, 0);
 
             // Center map viewer
-            Container mapcontainer = new Container(layout);
-            mapcontainer.SetGrid(3, 1);
-            mapcontainer.AutoScroll = true;
-            mapcontainer.SetBackgroundColor(40, 44, 52);
-
-            MapViewer mv = new MapViewer(mapcontainer);
+            MapViewer mv = new MapViewer(layout);
+            mv.SetGrid(3, 1);
 
             // Link the UI pieces together
             mv.LayersTab = lt;

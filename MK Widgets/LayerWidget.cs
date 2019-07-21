@@ -55,7 +55,7 @@ namespace MKEditor.Widgets
                 else this.Sprites["visible"].X = 4;
                 this.LayerVisible = Visible;
                 this.RedrawVisible = true;
-                this.MapViewer.Sprites[(this.MapViewer.Map.Layers.Count - LayerIndex).ToString()].Visible = this.LayerVisible;
+                this.MapViewer.MapWidget.Sprites[(this.MapViewer.Map.Layers.Count - LayerIndex).ToString()].Visible = this.LayerVisible;
                 this.Redraw();
             }
         }
