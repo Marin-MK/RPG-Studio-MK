@@ -10,6 +10,7 @@ namespace MKEditor
     public class WidgetWindow : Window
     {
         public UIManager UI;
+        public bool Blocked = false;
 
         public WidgetWindow()
         {
@@ -89,6 +90,7 @@ namespace MKEditor
 
             MapViewer mv = new MapViewer(mapcontainer);
 
+            // Link the UI pieces together
             mv.LayersTab = lt;
             mv.TilesetTab = tt;
             lt.TilesetTab = tt;

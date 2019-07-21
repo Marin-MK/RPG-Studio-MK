@@ -91,6 +91,8 @@ namespace MKEditor.Widgets
 
         public void NewLayer(object sender, EventArgs e)
         {
+            MapPropertiesWindow mpw = new MapPropertiesWindow(Window);
+            return;
             int Index = Layers.Count - SelectedLayer - 1;
             Console.WriteLine("New");
             LayerWidget lw = new LayerWidget(layerstack, "layerWidget", Index);

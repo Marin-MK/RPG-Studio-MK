@@ -64,12 +64,12 @@ namespace MKEditor.Widgets
             this.SetHeight(maxheight);
         }
 
-        public override IContainer Add(Widget w)
+        public override void Add(Widget w)
         {
-            return this.Insert(this.Widgets.Count, w);
+            this.Insert(this.Widgets.Count, w);
         }
 
-        public IContainer Insert(int Index, Widget w)
+        public Widget Insert(int Index, Widget w)
         {
             if (w is LayoutContainer)
             {

@@ -94,6 +94,7 @@ namespace MKEditor.Widgets
             {
                 this.SetParent(Parent, Index);
                 this.Viewport = new Viewport(this.Window.Renderer, 0, 0, this.Size);
+                this.Viewport.Z = this.Parent.Viewport.Z;
             }
             this.Name = this.Parent.GetName(Name);
             this.Sprites["_bg"] = new Sprite(this.Viewport);
@@ -156,7 +157,7 @@ namespace MKEditor.Widgets
             if (this.ZIndex != ZIndex)
             {
                 this.ZIndex = ZIndex;
-                this.Viewport.Z = this.ZIndex;
+                this.Viewport.Z = this.Parent.Viewport.Z + this.ZIndex;
             }
         }
 
@@ -567,26 +568,32 @@ namespace MKEditor.Widgets
             return this;
         }
 
-        public virtual IContainer Add(Widget w)
+        public virtual void Add(Widget w)
         {
             if (this.Widgets.Exists(wgt => wgt.Name == w.Name))
             {
                 throw new Exception("Already existing widget by the name of '" + w.Name + "'");
             }
             this.Widgets.Add(w);
-            return this;
         }
 
-        public virtual IContainer Get(string Name)
+        public virtual Widget Get(string Name)
         {
             foreach (Widget w in this.Widgets)
             {
-                if (w.Name == Name) return w;
+                if (w is LayoutContainer)
+                {
+                    if ((w as LayoutContainer).Widget.Name == Name) return w;
+                }
+                else
+                {
+                    if (w.Name == Name) return w;
+                }
             }
             return null;
         }
 
-        public virtual IContainer Remove(Widget w)
+        public virtual Widget Remove(Widget w)
         {
             for (int i = 0; i < this.Widgets.Count; i++)
             {

@@ -77,7 +77,7 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override IContainer Add(Widget w)
+        public override void Add(Widget w)
         {
             if (w is LayoutContainer)
             {
@@ -90,7 +90,6 @@ namespace MKEditor.Widgets
                 w.SetParent(c);
                 w.Viewport = c.Viewport;
             }
-            return w;
         }
 
         public void UpdateContainers()

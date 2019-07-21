@@ -6,7 +6,7 @@ using static SDL2.SDL;
 
 namespace MKEditor.Widgets
 {
-    public class TextBox : Widget
+    public class OldTextBox : Widget
     {
         public string Text { get; protected set; }
         public int CaretIndex { get; protected set; }
@@ -17,7 +17,7 @@ namespace MKEditor.Widgets
 
         private DateTime? CaretAnim;
 
-        public TextBox(object Parent)
+        public OldTextBox(object Parent)
             : base(Parent, "textBox")
         {
             this.WidgetIM.OnHoverChanged += HoverChanged;

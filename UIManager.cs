@@ -36,26 +36,32 @@ namespace MKEditor
             BGSprite.Bitmap = new SolidBitmap(this.Size, this.BackgroundColor);
         }
 
-        public IContainer Add(Widget w)
+        public void Add(Widget w)
         {
             if (this.Widgets.Exists(wgt => wgt.Name == w.Name))
             {
                 throw new Exception("Already existing widget by the name of '" + w.Name + "'");
             }
             this.Widgets.Add(w);
-            return this;
         }
 
-        public IContainer Get(string Name)
+        public virtual Widget Get(string Name)
         {
             foreach (Widget w in this.Widgets)
             {
-                if (w.Name == Name) return w;
+                if (w is LayoutContainer)
+                {
+                    if ((w as LayoutContainer).Widget.Name == Name) return w;
+                }
+                else
+                {
+                    if (w.Name == Name) return w;
+                }
             }
             return null;
         }
 
-        public IContainer Remove(Widget w)
+        public Widget Remove(Widget w)
         {
             for (int i = 0; i < this.Widgets.Count; i++)
             {
@@ -82,6 +88,11 @@ namespace MKEditor
         public void AddInput(MouseInputManager input)
         {
             IMs.Add(input);
+        }
+
+        public void RemoveInput(MouseInputManager input)
+        {
+            IMs.Remove(input);
         }
 
         public void MouseDown(object sender, MouseEventArgs e)

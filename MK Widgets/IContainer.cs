@@ -21,9 +21,9 @@ namespace MKEditor.Widgets
 
         IContainer Parent { get; }
 
-        IContainer Add(Widget w);
-        IContainer Get(string Name);
-        IContainer Remove(Widget w);
+        void Add(Widget w);
+        Widget Get(string Name);
+        Widget Remove(Widget w);
         string GetName(string Name);
     }
 }
