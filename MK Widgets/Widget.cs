@@ -37,6 +37,7 @@ namespace MKEditor.Widgets
         public List<IMenuItem>              ContextMenuList  { get; protected set; }
         public bool                         ShowContextMenu  { get; protected set; } = false;
         public List<Shortcut>               Shortcuts        { get; protected set; } = new List<Shortcut>();
+        public bool                         ConsiderInAutoScroll = true;
 
         public  bool   AutoScroll        = false;
         public  bool   ShowScrollBars    = false;
@@ -79,6 +80,7 @@ namespace MKEditor.Widgets
         public EventHandler<SizeEventArgs> OnParentSizeChanged;
         public EventHandler<SizeEventArgs> OnChildBoundsChanged;
         public EventHandler<EventArgs> OnDisposed;
+        public EventHandler<EventArgs> OnScrolling;
 
         public MinimalHScrollBar ScrollBarX { get; protected set; }
         public MinimalVScrollBar ScrollBarY { get; protected set; }
@@ -351,7 +353,8 @@ namespace MKEditor.Widgets
             MaxChildWidth = 0;
             this.Widgets.ForEach(wdgt =>
             {
-                if (!wdgt.Visible || wdgt is AutoVScrollBar || wdgt is AutoHScrollBar) return;
+                if (!wdgt.Visible || !wdgt.ConsiderInAutoScroll ||
+                    wdgt is AutoVScrollBar || wdgt is AutoHScrollBar) return;
                 int w = wdgt.Size.Width;
                 if (wdgt.Parent is LayoutContainer) w += (wdgt.Parent as LayoutContainer).Position.X;
                 else w += wdgt.Position.X;
@@ -362,7 +365,8 @@ namespace MKEditor.Widgets
             MaxChildHeight = 0;
             this.Widgets.ForEach(w =>
             {
-                if (!w.Visible || w is AutoVScrollBar || w is AutoHScrollBar) return;
+                if (!w.Visible || !w.ConsiderInAutoScroll ||
+                    w is AutoVScrollBar || w is AutoHScrollBar) return;
                 int h = w.Size.Height;
                 if (w.Parent is LayoutContainer) h += (w.Parent as LayoutContainer).Position.Y;
                 else h += w.Position.Y;
@@ -398,6 +402,7 @@ namespace MKEditor.Widgets
                 ScrollBarX.SetValue((double) this.ScrolledX / (MaxChildWidth - this.Viewport.Width));
                 ScrollBarX.SetSliderSize((double) this.Viewport.Width / MaxChildWidth);
                 ScrollBarX.MouseInputRect = this.Viewport.Rect;
+                ScrollBarX.OnValueChanged = OnScrolling;
             }
             else if (ScrollBarX != null)
             {
@@ -444,6 +449,7 @@ namespace MKEditor.Widgets
                 ScrollBarY.SetSliderSize((double) this.Viewport.Height / MaxChildHeight);
                 ScrollBarY.MouseInputRect = this.Viewport.Rect;
                 ScrollBarY.SetSliderVisible(ActuallyVisible);
+                ScrollBarY.OnValueChanged = OnScrolling;
             }
             else if (ScrollBarY != null)
             {

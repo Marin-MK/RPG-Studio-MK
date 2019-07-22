@@ -7,8 +7,10 @@ namespace MKEditor.Widgets
     public class TilesetTab : Widget
     {
         public int           TilesetIndex    { get; protected set; } = 0;
-        public int           TileX           { get; protected set; } = 0;
-        public int           TileY           { get; protected set; } = 0;
+        public int           TileStartX      { get; protected set; } = 0;
+        public int           TileStartY      { get; protected set; } = 0;
+        public int           TileEndX        { get; protected set; } = 0;
+        public int           TileEndY        { get; protected set; } = 0;
 
         public IconButton PencilButton;
         public IconButton FillButton;
@@ -95,6 +97,8 @@ namespace MKEditor.Widgets
 
             CursorIM = new MouseInputManager(this);
             CursorIM.OnMouseDown += MouseDown;
+            CursorIM.OnMouseUp += MouseUp;
+            CursorIM.OnMouseMoving += MouseMoving;
 
             TilesetContainer = new Container(TabControl.GetTab(0));
             TilesetContainer.SetPosition(0, 4);
@@ -114,8 +118,10 @@ namespace MKEditor.Widgets
         {
             Cursor.SetPosition(28, 46);
             TilesetIndex = 0;
-            TileX = 0;
-            TileY = 0;
+            TileStartX = 0;
+            TileStartY = 0;
+            TileEndX = 0;
+            TileEndY = 0;
             for (int i = 0; i < this.TilesetContainers.Count; i++)
             {
                 this.TilesetContainers[i].Dispose();
@@ -144,8 +150,8 @@ namespace MKEditor.Widgets
         public void SelectTile(Data.TileData tile)
         {
             TilesetIndex = tile.TilesetIndex;
-            TileX = tile.TileID % 8;
-            TileY = (int) Math.Floor(tile.TileID / 8d);
+            TileStartX = TileEndX = tile.TileID % 8;
+            TileStartY = TileEndY = (int) Math.Floor(tile.TileID / 8d);
             UpdateCursorPosition();
             EraserButton.SetSelected(false);
         }
@@ -176,16 +182,105 @@ namespace MKEditor.Widgets
             }
             else
             {
-                Cursor.SetPosition(28 + TileX * 33, 46 + lc.Position.Y + TileY * 33);
+                int DiffX = TileEndX - TileStartX;
+                int DiffY = TileEndY - TileStartY;
+                int PosDiffX = 0;
+                int PosDiffY = 0;
+                Location origin = Location.BottomRight;
+                // If the origin is bottom right instead of top left
+                if (DiffX < 0)
+                {
+                    DiffX = -DiffX;
+                    PosDiffX = 33 * DiffX;
+                    origin = Location.BottomLeft;
+                }
+                if (DiffY < 0)
+                {
+                    DiffY = -DiffY;
+                    PosDiffY = 33 * DiffY;
+                    if (origin == Location.BottomLeft) origin = Location.TopLeft;
+                    else origin = Location.TopRight;
+                }
+                Cursor.SetPosition(28 + TileStartX * 33 - PosDiffX, 46 + lc.Position.Y + TileStartY * 33 - PosDiffY);
+                Cursor.SetSize(32 * (DiffX + 1) + DiffX, 32 * (DiffY + 1) + DiffY);
+                MapViewer.CursorOrigin = origin;
+                MapViewer.Cursor.SetSize(32 * (DiffX + 1), 32 * (DiffY + 1));
+                MapViewer.TileIDs = new List<int?>();
+                MapViewer.TileIDsWidth = DiffX;
+                MapViewer.TileIDsHeight = DiffY;
+                int sx = TileStartX < TileEndX ? TileStartX : TileEndX;
+                int ex = TileStartX < TileEndX ? TileEndX : TileStartX;
+                int sy = TileStartY < TileEndY ? TileStartY : TileEndY;
+                int ey = TileStartY < TileEndY ? TileEndY : TileStartY;
+                for (int y = sy; y <= ey; y++)
+                {
+                    for (int x = sx; x <= ex; x++)
+                    {
+                        int tileid = y * 8 + x;
+                        MapViewer.TileIDs.Add(tileid);
+                    }
+                }
                 Cursor.SetVisible(true);
             }
         }
 
+        public override void MouseMoving(object sender, MouseEventArgs e)
+        {
+            base.MouseMoving(sender, e);
+            if (!DraggingTileset) return;
+            int idx = -1,
+                x = -1,
+                y = -1,
+                height = -1;
+            GetTilePosition(e, out idx, out x, out y, out height);
+            if (idx != -1 && x != -1 && y != -1 && height != -1)
+            {
+                // Makes sure you can only have a selection within the same tileset
+                if (idx != TilesetIndex) return;
+                TileEndX = x;
+                TileEndY = y;
+                UpdateCursorPosition();
+            }
+        }
+
+        bool DraggingTileset = false;
+
         public override void MouseDown(object sender, MouseEventArgs e)
         {
+            base.MouseDown(sender, e);
+            if (e.MiddleButton != e.OldMiddleButton) return; // A button other than the middle mouse button was pressed (left or right)
+            int idx = -1,
+                x = -1,
+                y = -1,
+                height = -1;
+            GetTilePosition(e, out idx, out x, out y, out height);
+            if (idx != -1 && x != -1 && y != -1 && height != -1)
+            {
+                DraggingTileset = true;
+                TileStartX = TileEndX = x;
+                TileStartY = TileEndY = y;
+                UpdateCursorPosition();
+                if (EraserButton.Selected)
+                {
+                    EraserButton.SetSelected(false);
+                }
+            }
+        }
+
+        public override void MouseUp(object sender, MouseEventArgs e)
+        {
+            base.MouseUp(sender, e);
+            DraggingTileset = e.LeftButton || e.RightButton;
+        }
+
+        public void GetTilePosition(MouseEventArgs e, out int TilesetIndex, out int X, out int Y, out int Height)
+        {
+            TilesetIndex = -1;
+            X = -1;
+            Y = -1;
+            Height = -1;
             if (TabControl.SelectedIndex != 0) return;
-            base.MouseMoving(sender, e);
-            if (e.LeftButton == e.OldLeftButton) return; // A button other than the left mouse button was pressed
+            if (!e.LeftButton && !e.RightButton) return;
             if (Parent.ScrollBarY != null && (Parent.ScrollBarY.Dragging || Parent.ScrollBarY.Hovering)) return;
             Container cont = TilesetContainer;
             int rx = e.X - cont.Viewport.X;
@@ -212,14 +307,9 @@ namespace MKEditor.Widgets
                 int tilex = (int) Math.Floor(crx / 33d);
                 int tiley = (int) Math.Floor(cry / 33d);
                 TilesetIndex = i;
-                TileX = tilex;
-                TileY = tiley;
-                Cursor.SetPosition(28 + tilex * 33, 46 + height + tiley * 33);
-                Cursor.SetVisible(true);
-                if (EraserButton.Selected)
-                {
-                    EraserButton.SetSelected(false);
-                }
+                X = tilex;
+                Y = tiley;
+                Height = height;
                 break;
             }
         }

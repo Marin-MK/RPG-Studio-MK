@@ -22,6 +22,9 @@ namespace MKEditor
         public EventHandler<MouseEventArgs> OnMouseWheel;
         public EventHandler<MouseEventArgs> OnHoverChanged;
 
+        public int Priority = 0;
+        public int OldPriority = 0;
+
         public Rect Area;
 
         private bool _ClickedLeft = false;

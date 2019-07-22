@@ -97,6 +97,7 @@ namespace MKEditor
 
         public void MouseDown(object sender, MouseEventArgs e)
         {
+            SortInputManagers();
             for (int i = 0; i < IMs.Count; i++)
             {
                 if (IMs[i].Widget.Disposed)
@@ -111,6 +112,7 @@ namespace MKEditor
 
         public void MousePress(object sender, MouseEventArgs e)
         {
+            SortInputManagers();
             for (int i = 0; i < IMs.Count; i++)
             {
                 if (IMs[i].Widget.Disposed)
@@ -125,6 +127,7 @@ namespace MKEditor
 
         public void MouseUp(object sender, MouseEventArgs e)
         {
+            SortInputManagers();
             for (int i = 0; i < IMs.Count; i++)
             {
                 if (IMs[i].Widget.Disposed)
@@ -149,6 +152,7 @@ namespace MKEditor
 
         public void MouseMoving(object sender, MouseEventArgs e)
         {
+            SortInputManagers();
             for (int i = 0; i < IMs.Count; i++)
             {
                 if (IMs[i].Widget.Disposed)
@@ -163,6 +167,7 @@ namespace MKEditor
 
         public void MouseWheel(object sender, MouseEventArgs e)
         {
+            SortInputManagers();
             for (int i = 0; i < IMs.Count; i++)
             {
                 if (IMs[i].Widget.Disposed)
@@ -185,6 +190,32 @@ namespace MKEditor
                 w.OnParentSizeChanged.Invoke(sender, new SizeEventArgs(e.Width, e.Height));
                 w.Redraw();
             });
+        }
+
+        public void SortInputManagers()
+        {
+            bool NeedUpdate = false;
+            for (int i = 0; i < IMs.Count; i++)
+            {
+                if (IMs[i].Priority != IMs[i].OldPriority)
+                {
+                    NeedUpdate = true;
+                    break;
+                }
+            }
+            if (NeedUpdate)
+            {
+                this.IMs.Sort(delegate (MouseInputManager mim1, MouseInputManager mim2)
+                {
+                    if (mim1.Priority > mim2.Priority) return 1;
+                    if (mim1.Priority < mim2.Priority) return -1;
+                    return 0;
+                });
+            }
+            for (int i = 0; i < IMs.Count; i++)
+            {
+                IMs[i].OldPriority = IMs[i].Priority;
+            }
         }
 
         public void Update()

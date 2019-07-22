@@ -104,9 +104,33 @@ namespace MKEditor.Widgets
             Console.WriteLine("Move Down");
         }
 
+        List<Sprite> rlist;
+
         public void ToggleVisibilityLayer(object sender, EventArgs e)
         {
             Console.WriteLine("Toggle Visibility");
+            if (rlist == null)
+            {
+                Console.WriteLine("create");
+                rlist = new List<Sprite>();
+                for (int i = 0; i < 1000; i++)
+                {
+                    Sprite s = new Sprite(this.Viewport);
+                    s.Bitmap = new Bitmap(100, 100);
+                    rlist.Add(s);
+                }
+            }
+            else
+            {
+                Console.WriteLine("dispose");
+                for (int i = 0; i < rlist.Count; i++)
+                {
+                    rlist[i].Dispose();
+                }
+                rlist.Clear();
+                rlist = null;
+                GC.Collect();
+            }
             int layeridx = this.Map.Layers.Count - SelectedLayer - 1;
             this.Layers[layeridx].SetLayerVisible(!this.Layers[layeridx].LayerVisible);
         }

@@ -36,10 +36,10 @@ namespace MKEditor.Widgets
             Color bgc = new Color(47, 49, 54);
             this.Sprites["bg"].Bitmap = new Bitmap(this.Size);
             this.Sprites["bg"].Bitmap.Unlock();
-            this.Sprites["bg"].Bitmap.FillQuadrant(9, 9, 10, Quadrant.TopLeft, bgc);
-            this.Sprites["bg"].Bitmap.FillQuadrant(this.Size.Width - 10, 9, 10, Quadrant.TopRight, bgc);
-            this.Sprites["bg"].Bitmap.FillQuadrant(9, this.Size.Height - 10, 10, Quadrant.BottomLeft, bgc);
-            this.Sprites["bg"].Bitmap.FillQuadrant(this.Size.Width - 10, this.Size.Height - 10, 10, Quadrant.BottomRight, bgc);
+            this.Sprites["bg"].Bitmap.FillQuadrant(9, 9, 10, Location.TopLeft, bgc);
+            this.Sprites["bg"].Bitmap.FillQuadrant(this.Size.Width - 10, 9, 10, Location.TopRight, bgc);
+            this.Sprites["bg"].Bitmap.FillQuadrant(9, this.Size.Height - 10, 10, Location.BottomLeft, bgc);
+            this.Sprites["bg"].Bitmap.FillQuadrant(this.Size.Width - 10, this.Size.Height - 10, 10, Location.BottomRight, bgc);
 
             this.Sprites["bg"].Bitmap.FillRect(10, 0, this.Size.Width - 20, this.Size.Height, bgc);
             this.Sprites["bg"].Bitmap.FillRect(0, 10, 10, this.Size.Height - 20, bgc);
@@ -162,15 +162,15 @@ namespace MKEditor.Widgets
                     Color c = new Color(79, 82, 91);
                     if (i == 0)
                     {
-                        this.Sprites["selection"].Bitmap.FillQuadrant(9, 9, 10, Quadrant.TopLeft, c);
-                        this.Sprites["selection"].Bitmap.FillQuadrant(this.Size.Width - 10, 9, 10, Quadrant.TopRight, c);
+                        this.Sprites["selection"].Bitmap.FillQuadrant(9, 9, 10, Location.TopLeft, c);
+                        this.Sprites["selection"].Bitmap.FillQuadrant(this.Size.Width - 10, 9, 10, Location.TopRight, c);
                         this.Sprites["selection"].Bitmap.FillRect(10, 0, this.Size.Width - 20, 10, c);
                         this.Sprites["selection"].Bitmap.FillRect(0, 10, this.Size.Width, 21, c);
                     }
                     else if (i == this.Items.Count - 1)
                     {
-                        this.Sprites["selection"].Bitmap.FillQuadrant(9, 21, 10, Quadrant.BottomLeft, c);
-                        this.Sprites["selection"].Bitmap.FillQuadrant(this.Size.Width - 10, 21, 10, Quadrant.BottomRight, c);
+                        this.Sprites["selection"].Bitmap.FillQuadrant(9, 21, 10, Location.BottomLeft, c);
+                        this.Sprites["selection"].Bitmap.FillQuadrant(this.Size.Width - 10, 21, 10, Location.BottomRight, c);
                         this.Sprites["selection"].Bitmap.FillRect(10, 21, this.Size.Width - 20, 10, c);
                         this.Sprites["selection"].Bitmap.FillRect(0, 0, this.Size.Width, 21, c);
                     }

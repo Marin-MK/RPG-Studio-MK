@@ -47,13 +47,13 @@ namespace MKEditor.Widgets
             if (this.Value != value)
             {
                 this.Value = value;
-                if (this.OnValueChanged != null) this.OnValueChanged.Invoke(this, new EventArgs());
                 if (this is AutoHScrollBar)
                 {
                     Widget w = this.Parent as Widget;
                     w.ScrolledX = (int) Math.Round((w.MaxChildWidth - w.Viewport.Width) * this.Value);
                     w.UpdateBounds();
                 }
+                if (this.OnValueChanged != null) this.OnValueChanged.Invoke(this, new EventArgs());
                 Redraw();
             }
         }
