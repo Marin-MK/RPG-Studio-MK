@@ -49,7 +49,7 @@ namespace MKEditor.Widgets
                 OuterColor.Set(0, 120, 215);
                 InnerColor.Set(229, 241, 251);
             }
-            else if (this.Selected)
+            else if (this.SelectedWidget)
             {
                 OuterColor.Set(0, 120, 215);
                 Thickness = 2;

@@ -66,7 +66,7 @@ namespace MKEditor.Widgets
             if (this.Sprites["box"].Bitmap != null) this.Sprites["box"].Bitmap.Dispose();
             this.Sprites["box"].Bitmap = new Bitmap(this.Size);
             Color c = new Color(122, 122, 122);
-            if (this.Selected)
+            if (this.SelectedWidget)
             {
                 c.Set(0, 120, 215);
             }

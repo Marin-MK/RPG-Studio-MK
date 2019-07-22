@@ -238,13 +238,13 @@ namespace MKEditor
         {
             if (this.SelectedWidget != null)
             {
-                this.SelectedWidget.Selected = false;
-                this.SelectedWidget.OnDeselected.Invoke(this, new EventArgs());
+                this.SelectedWidget.SelectedWidget = false;
+                this.SelectedWidget.OnWidgetDeselected.Invoke(this, new EventArgs());
                 this.SelectedWidget.Redraw();
             }
             this.SelectedWidget = w;
-            this.SelectedWidget.Selected = true;
-            this.SelectedWidget.OnSelected(this, new EventArgs());
+            this.SelectedWidget.SelectedWidget = true;
+            this.SelectedWidget.OnWidgetSelected(this, new EventArgs());
             this.SelectedWidget.Redraw();
         }
 

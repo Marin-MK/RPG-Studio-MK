@@ -141,7 +141,7 @@ namespace MKEditor.Widgets
 
         public override void Update()
         {
-            if (this.Selected)
+            if (this.SelectedWidget)
             {
                 if (SelectedLayer > 0 && Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_DOWN))
                 {

@@ -10,7 +10,10 @@ namespace MKEditor.Widgets
         public int IconY;
         public bool Toggleable = false;
 
-        private bool Selected = false;
+        public bool Selected = false;
+
+        public EventHandler<EventArgs> OnSelection;
+        public EventHandler<EventArgs> OnDeselection;
 
         public IconButton(object Parent, string Name = "iconButton")
             : base(Parent, Name)
@@ -46,6 +49,8 @@ namespace MKEditor.Widgets
                     }
                 }
                 this.Selected = Selected;
+                if (Selected && this.OnSelection != null) this.OnSelection.Invoke(this, new EventArgs());
+                if (!Selected && this.OnDeselection != null) this.OnDeselection.Invoke(this, new EventArgs());
                 Redraw();
             }
         }

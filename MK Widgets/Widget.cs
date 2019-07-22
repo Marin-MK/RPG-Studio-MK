@@ -31,7 +31,7 @@ namespace MKEditor.Widgets
         public Point                        AdjustedPosition { get; protected set; } = new Point(0, 0);
         public Size                         AdjustedSize     { get; protected set; } = new Size(50, 50);
         public bool                         Visible          { get; protected set; } = true;
-        public bool                         Selected         = false;
+        public bool                         SelectedWidget   = false;
         public bool                         Dock             = false;
         public int                          ZIndex           { get; protected set; } = 0;
         public List<IMenuItem>              ContextMenuList  { get; protected set; }
@@ -71,8 +71,8 @@ namespace MKEditor.Widgets
         public EventHandler<MouseEventArgs> OnMouseWheel;
         public EventHandler<MouseEventArgs> OnMouseMoving;
         public EventHandler<MouseEventArgs> OnWidgetSelect;
-        public EventHandler<EventArgs> OnSelected;
-        public EventHandler<EventArgs> OnDeselected;
+        public EventHandler<EventArgs> OnWidgetSelected;
+        public EventHandler<EventArgs> OnWidgetDeselected;
         public EventHandler<TextInputEventArgs> OnTextInput;
         public EventHandler<EventArgs> OnPositionChanged;
         public EventHandler<SizeEventArgs> OnSizeChanged;
@@ -102,8 +102,8 @@ namespace MKEditor.Widgets
             this.Sprites["_bg"].Z = -999999999;
             this.OnLeftClick = new EventHandler<MouseEventArgs>(this.LeftClick);
             this.OnMouseMoving = new EventHandler<MouseEventArgs>(this.MouseMoving);
-            this.OnSelected = new EventHandler<EventArgs>(this.WidgetSelected);
-            this.OnDeselected = new EventHandler<EventArgs>(this.WidgetDeselected);
+            this.OnWidgetSelected = new EventHandler<EventArgs>(this.WidgetSelected);
+            this.OnWidgetDeselected = new EventHandler<EventArgs>(this.WidgetDeselected);
             this.OnTextInput = new EventHandler<TextInputEventArgs>(this.TextInput);
             this.OnPositionChanged = new EventHandler<EventArgs>(this.PositionChanged);
             this.OnSizeChanged = new EventHandler<SizeEventArgs>(this.SizeChanged);
@@ -224,7 +224,7 @@ namespace MKEditor.Widgets
         {
             AssertUndisposed();
 
-            if (this.Selected)
+            if (this.SelectedWidget)
             {
                 foreach (Shortcut s in this.Shortcuts)
                 {

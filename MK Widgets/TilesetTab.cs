@@ -10,6 +10,13 @@ namespace MKEditor.Widgets
         public int           TileX           { get; protected set; } = 0;
         public int           TileY           { get; protected set; } = 0;
 
+        public IconButton PencilButton;
+        public IconButton FillButton;
+        public IconButton EllipseButton;
+        public IconButton RectButton;
+        public IconButton SelectButton;
+        public IconButton EraserButton;
+
         public LayersTab LayersTab;
         public MapViewer MapViewer;
 
@@ -42,30 +49,39 @@ namespace MKEditor.Widgets
             DrawContainer.SetPosition(75, 29);
             DrawContainer.SetSize(140, 26);
 
-            IconButton pencil = new IconButton(DrawContainer);
-            pencil.SetIcon(1, 0);
-            pencil.SetSelected(true);
+            PencilButton = new IconButton(DrawContainer);
+            PencilButton.SetIcon(1, 0);
+            PencilButton.SetSelected(true);
 
-            IconButton bucket = new IconButton(DrawContainer);
-            bucket.SetIcon(2, 0);
-            bucket.SetPosition(28, 0);
+            FillButton = new IconButton(DrawContainer);
+            FillButton.SetIcon(2, 0);
+            FillButton.SetPosition(28, 0);
 
-            IconButton ellipse = new IconButton(DrawContainer);
-            ellipse.SetIcon(3, 0);
-            ellipse.SetPosition(56, 0);
+            EllipseButton = new IconButton(DrawContainer);
+            EllipseButton.SetIcon(3, 0);
+            EllipseButton.SetPosition(56, 0);
 
-            IconButton rect = new IconButton(DrawContainer);
-            rect.SetIcon(4, 0);
-            rect.SetPosition(84, 0);
+            RectButton = new IconButton(DrawContainer);
+            RectButton.SetIcon(4, 0);
+            RectButton.SetPosition(84, 0);
 
-            IconButton select = new IconButton(DrawContainer);
-            select.SetIcon(5, 0);
-            select.SetPosition(112, 0);
+            SelectButton = new IconButton(DrawContainer);
+            SelectButton.SetIcon(5, 0);
+            SelectButton.SetPosition(112, 0);
 
-            IconButton erase = new IconButton(this);
-            erase.SetIcon(6, 0);
-            erase.SetPosition(215, 29);
-            erase.Toggleable = true;
+            EraserButton = new IconButton(this);
+            EraserButton.SetIcon(6, 0);
+            EraserButton.SetPosition(215, 29);
+            EraserButton.Toggleable = true;
+            EraserButton.OnSelection += delegate (object sender, EventArgs e)
+            {
+                Cursor.SetPosition(0, 0);
+                Cursor.SetVisible(false);
+            };
+            EraserButton.OnDeselection += delegate (object sender, EventArgs e)
+            {
+                UpdateCursorPosition();
+            };
 
             TabControl = new TabView(this);
             TabControl.SetPosition(0, 62);
@@ -125,6 +141,15 @@ namespace MKEditor.Widgets
             }
         }
 
+        public void SelectTile(Data.TileData tile)
+        {
+            TilesetIndex = tile.TilesetIndex;
+            TileX = tile.TileID % 8;
+            TileY = (int) Math.Floor(tile.TileID / 8d);
+            UpdateCursorPosition();
+            EraserButton.SetSelected(false);
+        }
+
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
@@ -143,7 +168,7 @@ namespace MKEditor.Widgets
             if (TabControl.SelectedIndex != 0) return;
             LayoutContainer lc = TilesetStackPanel.Widgets[TilesetIndex] as LayoutContainer;
             CollapsibleContainer cc = lc.Widget as CollapsibleContainer;
-            if (cc.Collapsed)
+            if (cc.Collapsed || EraserButton.Selected)
             {
                 Cursor.SetPosition(0, 0);
                 Cursor.SetVisible(false);
@@ -191,6 +216,10 @@ namespace MKEditor.Widgets
                 TileY = tiley;
                 Cursor.SetPosition(28 + tilex * 33, 46 + height + tiley * 33);
                 Cursor.SetVisible(true);
+                if (EraserButton.Selected)
+                {
+                    EraserButton.SetSelected(false);
+                }
                 break;
             }
         }
