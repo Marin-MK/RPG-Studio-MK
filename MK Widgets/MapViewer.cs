@@ -16,8 +16,8 @@ namespace MKEditor.Widgets
         public int MapTileY = 0;
         public Location CursorOrigin;
         public List<int?> TileIDs;
-        public int TileIDsWidth = 1;
-        public int TileIDsHeight = 1;
+        public int CursorWidth = 0;
+        public int CursorHeight = 0;
         public Point OriginDrawPoint;
 
         public Container MainContainer;
@@ -137,18 +137,23 @@ namespace MKEditor.Widgets
             {
                 MapTileX = tilex;
                 MapTileY = tiley;
-                int offsetx = 0;
-                int offsety = 0;
-                if (CursorOrigin == Location.TopRight || CursorOrigin == Location.BottomRight)
-                    offsetx = 32 * TileIDsWidth;
-                if (CursorOrigin == Location.BottomLeft || CursorOrigin == Location.BottomRight)
-                    offsety = 32 * TileIDsHeight;
-                Cursor.SetPosition(cx - offsetx, cy - offsety);
+                UpdateCursorPosition();
             }
             if (oldmousex != RelativeMouseX || oldmousey != RelativeMouseY)
             {
                 UpdateTilePlacement(oldmousex, oldmousey, RelativeMouseX, RelativeMouseY);
             }
+        }
+
+        public void UpdateCursorPosition()
+        {
+            int offsetx = 0;
+            int offsety = 0;
+            if (CursorOrigin == Location.TopRight || CursorOrigin == Location.BottomRight)
+                offsetx = 32 * CursorWidth;
+            if (CursorOrigin == Location.BottomLeft || CursorOrigin == Location.BottomRight)
+                offsety = 32 * CursorHeight;
+            Cursor.SetPosition(MapWidget.Position.X + 32 * MapTileX - offsetx, MapWidget.Position.Y + 32 * MapTileY - offsety);
         }
 
         public override void MouseDown(object sender, MouseEventArgs e)
@@ -176,8 +181,7 @@ namespace MKEditor.Widgets
             {
                 if (OriginDrawPoint == null) OriginDrawPoint = new Point((int) Math.Floor(oldx / 32d), (int) Math.Floor(oldy / 32d));
                 int Layer = this.LayersTab.SelectedLayer;
-                int TileID = this.TilesetTab.TileStartY * 8 + this.TilesetTab.TileStartX;
-                MapWidget.DrawTiles(oldx, oldy, newx, newy, Layer, TileID);
+                MapWidget.DrawTiles(oldx, oldy, newx, newy, Layer);
             }
             if (WidgetIM.ClickedRightInArea == true)
             {
@@ -276,8 +280,14 @@ namespace MKEditor.Widgets
             }
         }
 
-        public void DrawTiles(int oldx, int oldy, int newx, int newy, int layer, int tileidd)
+        public void DrawTiles(int oldx, int oldy, int newx, int newy, int layer)
         {
+            // Avoid drawing a line from top left to current tile
+            if (oldx == -1 || oldy == -1)
+            {
+                oldx = newx;
+                oldy = newy;
+            }
             Point Origin = MapViewer.OriginDrawPoint;
             // This resets the two points tiles are drawn in between if the mouse has gone off the map (otherwise it'd draw a line between
             // the last point on the map and the current point on the map)
@@ -324,32 +334,41 @@ namespace MKEditor.Widgets
             {
                 int MapTileX = TempCoords[i].X;
                 int MapTileY = TempCoords[i].Y;
+                int OriginX = MapViewer.OriginDrawPoint.X;
+                int OriginY = MapViewer.OriginDrawPoint.Y;
                 if (MapViewer.CursorOrigin == Location.TopRight || MapViewer.CursorOrigin == Location.BottomRight)
-                    MapTileX -= MapViewer.TileIDsWidth;
+                {
+                    MapTileX -= MapViewer.CursorWidth;
+                    OriginX -= MapViewer.CursorWidth;
+                }
                 if (MapViewer.CursorOrigin == Location.BottomLeft || MapViewer.CursorOrigin == Location.BottomRight)
-                    MapTileY -= MapViewer.TileIDsHeight;
+                {
+                    MapTileY -= MapViewer.CursorHeight;
+                    OriginY -= MapViewer.CursorHeight;
+                }
                 // MapTileX and MapTileY are now the top left no matter the origin point
                 int SelArea = MapViewer.TileIDs.Count;
 
-                int OriginDiffX = (MapViewer.OriginDrawPoint.X - MapTileX) % (MapViewer.TileIDsWidth + 1);
-                int OriginDiffY = (MapViewer.OriginDrawPoint.Y - MapTileY) % (MapViewer.TileIDsHeight + 1);
+                int OriginDiffX = (OriginX - MapTileX) % (MapViewer.CursorWidth + 1);
+                int OriginDiffY = (OriginY - MapTileY) % (MapViewer.CursorHeight + 1);
 
-                Console.WriteLine($"top left: {MapTileX},{MapTileY} count: {SelArea} diff: {OriginDiffX},{OriginDiffY}");
                 for (int j = 0; j < SelArea; j++)
                 {
                     if (MapViewer.TileIDs[j] == null) continue;
-                    int selx = j % (MapViewer.TileIDsWidth + 1);
+                    int selx = j % (MapViewer.CursorWidth + 1);
                     if (OriginDiffX < 0) selx -= OriginDiffX;
-                    if (OriginDiffX > 0) selx += MapViewer.TileIDsWidth + 1 - OriginDiffX;
-                    selx %= MapViewer.TileIDsWidth + 1;
-                    int sely = (int) Math.Floor((double) j / (MapViewer.TileIDsWidth + 1));
+                    if (OriginDiffX > 0) selx -= OriginDiffX;
+                    if (selx < 0) selx += MapViewer.CursorWidth + 1;
+                    selx %= MapViewer.CursorWidth + 1;
+                    int sely = (int) Math.Floor((double) j / (MapViewer.CursorWidth + 1));
                     if (OriginDiffY < 0) sely -= OriginDiffY;
-                    if (OriginDiffY > 0) sely += MapViewer.TileIDsHeight + 1 - OriginDiffY;
-                    sely %= MapViewer.TileIDsHeight + 1;
-                    int tileid = (int) MapViewer.TileIDs[sely * (MapViewer.TileIDsWidth + 1) + selx];
+                    if (OriginDiffY > 0) sely -= OriginDiffY;
+                    if (sely < 0) sely += MapViewer.CursorHeight + 1;
+                    sely %= MapViewer.CursorHeight + 1;
+                    int tileid = (int) MapViewer.TileIDs[sely * (MapViewer.CursorWidth + 1) + selx];
                     
-                    int actualx = MapTileX + (j % (MapViewer.TileIDsWidth + 1));
-                    int actualy = MapTileY + (int) Math.Floor((double) j / (MapViewer.TileIDsWidth + 1));
+                    int actualx = MapTileX + (j % (MapViewer.CursorWidth + 1));
+                    int actualy = MapTileY + (int) Math.Floor((double) j / (MapViewer.CursorWidth + 1));
 
                     int MapPosition = actualy * MapData.Width + actualx;
                     if (actualx < 0 || actualx >= MapData.Width || actualy < 0 || actualy >= MapData.Height) continue;

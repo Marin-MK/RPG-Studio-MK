@@ -206,8 +206,8 @@ namespace MKEditor.Widgets
                 MapViewer.CursorOrigin = origin;
                 MapViewer.Cursor.SetSize(32 * (DiffX + 1), 32 * (DiffY + 1));
                 MapViewer.TileIDs = new List<int?>();
-                MapViewer.TileIDsWidth = DiffX;
-                MapViewer.TileIDsHeight = DiffY;
+                MapViewer.CursorWidth = DiffX;
+                MapViewer.CursorHeight = DiffY;
                 int sx = TileStartX < TileEndX ? TileStartX : TileEndX;
                 int ex = TileStartX < TileEndX ? TileEndX : TileStartX;
                 int sy = TileStartY < TileEndY ? TileStartY : TileEndY;
