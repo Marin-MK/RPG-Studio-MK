@@ -15,10 +15,11 @@ namespace MKEditor.Widgets
         public int MapTileX = 0;
         public int MapTileY = 0;
         public Location CursorOrigin;
-        public List<int?> TileIDs;
+        public List<Data.TileData> TileDataList = new List<Data.TileData>();
         public int CursorWidth = 0;
         public int CursorHeight = 0;
         public Point OriginDrawPoint;
+        public bool SelectionOnMap = false;
 
         public Container MainContainer;
         public CursorWidget Cursor;
@@ -133,12 +134,9 @@ namespace MKEditor.Widgets
             RelativeMouseY = cy;
             cx += MapWidget.Position.X;
             cy += MapWidget.Position.Y;
-            if (Cursor.Position.X != cx || Cursor.Position.Y != cy) // Tile changed
-            {
-                MapTileX = tilex;
-                MapTileY = tiley;
-                UpdateCursorPosition();
-            }
+            MapTileX = tilex;
+            MapTileY = tiley;
+            UpdateCursorPosition();
             if (oldmousex != RelativeMouseX || oldmousey != RelativeMouseY)
             {
                 UpdateTilePlacement(oldmousex, oldmousey, RelativeMouseX, RelativeMouseY);
@@ -154,6 +152,7 @@ namespace MKEditor.Widgets
             if (CursorOrigin == Location.BottomLeft || CursorOrigin == Location.BottomRight)
                 offsety = 32 * CursorHeight;
             Cursor.SetPosition(MapWidget.Position.X + 32 * MapTileX - offsetx, MapWidget.Position.Y + 32 * MapTileY - offsety);
+            Cursor.SetSize(32 * (CursorWidth + 1), 32 * (CursorHeight + 1));
         }
 
         public override void MouseDown(object sender, MouseEventArgs e)
@@ -168,7 +167,7 @@ namespace MKEditor.Widgets
         public override void MouseUp(object sender, MouseEventArgs e)
         {
             base.MouseUp(sender, e);
-            if (e.LeftButton != e.OldLeftButton) OriginDrawPoint = null;
+            if (!e.LeftButton && !e.RightButton) OriginDrawPoint = null;
         }
 
         public void UpdateTilePlacement(int oldx = -1, int oldy = -1, int newx = -1, int newy = -1)
@@ -185,18 +184,65 @@ namespace MKEditor.Widgets
             }
             if (WidgetIM.ClickedRightInArea == true)
             {
-                if (MapTileX < 0 || MapTileX >= Map.Width || MapTileY < 0 || MapTileY >= Map.Height) return;
+                if (OriginDrawPoint == null) OriginDrawPoint = new Point((int) Math.Floor(oldx / 32d), (int) Math.Floor(oldy / 32d));
                 int Layer = this.LayersTab.SelectedLayer;
-                int MapTileIndex = MapTileY * Map.Width + MapTileX;
-                Data.TileData tile = Map.Layers[Layer].Tiles[MapTileIndex];
-                if (tile == null)
+                TileDataList.Clear();
+                
+                int OriginDiffX = MapTileX - OriginDrawPoint.X;
+                int OriginDiffY = MapTileY - OriginDrawPoint.Y;
+                CursorOrigin = Location.BottomRight;
+                if (OriginDiffX < 0)
                 {
-                    TilesetTab.EraserButton.SetSelected(true);
-                    TilesetTab.UpdateCursorPosition();
+                    OriginDiffX = -OriginDiffX;
+                    CursorOrigin = Location.BottomLeft;
+                }
+                if (OriginDiffY < 0)
+                {
+                    OriginDiffY = -OriginDiffY;
+                    if (CursorOrigin == Location.BottomLeft) CursorOrigin = Location.TopLeft;
+                    else CursorOrigin = Location.TopRight;
+                }
+                CursorWidth = OriginDiffX;
+                CursorHeight = OriginDiffY;
+                UpdateCursorPosition();
+                
+                if (CursorWidth == 0 && CursorHeight == 0)
+                {
+                    int MapTileIndex = MapTileY * Map.Width + MapTileX;
+                    if (MapTileX < 0 || MapTileX >= Map.Width || MapTileY < 0 || MapTileY >= Map.Height)
+                        TilesetTab.EraserButton.SetSelected(true);
+                    else
+                    {
+                        Data.TileData tile = Map.Layers[Layer].Tiles[MapTileIndex];
+                        if (tile == null) TilesetTab.EraserButton.SetSelected(true);
+                        else TilesetTab.SelectTile(tile);
+                    }
                 }
                 else
                 {
-                    TilesetTab.SelectTile(tile);
+                    SelectionOnMap = true;
+                    TilesetTab.EraserButton.SetSelected(false);
+                    int sx = OriginDrawPoint.X < MapTileX ? OriginDrawPoint.X : MapTileX;
+                    int ex = OriginDrawPoint.X < MapTileX ? MapTileX : OriginDrawPoint.X;
+                    int sy = OriginDrawPoint.Y < MapTileY ? OriginDrawPoint.Y : MapTileY;
+                    int ey = OriginDrawPoint.Y < MapTileY ? MapTileY : OriginDrawPoint.Y;
+                    for (int y = sy; y <= ey; y++)
+                    {
+                        for (int x = sx; x <= ex; x++)
+                        {
+                            int index = y * Map.Width + x;
+                            if (x < 0 || x >= Map.Width || y < 0 || y >= Map.Height)
+                                TileDataList.Add(null);
+                            else
+                            {
+                                Data.TileData tile = Map.Layers[Layer].Tiles[index];
+                                TileDataList.Add(tile);
+                            }
+                        }
+                    }
+                    SelectionOnMap = true;
+                    Console.WriteLine();
+                    Console.WriteLine();
                 }
             }
         }
@@ -295,7 +341,7 @@ namespace MKEditor.Widgets
             this.Sprites[layer.ToString()].Bitmap.Unlock();
             bool line = !(oldx == newx && oldy == newy);
             List<Point> TempCoords = new List<Point>();
-            if (line)
+            if (line) // Draw tiles between several tiles - use simple line drawing algorithm to determine the tiles to draw on
             {
                 int x1 = oldx;
                 int y1 = oldy;
@@ -325,13 +371,15 @@ namespace MKEditor.Widgets
                     }
                 }
             }
-            else
+            else // Just one singular tile
             {
                 TempCoords.Add(new Point((int) Math.Floor(newx / 32d), (int) Math.Floor(newy / 32d)));
             }
 
             for (int i = 0; i < TempCoords.Count; i++)
             {
+                // Both of these depend on the origin, but we need them both at the top left as we begin drawing there
+                // and to be able to compare them to use in the modulus, they both have to be adjusted
                 int MapTileX = TempCoords[i].X;
                 int MapTileY = TempCoords[i].Y;
                 int OriginX = MapViewer.OriginDrawPoint.X;
@@ -347,14 +395,14 @@ namespace MKEditor.Widgets
                     OriginY -= MapViewer.CursorHeight;
                 }
                 // MapTileX and MapTileY are now the top left no matter the origin point
-                int SelArea = MapViewer.TileIDs.Count;
+                int SelArea = MapViewer.TileDataList.Count;
 
                 int OriginDiffX = (OriginX - MapTileX) % (MapViewer.CursorWidth + 1);
                 int OriginDiffY = (OriginY - MapTileY) % (MapViewer.CursorHeight + 1);
 
                 for (int j = 0; j < SelArea; j++)
                 {
-                    if (MapViewer.TileIDs[j] == null) continue;
+                    bool Blank = blanktile;
                     int selx = j % (MapViewer.CursorWidth + 1);
                     if (OriginDiffX < 0) selx -= OriginDiffX;
                     if (OriginDiffX > 0) selx -= OriginDiffX;
@@ -365,15 +413,27 @@ namespace MKEditor.Widgets
                     if (OriginDiffY > 0) sely -= OriginDiffY;
                     if (sely < 0) sely += MapViewer.CursorHeight + 1;
                     sely %= MapViewer.CursorHeight + 1;
-                    int tileid = (int) MapViewer.TileIDs[sely * (MapViewer.CursorWidth + 1) + selx];
-                    
+                    Data.TileData tiledata = MapViewer.TileDataList[sely * (MapViewer.CursorWidth + 1) + selx];
+                    int tileid = -1;
+                    int tilesetindex = -1;
+                    int tilesetx = -1;
+                    int tilesety = -1;
+                    if (tiledata != null)
+                    {
+                        tileid = tiledata.TileID;
+                        tilesetindex = tiledata.TilesetIndex;
+                        tilesetx = tileid % 8;
+                        tilesety = (int) Math.Floor(tileid / 8d);
+                    }
+                    else Blank = true;
+
                     int actualx = MapTileX + (j % (MapViewer.CursorWidth + 1));
                     int actualy = MapTileY + (int) Math.Floor((double) j / (MapViewer.CursorWidth + 1));
 
                     int MapPosition = actualy * MapData.Width + actualx;
                     if (actualx < 0 || actualx >= MapData.Width || actualy < 0 || actualy >= MapData.Height) continue;
                     Data.TileData olddata = MapData.Layers[layer].Tiles[MapPosition];
-                    if (blanktile)
+                    if (Blank)
                     {
                         MapData.Layers[layer].Tiles[MapPosition] = null;
                     }
@@ -381,22 +441,20 @@ namespace MKEditor.Widgets
                     {
                         MapData.Layers[layer].Tiles[MapPosition] = new Data.TileData
                         {
-                            TilesetIndex = MapViewer.TilesetTab.TilesetIndex,
+                            TilesetIndex = tilesetindex,
                             TileID = tileid
                         };
                     }
+                    
                     if (olddata != MapData.Layers[layer].Tiles[MapPosition])
                     {
                         this.Sprites[layer.ToString()].Bitmap.FillRect(actualx * 32, actualy * 32, 32, 32, Color.ALPHA);
-                        if (!blanktile)
+                        if (!Blank)
                         {
-                            int topleftx = MapViewer.TilesetTab.TileStartX < MapViewer.TilesetTab.TileEndX ? MapViewer.TilesetTab.TileStartX : MapViewer.TilesetTab.TileEndX;
-                            int toplefty = MapViewer.TilesetTab.TileStartY < MapViewer.TilesetTab.TileEndY ? MapViewer.TilesetTab.TileStartY : MapViewer.TilesetTab.TileEndY;
-
                             this.Sprites[layer.ToString()].Bitmap.Build(
                                 actualx * 32, actualy * 32,
-                                Data.GameData.Tilesets[MapData.TilesetIDs[MapViewer.TilesetTab.TilesetIndex]].TilesetBitmap,
-                                new Rect((topleftx + selx) * 32, (toplefty + sely) * 32, 32, 32)
+                                Data.GameData.Tilesets[MapData.TilesetIDs[tilesetindex]].TilesetBitmap,
+                                new Rect(tilesetx * 32, tilesety * 32, 32, 32)
                             );
                         }
                     }

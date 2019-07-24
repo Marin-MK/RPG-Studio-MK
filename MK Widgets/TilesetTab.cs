@@ -79,6 +79,11 @@ namespace MKEditor.Widgets
             {
                 Cursor.SetPosition(0, 0);
                 Cursor.SetVisible(false);
+                MapViewer.TileDataList = new List<Data.TileData>() { null };
+                MapViewer.CursorWidth = 0;
+                MapViewer.CursorHeight = 0;
+                UpdateCursorPosition();
+                MapViewer.UpdateCursorPosition();
             };
             EraserButton.OnDeselection += delegate (object sender, EventArgs e)
             {
@@ -152,6 +157,7 @@ namespace MKEditor.Widgets
             TilesetIndex = tile.TilesetIndex;
             TileStartX = TileEndX = tile.TileID % 8;
             TileStartY = TileEndY = (int) Math.Floor(tile.TileID / 8d);
+            MapViewer.SelectionOnMap = false;
             UpdateCursorPosition();
             EraserButton.SetSelected(false);
         }
@@ -174,7 +180,7 @@ namespace MKEditor.Widgets
             if (TabControl.SelectedIndex != 0) return;
             LayoutContainer lc = TilesetStackPanel.Widgets[TilesetIndex] as LayoutContainer;
             CollapsibleContainer cc = lc.Widget as CollapsibleContainer;
-            if (cc.Collapsed || EraserButton.Selected)
+            if (cc.Collapsed || EraserButton.Selected || MapViewer.SelectionOnMap)
             {
                 Cursor.SetPosition(0, 0);
                 Cursor.SetVisible(false);
@@ -204,10 +210,11 @@ namespace MKEditor.Widgets
                 Cursor.SetPosition(28 + TileStartX * 33 - PosDiffX, 46 + lc.Position.Y + TileStartY * 33 - PosDiffY);
                 Cursor.SetSize(32 * (DiffX + 1) + DiffX, 32 * (DiffY + 1) + DiffY);
                 MapViewer.CursorOrigin = origin;
-                MapViewer.Cursor.SetSize(32 * (DiffX + 1), 32 * (DiffY + 1));
-                MapViewer.TileIDs = new List<int?>();
+                MapViewer.TileDataList.Clear();
                 MapViewer.CursorWidth = DiffX;
                 MapViewer.CursorHeight = DiffY;
+                MapViewer.SelectionOnMap = false;
+                MapViewer.UpdateCursorPosition();
                 int sx = TileStartX < TileEndX ? TileStartX : TileEndX;
                 int ex = TileStartX < TileEndX ? TileEndX : TileStartX;
                 int sy = TileStartY < TileEndY ? TileStartY : TileEndY;
@@ -217,7 +224,7 @@ namespace MKEditor.Widgets
                     for (int x = sx; x <= ex; x++)
                     {
                         int tileid = y * 8 + x;
-                        MapViewer.TileIDs.Add(tileid);
+                        MapViewer.TileDataList.Add(new Data.TileData() { TileID = tileid, TilesetIndex = TilesetIndex });
                     }
                 }
                 Cursor.SetVisible(true);
@@ -230,10 +237,9 @@ namespace MKEditor.Widgets
             if (!DraggingTileset) return;
             int idx = -1,
                 x = -1,
-                y = -1,
-                height = -1;
-            GetTilePosition(e, out idx, out x, out y, out height);
-            if (idx != -1 && x != -1 && y != -1 && height != -1)
+                y = -1;
+            GetTilePosition(e, out idx, out x, out y);
+            if (idx != -1 && x != -1 && y != -1)
             {
                 // Makes sure you can only have a selection within the same tileset
                 if (idx != TilesetIndex) return;
@@ -251,14 +257,15 @@ namespace MKEditor.Widgets
             if (e.MiddleButton != e.OldMiddleButton) return; // A button other than the middle mouse button was pressed (left or right)
             int idx = -1,
                 x = -1,
-                y = -1,
-                height = -1;
-            GetTilePosition(e, out idx, out x, out y, out height);
-            if (idx != -1 && x != -1 && y != -1 && height != -1)
+                y = -1;
+            GetTilePosition(e, out idx, out x, out y);
+            if (idx != -1 && x != -1 && y != -1)
             {
                 DraggingTileset = true;
+                TilesetIndex = idx;
                 TileStartX = TileEndX = x;
                 TileStartY = TileEndY = y;
+                MapViewer.SelectionOnMap = false;
                 UpdateCursorPosition();
                 if (EraserButton.Selected)
                 {
@@ -273,12 +280,11 @@ namespace MKEditor.Widgets
             DraggingTileset = e.LeftButton || e.RightButton;
         }
 
-        public void GetTilePosition(MouseEventArgs e, out int TilesetIndex, out int X, out int Y, out int Height)
+        public void GetTilePosition(MouseEventArgs e, out int TilesetIndex, out int X, out int Y)
         {
             TilesetIndex = -1;
             X = -1;
             Y = -1;
-            Height = -1;
             if (TabControl.SelectedIndex != 0) return;
             if (!e.LeftButton && !e.RightButton) return;
             if (Parent.ScrollBarY != null && (Parent.ScrollBarY.Dragging || Parent.ScrollBarY.Hovering)) return;
@@ -309,7 +315,6 @@ namespace MKEditor.Widgets
                 TilesetIndex = i;
                 X = tilex;
                 Y = tiley;
-                Height = height;
                 break;
             }
         }
