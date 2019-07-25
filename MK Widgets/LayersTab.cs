@@ -10,7 +10,7 @@ namespace MKEditor.Widgets
         public MapViewer MapViewer;
         public Data.Map Map { get { return this.MapViewer.Map; } }
 
-        public int SelectedLayer
+        public int SelectedLayer // Index is based on the map's layers (i.e. it's the real layer index)
         {
             get
             {
@@ -88,56 +88,70 @@ namespace MKEditor.Widgets
             });
         }
 
+        public void UpdateNames()
+        {
+            for (int i = 0; i < Map.Layers.Count; i++) Map.Layers[i].Name = $"Layer {i + 1}";
+        }
+
         public void NewLayer(object sender, EventArgs e)
         {
             // Temporarily opens map properties window for debugging purposes.
-            MapPropertiesWindow mpw = new MapPropertiesWindow(Window);
+            //MapPropertiesWindow mpw = new MapPropertiesWindow(Window);
+            Data.Layer layer = new Data.Layer($"Layer {SelectedLayer + 2}");
+            layer.Tiles = new List<Data.TileData>();
+            for (int i = 0; i < Map.Width * Map.Height; i++) layer.Tiles.Add(null);
+            Map.Layers.Insert(SelectedLayer + 1, layer);
+            UpdateNames();
+            int oldselected = SelectedLayer;
+            MapViewer.RedrawLayers();
+            CreateLayers();
+            Layers[Map.Layers.Count - oldselected - 2].SetLayerSelected(true);
         }
-
-        public void MoveLayerUp(object sender, EventArgs e)
-        {
-            Console.WriteLine("Move Up");
-        }
-
-        public void MoveLayerDown(object sender, EventArgs e)
-        {
-            Console.WriteLine("Move Down");
-        }
-
-        List<Sprite> rlist;
 
         public void ToggleVisibilityLayer(object sender, EventArgs e)
         {
-            Console.WriteLine("Toggle Visibility");
-            if (rlist == null)
-            {
-                Console.WriteLine("create");
-                rlist = new List<Sprite>();
-                for (int i = 0; i < 1000; i++)
-                {
-                    Sprite s = new Sprite(this.Viewport);
-                    s.Bitmap = new Bitmap(100, 100);
-                    rlist.Add(s);
-                }
-            }
-            else
-            {
-                Console.WriteLine("dispose");
-                for (int i = 0; i < rlist.Count; i++)
-                {
-                    rlist[i].Dispose();
-                }
-                rlist.Clear();
-                rlist = null;
-                GC.Collect();
-            }
             int layeridx = this.Map.Layers.Count - SelectedLayer - 1;
             this.Layers[layeridx].SetLayerVisible(!this.Layers[layeridx].LayerVisible);
         }
 
+        public void MoveLayerUp(object sender, EventArgs e)
+        {
+            if (SelectedLayer >= Map.Layers.Count - 1) return;
+            Data.Layer layer1 = Map.Layers[SelectedLayer + 1];
+            Map.Layers[SelectedLayer + 1] = Map.Layers[SelectedLayer];
+            Map.Layers[SelectedLayer] = layer1;
+            UpdateNames();
+            int oldselected = SelectedLayer;
+            MapViewer.RedrawLayers();
+            CreateLayers();
+            Layers[Map.Layers.Count - oldselected - 2].SetLayerSelected(true);
+        }
+
+        public void MoveLayerDown(object sender, EventArgs e)
+        {
+            if (SelectedLayer <= 0) return;
+            Data.Layer layer1 = Map.Layers[SelectedLayer - 1];
+            Map.Layers[SelectedLayer - 1] = Map.Layers[SelectedLayer];
+            Map.Layers[SelectedLayer] = layer1;
+            UpdateNames();
+            int oldselected = SelectedLayer;
+            MapViewer.RedrawLayers();
+            CreateLayers();
+            Layers[Map.Layers.Count - oldselected].SetLayerSelected(true);
+        }
+
         public void DeleteLayer(object sender, EventArgs e)
         {
-            Console.WriteLine("Delete");
+            if (Map.Layers.Count > 0)
+            {
+                Map.Layers.RemoveAt(SelectedLayer);
+                UpdateNames();
+                int oldselected = SelectedLayer;
+                MapViewer.RedrawLayers();
+                CreateLayers();
+                if (oldselected == 0) oldselected += 1;
+                Layers[Map.Layers.Count - oldselected].SetLayerSelected(true);
+            }
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)

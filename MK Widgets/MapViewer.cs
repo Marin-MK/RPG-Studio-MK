@@ -68,6 +68,11 @@ namespace MKEditor.Widgets
             if (MainContainer.ScrollBarY != null) MainContainer.ScrollBarY.SetValue(0.5);
         }
 
+        public void RedrawLayers()
+        {
+            MapWidget.RedrawLayers();
+        }
+
         public void CreateLayerBitmaps()
         {
             MapWidget.LoadLayers(this.Map);
@@ -174,7 +179,6 @@ namespace MKEditor.Widgets
         {
             if (MainContainer.ScrollBarX != null && (MainContainer.ScrollBarX.Dragging || MainContainer.ScrollBarX.Hovering)) return;
             if (MainContainer.ScrollBarY != null && (MainContainer.ScrollBarY.Dragging || MainContainer.ScrollBarY.Hovering)) return;
-            if (MapTileX == -1 || MapTileY == -1) return;
             // Input handling
             if (WidgetIM.ClickedLeftInArea == true)
             {
@@ -266,6 +270,12 @@ namespace MKEditor.Widgets
         {
             this.MapData = MapData;
             this.SetSize(MapData.Width * 32, MapData.Height * 32);
+            RedrawGrid();
+            RedrawLayers();
+        }
+
+        public void RedrawGrid()
+        {
             if (Sprites["grid"].Bitmap != null) Sprites["grid"].Bitmap.Dispose();
             Sprites["grid"].Bitmap = new Bitmap(MapData.Width * 32, MapData.Height * 32);
             Sprites["grid"].Bitmap.Unlock();
@@ -284,6 +294,10 @@ namespace MKEditor.Widgets
                 }
             }
             Sprites["grid"].Bitmap.Lock();
+        }
+
+        public void RedrawLayers()
+        {
             foreach (string s in this.Sprites.Keys)
             {
                 if (s != "_bg" && s != "grid") this.Sprites[s].Dispose();
@@ -315,7 +329,7 @@ namespace MKEditor.Widgets
                         int mapy = y * 32;
                         int tile_id = MapData.Layers[layer].Tiles[y * MapData.Width + x].TileID;
                         int tilesetx = tile_id % 8;
-                        int tilesety = (int) Math.Floor(tile_id / 8d);
+                        int tilesety = (int)Math.Floor(tile_id / 8d);
                         layerbmp.Build(new Rect(mapx, mapy, 32, 32), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
                     }
                 }

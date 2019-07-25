@@ -22,6 +22,8 @@ namespace MKEditor.Widgets
         public LayersTab LayersTab;
         public MapViewer MapViewer;
 
+        bool DraggingTileset = false;
+
         TabView TabControl;
 
         // Tilesets tab
@@ -248,8 +250,6 @@ namespace MKEditor.Widgets
                 UpdateCursorPosition();
             }
         }
-
-        bool DraggingTileset = false;
 
         public override void MouseDown(object sender, MouseEventArgs e)
         {
