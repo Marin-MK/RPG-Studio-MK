@@ -30,6 +30,8 @@ namespace MKEditor.Widgets
             allmapcontainer.SetWidth(205);
             allmapcontainer.AutoScroll = true;
 
+            Container bgcontainer = new Container(allmapcontainer);
+
             mapview = new TreeView(allmapcontainer);
             mapview.SetWidth(205);
             List<TreeNode> Nodes = new List<TreeNode>();
@@ -40,7 +42,11 @@ namespace MKEditor.Widgets
             mapview.SetNodes(Nodes);
             mapview.OnSelectedNodeChanged += delegate (object sender, MouseEventArgs e)
             {
-                MapViewer.SetMap(mapview.SelectedNode.Object as Data.Map);
+                //MapViewer.SetMap(mapview.SelectedNode.Object as Data.Map);
+            };
+            mapview.OnSizeChanged += delegate (object sender, SizeEventArgs e)
+            {
+                //bgcontainer.SetSize(mapview.Size.Width + 20, mapview.Size.Height + 20);
             };
         }
 
