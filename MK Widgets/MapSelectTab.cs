@@ -14,16 +14,13 @@ namespace MKEditor.Widgets
         public MapSelectTab(object Parent, string Name = "mapSelectTab")
             : base(Parent, Name)
         {
-            this.Sprites["text"] = new Sprite(this.Viewport);
-            Font f = new Font("Fonts/Quicksand Bold", 16);
-            Size s = f.TextSize("Maps");
-            this.Sprites["text"].Bitmap = new Bitmap(s);
-            this.Sprites["text"].Bitmap.Font = f;
-            this.Sprites["text"].X = 6;
-            this.Sprites["text"].Y = 14;
-            this.Sprites["text"].Bitmap.Unlock();
-            this.Sprites["text"].Bitmap.DrawText("Maps", Color.WHITE);
-            this.Sprites["text"].Bitmap.Lock();
+            SetBackgroundColor(27, 28, 32);
+            this.Sprites["header"] = new Sprite(this.Viewport, new Bitmap(314, 22));
+            this.Sprites["header"].Bitmap.Unlock();
+            this.Sprites["header"].Bitmap.FillRect(0, 0, 314, 22, new Color(40, 44, 52));
+            this.Sprites["header"].Bitmap.Font = Font.Get("Fonts/Ubuntu-R", 16);
+            this.Sprites["header"].Bitmap.DrawText("Maps", 6, 1, Color.WHITE);
+            this.Sprites["header"].Bitmap.Lock();
 
             allmapcontainer = new Container(this);
             allmapcontainer.SetPosition(20, 40);
@@ -42,11 +39,8 @@ namespace MKEditor.Widgets
             mapview.SetNodes(Nodes);
             mapview.OnSelectedNodeChanged += delegate (object sender, MouseEventArgs e)
             {
-                //MapViewer.SetMap(mapview.SelectedNode.Object as Data.Map);
-            };
-            mapview.OnSizeChanged += delegate (object sender, SizeEventArgs e)
-            {
-                //bgcontainer.SetSize(mapview.Size.Width + 20, mapview.Size.Height + 20);
+                // Changes mapviewer, layerstab and tilesettab to match the new map
+                MapViewer.SetMap(mapview.SelectedNode.Object as Data.Map);
             };
         }
 

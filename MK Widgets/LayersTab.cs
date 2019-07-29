@@ -10,7 +10,7 @@ namespace MKEditor.Widgets
         public MapViewer MapViewer;
         public Data.Map Map { get { return this.MapViewer.Map; } }
 
-        public int SelectedLayer // Index is based on the map's layers (i.e. it's the real layer index)
+        public int SelectedLayer
         {
             get
             {
@@ -26,14 +26,13 @@ namespace MKEditor.Widgets
         public LayersTab(object Parent, string Name = "layersTab")
             : base(Parent, Name)
         {
+            SetBackgroundColor(27, 28, 32);
             this.Sprites["header"] = new Sprite(this.Viewport, new Bitmap(314, 22));
             this.Sprites["header"].Bitmap.Unlock();
-            this.Sprites["header"].Bitmap.FillRect(0, 0, 314, 22, new Color(135, 135, 135));
+            this.Sprites["header"].Bitmap.FillRect(0, 0, 314, 22, new Color(40, 44, 52));
             this.Sprites["header"].Bitmap.Font = Font.Get("Fonts/Ubuntu-R", 16);
-            this.Sprites["header"].Bitmap.DrawText("Layers", 6, 0, Color.WHITE);
+            this.Sprites["header"].Bitmap.DrawText("Layers", 6, 1, Color.WHITE);
             this.Sprites["header"].Bitmap.Lock();
-
-            SetBackgroundColor(47, 49, 54);
 
             this.OnWidgetSelect += WidgetSelect;
 

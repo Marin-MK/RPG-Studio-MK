@@ -64,6 +64,7 @@ namespace MKEditor.Widgets
             TilesetTab.SetTilesets(Map.TilesetIDs);
             this.CreateLayerBitmaps();
             this.LayersTab.CreateLayers();
+            TilesetTab.SelectTile(new Data.TileData() { TilesetIndex = 0, TileID = 0 });
             if (MainContainer.ScrollBarX != null) MainContainer.ScrollBarX.SetValue(0.5);
             if (MainContainer.ScrollBarY != null) MainContainer.ScrollBarY.SetValue(0.5);
         }

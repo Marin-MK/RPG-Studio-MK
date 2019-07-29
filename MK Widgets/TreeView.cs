@@ -19,7 +19,7 @@ namespace MKEditor.Widgets
         public TreeView(object Parent, string Name = "treeView")
             : base(Parent, Name)
         {
-            this.Nodes = new List<TreeNode>()
+            /*this.Nodes = new List<TreeNode>()
             {
                 NewNode("Intro"),
                 NewNode("Lappet Town", new List<TreeNode>()
@@ -67,7 +67,7 @@ namespace MKEditor.Widgets
                     NewNode("Natural Park Pavillion")
                 })
             };
-            SelectedNode = Nodes[0];
+            SelectedNode = Nodes[0];*/
             
             this.Sprites["list"] = new Sprite(this.Viewport);
             this.WidgetIM.OnMouseDown += MouseDown;
@@ -76,7 +76,8 @@ namespace MKEditor.Widgets
 
         public void SetNodes(List<TreeNode> Nodes)
         {
-            //this.Nodes = Nodes;
+            this.Nodes = Nodes;
+            SelectedNode = Nodes[0];
             this.Redraw();
         }
 
@@ -116,12 +117,13 @@ namespace MKEditor.Widgets
             this.Sprites["list"].Bitmap.Font = f;
             string text = node.Object.ToString();
             Size s = f.TextSize(text);
+            node.PixelWidth = s.Width + 16;
             Color c = SelectedNode == node ? new Color(255, 168, 54) : new Color(134, 146, 158);
             this.Sprites["list"].Bitmap.DrawText(text, x + 16, y, c);
             if (x + 20 + s.Width > this.Size.Width) this.SetWidth(x + 20 + s.Width);
 
+            #region Draws connecting lines
             Color LineColor = new Color(134, 146, 158);
-
             if (FirstNode && !LastNode) // First node
             {
                 Sprites["list"].Bitmap.DrawLine(x, y + 11, x, y + 23, LineColor);
@@ -134,24 +136,17 @@ namespace MKEditor.Widgets
             {
                 Sprites["list"].Bitmap.DrawLine(x, y, x, y + 23, LineColor);
             }
-
             if (!LastNode)
             {
                 int fullnodecount = node.GetDisplayedNodeCount();
                 Sprites["list"].Bitmap.DrawLine(x, y, x, y + 23 + fullnodecount * 24, LineColor);
             }
-
             Sprites["list"].Bitmap.DrawLine(x, y + 11, x + 8, y + 11, LineColor);
+            #endregion
 
             if (node.Nodes.Count > 0)
             {
                 DrawCollapseBox(Sprites["list"].Bitmap as Bitmap, x - 3, y + 8, node.Collapsed);
-
-                //Font fa = Font.Get("Fonts/FontAwesome Solid", 14);
-                //char glyph = node.Collapsed ? '\uf105' : '\uf107';
-                //this.Sprites["list"].Bitmap.Font = fa;
-                //this.Sprites["list"].Bitmap.DrawGlyph(glyph, x + 2, y - 2, Color.WHITE);
-
                 if (!node.Collapsed)
                 {
                     for (int i = 0; i < node.Nodes.Count; i++)
@@ -223,20 +218,21 @@ namespace MKEditor.Widgets
                     if (n != null) break;
                     index += this.Nodes[i].GetDisplayedNodeCount() + 1;
                 }
-                if (n != null)
+                if (n == null) return;
+                int nodex = n.PixelsIndented;
+                if (rx < nodex - 10 || rx > nodex + n.PixelWidth + 10) return;
+                if (rx < nodex + 10)
                 {
-                    int nx = n.PixelsIndented - 8;
-                    int ny = globalindex * 24 + 3;
-                    if (rx >= nx && ry >= ny && rx < nx + 16 && ry < ny + 24)
+                    if (n.Nodes.Count > 0)
                     {
                         n.Collapsed = !n.Collapsed;
                         if (n.Collapsed && n.ContainsNode(SelectedNode))
                             SelectedNode = n;
                     }
-                    else
-                    {
-                        SelectedNode = n;
-                    }
+                }
+                else
+                {
+                    SelectedNode = n;
                 }
             }
             if (SelectedNode != oldselected)
@@ -253,6 +249,7 @@ namespace MKEditor.Widgets
         public bool Collapsed = false;
         public List<TreeNode> Nodes = new List<TreeNode>();
         public int PixelsIndented = 0;
+        public int PixelWidth = 0;
 
         public int GetDisplayedNodeCount()
         {

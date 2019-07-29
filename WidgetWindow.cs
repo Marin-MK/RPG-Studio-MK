@@ -35,6 +35,7 @@ namespace MKEditor
             );
             layout.SetColumns(
                 new GridSize(234, Unit.Pixels),
+                new GridSize(2, Unit.Pixels),
                 new GridSize(1),
                 new GridSize(2, Unit.Pixels),
                 new GridSize(314, Unit.Pixels)
@@ -42,30 +43,34 @@ namespace MKEditor
             // Header
             new Widget(layout)
                 .SetBackgroundColor(40, 44, 52)
-                .SetGrid(0, 0, 0, 3);
+                .SetGrid(0, 0, 0, 4);
 
             // Toolbar
             Widget w = new Widget(layout)
                 .SetBackgroundColor(27, 28, 32)
-                .SetGrid(1, 1, 0, 3);
+                .SetGrid(1, 1, 0, 4);
 
             // Orange separator
             new Widget(layout)
                 .SetBackgroundColor(255, 191, 31)
-                .SetGrid(2, 2, 0, 3);
+                .SetGrid(2, 2, 0, 4);
 
             // Left sidebar
             MapSelectTab mst = new MapSelectTab(layout);
             mst.SetGrid(3, 0);
-            mst.SetBackgroundColor(27, 28, 32);
 
-            // Black separator
+            // Black separator left
             new Widget(layout)
-                .SetGrid(3, 2)
+                .SetGrid(3, 1)
+                .SetBackgroundColor(Color.BLACK);
+
+            // Black separator right
+            new Widget(layout)
+                .SetGrid(3, 3)
                 .SetBackgroundColor(Color.BLACK);
 
             // Right sidebar
-            Grid rightcontainer = new Grid(layout).SetGrid(3, 3) as Grid;
+            Grid rightcontainer = new Grid(layout).SetGrid(3, 4) as Grid;
             rightcontainer.SetRows(new GridSize(2), new GridSize(2, Unit.Pixels), new GridSize(1));
             rightcontainer.SetColumns(new GridSize(1));
             rightcontainer.SetBackgroundColor(40, 44, 52);
@@ -84,7 +89,7 @@ namespace MKEditor
 
             // Center map viewer
             MapViewer mv = new MapViewer(layout);
-            mv.SetGrid(3, 1);
+            mv.SetGrid(3, 2);
 
             // Link the UI pieces together
             mv.LayersTab = lt;
