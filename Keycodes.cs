@@ -57,10 +57,29 @@ namespace MKEditor
         F11 = SDL_Keycode.SDLK_F11,
         F12 = SDL_Keycode.SDLK_F12,
 
+        BACKSPACE = SDL_Keycode.SDLK_BACKSPACE,
+        RETURN = SDL_Keycode.SDLK_RETURN,
+        ENTER = RETURN,
+        SPACE = SDL_Keycode.SDLK_SPACE,
+        TAB = SDL_Keycode.SDLK_TAB,
+        HOME = SDL_Keycode.SDLK_HOME,
+        END = SDL_Keycode.SDLK_END,
+        INSERT = SDL_Keycode.SDLK_INSERT,
+        DELETE = SDL_Keycode.SDLK_DELETE,
+        PAGEUP = SDL_Keycode.SDLK_PAGEUP,
+        PAGEDOWN = SDL_Keycode.SDLK_PAGEDOWN,
+        ESCAPE = SDL_Keycode.SDLK_ESCAPE,
+
+        SCROLLLOCK = SDL_Keycode.SDLK_SCROLLLOCK,
+        CAPSLOCK = SDL_Keycode.SDLK_CAPSLOCK,
+        NUMLOCK = SDL_Keycode.SDLK_NUMLOCKCLEAR,
+
+        PRINTSCREEN = SDL_Keycode.SDLK_PRINTSCREEN,
+        PAUSE = SDL_Keycode.SDLK_PAUSE,
+
         CTRL = SDL_Keycode.SDLK_LCTRL | SDL_Keycode.SDLK_RCTRL,
         SHIFT = SDL_Keycode.SDLK_LSHIFT | SDL_Keycode.SDLK_RSHIFT,
         ALT = SDL_Keycode.SDLK_LALT | SDL_Keycode.SDLK_RALT,
-        DELETE = SDL_Keycode.SDLK_DELETE
     }
 
     public class Key

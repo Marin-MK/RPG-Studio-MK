@@ -154,6 +154,21 @@ namespace MKEditor.Widgets
             return true;
         }
 
+        public object GetParentWindow()
+        {
+            if (Parent is PopupWindow || Parent is WidgetWindow) return Parent;
+            else if (Parent is UIManager) return Window;
+            else return (Parent as Widget).GetParentWindow();
+        }
+
+        public bool IsBlocked()
+        {
+            object prnt = GetParentWindow();
+            if (prnt is WidgetWindow) return (prnt as WidgetWindow).Blocked;
+            if (prnt is PopupWindow) return (prnt as PopupWindow).Blocked;
+            return false;
+        }
+
         public void SetZIndex(int ZIndex)
         {
             if (this.ZIndex != ZIndex)

@@ -24,6 +24,12 @@ namespace MKEditor.Widgets
             sb2.SetInnerColor(64, 60, 64);
             sb2.SetPosition(20, 44);
             sb2.SetSize(308, 201);
+            NumericBox nb = new NumericBox(this);
+            nb.SetPosition(120, 120);
+            nb.SetSize(64, 27);
+            TextBox tb = new TextBox(this);
+            tb.SetPosition(120, 150);
+            tb.SetSize(128, 27);
         }
     }
 }

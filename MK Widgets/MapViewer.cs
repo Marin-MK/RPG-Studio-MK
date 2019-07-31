@@ -24,6 +24,7 @@ namespace MKEditor.Widgets
         public Container MainContainer;
         public CursorWidget Cursor;
         public MapImageWidget MapWidget;
+        //public ColoredBox DropShadow;
         public GridBackground GridBackground;
 
         MouseEventArgs LastMouseEvent;
@@ -46,6 +47,9 @@ namespace MKEditor.Widgets
             Cursor = new CursorWidget(MainContainer);
             Cursor.ConsiderInAutoScroll = false;
             GridBackground = new GridBackground(MainContainer);
+            //DropShadow = new ColoredBox(MainContainer);
+            //DropShadow.SetInnerColor(new Color(0, 0, 0, 64));
+            //DropShadow.SetOuterColor(new Color(0, 0, 0, 64));
             MapWidget = new MapImageWidget(MainContainer);
         }
 
@@ -93,6 +97,8 @@ namespace MKEditor.Widgets
             GridBackground.SetOffset(offsetx, offsety);
             GridBackground.SetSize(width, height);
             MapWidget.SetPosition(x, y);
+            //DropShadow.SetPosition(MapWidget.Position.X + 10, MapWidget.Position.Y + 10);
+            //DropShadow.SetSize(MapWidget.Size);
             MainContainer.UpdateAutoScroll();
             if (MainContainer.ScrollBarX != null) MainContainer.ScrollBarX.WidgetIM.Priority = 1;
             if (MainContainer.ScrollBarY != null) MainContainer.ScrollBarY.WidgetIM.Priority = 1;

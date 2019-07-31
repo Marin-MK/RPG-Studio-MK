@@ -23,8 +23,7 @@ namespace MKEditor.Widgets
             this.Sprites["header"].Bitmap.Lock();
 
             allmapcontainer = new Container(this);
-            allmapcontainer.SetPosition(20, 40);
-            allmapcontainer.SetWidth(205);
+            allmapcontainer.SetPosition(8, 26);
             allmapcontainer.AutoScroll = true;
 
             Container bgcontainer = new Container(allmapcontainer);
@@ -40,13 +39,13 @@ namespace MKEditor.Widgets
             mapview.OnSelectedNodeChanged += delegate (object sender, MouseEventArgs e)
             {
                 // Changes mapviewer, layerstab and tilesettab to match the new map
-                MapViewer.SetMap(mapview.SelectedNode.Object as Data.Map);
+                //MapViewer.SetMap(mapview.SelectedNode.Object as Data.Map);
             };
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
-            allmapcontainer.SetHeight(this.Size.Height - 50);
+            allmapcontainer.SetSize(this.Size.Width - 12, this.Size.Height - 30);
             base.SizeChanged(sender, e);
         }
     }

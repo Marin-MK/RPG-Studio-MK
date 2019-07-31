@@ -79,7 +79,7 @@ namespace MKEditor
             if (!Ready()) return;
             if (!Widget.Visible) return;
             if (OverContextMenu()) return;
-            if (Widget.Window.Blocked) return;
+            if (Widget.IsBlocked()) return;
 
             if (Widget.Window.UI.OverContextMenu != null && Widget.Window.UI.OverContextMenu != Widget)
             {
@@ -110,7 +110,7 @@ namespace MKEditor
             if (!Ready()) return;
             if (!Widget.Visible) return;
             if (OverContextMenu()) return;
-            if (Widget.Window.Blocked) return;
+            if (Widget.IsBlocked()) return;
 
             if (this.OnMousePress != null) this.OnMousePress.Invoke(this, e);
         }
@@ -120,7 +120,7 @@ namespace MKEditor
             if (!Ready()) return;
             if (!Widget.Visible) return;
             if (OverContextMenu()) return;
-            if (Widget.Window.Blocked) return;
+            if (Widget.IsBlocked()) return;
 
             if (!e.LeftButton && e.OldLeftButton)
             {
@@ -150,7 +150,7 @@ namespace MKEditor
             if (!Ready()) return;
             if (!Widget.Visible) return;
             if (OverContextMenu()) return;
-            if (Widget.Window.Blocked) return;
+            if (Widget.IsBlocked()) return;
 
             if (e.WheelY != 0 && this.OnMouseWheel != null) this.OnMouseWheel.Invoke(this, e);
         }
@@ -160,7 +160,7 @@ namespace MKEditor
             if (!Ready()) return;
             if (!Widget.Visible) return;
             if (OverContextMenu()) return;
-            if (Widget.Window.Blocked) return;
+            if (Widget.IsBlocked()) return;
 
             bool oldhover = this.Hovering;
             this.Hovering = e.InArea(this.Area);

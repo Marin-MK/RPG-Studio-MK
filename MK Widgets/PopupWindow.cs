@@ -5,6 +5,7 @@ namespace MKEditor.Widgets
 {
     public class PopupWindow : Widget
     {
+        public bool Blocked = false;
         public string DisplayName { get; protected set; }
 
         public PopupWindow(object Parent, string Name = "popupWindow")

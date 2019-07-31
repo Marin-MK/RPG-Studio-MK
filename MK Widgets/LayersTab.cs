@@ -83,7 +83,11 @@ namespace MKEditor.Widgets
             RegisterShortcuts(new List<Shortcut>()
             {
                 new Shortcut(new Key(Keycode.H, Keycode.CTRL), new EventHandler<EventArgs>(ToggleVisibilityLayer), true),
-                new Shortcut(new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer))
+                new Shortcut(new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer)),
+                new Shortcut(new Key(Keycode.RETURN), new EventHandler<EventArgs>(delegate (object sender, EventArgs e)
+                {
+                    new MapPropertiesWindow(Window);
+                }))
             });
         }
 

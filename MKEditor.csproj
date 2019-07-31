@@ -80,8 +80,10 @@
     <Compile Include="MK Widgets\MapPropertiesWindow.cs" />
     <Compile Include="MK Widgets\MapSelectTab.cs" />
     <Compile Include="MK Widgets\MenuItem.cs" />
+    <Compile Include="MK Widgets\NumericBox.cs" />
     <Compile Include="MK Widgets\PopupWindow.cs" />
     <Compile Include="MK Widgets\TabView.cs" />
+    <Compile Include="MK Widgets\TextBox.cs" />
     <Compile Include="MK Widgets\TreeView.cs" />
     <Compile Include="GameData\MKD\Event.cs" />
     <Compile Include="GameData\MKD\EventCommands.cs" />
