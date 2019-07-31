@@ -8,6 +8,8 @@ namespace MKEditor.Widgets
     {
         public string Text { get { return TextEntryField.Text; } }
         public int CaretIndex { get { return TextEntryField.CaretIndex; } }
+        public int SelectionIndexStart { get { return TextEntryField.SelectionIndexStart; } }
+        public int SelectionIndexStop { get { return TextEntryField.SelectionIndexStop; } }
 
         TextEntryField TextEntryField;
 
@@ -66,11 +68,17 @@ namespace MKEditor.Widgets
 
         public string Text = "";
         public int CaretIndex = 0;
+        public int SelectionIndexStart = -1;
+        public int SelectionIndexStop = -1;
+
+        int CaretSelectionDistance = 0;
 
         public TextEntryField(object Parent, string Name = "textEntryField")
             : base(Parent, Name)
         {
             TextBox = Parent as TextBox;
+            Sprites["selection"] = new Sprite(this.Viewport, new SolidBitmap(1, 21, new Color(128, 128, 128)));
+            Sprites["selection"].Visible = false;
             Sprites["text"] = new Sprite(this.Viewport);
             Sprites["caret"] = new Sprite(this.Viewport, new SolidBitmap(1, 21, new Color(32, 32, 32)));
             Sprites["caret"].Y = 1;
@@ -97,28 +105,89 @@ namespace MKEditor.Widgets
                 this.CaretIndex = Index;
                 if (CaretIndex < oldidx) // Moved left
                 {
-                    int Diff = oldidx - CaretIndex;
-                    string movedtext = Text.Substring(CaretIndex, Diff);
-                    int movedwidth = Sprites["text"].Bitmap.TextSize(movedtext).Width;
-                    Sprites["caret"].X -= movedwidth;
-                    if (Sprites["caret"].X < 0)
+                    bool DontMoveCaret = !(Input.Press(SDL_Keycode.SDLK_LSHIFT) || Input.Press(SDL_Keycode.SDLK_RSHIFT)) && SelectionIndexStart != -1;
+                    if (!DontMoveCaret)
                     {
-                        Sprites["text"].X += -Sprites["caret"].X;
-                        Sprites["caret"].X = 0;
+                        int Diff = oldidx - CaretIndex;
+                        string movedtext = Text.Substring(CaretIndex, Diff);
+                        int movedwidth = Sprites["text"].Bitmap.TextSize(movedtext).Width;
+                        Sprites["caret"].X -= movedwidth;
+                        if (Sprites["caret"].X < 0)
+                        {
+                            Sprites["text"].X += -Sprites["caret"].X;
+                            Sprites["caret"].X = 0;
+                        }
+                    }
+                    int oldstart = SelectionIndexStart;
+                    int oldstop = SelectionIndexStop;
+                    if (Input.Press(SDL_Keycode.SDLK_LSHIFT) || Input.Press(SDL_Keycode.SDLK_RSHIFT))
+                    {
+                        if (SelectionIndexStart == -1) // No selection yet
+                        {
+                            SelectionIndexStart = CaretIndex + 1;
+                            SelectionIndexStop = CaretIndex;
+                        }
+                        else
+                        {
+                            SelectionIndexStop -= 1;
+                        }
+                    }
+                    else
+                    {
+                        SelectionIndexStart = SelectionIndexStop = -1;
+                    }
+                    UpdateSelection();
+                    if (DontMoveCaret)
+                    {
+                        CaretIndex = oldidx;
+                        SetCaretIndex(Math.Min(oldstart, oldstop));
                     }
                 }
                 else if (CaretIndex > oldidx) // Moved right
                 {
-                    int Diff = CaretIndex - oldidx;
-                    string movedtext = Text.Substring(oldidx, Diff);
-                    int movedwidth = Sprites["text"].Bitmap.TextSize(movedtext).Width;
-                    Sprites["caret"].X += movedwidth;
-                    if (Sprites["caret"].X >= Size.Width - 1)
+                    bool DontMoveCaret = !(Input.Press(SDL_Keycode.SDLK_LSHIFT) || Input.Press(SDL_Keycode.SDLK_RSHIFT)) && SelectionIndexStart != -1;
+                    if (!DontMoveCaret)
                     {
-                        Sprites["text"].X -= Sprites["caret"].X - Size.Width + 1;
-                        Sprites["caret"].X = Size.Width - 1;
+                        int Diff = CaretIndex - oldidx;
+                        string movedtext = Text.Substring(oldidx, Diff);
+                        int movedwidth = Sprites["text"].Bitmap.TextSize(movedtext).Width;
+                        Sprites["caret"].X += movedwidth;
+                        if (Sprites["caret"].X >= Size.Width - 1)
+                        {
+                            Sprites["text"].X -= Sprites["caret"].X - Size.Width + 1;
+                            Sprites["caret"].X = Size.Width - 1;
+                        }
+                    }
+                    int oldstart = SelectionIndexStart;
+                    int oldstop = SelectionIndexStop;
+                    if (Input.Press(SDL_Keycode.SDLK_LSHIFT) || Input.Press(SDL_Keycode.SDLK_RSHIFT))
+                    {
+                        if (SelectionIndexStart == -1) // No selection yet
+                        {
+                            SelectionIndexStart = CaretIndex - 1;
+                            SelectionIndexStop = CaretIndex;
+                        }
+                        else
+                        {
+                            SelectionIndexStop += 1;
+                        }
+                    }
+                    else
+                    {
+                        SelectionIndexStart = SelectionIndexStop = -1;
+                    }
+                    UpdateSelection();
+                    if (DontMoveCaret)
+                    {
+                        CaretIndex = oldidx;
+                        SetCaretIndex(Math.Max(oldstart, oldstop));
                     }
                 }
+            }
+            else if (!Input.Press(SDL_Keycode.SDLK_LSHIFT) && !Input.Press(SDL_Keycode.SDLK_RSHIFT))
+            {
+                SelectionIndexStart = SelectionIndexStop = -1;
+                UpdateSelection();
             }
         }
 
@@ -170,10 +239,45 @@ namespace MKEditor.Widgets
                 Sprites["text"].X += Diff;
                 Sprites["caret"].X += Diff;
             }
+            UpdateSelection();
 
             if (oldtext != this.Text)
             {
                 Redraw();
+            }
+        }
+
+        private void UpdateSelection()
+        {
+            Console.WriteLine($"{SelectionIndexStart},{SelectionIndexStop}");
+            if (SelectionIndexStart != -1)
+            {
+                Sprites["selection"].Visible = true;
+                Sprites["caret"].Visible = false;
+                int widthtocaret = Sprites["text"].Bitmap.TextSize(Text.Substring(0, CaretIndex)).Width;
+                int widthtoselectstart = Sprites["text"].Bitmap.TextSize(Text.Substring(0, SelectionIndexStart)).Width;
+                int start = SelectionIndexStart > SelectionIndexStop ? SelectionIndexStop : SelectionIndexStart;
+                int end = SelectionIndexStart > SelectionIndexStop ? SelectionIndexStart : SelectionIndexStop;
+                int selwidth = Sprites["text"].Bitmap.TextSize(Text.Substring(start, end - start)).Width;
+                int diff = widthtocaret - widthtoselectstart;
+                if (diff > 0) // caret is right of selection start
+                {
+                    Console.WriteLine("caret is right");
+                    Sprites["selection"].X = Sprites["caret"].X - diff;
+                }
+                else // caret is left of selection start
+                {
+                    Console.WriteLine("caret is left");
+                    Sprites["selection"].X = Sprites["caret"].X - diff - selwidth;
+                }
+                Sprites["selection"].Bitmap.Unlock();
+                (Sprites["selection"].Bitmap as SolidBitmap).SetSize(selwidth, 21);
+                Sprites["selection"].Bitmap.Lock();
+            }
+            else
+            {
+                Sprites["selection"].Visible = false;
+                Sprites["caret"].Visible = true;
             }
         }
 
