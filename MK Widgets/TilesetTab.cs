@@ -112,7 +112,7 @@ namespace MKEditor.Widgets
             TilesetContainer.AutoScroll = true;
 
             Cursor = new CursorWidget(TilesetContainer);
-            Cursor.SetPosition(20, 33);
+            Cursor.SetPosition(20-7, 33-7);
             Cursor.SetZIndex(1);
 
             TilesetStackPanel = new VStackPanel(TilesetContainer);
@@ -122,7 +122,7 @@ namespace MKEditor.Widgets
 
         public void SetTilesets(List<int> TilesetIDs)
         {
-            Cursor.SetPosition(28, 46);
+            Cursor.SetPosition(28-7, 46-7);
             TilesetIndex = 0;
             TileStartX = 0;
             TileStartY = 0;
@@ -208,8 +208,8 @@ namespace MKEditor.Widgets
                     if (origin == Location.BottomLeft) origin = Location.TopLeft;
                     else origin = Location.TopRight;
                 }
-                Cursor.SetPosition(28 + TileStartX * 33 - PosDiffX, 46 + lc.Position.Y + TileStartY * 33 - PosDiffY);
-                Cursor.SetSize(32 * (DiffX + 1) + DiffX, 32 * (DiffY + 1) + DiffY);
+                Cursor.SetPosition(28 + TileStartX * 33 - PosDiffX-7, 46 + lc.Position.Y + TileStartY * 33 - PosDiffY-7);
+                Cursor.SetSize(32 * (DiffX + 1) + DiffX+14, 32 * (DiffY + 1) + DiffY+14);
                 MapViewer.CursorOrigin = origin;
                 MapViewer.TileDataList.Clear();
                 MapViewer.CursorWidth = DiffX;

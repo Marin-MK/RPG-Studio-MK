@@ -20,7 +20,7 @@ namespace MKEditor.Widgets
         public TreeView(object Parent, string Name = "treeView")
             : base(Parent, Name)
         {
-            this.Nodes = new List<TreeNode>()
+            /*SetNodes(new List<TreeNode>()
             {
                 NewNode("Intro"),
                 NewNode("Hau'oli City Shopping District", new List<TreeNode>()
@@ -67,8 +67,7 @@ namespace MKEditor.Widgets
                     NewNode("Natural Park Entrance"),
                     NewNode("Natural Park Pavillion")
                 })
-            };
-            SelectedNode = Nodes[0];
+            });*/
             
             this.Sprites["list"] = new Sprite(this.Viewport);
             this.WidgetIM.OnMouseDown += MouseDown;
@@ -77,8 +76,8 @@ namespace MKEditor.Widgets
 
         public void SetNodes(List<TreeNode> Nodes)
         {
-            //this.Nodes = Nodes;
-            //SelectedNode = Nodes[0];
+            this.Nodes = Nodes;
+            SelectedNode = Nodes[0];
             this.Redraw();
         }
 

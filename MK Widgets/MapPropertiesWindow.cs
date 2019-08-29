@@ -30,6 +30,10 @@ namespace MKEditor.Widgets
             TextBox tb = new TextBox(this);
             tb.SetPosition(120, 150);
             tb.SetSize(128, 27);
+            CheckBox cb = new CheckBox(this);
+            cb.SetPosition(120, 180);
+            cb.SetSize(16, 16);
+            cb.SetText("Autoplay BGM");
         }
     }
 }

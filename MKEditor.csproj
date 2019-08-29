@@ -72,6 +72,7 @@
     <Compile Include="GameData\Serializable.cs" />
     <Compile Include="Keycodes.cs" />
     <Compile Include="Margin.cs" />
+    <Compile Include="MK Widgets\CheckBox.cs" />
     <Compile Include="MK Widgets\ColoredBox.cs" />
     <Compile Include="MK Widgets\ContextMenu.cs" />
     <Compile Include="MK Widgets\CursorWidget.cs" />
@@ -113,7 +114,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="UIManager.cs" />
     <Compile Include="Widgets\Button.cs" />
-    <Compile Include="Widgets\CheckBox.cs" />
+    <Compile Include="Widgets\OldCheckBox.cs" />
     <Compile Include="Widgets\GroupBox.cs" />
     <Compile Include="MK Widgets\IContainer.cs" />
     <Compile Include="Widgets\ListBox.cs" />

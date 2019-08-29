@@ -3,14 +3,14 @@ using ODL;
 
 namespace MKEditor.Widgets
 {
-    public class CheckBox : Widget
+    public class OldCheckBox : Widget
     {
         public bool Checked { get; protected set; } = false;
         public string Text { get; protected set; } = "";
 
         private bool RedrawText = true;
 
-        public CheckBox(object Parent)
+        public OldCheckBox(object Parent)
             : base(Parent, "checkBox")
         {
             this.WidgetIM.OnMouseDown += this.MouseDown;

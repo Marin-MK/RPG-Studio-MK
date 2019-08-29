@@ -163,8 +163,8 @@ namespace MKEditor.Widgets
                 offsetx = 32 * CursorWidth;
             if (CursorOrigin == Location.BottomLeft || CursorOrigin == Location.BottomRight)
                 offsety = 32 * CursorHeight;
-            Cursor.SetPosition(MapWidget.Position.X + 32 * MapTileX - offsetx, MapWidget.Position.Y + 32 * MapTileY - offsety);
-            Cursor.SetSize(32 * (CursorWidth + 1), 32 * (CursorHeight + 1));
+            Cursor.SetPosition(MapWidget.Position.X + 32 * MapTileX - offsetx - 7, MapWidget.Position.Y + 32 * MapTileY - offsety - 7);
+            Cursor.SetSize(32 * (CursorWidth + 1) + 14, 32 * (CursorHeight + 1) + 14);
         }
 
         public override void MouseDown(object sender, MouseEventArgs e)
@@ -191,6 +191,14 @@ namespace MKEditor.Widgets
             {
                 if (OriginDrawPoint == null) OriginDrawPoint = new Point((int) Math.Floor(oldx / 32d), (int) Math.Floor(oldy / 32d));
                 int Layer = this.LayersTab.SelectedLayer;
+                if (TileDataList.Count == 0)
+                {
+                    if (TilesetTab.EraserButton.Selected) TileDataList.Add(null);
+                    else
+                    {
+                        throw new Exception($"The tile data list is empty, but the eraser tool is not selected.\nCan't find tiles to draw with.");
+                    }
+                }
                 MapWidget.DrawTiles(oldx, oldy, newx, newy, Layer);
             }
             if (WidgetIM.ClickedRightInArea == true)
@@ -251,7 +259,6 @@ namespace MKEditor.Widgets
                             }
                         }
                     }
-                    SelectionOnMap = true;
                     Console.WriteLine();
                     Console.WriteLine();
                 }

@@ -39,7 +39,7 @@ namespace MKEditor.Widgets
             mapview.OnSelectedNodeChanged += delegate (object sender, MouseEventArgs e)
             {
                 // Changes mapviewer, layerstab and tilesettab to match the new map
-                //MapViewer.SetMap(mapview.SelectedNode.Object as Data.Map);
+                MapViewer.SetMap(mapview.SelectedNode.Object as Data.Map);
             };
         }
 

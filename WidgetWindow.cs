@@ -104,7 +104,7 @@ namespace MKEditor
             foreach (Map m in GameData.Maps.Values) { map = m; break; }
             mv.SetMap(map);
 
-            new MapPropertiesWindow(this);
+            //new MapPropertiesWindow(this);
 
             this.OnMouseDown += UI.MouseDown;
             this.OnMousePress += UI.MousePress;
