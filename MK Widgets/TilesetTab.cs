@@ -109,7 +109,10 @@ namespace MKEditor.Widgets
             TilesetContainer = new Container(TabControl.GetTab(0));
             TilesetContainer.SetPosition(0, 4);
             TilesetContainer.SetSize(this.Size.Width, TabControl.GetTab(0).Size.Height - 8);
-            TilesetContainer.AutoScroll = true;
+            TilesetContainer.VAutoScroll = true;
+
+            VScrollBar vs = new VScrollBar(this);
+            TilesetContainer.SetVScrollBar(vs);
 
             Cursor = new CursorWidget(TilesetContainer);
             Cursor.SetPosition(20-7, 33-7);
@@ -286,7 +289,7 @@ namespace MKEditor.Widgets
             Y = -1;
             if (TabControl.SelectedIndex != 0) return;
             if (!e.LeftButton && !e.RightButton) return;
-            if (Parent.ScrollBarY != null && (Parent.ScrollBarY.Dragging || Parent.ScrollBarY.Hovering)) return;
+            if (Parent.VScrollBar != null && (Parent.VScrollBar.Dragging || Parent.VScrollBar.Hovering)) return;
             Container cont = TilesetContainer;
             int rx = e.X - cont.Viewport.X;
             int ry = e.Y - cont.Viewport.Y;

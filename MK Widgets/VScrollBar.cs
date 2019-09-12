@@ -4,7 +4,7 @@ using ODL;
 
 namespace MKEditor.Widgets
 {
-    public class MinimalVScrollBar : Widget
+    public class VScrollBar : Widget
     {
         public double SliderSize     { get; protected set; }
         public double Value          { get; protected set; }
@@ -12,6 +12,8 @@ namespace MKEditor.Widgets
         public bool   Hovering       { get { return SliderIM.Hovering; } }
         public bool   Dragging       { get { return SliderIM.ClickedLeftInArea == true; } }
         public Rect   MouseInputRect { get; set; }
+
+        public Widget LinkedWidget;
 
         public int MinSliderHeight = 8;
 
@@ -21,17 +23,13 @@ namespace MKEditor.Widgets
         private int SliderRY = 0;
         private MouseInputManager SliderIM;
 
-        public MinimalVScrollBar(object Parent, string Name = "vScrollBar")
+        public VScrollBar(object Parent, string Name = "vScrollBar")
             : base(Parent, Name)
         {
             this.Size = new Size(17, 60);
+            this.ConsiderInAutoScroll = false;
             this.WidgetIM.OnMouseWheel += MouseWheel;
-            this.Sprites["bar"] = new Sprite(this.Viewport);
-            this.Sprites["bar"].X = 5;
-            this.Sprites["bar"].Bitmap = new SolidBitmap(1, 1, new Color(186, 186, 186));
             this.Sprites["slider"] = new Sprite(this.Viewport);
-            this.Sprites["slider"].X = 2;
-            this.Sprites["slider"].Bitmap = new SolidBitmap(1, 1, new Color(186, 186, 186));
             this.SliderSize = 0.25;
             this.Value = 0;
             this.SliderIM = new MouseInputManager(this);
@@ -48,11 +46,10 @@ namespace MKEditor.Widgets
             if (this.Value != value)
             {
                 this.Value = value;
-                if (this is AutoVScrollBar)
+                if (LinkedWidget != null)
                 {
-                    Widget w = this.Parent as Widget;
-                    w.ScrolledY = (int) Math.Round((w.MaxChildHeight - w.Viewport.Height) * this.Value);
-                    w.UpdateBounds();
+                    LinkedWidget.ScrolledY = (int) Math.Round((LinkedWidget.MaxChildHeight - LinkedWidget.Viewport.Height) * this.Value);
+                    LinkedWidget.UpdateBounds();
                 }
                 if (this.OnValueChanged != null) this.OnValueChanged.Invoke(this, new EventArgs());
                 Redraw();
@@ -79,37 +76,31 @@ namespace MKEditor.Widgets
 
         protected override void Draw()
         {
-            int height = this.Size.Height - 4;
+            int height = this.Size.Height;
             int sliderheight = (int) Math.Round(height * this.SliderSize);
-            Color sc = new Color(205, 205, 205);
-            if (this.SliderIM.ClickedLeftInArea == true)
+            Color sc = new Color(64, 104, 146);
+            if (this.SliderIM.ClickedLeftInArea == true || SliderIM.HoverAnim())
             {
-                sc.Set(96, 96, 96);
+                sc.Set(59, 227, 255);
             }
-            else if (this.SliderIM.HoverAnim())
-            {
-                sc.Set(192, 192, 192);
-            }
-
-            this.Sprites["bar"].Bitmap.Unlock();
-            (this.Sprites["bar"].Bitmap as SolidBitmap).SetSize(2, this.Size.Height);
-            this.Sprites["bar"].Bitmap.Lock();
-
+            if (this.Sprites["slider"].Bitmap != null) this.Sprites["slider"].Bitmap.Dispose();
+            this.Sprites["slider"].Bitmap = new Bitmap(8, sliderheight);
             this.Sprites["slider"].Bitmap.Unlock();
-            (this.Sprites["slider"].Bitmap as SolidBitmap).SetSize(8, sliderheight);
-            (this.Sprites["slider"].Bitmap as SolidBitmap).SetColor(sc);
+            this.Sprites["slider"].Bitmap.FillRect(7, sliderheight - 1, sc);
+            this.Sprites["slider"].Bitmap.DrawLine(7, 0, 7, sliderheight - 1, Color.BLACK);
+            this.Sprites["slider"].Bitmap.DrawLine(0, sliderheight - 1, 7, sliderheight - 1, Color.BLACK);
             this.Sprites["slider"].Bitmap.Lock();
-            this.Sprites["slider"].Y = 2 + (int) Math.Round((height - sliderheight) * this.Value);
+            this.Sprites["slider"].Y = (int) Math.Round((height - sliderheight) * this.Value);
             base.Draw();
         }
 
         public override void Update()
         {
             // Slider Input management
-            int height = this.Size.Height - 4;
+            int height = this.Size.Height;
             int sliderheight = (int) Math.Round(height * this.SliderSize);
             int sy = (int) Math.Round((height - sliderheight) * this.Value);
-            this.SliderRect = new Rect(this.Viewport.X, this.Viewport.Y + sy + 2, 13, sliderheight);
+            this.SliderRect = new Rect(this.Viewport.X, this.Viewport.Y + sy, 8, sliderheight);
 
             this.SliderIM.Update(this.SliderRect);
 
@@ -150,66 +141,36 @@ namespace MKEditor.Widgets
         public void UpdateSlider(MouseEventArgs e)
         {
             if (!SliderVisible) return;
-            int height = this.Size.Height - 4;
+            int height = this.Size.Height;
             int sliderheight = (int) Math.Round(height * this.SliderSize);
             height -= sliderheight;
-            int newy = (e.Y - this.Viewport.Y - 2 - this.SliderRY);
+            int newy = (e.Y - this.Viewport.Y - this.SliderRY);
             newy = Math.Max(Math.Min(newy, height), 0);
             this.SetValue((double) newy / height);
-            if (this.Parent is ListBox)
+            if (LinkedWidget.VAutoScroll)
             {
-                ListBox box = this.Parent as ListBox;
-                box.SetTopIndex((int) Math.Round(this.Value * (box.Items.Count - box.VisibleItems)));
-            }
-            else if (this.Parent is Widget && (this.Parent as Widget).AutoScroll)
-            {
-                Widget w = this.Parent as Widget;
-                w.ScrolledY = (int) Math.Round((w.MaxChildHeight - w.Viewport.Height) * this.Value);
-                w.UpdateBounds();
+                LinkedWidget.ScrolledY = (int) Math.Round((LinkedWidget.MaxChildHeight - LinkedWidget.Viewport.Height) * this.Value);
+                LinkedWidget.UpdateBounds();
             }
         }
 
         public void ScrollUp()
         {
             if (!SliderVisible) return;
-            if (this.Parent is ListBox)
-            {
-                ListBox box = this.Parent as ListBox;
-                if (box.TopIndex - 1 >= 0)
-                {
-                    box.SetTopIndex(box.TopIndex - 1);
-                }
-            }
-            else
-            {
-                Widget w = this.Parent as Widget;
-                this.SetValue((w.ScrolledY - 11d) / (w.MaxChildHeight - w.Viewport.Height));
-            }
+            this.SetValue((LinkedWidget.ScrolledY - 11d) / (LinkedWidget.MaxChildHeight - LinkedWidget.Viewport.Height));
         }
 
         public void ScrollDown()
         {
             if (!SliderVisible) return;
-            if (this.Parent is ListBox)
-            {
-                ListBox box = this.Parent as ListBox;
-                if (box.TopIndex + 1 <= box.Items.Count - box.VisibleItems)
-                {
-                    box.SetTopIndex(box.TopIndex + 1);
-                }
-            }
-            else
-            {
-                Widget w = this.Parent as Widget;
-                this.SetValue((w.ScrolledY + 11d) / (w.MaxChildHeight - w.Viewport.Height));
-            }
+            this.SetValue((LinkedWidget.ScrolledY + 11d) / (LinkedWidget.MaxChildHeight - LinkedWidget.Viewport.Height));
         }
 
         public override void MouseWheel(object sender, MouseEventArgs e)
         {
             if (!SliderVisible) return;
             // If a HScrollBar exists
-            if (Parent.ScrollBarX != null)
+            if (LinkedWidget.HScrollBar != null)
             {
                 // Return if pressing shift (i.e. HScrollBar will scroll instead)
                 if (Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LSHIFT)) return;
@@ -217,7 +178,7 @@ namespace MKEditor.Widgets
             bool inside = false;
             if (this.MouseInputRect != null) inside = this.MouseInputRect.Contains(e.X, e.Y);
             else inside = this.Viewport.Contains(e.X, e.Y);
-            if (!(this.Parent is ListBox) && inside)
+            if (inside)
             {
                 int downcount = 0;
                 int upcount = 0;
@@ -226,15 +187,6 @@ namespace MKEditor.Widgets
                 for (int i = 0; i < downcount * 3; i++) this.ScrollDown();
                 for (int i = 0; i < upcount * 3; i++) this.ScrollUp();
             }
-        }
-    }
-
-    public class AutoVScrollBar : MinimalVScrollBar
-    {
-        public AutoVScrollBar(object Parent, string Name = "autoScrollBar")
-            : base(Parent, Name)
-        {
-
         }
     }
 }

@@ -39,8 +39,11 @@ namespace MKEditor.Widgets
             layercontainer = new Container(this);
             layercontainer.SetPosition(0, 26);
             layercontainer.SetSize(314, this.Size.Height - 30);
-            layercontainer.AutoScroll = true;
+            layercontainer.VAutoScroll = true;
             layercontainer.ShowScrollBars = true;
+
+            VScrollBar vs = new VScrollBar(this);
+            layercontainer.SetVScrollBar(vs);
 
             layerstack = new VStackPanel(layercontainer);
             layerstack.SetWidth(293);

@@ -24,42 +24,252 @@ namespace MKEditor.Widgets
         public Container MainContainer;
         public CursorWidget Cursor;
         public MapImageWidget MapWidget;
-        //public ColoredBox DropShadow;
-        public GridBackground GridBackground;
+        public Widget GridBackground;
+        public Widget DummyWidget;
+
+        public VScrollBar VScrollBar;
+        public HScrollBar HScrollBar;
 
         MouseEventArgs LastMouseEvent;
 
         public MapViewer(object Parent, string Name = "mapViewer")
             : base(Parent, Name)
         {
-            this.SetBackgroundColor(Color.BLACK);
+            this.SetBackgroundColor(28, 50, 73);
             this.WidgetIM.OnMouseMoving += MouseMoving;
             this.WidgetIM.OnMouseDown += MouseDown;
             this.WidgetIM.OnMouseUp += MouseUp;
             this.OnWidgetSelect += WidgetSelect;
             MainContainer = new Container(this);
-            MainContainer.Name = "mapViewerContainer";
-            MainContainer.AutoScroll = true;
+            MainContainer.SetPosition(1, 0);
+            MainContainer.HAutoScroll = MainContainer.VAutoScroll = true;
             MainContainer.OnScrolling += delegate (object sender, EventArgs e)
             {
                 if (LastMouseEvent != null) this.MouseMoving(sender, LastMouseEvent);
             };
+            DummyWidget = new Widget(MainContainer);
+            GridBackground = new Widget(MainContainer);
+            GridBackground.SetBackgroundColor(new Color(0,0,0));
             Cursor = new CursorWidget(MainContainer);
             Cursor.ConsiderInAutoScroll = false;
-            GridBackground = new GridBackground(MainContainer);
-            //DropShadow = new ColoredBox(MainContainer);
-            //DropShadow.SetInnerColor(new Color(0, 0, 0, 64));
-            //DropShadow.SetOuterColor(new Color(0, 0, 0, 64));
             MapWidget = new MapImageWidget(MainContainer);
+            Sprites["topleft"] = new Sprite(this.Viewport);
+            Sprites["topright"] = new Sprite(this.Viewport);
+            Sprites["bottomleft"] = new Sprite(this.Viewport);
+            Sprites["bottomright"] = new Sprite(this.Viewport);
+            Sprites["left"] = new Sprite(this.Viewport);
+            Sprites["top"] = new Sprite(this.Viewport);
+            Sprites["right"] = new Sprite(this.Viewport);
+            Sprites["bottom"] = new Sprite(this.Viewport);
+            Sprites["hslider"] = new Sprite(this.Viewport, new SolidBitmap(Size.Width - 13, 11, new Color(10, 23, 37)));
+            Sprites["hslider"].X = 1;
+            Sprites["vslider"] = new Sprite(this.Viewport, new SolidBitmap(11, Size.Height - 12, new Color(10, 23, 37)));
+            HScrollBar = new HScrollBar(this);
+            HScrollBar.SetPosition(2, Size.Height - 9);
+            HScrollBar.SetSize(Size.Width - 15, 8);
+            MainContainer.SetHScrollBar(HScrollBar);
+            VScrollBar = new VScrollBar(this);
+            VScrollBar.SetPosition(Size.Width - 9, 1);
+            VScrollBar.SetSize(8, Size.Height - 14);
+            MainContainer.SetVScrollBar(VScrollBar);
+            UpdateSize();
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            MainContainer.SetSize(this.Size);
+            MainContainer.SetSize(this.Size.Width - 12, this.Size.Height - 11);
             PositionMap();
-            if (MainContainer.ScrollBarX != null) MainContainer.ScrollBarX.SetValue(0.5);
-            if (MainContainer.ScrollBarY != null) MainContainer.ScrollBarY.SetValue(0.5);
+            UpdateSize();
+            if (MainContainer.HScrollBar != null) MainContainer.HScrollBar.SetValue(0.5);
+            if (MainContainer.VScrollBar != null) MainContainer.VScrollBar.SetValue(0.5);
+        }
+
+        private void UpdateSize()
+        {
+            Bitmap b;
+            if (Sprites["topleft"].Bitmap == null)
+            {
+                b = new Bitmap(14, 12);
+                #region Draw Corner
+                b.Unlock();
+                b.FillRect(0, 0, 14, 12, new Color(22, 40, 58));
+                b.SetPixel(3, 11, new Color(22, 40, 59));
+                b.SetPixel(4, 9, new Color(22, 40, 59));
+                b.SetPixel(4, 8, new Color(22, 40, 59));
+                b.SetPixel(4, 7, new Color(22, 40, 59));
+                b.SetPixel(4, 8, new Color(22, 40, 59));
+                b.SetPixel(5, 6, new Color(22, 40, 59));
+                b.SetPixel(6, 5, new Color(22, 40, 59));
+                b.SetPixel(7, 4, new Color(22, 40, 59));
+                b.SetPixel(8, 4, new Color(22, 40, 59));
+                b.SetPixel(9, 4, new Color(22, 40, 59));
+                b.SetPixel(11, 3, new Color(22, 40, 59));
+                b.SetPixel(12, 3, new Color(22, 40, 59));
+                b.SetPixel(13, 3, new Color(22, 40, 59));
+
+                b.SetPixel(4, 11, new Color(23, 41, 60));
+                b.SetPixel(4, 10, new Color(23, 41, 60));
+                b.SetPixel(5, 8, new Color(23, 41, 60));
+                b.SetPixel(5, 7, new Color(23, 41, 60));
+                b.SetPixel(6, 6, new Color(23, 41, 60));
+                b.SetPixel(7, 5, new Color(23, 41, 60));
+                b.SetPixel(5, 8, new Color(23, 41, 60));
+                b.SetPixel(8, 5, new Color(23, 41, 60));
+                b.SetPixel(10, 4, new Color(23, 41, 60));
+                b.SetPixel(11, 4, new Color(23, 41, 60));
+                b.SetPixel(12, 4, new Color(23, 41, 60));
+                b.SetPixel(13, 4, new Color(23, 41, 60));
+
+                b.SetPixel(5, 9, new Color(23, 41, 61));
+                b.SetPixel(9, 5, new Color(23, 41, 61));
+
+                b.SetPixel(5, 10, new Color(23, 42, 61));
+                b.SetPixel(6, 7, new Color(23, 42, 61));
+                b.SetPixel(7, 6, new Color(23, 42, 61));
+                b.SetPixel(10, 5, new Color(23, 42, 61));
+
+                b.SetPixel(5, 11, new Color(23, 42, 62));
+                b.SetPixel(6, 8, new Color(23, 42, 62));
+                b.SetPixel(8, 6, new Color(23, 42, 62));
+                b.SetPixel(11, 5, new Color(23, 42, 62));
+                b.SetPixel(12, 5, new Color(23, 42, 62));
+                b.SetPixel(13, 5, new Color(23, 42, 62));
+
+                b.SetPixel(7, 7, new Color(24, 43, 62));
+
+                b.SetPixel(6, 9, new Color(24, 43, 63));
+                b.SetPixel(9, 6, new Color(24, 43, 63));
+
+                b.SetPixel(6, 10, new Color(24, 43, 64));
+                b.SetPixel(10, 6, new Color(24, 43, 64));
+
+                b.SetPixel(6, 11, new Color(24, 44, 64));
+                b.SetPixel(7, 8, new Color(24, 44, 64));
+                b.SetPixel(8, 7, new Color(24, 44, 64));
+                b.SetPixel(11, 6, new Color(24, 44, 64));
+                b.SetPixel(12, 6, new Color(24, 44, 64));
+                b.SetPixel(13, 6, new Color(24, 44, 64));
+
+                b.SetPixel(7, 9, new Color(25, 45, 65));
+                b.SetPixel(9, 7, new Color(25, 45, 65));
+
+                b.SetPixel(7, 10, new Color(25, 45, 66));
+                b.SetPixel(8, 8, new Color(25, 45, 66));
+                b.SetPixel(10, 7, new Color(25, 45, 66));
+
+                b.SetPixel(7, 11, new Color(25, 46, 67));
+                b.SetPixel(11, 7, new Color(25, 46, 67));
+
+                b.SetPixel(12, 7, new Color(26, 46, 67));
+                b.SetPixel(13, 7, new Color(26, 46, 67));
+
+                b.SetPixel(8, 9, new Color(26, 46, 68));
+                b.SetPixel(9, 8, new Color(26, 46, 68));
+
+                b.SetPixel(8, 11, new Color(26, 47, 69));
+                b.SetPixel(8, 10, new Color(26, 47, 69));
+                b.SetPixel(9, 9, new Color(26, 47, 69));
+                b.SetPixel(10, 8, new Color(26, 47, 69));
+                b.SetPixel(11, 8, new Color(26, 47, 69));
+
+                b.SetPixel(9, 10, new Color(27, 48, 70));
+                b.SetPixel(10, 9, new Color(27, 48, 70));
+                b.SetPixel(12, 8, new Color(27, 48, 70));
+
+                b.SetPixel(13, 8, new Color(27, 48, 70));
+
+                b.SetPixel(9, 11, new Color(27, 49, 71));
+                b.SetPixel(10, 10, new Color(27, 49, 71));
+                b.SetPixel(11, 9, new Color(27, 49, 71));
+                b.SetPixel(12, 9, new Color(27, 49, 71));
+                b.SetPixel(13, 9, new Color(27, 49, 71));
+
+                b.SetPixel(10, 11, new Color(27, 49, 72));
+                b.SetPixel(11, 11, new Color(27, 49, 72));
+                b.SetPixel(11, 10, new Color(27, 49, 72));
+                b.SetPixel(12, 10, new Color(27, 49, 72));
+                b.SetPixel(13, 10, new Color(27, 49, 72));
+
+                b.SetPixel(12, 11, new Color(28, 50, 73));
+                b.SetPixel(13, 11, new Color(28, 50, 73));
+                b.Lock();
+                #endregion
+                Sprites["topleft"].Bitmap = b;
+                Sprites["topright"].Bitmap = b;
+                Sprites["topright"].MirrorX = true;
+                Sprites["bottomleft"].Bitmap = b;
+                Sprites["bottomleft"].MirrorY = true;
+                Sprites["bottomright"].Bitmap = b;
+                Sprites["bottomright"].MirrorX = true;
+                Sprites["bottomright"].MirrorY = true;
+
+                Bitmap side = new Bitmap(14, 1);
+                #region Side Gradient
+                side.Unlock();
+                side.SetPixel(0, 0, new Color(22, 40, 58));
+                side.SetPixel(1, 0, new Color(22, 40, 58));
+                side.SetPixel(2, 0, new Color(22, 40, 58));
+                side.SetPixel(3, 0, new Color(22, 40, 59));
+                side.SetPixel(4, 0, new Color(23, 41, 60));
+                side.SetPixel(5, 0, new Color(23, 42, 62));
+                side.SetPixel(6, 0, new Color(24, 44, 64));
+                side.SetPixel(7, 0, new Color(26, 46, 67));
+                side.SetPixel(8, 0, new Color(27, 48, 70));
+                side.SetPixel(9, 0, new Color(27, 49, 71));
+                side.SetPixel(10, 0, new Color(27, 49, 72));
+                side.SetPixel(11, 0, new Color(28, 50, 73));
+                side.SetPixel(12, 0, new Color(28, 50, 73));
+                side.SetPixel(13, 0, new Color(28, 50, 73));
+                side.Lock();
+                #endregion
+                Sprites["left"].Bitmap = side;
+                Sprites["top"].Bitmap = side;
+                Sprites["top"].Angle = 90;
+                Sprites["right"].Bitmap = side;
+                Sprites["right"].MirrorX = true;
+                Sprites["bottom"].Bitmap = side;
+                Sprites["bottom"].Angle = -90;
+
+                Sprites["borderline"] = new Sprite(this.Viewport, new SolidBitmap(1, Size.Height, new Color(10, 23, 37)));
+            }
+            else b = Sprites["topleft"].Bitmap as Bitmap;
+            Sprites["topleft"].X = 1;
+            Sprites["topright"].X = Size.Width - b.Width - 11;
+            Sprites["bottomleft"].X = 1;
+            Sprites["bottomleft"].Y = Size.Height - b.Height - 11;
+            Sprites["bottomright"].X = Size.Width - b.Width - 11;
+            Sprites["bottomright"].Y = Size.Height - b.Height - 11;
+            Sprites["left"].X = 1;
+            Sprites["left"].Y = b.Height;
+            Sprites["left"].ZoomY = Size.Height - 11 - 2 * b.Height;
+            Sprites["top"].X = Size.Width - b.Width - 11;
+            Sprites["top"].ZoomY = Size.Width - 12 - 2 * b.Width;
+            Sprites["right"].X = Size.Width - b.Width - 11;
+            Sprites["right"].Y = Sprites["left"].Y;
+            Sprites["right"].ZoomY = Sprites["left"].ZoomY;
+            Sprites["bottom"].X = 1 + b.Width;
+            Sprites["bottom"].Y = Size.Height - 11;
+            Sprites["bottom"].ZoomY = Sprites["top"].ZoomY;
+
+            Sprites["borderline"].Bitmap.Unlock();
+            (Sprites["borderline"].Bitmap as SolidBitmap).SetSize(1, Size.Height);
+            Sprites["borderline"].Bitmap.Lock();
+
+            Sprites["hslider"].Bitmap.Unlock();
+            (Sprites["hslider"].Bitmap as SolidBitmap).SetSize(Size.Width - 13, 11);
+            Sprites["hslider"].Bitmap.Lock();
+            Sprites["hslider"].Y = Size.Height - 11;
+
+            Sprites["vslider"].Bitmap.Unlock();
+            (Sprites["vslider"].Bitmap as SolidBitmap).SetSize(11, Size.Height - 12);
+            Sprites["vslider"].Bitmap.Lock();
+            Sprites["vslider"].X = Size.Width - 11;
+
+            HScrollBar.SetPosition(2, Size.Height - 9);
+            HScrollBar.SetSize(Size.Width - 15, 8);
+            VScrollBar.SetPosition(Size.Width - 9, 1);
+            VScrollBar.SetSize(8, Size.Height - 14);
         }
 
         public void SetMap(Data.Map Map)
@@ -69,8 +279,8 @@ namespace MKEditor.Widgets
             this.CreateLayerBitmaps();
             this.LayersTab.CreateLayers();
             TilesetTab.SelectTile(new Data.TileData() { TilesetIndex = 0, TileID = 0 });
-            if (MainContainer.ScrollBarX != null) MainContainer.ScrollBarX.SetValue(0.5);
-            if (MainContainer.ScrollBarY != null) MainContainer.ScrollBarY.SetValue(0.5);
+            if (MainContainer.HScrollBar != null) MainContainer.HScrollBar.SetValue(0.5);
+            if (MainContainer.VScrollBar != null) MainContainer.VScrollBar.SetValue(0.5);
         }
 
         public void RedrawLayers()
@@ -81,27 +291,27 @@ namespace MKEditor.Widgets
         public void CreateLayerBitmaps()
         {
             MapWidget.LoadLayers(this.Map);
+            GridBackground.SetSize(MapWidget.Size.Width + 4, MapWidget.Size.Height + 4);
             PositionMap();
         }
 
         public void PositionMap()
         {
             int width = this.Map.Width * 32 + this.Viewport.Width / 2;
-            if (width < this.Viewport.Width) width = this.Viewport.Width;
+            if (width < this.Viewport.Width) width = MainContainer.Size.Width;
             int height = this.Map.Height * 32 + this.Viewport.Height / 2;
-            if (height < this.Viewport.Height) height = this.Viewport.Height;
+            if (height < this.Viewport.Height) height = MainContainer.Size.Height;
             int x = width / 2 - MapWidget.Size.Width / 2;
             int y = height / 2 - MapWidget.Size.Height / 2;
             int offsetx = 32 - x % 32;
             int offsety = 32 - y % 32;
-            GridBackground.SetOffset(offsetx, offsety);
-            GridBackground.SetSize(width, height);
             MapWidget.SetPosition(x, y);
-            //DropShadow.SetPosition(MapWidget.Position.X + 10, MapWidget.Position.Y + 10);
-            //DropShadow.SetSize(MapWidget.Size);
+            GridBackground.SetPosition(x - 2, y - 2);
+            DummyWidget.SetSize(width, height);
             MainContainer.UpdateAutoScroll();
-            if (MainContainer.ScrollBarX != null) MainContainer.ScrollBarX.WidgetIM.Priority = 1;
-            if (MainContainer.ScrollBarY != null) MainContainer.ScrollBarY.WidgetIM.Priority = 1;
+            // Might not do anything anymore
+            if (MainContainer.HScrollBar != null) MainContainer.HScrollBar.WidgetIM.Priority = 1;
+            if (MainContainer.VScrollBar != null) MainContainer.VScrollBar.WidgetIM.Priority = 1;
         }
 
         public override void MouseMoving(object sender, MouseEventArgs e)
@@ -110,8 +320,8 @@ namespace MKEditor.Widgets
             int oldmousex = RelativeMouseX;
             int oldmousey = RelativeMouseY;
             // Cursor placement
-            if (MainContainer.ScrollBarX != null && (MainContainer.ScrollBarX.Dragging || MainContainer.ScrollBarX.Hovering)) return;
-            if (MainContainer.ScrollBarY != null && (MainContainer.ScrollBarY.Dragging || MainContainer.ScrollBarY.Hovering)) return;
+            if (MainContainer.HScrollBar != null && (MainContainer.HScrollBar.Dragging || MainContainer.HScrollBar.Hovering)) return;
+            if (MainContainer.VScrollBar != null && (MainContainer.VScrollBar.Dragging || MainContainer.VScrollBar.Hovering)) return;
             int rx = e.X - MapWidget.Viewport.X;
             int ry = e.Y - MapWidget.Viewport.Y;
             if (e.X < MainContainer.Viewport.X || e.Y < MainContainer.Viewport.Y ||
@@ -184,8 +394,8 @@ namespace MKEditor.Widgets
 
         public void UpdateTilePlacement(int oldx = -1, int oldy = -1, int newx = -1, int newy = -1)
         {
-            if (MainContainer.ScrollBarX != null && (MainContainer.ScrollBarX.Dragging || MainContainer.ScrollBarX.Hovering)) return;
-            if (MainContainer.ScrollBarY != null && (MainContainer.ScrollBarY.Dragging || MainContainer.ScrollBarY.Hovering)) return;
+            if (MainContainer.HScrollBar != null && (MainContainer.HScrollBar.Dragging || MainContainer.HScrollBar.Hovering)) return;
+            if (MainContainer.VScrollBar != null && (MainContainer.VScrollBar.Dragging || MainContainer.VScrollBar.Hovering)) return;
             // Input handling
             if (WidgetIM.ClickedLeftInArea == true)
             {
@@ -259,8 +469,6 @@ namespace MKEditor.Widgets
                             }
                         }
                     }
-                    Console.WriteLine();
-                    Console.WriteLine();
                 }
             }
         }
@@ -274,7 +482,7 @@ namespace MKEditor.Widgets
         public MapImageWidget(object Parent, string Name = "mapImageWidget")
             : base(Parent, Name)
         {
-            SetBackgroundColor(Color.BLACK);
+            SetBackgroundColor(28, 50, 73);
             Sprites["grid"] = new Sprite(this.Viewport);
             Sprites["grid"].Z = 999999;
             this.MapViewer = this.Parent.Parent as MapViewer;
@@ -284,8 +492,8 @@ namespace MKEditor.Widgets
         {
             this.MapData = MapData;
             this.SetSize(MapData.Width * 32, MapData.Height * 32);
-            RedrawGrid();
             RedrawLayers();
+            RedrawGrid();
         }
 
         public void RedrawGrid()
@@ -293,14 +501,14 @@ namespace MKEditor.Widgets
             if (Sprites["grid"].Bitmap != null) Sprites["grid"].Bitmap.Dispose();
             Sprites["grid"].Bitmap = new Bitmap(MapData.Width * 32, MapData.Height * 32);
             Sprites["grid"].Bitmap.Unlock();
-            Color c = new Color(0, 0, 0, 64);
+            Color c = new Color(0, 0, 0, 128);
             for (int y = 0; y < MapData.Height * 32; y++)
             {
                 for (int x = 0; x < MapData.Width * 32; x++)
                 {
                     bool draw = false;
-                    if (x > 0 && x < MapData.Width * 32 && x % 32 == 0) draw = true;
-                    if (y > 0 && y < MapData.Height * 32 && y % 32 == 0) draw = true;
+                    if (x > 0 && x % 32 == 0 && (y % 4 == 1 || y % 4 == 2)) draw = true;
+                    if (y > 0 && y % 32 == 0 && (x % 4 == 1 || x % 4 == 2)) draw = true;
                     if (draw)
                     {
                         Sprites["grid"].Bitmap.SetPixel(x, y, c);
@@ -343,7 +551,7 @@ namespace MKEditor.Widgets
                         int mapy = y * 32;
                         int tile_id = MapData.Layers[layer].Tiles[y * MapData.Width + x].TileID;
                         int tilesetx = tile_id % 8;
-                        int tilesety = (int)Math.Floor(tile_id / 8d);
+                        int tilesety = (int) Math.Floor(tile_id / 8d);
                         layerbmp.Build(new Rect(mapx, mapy, 32, 32), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
                     }
                 }

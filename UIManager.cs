@@ -19,8 +19,8 @@ namespace MKEditor
         public List<Widget> Widgets { get; protected set; } = new List<Widget>();
         public Color BackgroundColor { get { return this.Window.BackgroundColor; } }
         public Widget SelectedWidget { get; protected set; }
-        public MinimalHScrollBar ScrollBarX { get { return null; } }
-        public MinimalVScrollBar ScrollBarY { get { return null; } }
+        public HScrollBar HScrollBar { get { return null; } set { throw new MethodNotSupportedException(this); } }
+        public VScrollBar VScrollBar { get { return null; } set { throw new MethodNotSupportedException(this); } }
         public ContextMenu OverContextMenu;
         public List<Shortcut> Shortcuts { get; protected set; } = new List<Shortcut>();
 

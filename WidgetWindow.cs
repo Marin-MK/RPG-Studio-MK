@@ -19,61 +19,95 @@ namespace MKEditor
             Widget.Setup();
 
             this.SetSize(1080, 720);
-
             this.Initialize();
-
-            this.SetBackgroundColor(240, 240, 240);
-
+            using (Bitmap b = new Bitmap(9, 14)) // Set cursor
+            {
+                Color gray = new Color(55, 51, 55);
+                Color white = Color.WHITE;
+                b.Unlock();
+                b.DrawLine(0, 0, 0, 12, gray);
+                b.DrawLine(1, 0, 8, 7, gray);
+                b.SetPixel(8, 8, gray);
+                b.SetPixel(8, 9, gray);
+                b.SetPixel(7, 9, gray);
+                b.SetPixel(6, 9, gray);
+                b.SetPixel(6, 10, gray);
+                b.SetPixel(7, 11, gray);
+                b.SetPixel(7, 12, gray);
+                b.SetPixel(7, 13, gray);
+                b.SetPixel(6, 13, gray);
+                b.SetPixel(5, 13, gray);
+                b.SetPixel(4, 12, gray);
+                b.SetPixel(4, 11, gray);
+                b.SetPixel(3, 10, gray);
+                b.SetPixel(2, 11, gray);
+                b.SetPixel(1, 12, gray);
+                b.DrawLine(1, 1, 1, 11, white);
+                b.DrawLine(2, 2, 2, 10, white);
+                b.DrawLine(3, 3, 3, 9, white);
+                b.DrawLine(4, 4, 4, 10, white);
+                b.DrawLine(5, 5, 5, 12, white);
+                b.DrawLine(6, 6, 6, 8, white);
+                b.SetPixel(7, 7, white);
+                b.SetPixel(7, 8, white);
+                b.SetPixel(6, 11, white);
+                b.SetPixel(6, 12, white);
+                b.Lock();
+                Graphics.SetCursor(b);
+            }
             this.UI = new UIManager(this);
 
             Grid layout = new Grid(this);
             layout.SetRows(
-                new GridSize(37, Unit.Pixels),
-                new GridSize(33, Unit.Pixels),
+                new GridSize(32, Unit.Pixels),
+                new GridSize(63, Unit.Pixels),
                 new GridSize(1, Unit.Pixels),
                 new GridSize(1)
             );
             layout.SetColumns(
-                new GridSize(234, Unit.Pixels),
-                new GridSize(2, Unit.Pixels),
+                new GridSize(224, Unit.Pixels),
                 new GridSize(1),
-                new GridSize(2, Unit.Pixels),
-                new GridSize(314, Unit.Pixels)
+                new GridSize(293, Unit.Pixels)
             );
-            // Header
-            new Widget(layout)
-                .SetBackgroundColor(40, 44, 52)
-                .SetGrid(0, 0, 0, 4);
 
-            // Toolbar
+
+            // Header + Menubar
+            MenuBar menu = new MenuBar(layout)
+                .SetBackgroundColor(28, 50, 73)
+                .SetGrid(0, 0, 0, 2) as MenuBar;
+            menu.SetItems(new List<MenuItem>()
+            {
+                new MenuItem("File"),
+                new MenuItem("Edit"),
+                new MenuItem("View"),
+                new MenuItem("Game"),
+                new MenuItem("Help")
+            });
+
+
+            // Toolbar (modes, icons, etc)
             Widget w = new Widget(layout)
-                .SetBackgroundColor(27, 28, 32)
-                .SetGrid(1, 1, 0, 4);
+                .SetBackgroundColor(10, 23, 37)
+                .SetGrid(1, 1, 0, 2);
 
-            // Orange separator
+
+            // Blue 1px separator
             new Widget(layout)
-                .SetBackgroundColor(255, 191, 31)
-                .SetGrid(2, 2, 0, 4);
+                .SetBackgroundColor(79, 108, 159)
+                .SetGrid(2, 2, 0, 2);
+
 
             // Left sidebar
             MapSelectTab mst = new MapSelectTab(layout);
             mst.SetGrid(3, 0);
 
-            // Black separator left
-            new Widget(layout)
-                .SetGrid(3, 1)
-                .SetBackgroundColor(Color.BLACK);
-
-            // Black separator right
-            new Widget(layout)
-                .SetGrid(3, 3)
-                .SetBackgroundColor(Color.BLACK);
 
             // Right sidebar
-            Grid rightcontainer = new Grid(layout).SetGrid(3, 4) as Grid;
+            Grid rightcontainer = new Grid(layout).SetGrid(3, 2) as Grid;
             rightcontainer.SetRows(new GridSize(2), new GridSize(2, Unit.Pixels), new GridSize(1));
             rightcontainer.SetColumns(new GridSize(1));
             rightcontainer.SetBackgroundColor(40, 44, 52);
+
 
             // Tileset part of right sidebar
             TilesetTab tt = new TilesetTab(rightcontainer);
@@ -87,9 +121,12 @@ namespace MKEditor
             LayersTab lt = new LayersTab(rightcontainer);
             lt.SetGrid(2, 0);
 
+
             // Center map viewer
             MapViewer mv = new MapViewer(layout);
-            mv.SetGrid(3, 2);
+            mv.SetGrid(3, 1);
+
+
 
             // Link the UI pieces together
             mv.LayersTab = lt;
@@ -100,10 +137,12 @@ namespace MKEditor
             tt.MapViewer = mv;
             mst.MapViewer = mv;
 
+            // Set initial map
             Map map = null;
             foreach (Map m in GameData.Maps.Values) { map = m; break; }
             mv.SetMap(map);
 
+            // TEMP: Create map properties window
             //new MapPropertiesWindow(this);
 
             this.OnMouseDown += UI.MouseDown;
@@ -113,11 +152,8 @@ namespace MKEditor
             this.OnMouseWheel += UI.MouseWheel;
             this.OnTextInput += UI.TextInput;
             this.OnWindowResized += UI.WindowResized;
-
             this.OnTick += Tick;
-            
             this.UI.Update();
-
             this.Start();
         }
 

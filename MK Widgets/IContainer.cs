@@ -16,8 +16,8 @@ namespace MKEditor.Widgets
         int ScrolledX { get; set; }
         int ScrolledY { get; set; }
         Point ScrolledPosition { get; }
-        MinimalHScrollBar ScrollBarX { get; }
-        MinimalVScrollBar ScrollBarY { get; }
+        HScrollBar HScrollBar { get; }
+        VScrollBar VScrollBar { get; }
 
         IContainer Parent { get; }
 

@@ -80,6 +80,7 @@
     <Compile Include="MK Widgets\Label.cs" />
     <Compile Include="MK Widgets\MapPropertiesWindow.cs" />
     <Compile Include="MK Widgets\MapSelectTab.cs" />
+    <Compile Include="MK Widgets\MenuBar.cs" />
     <Compile Include="MK Widgets\MenuItem.cs" />
     <Compile Include="MK Widgets\NumericBox.cs" />
     <Compile Include="MK Widgets\PopupWindow.cs" />
@@ -102,9 +103,8 @@
     <Compile Include="MK Widgets\LayersTab.cs" />
     <Compile Include="MK Widgets\LayerWidget.cs" />
     <Compile Include="MK Widgets\MapViewer.cs" />
-    <Compile Include="Widgets\MenuStrip.cs" />
-    <Compile Include="MK Widgets\MinimalHScrollBar.cs" />
-    <Compile Include="MK Widgets\MinimalVScrollBar.cs" />
+    <Compile Include="MK Widgets\HScrollBar.cs" />
+    <Compile Include="MK Widgets\VScrollBar.cs" />
     <Compile Include="MK Widgets\PictureBox.cs" />
     <Compile Include="Widgets\RadioButton.cs" />
     <Compile Include="MK Widgets\TilesetTab.cs" />
@@ -117,10 +117,8 @@
     <Compile Include="Widgets\OldCheckBox.cs" />
     <Compile Include="Widgets\GroupBox.cs" />
     <Compile Include="MK Widgets\IContainer.cs" />
-    <Compile Include="Widgets\ListBox.cs" />
     <Compile Include="Widgets\ProgressBar.cs" />
     <Compile Include="Widgets\OldTextBox.cs" />
-    <Compile Include="Widgets\VScrollBar.cs" />
     <Compile Include="MK Widgets\Widget.cs" />
   </ItemGroup>
   <ItemGroup>
