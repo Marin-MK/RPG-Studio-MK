@@ -488,7 +488,7 @@ namespace MKEditor.Widgets
             if (Sprites["grid"].Bitmap != null) Sprites["grid"].Bitmap.Dispose();
             Sprites["grid"].Bitmap = new Bitmap(MapData.Width * 32, MapData.Height * 32);
             Sprites["grid"].Bitmap.Unlock();
-            Color c = new Color(0, 13, 26, 220);
+            Color c = new Color(0, 13, 26, 128);
             for (int y = 0; y < MapData.Height * 32; y++)
             {
                 for (int x = 0; x < MapData.Width * 32; x++)

@@ -10,7 +10,7 @@ namespace MKEditor.Widgets
         public bool      LayerVisible  { get; protected set; } = true;
         public bool      LayerSelected { get; protected set; } = false;
         public int       LayerIndex    { get; set; }
-        public MapViewer MapViewer     { get { return (Parent.Parent.Parent.Parent as LayersTab).MapViewer; } }
+        public MapViewer MapViewer;
 
         private bool RedrawText = true;
         private bool RedrawVisible = true;
@@ -21,15 +21,14 @@ namespace MKEditor.Widgets
         public LayerWidget(object Parent, string Name = "layerWidget", int Index = -1)
             : base(Parent, Name, Index)
         {
-            this.SetSize(293, 32);
-            this.Sprites["bar"] = new Sprite(this.Viewport, new SolidBitmap(this.Size.Width - 30, 32));
-            this.Sprites["bar"].X = 30;
+            this.SetSize(278, 24);
+            this.Sprites["bar"] = new Sprite(this.Viewport, new SolidBitmap(278, 32));
             this.Sprites["text"] = new Sprite(this.Viewport);
             this.Sprites["text"].X = 40;
-            this.Sprites["text"].Y = 8;
+            this.Sprites["text"].Y = 3;
             this.Sprites["visible"] = new Sprite(this.Viewport);
-            this.Sprites["visible"].X = 5;
-            this.Sprites["visible"].Y = 9;
+            this.Sprites["visible"].X = 10;
+            this.Sprites["visible"].Y = 4;
             this.VisibleIM = new MouseInputManager(this);
             this.VisibleIM.OnLeftClick += LayerVisibleClicked;
             this.WidgetIM.OnLeftClick += LayerClicked;
@@ -76,8 +75,8 @@ namespace MKEditor.Widgets
                 this.Sprites["bar"].Bitmap.Unlock();
                 if (this.LayerSelected)
                 {
-                    (this.Sprites["bar"].Bitmap as SolidBitmap).SetColor(new Color(255, 168, 54));
-                    this.Sprites["text"].Color = Color.BLACK;
+                    (this.Sprites["bar"].Bitmap as SolidBitmap).SetColor(new Color(28, 50, 73));
+                    this.Sprites["text"].Color = new Color(55, 187, 255);
                 }
                 else
                 {
@@ -117,7 +116,7 @@ namespace MKEditor.Widgets
         {
             if (this.RedrawText)
             {
-                Font f = Font.Get("Fonts/Ubuntu-R", 16);
+                Font f = Font.Get("Fonts/ProductSans-M", 14);
                 Size s = f.TextSize(this.Text);
                 if (this.Sprites["text"].Bitmap != null) this.Sprites["text"].Bitmap.Dispose();
                 this.Sprites["text"].Bitmap = new Bitmap(s);

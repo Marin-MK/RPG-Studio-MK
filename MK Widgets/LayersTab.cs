@@ -9,6 +9,8 @@ namespace MKEditor.Widgets
         public TilesetTab TilesetTab;
         public MapViewer MapViewer;
         public Data.Map Map { get { return this.MapViewer.Map; } }
+        public TabView TabView;
+        public TabContainer MainContainer;
 
         public int SelectedLayer
         {
@@ -26,27 +28,28 @@ namespace MKEditor.Widgets
         public LayersTab(object Parent, string Name = "layersTab")
             : base(Parent, Name)
         {
-            SetBackgroundColor(27, 28, 32);
-            this.Sprites["header"] = new Sprite(this.Viewport, new Bitmap(314, 22));
-            this.Sprites["header"].Bitmap.Unlock();
-            this.Sprites["header"].Bitmap.FillRect(0, 0, 314, 22, new Color(40, 44, 52));
-            this.Sprites["header"].Bitmap.Font = Font.Get("Fonts/Ubuntu-R", 16);
-            this.Sprites["header"].Bitmap.DrawText("Layers", 6, 1, Color.WHITE);
-            this.Sprites["header"].Bitmap.Lock();
+            SetBackgroundColor(10, 23, 37);
+
+            Sprites["bg"] = new Sprite(this.Viewport);
+            Sprites["bg"].Y = 25;
+
+            TabView = new TabView(this);
+            TabView.CreateTab("Layers");
+            MainContainer = TabView.GetTab(0);
 
             this.OnWidgetSelect += WidgetSelect;
 
-            layercontainer = new Container(this);
-            layercontainer.SetPosition(0, 26);
-            layercontainer.SetSize(314, this.Size.Height - 30);
+            layercontainer = new Container(MainContainer);
+            layercontainer.SetPosition(0, 40);
+            layercontainer.SetSize(280, this.Size.Height - 64);
             layercontainer.VAutoScroll = true;
-            layercontainer.ShowScrollBars = true;
 
             VScrollBar vs = new VScrollBar(this);
             layercontainer.SetVScrollBar(vs);
 
             layerstack = new VStackPanel(layercontainer);
-            layerstack.SetWidth(293);
+            layerstack.SetWidth(280);
+            layerstack.SetPosition(2, 5);
             layerstack.SetContextMenuList(new List<IMenuItem>()
             {
                 new MenuItem("New Layer")
@@ -92,6 +95,8 @@ namespace MKEditor.Widgets
                     new MapPropertiesWindow(Window);
                 }))
             });
+
+            SetSize(293, 200); // Dummy size so the sprites can be drawn properly
         }
 
         public void UpdateNames()
@@ -162,8 +167,19 @@ namespace MKEditor.Widgets
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
-            layercontainer.SetHeight(this.Size.Height - 30);
             base.SizeChanged(sender, e);
+            TabView.SetSize(Size);
+            layercontainer.SetHeight(this.Size.Height - 64);
+            layercontainer.VScrollBar.SetPosition(Size.Width - 10, 66);
+            layercontainer.VScrollBar.SetSize(8, Size.Height - 67);
+            if (Sprites["bg"].Bitmap != null) Sprites["bg"].Bitmap.Dispose();
+            Sprites["bg"].Bitmap = new Bitmap(Size.Width, Size.Height - 25);
+            Sprites["bg"].Bitmap.Unlock();
+            Sprites["bg"].Bitmap.FillRect(0, 0, Size.Width, 40, new Color(28, 50, 73));
+            Sprites["bg"].Bitmap.DrawLine(0, 40, 0, Size.Height - 26, new Color(28, 50, 73));
+            Sprites["bg"].Bitmap.DrawLine(Size.Width - 1, 40, Size.Width - 1, Size.Height - 26, new Color(28, 50, 73));
+            Sprites["bg"].Bitmap.DrawLine(Size.Width - 12, 40, Size.Width - 12, Size.Height - 26, new Color(28, 50, 73));
+            Sprites["bg"].Bitmap.Lock();
         }
 
         public void CreateLayers()
@@ -176,6 +192,7 @@ namespace MKEditor.Widgets
             for (int layer = this.Map.Layers.Count - 1; layer >= 0; layer--)
             {
                 LayerWidget layerwidget = new LayerWidget(layerstack);
+                layerwidget.MapViewer = MapViewer;
                 layerwidget.LayerIndex = this.Map.Layers.Count - layer;
                 layerwidget.SetText(this.Map.Layers[layer].Name);
                 this.Layers.Add(layerwidget);

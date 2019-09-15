@@ -38,18 +38,28 @@ namespace MKEditor.Widgets
         public TilesetTab(object Parent, string Name = "tilesetTab")
             : base(Parent, Name)
         {
-            SetBackgroundColor(27, 28, 32);
-            this.Sprites["header"] = new Sprite(this.Viewport, new Bitmap(314, 22));
-            this.Sprites["header"].Bitmap.Unlock();
-            this.Sprites["header"].Bitmap.FillRect(0, 0, 314, 22, new Color(40, 44, 52));
-            this.Sprites["header"].Bitmap.Font = Font.Get("Fonts/Ubuntu-R", 16);
-            this.Sprites["header"].Bitmap.DrawText("Tiles", 6, 1, Color.WHITE);
-            this.Sprites["header"].Bitmap.Lock();
+            SetBackgroundColor(10, 23, 37);
+
+            Sprites["bg"] = new Sprite(this.Viewport);
+            Sprites["bg"].Y = 25;
 
             this.OnWidgetSelect += WidgetSelect;
 
-            Container DrawContainer = new Container(this);
-            DrawContainer.SetPosition(75, 29);
+            CursorIM = new MouseInputManager(this);
+            CursorIM.OnMouseDown += MouseDown;
+            CursorIM.OnMouseUp += MouseUp;
+            CursorIM.OnMouseMoving += MouseMoving;
+
+            TabControl = new TabView(this);
+            TabControl.CreateTab("Tilesets");
+            TabControl.CreateTab("Autotiles");
+            TabControl.OnSelectionChanged += delegate (object sender, EventArgs e)
+            {
+                if (TabControl.SelectedIndex == 0) UpdateCursorPosition();
+            };
+
+            Container DrawContainer = new Container(TabControl.GetTab(0));
+            DrawContainer.SetPosition(15, 4);
             DrawContainer.SetSize(140, 26);
 
             PencilButton = new IconButton(DrawContainer);
@@ -72,9 +82,9 @@ namespace MKEditor.Widgets
             SelectButton.SetIcon(5, 0);
             SelectButton.SetPosition(112, 0);
 
-            EraserButton = new IconButton(this);
+            EraserButton = new IconButton(TabControl.GetTab(0));
             EraserButton.SetIcon(6, 0);
-            EraserButton.SetPosition(215, 29);
+            EraserButton.SetPosition(155, 4);
             EraserButton.Toggleable = true;
             EraserButton.OnSelection += delegate (object sender, EventArgs e)
             {
@@ -91,36 +101,22 @@ namespace MKEditor.Widgets
                 UpdateCursorPosition();
             };
 
-            TabControl = new TabView(this);
-            TabControl.SetPosition(0, 62);
-            TabControl.SetSize(this.Size.Width, this.Size.Height - 62);
-            TabControl.CreateTab("Tilesets");
-            TabControl.CreateTab("Autotiles");
-            TabControl.OnSelectionChanged += delegate (object sender, EventArgs e)
-            {
-                if (TabControl.SelectedIndex == 0) UpdateCursorPosition();
-            };
-
-            CursorIM = new MouseInputManager(this);
-            CursorIM.OnMouseDown += MouseDown;
-            CursorIM.OnMouseUp += MouseUp;
-            CursorIM.OnMouseMoving += MouseMoving;
-
             TilesetContainer = new Container(TabControl.GetTab(0));
-            TilesetContainer.SetPosition(0, 4);
-            TilesetContainer.SetSize(this.Size.Width, TabControl.GetTab(0).Size.Height - 8);
+            TilesetContainer.SetPosition(1, 38);
             TilesetContainer.VAutoScroll = true;
 
-            VScrollBar vs = new VScrollBar(this);
+            VScrollBar vs = new VScrollBar(TabControl.GetTab(0));
             TilesetContainer.SetVScrollBar(vs);
 
             Cursor = new CursorWidget(TilesetContainer);
-            Cursor.SetPosition(20-7, 33-7);
+            Cursor.SetPosition(7, 8);
             Cursor.SetZIndex(1);
 
             TilesetStackPanel = new VStackPanel(TilesetContainer);
-            TilesetStackPanel.SetWidth(283);
-            TilesetStackPanel.SetPosition(8, 13);
+            TilesetStackPanel.SetWidth(264);
+            TilesetStackPanel.SetPosition(8, 7);
+
+            SetSize(293, 200); // Dummy size so the sprites can be drawn properly
         }
 
         public void SetTilesets(List<int> TilesetIDs)
@@ -149,7 +145,7 @@ namespace MKEditor.Widgets
                 c.SetSize(TilesetContainer.Size.Width - 13, tileset.TilesetListBitmap.Height + 33);
                 TilesetContainers.Add(c);
                 PictureBox image = new PictureBox(c);
-                image.SetPosition(20, 33);
+                image.SetPosition(0, 33);
                 image.Sprite.Bitmap = tileset.TilesetListBitmap;
                 image.SetSize(tileset.TilesetListBitmap.Width, tileset.TilesetListBitmap.Height);
                 TilesetImages.Add(image);
@@ -169,8 +165,17 @@ namespace MKEditor.Widgets
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            TabControl.SetSize(this.Size.Width, this.Size.Height - 62);
-            TilesetContainer.SetSize(this.Size.Width, TabControl.GetTab(0).Size.Height - 8);
+            TabControl.SetSize(Size);
+            TilesetContainer.SetSize(Size.Width - 13, TabControl.GetTab(0).Size.Height - 39);
+            TilesetContainer.VScrollBar.SetPosition(Size.Width - 10, 38);
+            TilesetContainer.VScrollBar.SetSize(8, Size.Height - 66);
+            if (Sprites["bg"].Bitmap != null) Sprites["bg"].Bitmap.Dispose();
+            Sprites["bg"].Bitmap = new Bitmap(Size.Width, Size.Height - 25);
+            Sprites["bg"].Bitmap.Unlock();
+            Sprites["bg"].Bitmap.FillRect(0, 0, Size.Width, 37, new Color(28, 50, 73));
+            Sprites["bg"].Bitmap.DrawRect(0, 37, Size.Width, Size.Height - 25 - 37, new Color(28, 50, 73));
+            Sprites["bg"].Bitmap.DrawLine(Size.Width - 12, 38, Size.Width - 12, Size.Height - 27, new Color(28, 50, 73));
+            Sprites["bg"].Bitmap.Lock();
         }
 
         public override void Update()
@@ -211,7 +216,7 @@ namespace MKEditor.Widgets
                     if (origin == Location.BottomLeft) origin = Location.TopLeft;
                     else origin = Location.TopRight;
                 }
-                Cursor.SetPosition(28 + TileStartX * 33 - PosDiffX-7, 46 + lc.Position.Y + TileStartY * 33 - PosDiffY-7);
+                Cursor.SetPosition(8 + TileStartX * 33 - PosDiffX-7, 40 + lc.Position.Y + TileStartY * 33 - PosDiffY-7);
                 Cursor.SetSize(32 * (DiffX + 1) + DiffX+14, 32 * (DiffY + 1) + DiffY+14);
                 MapViewer.CursorOrigin = origin;
                 MapViewer.TileDataList.Clear();
@@ -296,8 +301,8 @@ namespace MKEditor.Widgets
             if (rx < 0 || ry < 0 || rx >= cont.Viewport.Width || ry >= cont.Viewport.Height) return; // Off the widget
             rx += cont.ScrolledX;
             ry += cont.ScrolledY;
-            if (rx < 28 || ry < 46 || rx >= 291) return; // Not over a tileset
-            int crx = rx - 28; // container (c) relative (r) x (x)
+            if (rx < 8 || ry < 7 || rx >= 264) return; // Not over a tileset
+            int crx = rx - 8; // container (c) relative (r) x (x)
             // crx will always be between 0 and 256 because any other value has been caught with the if-statements already
             for (int i = 0; i < TilesetStackPanel.Widgets.Count; i++)
             {
@@ -310,8 +315,8 @@ namespace MKEditor.Widgets
                 // So we now need to determine the y coordinate relative to this container
                 // To determine which tile we're over.
                 int cry = ry - lc.Position.Y; // container (c) relative (r) y (y)
-                if (cry < 46) continue; // In the name part of the container
-                cry -= 46;
+                if (cry < 40) continue; // In the name part of the container
+                cry -= 40;
                 int tilex = (int) Math.Floor(crx / 33d);
                 int tiley = (int) Math.Floor(cry / 33d);
                 TilesetIndex = i;

@@ -18,27 +18,8 @@ namespace MKEditor.Widgets
         public CursorWidget(object Parent, string Name = "cursorWidget")
             : base(Parent, Name)
         {
-            //RectSprite outer = new RectSprite(this.Viewport);
-            //outer.SetOuterColor(Color.BLACK);
-            //Sprites["outer"] = outer;
-
-            //RectSprite middle = new RectSprite(this.Viewport);
-            //middle.SetOuterColor(Color.WHITE);
-            //Sprites["middle"] = middle;
-
-            //RectSprite inner = new RectSprite(this.Viewport);
-            //inner.SetOuterColor(Color.BLACK);
-            //Sprites["inner"] = inner;
-
-            //this.SetSize(32, 32);
-
-            //middle.X = middle.Y = 1;
-            //inner.X = inner.Y = 2;
-
-            //this.SetSize(32, 32);
-
             Bitmap b = new Bitmap(23, 23);
-            #region Cursor w/ glow
+            #region Cornerpiece with shadow
             b.Unlock();
             b.SetPixel(5, 0, 0, 0, 0, 1);
             b.SetPixel(6, 0, 0, 0, 0, 1);
@@ -168,16 +149,9 @@ namespace MKEditor.Widgets
             b.DrawLine(7, 7, 22, 7, 0, 0, 0);
             b.DrawLine(7, 8, 7, 22, 0, 0, 0);
             b.DrawLine(8, 8, 22, 8, 255, 255, 255);
-            // 1px
             b.DrawLine(8, 9, 8, 22, 255, 255, 255);
             b.DrawLine(9, 9, 22, 9, 0, 0, 0);
             b.DrawLine(9, 10, 9, 22, 0, 0, 0);
-            // 2px
-            //b.DrawLine(8, 10, 8, 22, 255, 255, 255);
-            //b.DrawLine(8, 9, 22, 9, 255, 255, 255);
-            //b.DrawLine(9, 10, 9, 22, 255, 255, 255);
-            //b.DrawLine(10, 10, 22, 10, 0, 0, 0); // 2px
-            //b.DrawLine(10, 11, 10, 22, 0, 0, 0); // 2px
             b.Lock();
             #endregion
 
@@ -196,37 +170,50 @@ namespace MKEditor.Widgets
             bottomright.X = bottomright.Y = 23;
             Sprites["bottomright"] = bottomright;
 
-            Bitmap filler = new Bitmap(1, 10);
-            filler.Unlock();
-            filler.SetPixel(0, 0, 0, 0, 0, 2);
-            filler.SetPixel(0, 1, 0, 0, 0, 5);
-            filler.SetPixel(0, 2, 0, 0, 0, 12);
-            filler.SetPixel(0, 3, 0, 0, 0, 24);
-            filler.SetPixel(0, 4, 0, 0, 0, 45);
-            filler.SetPixel(0, 5, 0, 0, 0, 73);
-            filler.SetPixel(0, 6, 0, 0, 0, 109);
-            filler.SetPixel(0, 7, 0, 0, 0);
-            filler.SetPixel(0, 8, 255, 255, 255);
-            filler.SetPixel(0, 9, 0, 0, 0);
-            filler.Lock();
+            Bitmap vfiller = new Bitmap(1, 10);
+            vfiller.Unlock();
+            vfiller.SetPixel(0, 0, 0, 0, 0, 2);
+            vfiller.SetPixel(0, 1, 0, 0, 0, 5);
+            vfiller.SetPixel(0, 2, 0, 0, 0, 12);
+            vfiller.SetPixel(0, 3, 0, 0, 0, 24);
+            vfiller.SetPixel(0, 4, 0, 0, 0, 45);
+            vfiller.SetPixel(0, 5, 0, 0, 0, 73);
+            vfiller.SetPixel(0, 6, 0, 0, 0, 109);
+            vfiller.SetPixel(0, 7, 0, 0, 0);
+            vfiller.SetPixel(0, 8, 255, 255, 255);
+            vfiller.SetPixel(0, 9, 0, 0, 0);
+            vfiller.Lock();
 
-            top = new Sprite(this.Viewport, filler);
+            Bitmap hfiller = new Bitmap(10, 1);
+            hfiller.Unlock();
+            hfiller.SetPixel(0, 0, 0, 0, 0, 2);
+            hfiller.SetPixel(1, 0, 0, 0, 0, 5);
+            hfiller.SetPixel(2, 0, 0, 0, 0, 12);
+            hfiller.SetPixel(3, 0, 0, 0, 0, 24);
+            hfiller.SetPixel(4, 0, 0, 0, 0, 45);
+            hfiller.SetPixel(5, 0, 0, 0, 0, 73);
+            hfiller.SetPixel(6, 0, 0, 0, 0, 109);
+            hfiller.SetPixel(7, 0, 0, 0, 0);
+            hfiller.SetPixel(8, 0, 255, 255, 255);
+            hfiller.SetPixel(9, 0, 0, 0, 0);
+            hfiller.Lock();
+
+            top = new Sprite(this.Viewport, vfiller);
             top.X = 23;
             top.ZoomX = 0;
             Sprites["top"] = top;
-            left = new Sprite(this.Viewport, filler);
+            left = new Sprite(this.Viewport, hfiller);
             left.Y = 23;
-            left.Angle = -90;
-            left.ZoomX = 0;
+            left.ZoomY = 0;
             Sprites["left"] = left;
-            right = new Sprite(this.Viewport, filler);
+            right = new Sprite(this.Viewport, hfiller);
             right.Y = 23;
-            right.Angle = 90;
-            right.ZoomX = 0;
+            right.MirrorX = true;
+            right.ZoomY = 0;
             Sprites["right"] = right;
-            bottom = new Sprite(this.Viewport, filler);
+            bottom = new Sprite(this.Viewport, vfiller);
             bottom.X = 23;
-            bottom.Angle = 180;
+            bottom.MirrorY = true;
             bottom.ZoomX = 0;
             Sprites["bottom"] = bottom;
 
@@ -238,28 +225,16 @@ namespace MKEditor.Widgets
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            //(Sprites["outer"] as RectSprite).SetSize(this.Size);
-            //(Sprites["middle"] as RectSprite).SetSize(this.Size.Width - 2, this.Size.Height - 2);
-            //(Sprites["inner"] as RectSprite).SetSize(this.Size.Width - 4, this.Size.Height - 4);
             topright.X = Size.Width - 23;
             bottomleft.Y = Size.Height - 23;
             bottomright.X = topright.X;
             bottomright.Y = bottomleft.Y;
             top.ZoomX = Size.Width - 46;
-            left.ZoomX = Size.Height - 46;
-            left.Y = Size.Height - 23;
-            right.ZoomX = Size.Height - 46;
-            right.X = Size.Width;
-            bottom.X = Size.Width - 23;
-            bottom.Y = Size.Height;
+            left.ZoomY = Size.Height - 46;
+            right.X = Size.Width - 10;
+            right.ZoomY = Size.Height - 46;
+            bottom.Y = Size.Height - 10;
             bottom.ZoomX = Size.Width - 46;
-
-        }
-
-        public override void Update()
-        {
-            //Console.WriteLine(ScrolledY.ToString() + " : " + Parent.AdjustedPosition.Y.ToString());
-            base.Update();
         }
     }
 }

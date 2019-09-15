@@ -172,7 +172,7 @@ namespace MKEditor.Widgets
                     {
                         (SelectedItem as MenuItem).OnLeftClick.Invoke(sender, e);
                     }
-                    this.OnItemInvoked.Invoke(sender, new EventArgs());
+                    if (OnItemInvoked != null) OnItemInvoked.Invoke(sender, new EventArgs());
                     this.Dispose();
                 }
             }
