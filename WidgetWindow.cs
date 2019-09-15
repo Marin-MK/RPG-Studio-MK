@@ -77,11 +77,58 @@ namespace MKEditor
                 .SetGrid(0, 0, 0, 2) as MenuBar;
             menu.SetItems(new List<MenuItem>()
             {
-                new MenuItem("File"),
-                new MenuItem("Edit"),
-                new MenuItem("View"),
-                new MenuItem("Game"),
+                new MenuItem("File")
+                {
+                    Items = new List<IMenuItem>()
+                    {
+                        new MenuItem("New"),
+                        new MenuItem("Open") { Shortcut = "Ctrl+O" },
+                        new MenuItem("Save") { Shortcut = "Ctrl+S" },
+                        new MenuItem("Close Project"),
+                        new MenuItem("Exit Editor")
+                    }
+                },
+                new MenuItem("Edit")
+                {
+                    Items = new List<IMenuItem>()
+                    {
+                        new MenuItem("Cut"),
+                        new MenuItem("Copy") { Shortcut = "Ctrl+C" },
+                        new MenuItem("Paste") { Shortcut = "Ctrl+V" },
+                        new MenuSeparator(),
+                        new MenuItem("Undo") { Shortcut = "Ctrl+Z" },
+                        new MenuItem("Redo") { Shortcut = "Ctrl+Y" },
+                        new MenuSeparator(),
+                        new MenuItem("Delete") { Shortcut = "Del" }
+                    }
+                },
+                new MenuItem("View")
+                {
+                    Items = new List<IMenuItem>()
+                    {
+                        new MenuItem("Focus Selected Layer"),
+                        new MenuItem("Show Grid"),
+                        new MenuItem("Zoom 1:1"),
+                        new MenuItem("Zoom 1:2"),
+                        new MenuItem("Zoom 1:4")
+                    }
+                },
+                new MenuItem("Game")
+                {
+                    Items = new List<IMenuItem>()
+                    {
+                        new MenuItem("Play Game") { Shortcut = "F12" },
+                        new MenuItem("Open Game Folder")
+                    }
+                },
                 new MenuItem("Help")
+                {
+                    Items = new List<IMenuItem>()
+                    {
+                        new MenuItem("Help") { Shortcut = "F1" },
+                        new MenuItem("About MK Editor")
+                    }
+                }
             });
 
 

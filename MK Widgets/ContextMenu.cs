@@ -9,11 +9,13 @@ namespace MKEditor.Widgets
         public List<IMenuItem> Items = new List<IMenuItem>();
         public IMenuItem SelectedItem;
 
+        public EventHandler<EventArgs> OnItemInvoked;
+
         public ContextMenu(object Parent, string Name = "contextMenu")
             : base(Parent, Name)
         {
             this.SetZIndex(999);
-            this.SetWidth(260);
+            this.SetWidth(192);
             this.Sprites["bg"] = new RectSprite(this.Viewport);
             (this.Sprites["bg"] as RectSprite).SetColor(Color.BLACK, new Color(45, 69, 107));
             this.Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(2, 18, new Color(55, 187, 255)));
@@ -25,22 +27,40 @@ namespace MKEditor.Widgets
             this.WidgetIM.OnMouseDown += MouseDown;
         }
 
+        public void SetInnerColor(byte R, byte G, byte B, byte A = 255)
+        {
+            SetInnerColor(new Color(R, G, B, A));
+        }
+        public void SetInnerColor(Color c)
+        {
+            (Sprites["bg"] as RectSprite).SetInnerColor(c);
+        }
+
+        public void SetOuterColor(byte R, byte G, byte B, byte A = 255)
+        {
+            SetOuterColor(new Color(R, G, B, A));
+        }
+        public void SetOuterColor(Color c)
+        {
+            (Sprites["bg"] as RectSprite).SetOuterColor(c);
+        }
+
         public void SetItems(List<IMenuItem> Items)
         {
             this.Items = new List<IMenuItem>(Items);
-            this.SetSize(192, Items.Count * 23 + 10);
+            this.SetSize(192, CalcHeight() + 10);
             (this.Sprites["bg"] as RectSprite).SetSize(this.Size);
         }
 
         protected override void Draw()
         {
             if (this.Sprites["items"].Bitmap != null) this.Sprites["items"].Bitmap.Dispose();
-            this.Sprites["items"].Bitmap = new Bitmap(192, Items.Count * 23 + 10);
+            this.Sprites["items"].Bitmap = new Bitmap(192, CalcHeight() + 10);
             Font f = Font.Get("Fonts/ProductSans-M", 12);
             this.Sprites["items"].Bitmap.Font = f;
             this.Sprites["items"].Bitmap.Unlock();
 
-            int y = 9;
+            int y = 5;
             for (int i = 0; i < this.Items.Count; i++)
             {
                 IMenuItem item = this.Items[i];
@@ -55,15 +75,15 @@ namespace MKEditor.Widgets
                         if (!e.ConditionValue) c = new Color(155, 164, 178);
                         menuitem.LastClickable = e.ConditionValue;
                     }
-                    this.Sprites["items"].Bitmap.DrawText(menuitem.Text, 10, y, c);
+                    this.Sprites["items"].Bitmap.DrawText(menuitem.Text, 10, y + 4, c);
                     if (!string.IsNullOrEmpty(menuitem.Shortcut))
-                        this.Sprites["items"].Bitmap.DrawText(menuitem.Shortcut, Size.Width - 9, y, c, DrawOptions.RightAlign);
+                        this.Sprites["items"].Bitmap.DrawText(menuitem.Shortcut, Size.Width - 9, y + 4, c, DrawOptions.RightAlign);
                     y += 23;
                 }
                 else if (item is MenuSeparator)
                 {
-                    this.Sprites["items"].Bitmap.DrawLine(1, y, Size.Width - 2, y, 38, 39, 42);
-                    y += 1;
+                    this.Sprites["items"].Bitmap.DrawLine(6, y + 2, Size.Width - 12, y + 2, 38, 56, 82);
+                    y += 5;
                 }
             }
             this.Sprites["items"].Bitmap.Lock();
@@ -76,9 +96,18 @@ namespace MKEditor.Widgets
             base.Dispose();
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        private int CalcHeight(int upto = -1)
         {
-            base.SizeChanged(sender, e);
+            int h = 0;
+            for (int i = 0; i < Items.Count; i++)
+            {
+                if (upto == -1 || i <= upto)
+                {
+                    if (Items[i] is MenuSeparator) h += 5;
+                    else h += 23;
+                }
+            }
+            return h;
         }
 
         public override void HoverChanged(object sender, MouseEventArgs e)
@@ -99,7 +128,7 @@ namespace MKEditor.Widgets
                 this.SelectedItem = null;
                 return;
             }
-            int y = 9;
+            int y = 4;
             if (ry < y)
             {
                 Sprites["selector"].Visible = false;
@@ -110,14 +139,24 @@ namespace MKEditor.Widgets
             {
                 if (Items[i] is MenuItem)
                 {
-                    if (y < ry && y + 23 >= ry)
+                    if (y <= ry && y + 23 > ry)
                     {
-                        Sprites["selector"].Y = y - 1;
+                        Sprites["selector"].Y = y + 2;
                         Sprites["selector"].Visible = true;
                         this.SelectedItem = Items[i];
                         break;
                     }
                     y += 23;
+                }
+                else
+                {
+                    if (y <= ry && y + 5 > ry)
+                    {
+                        Sprites["selector"].Visible = false;
+                        this.SelectedItem = Items[i];
+                        break;
+                    }
+                    y += 5;
                 }
             }
         }
@@ -133,6 +172,7 @@ namespace MKEditor.Widgets
                     {
                         (SelectedItem as MenuItem).OnLeftClick.Invoke(sender, e);
                     }
+                    this.OnItemInvoked.Invoke(sender, new EventArgs());
                     this.Dispose();
                 }
             }

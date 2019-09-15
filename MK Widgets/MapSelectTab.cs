@@ -139,12 +139,15 @@ namespace MKEditor.Widgets
                 // Changes mapviewer, layerstab and tilesettab to match the new map
                 //MapViewer.SetMap(mapview.SelectedNode.Object as Data.Map);
             };
-            this.SetContextMenuList(new List<IMenuItem>()
+            mapview.SetContextMenuList(new List<IMenuItem>()
             {
-                new MenuItem("Map Properties"),
                 new MenuItem("New Map"),
+                new MenuSeparator(),
+                new MenuItem("Edit Map"),
+                new MenuItem("Cut"),
                 new MenuItem("Copy") { Shortcut = "Ctrl+C" },
                 new MenuItem("Paste") { Shortcut = "Ctrl+V", IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = false; } },
+                new MenuSeparator(),
                 new MenuItem("Delete") { Shortcut = "Del" }
             });
         }

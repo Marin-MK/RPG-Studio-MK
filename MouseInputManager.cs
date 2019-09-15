@@ -119,7 +119,7 @@ namespace MKEditor
         {
             if (!Ready()) return;
             if (!Widget.Visible) return;
-            if (OverContextMenu()) return;
+            //if (OverContextMenu()) return; // If a button opens up a context menu, the mouse-up event shouldn't be ignored because of that menu.
             if (Widget.IsBlocked()) return;
 
             if (!e.LeftButton && e.OldLeftButton)

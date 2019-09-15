@@ -76,17 +76,14 @@ namespace MKEditor.Widgets
             this.Sprites["list"].Bitmap.Font = f;
             string text = node.Object.ToString();
             Size s = f.TextSize(text);
-            node.PixelWidth = s.Width + 12;
             Color c = SelectedNode == node ? new Color(55, 187, 255) : Color.WHITE;
             this.Sprites["list"].Bitmap.DrawText(text, x + 12, y, c);
             if (x + 16 + s.Width > this.Size.Width) this.SetWidth(x + 16 + s.Width);
 
-            #region Draws connecting lines
             if (!FirstGeneration)
             {
                 Sprites["list"].Bitmap.DrawLine(x - 16, y + 8, x - 6, y + 8, new Color(64, 104, 146));
             }
-            #endregion
 
             if (node.Nodes.Count > 0)
             {
@@ -186,6 +183,7 @@ namespace MKEditor.Widgets
         public override void HoverChanged(object sender, MouseEventArgs e)
         {
             base.HoverChanged(sender, e);
+            if (Window.UI.OverContextMenu != null) return;
             Sprites["hover"].Visible = WidgetIM.Hovering;
             MouseMoving(sender, e);
         }
@@ -193,7 +191,7 @@ namespace MKEditor.Widgets
         public override void MouseMoving(object sender, MouseEventArgs e)
         {
             base.MouseMoving(sender, e);
-            if (!WidgetIM.Hovering) return;
+            if (!WidgetIM.Hovering || Window.UI.OverContextMenu != null) return;
             int ry = e.Y - this.Viewport.Y + Position.Y - ScrolledPosition.Y;
             int globalindex = (int) Math.Floor((ry - 5) / 24d);
             Sprites["hover"].Visible = true;
@@ -203,7 +201,7 @@ namespace MKEditor.Widgets
         public override void MouseDown(object sender, MouseEventArgs e)
         {
             base.MouseDown(sender, e);
-            if (!WidgetIM.Hovering) return;
+            if (!WidgetIM.Hovering || Window.UI.OverContextMenu != null) return;
             TreeNode oldselected = this.SelectedNode;
             if (e.LeftButton && !e.OldLeftButton)
             {
@@ -267,7 +265,6 @@ namespace MKEditor.Widgets
         public bool Collapsed = true;
         public List<TreeNode> Nodes = new List<TreeNode>();
         public int PixelsIndented = 0;
-        public int PixelWidth = 0;
 
         public int GetDisplayedNodeCount()
         {

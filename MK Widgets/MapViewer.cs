@@ -24,11 +24,6 @@ namespace MKEditor.Widgets
         public Container MainContainer;
         public CursorWidget Cursor;
         public MapImageWidget MapWidget;
-        public Widget GridBackground;
-        public Widget DummyWidget;
-
-        public VScrollBar VScrollBar;
-        public HScrollBar HScrollBar;
 
         MouseEventArgs LastMouseEvent;
 
@@ -47,9 +42,6 @@ namespace MKEditor.Widgets
             {
                 if (LastMouseEvent != null) this.MouseMoving(sender, LastMouseEvent);
             };
-            DummyWidget = new Widget(MainContainer);
-            GridBackground = new Widget(MainContainer);
-            GridBackground.SetBackgroundColor(new Color(0,0,0));
             Cursor = new CursorWidget(MainContainer);
             Cursor.ConsiderInAutoScroll = false;
             MapWidget = new MapImageWidget(MainContainer);
@@ -291,7 +283,6 @@ namespace MKEditor.Widgets
         public void CreateLayerBitmaps()
         {
             MapWidget.LoadLayers(this.Map);
-            GridBackground.SetSize(MapWidget.Size.Width + 4, MapWidget.Size.Height + 4);
             PositionMap();
         }
 
@@ -306,12 +297,7 @@ namespace MKEditor.Widgets
             int offsetx = 32 - x % 32;
             int offsety = 32 - y % 32;
             MapWidget.SetPosition(x, y);
-            GridBackground.SetPosition(x - 2, y - 2);
-            DummyWidget.SetSize(width, height);
             MainContainer.UpdateAutoScroll();
-            // Might not do anything anymore
-            if (MainContainer.HScrollBar != null) MainContainer.HScrollBar.WidgetIM.Priority = 1;
-            if (MainContainer.VScrollBar != null) MainContainer.VScrollBar.WidgetIM.Priority = 1;
         }
 
         public override void MouseMoving(object sender, MouseEventArgs e)
@@ -491,6 +477,7 @@ namespace MKEditor.Widgets
         public void LoadLayers(Data.Map MapData)
         {
             this.MapData = MapData;
+            SetBackgroundColor(73, 89, 109);
             this.SetSize(MapData.Width * 32, MapData.Height * 32);
             RedrawLayers();
             RedrawGrid();
@@ -501,14 +488,14 @@ namespace MKEditor.Widgets
             if (Sprites["grid"].Bitmap != null) Sprites["grid"].Bitmap.Dispose();
             Sprites["grid"].Bitmap = new Bitmap(MapData.Width * 32, MapData.Height * 32);
             Sprites["grid"].Bitmap.Unlock();
-            Color c = new Color(0, 0, 0, 128);
+            Color c = new Color(0, 13, 26, 220);
             for (int y = 0; y < MapData.Height * 32; y++)
             {
                 for (int x = 0; x < MapData.Width * 32; x++)
                 {
                     bool draw = false;
-                    if (x > 0 && x % 32 == 0 && (y % 4 == 1 || y % 4 == 2)) draw = true;
-                    if (y > 0 && y % 32 == 0 && (x % 4 == 1 || x % 4 == 2)) draw = true;
+                    if (x > 0 && x % 32 == 0 && y % 2 == 0) draw = true;
+                    if (y > 0 && y % 32 == 0 && x % 2 == 0) draw = true;
                     if (draw)
                     {
                         Sprites["grid"].Bitmap.SetPixel(x, y, c);
@@ -698,114 +685,6 @@ namespace MKEditor.Widgets
             }
 
             this.Sprites[layer.ToString()].Bitmap.Lock();
-        }
-    }
-
-    public class GridBackground : Widget
-    {
-        public Bitmap GridBitmap;
-        public int OffsetX;
-        public int OffsetY;
-
-        public GridBackground(object Parent, string Name = "gridBackground")
-            : base(Parent, Name)
-        {
-            GridBitmap = new Bitmap(32, 32);
-            GridBitmap.Unlock();
-            #region Draw Grid pattern
-            Bitmap b = GridBitmap;
-            /*Color Corner = new Color(102, 104, 111);
-            Color CornerSmall = new Color(82, 84, 91);
-            Color Outer = new Color(75, 79, 86);
-            Color Inner = new Color(72, 76, 84);
-            Color Fill = new Color(69, 73, 81);
-            b.SetPixel(0, 0, Corner);
-            b.SetPixel(1, 0, Corner);
-            b.SetPixel(2, 0, Corner);
-            b.SetPixel(0, 1, Corner);
-            b.SetPixel(0, 2, Corner);
-            b.SetPixel(1, 1, CornerSmall);
-            b.SetPixel(2, 1, CornerSmall);
-            b.SetPixel(1, 2, CornerSmall);
-            b.DrawLine(3, 0, 28, 0, Outer);
-            b.DrawLine(3, 1, 28, 1, Inner);
-            b.SetPixel(29, 0, Corner);
-            b.SetPixel(30, 0, Corner);
-            b.SetPixel(31, 0, Corner);
-            b.SetPixel(31, 1, Corner);
-            b.SetPixel(31, 2, Corner);
-            b.SetPixel(30, 1, CornerSmall);
-            b.SetPixel(29, 1, CornerSmall);
-            b.SetPixel(30, 2, CornerSmall);
-            b.DrawLine(31, 3, 31, 28, Outer);
-            b.DrawLine(30, 3, 30, 28, Inner);
-            b.SetPixel(31, 29, Corner);
-            b.SetPixel(31, 30, Corner);
-            b.SetPixel(31, 31, Corner);
-            b.SetPixel(30, 31, Corner);
-            b.SetPixel(29, 31, Corner);
-            b.SetPixel(30, 29, CornerSmall);
-            b.SetPixel(30, 30, CornerSmall);
-            b.SetPixel(29, 30, CornerSmall);
-            b.DrawLine(28, 31, 3, 31, Outer);
-            b.DrawLine(28, 30, 3, 30, Inner);
-            b.SetPixel(0, 29, Corner);
-            b.SetPixel(0, 30, Corner);
-            b.SetPixel(0, 31, Corner);
-            b.SetPixel(1, 31, Corner);
-            b.SetPixel(2, 31, Corner);
-            b.SetPixel(2, 30, CornerSmall);
-            b.SetPixel(1, 30, CornerSmall);
-            b.SetPixel(1, 29, CornerSmall);
-            b.DrawLine(0, 28, 0, 3, Outer);
-            b.DrawLine(1, 28, 1, 3, Inner);
-            b.FillRect(2, 2, 28, 28, Fill);*/
-            Color Cross = new Color(68, 71, 78);
-            Color Line = new Color(48, 52, 59);
-            Color Fill = new Color(40, 44, 52);
-            b.SetPixel(0, 0, Cross);
-            b.SetPixel(1, 0, Cross);
-            b.SetPixel(2, 0, Cross);
-            b.SetPixel(0, 1, Cross);
-            b.SetPixel(0, 2, Cross);
-            b.SetPixel(30, 0, Cross);
-            b.SetPixel(31, 0, Cross);
-            b.SetPixel(0, 30, Cross);
-            b.SetPixel(0, 31, Cross);
-            b.DrawLine(3, 0, 29, 0, Line);
-            b.DrawLine(0, 3, 0, 29, Line);
-            b.FillRect(1, 1, 31, 31, Fill);
-            #endregion
-            GridBitmap.Lock();
-            Sprites["grid"] = new Sprite(this.Viewport);
-            Sprites["grid"].Bitmap = GridBitmap;
-            UpdatePositions();
-        }
-
-        public override void SizeChanged(object sender, SizeEventArgs e)
-        {
-            base.SizeChanged(sender, e);
-            UpdatePositions();
-        }
-
-        public void SetOffset(int x, int y)
-        {
-            this.OffsetX = x;
-            this.OffsetY = y;
-        }
-
-        public void UpdatePositions()
-        {
-            Sprites["grid"].MultiplePositions.Clear();
-            int tilesx = (int) Math.Ceiling(this.Size.Width / 32d) + 1;
-            int tilesy = (int) Math.Ceiling(this.Size.Height / 32d) + 1;
-            for (int y = 0; y < tilesy; y++)
-            {
-                for (int x = 0; x < tilesx; x++)
-                {
-                    Sprites["grid"].MultiplePositions.Add(new Point(x * 32 - OffsetX, y * 32 - OffsetY));
-                }
-            }
         }
     }
 }
