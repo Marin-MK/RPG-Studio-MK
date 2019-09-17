@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ODL;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -63,7 +64,7 @@ end
 ";
         }
 
-        public static void DrawCollapseBox(ODL.Bitmap b, int x, int y, bool collapsed)
+        public static void DrawCollapseBox(Bitmap b, int x, int y, bool collapsed)
         {
             b.SetPixel(x, y + 2, 17, 33, 50);
             b.SetPixel(x + 2, y, 17, 33, 50);
@@ -112,7 +113,7 @@ end
             b.SetPixel(x + 9, y + 5, 17, 27, 38);
             b.SetPixel(x + 2, y + 5, 181, 193, 206);
             b.SetPixel(x + 8, y + 5, 181, 193, 206);
-            b.DrawLine(x + 3, y + 5, x + 7, y + 5, ODL.Color.WHITE);
+            b.DrawLine(x + 3, y + 5, x + 7, y + 5, Color.WHITE);
             if (collapsed)
             {
                 b.SetPixel(x + 3, y, 39, 64, 90);
@@ -137,8 +138,25 @@ end
                 b.SetPixel(x + 6, y + 7, 17, 27, 38);
                 b.SetPixel(x + 5, y + 2, 181, 193, 206);
                 b.SetPixel(x + 5, y + 8, 181, 193, 206);
-                b.DrawLine(x + 5, y + 3, x + 5, y + 7, ODL.Color.WHITE);
+                b.DrawLine(x + 5, y + 3, x + 5, y + 7, Color.WHITE);
             }
+        }
+
+        public static string Digits(int Number, int Digits)
+        {
+            string num = Number.ToString();
+            if (num.Length >= Digits) return num;
+            int missing = Digits - num.Length;
+
+            for (int i = 0; i < missing; i++) num = "0" + num;
+            return num;
+        }
+
+        public static Bitmap IconSheet;
+        
+        public static void Initialize()
+        {
+            IconSheet = new Bitmap("icons.png");
         }
     }
 }

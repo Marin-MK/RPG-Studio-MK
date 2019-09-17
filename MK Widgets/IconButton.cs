@@ -9,8 +9,9 @@ namespace MKEditor.Widgets
         public int IconX;
         public int IconY;
         public bool Toggleable = false;
+        public bool Selectable = true;
 
-        public bool Selected = false;
+        public bool Selected { get; protected set; } = false;
 
         public EventHandler<EventArgs> OnSelection;
         public EventHandler<EventArgs> OnDeselection;
@@ -18,19 +19,14 @@ namespace MKEditor.Widgets
         public IconButton(object Parent, string Name = "iconButton")
             : base(Parent, Name)
         {
-            this.SetSize(26, 26);
-            Sprites["bg"] = new Sprite(this.Viewport);
-            Sprites["bg"].Bitmap = new Bitmap(26, 26);
-            Sprites["bg"].Bitmap.Unlock();
-            Sprites["bg"].Bitmap.FillRect(0, 0, 26, 26, Color.WHITE);
-            Sprites["bg"].Bitmap.SetPixel(0, 0, Color.ALPHA);
-            Sprites["bg"].Bitmap.SetPixel(25, 0, Color.ALPHA);
-            Sprites["bg"].Bitmap.SetPixel(0, 25, Color.ALPHA);
-            Sprites["bg"].Bitmap.SetPixel(25, 25, Color.ALPHA);
-            Sprites["bg"].Color = Color.ALPHA;
-            Sprites["bg"].Bitmap.Lock();
+            this.SetSize(24, 27);
             Sprites["icon"] = new Sprite(this.Viewport);
-            Sprites["icon"].Bitmap = new Bitmap(26, 26);
+            Sprites["icon"].Bitmap = Utilities.IconSheet;
+            Sprites["icon"].SrcRect.Width = 24;
+            Sprites["icon"].SrcRect.Height = 24;
+            Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(24, 2, 59, 227, 255));
+            Sprites["selector"].Y = 24;
+            Sprites["selector"].Visible = false;
             this.WidgetIM.OnHoverChanged += HoverChanged;
             this.WidgetIM.OnMouseDown += MouseDown;
         }
@@ -51,31 +47,22 @@ namespace MKEditor.Widgets
                 this.Selected = Selected;
                 if (Selected && this.OnSelection != null) this.OnSelection.Invoke(this, new EventArgs());
                 if (!Selected && this.OnDeselection != null) this.OnDeselection.Invoke(this, new EventArgs());
-                Redraw();
+                SetIcon(IconX, IconY, Selected);
             }
         }
 
-        public void SetIcon(int IconX, int IconY)
+        public void SetIcon(int IconX, int IconY, bool Selected = false)
         {
-            Sprites["icon"].Bitmap.Unlock();
-            Sprites["icon"].Bitmap.Build(new Rect(1, 1, 24, 24), Widget.IconSheet, new Rect(IconX * 24, IconY * 24, 24, 24));
-            Sprites["icon"].Bitmap.Lock();
+            Sprites["icon"].SrcRect.X = IconX * 24;
+            Sprites["icon"].SrcRect.Y = IconY * 24 + (Selected ? 24 : 0);
+            this.IconX = IconX;
+            this.IconY = IconY;
         }
 
-        protected override void Draw()
+        public override void HoverChanged(object sender, MouseEventArgs e)
         {
-            Sprites["bg"].Color = Color.ALPHA;
-            Sprites["icon"].Color = Color.WHITE;
-            if (Selected)
-            {
-                Sprites["bg"].Color = new Color(255, 168, 54);
-                Sprites["icon"].Color = Color.BLACK;
-            }
-            else if (WidgetIM.Hovering)
-            {
-                Sprites["bg"].Color = new Color(79, 82, 91);
-            }
-            base.Draw();
+            base.HoverChanged(sender, e);
+            Sprites["selector"].Visible = WidgetIM.Hovering;
         }
 
         public override void MouseDown(object sender, MouseEventArgs e)

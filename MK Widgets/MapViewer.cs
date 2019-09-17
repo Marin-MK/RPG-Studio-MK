@@ -21,9 +21,12 @@ namespace MKEditor.Widgets
         public Point OriginDrawPoint;
         public bool SelectionOnMap = false;
 
+        public double ZoomFactor = 1.0;
+
         public Container MainContainer;
         public CursorWidget Cursor;
         public MapImageWidget MapWidget;
+        public Widget DummyWidget;
 
         MouseEventArgs LastMouseEvent;
 
@@ -38,13 +41,10 @@ namespace MKEditor.Widgets
             MainContainer = new Container(this);
             MainContainer.SetPosition(1, 0);
             MainContainer.HAutoScroll = MainContainer.VAutoScroll = true;
-            MainContainer.OnScrolling += delegate (object sender, EventArgs e)
-            {
-                if (LastMouseEvent != null) this.MouseMoving(sender, LastMouseEvent);
-            };
             Cursor = new CursorWidget(MainContainer);
             Cursor.ConsiderInAutoScroll = false;
             MapWidget = new MapImageWidget(MainContainer);
+            DummyWidget = new Widget(MainContainer);
             Sprites["topleft"] = new Sprite(this.Viewport);
             Sprites["topright"] = new Sprite(this.Viewport);
             Sprites["bottomleft"] = new Sprite(this.Viewport);
@@ -67,14 +67,19 @@ namespace MKEditor.Widgets
             UpdateSize();
         }
 
+        public void SetZoomFactor(double factor)
+        {
+            this.ZoomFactor = factor;
+            MapWidget.SetZoomFactor(factor);
+            PositionMap();
+        }
+
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
             MainContainer.SetSize(this.Size.Width - 12, this.Size.Height - 11);
             PositionMap();
             UpdateSize();
-            if (MainContainer.HScrollBar != null) MainContainer.HScrollBar.SetValue(0.5);
-            if (MainContainer.VScrollBar != null) MainContainer.VScrollBar.SetValue(0.5);
         }
 
         private void UpdateSize()
@@ -288,15 +293,33 @@ namespace MKEditor.Widgets
 
         public void PositionMap()
         {
-            int width = this.Map.Width * 32 + this.Viewport.Width / 2;
-            if (width < this.Viewport.Width) width = MainContainer.Size.Width;
-            int height = this.Map.Height * 32 + this.Viewport.Height / 2;
-            if (height < this.Viewport.Height) height = MainContainer.Size.Height;
-            int x = width / 2 - MapWidget.Size.Width / 2;
-            int y = height / 2 - MapWidget.Size.Height / 2;
-            int offsetx = 32 - x % 32;
-            int offsety = 32 - y % 32;
+            int x = 0;
+            if (Map.Width * 32 * ZoomFactor < Viewport.Width)
+            {
+                x = MainContainer.Viewport.Width / 2 - (int) Math.Round(Map.Width * 32 * ZoomFactor / 2d);
+            }
+            else
+            {
+                x = MainContainer.Viewport.Width / 4;
+            }
+            int y = 0;
+            if (Map.Height * 32 * ZoomFactor < Viewport.Height)
+            {
+                y = MainContainer.Viewport.Height / 2 - (int) Math.Round(Map.Height * 32 * ZoomFactor / 2d);
+            }
+            else
+            {
+                y = MainContainer.Viewport.Height / 4;
+            }
             MapWidget.SetPosition(x, y);
+            MapWidget.SetSize((int) Math.Round(Map.Width * 32 * ZoomFactor), (int) Math.Round(Map.Height * 32 * ZoomFactor));
+            DummyWidget.SetSize(2 * x + MapWidget.Size.Width, 2 * y + MapWidget.Size.Height);
+            if (Map.Width * 32 * ZoomFactor >= Viewport.Width || Map.Height * 32 * ZoomFactor >= Viewport.Height)
+            {
+                Console.WriteLine("half");
+                MainContainer.HScrollBar.SetValue(0.5);
+                MainContainer.VScrollBar.SetValue(0.5);
+            }
             MainContainer.UpdateAutoScroll();
         }
 
@@ -333,8 +356,8 @@ namespace MKEditor.Widgets
                 movedy -= MapWidget.Position.Y;
                 ry += movedy;
             }
-            int tilex = (int) Math.Floor(rx / 32d);
-            int tiley = (int) Math.Floor(ry / 32d);
+            int tilex = (int) Math.Floor(rx / (32d * ZoomFactor));
+            int tiley = (int) Math.Floor(ry / (32d * ZoomFactor));
             Cursor.SetVisible(true);
             int cx = tilex * 32;
             int cy = tiley * 32;
@@ -356,11 +379,11 @@ namespace MKEditor.Widgets
             int offsetx = 0;
             int offsety = 0;
             if (CursorOrigin == Location.TopRight || CursorOrigin == Location.BottomRight)
-                offsetx = 32 * CursorWidth;
+                offsetx = (int) Math.Round(32 * CursorWidth * ZoomFactor);
             if (CursorOrigin == Location.BottomLeft || CursorOrigin == Location.BottomRight)
-                offsety = 32 * CursorHeight;
-            Cursor.SetPosition(MapWidget.Position.X + 32 * MapTileX - offsetx - 7, MapWidget.Position.Y + 32 * MapTileY - offsety - 7);
-            Cursor.SetSize(32 * (CursorWidth + 1) + 14, 32 * (CursorHeight + 1) + 14);
+                offsety = (int) Math.Round(32 * CursorHeight * ZoomFactor);
+            Cursor.SetPosition(MapWidget.Position.X + (int) Math.Round(32 * MapTileX * ZoomFactor) - offsetx - 7, MapWidget.Position.Y + (int) Math.Round(32 * MapTileY * ZoomFactor) - offsety - 7);
+            Cursor.SetSize((int) Math.Round(32 * ZoomFactor) * (CursorWidth + 1) + 14, (int) Math.Round(32 * ZoomFactor) * (CursorHeight + 1) + 14);
         }
 
         public override void MouseDown(object sender, MouseEventArgs e)
@@ -392,7 +415,9 @@ namespace MKEditor.Widgets
                     if (TilesetTab.EraserButton.Selected) TileDataList.Add(null);
                     else
                     {
-                        throw new Exception($"The tile data list is empty, but the eraser tool is not selected.\nCan't find tiles to draw with.");
+                        TilesetTab.EraserButton.SetSelected(true);
+                        TileDataList.Add(null);
+                        //throw new Exception($"The tile data list is empty, but the eraser tool is not selected.\nCan't find tiles to draw with.");
                     }
                 }
                 MapWidget.DrawTiles(oldx, oldy, newx, newy, Layer);
@@ -465,20 +490,31 @@ namespace MKEditor.Widgets
         public MapViewer MapViewer;
         public Data.Map MapData;
 
+        public double ZoomFactor = 1.0;
+
         public MapImageWidget(object Parent, string Name = "mapImageWidget")
             : base(Parent, Name)
         {
-            SetBackgroundColor(28, 50, 73);
+            SetBackgroundColor(73, 89, 109);
             Sprites["grid"] = new Sprite(this.Viewport);
             Sprites["grid"].Z = 999999;
             this.MapViewer = this.Parent.Parent as MapViewer;
         }
 
+        public void SetZoomFactor(double factor)
+        {
+            for (int i = 0; i < MapData.Layers.Count; i++)
+            {
+                Sprites[i.ToString()].ZoomX = Sprites[i.ToString()].ZoomY = factor;
+            }
+            Sprites["grid"].ZoomX = Sprites["grid"].ZoomY = factor;
+            this.ZoomFactor = factor;
+        }
+
         public void LoadLayers(Data.Map MapData)
         {
             this.MapData = MapData;
-            SetBackgroundColor(73, 89, 109);
-            this.SetSize(MapData.Width * 32, MapData.Height * 32);
+            this.SetSize((int) Math.Round(MapData.Width * 32 * ZoomFactor), (int) Math.Round(MapData.Height * 32 * ZoomFactor));
             RedrawLayers();
             RedrawGrid();
         }
@@ -513,7 +549,7 @@ namespace MKEditor.Widgets
             }
             for (int i = 0; i < MapData.Layers.Count; i++)
             {
-                this.Sprites[i.ToString()] = new Sprite(this.Viewport, this.Size.Width, this.Size.Height);
+                this.Sprites[i.ToString()] = new Sprite(this.Viewport, MapData.Width * 32, MapData.Height * 32);
                 this.Sprites[i.ToString()].Z = i;
                 this.Sprites[i.ToString()].Bitmap.Unlock();
             }
@@ -547,6 +583,7 @@ namespace MKEditor.Widgets
             {
                 this.Sprites[i.ToString()].Bitmap.Lock();
             }
+            SetZoomFactor(ZoomFactor);
         }
 
         public void DrawTiles(int oldx, int oldy, int newx, int newy, int layer)

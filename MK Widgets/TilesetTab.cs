@@ -63,27 +63,27 @@ namespace MKEditor.Widgets
             DrawContainer.SetSize(140, 26);
 
             PencilButton = new IconButton(DrawContainer);
-            PencilButton.SetIcon(1, 0);
+            PencilButton.SetIcon(15, 0);
             PencilButton.SetSelected(true);
 
             FillButton = new IconButton(DrawContainer);
-            FillButton.SetIcon(2, 0);
+            FillButton.SetIcon(16, 0);
             FillButton.SetPosition(28, 0);
 
             EllipseButton = new IconButton(DrawContainer);
-            EllipseButton.SetIcon(3, 0);
+            EllipseButton.SetIcon(17, 0);
             EllipseButton.SetPosition(56, 0);
 
             RectButton = new IconButton(DrawContainer);
-            RectButton.SetIcon(4, 0);
+            RectButton.SetIcon(18, 0);
             RectButton.SetPosition(84, 0);
 
             SelectButton = new IconButton(DrawContainer);
-            SelectButton.SetIcon(5, 0);
+            SelectButton.SetIcon(19, 0);
             SelectButton.SetPosition(112, 0);
 
             EraserButton = new IconButton(TabControl.GetTab(0));
-            EraserButton.SetIcon(6, 0);
+            EraserButton.SetIcon(20, 0);
             EraserButton.SetPosition(155, 4);
             EraserButton.Toggleable = true;
             EraserButton.OnSelection += delegate (object sender, EventArgs e)

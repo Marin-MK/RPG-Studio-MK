@@ -6,20 +6,12 @@ namespace MKEditor.Widgets
 {
     public class Widget : IDisposable, IContainer
     {
-        public static Bitmap IconSheet;
-
-        public static void Setup()
-        {
-            IconSheet = new Bitmap("icons.png");
-        }
-
-
         public string                       Name;
         public Viewport                     Viewport         { get; set; }
         public Size                         Size             { get; protected set; } = new Size(50, 50);
         public Point                        Position         { get; protected set; } = new Point(0, 0);
         public WidgetWindow                 Window           { get; protected set; }
-        public bool                         AutoResize       { get; protected set; } = false;
+        public bool                         AutoResize       = false;
         public Size                         MinimumSize      { get; protected set; } = new Size(1, 1);
         public Size                         MaximumSize      { get; protected set; } = new Size(9999, 9999);
         public Color                        BackgroundColor  { get; protected set; } = new Color(255, 255, 255, 0);
@@ -114,6 +106,9 @@ namespace MKEditor.Widgets
             this.OnChildBoundsChanged = new EventHandler<SizeEventArgs>(this.ChildBoundsChanged);
             this.WidgetIM = new MouseInputManager(this);
             this.WidgetIM.OnRightClick += RightClick_ContextMenu;
+
+            //Sprites["bounds"] = new Sprite(this.Viewport);
+            //Sprites["bounds"].Z = 999999;
         }
 
         public void SetParent(object Parent, int Index = -1)
@@ -341,6 +336,11 @@ namespace MKEditor.Widgets
         }
         public virtual void SizeChanged(object sender, SizeEventArgs e)
         {
+            //if (Sprites["bounds"].Bitmap != null) Sprites["bounds"].Bitmap.Dispose();
+            //Sprites["bounds"].Bitmap = new Bitmap(Size);
+            //Sprites["bounds"].Bitmap.Unlock();
+            //Sprites["bounds"].Bitmap.DrawRect(Size, Color.BLACK);
+            //Sprites["bounds"].Bitmap.Lock();
             UpdateAutoScroll();
             UpdateLayout();
             for (int i = 0; i < this.Widgets.Count;i ++)
@@ -381,63 +381,74 @@ namespace MKEditor.Widgets
                 else h += w.Position.Y;
                 if (h > MaxChildHeight) MaxChildHeight = h;
             });
-            // ScrollBarX
-            if (HAutoScroll)
+            if (AutoResize)
             {
-                if (MaxChildWidth > this.Size.Width)
-                {
-                    if (HScrollBar == null)
-                    {
-                        throw new Exception("Autoscroll was enabled, but no scrollbar has been defined.");
-                    }
-                    if (OldMaxChildWidth - this.Viewport.Width > 0 && this.ScrolledX > OldMaxChildWidth - this.Viewport.Width)
-                    {
-                        this.ScrolledX = OldMaxChildWidth - this.Viewport.Width;
-                    }
-                    HScrollBar.SetValue((double) this.ScrolledX / (MaxChildWidth - this.Viewport.Width));
-                    HScrollBar.SetSliderSize((double) this.Viewport.Width / MaxChildWidth);
-                    HScrollBar.MouseInputRect = this.Viewport.Rect;
-                    HScrollBar.OnValueChanged = OnScrolling;
-                    HScrollBar.SetVisible(true);
-                }
-                else if (HScrollBar != null)
-                {
-                    HScrollBar.SetVisible(false);
-                    ScrolledX = 0;
-                }
+                int w = this.Size.Width;
+                if (MaxChildWidth > w) w = MaxChildWidth;
+                int h = this.Size.Height;
+                if (MaxChildHeight > h) h = MaxChildHeight;
+                SetSize(w, h);
             }
-            // ScrollBarY
-            if (VAutoScroll)
+            else
             {
-                if (MaxChildHeight > this.Size.Height || ShowScrollBars)
+                // ScrollBarX
+                if (HAutoScroll)
                 {
-                    bool ActuallyVisible = MaxChildHeight > this.Size.Height;
-                    if (VScrollBar == null)
+                    if (MaxChildWidth > this.Size.Width)
                     {
-                        throw new Exception("Autoscroll was enabled, but no scrollbar has been defined.");
+                        if (HScrollBar == null)
+                        {
+                            throw new Exception("Autoscroll was enabled, but no scrollbar has been defined.");
+                        }
+                        if (OldMaxChildWidth - this.Viewport.Width > 0 && this.ScrolledX > OldMaxChildWidth - this.Viewport.Width)
+                        {
+                            this.ScrolledX = OldMaxChildWidth - this.Viewport.Width;
+                        }
+                        HScrollBar.SetValue((double)this.ScrolledX / (MaxChildWidth - this.Viewport.Width));
+                        HScrollBar.SetSliderSize((double)this.Viewport.Width / MaxChildWidth);
+                        HScrollBar.MouseInputRect = this.Viewport.Rect;
+                        HScrollBar.OnValueChanged = OnScrolling;
+                        HScrollBar.SetVisible(true);
                     }
-                    if (ActuallyVisible)
+                    else if (HScrollBar != null)
                     {
-                        if (OldMaxChildHeight - this.Viewport.Height > 0 && this.ScrolledY > OldMaxChildHeight - this.Viewport.Height)
-                        {
-                            this.ScrolledY = OldMaxChildHeight - this.Viewport.Height;
-                        }
-                        if (this.ScrolledY > MaxChildHeight - this.Viewport.Height)
-                        {
-                            this.ScrolledY = MaxChildHeight - this.Viewport.Height;
-                        }
+                        HScrollBar.SetVisible(false);
+                        ScrolledX = 0;
                     }
-                    VScrollBar.SetValue((double) this.ScrolledY / (MaxChildHeight - this.Viewport.Height));
-                    VScrollBar.SetSliderSize((double) this.Viewport.Height / MaxChildHeight);
-                    VScrollBar.MouseInputRect = this.Viewport.Rect;
-                    VScrollBar.SetSliderVisible(ActuallyVisible);
-                    VScrollBar.OnValueChanged = OnScrolling;
-                    VScrollBar.SetVisible(true);
                 }
-                else if (VScrollBar != null)
+                // ScrollBarY
+                if (VAutoScroll)
                 {
-                    VScrollBar.SetVisible(false);
-                    ScrolledY = 0;
+                    if (MaxChildHeight > this.Size.Height || ShowScrollBars)
+                    {
+                        bool ActuallyVisible = MaxChildHeight > this.Size.Height;
+                        if (VScrollBar == null)
+                        {
+                            throw new Exception("Autoscroll was enabled, but no scrollbar has been defined.");
+                        }
+                        if (ActuallyVisible)
+                        {
+                            if (OldMaxChildHeight - this.Viewport.Height > 0 && this.ScrolledY > OldMaxChildHeight - this.Viewport.Height)
+                            {
+                                this.ScrolledY = OldMaxChildHeight - this.Viewport.Height;
+                            }
+                            if (this.ScrolledY > MaxChildHeight - this.Viewport.Height)
+                            {
+                                this.ScrolledY = MaxChildHeight - this.Viewport.Height;
+                            }
+                        }
+                        VScrollBar.SetValue((double)this.ScrolledY / (MaxChildHeight - this.Viewport.Height));
+                        VScrollBar.SetSliderSize((double)this.Viewport.Height / MaxChildHeight);
+                        VScrollBar.MouseInputRect = this.Viewport.Rect;
+                        VScrollBar.SetSliderVisible(ActuallyVisible);
+                        VScrollBar.OnValueChanged = OnScrolling;
+                        VScrollBar.SetVisible(true);
+                    }
+                    else if (VScrollBar != null)
+                    {
+                        VScrollBar.SetVisible(false);
+                        ScrolledY = 0;
+                    }
                 }
             }
             // Update positions

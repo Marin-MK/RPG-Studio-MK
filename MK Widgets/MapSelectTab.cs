@@ -40,8 +40,6 @@ namespace MKEditor.Widgets
             vs.SetSize(8, Size.Height - 2);
             allmapcontainer.SetVScrollBar(vs);
 
-            Container bgcontainer = new Container(allmapcontainer);
-
             mapview = new TreeView(allmapcontainer);
             mapview.SetWidth(205);
             List<TreeNode> Nodes = new List<TreeNode>();
@@ -49,95 +47,11 @@ namespace MKEditor.Widgets
             {
                 Nodes.Add(new TreeNode() { Object = kvp.Value });
             }
-            // temp
-            Nodes = new List<TreeNode>()
-            {
-                new TreeNode()
-                {
-                    Object = "Pallet Town",
-                    Nodes = new List<TreeNode>()
-                    {
-                        new TreeNode()
-                        {
-                            Object = "Player's House",
-                            Nodes = new List<TreeNode>()
-                            {
-                                new TreeNode() { Object = "Players Room" }
-                            }
-                        },
-                        new TreeNode() { Object = "Rival's House" },
-                        new TreeNode() { Object = "Professor's Lab" }
-                    }
-                },
-                new TreeNode() { Object = "Route 1" },
-                new TreeNode()
-                {
-                    Object = "Viridian City",
-                    Nodes = new List<TreeNode>()
-                    {
-                        new TreeNode() { Object = "Pokémon Centre" },
-                        new TreeNode() { Object = "Poké Mart" },
-                        new TreeNode() { Object = "Pokémon Gym" },
-                        new TreeNode() { Object = "House 1" },
-                        new TreeNode() { Object = "House 2" }
-                    }
-                },
-                new TreeNode() { Object = "Route 2" },
-                new TreeNode() { Object = "Hau'oli City Shopping District" },
-                new TreeNode() { Object = "Viridian Forest" },
-                new TreeNode()
-                {
-                    Object = "Pewter City",
-                    Nodes = new List<TreeNode>()
-                    {
-                        new TreeNode() { Object = "Pewter Child" }
-                    }
-                },
-                new TreeNode() { Object = "Route 3" },
-                new TreeNode()
-                {
-                    Object = "Mt. Moon",
-                    Nodes = new List<TreeNode>()
-                    {
-                        new TreeNode() { Object = "Floor 1" }
-                    }
-                },
-                new TreeNode() { Object = "Route 4" },
-                new TreeNode()
-                {
-                    Object = "Cerulean City",
-                    Nodes = new List<TreeNode>()
-                    {
-                        new TreeNode() { Object = "Cerulean Child" }
-                    }
-                },
-                new TreeNode() { Object = "Route 24" },
-                new TreeNode() { Object = "Route 25" },
-                new TreeNode() { Object = "Route 5" },
-                new TreeNode() { Object = "Underground" },
-                new TreeNode() { Object = "Route 6" },
-                new TreeNode()
-                {
-                    Object = "Vermillion City",
-                    Nodes = new List<TreeNode>()
-                    {
-                        new TreeNode() { Object = "Vermillion Child" }
-                    }
-                },
-                new TreeNode()
-                {
-                    Object = "Diglett's Cave",
-                    Nodes = new List<TreeNode>()
-                    {
-                        new TreeNode() { Object = "Floor 1" }
-                    }
-                }
-            };
             mapview.SetNodes(Nodes);
             mapview.OnSelectedNodeChanged += delegate (object sender, MouseEventArgs e)
             {
                 // Changes mapviewer, layerstab and tilesettab to match the new map
-                //MapViewer.SetMap(mapview.SelectedNode.Object as Data.Map);
+                MapViewer.SetMap(mapview.SelectedNode.Object as Data.Map);
             };
             mapview.SetContextMenuList(new List<IMenuItem>()
             {

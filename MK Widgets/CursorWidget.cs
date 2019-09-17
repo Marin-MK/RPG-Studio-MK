@@ -225,16 +225,47 @@ namespace MKEditor.Widgets
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            topright.X = Size.Width - 23;
-            bottomleft.Y = Size.Height - 23;
-            bottomright.X = topright.X;
-            bottomright.Y = bottomleft.Y;
-            top.ZoomX = Size.Width - 46;
-            left.ZoomY = Size.Height - 46;
-            right.X = Size.Width - 10;
-            right.ZoomY = Size.Height - 46;
-            bottom.Y = Size.Height - 10;
-            bottom.ZoomX = Size.Width - 46;
+            if (this.Size.Width < 46 || this.Size.Height < 46)
+            {
+                topleft.Visible = false;
+                topright.Visible = false;
+                bottomleft.Visible = false;
+                bottomright.Visible = false;
+                top.Visible = false;
+                left.Visible = false;
+                right.Visible = false;
+                bottom.Visible = false;
+                if (!Sprites.ContainsKey("rect")) Sprites["rect"] = new Sprite(this.Viewport);
+                if (Sprites["rect"].Bitmap != null) Sprites["rect"].Bitmap.Dispose();
+                Sprites["rect"].Bitmap = new Bitmap(Size);
+                Sprites["rect"].Bitmap.Unlock();
+                Sprites["rect"].Bitmap.DrawRect(7, 7, Size.Width - 14, Size.Height - 14, Color.BLACK);
+                Sprites["rect"].Bitmap.DrawRect(8, 8, Size.Width - 16, Size.Height - 16, Color.WHITE);
+                Sprites["rect"].Bitmap.DrawRect(9, 9, Size.Width - 18, Size.Height - 18, Color.BLACK);
+                Sprites["rect"].Bitmap.Lock();
+            }
+            else
+            {
+                topleft.Visible = true;
+                topright.Visible = true;
+                bottomleft.Visible = true;
+                bottomright.Visible = true;
+                top.Visible = true;
+                left.Visible = true;
+                right.Visible = true;
+                bottom.Visible = true;
+                if (Sprites.ContainsKey("rect") && !Sprites["rect"].Bitmap.Disposed) Sprites["rect"].Bitmap.Dispose();
+                topright.X = Size.Width - 23;
+                bottomleft.Y = Size.Height - 23;
+                bottomright.X = topright.X;
+                bottomright.Y = bottomleft.Y;
+                top.ZoomX = Size.Width - 46;
+                left.ZoomY = Size.Height - 46;
+                right.X = Size.Width - 10;
+                right.ZoomY = Size.Height - 46;
+                bottom.Y = Size.Height - 10;
+                bottom.ZoomX = Size.Width - 46;
+            }
         }
     }
 }

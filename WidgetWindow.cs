@@ -14,9 +14,9 @@ namespace MKEditor
 
         public WidgetWindow()
         {
-            GameData.Initialize("D:\\Desktop\\MK\\MK\\data");
+            Utilities.Initialize();
 
-            Widget.Setup();
+            GameData.Initialize("D:\\Desktop\\MK\\MK\\data");
 
             this.SetSize(1080, 720);
             this.Initialize();
@@ -133,9 +133,8 @@ namespace MKEditor
 
 
             // Toolbar (modes, icons, etc)
-            Widget w = new Widget(layout)
-                .SetBackgroundColor(10, 23, 37)
-                .SetGrid(1, 1, 0, 2);
+            ToolBar toolbar = new ToolBar(layout);
+            toolbar.SetGrid(1, 1, 0, 2);
 
 
             // Blue 1px separator
@@ -151,7 +150,7 @@ namespace MKEditor
 
             // Right sidebar
             Grid rightcontainer = new Grid(layout).SetGrid(3, 2) as Grid;
-            rightcontainer.SetRows(new GridSize(2), new GridSize(1));
+            rightcontainer.SetRows(new GridSize(5), new GridSize(2));
             rightcontainer.SetColumns(new GridSize(1));
             rightcontainer.SetBackgroundColor(40, 44, 52);
 
@@ -178,6 +177,7 @@ namespace MKEditor
             tt.LayersTab = lt;
             tt.MapViewer = mv;
             mst.MapViewer = mv;
+            toolbar.MapViewer = mv;
 
             // Set initial map
             Map map = null;
