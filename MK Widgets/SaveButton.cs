@@ -3,15 +3,9 @@ using ODL;
 
 namespace MKEditor.Widgets
 {
-    public class ModeButton : Widget
+    public class SaveButton : Widget
     {
-        public string Text { get; private set; } = "";
-        public bool Selected { get; private set; }
-
-        public EventHandler<EventArgs> OnSelection;
-        public EventHandler<EventArgs> OnDeselection;
-
-        public ModeButton(object Parent, string Name = "modeButton")
+        public SaveButton(object Parent, string Name = "saveButton")
             : base(Parent, Name)
         {
             Bitmap c = new Bitmap(12, 12);
@@ -198,7 +192,7 @@ namespace MKEditor.Widgets
 
             Sprites["bg"] = new Sprite(this.Viewport, new Bitmap(96, 32));
             Sprites["bg"].Bitmap.Unlock();
-            Sprites["bg"].Bitmap.FillRect(0, 0, 96, 32, new Color(28, 50, 73));
+            Sprites["bg"].Bitmap.FillRect(0, 0, 96, 32, new Color(87, 123, 168));
             Sprites["bg"].Bitmap.SetPixel(0, 0, Color.ALPHA);
             Sprites["bg"].Bitmap.SetPixel(95, 0, Color.ALPHA);
             Sprites["bg"].Bitmap.SetPixel(0, 31, Color.ALPHA);
@@ -208,15 +202,20 @@ namespace MKEditor.Widgets
             Sprites["bg"].Y = 5;
 
             Sprites["text"] = new Sprite(this.Viewport);
-            Sprites["text"].Y = 11;
+            Sprites["text"].Y = 12;
 
             Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(106, 2, new Color(59, 227, 255)));
             Sprites["selector"].Visible = false;
             Sprites["selector"].Y = 50;
 
+            Sprites["icon"] = new Sprite(this.Viewport);
+            Sprites["icon"].Bitmap = Utilities.IconSheet;
+            Sprites["icon"].SrcRect = new Rect(22 * 24, 0, 24, 24);
+            Sprites["icon"].X = 14;
+            Sprites["icon"].Y = 9;
+
             WidgetIM.OnHoverChanged += UpdateSelector;
             WidgetIM.OnMouseMoving += UpdateSelector;
-            WidgetIM.OnMouseDown += MouseDown;
 
             SetSize(106, 52);
         }
@@ -242,46 +241,17 @@ namespace MKEditor.Widgets
             Sprites["bottom"].ZoomX = Sprites["top"].ZoomX;
         }
 
-        public void SetText(string Text)
-        {
-            if (this.Text != Text)
-            {
-                this.Text = Text;
-                Redraw();
-            }
-        }
-
-        public void SetSelected(bool Selected)
-        {
-            if (this.Selected != Selected)
-            {
-                if (Selected)
-                {
-                    foreach (Widget w in Parent.Widgets)
-                    {
-                        if (!(w is ModeButton)) continue;
-                        ModeButton b = w as ModeButton;
-                        if (b.Selected) b.SetSelected(false);
-                    }
-                }
-                this.Selected = Selected;
-                if (Selected && this.OnSelection != null) this.OnSelection.Invoke(this, new EventArgs());
-                if (!Selected && this.OnDeselection != null) this.OnDeselection.Invoke(this, new EventArgs());
-                Redraw();
-            }
-        }
-
         protected override void Draw()
         {
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
             Font f = Font.Get("Fonts/Ubuntu-B", 16);
-            Size s = f.TextSize(Text);
+            Size s = f.TextSize("Save");
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Font = f;
             Sprites["text"].Bitmap.Unlock();
-            Sprites["text"].Bitmap.DrawText(Text, Selected ? new Color(0, 165, 255) : Color.WHITE);
+            Sprites["text"].Bitmap.DrawText("Save", Color.WHITE);
             Sprites["text"].Bitmap.Lock();
-            Sprites["text"].X = Size.Width / 2 - s.Width / 2;
+            Sprites["text"].X = Size.Width / 2 - 11;
             base.Draw();
         }
 
@@ -289,15 +259,6 @@ namespace MKEditor.Widgets
         {
             int ry = e.Y - Viewport.Y;
             Sprites["selector"].Visible = WidgetIM.Hovering && ry < 42;
-        }
-
-        public override void MouseDown(object sender, MouseEventArgs e)
-        {
-            base.MouseDown(sender, e);
-            if (Sprites["selector"].Visible)
-            {
-                SetSelected(true);
-            }
         }
     }
 }

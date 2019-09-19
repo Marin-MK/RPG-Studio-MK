@@ -52,12 +52,12 @@ namespace MKEditor.Widgets
             }
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
             Sprites["text"].Bitmap = new Bitmap(Size);
-            Font f = Font.Get("Fonts/ProductSans-B", 16);
+            Font f = Font.Get("Fonts/Ubuntu-B", 15);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = f;
             for (int i = 0; i < this.Tabs.Count; i++)
             {
-                Sprites["text"].Bitmap.DrawText(Names[i], i * 78 + 38, 3, Color.WHITE, DrawOptions.CenterAlign);
+                Sprites["text"].Bitmap.DrawText(Names[i], i * 78 + 39, 3, Color.WHITE, DrawOptions.CenterAlign);
             }
             Sprites["text"].Bitmap.Lock();
             base.Draw();

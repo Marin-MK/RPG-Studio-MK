@@ -8,6 +8,8 @@ namespace MKEditor.Widgets
     {
         public MapViewer MapViewer;
 
+        TabView TabView;
+
         Container allmapcontainer;
         TreeView mapview;
 
@@ -15,24 +17,19 @@ namespace MKEditor.Widgets
             : base(Parent, Name)
         {
             SetBackgroundColor(10, 23, 37);
-            this.Sprites["header"] = new Sprite(this.Viewport);
-            Font f = Font.Get("Fonts/ProductSans-B", 16);
-            Size s = f.TextSize("Maps");
-            this.Sprites["header"].Bitmap = new Bitmap(s);
-            this.Sprites["header"].Bitmap.Unlock();
-            this.Sprites["header"].Bitmap.Font = f;
-            this.Sprites["header"].Bitmap.DrawText("Maps", Color.WHITE);
-            this.Sprites["header"].Bitmap.Lock();
-            this.Sprites["header"].X = 10;
-            this.Sprites["header"].Y = 9;
 
+            TabView = new TabView(this);
+            TabView.CreateTab("Maps");
+
+            Sprites["header"] = new Sprite(this.Viewport, new SolidBitmap(Size.Width - 12, 4, new Color(28, 50, 73)));
+            Sprites["header"].Y = 25;
             Sprites["bar1"] = new Sprite(this.Viewport, new SolidBitmap(1, Size.Height, new Color(28, 50, 73)));
             Sprites["bar1"].X = Size.Width - 1;
             Sprites["bar2"] = new Sprite(this.Viewport, new SolidBitmap(1, Size.Height, new Color(28, 50, 73)));
             Sprites["bar2"].X = Size.Width - 12;
 
-            allmapcontainer = new Container(this);
-            allmapcontainer.SetPosition(1, 34);
+            allmapcontainer = new Container(TabView.GetTab(0));
+            allmapcontainer.SetPosition(0, 3);
             allmapcontainer.VAutoScroll = true;
 
             VScrollBar vs = new VScrollBar(this);
@@ -41,7 +38,7 @@ namespace MKEditor.Widgets
             allmapcontainer.SetVScrollBar(vs);
 
             mapview = new TreeView(allmapcontainer);
-            mapview.SetWidth(205);
+            mapview.SetWidth(212);
             List<TreeNode> Nodes = new List<TreeNode>();
             foreach (KeyValuePair<int, Data.Map> kvp in Data.GameData.Maps)
             {
@@ -68,8 +65,12 @@ namespace MKEditor.Widgets
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
-            allmapcontainer.SetSize(this.Size.Width - 13 - 1, this.Size.Height - 36);
             base.SizeChanged(sender, e);
+            TabView.SetSize(this.Size);
+            allmapcontainer.SetSize(this.Size.Width - 12, this.Size.Height - 36);
+            Sprites["header"].Bitmap.Unlock();
+            (Sprites["header"].Bitmap as SolidBitmap).SetSize(Size.Width - 12, 4);
+            Sprites["header"].Bitmap.Lock();
             Sprites["bar1"].X = Size.Width - 1;
             Sprites["bar1"].Bitmap.Unlock();
             (Sprites["bar1"].Bitmap as SolidBitmap).SetSize(1, Size.Height);

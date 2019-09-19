@@ -33,7 +33,6 @@ namespace MKEditor.Widgets
 
         public  bool       HAutoScroll       = false;
         public  bool       VAutoScroll       = false;
-        public  bool       ShowScrollBars    = false;
         public  int        ScrolledX         { get; set; } = 0;
         public  int        ScrolledY         { get; set; } = 0;
         public  Point      ScrolledPosition
@@ -419,7 +418,7 @@ namespace MKEditor.Widgets
                 // ScrollBarY
                 if (VAutoScroll)
                 {
-                    if (MaxChildHeight > this.Size.Height || ShowScrollBars)
+                    if (MaxChildHeight > this.Size.Height)
                     {
                         bool ActuallyVisible = MaxChildHeight > this.Size.Height;
                         if (VScrollBar == null)

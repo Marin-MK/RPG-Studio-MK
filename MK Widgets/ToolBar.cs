@@ -21,6 +21,9 @@ namespace MKEditor.Widgets
         ModeButton ScriptingMode;
         ModeButton DatabaseMode;
 
+        PlayButton PlayButton;
+        SaveButton SaveButton;
+
         int DrawnX = 0;
         int DrawnY = 0;
 
@@ -40,6 +43,9 @@ namespace MKEditor.Widgets
             DatabaseMode = new ModeButton(this);
             DatabaseMode.SetPosition(232, 11);
             DatabaseMode.SetText("Database");
+
+            PlayButton = new PlayButton(this);
+            SaveButton = new SaveButton(this);
 
             SetBackgroundColor(10, 23, 37);
             Cut = new IconButton(this);
@@ -85,6 +91,13 @@ namespace MKEditor.Widgets
             {
                 MapViewer.SetZoomFactor(0.25);
             };
+        }
+
+        public override void SizeChanged(object sender, SizeEventArgs e)
+        {
+            base.SizeChanged(sender, e);
+            PlayButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width, 11);
+            SaveButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width - 7 - SaveButton.Size.Width, 11);
         }
 
         protected override void Draw()

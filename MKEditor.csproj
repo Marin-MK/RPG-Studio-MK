@@ -78,13 +78,15 @@
     <Compile Include="MK Widgets\CursorWidget.cs" />
     <Compile Include="MK Widgets\IconButton.cs" />
     <Compile Include="MK Widgets\Label.cs" />
-    <Compile Include="MK Widgets\MapPropertiesWindow.cs" />
+    <Compile Include="Windows\MapPropertiesWindow.cs" />
     <Compile Include="MK Widgets\MapSelectTab.cs" />
     <Compile Include="MK Widgets\MenuBar.cs" />
     <Compile Include="MK Widgets\MenuItem.cs" />
     <Compile Include="MK Widgets\ModeButton.cs" />
     <Compile Include="MK Widgets\NumericBox.cs" />
-    <Compile Include="MK Widgets\PopupWindow.cs" />
+    <Compile Include="MK Widgets\PlayButton.cs" />
+    <Compile Include="Windows\PopupWindow.cs" />
+    <Compile Include="MK Widgets\SaveButton.cs" />
     <Compile Include="MK Widgets\TabView.cs" />
     <Compile Include="MK Widgets\TextBox.cs" />
     <Compile Include="MK Widgets\ToolBar.cs" />
@@ -111,7 +113,7 @@
     <Compile Include="Widgets\RadioButton.cs" />
     <Compile Include="MK Widgets\TilesetTab.cs" />
     <Compile Include="MK Widgets\VStackPanel.cs" />
-    <Compile Include="WidgetWindow.cs" />
+    <Compile Include="Windows\WidgetWindow.cs" />
     <Compile Include="MouseInputManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="UIManager.cs" />

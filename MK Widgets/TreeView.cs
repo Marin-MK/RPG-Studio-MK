@@ -15,7 +15,6 @@ namespace MKEditor.Widgets
             : base(Parent, Name)
         {
             this.Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(1, 21, new Color(28, 50, 73)));
-            this.Sprites["selector"].Y = 3;
             this.Sprites["hover"] = new Sprite(this.Viewport, new SolidBitmap(2, 21, new Color(55, 187, 255)));
             this.Sprites["hover"].Visible = false;
             this.Sprites["list"] = new Sprite(this.Viewport);
@@ -53,10 +52,8 @@ namespace MKEditor.Widgets
             this.SetHeight(height);
             this.Sprites["list"].Bitmap = new Bitmap(this.Size.Width, height);
             this.Sprites["list"].Bitmap.Unlock();
-
-            int oldwidth = this.Size.Width;
-            this.SetWidth(205);
-            int y = 5;
+            
+            int y = 0;
             for (int i = 0; i < this.Nodes.Count; i++)
             {
                 y = DrawNode(this.Nodes[i], 15, y, true, i == this.Nodes.Count - 1);
@@ -66,7 +63,6 @@ namespace MKEditor.Widgets
             this.Sprites["list"].Bitmap.Lock();
 
             base.Draw();
-            if (this.Size.Width != oldwidth) this.Redraw();
         }
 
         private int DrawNode(TreeNode node, int x, int y, bool FirstGeneration, bool LastNode)
@@ -77,8 +73,7 @@ namespace MKEditor.Widgets
             string text = node.Object.ToString();
             Size s = f.TextSize(text);
             Color c = SelectedNode == node ? new Color(55, 187, 255) : Color.WHITE;
-            this.Sprites["list"].Bitmap.DrawText(text, x + 12, y, c);
-            if (x + 16 + s.Width > this.Size.Width) this.SetWidth(x + 16 + s.Width);
+            this.Sprites["list"].Bitmap.DrawText(text, x + 12, y + 1, c);
 
             if (!FirstGeneration)
             {
@@ -115,9 +110,9 @@ namespace MKEditor.Widgets
             base.MouseMoving(sender, e);
             if (!WidgetIM.Hovering || Window.UI.OverContextMenu != null) return;
             int ry = e.Y - this.Viewport.Y + Position.Y - ScrolledPosition.Y;
-            int globalindex = (int) Math.Floor((ry - 5) / 24d);
+            int globalindex = (int) Math.Floor(ry / 24d);
             Sprites["hover"].Visible = true;
-            Sprites["hover"].Y = 3 + globalindex * 24;
+            Sprites["hover"].Y = globalindex * 24;
         }
 
         public override void MouseDown(object sender, MouseEventArgs e)
@@ -129,7 +124,7 @@ namespace MKEditor.Widgets
             {
                 int rx = e.X - this.Viewport.X + Position.X - ScrolledPosition.X;
                 int ry = e.Y - this.Viewport.Y + Position.Y - ScrolledPosition.Y;
-                int globalindex = (int) Math.Floor((ry - 5) / 24d);
+                int globalindex = (int) Math.Floor(ry / 24d);
                 int index = 0;
                 TreeNode n = null;
                 for (int i = 0; i < this.Nodes.Count; i++)
@@ -146,7 +141,7 @@ namespace MKEditor.Widgets
                     if (n.Collapsed && n.ContainsNode(SelectedNode))
                     {
                         SelectedNode = n;
-                        this.Sprites["selector"].Y = 3 + globalindex * 24;
+                        this.Sprites["selector"].Y = globalindex * 24;
                     }
                     else if (n != SelectedNode)
                     {
@@ -164,13 +159,13 @@ namespace MKEditor.Widgets
                                 sindex += this.Nodes[i].GetNodeIndex(SelectedNode);
                             }
                         }
-                        this.Sprites["selector"].Y = 3 + sindex * 24;
+                        this.Sprites["selector"].Y = sindex * 24;
                     }
                 }
                 else
                 {
                     SelectedNode = n;
-                    this.Sprites["selector"].Y = 3 + globalindex * 24;
+                    this.Sprites["selector"].Y = globalindex * 24;
                 }
             }
             if (SelectedNode != oldselected)
