@@ -25,6 +25,7 @@ namespace MKEditor
         public List<Shortcut> Shortcuts { get; protected set; } = new List<Shortcut>();
 
         private Sprite BGSprite;
+        private Sprite OverlaySprite;
         private List<MouseInputManager> IMs = new List<MouseInputManager>();
 
         public IContainer Parent { get { throw new MethodNotSupportedException(this); } }
@@ -182,9 +183,7 @@ namespace MKEditor
 
         public void WindowResized(object sender, WindowEventArgs e)
         {
-            BGSprite.Bitmap.Unlock();
             (BGSprite.Bitmap as SolidBitmap).SetSize(this.Size);
-            BGSprite.Bitmap.Lock();
             this.Widgets.ForEach(w =>
             {
                 w.OnParentSizeChanged.Invoke(sender, new SizeEventArgs(e.Width, e.Height));

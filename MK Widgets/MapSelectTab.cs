@@ -54,7 +54,7 @@ namespace MKEditor.Widgets
             {
                 new MenuItem("New Map"),
                 new MenuSeparator(),
-                new MenuItem("Edit Map"),
+                new MenuItem("Edit Map") { OnLeftClick = OpenMapProperties },
                 new MenuItem("Cut"),
                 new MenuItem("Copy") { Shortcut = "Ctrl+C" },
                 new MenuItem("Paste") { Shortcut = "Ctrl+V", IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = false; } },
@@ -68,19 +68,18 @@ namespace MKEditor.Widgets
             base.SizeChanged(sender, e);
             TabView.SetSize(this.Size);
             allmapcontainer.SetSize(this.Size.Width - 12, this.Size.Height - 36);
-            Sprites["header"].Bitmap.Unlock();
             (Sprites["header"].Bitmap as SolidBitmap).SetSize(Size.Width - 12, 4);
-            Sprites["header"].Bitmap.Lock();
             Sprites["bar1"].X = Size.Width - 1;
-            Sprites["bar1"].Bitmap.Unlock();
             (Sprites["bar1"].Bitmap as SolidBitmap).SetSize(1, Size.Height);
-            Sprites["bar1"].Bitmap.Lock();
             Sprites["bar2"].X = Size.Width - 12;
-            Sprites["bar2"].Bitmap.Unlock();
             (Sprites["bar2"].Bitmap as SolidBitmap).SetSize(1, Size.Height);
-            Sprites["bar2"].Bitmap.Lock();
             allmapcontainer.VScrollBar.SetPosition(Size.Width - 10, 1);
             allmapcontainer.VScrollBar.SetSize(8, Size.Height - 2);
+        }
+
+        private void OpenMapProperties(object sender, MouseEventArgs e)
+        {
+            MapPropertiesWindow mpw = new MapPropertiesWindow(this.Window);
         }
     }
 }

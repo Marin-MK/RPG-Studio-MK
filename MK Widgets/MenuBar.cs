@@ -95,9 +95,7 @@ namespace MKEditor.Widgets
             else
             {
                 Sprites["selector"].X = selx;
-                Sprites["selector"].Bitmap.Unlock();
                 (Sprites["selector"].Bitmap as SolidBitmap).SetSize(selwidth, 2);
-                Sprites["selector"].Bitmap.Lock();
                 Sprites["selector"].Visible = true;
                 SelectedIndex = idx;
                 SelectedItem = Items[idx];

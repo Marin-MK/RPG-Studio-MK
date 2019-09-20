@@ -19,6 +19,7 @@ namespace MKEditor
             GameData.Initialize("D:\\Desktop\\MK\\MK\\data");
 
             this.SetSize(1080, 720);
+            this.SetMinimumSize(600, 400);
             this.Initialize();
             using (Bitmap b = new Bitmap(9, 14)) // Set cursor
             {
@@ -197,6 +198,11 @@ namespace MKEditor
             this.OnTick += Tick;
             this.UI.Update();
             this.Start();
+        }
+
+        public void SetOverlayOpacity(byte Opacity)
+        {
+            TopSprite.Opacity = Opacity;
         }
 
         private void Tick(object sender, EventArgs e)

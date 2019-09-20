@@ -248,19 +248,13 @@ namespace MKEditor.Widgets
             Sprites["bottom"].X = 1 + b.Width;
             Sprites["bottom"].Y = Size.Height - 11;
             Sprites["bottom"].ZoomY = Sprites["top"].ZoomY;
-
-            Sprites["borderline"].Bitmap.Unlock();
+            
             (Sprites["borderline"].Bitmap as SolidBitmap).SetSize(1, Size.Height);
-            Sprites["borderline"].Bitmap.Lock();
-
-            Sprites["hslider"].Bitmap.Unlock();
+            
             (Sprites["hslider"].Bitmap as SolidBitmap).SetSize(Size.Width - 13, 11);
-            Sprites["hslider"].Bitmap.Lock();
             Sprites["hslider"].Y = Size.Height - 11;
-
-            Sprites["vslider"].Bitmap.Unlock();
+            
             (Sprites["vslider"].Bitmap as SolidBitmap).SetSize(11, Size.Height - 12);
-            Sprites["vslider"].Bitmap.Lock();
             Sprites["vslider"].X = Size.Width - 11;
 
             HScrollBar.SetPosition(2, Size.Height - 9);

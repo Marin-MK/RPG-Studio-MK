@@ -270,9 +270,7 @@ namespace MKEditor.Widgets
                     Console.WriteLine("caret is left");
                     Sprites["selection"].X = Sprites["caret"].X - diff - selwidth;
                 }
-                Sprites["selection"].Bitmap.Unlock();
                 (Sprites["selection"].Bitmap as SolidBitmap).SetSize(selwidth, 21);
-                Sprites["selection"].Bitmap.Lock();
             }
             else
             {

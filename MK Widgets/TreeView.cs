@@ -34,9 +34,7 @@ namespace MKEditor.Widgets
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            this.Sprites["selector"].Bitmap.Unlock();
             (this.Sprites["selector"].Bitmap as SolidBitmap).SetSize(this.Size.Width, 21);
-            this.Sprites["selector"].Bitmap.Lock();
         }
 
         protected override void Draw()

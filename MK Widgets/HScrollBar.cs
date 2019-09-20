@@ -74,7 +74,7 @@ namespace MKEditor.Widgets
             Color sc = new Color(64, 104, 146);
             if (this.SliderIM.ClickedLeftInArea == true || SliderIM.HoverAnim())
             {
-                sc.Set(59, 227, 255);
+                sc = new Color(59, 227, 255);
             }
             if (this.Sprites["slider"].Bitmap != null) this.Sprites["slider"].Bitmap.Dispose();
             this.Sprites["slider"].Bitmap = new Bitmap(sliderwidth, 8);

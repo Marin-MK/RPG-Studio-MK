@@ -566,9 +566,7 @@ namespace MKEditor.Widgets
             if (oldsize.Width != size.Width || oldsize.Height != size.Height)
             {
                 this.Size = size;
-                this.Sprites["_bg"].Bitmap.Unlock();
                 (this.Sprites["_bg"].Bitmap as SolidBitmap).SetSize(this.Size);
-                this.Sprites["_bg"].Bitmap.Lock();
                 this.Viewport.Width = this.Size.Width;
                 this.Viewport.Height = this.Size.Height;
                 this.RedrawSize = true;
@@ -599,9 +597,7 @@ namespace MKEditor.Widgets
         {
             AssertUndisposed();
             this.BackgroundColor = c;
-            this.Sprites["_bg"].Bitmap.Unlock();
             (this.Sprites["_bg"].Bitmap as SolidBitmap).SetColor(c);
-            this.Sprites["_bg"].Bitmap.Lock();
             return this;
         }
 

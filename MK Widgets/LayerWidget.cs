@@ -72,7 +72,6 @@ namespace MKEditor.Widgets
                         if (lw != this) lw.SetLayerSelected(false);
                     }
                 }
-                this.Sprites["bar"].Bitmap.Unlock();
                 if (this.LayerSelected)
                 {
                     (this.Sprites["bar"].Bitmap as SolidBitmap).SetColor(new Color(28, 50, 73));
@@ -83,7 +82,6 @@ namespace MKEditor.Widgets
                     (this.Sprites["bar"].Bitmap as SolidBitmap).SetColor(Color.ALPHA);
                     this.Sprites["text"].Color = Color.WHITE;
                 }
-                this.Sprites["bar"].Bitmap.Lock();
             }
         }
 

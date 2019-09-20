@@ -8,7 +8,7 @@ namespace MKEditor.Widgets
         public MapPropertiesWindow(object Parent, string Name = "mapPropertiesWindow")
             : base(Parent, Name)
         {
-            this.SetName("New Map");
+            this.SetName("Map Properties");
             this.SetSize(554, 474);
             this.Center();
             Label settings = new Label(this);

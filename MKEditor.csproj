@@ -110,19 +110,13 @@
     <Compile Include="MK Widgets\HScrollBar.cs" />
     <Compile Include="MK Widgets\VScrollBar.cs" />
     <Compile Include="MK Widgets\PictureBox.cs" />
-    <Compile Include="Widgets\RadioButton.cs" />
     <Compile Include="MK Widgets\TilesetTab.cs" />
     <Compile Include="MK Widgets\VStackPanel.cs" />
     <Compile Include="Windows\WidgetWindow.cs" />
     <Compile Include="MouseInputManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="UIManager.cs" />
-    <Compile Include="Widgets\Button.cs" />
-    <Compile Include="Widgets\OldCheckBox.cs" />
-    <Compile Include="Widgets\GroupBox.cs" />
     <Compile Include="MK Widgets\IContainer.cs" />
-    <Compile Include="Widgets\ProgressBar.cs" />
-    <Compile Include="Widgets\OldTextBox.cs" />
     <Compile Include="MK Widgets\Widget.cs" />
   </ItemGroup>
   <ItemGroup>
