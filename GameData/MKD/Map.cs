@@ -66,6 +66,7 @@ namespace MKEditor.Data
     {
         public string Name = "Unnamed Layer";
         public List<TileData> Tiles = new List<TileData>();
+        public bool Visible = true;
 
         public Layer(string Name)
         {

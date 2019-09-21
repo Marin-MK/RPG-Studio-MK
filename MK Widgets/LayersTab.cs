@@ -12,18 +12,10 @@ namespace MKEditor.Widgets
         public TabView TabView;
         public TabContainer MainContainer;
 
-        public int SelectedLayer
-        {
-            get
-            {
-                return Layers.Count - Layers.Find(lw => lw.LayerSelected).LayerIndex;
-            }
-        }
+        public int SelectedLayer { get { return layerwidget.SelectedLayer; } }
 
         private Container layercontainer;
-        private VStackPanel layerstack;
-
-        public List<LayerWidget> Layers = new List<LayerWidget>();
+        private LayerWidget layerwidget;
 
         public LayersTab(object Parent, string Name = "layersTab")
             : base(Parent, Name)
@@ -40,17 +32,14 @@ namespace MKEditor.Widgets
             this.OnWidgetSelect += WidgetSelect;
 
             layercontainer = new Container(MainContainer);
-            layercontainer.SetPosition(0, 40);
-            layercontainer.SetSize(280, this.Size.Height - 64);
+            layercontainer.SetPosition(2, 40);
             layercontainer.VAutoScroll = true;
 
             VScrollBar vs = new VScrollBar(this);
             layercontainer.SetVScrollBar(vs);
 
-            layerstack = new VStackPanel(layercontainer);
-            layerstack.SetWidth(280);
-            layerstack.SetPosition(2, 5);
-            layerstack.SetContextMenuList(new List<IMenuItem>()
+            layerwidget = new LayerWidget(layercontainer);
+            layerwidget.SetContextMenuList(new List<IMenuItem>()
             {
                 new MenuItem("New Layer")
                 {
@@ -68,7 +57,7 @@ namespace MKEditor.Widgets
                 {
                     Icon = Icon.Up,
                     OnLeftClick = MoveLayerUp,
-                    IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = SelectedLayer < this.Map.Layers.Count - 1; }
+                    IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = SelectedLayer < Map.Layers.Count - 1; }
                 },
                 new MenuItem("Move Layer Down")
                 {
@@ -82,18 +71,14 @@ namespace MKEditor.Widgets
                     Icon = Icon.Delete,
                     Shortcut = "Del",
                     OnLeftClick = DeleteLayer,
-                    IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Layers.Count > 1; }
+                    IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Map.Layers.Count > 1; }
                 }
             });
 
             RegisterShortcuts(new List<Shortcut>()
             {
                 new Shortcut(new Key(Keycode.H, Keycode.CTRL), new EventHandler<EventArgs>(ToggleVisibilityLayer), true),
-                new Shortcut(new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer)),
-                new Shortcut(new Key(Keycode.RETURN), new EventHandler<EventArgs>(delegate (object sender, EventArgs e)
-                {
-                    new MapPropertiesWindow(Window);
-                }))
+                new Shortcut(new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer))
             });
 
             SetSize(293, 200); // Dummy size so the sprites can be drawn properly
@@ -106,8 +91,6 @@ namespace MKEditor.Widgets
 
         public void NewLayer(object sender, EventArgs e)
         {
-            // Temporarily opens map properties window for debugging purposes.
-            //MapPropertiesWindow mpw = new MapPropertiesWindow(Window);
             Data.Layer layer = new Data.Layer($"Layer {SelectedLayer + 2}");
             layer.Tiles = new List<Data.TileData>();
             for (int i = 0; i < Map.Width * Map.Height; i++) layer.Tiles.Add(null);
@@ -116,13 +99,13 @@ namespace MKEditor.Widgets
             int oldselected = SelectedLayer;
             MapViewer.RedrawLayers();
             CreateLayers();
-            Layers[Map.Layers.Count - oldselected - 2].SetLayerSelected(true);
+            layerwidget.UpdateLayers();
+            layerwidget.SetSelectedLayer(oldselected + 1);
         }
 
         public void ToggleVisibilityLayer(object sender, EventArgs e)
         {
-            int layeridx = this.Map.Layers.Count - SelectedLayer - 1;
-            this.Layers[layeridx].SetLayerVisible(!this.Layers[layeridx].LayerVisible);
+            layerwidget.SetLayerVisible(SelectedLayer, !Map.Layers[SelectedLayer].Visible);
         }
 
         public void MoveLayerUp(object sender, EventArgs e)
@@ -135,7 +118,7 @@ namespace MKEditor.Widgets
             int oldselected = SelectedLayer;
             MapViewer.RedrawLayers();
             CreateLayers();
-            Layers[Map.Layers.Count - oldselected - 2].SetLayerSelected(true);
+            layerwidget.SetSelectedLayer(oldselected + 1);
         }
 
         public void MoveLayerDown(object sender, EventArgs e)
@@ -148,12 +131,12 @@ namespace MKEditor.Widgets
             int oldselected = SelectedLayer;
             MapViewer.RedrawLayers();
             CreateLayers();
-            Layers[Map.Layers.Count - oldselected].SetLayerSelected(true);
+            layerwidget.SetSelectedLayer(oldselected - 1);
         }
 
         public void DeleteLayer(object sender, EventArgs e)
         {
-            if (Map.Layers.Count > 0)
+            if (Map.Layers.Count > 1)
             {
                 Map.Layers.RemoveAt(SelectedLayer);
                 UpdateNames();
@@ -161,7 +144,8 @@ namespace MKEditor.Widgets
                 MapViewer.RedrawLayers();
                 CreateLayers();
                 if (oldselected == 0) oldselected += 1;
-                Layers[Map.Layers.Count - oldselected].SetLayerSelected(true);
+                layerwidget.UpdateLayers();
+                layerwidget.SetSelectedLayer(Map.Layers.Count - 1);
             }
         }
 
@@ -169,7 +153,7 @@ namespace MKEditor.Widgets
         {
             base.SizeChanged(sender, e);
             TabView.SetSize(Size);
-            layercontainer.SetHeight(this.Size.Height - 64);
+            layercontainer.SetSize(Size.Width - 14, Size.Height - 64);
             layercontainer.VScrollBar.SetPosition(Size.Width - 10, 66);
             layercontainer.VScrollBar.SetSize(8, Size.Height - 67);
             if (Sprites["bg"].Bitmap != null) Sprites["bg"].Bitmap.Dispose();
@@ -179,25 +163,14 @@ namespace MKEditor.Widgets
             Sprites["bg"].Bitmap.DrawLine(0, 40, 0, Size.Height - 26, new Color(28, 50, 73));
             Sprites["bg"].Bitmap.DrawLine(Size.Width - 1, 40, Size.Width - 1, Size.Height - 26, new Color(28, 50, 73));
             Sprites["bg"].Bitmap.DrawLine(Size.Width - 12, 40, Size.Width - 12, Size.Height - 26, new Color(28, 50, 73));
+            Sprites["bg"].Bitmap.DrawLine(43, 40, 43, Size.Height - 26, new Color(28, 50, 73));
+
             Sprites["bg"].Bitmap.Lock();
         }
 
         public void CreateLayers()
         {
-            for (int i = 0; i < Layers.Count; i++)
-            {
-                Layers[i].Dispose();
-            }
-            Layers.Clear();
-            for (int layer = this.Map.Layers.Count - 1; layer >= 0; layer--)
-            {
-                LayerWidget layerwidget = new LayerWidget(layerstack);
-                layerwidget.MapViewer = MapViewer;
-                layerwidget.LayerIndex = this.Map.Layers.Count - layer;
-                layerwidget.SetText(this.Map.Layers[layer].Name);
-                this.Layers.Add(layerwidget);
-            }
-            this.Layers[this.Map.Layers.Count - 1].SetLayerSelected(true);
+            layerwidget.SetLayers(Map.Layers);
         }
 
         public override void Update()
@@ -206,11 +179,11 @@ namespace MKEditor.Widgets
             {
                 if (SelectedLayer > 0 && Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_DOWN))
                 {
-                    this.Layers[this.Map.Layers.Count - SelectedLayer].SetLayerSelected(true);
+                    //this.Layers[this.Map.Layers.Count - SelectedLayer].SetLayerSelected(true);
                 }
                 if (SelectedLayer < this.Map.Layers.Count - 1 && Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_UP))
                 {
-                    this.Layers[this.Map.Layers.Count - SelectedLayer - 2].SetLayerSelected(true);
+                    //this.Layers[this.Map.Layers.Count - SelectedLayer - 2].SetLayerSelected(true);
                 }
             }
             base.Update();

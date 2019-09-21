@@ -477,6 +477,11 @@ namespace MKEditor.Widgets
                 }
             }
         }
+
+        public void SetLayerVisible(int layerindex, bool Visible)
+        {
+            MapWidget.SetLayerVisible(layerindex, Visible);
+        }
     }
 
     public class MapImageWidget : Widget
@@ -533,6 +538,12 @@ namespace MKEditor.Widgets
                 }
             }
             Sprites["grid"].Bitmap.Lock();
+        }
+
+        public void SetLayerVisible(int layerindex, bool Visible)
+        {
+            MapData.Layers[layerindex].Visible = Visible;
+            Sprites[layerindex.ToString()].Visible = Visible;
         }
 
         public void RedrawLayers()

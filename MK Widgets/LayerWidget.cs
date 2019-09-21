@@ -6,152 +6,101 @@ namespace MKEditor.Widgets
 {
     public class LayerWidget : Widget
     {
-        public string    Text          { get; protected set; }
-        public bool      LayerVisible  { get; protected set; } = true;
-        public bool      LayerSelected { get; protected set; } = false;
-        public int       LayerIndex    { get; set; }
-        public MapViewer MapViewer;
+        public MapViewer MapViewer { get { return (Parent.Parent.Parent.Parent as LayersTab).MapViewer; } }
+        public List<Data.Layer> Layers { get; private set; }
+        public int SelectedLayer { get; private set; }
 
-        private bool RedrawText = true;
-        private bool RedrawVisible = true;
-        private Rect VisibleRect;
-
-        MouseInputManager VisibleIM;
-
-        public LayerWidget(object Parent, string Name = "layerWidget", int Index = -1)
-            : base(Parent, Name, Index)
+        public LayerWidget(object Parent, string Name = "layerWidget")
+            : base(Parent, Name)
         {
-            this.SetSize(278, 24);
-            this.Sprites["bar"] = new Sprite(this.Viewport, new SolidBitmap(278, 32));
-            this.Sprites["text"] = new Sprite(this.Viewport);
-            this.Sprites["text"].X = 40;
-            this.Sprites["text"].Y = 3;
-            this.Sprites["visible"] = new Sprite(this.Viewport);
-            this.Sprites["visible"].X = 10;
-            this.Sprites["visible"].Y = 4;
-            this.VisibleIM = new MouseInputManager(this);
-            this.VisibleIM.OnLeftClick += LayerVisibleClicked;
-            this.WidgetIM.OnLeftClick += LayerClicked;
-            this.WidgetIM.OnRightClick += LayerClicked;
+            Sprites["bg"] = new Sprite(this.Viewport);
+            Sprites["text"] = new Sprite(this.Viewport);
+            WidgetIM.OnMouseDown += MouseDown;
         }
 
-        public Widget SetText(string Text)
+        public void SetLayers(List<Data.Layer> Layers)
         {
-            if (this.Text != Text)
+            if (this.Layers != Layers)
             {
-                this.Text = Text;
-                this.RedrawText = true;
-                this.Redraw();
-            }
-            return this;
-        }
-
-        public void SetLayerVisible(bool Visible)
-        {
-            if (this.LayerVisible != Visible)
-            {
-                if (Visible) this.Sprites["visible"].X = 5;
-                else this.Sprites["visible"].X = 4;
-                this.LayerVisible = Visible;
-                this.RedrawVisible = true;
-                this.MapViewer.MapWidget.Sprites[(this.MapViewer.Map.Layers.Count - LayerIndex).ToString()].Visible = this.LayerVisible;
-                this.Redraw();
+                this.Layers = Layers;
+                SetSize(278, Layers.Count * 24);
+                SelectedLayer = Layers.Count - 1;
+                Redraw();
             }
         }
 
-        public void SetLayerSelected(bool LayerSelected)
+        public void UpdateLayers()
         {
-            if (this.LayerSelected != LayerSelected)
+            if (Layers.Count * 24 > Size.Height)
             {
-                this.LayerSelected = LayerSelected;
-                if (this.LayerSelected)
-                {
-                    foreach (LayoutContainer lc in this.Parent.Parent.Widgets.FindAll(wdgt => wdgt is LayoutContainer))
-                    {
-                        LayerWidget lw = lc.Widget as LayerWidget;
-                        if (lw != this) lw.SetLayerSelected(false);
-                    }
-                }
-                if (this.LayerSelected)
-                {
-                    (this.Sprites["bar"].Bitmap as SolidBitmap).SetColor(new Color(28, 50, 73));
-                    this.Sprites["text"].Color = new Color(55, 187, 255);
-                }
-                else
-                {
-                    (this.Sprites["bar"].Bitmap as SolidBitmap).SetColor(Color.ALPHA);
-                    this.Sprites["text"].Color = Color.WHITE;
-                }
+                SetHeight(Layers.Count * 24);
             }
+            Redraw();
         }
 
-        public void SetLayerIndex(int Index)
+        public void SetSelectedLayer(int layerindex)
         {
-            if (this.LayerIndex != Index)
-            {
-                this.LayerIndex = Index;
-            }
+            SelectedLayer = layerindex;
+            Redraw();
         }
 
-        public override void Update()
+        public void SetLayerVisible(int layerindex, bool visible)
         {
-            int DiffX = this.Parent.AdjustedPosition.X;
-            int DiffY = this.Parent.AdjustedPosition.Y;
-            int x = this.Viewport.X - DiffX;
-            int y = this.Viewport.Y - DiffY + 4;
-            int w = 30 - Parent.AdjustedSize.Width;
-            int h = 28 - Parent.AdjustedSize.Height;
-            if (x < this.Viewport.X) { w -= this.Viewport.X - x; x = this.Viewport.X; }
-            if (y < this.Viewport.Y) { h -= this.Viewport.Y - y; y = this.Viewport.Y; }
-            if (this.Viewport.Width < 0) w = 0;
-            if (this.Viewport.Height < 0) h = 0;
-            VisibleRect = new Rect(x, y, w, h);
-            this.VisibleIM.Update(VisibleRect);
-            base.Update();
+            MapViewer.SetLayerVisible(layerindex, !Layers[layerindex].Visible);
+            Redraw();
         }
 
         protected override void Draw()
         {
-            if (this.RedrawText)
+            if (Sprites["bg"].Bitmap != null) Sprites["bg"].Bitmap.Dispose();
+            Sprites["bg"].Bitmap = new Bitmap(Size.Width, 24 * Layers.Count);
+            Sprites["text"].Bitmap = new Bitmap(Size.Width, 24 * Layers.Count);
+            Font f = Font.Get("Fonts/ProductSans-M", 14);
+            Sprites["bg"].Bitmap.Unlock();
+            Sprites["text"].Bitmap.Unlock();
+            Sprites["text"].Bitmap.Font = f;
+            for (int i = 0; i < Layers.Count; i++)
             {
-                Font f = Font.Get("Fonts/ProductSans-M", 14);
-                Size s = f.TextSize(this.Text);
-                if (this.Sprites["text"].Bitmap != null) this.Sprites["text"].Bitmap.Dispose();
-                this.Sprites["text"].Bitmap = new Bitmap(s);
-                this.Sprites["text"].Bitmap.Unlock();
-                this.Sprites["text"].Bitmap.Font = f;
-                this.Sprites["text"].Bitmap.DrawText(this.Text, Color.WHITE);
-                this.Sprites["text"].Bitmap.Lock();
+                int y = 24 * (Layers.Count - i - 1);
+                Color c = Color.WHITE;
+                bool visible = Layers[i].Visible;
+                if (i == SelectedLayer)
+                {
+                    c = new Color(55, 187, 255);
+                    Sprites["bg"].Bitmap.FillRect(0, y, 39, 24, new Color(28, 50, 73));
+                    Sprites["bg"].Bitmap.FillRect(44, y, Size.Width - 44, 24, new Color(28, 50, 73));
+                    if (visible) Sprites["bg"].Bitmap.Build(8, y - 1, Utilities.IconSheet, new Rect(14 * 24, 24, 24, 24));
+                }
+                else if (visible) Sprites["bg"].Bitmap.Build(8, y - 1, Utilities.IconSheet, new Rect(14 * 24, 0, 24, 24));
+                Sprites["text"].Bitmap.DrawText(Layers[i].Name, 53, y + 3, c);
             }
-
-            if (this.RedrawVisible)
-            {
-                Font f = Font.Get("Fonts/FontAwesome Solid", 16);
-                char c = this.LayerVisible ? '\uf06e' : '\uf070';
-                Size s = f.TextSize(c);
-                if (this.Sprites["visible"].Bitmap != null) this.Sprites["visible"].Bitmap.Dispose();
-                this.Sprites["visible"].Bitmap = new Bitmap(s);
-                this.Sprites["visible"].Bitmap.Unlock();
-                this.Sprites["visible"].Bitmap.Font = f;
-                this.Sprites["visible"].Bitmap.DrawGlyph(c, Color.WHITE);
-                this.Sprites["visible"].Bitmap.Lock();
-            }
-
-            this.RedrawText = false;
-            this.RedrawVisible = false;
+            Sprites["bg"].Bitmap.Lock();
+            Sprites["text"].Bitmap.Lock();
             base.Draw();
         }
 
-        private void LayerVisibleClicked(object sender, MouseEventArgs e)
+        public override void MouseDown(object sender, MouseEventArgs e)
         {
-            this.SetLayerVisible(!this.LayerVisible);
-        }
-        
-        private void LayerClicked(object sender, MouseEventArgs e)
-        {
-            // Can't select a layer when inside the Visible button
-            if (VisibleRect.Contains(e.X, e.Y)) return;
-            this.SetLayerSelected(true);
+            base.MouseDown(sender, e);
+            int rx = e.X - Viewport.X;
+            int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
+            if (!WidgetIM.Hovering) return;
+            int layerindex = Layers.Count - 1 - (int) Math.Floor(ry / 24d);
+            if (rx < 39)
+            {
+                if (e.LeftButton != e.OldLeftButton && e.LeftButton)
+                {
+                    SetLayerVisible(layerindex, !Layers[layerindex].Visible);
+                }
+                else
+                {
+                    SetSelectedLayer(layerindex);
+                }
+            }
+            else if (rx > 43)
+            {
+                SetSelectedLayer(layerindex);
+            }
         }
     }
 }
