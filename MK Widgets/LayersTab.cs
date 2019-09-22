@@ -17,6 +17,12 @@ namespace MKEditor.Widgets
         private Container layercontainer;
         private LayerWidget layerwidget;
 
+        private IconButton FocusButton;
+        private NewLayerButton NewButton;
+        private IconButton MoveUp;
+        private IconButton MoveDown;
+        private IconButton DeleteButton;
+
         public LayersTab(object Parent, string Name = "layersTab")
             : base(Parent, Name)
         {
@@ -28,6 +34,37 @@ namespace MKEditor.Widgets
             TabView = new TabView(this);
             TabView.CreateTab("Layers");
             MainContainer = TabView.GetTab(0);
+
+            FocusButton = new IconButton(MainContainer);
+            FocusButton.SetIcon(13, 0);
+            FocusButton.SetPosition(10, 8);
+            FocusButton.SetSelectorOffset(4);
+            FocusButton.Selectable = false;
+            FocusButton.OnLeftClick += FocusLayer;
+
+            NewButton = new NewLayerButton(MainContainer);
+            NewButton.SetPosition(46, 3);
+
+            MoveUp = new IconButton(MainContainer);
+            MoveUp.SetIcon(10, 0);
+            MoveUp.SetPosition(188, 8);
+            MoveUp.SetSelectorOffset(4);
+            MoveUp.Selectable = false;
+            MoveUp.OnLeftClick += MoveLayerUp;
+
+            MoveDown = new IconButton(MainContainer);
+            MoveDown.SetIcon(11, 0);
+            MoveDown.SetPosition(223, 8);
+            MoveDown.SetSelectorOffset(4);
+            MoveDown.Selectable = false;
+            MoveDown.OnLeftClick += MoveLayerDown;
+
+            DeleteButton = new IconButton(MainContainer);
+            DeleteButton.SetIcon(12, 0);
+            DeleteButton.SetPosition(258, 8);
+            DeleteButton.SetSelectorOffset(4);
+            DeleteButton.Selectable = false;
+            DeleteButton.OnLeftClick += DeleteLayer;
 
             this.OnWidgetSelect += WidgetSelect;
 
@@ -149,6 +186,23 @@ namespace MKEditor.Widgets
             }
         }
 
+        public void FocusLayer(object sender, EventArgs e)
+        {
+            bool OnlySelectedIsVisible = !Map.Layers.Exists(layer => layer != Map.Layers[SelectedLayer] && layer.Visible);
+            if (!Map.Layers[SelectedLayer].Visible)
+            {
+                OnlySelectedIsVisible = true;
+                layerwidget.SetLayerVisible(SelectedLayer, true);
+            }
+            for (int i = 0; i < Map.Layers.Count; i++)
+            {
+                if (i != SelectedLayer)
+                {
+                    layerwidget.SetLayerVisible(i, OnlySelectedIsVisible);
+                }
+            }
+        }
+
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
@@ -179,11 +233,11 @@ namespace MKEditor.Widgets
             {
                 if (SelectedLayer > 0 && Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_DOWN))
                 {
-                    //this.Layers[this.Map.Layers.Count - SelectedLayer].SetLayerSelected(true);
+                    layerwidget.SetSelectedLayer(SelectedLayer - 1);
                 }
                 if (SelectedLayer < this.Map.Layers.Count - 1 && Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_UP))
                 {
-                    //this.Layers[this.Map.Layers.Count - SelectedLayer - 2].SetLayerSelected(true);
+                    layerwidget.SetSelectedLayer(SelectedLayer + 1);
                 }
             }
             base.Update();

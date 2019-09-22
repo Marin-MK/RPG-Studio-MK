@@ -15,6 +15,10 @@ namespace MKEditor.Widgets
         {
             Sprites["bg"] = new Sprite(this.Viewport);
             Sprites["text"] = new Sprite(this.Viewport);
+            Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(2, 24, new Color(59, 227, 255)));
+            Sprites["selector"].Visible = false;
+            WidgetIM.OnHoverChanged += HoverChanged;
+            WidgetIM.OnMouseMoving += MouseMoving;
             WidgetIM.OnMouseDown += MouseDown;
         }
 
@@ -46,7 +50,7 @@ namespace MKEditor.Widgets
 
         public void SetLayerVisible(int layerindex, bool visible)
         {
-            MapViewer.SetLayerVisible(layerindex, !Layers[layerindex].Visible);
+            MapViewer.SetLayerVisible(layerindex, visible);
             Redraw();
         }
 
@@ -79,6 +83,25 @@ namespace MKEditor.Widgets
             base.Draw();
         }
 
+        public override void HoverChanged(object sender, MouseEventArgs e)
+        {
+            base.HoverChanged(sender, e);
+            if (!WidgetIM.Hovering) Sprites["selector"].Visible = false;
+        }
+
+        public override void MouseMoving(object sender, MouseEventArgs e)
+        {
+            base.MouseMoving(sender, e);
+            if (!WidgetIM.Hovering)
+            {
+                Sprites["selector"].Visible = false;
+                return;
+            }
+            int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
+            Sprites["selector"].Y = 24 * (int) Math.Floor(ry / 24d);
+            Sprites["selector"].Visible = true;
+        }
+
         public override void MouseDown(object sender, MouseEventArgs e)
         {
             base.MouseDown(sender, e);
@@ -97,7 +120,7 @@ namespace MKEditor.Widgets
                     SetSelectedLayer(layerindex);
                 }
             }
-            else if (rx > 43)
+            else
             {
                 SetSelectedLayer(layerindex);
             }

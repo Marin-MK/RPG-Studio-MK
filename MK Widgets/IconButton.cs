@@ -19,16 +19,17 @@ namespace MKEditor.Widgets
         public IconButton(object Parent, string Name = "iconButton")
             : base(Parent, Name)
         {
-            this.SetSize(24, 27);
-            Sprites["icon"] = new Sprite(this.Viewport);
+            SetSize(24, 27);
+            Sprites["icon"] = new Sprite(Viewport);
             Sprites["icon"].Bitmap = Utilities.IconSheet;
             Sprites["icon"].SrcRect.Width = 24;
             Sprites["icon"].SrcRect.Height = 24;
-            Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(24, 2, 59, 227, 255));
+            Sprites["selector"] = new Sprite(Viewport, new SolidBitmap(24, 2, 59, 227, 255));
             Sprites["selector"].Y = 24;
             Sprites["selector"].Visible = false;
-            this.WidgetIM.OnHoverChanged += HoverChanged;
-            this.WidgetIM.OnMouseDown += MouseDown;
+            WidgetIM.OnHoverChanged += HoverChanged;
+            WidgetIM.OnMouseDown += MouseDown;
+            WidgetIM.OnLeftClick += LeftClick;
         }
 
         public void SetSelected(bool Selected)
@@ -55,8 +56,16 @@ namespace MKEditor.Widgets
         {
             Sprites["icon"].SrcRect.X = IconX * 24;
             Sprites["icon"].SrcRect.Y = IconY * 24 + (Selected ? 24 : 0);
+            // Changing SrcRect doesn't update the viewport/renderer
+            Sprites["icon"].Update();
             this.IconX = IconX;
             this.IconY = IconY;
+        }
+
+        public void SetSelectorOffset(int pixels)
+        {
+            SetSize(24, 27 + pixels);
+            Sprites["selector"].Y = 25 + pixels;
         }
 
         public override void HoverChanged(object sender, MouseEventArgs e)
@@ -68,10 +77,27 @@ namespace MKEditor.Widgets
         public override void MouseDown(object sender, MouseEventArgs e)
         {
             base.MouseDown(sender, e);
-            if (WidgetIM.Hovering)
+            int ry = e.Y - Viewport.Y;
+            if (WidgetIM.Hovering && ry < 27 && !TimerExists("reset"))
             {
                 if (Toggleable) SetSelected(!Selected);
-                else SetSelected(true);
+                else if (Selectable) SetSelected(true);
+                else // Normal pressable button
+                {
+                    SetIcon(IconX, IconY, true);
+                    SetTimer("reset", 100);
+                    if (OnLeftClick != null) OnLeftClick.Invoke(sender, e);
+                }
+            }
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            if (TimerPassed("reset"))
+            {
+                SetIcon(IconX, IconY, false);
+                DestroyTimer("reset");
             }
         }
     }

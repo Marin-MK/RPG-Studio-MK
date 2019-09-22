@@ -601,6 +601,32 @@ namespace MKEditor.Widgets
             return this;
         }
 
+        List<Timer> Timers = new List<Timer>();
+
+        public void SetTimer(string identifier, long milliseconds)
+        {
+            Timers.Add(new Timer(identifier, DateTime.Now.Ticks, 10000 * milliseconds));
+        }
+
+        public bool TimerPassed(string identifier)
+        {
+            Timer t = Timers.Find(timer => timer.Identifier == identifier);
+            if (t == null) return false;
+            return DateTime.Now.Ticks >= t.StartTime + t.Timespan;
+        }
+
+        public bool TimerExists(string identifier)
+        {
+            return Timers.Exists(t => t.Identifier == identifier);
+        }
+
+        public void DestroyTimer(string identifier)
+        {
+            Timer t = Timers.Find(timer => timer.Identifier == identifier);
+            if (t == null) throw new Exception("No timer by the identifier of '" + identifier + "' was found.");
+            Timers.Remove(t);
+        }
+
         public virtual void Add(Widget w)
         {
             if (this.Widgets.Exists(wgt => wgt.Name == w.Name))
@@ -745,5 +771,19 @@ namespace MKEditor.Widgets
         Up = '\uf062',
 
         Eraser = '\uf12d'
+    }
+
+    class Timer
+    {
+        public string Identifier;
+        public long StartTime;
+        public long Timespan;
+
+        public Timer(string identifier, long starttime, long timespan)
+        {
+            this.Identifier = identifier;
+            this.StartTime = starttime;
+            this.Timespan = timespan;
+        }
     }
 }

@@ -557,6 +557,7 @@ namespace MKEditor.Widgets
                 this.Sprites[i.ToString()] = new Sprite(this.Viewport, MapData.Width * 32, MapData.Height * 32);
                 this.Sprites[i.ToString()].Z = i;
                 this.Sprites[i.ToString()].Bitmap.Unlock();
+                this.Sprites[i.ToString()].Visible = MapData.Layers[i].Visible;
             }
             // Iterate through all the layers
             for (int layer = 0; layer < MapData.Layers.Count; layer++)

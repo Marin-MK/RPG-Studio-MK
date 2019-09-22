@@ -78,6 +78,7 @@
     <Compile Include="MK Widgets\CursorWidget.cs" />
     <Compile Include="MK Widgets\IconButton.cs" />
     <Compile Include="MK Widgets\Label.cs" />
+    <Compile Include="MK Widgets\NewLayerButton.cs" />
     <Compile Include="Windows\MapPropertiesWindow.cs" />
     <Compile Include="MK Widgets\MapSelectTab.cs" />
     <Compile Include="MK Widgets\MenuBar.cs" />
