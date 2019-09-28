@@ -15,64 +15,33 @@ namespace MKEditor.Widgets
         public int SelectedLayer { get { return layerwidget.SelectedLayer; } }
 
         private Container layercontainer;
-        private LayerWidget layerwidget;
-
-        private IconButton FocusButton;
-        private NewLayerButton NewButton;
-        private IconButton MoveUp;
-        private IconButton MoveDown;
-        private IconButton DeleteButton;
+        public LayerWidget layerwidget;
 
         public LayersTab(object Parent, string Name = "layersTab")
             : base(Parent, Name)
         {
+            Viewport.Name = "LayersTab";
             SetBackgroundColor(10, 23, 37);
 
             Sprites["bg"] = new Sprite(this.Viewport);
             Sprites["bg"].Y = 25;
+            Sprites["bg"].Name = "LayersTab Background";
 
             TabView = new TabView(this);
+            TabView.Viewport.Name = "Layers TabView";
             TabView.CreateTab("Layers");
             MainContainer = TabView.GetTab(0);
-
-            FocusButton = new IconButton(MainContainer);
-            FocusButton.SetIcon(13, 0);
-            FocusButton.SetPosition(10, 8);
-            FocusButton.SetSelectorOffset(4);
-            FocusButton.Selectable = false;
-            FocusButton.OnLeftClick += FocusLayer;
-
-            NewButton = new NewLayerButton(MainContainer);
-            NewButton.SetPosition(46, 3);
-
-            MoveUp = new IconButton(MainContainer);
-            MoveUp.SetIcon(10, 0);
-            MoveUp.SetPosition(178, 8);
-            MoveUp.SetSelectorOffset(3);
-            MoveUp.Selectable = false;
-            MoveUp.OnLeftClick += MoveLayerUp;
-
-            MoveDown = new IconButton(MainContainer);
-            MoveDown.SetIcon(11, 0);
-            MoveDown.SetPosition(213, 8);
-            MoveDown.SetSelectorOffset(3);
-            MoveDown.Selectable = false;
-            MoveDown.OnLeftClick += MoveLayerDown;
-
-            DeleteButton = new IconButton(MainContainer);
-            DeleteButton.SetIcon(12, 0);
-            DeleteButton.SetPosition(248, 8);
-            DeleteButton.SetSelectorOffset(3);
-            DeleteButton.Selectable = false;
-            DeleteButton.OnLeftClick += DeleteLayer;
+            MainContainer.Viewport.Name = "Layers MainContainer";
 
             this.OnWidgetSelect += WidgetSelect;
 
             layercontainer = new Container(MainContainer);
-            layercontainer.SetPosition(2, 40);
+            layercontainer.Viewport.Name = "LayerContainer";
+            layercontainer.SetPosition(1, 4);
             layercontainer.VAutoScroll = true;
 
             VScrollBar vs = new VScrollBar(this);
+            vs.Viewport.Name = "Layers ScrollBar";
             layercontainer.SetVScrollBar(vs);
 
             layerwidget = new LayerWidget(layercontainer);
@@ -118,7 +87,7 @@ namespace MKEditor.Widgets
                 new Shortcut(new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer))
             });
 
-            SetSize(293, 200); // Dummy size so the sprites can be drawn properly
+            SetSize(283, 200); // Dummy size so the sprites can be drawn properly
         }
 
         public void UpdateNames()
@@ -207,18 +176,15 @@ namespace MKEditor.Widgets
         {
             base.SizeChanged(sender, e);
             TabView.SetSize(Size);
-            layercontainer.SetSize(Size.Width - 14, Size.Height - 64);
-            layercontainer.VScrollBar.SetPosition(Size.Width - 10, 66);
-            layercontainer.VScrollBar.SetSize(8, Size.Height - 67);
+            layercontainer.SetSize(Size.Width - 12, Size.Height - 29);
+            layercontainer.VScrollBar.SetPosition(Size.Width - 9, 30);
+            layercontainer.VScrollBar.SetSize(8, Size.Height - 31);
             if (Sprites["bg"].Bitmap != null) Sprites["bg"].Bitmap.Dispose();
             Sprites["bg"].Bitmap = new Bitmap(Size.Width, Size.Height - 25);
             Sprites["bg"].Bitmap.Unlock();
-            Sprites["bg"].Bitmap.FillRect(0, 0, Size.Width, 40, new Color(28, 50, 73));
-            Sprites["bg"].Bitmap.DrawLine(0, 40, 0, Size.Height - 26, new Color(28, 50, 73));
-            Sprites["bg"].Bitmap.DrawLine(Size.Width - 1, 40, Size.Width - 1, Size.Height - 26, new Color(28, 50, 73));
-            Sprites["bg"].Bitmap.DrawLine(Size.Width - 12, 40, Size.Width - 12, Size.Height - 26, new Color(28, 50, 73));
-            Sprites["bg"].Bitmap.DrawLine(43, 40, 43, Size.Height - 26, new Color(28, 50, 73));
-
+            Sprites["bg"].Bitmap.FillRect(0, 0, Size.Width, 4, new Color(28, 50, 73));
+            Sprites["bg"].Bitmap.DrawLine(Size.Width - 11, 4, Size.Width - 11, Size.Height - 26, new Color(28, 50, 73));
+            Sprites["bg"].Bitmap.DrawLine(42, 4, 42, Size.Height - 26, new Color(28, 50, 73));
             Sprites["bg"].Bitmap.Lock();
         }
 

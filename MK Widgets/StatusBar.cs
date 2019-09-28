@@ -18,21 +18,27 @@ namespace MKEditor.Widgets
         public StatusBar(object Parent, string Name = "statusBar")
             : base(Parent, Name)
         {
+            Viewport.Name = "StatusBar";
             SetBackgroundColor(10, 23, 37);
             Sprites["map"] = new Sprite(this.Viewport);
             Sprites["map"].X = 4;
             Sprites["map"].Y = 3;
+            Sprites["map"].Name = "MapText";
             Sprites["line1"] = new Sprite(this.Viewport, new SolidBitmap(1, 20, new Color(28, 50, 73)));
             Sprites["line1"].X = 296;
             Sprites["line1"].Y = 3;
+            Sprites["line1"].Name = "Divider 1";
             Sprites["line2"] = new Sprite(this.Viewport, new SolidBitmap(1, 20, new Color(28, 50, 73)));
             Sprites["line2"].X = Size.Width - 284;
             Sprites["line2"].Y = 3;
+            Sprites["line2"].Name = "Divider 2";
             Sprites["text"] = new Sprite(this.Viewport);
             Sprites["text"].X = 300;
             Sprites["text"].Y = 3;
+            Sprites["text"].Name = "MessageText";
             Sprites["cursor"] = new Sprite(this.Viewport);
             Sprites["cursor"].Y = 3;
+            Sprites["cursor"].Name = "CursorText";
 
             ZoomControl = new ZoomControl(this);
         }

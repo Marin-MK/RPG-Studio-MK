@@ -40,9 +40,8 @@ namespace MKEditor.Widgets
             this.Sprites["header"].Bitmap = new Bitmap(Size.Width, 22);
             this.Sprites["header"].Bitmap.Unlock();
             this.Sprites["header"].Bitmap.Font = f;
-            this.Sprites["header"].Bitmap.FillRect(0, 0, Size.Width, 22, 28, 50, 73);
-            Utilities.DrawCollapseBox(this.Sprites["header"].Bitmap as Bitmap, 9, 6, this.Collapsed);
-            this.Sprites["header"].Bitmap.DrawText(this.Text, 32, 2, Color.WHITE);
+            Utilities.DrawCollapseBox(this.Sprites["header"].Bitmap as Bitmap, 3, 4, this.Collapsed);
+            this.Sprites["header"].Bitmap.DrawText(this.Text, 22, 0, Color.WHITE);
             this.Sprites["header"].Bitmap.Lock();
             base.Draw();
         }
@@ -80,7 +79,7 @@ namespace MKEditor.Widgets
             base.MouseDown(sender, e);
             int rx = e.X - Viewport.X;
             int ry = e.Y - Viewport.Y;
-            if (rx < 5 || rx >= 24 || ry < 1 || ry >= 21) return;
+            if (rx < 0 || rx >= 19 || ry < 1 || ry >= 21) return;
             SetCollapsed(!Collapsed);
         }
     }

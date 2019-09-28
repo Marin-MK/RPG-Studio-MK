@@ -1,9 +1,7 @@
-﻿using ODL;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using System.Runtime.InteropServices;
+using ODL;
+using static SDL2.SDL;
 
 namespace MKEditor
 {

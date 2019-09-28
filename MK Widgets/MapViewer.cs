@@ -42,7 +42,6 @@ namespace MKEditor.Widgets
             this.WidgetIM.OnMouseWheel += MouseWheel;
             this.OnWidgetSelect += WidgetSelect;
             MainContainer = new Container(this);
-            MainContainer.SetPosition(1, 0);
             MainContainer.HAutoScroll = MainContainer.VAutoScroll = true;
             Cursor = new CursorWidget(MainContainer);
             Cursor.ConsiderInAutoScroll = false;
@@ -57,7 +56,6 @@ namespace MKEditor.Widgets
             Sprites["right"] = new Sprite(this.Viewport);
             Sprites["bottom"] = new Sprite(this.Viewport);
             Sprites["hslider"] = new Sprite(this.Viewport, new SolidBitmap(Size.Width - 13, 11, new Color(10, 23, 37)));
-            Sprites["hslider"].X = 1;
             Sprites["vslider"] = new Sprite(this.Viewport, new SolidBitmap(11, Size.Height - 12, new Color(10, 23, 37)));
             HScrollBar = new HScrollBar(this);
             HScrollBar.SetPosition(2, Size.Height - 9);
@@ -84,13 +82,12 @@ namespace MKEditor.Widgets
             MapWidget.SetZoomFactor(factor);
             PositionMap();
             MouseMoving(null, Graphics.LastMouseEvent);
-            //UpdateCursorPosition();
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            MainContainer.SetSize(this.Size.Width - 12, this.Size.Height - 11);
+            MainContainer.SetSize(this.Size.Width - 11, this.Size.Height - 11);
             PositionMap();
             UpdateSize();
         }
@@ -240,37 +237,30 @@ namespace MKEditor.Widgets
                 Sprites["right"].MirrorX = true;
                 Sprites["bottom"].Bitmap = side;
                 Sprites["bottom"].Angle = -90;
-
-                Sprites["borderline"] = new Sprite(this.Viewport, new SolidBitmap(1, Size.Height, new Color(10, 23, 37)));
             }
             else b = Sprites["topleft"].Bitmap as Bitmap;
-            Sprites["topleft"].X = 1;
             Sprites["topright"].X = Size.Width - b.Width - 11;
-            Sprites["bottomleft"].X = 1;
             Sprites["bottomleft"].Y = Size.Height - b.Height - 11;
             Sprites["bottomright"].X = Size.Width - b.Width - 11;
             Sprites["bottomright"].Y = Size.Height - b.Height - 11;
-            Sprites["left"].X = 1;
             Sprites["left"].Y = b.Height;
             Sprites["left"].ZoomY = Size.Height - 11 - 2 * b.Height;
             Sprites["top"].X = Size.Width - b.Width - 11;
-            Sprites["top"].ZoomY = Size.Width - 12 - 2 * b.Width;
+            Sprites["top"].ZoomY = Size.Width - 11 - 2 * b.Width;
             Sprites["right"].X = Size.Width - b.Width - 11;
             Sprites["right"].Y = Sprites["left"].Y;
             Sprites["right"].ZoomY = Sprites["left"].ZoomY;
-            Sprites["bottom"].X = 1 + b.Width;
+            Sprites["bottom"].X = b.Width;
             Sprites["bottom"].Y = Size.Height - 11;
             Sprites["bottom"].ZoomY = Sprites["top"].ZoomY;
             
-            (Sprites["borderline"].Bitmap as SolidBitmap).SetSize(1, Size.Height);
-            
-            (Sprites["hslider"].Bitmap as SolidBitmap).SetSize(Size.Width - 13, 11);
+            (Sprites["hslider"].Bitmap as SolidBitmap).SetSize(Size.Width - 12, 11);
             Sprites["hslider"].Y = Size.Height - 11;
             
             (Sprites["vslider"].Bitmap as SolidBitmap).SetSize(11, Size.Height - 12);
             Sprites["vslider"].X = Size.Width - 11;
 
-            HScrollBar.SetPosition(2, Size.Height - 9);
+            HScrollBar.SetPosition(1, Size.Height - 9);
             HScrollBar.SetSize(Size.Width - 15, 8);
             VScrollBar.SetPosition(Size.Width - 9, 1);
             VScrollBar.SetSize(8, Size.Height - 14);

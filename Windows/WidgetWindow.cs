@@ -165,7 +165,7 @@ namespace MKEditor
 
             // Right sidebar
             Grid rightcontainer = new Grid(layout).SetGrid(3, 4) as Grid;
-            rightcontainer.SetRows(new GridSize(5), new GridSize(2));
+            rightcontainer.SetRows(new GridSize(5), new GridSize(1, Unit.Pixels), new GridSize(2));
             rightcontainer.SetColumns(new GridSize(1));
             rightcontainer.SetBackgroundColor(40, 44, 52);
 
@@ -173,9 +173,14 @@ namespace MKEditor
             // Tileset part of right sidebar
             TilesetTab tt = new TilesetTab(rightcontainer);
 
+            // Inner right sidebar divider
+            new Widget(rightcontainer)
+                .SetBackgroundColor(DividerColor)
+                .SetGrid(1, 0);
+
             // Layers part of right sidebar
             LayersTab lt = new LayersTab(rightcontainer);
-            lt.SetGrid(1, 0);
+            lt.SetGrid(2, 0);
 
 
             // Center map viewer

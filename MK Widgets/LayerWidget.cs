@@ -13,10 +13,14 @@ namespace MKEditor.Widgets
         public LayerWidget(object Parent, string Name = "layerWidget")
             : base(Parent, Name)
         {
+            Viewport.Name = "LayerWidget";
             Sprites["bg"] = new Sprite(this.Viewport);
+            Sprites["bg"].Name = "LayerWidget Background";
             Sprites["text"] = new Sprite(this.Viewport);
+            Sprites["text"].Name = "LayerWidget Text";
             Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(2, 24, new Color(59, 227, 255)));
             Sprites["selector"].Visible = false;
+            Sprites["selector"].Name = "LayerWidget Selector";
             WidgetIM.OnHoverChanged += HoverChanged;
             WidgetIM.OnMouseMoving += MouseMoving;
             WidgetIM.OnMouseDown += MouseDown;

@@ -53,26 +53,26 @@ namespace MKEditor.Widgets
             };
 
             TilesetContainer = new Container(TabControl.GetTab(0));
-            TilesetContainer.SetPosition(1, 38);
+            TilesetContainer.SetPosition(0, 5);
             TilesetContainer.VAutoScroll = true;
 
             VScrollBar vs = new VScrollBar(TabControl.GetTab(0));
             TilesetContainer.SetVScrollBar(vs);
 
             Cursor = new CursorWidget(TilesetContainer);
-            Cursor.SetPosition(7, 8);
+            Cursor.SetPosition(3, 8);
             Cursor.SetZIndex(1);
 
             TilesetStackPanel = new VStackPanel(TilesetContainer);
             TilesetStackPanel.SetWidth(264);
-            TilesetStackPanel.SetPosition(8, 7);
+            TilesetStackPanel.SetPosition(8, 3);
 
-            SetSize(293, 200); // Dummy size so the sprites can be drawn properly
+            SetSize(283, 200); // Dummy size so the sprites can be drawn properly
         }
 
         public void SetTilesets(List<int> TilesetIDs)
         {
-            Cursor.SetPosition(28-7, 46-7);
+            Cursor.SetPosition(21, 39);
             TilesetIndex = 0;
             TileStartX = 0;
             TileStartY = 0;
@@ -93,10 +93,10 @@ namespace MKEditor.Widgets
                 c.SetText(tileset.Name);
                 c.SetMargin(0, 0, 0, 8);
                 c.OnCollapsedChanged += delegate (object sender, EventArgs e) { UpdateCursorPosition(); };
-                c.SetSize(TilesetContainer.Size.Width - 13, tileset.TilesetListBitmap.Height + 33);
+                c.SetSize(TilesetContainer.Size.Width - 13, tileset.TilesetListBitmap.Height + 23);
                 TilesetContainers.Add(c);
                 PictureBox image = new PictureBox(c);
-                image.SetPosition(0, 33);
+                image.SetPosition(0, 23);
                 image.Sprite.Bitmap = tileset.TilesetListBitmap;
                 image.SetSize(tileset.TilesetListBitmap.Width, tileset.TilesetListBitmap.Height);
                 TilesetImages.Add(image);
@@ -117,15 +117,14 @@ namespace MKEditor.Widgets
         {
             base.SizeChanged(sender, e);
             TabControl.SetSize(Size);
-            TilesetContainer.SetSize(Size.Width - 13, TabControl.GetTab(0).Size.Height - 39);
-            TilesetContainer.VScrollBar.SetPosition(Size.Width - 10, 38);
-            TilesetContainer.VScrollBar.SetSize(8, Size.Height - 66);
+            TilesetContainer.SetSize(Size.Width - 11, TabControl.GetTab(0).Size.Height - 5);
+            TilesetContainer.VScrollBar.SetPosition(Size.Width - 9, 4);
+            TilesetContainer.VScrollBar.SetSize(8, Size.Height - 31);
             if (Sprites["bg"].Bitmap != null) Sprites["bg"].Bitmap.Dispose();
             Sprites["bg"].Bitmap = new Bitmap(Size.Width, Size.Height - 25);
             Sprites["bg"].Bitmap.Unlock();
-            Sprites["bg"].Bitmap.FillRect(0, 0, Size.Width, 37, new Color(28, 50, 73));
-            Sprites["bg"].Bitmap.DrawRect(0, 37, Size.Width, Size.Height - 25 - 37, new Color(28, 50, 73));
-            Sprites["bg"].Bitmap.DrawLine(Size.Width - 12, 38, Size.Width - 12, Size.Height - 27, new Color(28, 50, 73));
+            Sprites["bg"].Bitmap.FillRect(0, 0, Size.Width, 4, new Color(28, 50, 73));
+            Sprites["bg"].Bitmap.DrawLine(Size.Width - 11, 4, Size.Width - 11, Size.Height - 26, new Color(28, 50, 73));
             Sprites["bg"].Bitmap.Lock();
         }
 
@@ -167,8 +166,8 @@ namespace MKEditor.Widgets
                     if (origin == Location.BottomLeft) origin = Location.TopLeft;
                     else origin = Location.TopRight;
                 }
-                Cursor.SetPosition(8 + TileStartX * 33 - PosDiffX-7, 40 + lc.Position.Y + TileStartY * 33 - PosDiffY-7);
-                Cursor.SetSize(32 * (DiffX + 1) + DiffX+14, 32 * (DiffY + 1) + DiffY+14);
+                Cursor.SetPosition(1 + TileStartX * 33 - PosDiffX, 19 + lc.Position.Y + TileStartY * 33 - PosDiffY);
+                Cursor.SetSize(32 * (DiffX + 1) + DiffX + 14, 32 * (DiffY + 1) + DiffY+14);
                 MapViewer.CursorOrigin = origin;
                 MapViewer.TileDataList.Clear();
                 MapViewer.CursorWidth = DiffX;
@@ -252,7 +251,7 @@ namespace MKEditor.Widgets
             if (rx < 0 || ry < 0 || rx >= cont.Viewport.Width || ry >= cont.Viewport.Height) return; // Off the widget
             rx += cont.ScrolledX;
             ry += cont.ScrolledY;
-            if (rx < 8 || ry < 7 || rx >= 264) return; // Not over a tileset
+            if (rx < 8 || ry < 3 || rx >= 264) return; // Not over a tileset
             int crx = rx - 8; // container (c) relative (r) x (x)
             // crx will always be between 0 and 256 because any other value has been caught with the if-statements already
             for (int i = 0; i < TilesetStackPanel.Widgets.Count; i++)
@@ -266,8 +265,8 @@ namespace MKEditor.Widgets
                 // So we now need to determine the y coordinate relative to this container
                 // To determine which tile we're over.
                 int cry = ry - lc.Position.Y; // container (c) relative (r) y (y)
-                if (cry < 40) continue; // In the name part of the container
-                cry -= 40;
+                if (cry < 26) continue; // In the name part of the container
+                cry -= 26;
                 int tilex = (int) Math.Floor(crx / 33d);
                 int tiley = (int) Math.Floor(cry / 33d);
                 TilesetIndex = i;
