@@ -225,7 +225,7 @@ namespace MKEditor.Widgets
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            if (this.Size.Width < 46 || this.Size.Height < 46)
+            if (true)//this.Size.Width < 46 || this.Size.Height < 46)
             {
                 topleft.Visible = false;
                 topright.Visible = false;

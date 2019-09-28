@@ -18,6 +18,7 @@ namespace MKEditor.Widgets
         public int MinSliderHeight = 8;
 
         public EventHandler<EventArgs> OnValueChanged;
+        public EventHandler<DirectionEventArgs> OnControlScrolling;
 
         private Rect SliderRect;
         private int SliderRY = 0;
@@ -173,19 +174,26 @@ namespace MKEditor.Widgets
             if (LinkedWidget.HScrollBar != null)
             {
                 // Return if pressing shift (i.e. HScrollBar will scroll instead)
-                if (Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LSHIFT)) return;
+                if (Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(SDL2.SDL.SDL_Keycode.SDLK_RSHIFT)) return;
             }
             bool inside = false;
             if (this.MouseInputRect != null) inside = this.MouseInputRect.Contains(e.X, e.Y);
             else inside = this.Viewport.Contains(e.X, e.Y);
             if (inside)
             {
-                int downcount = 0;
-                int upcount = 0;
-                if (e.WheelY < 0) downcount = Math.Abs(e.WheelY);
-                else upcount = e.WheelY;
-                for (int i = 0; i < downcount * 3; i++) this.ScrollDown();
-                for (int i = 0; i < upcount * 3; i++) this.ScrollUp();
+                if (Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LCTRL) || Input.Press(SDL2.SDL.SDL_Keycode.SDLK_RCTRL))
+                {
+                    if (OnControlScrolling != null) OnControlScrolling.Invoke(sender, new DirectionEventArgs(e.WheelY > 0, e.WheelY < 0));
+                }
+                else
+                {
+                    int downcount = 0;
+                    int upcount = 0;
+                    if (e.WheelY < 0) downcount = Math.Abs(e.WheelY);
+                    else upcount = e.WheelY;
+                    for (int i = 0; i < downcount * 3; i++) this.ScrollDown();
+                    for (int i = 0; i < upcount * 3; i++) this.ScrollUp();
+                }
             }
         }
     }

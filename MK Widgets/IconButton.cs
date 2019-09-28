@@ -19,13 +19,13 @@ namespace MKEditor.Widgets
         public IconButton(object Parent, string Name = "iconButton")
             : base(Parent, Name)
         {
-            SetSize(24, 27);
+            SetSize(24, 28);
             Sprites["icon"] = new Sprite(Viewport);
             Sprites["icon"].Bitmap = Utilities.IconSheet;
             Sprites["icon"].SrcRect.Width = 24;
             Sprites["icon"].SrcRect.Height = 24;
             Sprites["selector"] = new Sprite(Viewport, new SolidBitmap(24, 2, 59, 227, 255));
-            Sprites["selector"].Y = 24;
+            Sprites["selector"].Y = 26;
             Sprites["selector"].Visible = false;
             WidgetIM.OnHoverChanged += HoverChanged;
             WidgetIM.OnMouseDown += MouseDown;
@@ -64,8 +64,8 @@ namespace MKEditor.Widgets
 
         public void SetSelectorOffset(int pixels)
         {
-            SetSize(24, 27 + pixels);
-            Sprites["selector"].Y = 25 + pixels;
+            SetSize(24, 28 + pixels);
+            Sprites["selector"].Y = 26 + pixels;
         }
 
         public override void HoverChanged(object sender, MouseEventArgs e)
@@ -78,7 +78,7 @@ namespace MKEditor.Widgets
         {
             base.MouseDown(sender, e);
             int ry = e.Y - Viewport.Y;
-            if (WidgetIM.Hovering && ry < 27 && !TimerExists("reset"))
+            if (WidgetIM.Hovering && ry < 29 && !TimerExists("reset"))
             {
                 if (Toggleable) SetSelected(!Selected);
                 else if (Selectable) SetSelected(true);

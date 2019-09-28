@@ -9,6 +9,8 @@ namespace MKEditor.Widgets
         public Data.Map Map;
         public TilesetTab TilesetTab;
         public LayersTab LayersTab;
+        public ToolBar ToolBar;
+        public StatusBar StatusBar;
 
         public int RelativeMouseX = 0;
         public int RelativeMouseY = 0;
@@ -37,6 +39,7 @@ namespace MKEditor.Widgets
             this.WidgetIM.OnMouseMoving += MouseMoving;
             this.WidgetIM.OnMouseDown += MouseDown;
             this.WidgetIM.OnMouseUp += MouseUp;
+            this.WidgetIM.OnMouseWheel += MouseWheel;
             this.OnWidgetSelect += WidgetSelect;
             MainContainer = new Container(this);
             MainContainer.SetPosition(1, 0);
@@ -59,10 +62,18 @@ namespace MKEditor.Widgets
             HScrollBar = new HScrollBar(this);
             HScrollBar.SetPosition(2, Size.Height - 9);
             HScrollBar.SetSize(Size.Width - 15, 8);
+            HScrollBar.OnValueChanged += delegate (object sender, EventArgs e)
+            {
+                if (Graphics.LastMouseEvent != null) MouseMoving(sender, Graphics.LastMouseEvent);
+            };
             MainContainer.SetHScrollBar(HScrollBar);
             VScrollBar = new VScrollBar(this);
             VScrollBar.SetPosition(Size.Width - 9, 1);
             VScrollBar.SetSize(8, Size.Height - 14);
+            VScrollBar.OnValueChanged += delegate (object sender, EventArgs e)
+            {
+                if (Graphics.LastMouseEvent != null) MouseMoving(sender, Graphics.LastMouseEvent);
+            };
             MainContainer.SetVScrollBar(VScrollBar);
             UpdateSize();
         }
@@ -72,6 +83,8 @@ namespace MKEditor.Widgets
             this.ZoomFactor = factor;
             MapWidget.SetZoomFactor(factor);
             PositionMap();
+            MouseMoving(null, Graphics.LastMouseEvent);
+            //UpdateCursorPosition();
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
@@ -310,7 +323,6 @@ namespace MKEditor.Widgets
             DummyWidget.SetSize(2 * x + MapWidget.Size.Width, 2 * y + MapWidget.Size.Height);
             if (Map.Width * 32 * ZoomFactor >= Viewport.Width || Map.Height * 32 * ZoomFactor >= Viewport.Height)
             {
-                Console.WriteLine("half");
                 MainContainer.HScrollBar.SetValue(0.5);
                 MainContainer.VScrollBar.SetValue(0.5);
             }
@@ -395,6 +407,13 @@ namespace MKEditor.Widgets
             if (!e.LeftButton && !e.RightButton) OriginDrawPoint = null;
         }
 
+        public override void MouseWheel(object sender, MouseEventArgs e)
+        {
+            base.MouseWheel(sender, e);
+            if (!Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LCTRL) && !Input.Press(SDL2.SDL.SDL_Keycode.SDLK_RCTRL)) return;
+            StatusBar.ZoomControl.SetLevel(StatusBar.ZoomControl.Level + (e.WheelY > 0 ? 1 : -1));
+        }
+
         public void UpdateTilePlacement(int oldx = -1, int oldy = -1, int newx = -1, int newy = -1)
         {
             if (MainContainer.HScrollBar != null && (MainContainer.HScrollBar.Dragging || MainContainer.HScrollBar.Hovering)) return;
@@ -406,10 +425,10 @@ namespace MKEditor.Widgets
                 int Layer = this.LayersTab.SelectedLayer;
                 if (TileDataList.Count == 0)
                 {
-                    if (TilesetTab.EraserButton.Selected) TileDataList.Add(null);
+                    if (ToolBar.EraserButton.Selected) TileDataList.Add(null);
                     else
                     {
-                        TilesetTab.EraserButton.SetSelected(true);
+                        ToolBar.EraserButton.SetSelected(true);
                         TileDataList.Add(null);
                         //throw new Exception($"The tile data list is empty, but the eraser tool is not selected.\nCan't find tiles to draw with.");
                     }
@@ -444,18 +463,18 @@ namespace MKEditor.Widgets
                 {
                     int MapTileIndex = MapTileY * Map.Width + MapTileX;
                     if (MapTileX < 0 || MapTileX >= Map.Width || MapTileY < 0 || MapTileY >= Map.Height)
-                        TilesetTab.EraserButton.SetSelected(true);
+                        ToolBar.EraserButton.SetSelected(true);
                     else
                     {
                         Data.TileData tile = Map.Layers[Layer].Tiles[MapTileIndex];
-                        if (tile == null) TilesetTab.EraserButton.SetSelected(true);
+                        if (tile == null) ToolBar.EraserButton.SetSelected(true);
                         else TilesetTab.SelectTile(tile);
                     }
                 }
                 else
                 {
                     SelectionOnMap = true;
-                    TilesetTab.EraserButton.SetSelected(false);
+                    ToolBar.EraserButton.SetSelected(false);
                     int sx = OriginDrawPoint.X < MapTileX ? OriginDrawPoint.X : MapTileX;
                     int ex = OriginDrawPoint.X < MapTileX ? MapTileX : OriginDrawPoint.X;
                     int sy = OriginDrawPoint.Y < MapTileY ? OriginDrawPoint.Y : MapTileY;
@@ -603,7 +622,7 @@ namespace MKEditor.Widgets
             Point Origin = MapViewer.OriginDrawPoint;
             // This resets the two points tiles are drawn in between if the mouse has gone off the map (otherwise it'd draw a line between
             // the last point on the map and the current point on the map)
-            bool blanktile = MapViewer.TilesetTab.EraserButton.Selected;
+            bool blanktile = MapViewer.ToolBar.EraserButton.Selected;
             this.Sprites[layer.ToString()].Bitmap.Unlock();
             bool line = !(oldx == newx && oldy == newy);
             List<Point> TempCoords = new List<Point>();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ODL;
 
 namespace MKEditor.Widgets
@@ -6,124 +7,163 @@ namespace MKEditor.Widgets
     public class ToolBar : Widget
     {
         public MapViewer MapViewer;
+        public TilesetTab TilesetTab;
+        public StatusBar StatusBar;
+
         IconButton Cut;
         IconButton Copy;
         IconButton Paste;
         IconButton Delete;
         IconButton Undo;
         IconButton Redo;
-        Container ZoomContainer;
-        IconButton Zoom1;
-        IconButton Zoom2;
-        IconButton Zoom3;
 
         ModeButton MappingMode;
+        ModeButton EventingMode;
         ModeButton ScriptingMode;
         ModeButton DatabaseMode;
+
+        Container ActionContainer;
+        Container CopyContainer;
+        Container DrawToolsContainer;
+
+        public IconButton PencilButton;
+        public IconButton FillButton;
+        public IconButton EllipseButton;
+        public IconButton RectButton;
+        public IconButton SelectButton;
+        public IconButton EraserButton;
 
         PlayButton PlayButton;
         SaveButton SaveButton;
 
-        int DrawnX = 0;
-        int DrawnY = 0;
-
         public ToolBar(object Parent, string Name = "toolBar")
             : base(Parent, Name)
         {
-            Sprites["status"] = new Sprite(this.Viewport);
+            SetBackgroundColor(10, 23, 37);
 
-            MappingMode = new ModeButton(this);
-            MappingMode.SetPosition(8, 11);
-            MappingMode.SetText("Mapping");
+            MappingMode = new ModeButton("Maps", 23, this);
+            MappingMode.SetPosition(4, 0);
+            MappingMode.SetSelected(true);
 
-            ScriptingMode = new ModeButton(this);
-            ScriptingMode.SetPosition(120, 11);
-            ScriptingMode.SetText("Scripting");
+            EventingMode = new ModeButton("Events", 24, this);
+            EventingMode.SetPosition(MappingMode.Position.X + MappingMode.Size.Width + 12, 0);
 
-            DatabaseMode = new ModeButton(this);
-            DatabaseMode.SetPosition(232, 11);
-            DatabaseMode.SetText("Database");
+            ScriptingMode = new ModeButton("Scripts", 25, this);
+            ScriptingMode.SetPosition(EventingMode.Position.X + EventingMode.Size.Width + 12, 0);
+
+            DatabaseMode = new ModeButton("Database", 26, this);
+            DatabaseMode.SetPosition(ScriptingMode.Position.X + ScriptingMode.Size.Width + 12, 0);
+
+            ActionContainer = new Container(this);
+            ActionContainer.SetPosition(DatabaseMode.Position.X + DatabaseMode.Size.Width + 12, 3);
+            ActionContainer.SetSize(83, 28);
+            ActionContainer.Sprites["line"] = new Sprite(ActionContainer.Viewport, new SolidBitmap(1, 26, new Color(28, 50, 73)));
+            Delete = new IconButton(ActionContainer);
+            Delete.SetPosition(6, 0);
+            Delete.SetIcon(3, 0);
+            Delete.Selectable = false;
+            Undo = new IconButton(ActionContainer);
+            Undo.SetPosition(30, 0);
+            Undo.SetIcon(4, 0);
+            Undo.Selectable = false;
+            Redo = new IconButton(ActionContainer);
+            Redo.SetPosition(54, 0);
+            Redo.SetIcon(5, 0);
+            Redo.Selectable = false;
+
+            CopyContainer = new Container(this);
+            CopyContainer.SetPosition(ActionContainer.Position.X + ActionContainer.Size.Width, 3);
+            CopyContainer.SetSize(83, 28);
+            CopyContainer.Sprites["line"] = new Sprite(CopyContainer.Viewport, new SolidBitmap(1, 26, new Color(28, 50, 73)));
+            Cut = new IconButton(CopyContainer);
+            Cut.SetPosition(6, 0);
+            Cut.SetIcon(0, 0);
+            Cut.Selectable = false;
+            Copy = new IconButton(CopyContainer);
+            Copy.SetPosition(30, 0);
+            Copy.SetIcon(1, 0);
+            Copy.Selectable = false;
+            Paste = new IconButton(CopyContainer);
+            Paste.SetPosition(54, 0);
+            Paste.SetIcon(2, 0);
+            Paste.Selectable = false;
+
+            DrawToolsContainer = new Container(this);
+            DrawToolsContainer.SetPosition(Size.Width - 283 - 186, 3);
+            DrawToolsContainer.SetSize(186, 28);
+            DrawToolsContainer.Sprites["line1"] = new Sprite(DrawToolsContainer.Viewport, new SolidBitmap(1, 26, new Color(28, 50, 73)));
+            DrawToolsContainer.Sprites["line1"].X = 144;
+            DrawToolsContainer.Sprites["line2"] = new Sprite(DrawToolsContainer.Viewport, new SolidBitmap(1, 26, new Color(28, 50, 73)));
+            DrawToolsContainer.Sprites["line2"].X = 185;
+
+            PencilButton = new IconButton(DrawToolsContainer);
+            PencilButton.SetIcon(15, 0);
+            PencilButton.SetSelected(true);
+
+            FillButton = new IconButton(DrawToolsContainer);
+            FillButton.SetIcon(16, 0);
+            FillButton.SetPosition(28, 0);
+
+            EllipseButton = new IconButton(DrawToolsContainer);
+            EllipseButton.SetIcon(17, 0);
+            EllipseButton.SetPosition(56, 0);
+
+            RectButton = new IconButton(DrawToolsContainer);
+            RectButton.SetIcon(18, 0);
+            RectButton.SetPosition(84, 0);
+
+            SelectButton = new IconButton(DrawToolsContainer);
+            SelectButton.SetIcon(19, 0);
+            SelectButton.SetPosition(112, 0);
+
+            EraserButton = new IconButton(DrawToolsContainer);
+            EraserButton.SetIcon(20, 0);
+            EraserButton.SetPosition(153, 0);
+            EraserButton.Toggleable = true;
+            EraserButton.OnSelection += delegate (object sender, EventArgs e)
+            {
+                TilesetTab.Cursor.SetPosition(0, 0);
+                TilesetTab.Cursor.SetVisible(false);
+                MapViewer.TileDataList = new List<Data.TileData>() { null };
+                MapViewer.CursorWidth = 0;
+                MapViewer.CursorHeight = 0;
+                TilesetTab.UpdateCursorPosition();
+                MapViewer.UpdateCursorPosition();
+            };
+            EraserButton.OnDeselection += delegate (object sender, EventArgs e)
+            {
+                TilesetTab.UpdateCursorPosition();
+            };
 
             PlayButton = new PlayButton(this);
             SaveButton = new SaveButton(this);
-
-            SetBackgroundColor(10, 23, 37);
-            Cut = new IconButton(this);
-            Cut.SetPosition(355, 35);
-            Cut.SetIcon(0, 0);
-            Copy = new IconButton(this);
-            Copy.SetPosition(387, 35);
-            Copy.SetIcon(1, 0);
-            Paste = new IconButton(this);
-            Paste.SetPosition(419, 35);
-            Paste.SetIcon(2, 0);
-            Delete = new IconButton(this);
-            Delete.SetPosition(451, 35);
-            Delete.SetIcon(3, 0);
-            Undo = new IconButton(this);
-            Undo.SetPosition(483, 35);
-            Undo.SetIcon(4, 0);
-            Redo = new IconButton(this);
-            Redo.SetPosition(515, 35);
-            Redo.SetIcon(5, 0);
-
-            ZoomContainer = new Container(this);
-            ZoomContainer.SetPosition(564, 35);
-            ZoomContainer.SetSize(86, 27);
-            Zoom1 = new IconButton(ZoomContainer);
-            Zoom1.SetIcon(7, 0);
-            Zoom1.SetSelected(true);
-            Zoom1.OnSelection = delegate (object sender, EventArgs e)
-            {
-                MapViewer.SetZoomFactor(1);
-            };
-            Zoom2 = new IconButton(ZoomContainer);
-            Zoom2.SetPosition(32, 0);
-            Zoom2.SetIcon(8, 0);
-            Zoom2.OnSelection = delegate (object sender, EventArgs e)
-            {
-                MapViewer.SetZoomFactor(0.5);
-            };
-            Zoom3 = new IconButton(ZoomContainer);
-            Zoom3.SetPosition(64, 0);
-            Zoom3.SetIcon(9, 0);
-            Zoom3.OnSelection = delegate (object sender, EventArgs e)
-            {
-                MapViewer.SetZoomFactor(0.25);
-            };
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            PlayButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width, 11);
-            SaveButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width - 7 - SaveButton.Size.Width, 11);
-        }
-
-        protected override void Draw()
-        {
-            if (Sprites["status"].Bitmap != null) Sprites["status"].Bitmap.Dispose();
-            Sprites["status"].Bitmap = new Bitmap(this.Size);
-            Sprites["status"].Bitmap.Unlock();
-            Sprites["status"].Bitmap.Font = Font.Get("Fonts/ProductSans-M", 14);
-            if (MapViewer.MapTileX >= 0 && MapViewer.MapTileY >= 0 && MapViewer.MapTileX < MapViewer.Map.Width && MapViewer.MapTileY < MapViewer.Map.Height)
+            DrawToolsContainer.SetPosition(Size.Width - 283 - 186, 3);
+            PlayButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width, 2);
+            SaveButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width - 7 - SaveButton.Size.Width, 2);
+            if (Size.Width < 800)
             {
-                string c1 = Utilities.Digits(MapViewer.MapTileX, 3);
-                string c2 = Utilities.Digits(MapViewer.MapTileY, 3);
-                Sprites["status"].Bitmap.DrawText(c1, Size.Width - 350, 40, new Color(80, 146, 218), DrawOptions.RightAlign);
-                Sprites["status"].Bitmap.DrawText("x", Size.Width - 347, 40, new Color(80, 146, 218));
-                Sprites["status"].Bitmap.DrawText(c2, Size.Width - 337, 40, new Color(80, 146, 218));
+                DrawToolsContainer.SetPosition(SaveButton.Position.X - 185, 3);
             }
-            Sprites["status"].Bitmap.Lock();
-            DrawnX = MapViewer.MapTileX;
-            DrawnY = MapViewer.MapTileY;
-            base.Draw();
-        }
-
-        public override void Update()
-        {
-            if (DrawnX != MapViewer.MapTileX || DrawnY != MapViewer.MapTileY) Redraw();
-            base.Update();
+            else if (Size.Width < 895)
+            {
+                ActionContainer.SetVisible(false);
+                CopyContainer.SetVisible(false);
+            }
+            else if (Size.Width < 978)
+            {
+                ActionContainer.SetVisible(true);
+                CopyContainer.SetVisible(false);
+            }
+            else
+            {
+                ActionContainer.SetVisible(true);
+                CopyContainer.SetVisible(true);
+            }
         }
     }
 }

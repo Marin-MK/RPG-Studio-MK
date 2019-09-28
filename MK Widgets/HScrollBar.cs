@@ -17,6 +17,7 @@ namespace MKEditor.Widgets
         public int MinSliderSize = 8;
 
         public EventHandler<EventArgs> OnValueChanged;
+        public EventHandler<DirectionEventArgs> OnControlScrolling;
 
         private Rect SliderRect;
         private int SliderRX = 0;
@@ -161,19 +162,26 @@ namespace MKEditor.Widgets
             if (LinkedWidget.VScrollBar != null)
             {
                 // Return if NOT pressing shift (i.e. VScrollBar will scroll instead)
-                if (!Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LSHIFT)) return;
+                if (!Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) && !Input.Press(SDL2.SDL.SDL_Keycode.SDLK_RSHIFT)) return;
             }
             bool inside = false;
             if (this.MouseInputRect != null) inside = this.MouseInputRect.Contains(e.X, e.Y);
             else inside = this.Viewport.Contains(e.X, e.Y);
             if (inside)
             {
-                int leftcount = 0;
-                int rightcount = 0;
-                if (e.WheelY < 0) rightcount = Math.Abs(e.WheelY);
-                else leftcount = e.WheelY;
-                for (int i = 0; i < leftcount * 3; i++) this.ScrollLeft();
-                for (int i = 0; i < rightcount * 3; i++) this.ScrollRight();
+                if (Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LCTRL) || Input.Press(SDL2.SDL.SDL_Keycode.SDLK_RCTRL))
+                {
+                    if (OnControlScrolling != null) OnControlScrolling.Invoke(sender, new DirectionEventArgs(e.WheelY > 0, e.WheelY < 0));
+                }
+                else
+                {
+                    int leftcount = 0;
+                    int rightcount = 0;
+                    if (e.WheelY < 0) rightcount = Math.Abs(e.WheelY);
+                    else leftcount = e.WheelY;
+                    for (int i = 0; i < leftcount * 3; i++) this.ScrollLeft();
+                    for (int i = 0; i < rightcount * 3; i++) this.ScrollRight();
+                }
             }
         }
     }

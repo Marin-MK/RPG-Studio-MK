@@ -7,6 +7,7 @@ namespace MKEditor.Widgets
     public class MapSelectTab : Widget
     {
         public MapViewer MapViewer;
+        public StatusBar StatusBar;
 
         TabView TabView;
 
@@ -47,8 +48,7 @@ namespace MKEditor.Widgets
             mapview.SetNodes(Nodes);
             mapview.OnSelectedNodeChanged += delegate (object sender, MouseEventArgs e)
             {
-                // Changes mapviewer, layerstab and tilesettab to match the new map
-                MapViewer.SetMap(mapview.SelectedNode.Object as Data.Map);
+                SetMap(mapview.SelectedNode.Object as Data.Map);
             };
             mapview.SetContextMenuList(new List<IMenuItem>()
             {
@@ -61,6 +61,13 @@ namespace MKEditor.Widgets
                 new MenuSeparator(),
                 new MenuItem("Delete") { Shortcut = "Del" }
             });
+        }
+
+        public void SetMap(Data.Map Map)
+        {
+            // Changes mapviewer, layerstab and tilesettab to match the new map
+            MapViewer.SetMap(Map);
+            StatusBar.SetMap(Map);
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)

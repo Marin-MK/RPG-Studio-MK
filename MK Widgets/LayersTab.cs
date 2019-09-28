@@ -47,22 +47,22 @@ namespace MKEditor.Widgets
 
             MoveUp = new IconButton(MainContainer);
             MoveUp.SetIcon(10, 0);
-            MoveUp.SetPosition(188, 8);
-            MoveUp.SetSelectorOffset(4);
+            MoveUp.SetPosition(178, 8);
+            MoveUp.SetSelectorOffset(3);
             MoveUp.Selectable = false;
             MoveUp.OnLeftClick += MoveLayerUp;
 
             MoveDown = new IconButton(MainContainer);
             MoveDown.SetIcon(11, 0);
-            MoveDown.SetPosition(223, 8);
-            MoveDown.SetSelectorOffset(4);
+            MoveDown.SetPosition(213, 8);
+            MoveDown.SetSelectorOffset(3);
             MoveDown.Selectable = false;
             MoveDown.OnLeftClick += MoveLayerDown;
 
             DeleteButton = new IconButton(MainContainer);
             DeleteButton.SetIcon(12, 0);
-            DeleteButton.SetPosition(258, 8);
-            DeleteButton.SetSelectorOffset(4);
+            DeleteButton.SetPosition(248, 8);
+            DeleteButton.SetSelectorOffset(3);
             DeleteButton.Selectable = false;
             DeleteButton.OnLeftClick += DeleteLayer;
 

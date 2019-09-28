@@ -109,6 +109,7 @@ namespace MKEditor.Widgets
             int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
             if (!WidgetIM.Hovering) return;
             int layerindex = Layers.Count - 1 - (int) Math.Floor(ry / 24d);
+            if (layerindex < 0 || layerindex >= Layers.Count) return;
             if (rx < 39)
             {
                 if (e.LeftButton != e.OldLeftButton && e.LeftButton)

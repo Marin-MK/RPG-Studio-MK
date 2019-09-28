@@ -61,21 +61,26 @@ namespace MKEditor
             Grid layout = new Grid(this);
             layout.SetRows(
                 new GridSize(32, Unit.Pixels),
-                new GridSize(63, Unit.Pixels),
+                new GridSize(31, Unit.Pixels),
                 new GridSize(1, Unit.Pixels),
-                new GridSize(1)
+                new GridSize(1),
+                new GridSize(1, Unit.Pixels),
+                new GridSize(26, Unit.Pixels)
             );
             layout.SetColumns(
-                new GridSize(224, Unit.Pixels),
+                new GridSize(222, Unit.Pixels),
+                new GridSize(1, Unit.Pixels),
                 new GridSize(1),
-                new GridSize(293, Unit.Pixels)
+                new GridSize(1, Unit.Pixels),
+                new GridSize(283, Unit.Pixels)
             );
 
+            Color DividerColor = new Color(79, 108, 159);
 
             // Header + Menubar
             MenuBar menu = new MenuBar(layout)
                 .SetBackgroundColor(28, 50, 73)
-                .SetGrid(0, 0, 0, 2) as MenuBar;
+                .SetGrid(0, 0, 0, 4) as MenuBar;
             menu.SetItems(new List<MenuItem>()
             {
                 new MenuItem("File")
@@ -135,22 +140,31 @@ namespace MKEditor
 
             // Toolbar (modes, icons, etc)
             ToolBar toolbar = new ToolBar(layout);
-            toolbar.SetGrid(1, 1, 0, 2);
+            toolbar.SetGrid(1, 1, 0, 4);
 
 
             // Blue 1px separator
             new Widget(layout)
-                .SetBackgroundColor(79, 108, 159)
-                .SetGrid(2, 2, 0, 2);
+                .SetBackgroundColor(DividerColor)
+                .SetGrid(2, 2, 0, 4);
 
 
             // Left sidebar
             MapSelectTab mst = new MapSelectTab(layout);
             mst.SetGrid(3, 0);
 
+            // Left sidebar divider
+            new Widget(layout)
+                .SetBackgroundColor(79, 108, 159)
+                .SetGrid(3, 3, 1, 1);
+
+            // Right sidebar divider
+            new Widget(layout)
+                .SetBackgroundColor(DividerColor)
+                .SetGrid(3, 3, 3, 3);
 
             // Right sidebar
-            Grid rightcontainer = new Grid(layout).SetGrid(3, 2) as Grid;
+            Grid rightcontainer = new Grid(layout).SetGrid(3, 4) as Grid;
             rightcontainer.SetRows(new GridSize(5), new GridSize(2));
             rightcontainer.SetColumns(new GridSize(1));
             rightcontainer.SetBackgroundColor(40, 44, 52);
@@ -166,24 +180,46 @@ namespace MKEditor
 
             // Center map viewer
             MapViewer mv = new MapViewer(layout);
-            mv.SetGrid(3, 1);
+            mv.SetGrid(3, 2);
+
+            // Status bar divider
+            new Widget(layout)
+                .SetBackgroundColor(DividerColor)
+                .SetGrid(4, 4, 0, 4);
+
+            // Status bar
+            StatusBar status = new StatusBar(layout);
+            status.SetGrid(5, 5, 0, 4);
 
 
 
             // Link the UI pieces together
             mv.LayersTab = lt;
             mv.TilesetTab = tt;
+            mv.ToolBar = toolbar;
+            mv.StatusBar = status;
+
             lt.TilesetTab = tt;
             lt.MapViewer = mv;
+
             tt.LayersTab = lt;
             tt.MapViewer = mv;
+            tt.ToolBar = toolbar;
+
             mst.MapViewer = mv;
+
             toolbar.MapViewer = mv;
+            toolbar.TilesetTab = tt;
+            toolbar.StatusBar = status;
+
+            mst.StatusBar = status;
+
+            status.MapViewer = mv;
 
             // Set initial map
             Map map = null;
             foreach (Map m in GameData.Maps.Values) { map = m; break; }
-            mv.SetMap(map);
+            mst.SetMap(map);
 
             // TEMP: Create map properties window
             //new MapPropertiesWindow(this);
