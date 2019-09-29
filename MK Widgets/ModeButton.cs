@@ -38,6 +38,7 @@ namespace MKEditor.Widgets
             WidgetIM.OnMouseMoving += UpdateSelector;
             WidgetIM.OnMouseDown += MouseDown;
 
+            OnWidgetSelected += WidgetSelected;
             SetSize(27 + s.Width, 31);
         }
 

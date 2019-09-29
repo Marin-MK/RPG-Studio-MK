@@ -227,7 +227,7 @@ namespace MKEditor
             mst.SetMap(map);
 
             // TEMP: Create map properties window
-            //new MapPropertiesWindow(this);
+            new MapPropertiesWindow(map, this);
 
             this.OnMouseDown += UI.MouseDown;
             this.OnMousePress += UI.MousePress;

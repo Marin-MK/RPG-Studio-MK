@@ -37,7 +37,7 @@ namespace MKEditor.Widgets
             Sprites["bg"] = new Sprite(this.Viewport);
             Sprites["bg"].Y = 25;
 
-            this.OnWidgetSelect += WidgetSelect;
+            this.OnWidgetSelected += WidgetSelected;
 
             CursorIM = new MouseInputManager(this);
             CursorIM.OnMouseDown += MouseDown;

@@ -92,7 +92,7 @@ namespace MKEditor
                 this.ClickedLeftInArea = e.InArea(this.Area);
                 if (this.ClickedLeftInArea == true)
                 {
-                    if (this.Widget.OnWidgetSelect != null) this.Widget.OnWidgetSelect.Invoke(this, e);
+                    if (this.Widget.OnWidgetSelected != null) this.Widget.OnWidgetSelected.Invoke(this, e);
                 }
             }
 

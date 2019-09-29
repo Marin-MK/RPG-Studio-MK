@@ -21,7 +21,7 @@ namespace MKEditor.Widgets
             this.WidgetIM.OnHoverChanged += HoverChanged;
             this.WidgetIM.OnMouseMoving += MouseMoving;
             this.WidgetIM.OnMouseDown += MouseDown;
-            this.OnWidgetSelect += WidgetSelect;
+            this.OnWidgetSelected += WidgetSelected;
         }
 
         public void SetNodes(List<TreeNode> Nodes)

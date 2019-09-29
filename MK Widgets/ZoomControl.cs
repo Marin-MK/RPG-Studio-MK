@@ -13,7 +13,6 @@ namespace MKEditor.Widgets
         public ZoomControl(object Parent, string Name = "zoomControl")
             : base(Parent, Name)
         {
-            Viewport.Name = "ZoomControl";
             ZoomOut = new IconButton(this);
             ZoomOut.Selectable = false;
             ZoomOut.SetIcon(7, 0);
@@ -33,7 +32,6 @@ namespace MKEditor.Widgets
             };
 
             Sprites["text"] = new Sprite(this.Viewport);
-            Sprites["text"].Name = "ZoomText";
 
             SetLevel(0);
             SetSize(88, 26);

@@ -57,6 +57,7 @@ namespace MKEditor.Widgets
                 new MenuSeparator(),
                 new MenuItem("Delete") { Shortcut = "Del" }
             });
+            OnWidgetSelected += WidgetSelected;
         }
 
         public void SetMap(Data.Map Map)
@@ -80,7 +81,7 @@ namespace MKEditor.Widgets
 
         private void OpenMapProperties(object sender, MouseEventArgs e)
         {
-            MapPropertiesWindow mpw = new MapPropertiesWindow(this.Window);
+            MapPropertiesWindow mpw = new MapPropertiesWindow(mapview.SelectedNode.Object as Data.Map, this.Window);
         }
     }
 }

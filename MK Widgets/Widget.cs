@@ -65,8 +65,7 @@ namespace MKEditor.Widgets
         public EventHandler<MouseEventArgs> OnMouseUp;
         public EventHandler<MouseEventArgs> OnMouseWheel;
         public EventHandler<MouseEventArgs> OnMouseMoving;
-        public EventHandler<MouseEventArgs> OnWidgetSelect;
-        public EventHandler<EventArgs> OnWidgetSelected;
+        public EventHandler<MouseEventArgs> OnWidgetSelected;
         public EventHandler<EventArgs> OnWidgetDeselected;
         public EventHandler<TextInputEventArgs> OnTextInput;
         public EventHandler<EventArgs> OnPositionChanged;
@@ -96,7 +95,6 @@ namespace MKEditor.Widgets
             this.Sprites["_bg"].Z = -999999999;
             this.OnLeftClick = new EventHandler<MouseEventArgs>(this.LeftClick);
             this.OnMouseMoving = new EventHandler<MouseEventArgs>(this.MouseMoving);
-            this.OnWidgetSelected = new EventHandler<EventArgs>(this.WidgetSelected);
             this.OnWidgetDeselected = new EventHandler<EventArgs>(this.WidgetDeselected);
             this.OnTextInput = new EventHandler<TextInputEventArgs>(this.TextInput);
             this.OnPositionChanged = new EventHandler<EventArgs>(this.PositionChanged);
@@ -322,11 +320,10 @@ namespace MKEditor.Widgets
             Redraw();
         }
         public virtual void LeftClick(object sender, MouseEventArgs e) { }
-        public virtual void WidgetSelect(object sender, MouseEventArgs e)
+        public virtual void WidgetSelected(object sender, MouseEventArgs e)
         {
             this.Window.UI.SetSelectedWidget(this);
         }
-        public virtual void WidgetSelected(object sender, EventArgs e) { }
         public virtual void WidgetDeselected(object sender, EventArgs e) { }
         public virtual void TextInput(object sender, TextInputEventArgs e) { }
         public virtual void PositionChanged(object sender, EventArgs e)
@@ -558,7 +555,10 @@ namespace MKEditor.Widgets
         {
             AssertUndisposed();
             Size oldsize = this.Size;
-            size.Clamp(this.MinimumSize, this.MaximumSize);
+            if (size.Width < MinimumSize.Width) size.Width = MinimumSize.Width;
+            else if (size.Width > MaximumSize.Width) size.Width = MaximumSize.Width;
+            if (size.Height < MinimumSize.Height) size.Height = MinimumSize.Height;
+            else if (size.Height > MaximumSize.Height) size.Height = MaximumSize.Height;
             if (oldsize.Width != size.Width || oldsize.Height != size.Height)
             {
                 this.Size = size;
@@ -621,6 +621,13 @@ namespace MKEditor.Widgets
             Timer t = Timers.Find(timer => timer.Identifier == identifier);
             if (t == null) throw new Exception("No timer by the identifier of '" + identifier + "' was found.");
             Timers.Remove(t);
+        }
+
+        public void ResetTimer(string identifier)
+        {
+            Timer t = Timers.Find(timer => timer.Identifier == identifier);
+            if (t == null) throw new Exception("No timer by the identifier of '" + identifier + "' was found.");
+            t.StartTime = DateTime.Now.Ticks;
         }
 
         public virtual void Add(Widget w)

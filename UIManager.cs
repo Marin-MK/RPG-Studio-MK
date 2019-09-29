@@ -139,16 +139,6 @@ namespace MKEditor
                 }
                 IMs[i].MouseUp(e);
             }
-            for (int i = 0; i < IMs.Count; i++)
-            {
-                if (IMs[i].Widget.Disposed)
-                {
-                    IMs.RemoveAt(i);
-                    i--;
-                    continue;
-                }
-                if (IMs[i].OnHoverChanged != null) IMs[i].OnHoverChanged.Invoke(sender, e);
-            }
         }
 
         public void MouseMoving(object sender, MouseEventArgs e)
@@ -273,9 +263,11 @@ namespace MKEditor
                 this.SelectedWidget.Redraw();
             }
             this.SelectedWidget = w;
-            this.SelectedWidget.SelectedWidget = true;
-            this.SelectedWidget.OnWidgetSelected(this, new EventArgs());
-            this.SelectedWidget.Redraw();
+            if (w != null)
+            {
+                this.SelectedWidget.SelectedWidget = true;
+                this.SelectedWidget.Redraw();
+            }
         }
 
         public void TextInput(object sender, TextInputEventArgs e)

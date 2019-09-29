@@ -40,7 +40,7 @@ namespace MKEditor.Widgets
             this.WidgetIM.OnMouseDown += MouseDown;
             this.WidgetIM.OnMouseUp += MouseUp;
             this.WidgetIM.OnMouseWheel += MouseWheel;
-            this.OnWidgetSelect += WidgetSelect;
+            this.OnWidgetSelected += WidgetSelected;
             MainContainer = new Container(this);
             MainContainer.HAutoScroll = MainContainer.VAutoScroll = true;
             Cursor = new CursorWidget(MainContainer);

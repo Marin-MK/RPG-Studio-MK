@@ -30,6 +30,7 @@ namespace MKEditor.Widgets
             WidgetIM.OnHoverChanged += HoverChanged;
             WidgetIM.OnMouseDown += MouseDown;
             WidgetIM.OnLeftClick += LeftClick;
+            OnWidgetSelected += WidgetSelected;
         }
 
         public void SetSelected(bool Selected)

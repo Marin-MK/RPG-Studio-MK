@@ -20,28 +20,22 @@ namespace MKEditor.Widgets
         public LayersTab(object Parent, string Name = "layersTab")
             : base(Parent, Name)
         {
-            Viewport.Name = "LayersTab";
             SetBackgroundColor(10, 23, 37);
 
             Sprites["bg"] = new Sprite(this.Viewport);
             Sprites["bg"].Y = 25;
-            Sprites["bg"].Name = "LayersTab Background";
 
             TabView = new TabView(this);
-            TabView.Viewport.Name = "Layers TabView";
             TabView.CreateTab("Layers");
             MainContainer = TabView.GetTab(0);
-            MainContainer.Viewport.Name = "Layers MainContainer";
 
-            this.OnWidgetSelect += WidgetSelect;
+            this.OnWidgetSelected += WidgetSelected;
 
             layercontainer = new Container(MainContainer);
-            layercontainer.Viewport.Name = "LayerContainer";
             layercontainer.SetPosition(1, 4);
             layercontainer.VAutoScroll = true;
 
             VScrollBar vs = new VScrollBar(this);
-            vs.Viewport.Name = "Layers ScrollBar";
             layercontainer.SetVScrollBar(vs);
 
             layerwidget = new LayerWidget(layercontainer);

@@ -42,7 +42,7 @@ namespace MKEditor.Widgets
             if (Sprites["box"].Bitmap != null) Sprites["box"].Bitmap.Dispose();
             Sprites["box"].Bitmap = new Bitmap(this.Size);
             Sprites["box"].Bitmap.Unlock();
-            Color gray = new Color(108, 103, 110);
+            Color gray = new Color(86, 108, 134);
             Color dark = new Color(36, 34, 36);
             Sprites["box"].Bitmap.SetPixel(1, 1, gray);
             Sprites["box"].Bitmap.DrawLine(2, 0, Size.Width - 3, 0, gray);
@@ -71,6 +71,8 @@ namespace MKEditor.Widgets
         public int SelectionIndexStart = -1;
         public int SelectionIndexStop = -1;
 
+        bool TextEntry = false;
+
         int CaretSelectionDistance = 0;
 
         public TextEntryField(object Parent, string Name = "textEntryField")
@@ -80,10 +82,11 @@ namespace MKEditor.Widgets
             Sprites["selection"] = new Sprite(this.Viewport, new SolidBitmap(1, 21, new Color(128, 128, 128)));
             Sprites["selection"].Visible = false;
             Sprites["text"] = new Sprite(this.Viewport);
-            Sprites["caret"] = new Sprite(this.Viewport, new SolidBitmap(1, 21, new Color(32, 32, 32)));
+            Sprites["caret"] = new Sprite(this.Viewport, new SolidBitmap(1, 21, new Color(36, 34, 36)));
             Sprites["caret"].Y = 1;
             WidgetIM.OnHoverChanged += HoverChanged;
-            OnWidgetSelect += WidgetSelect;
+            WidgetIM.OnMouseDown += MouseDown;
+            OnWidgetSelected += WidgetSelected;
         }
 
         public void SetText(string Text)
@@ -191,20 +194,41 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void WidgetSelect(object sender, MouseEventArgs e)
+        public override void WidgetSelected(object sender, MouseEventArgs e)
         {
-            base.WidgetSelect(sender, e);
+            base.WidgetSelected(sender, e);
+            TextEntry = true;
             Input.StartTextInput();
+            Sprites["caret"].Visible = true;
+        }
+
+        public override void WidgetDeselected(object sender, EventArgs e)
+        {
+            base.WidgetDeselected(sender, e);
+            TextEntry = false;
+            Input.StopTextInput();
         }
 
         public override void TextInput(object sender, TextInputEventArgs e)
         {
+            if (!TextEntry) return;
             string oldtext = this.Text;
             int oldwidth = Sprites["text"].Bitmap.TextSize(Text.Substring(0, CaretIndex)).Width;
-            if (e.Backspace && CaretIndex > 0)
+            if (e.Backspace)
             {
-                this.Text = this.Text.Remove(this.CaretIndex - 1, 1);
-                this.CaretIndex--;
+                if (SelectionIndexStart != -1 && SelectionIndexStop != -1)
+                {
+                    int length = Math.Abs(SelectionIndexStop - SelectionIndexStart);
+                    this.Text = this.Text.Remove(SelectionIndexStop > SelectionIndexStart ? SelectionIndexStart : SelectionIndexStop, length);
+                    if (SelectionIndexStop > SelectionIndexStart) this.CaretIndex -= length;
+                    SelectionIndexStart = -1;
+                    SelectionIndexStop = -1;
+                }
+                else if (CaretIndex > 0)
+                {
+                    this.Text = this.Text.Remove(this.CaretIndex - 1, 1);
+                    this.CaretIndex--;
+                }
             }
             string NewStr = e.Text.Replace("\n", "");
             this.Text = this.Text.Insert(this.CaretIndex, NewStr);
@@ -249,7 +273,6 @@ namespace MKEditor.Widgets
 
         private void UpdateSelection()
         {
-            Console.WriteLine($"{SelectionIndexStart},{SelectionIndexStop}");
             if (SelectionIndexStart != -1)
             {
                 Sprites["selection"].Visible = true;
@@ -267,8 +290,7 @@ namespace MKEditor.Widgets
                 }
                 else // caret is left of selection start
                 {
-                    Console.WriteLine("caret is left");
-                    Sprites["selection"].X = Sprites["caret"].X - diff - selwidth;
+                    Sprites["selection"].X = Sprites["caret"].X;// - diff - selwidth;
                 }
                 (Sprites["selection"].Bitmap as SolidBitmap).SetSize(selwidth, 21);
             }
@@ -289,16 +311,28 @@ namespace MKEditor.Widgets
             {
                 SetCaretIndex(CaretIndex + 1);
             }
+            if (Window.UI.SelectedWidget == this)
+            {
+                if (!TimerExists("switch")) SetTimer("switch", 500);
+                if (TimerPassed("switch"))
+                {
+                    ResetTimer("switch");
+                    Sprites["caret"].Visible = !Sprites["caret"].Visible;
+                }
+            }
+            else
+            {
+                Sprites["caret"].Visible = false;
+            }
             base.Update();
         }
 
         protected override void Draw()
         {
-            Font f = Font.Get("Fonts/Ubuntu-B", 16);
+            Font f = Font.Get("Fonts/ProductSans-R", 14);
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
             Sprites["text"].Bitmap = new Bitmap(f.TextSize(this.Text).Width + 4, Size.Height);
             Sprites["text"].Bitmap.Unlock();
-            Sprites["text"].Bitmap.Clear();
             Sprites["text"].Bitmap.Font = f;
             Sprites["text"].Bitmap.DrawText(this.Text, 0, 2, Color.WHITE);
             Sprites["text"].Bitmap.Lock();
@@ -312,6 +346,15 @@ namespace MKEditor.Widgets
                 Input.SetCursor(SDL_SystemCursor.SDL_SYSTEM_CURSOR_IBEAM);
             else
                 Input.SetCursor(SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
+        }
+
+        public override void MouseDown(object sender, MouseEventArgs e)
+        {
+            base.MouseDown(sender, e);
+            if (e.LeftButton != e.OldLeftButton && e.LeftButton && !WidgetIM.Hovering && Window.UI.SelectedWidget == this)
+            {
+                Window.UI.SetSelectedWidget(null);
+            }
         }
     }
 }
