@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ODL;
 
 namespace MKEditor.Widgets
@@ -41,7 +42,7 @@ namespace MKEditor.Widgets
             Label widthlabel = new Label(box1);
             widthlabel.SetText("Width:");
             widthlabel.SetFont(f);
-            widthlabel.SetPosition(7, 101);
+            widthlabel.SetPosition(7, 99);
             NumericBox width = new NumericBox(box1);
             width.SetPosition(6, 115);
             width.MinValue = 1;
@@ -51,12 +52,31 @@ namespace MKEditor.Widgets
             Label heightlabel = new Label(box1);
             heightlabel.SetText("Height:");
             heightlabel.SetFont(f);
-            heightlabel.SetPosition(78, 101);
+            heightlabel.SetPosition(78, 99);
             NumericBox height = new NumericBox(box1);
             height.SetPosition(77, 115);
             height.MinValue = 1;
             height.MaxValue = 255;
             height.SetSize(66, 27);
+
+            ListBox Tilesets = new ListBox(box1);
+            Tilesets.SetPosition(166, 22);
+            Tilesets.SetItems(new List<ListItem>()
+            {
+                new ListItem("Common"),
+                new ListItem("Trees"),
+                new ListItem("Outdoor"),
+                new ListItem("Mountains"),
+                new ListItem("Sea"),
+                new ListItem("Houses"),
+                new ListItem("Skyscrapers"),
+                new ListItem("Rivers"),
+                new ListItem("Animals"),
+                new ListItem("Pokémon"),
+                new ListItem("Objects"),
+                new ListItem("Misc.")
+            });
+            Tilesets.SetButtonText("Add Tileset");
         }
     }
 

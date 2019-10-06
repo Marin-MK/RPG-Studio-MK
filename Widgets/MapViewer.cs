@@ -12,6 +12,25 @@ namespace MKEditor.Widgets
         public ToolBar ToolBar;
         public StatusBar StatusBar;
 
+        public int TopLeftX
+        {
+            get
+            {
+                int x = MapTileX;
+                if (CursorOrigin == Location.TopRight || CursorOrigin == Location.BottomRight) x -= CursorWidth;
+                return x;
+            }
+        }
+        public int TopLeftY
+        {
+            get
+            {
+                int y = MapTileY;
+                if (CursorOrigin == Location.BottomLeft || CursorOrigin == Location.BottomRight) y -= CursorHeight;
+                return y;
+            }
+        }
+
         public int RelativeMouseX = 0;
         public int RelativeMouseY = 0;
         public int MapTileX = 0;

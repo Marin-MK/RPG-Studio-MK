@@ -14,6 +14,8 @@ namespace MKEditor.Widgets
 
         int DrawnX = -1;
         int DrawnY = -1;
+        int DrawnWidth = -1;
+        int DrawnHeight = -1;
 
         public StatusBar(object Parent, string Name = "statusBar")
             : base(Parent, Name)
@@ -26,12 +28,13 @@ namespace MKEditor.Widgets
             Sprites["line1"].X = 296;
             Sprites["line1"].Y = 3;
             Sprites["line2"] = new Sprite(this.Viewport, new SolidBitmap(1, 20, new Color(28, 50, 73)));
-            Sprites["line2"].X = Size.Width - 284;
             Sprites["line2"].Y = 3;
+            Sprites["line3"] = new Sprite(this.Viewport, new SolidBitmap(1, 20, new Color(28, 50, 73)));
+            Sprites["line3"].Y = 3;
             Sprites["text"] = new Sprite(this.Viewport);
-            Sprites["text"].X = 300;
             Sprites["text"].Y = 3;
             Sprites["cursor"] = new Sprite(this.Viewport);
+            Sprites["cursor"].X = 304;
             Sprites["cursor"].Y = 3;
 
             ZoomControl = new ZoomControl(this);
@@ -70,16 +73,18 @@ namespace MKEditor.Widgets
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            Sprites["line2"].X = Size.Width - 284;
-            Sprites["cursor"].X = Size.Width - 280;
+            Sprites["line2"].X = Size.Width - 384;
+            Sprites["line3"].X = Size.Width - 284;
+            Sprites["text"].X = Size.Width - 276;
             ZoomControl.SetPosition(Size.Width - 290 - 88, 0);
         }
 
-        public void DrawCursorPosition(int X, int Y)
+        public void DrawCursor(int X, int Y, int width, int height)
         {
             if (Sprites["cursor"].Bitmap != null) Sprites["cursor"].Bitmap.Dispose();
             Font f = Font.Get("Fonts/ProductSans-M", 14);
-            string text = $"Cursor position ({Utilities.Digits(X, 3)}x{Utilities.Digits(Y, 3)})";
+            string text = $"{Utilities.Digits(X, 3)}x{Utilities.Digits(Y, 3)}";
+            if (width != 0 || height != 0) text += $" (size {width + 1},{height + 1})";
             Size s = f.TextSize(text);
             Sprites["cursor"].Bitmap = new Bitmap(s);
             Sprites["cursor"].Bitmap.Font = f;
@@ -88,6 +93,8 @@ namespace MKEditor.Widgets
             Sprites["cursor"].Bitmap.Lock();
             DrawnX = X;
             DrawnY = Y;
+            DrawnWidth = width;
+            DrawnHeight = height;
         }
 
         public void RemoveCursorText()
@@ -130,13 +137,16 @@ namespace MKEditor.Widgets
             }
             if (MapViewer != null)
             {
-                if (MapViewer.MapTileX < 0 || MapViewer.MapTileY < 0 || MapViewer.MapTileX >= MapViewer.Map.Width || MapViewer.MapTileY >= MapViewer.Map.Height)
+                if (MapViewer.TopLeftX < 0 || MapViewer.TopLeftY < 0 || MapViewer.TopLeftX >= MapViewer.Map.Width || MapViewer.TopLeftY >= MapViewer.Map.Height)
                 {
                     RemoveCursorText();
                 }
-                else if (MapViewer.MapTileX != DrawnX || MapViewer.MapTileY != DrawnY || Sprites["cursor"].Bitmap == null)
+                else if (MapViewer.TopLeftX != DrawnX || MapViewer.TopLeftY != DrawnY ||
+                         MapViewer.CursorWidth != DrawnWidth || MapViewer.CursorHeight != DrawnHeight ||
+                         Sprites["cursor"].Bitmap == null)
                 {
-                    DrawCursorPosition(MapViewer.MapTileX, MapViewer.MapTileY);
+                    
+                    DrawCursor(MapViewer.TopLeftX, MapViewer.TopLeftY, MapViewer.CursorWidth, MapViewer.CursorHeight);
                 }
             }
         }

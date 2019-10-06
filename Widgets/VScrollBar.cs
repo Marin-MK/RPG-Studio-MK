@@ -128,10 +128,7 @@ namespace MKEditor.Widgets
 
         private void SliderMouseUp(object sender, MouseEventArgs e)
         {
-            if (!e.LeftButton && e.OldLeftButton && this.SliderIM.ClickedLeftInArea == true)
-            {
-                Redraw();
-            }
+            Redraw();
         }
 
         private void SliderHoverChanged(object sender, MouseEventArgs e)
