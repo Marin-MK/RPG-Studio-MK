@@ -98,7 +98,6 @@ namespace MKEditor.Widgets
         public override void HoverChanged(object sender, MouseEventArgs e)
         {
             base.HoverChanged(sender, e);
-            if (Window.UI.OverContextMenu != null) return;
             Sprites["hover"].Visible = WidgetIM.Hovering;
             MouseMoving(sender, e);
         }
@@ -106,7 +105,7 @@ namespace MKEditor.Widgets
         public override void MouseMoving(object sender, MouseEventArgs e)
         {
             base.MouseMoving(sender, e);
-            if (!WidgetIM.Hovering || Window.UI.OverContextMenu != null) return;
+            if (!WidgetIM.Hovering) return;
             int ry = e.Y - this.Viewport.Y + Position.Y - ScrolledPosition.Y;
             int globalindex = (int) Math.Floor(ry / 24d);
             Sprites["hover"].Visible = true;
@@ -116,7 +115,7 @@ namespace MKEditor.Widgets
         public override void MouseDown(object sender, MouseEventArgs e)
         {
             base.MouseDown(sender, e);
-            if (!WidgetIM.Hovering || Window.UI.OverContextMenu != null) return;
+            if (!WidgetIM.Hovering) return;
             TreeNode oldselected = this.SelectedNode;
             if (e.LeftButton && !e.OldLeftButton)
             {

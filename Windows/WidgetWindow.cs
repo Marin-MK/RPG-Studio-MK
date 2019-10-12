@@ -11,6 +11,8 @@ namespace MKEditor
     {
         public UIManager UI;
         public bool Blocked = false;
+        public IContainer ActiveWidget;
+        public List<IContainer> Widgets = new List<IContainer>();
 
         public WidgetWindow()
         {
@@ -239,6 +241,12 @@ namespace MKEditor
             this.OnTick += Tick;
             this.UI.Update();
             this.Start();
+        }
+
+        public void SetActiveWidget(IContainer Widget)
+        {
+            this.ActiveWidget = Widget;
+            if (!Widgets.Contains(Widget)) Widgets.Add(Widget);
         }
 
         public void SetOverlayOpacity(byte Opacity)

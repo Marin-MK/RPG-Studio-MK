@@ -21,11 +21,10 @@ namespace MKEditor
         public Widget SelectedWidget { get; protected set; }
         public HScrollBar HScrollBar { get { return null; } set { throw new MethodNotSupportedException(this); } }
         public VScrollBar VScrollBar { get { return null; } set { throw new MethodNotSupportedException(this); } }
-        public ContextMenu OverContextMenu;
         public List<Shortcut> Shortcuts { get; protected set; } = new List<Shortcut>();
+        public int WindowLayer { get { return 0; } set { throw new MethodNotSupportedException(this); } }
 
         private Sprite BGSprite;
-        private Sprite OverlaySprite;
         private List<MouseInputManager> IMs = new List<MouseInputManager>();
 
         public IContainer Parent { get { throw new MethodNotSupportedException(this); } }
@@ -35,6 +34,7 @@ namespace MKEditor
             this.Window = Window;
             BGSprite = new Sprite(this.Viewport);
             BGSprite.Bitmap = new SolidBitmap(this.Size, this.BackgroundColor);
+            this.Window.SetActiveWidget(this);
         }
 
         public void Add(Widget w)
@@ -99,6 +99,7 @@ namespace MKEditor
         public void MouseDown(object sender, MouseEventArgs e)
         {
             SortInputManagers();
+            bool DoMoveEvent = false;
             for (int i = 0; i < IMs.Count; i++)
             {
                 if (IMs[i].Widget.Disposed)
@@ -108,6 +109,16 @@ namespace MKEditor
                     continue;
                 }
                 IMs[i].MouseDown(e);
+                if (e.Handled)
+                {
+                    DoMoveEvent = true;
+                    break;
+                }
+            }
+            if (DoMoveEvent)
+            {
+                e.Handled = false;
+                MouseMoving(sender, e);
             }
         }
 
@@ -123,6 +134,7 @@ namespace MKEditor
                     continue;
                 }
                 IMs[i].MousePress(e);
+                if (e.Handled) break;
             }
         }
 
@@ -138,6 +150,7 @@ namespace MKEditor
                     continue;
                 }
                 IMs[i].MouseUp(e);
+                if (e.Handled) break;
             }
         }
 
@@ -153,6 +166,7 @@ namespace MKEditor
                     continue;
                 }
                 IMs[i].MouseMoving(e);
+                if (e.Handled) break;
             }
         }
 
@@ -168,6 +182,7 @@ namespace MKEditor
                     continue;
                 }
                 IMs[i].MouseWheel(e);
+                if (e.Handled) break;
             }
         }
 
@@ -183,6 +198,8 @@ namespace MKEditor
 
         public void SortInputManagers()
         {
+            return;
+            // To do: remove
             bool NeedUpdate = false;
             for (int i = 0; i < IMs.Count; i++)
             {

@@ -71,7 +71,6 @@ namespace MKEditor.Widgets
 
         public void UpdateSelector(object sender, MouseEventArgs e)
         {
-            if (Window.UI.OverContextMenu != null) return;
             int ry = e.Y - Viewport.Y;
             Sprites["selector"].Visible = WidgetIM.Hovering && ry < 42;
         }

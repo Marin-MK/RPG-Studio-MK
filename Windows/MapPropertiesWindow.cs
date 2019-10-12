@@ -60,7 +60,7 @@ namespace MKEditor.Widgets
             height.SetSize(66, 27);
 
             ListBox Tilesets = new ListBox(box1);
-            Tilesets.SetPosition(166, 22);
+            Tilesets.SetPosition(162, 22);
             Tilesets.SetItems(new List<ListItem>()
             {
                 new ListItem("Common"),
@@ -77,6 +77,91 @@ namespace MKEditor.Widgets
                 new ListItem("Misc.")
             });
             Tilesets.SetButtonText("Add Tileset");
+            Tilesets.ListDrawer.SetContextMenuList(new List<IMenuItem>()
+            {
+                new MenuItem("Move Tileset Up") { OnLeftClick = MoveTilesetUp },
+                new MenuItem("Move Tileset Down") { OnLeftClick = MoveTilesetDown },
+                new MenuSeparator(),
+                new MenuItem("Remove Tileset") { OnLeftClick = RemoveTileset }
+            });
+            // Makes it so you can right click on the whole widget, except for the last 20 pixels (which is the button)
+            Tilesets.ListDrawer.OnContextMenuOpening += delegate (object sender, CancelEventArgs e)
+            {
+                int ry = Graphics.LastMouseEvent.Y - Tilesets.ListDrawer.Viewport.Y + Tilesets.ListDrawer.Position.Y - Tilesets.ListDrawer.ScrolledPosition.Y;
+                if (ry >= Tilesets.ListDrawer.Size.Height - 20) e.Cancel = true;
+            };
+            Tilesets.ListDrawer.OnButtonClicked += AddTileset;
+            Label tilesetslabel = new Label(box1);
+            tilesetslabel.SetText("Tilesets:");
+            tilesetslabel.SetFont(f);
+            tilesetslabel.SetPosition(163, 6);
+
+            ListBox Autotiles = new ListBox(box1);
+            Autotiles.SetPosition(312, 22);
+            Autotiles.SetItems(new List<ListItem>()
+            {
+                new ListItem("Sea Tiles"),
+                new ListItem("Flowers")
+            });
+            Autotiles.SetButtonText("Add Autotile");
+            Autotiles.ListDrawer.SetContextMenuList(new List<IMenuItem>()
+            {
+                new MenuItem("Move Autotile Up") { OnLeftClick = MoveAutotileUp },
+                new MenuItem("Move Autotile Down") { OnLeftClick = MoveAutotileDown },
+                new MenuSeparator(),
+                new MenuItem("Remove Autotile") { OnLeftClick = RemoveAutotile }
+            });
+            // Makes it so you can right click on the whole widget, except for the last 20 pixels (which is the button)
+            Autotiles.ListDrawer.OnContextMenuOpening += delegate (object sender, CancelEventArgs e)
+            {
+                int ry = Graphics.LastMouseEvent.Y - Autotiles.ListDrawer.Viewport.Y + Autotiles.ListDrawer.Position.Y - Autotiles.ListDrawer.ScrolledPosition.Y;
+                if (ry >= Autotiles.ListDrawer.Size.Height - 20) e.Cancel = true;
+            };
+            Autotiles.ListDrawer.OnButtonClicked += AddAutotile;
+            Label autotileslabel = new Label(box1);
+            autotileslabel.SetText("Autotiles:");
+            autotileslabel.SetFont(f);
+            autotileslabel.SetPosition(313, 6);
+        }
+
+        public void AddTileset(object sender, EventArgs e)
+        {
+            Console.WriteLine("Add Tileset");
+        }
+
+        public void MoveTilesetUp(object sender, EventArgs e)
+        {
+            Console.WriteLine("Move Tileset Up");
+        }
+
+        public void MoveTilesetDown(object sender, EventArgs e)
+        {
+            Console.WriteLine("Move Tileset Down");
+        }
+
+        public void RemoveTileset(object sender, EventArgs e)
+        {
+            Console.WriteLine("Remove Tileset");
+        }
+
+        public void AddAutotile(object sender, EventArgs e)
+        {
+            Console.WriteLine("Add Autotile");
+        }
+
+        public void MoveAutotileUp(object sender, EventArgs e)
+        {
+            Console.WriteLine("Move Autotile Up");
+        }
+
+        public void MoveAutotileDown(object sender, EventArgs e)
+        {
+            Console.WriteLine("Move Autotile Down");
+        }
+
+        public void RemoveAutotile(object sender, EventArgs e)
+        {
+            Console.WriteLine("Remove Autotile");
         }
     }
 

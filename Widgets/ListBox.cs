@@ -12,8 +12,8 @@ namespace MKEditor.Widgets
 
         public ListItem SelectedItem { get { return SelectedIndex == -1 ? null : Items[SelectedIndex]; } }
 
-        Container MainContainer;
-        ListDrawer ListDrawer;
+        public Container MainContainer;
+        public ListDrawer ListDrawer;
 
         public ListBox(object Parent, string Name = "listBox")
             : base(Parent, Name)
@@ -94,8 +94,9 @@ namespace MKEditor.Widgets
         }
     }
 
-    class ListDrawer : Widget
+    public class ListDrawer : Widget
     {
+        public EventHandler<EventArgs> OnButtonClicked;
         private bool HoveringButton = false;
 
         public ListDrawer(object Parent, string Name = "listDrawer")
@@ -106,6 +107,7 @@ namespace MKEditor.Widgets
             Sprites["hover"].Visible = false;
             WidgetIM.OnMouseMoving += MouseMoving;
             WidgetIM.OnHoverChanged += HoverChanged;
+            WidgetIM.OnMouseDown += MouseDown;
             Sprites["btn"] = new Sprite(this.Viewport);
             Sprites["btn"].X = 7;
         }
@@ -173,6 +175,12 @@ namespace MKEditor.Widgets
         {
             base.HoverChanged(sender, e);
             if (!WidgetIM.Hovering) Sprites["hover"].Visible = false;
+        }
+
+        public override void MouseDown(object sender, MouseEventArgs e)
+        {
+            base.MouseDown(sender, e);
+            if (HoveringButton && OnButtonClicked != null) OnButtonClicked.Invoke(sender, e);
         }
     }
 }

@@ -67,10 +67,9 @@ namespace MKEditor
             }
         }
 
-        public bool OverContextMenu()
+        public bool WidgetInaccessible()
         {
-            if (Widget.Window.UI.OverContextMenu != null && Widget.Window.UI.OverContextMenu != Widget && Widget.Window.UI.OverContextMenu.WidgetIM.Hovering)
-                return true;
+            if (Widget.WindowLayer < Widget.Window.ActiveWidget.WindowLayer) return true;
             return false;
         }
 
@@ -78,13 +77,18 @@ namespace MKEditor
         {
             if (!Ready()) return;
             if (!Widget.Visible) return;
-            if (OverContextMenu()) return;
-            if (Widget.IsBlocked()) return;
 
-            if (Widget.Window.UI.OverContextMenu != null && Widget.Window.UI.OverContextMenu != Widget)
+            if (!(Widget.Window.ActiveWidget is UIManager))
             {
-                Widget.Window.UI.OverContextMenu.Dispose();
+                if (!(Widget.Window.ActiveWidget as Widget).WidgetIM.Hovering)
+                {
+                    (Widget.Window.ActiveWidget as Widget).Dispose();
+                    e.Handled = true;
+                    return;
+                }
             }
+
+            if (WidgetInaccessible()) return;
 
             if (e.LeftButton && !e.OldLeftButton)
             {
@@ -109,8 +113,7 @@ namespace MKEditor
         {
             if (!Ready()) return;
             if (!Widget.Visible) return;
-            if (OverContextMenu()) return;
-            if (Widget.IsBlocked()) return;
+            if (WidgetInaccessible()) return;
 
             if (this.OnMousePress != null) this.OnMousePress.Invoke(this, e);
         }
@@ -119,8 +122,7 @@ namespace MKEditor
         {
             if (!Ready()) return;
             if (!Widget.Visible) return;
-            //if (OverContextMenu()) return; // If a button opens up a context menu, the mouse-up event shouldn't be ignored because of that menu.
-            if (Widget.IsBlocked()) return;
+            //if (WidgetInaccessible()) return; // If a button opens up a context menu, the mouse-up event shouldn't be ignored because of that menu.
 
             if (!e.LeftButton && e.OldLeftButton)
             {
@@ -149,8 +151,7 @@ namespace MKEditor
         {
             if (!Ready()) return;
             if (!Widget.Visible) return;
-            if (OverContextMenu()) return;
-            if (Widget.IsBlocked()) return;
+            if (WidgetInaccessible()) return;
 
             if (e.WheelY != 0 && this.OnMouseWheel != null) this.OnMouseWheel.Invoke(this, e);
         }
@@ -159,8 +160,7 @@ namespace MKEditor
         {
             if (!Ready()) return;
             if (!Widget.Visible) return;
-            if (OverContextMenu()) return;
-            if (Widget.IsBlocked()) return;
+            if (WidgetInaccessible()) return;
 
             bool oldhover = this.Hovering;
             this.Hovering = e.InArea(this.Area);

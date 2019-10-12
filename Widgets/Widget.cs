@@ -25,11 +25,33 @@ namespace MKEditor.Widgets
         public bool                         Visible          { get; protected set; } = true;
         public bool                         SelectedWidget   = false;
         public bool                         Dock             = false;
-        public int                          ZIndex           { get; protected set; } = 0;
+        private int _ZIndex = 0;
+        public int ZIndex
+        {
+            get
+            {
+                if (Parent is UIManager) return _ZIndex;
+                return (Parent as Widget).ZIndex + _ZIndex;
+            }
+            protected set { _ZIndex = value; }
+        }
+
         public List<IMenuItem>              ContextMenuList  { get; protected set; }
         public bool                         ShowContextMenu  { get; protected set; } = false;
         public List<Shortcut>               Shortcuts        { get; protected set; } = new List<Shortcut>();
         public bool                         ConsiderInAutoScroll = true;
+        private int _WindowLayer = 0;
+        public int WindowLayer
+        {
+            get
+            {
+                return Parent.WindowLayer > _WindowLayer ? Parent.WindowLayer : _WindowLayer;
+            }
+            set
+            {
+                _WindowLayer = value;
+            }
+        }
 
         public  bool       HAutoScroll       = false;
         public  bool       VAutoScroll       = false;
@@ -75,6 +97,7 @@ namespace MKEditor.Widgets
         public EventHandler<EventArgs> OnDisposing;
         public EventHandler<EventArgs> OnDisposed;
         public EventHandler<EventArgs> OnScrolling;
+        public EventHandler<CancelEventArgs> OnContextMenuOpening;
 
         public Widget(object Parent, string Name = "widget", int Index = -1)
         {
@@ -104,6 +127,7 @@ namespace MKEditor.Widgets
             this.WidgetIM = new MouseInputManager(this);
             this.WidgetIM.OnRightClick += RightClick_ContextMenu;
 
+            SetZIndex(0);
             //Sprites["bounds"] = new Sprite(this.Viewport);
             //Sprites["bounds"].Z = 999999;
         }
@@ -154,24 +178,16 @@ namespace MKEditor.Widgets
             else return (Parent as Widget).GetParentWindow();
         }
 
-        public bool IsBlocked()
-        {
-            object prnt = GetParentWindow();
-            if (prnt is WidgetWindow) return (prnt as WidgetWindow).Blocked;
-            if (prnt is PopupWindow) return (prnt as PopupWindow).Blocked;
-            return false;
-        }
-
         public void SetZIndex(int ZIndex)
         {
             if (this.ZIndex != ZIndex)
             {
                 this.ZIndex = ZIndex;
-                this.Viewport.Z = this.Parent.Viewport.Z + this.ZIndex;
+                this.Viewport.Z = this.ZIndex;
             }
         }
 
-        public void SetContextMenuList(List<IMenuItem> Items)
+        public virtual void SetContextMenuList(List<IMenuItem> Items)
         {
             this.ContextMenuList = Items;
             this.ShowContextMenu = Items.Count > 0;
@@ -289,16 +305,26 @@ namespace MKEditor.Widgets
         {
             if (ShowContextMenu && ContextMenuList != null && ContextMenuList.Count > 0)
             {
-                ContextMenu cm = new ContextMenu(this.Window);
-                cm.SetItems(ContextMenuList);
-                Size s = cm.Size;
-                int x = e.X;
-                int y = e.Y;
-                if (e.X + s.Width >= Window.Width) x -= s.Width;
-                if (e.Y + s.Height >= Window.Height) y -= s.Height;
-                x = Math.Max(0, x);
-                y = Math.Max(0, y);
-                cm.SetPosition(x, y);
+                bool cont = true;
+                if (OnContextMenuOpening != null)
+                {
+                    CancelEventArgs args = new CancelEventArgs();
+                    OnContextMenuOpening.Invoke(sender, args);
+                    if (args.Cancel) cont = false;
+                }
+                if (cont)
+                {
+                    ContextMenu cm = new ContextMenu(this.Window);
+                    cm.SetItems(ContextMenuList);
+                    Size s = cm.Size;
+                    int x = e.X;
+                    int y = e.Y;
+                    if (e.X + s.Width >= Window.Width) x -= s.Width;
+                    if (e.Y + s.Height >= Window.Height) y -= s.Height;
+                    x = Math.Max(0, x);
+                    y = Math.Max(0, y);
+                    cm.SetPosition(x, y);
+                }
             }
         }
         public virtual void MouseDown(object sender, MouseEventArgs e)

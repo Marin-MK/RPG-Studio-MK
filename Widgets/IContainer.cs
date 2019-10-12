@@ -20,6 +20,7 @@ namespace MKEditor.Widgets
         VScrollBar VScrollBar { get; }
 
         IContainer Parent { get; }
+        int WindowLayer { get; set; }
 
         void Add(Widget w);
         Widget Get(string Name);

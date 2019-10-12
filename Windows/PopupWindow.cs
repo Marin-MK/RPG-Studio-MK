@@ -11,7 +11,6 @@ namespace MKEditor.Widgets
         public PopupWindow(object Parent, string Name = "popupWindow")
             : base(Parent, Name)
         {
-            Window.Blocked = true;
             Window.SetOverlayOpacity(128);
             // The black overlay over the main window has its own viewport with z = 1000.
             // So we have to go one higher to make it ignore this window in the overlay darkening.
@@ -27,6 +26,9 @@ namespace MKEditor.Widgets
             Sprites["name"] = new Sprite(this.Viewport);
             Sprites["name"].X = 5;
             Sprites["name"].Y = 3;
+            this.WindowLayer = Window.ActiveWidget.WindowLayer + 1;
+            this.Window.SetActiveWidget(this);
+
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
@@ -65,6 +67,16 @@ namespace MKEditor.Widgets
             Sprites["name"].Bitmap.Font = f;
             Sprites["name"].Bitmap.DrawText(Name, Color.WHITE);
             Sprites["name"].Bitmap.Lock();
+        }
+
+        public override void Dispose()
+        {
+            if (this.Window.ActiveWidget == this)
+            {
+                this.Window.Widgets.RemoveAt(Window.Widgets.Count - 1);
+                this.Window.SetActiveWidget(Window.Widgets[Window.Widgets.Count - 1]);
+            }
+            base.Dispose();
         }
     }
 }

@@ -14,7 +14,7 @@ namespace MKEditor.Widgets
         public ContextMenu(object Parent, string Name = "contextMenu")
             : base(Parent, Name)
         {
-            this.SetZIndex(999);
+            this.SetZIndex(Window.ActiveWidget is UIManager ? 500 : (Window.ActiveWidget as Widget).ZIndex + 500);
             this.SetWidth(192);
             this.Sprites["bg"] = new RectSprite(this.Viewport);
             (this.Sprites["bg"] as RectSprite).SetColor(Color.BLACK, new Color(45, 69, 107));
@@ -25,6 +25,9 @@ namespace MKEditor.Widgets
             this.WidgetIM.OnHoverChanged += HoverChanged;
             this.WidgetIM.OnMouseMoving += MouseMoving;
             this.WidgetIM.OnMouseDown += MouseDown;
+
+            this.WindowLayer = Window.ActiveWidget.WindowLayer + 1;
+            this.Window.SetActiveWidget(this);
         }
 
         public void SetInnerColor(byte R, byte G, byte B, byte A = 255)
@@ -92,7 +95,11 @@ namespace MKEditor.Widgets
 
         public override void Dispose()
         {
-            if (this.Window.UI.OverContextMenu == this) this.Window.UI.OverContextMenu = null;
+            if (this.Window.ActiveWidget == this)
+            {
+                this.Window.Widgets.RemoveAt(Window.Widgets.Count - 1);
+                this.Window.SetActiveWidget(Window.Widgets[Window.Widgets.Count - 1]);
+            }
             base.Dispose();
         }
 
@@ -112,7 +119,6 @@ namespace MKEditor.Widgets
 
         public override void HoverChanged(object sender, MouseEventArgs e)
         {
-            this.Window.UI.OverContextMenu = this;
             base.HoverChanged(sender, e);
             this.MouseMoving(sender, e);
         }
