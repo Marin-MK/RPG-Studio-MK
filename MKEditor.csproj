@@ -67,11 +67,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GameData\Data\Species.cs" />
-    <Compile Include="GameData\Data\Type.cs" />
-    <Compile Include="GameData\Serializable.cs" />
+    <Compile Include="Editor.cs" />
+    <Compile Include="Game\Data\Species.cs" />
+    <Compile Include="Game\Data\Type.cs" />
+    <Compile Include="Game\Serializable.cs" />
     <Compile Include="Keycodes.cs" />
     <Compile Include="Margin.cs" />
+    <Compile Include="Widgets\Button.cs" />
     <Compile Include="Widgets\CheckBox.cs" />
     <Compile Include="Widgets\ColoredBox.cs" />
     <Compile Include="Widgets\ContextMenu.cs" />
@@ -81,6 +83,7 @@
     <Compile Include="Widgets\ListBox.cs" />
     <Compile Include="Widgets\StatusBar.cs" />
     <Compile Include="Widgets\ZoomControl.cs" />
+    <Compile Include="Windows\MessageBox.cs" />
     <Compile Include="Windows\MapPropertiesWindow.cs" />
     <Compile Include="Widgets\MapSelectTab.cs" />
     <Compile Include="Widgets\MenuBar.cs" />
@@ -94,12 +97,12 @@
     <Compile Include="Widgets\TextBox.cs" />
     <Compile Include="Widgets\ToolBar.cs" />
     <Compile Include="Widgets\TreeView.cs" />
-    <Compile Include="GameData\MKD\Event.cs" />
-    <Compile Include="GameData\MKD\EventCommands.cs" />
-    <Compile Include="GameData\MKD\EventConditions.cs" />
-    <Compile Include="GameData\GameData.cs" />
-    <Compile Include="GameData\MKD\Map.cs" />
-    <Compile Include="GameData\MKD\Tileset.cs" />
+    <Compile Include="Game\MKD\Event.cs" />
+    <Compile Include="Game\MKD\EventCommands.cs" />
+    <Compile Include="Game\MKD\EventConditions.cs" />
+    <Compile Include="Game\Data.cs" />
+    <Compile Include="Game\MKD\Map.cs" />
+    <Compile Include="Game\MKD\Tileset.cs" />
     <Compile Include="Widgets\CollapsibleContainer.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="Widgets\Container.cs" />
@@ -115,7 +118,8 @@
     <Compile Include="Widgets\PictureBox.cs" />
     <Compile Include="Widgets\TilesetTab.cs" />
     <Compile Include="Widgets\VStackPanel.cs" />
-    <Compile Include="Windows\WidgetWindow.cs" />
+    <Compile Include="Windows\TilesetPicker.cs" />
+    <Compile Include="Windows\MainEditorWindow.cs" />
     <Compile Include="MouseInputManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="UIManager.cs" />

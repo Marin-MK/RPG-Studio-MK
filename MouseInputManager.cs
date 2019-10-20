@@ -11,7 +11,7 @@ namespace MKEditor
     public class MouseInputManager
     {
         public readonly Widget Widget;
-        public WidgetWindow Window { get { return this.Widget.Window; } }
+        public MainEditorWindow Window { get { return this.Widget.Window; } }
 
         public EventHandler<MouseEventArgs> OnMouseMoving;
         public EventHandler<MouseEventArgs> OnMouseDown;
@@ -80,7 +80,7 @@ namespace MKEditor
 
             if (!(Widget.Window.ActiveWidget is UIManager))
             {
-                if (!(Widget.Window.ActiveWidget as Widget).WidgetIM.Hovering)
+                if (!(Widget.Window.ActiveWidget as Widget).WidgetIM.Hovering && Widget.Window.ActiveWidget is ContextMenu)
                 {
                     (Widget.Window.ActiveWidget as Widget).Dispose();
                     e.Handled = true;

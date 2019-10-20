@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using MKEditor.Game;
 using ODL;
 
 namespace MKEditor.Widgets
 {
     public class MapViewer : Widget
     {
-        public Data.Map Map;
+        public Game.Map Map;
         public TilesetTab TilesetTab;
         public LayersTab LayersTab;
         public ToolBar ToolBar;
@@ -36,7 +37,7 @@ namespace MKEditor.Widgets
         public int MapTileX = 0;
         public int MapTileY = 0;
         public Location CursorOrigin;
-        public List<Data.TileData> TileDataList = new List<Data.TileData>();
+        public List<Game.TileData> TileDataList = new List<Game.TileData>();
         public int CursorWidth = 0;
         public int CursorHeight = 0;
         public Point OriginDrawPoint;
@@ -285,13 +286,14 @@ namespace MKEditor.Widgets
             VScrollBar.SetSize(8, Size.Height - 14);
         }
 
-        public void SetMap(Data.Map Map)
+        public void SetMap(Map Map)
         {
             this.Map = Map;
+            StatusBar.SetMap(Map);
             TilesetTab.SetTilesets(Map.TilesetIDs);
             this.CreateLayerBitmaps();
             this.LayersTab.CreateLayers();
-            TilesetTab.SelectTile(new Data.TileData() { TilesetIndex = 0, TileID = 0 });
+            TilesetTab.SelectTile(new TileData() { TilesetIndex = 0, TileID = 0 });
             if (MainContainer.HScrollBar != null) MainContainer.HScrollBar.SetValue(0.5);
             if (MainContainer.VScrollBar != null) MainContainer.VScrollBar.SetValue(0.5);
         }
@@ -475,7 +477,7 @@ namespace MKEditor.Widgets
                         ToolBar.EraserButton.SetSelected(true);
                     else
                     {
-                        Data.TileData tile = Map.Layers[Layer].Tiles[MapTileIndex];
+                        TileData tile = Map.Layers[Layer].Tiles[MapTileIndex];
                         if (tile == null) ToolBar.EraserButton.SetSelected(true);
                         else TilesetTab.SelectTile(tile);
                     }
@@ -497,7 +499,7 @@ namespace MKEditor.Widgets
                                 TileDataList.Add(null);
                             else
                             {
-                                Data.TileData tile = Map.Layers[Layer].Tiles[index];
+                                TileData tile = Map.Layers[Layer].Tiles[index];
                                 TileDataList.Add(tile);
                             }
                         }
@@ -515,7 +517,7 @@ namespace MKEditor.Widgets
     public class MapImageWidget : Widget
     {
         public MapViewer MapViewer;
-        public Data.Map MapData;
+        public Map MapData;
 
         public double ZoomFactor = 1.0;
 
@@ -538,7 +540,7 @@ namespace MKEditor.Widgets
             this.ZoomFactor = factor;
         }
 
-        public void LoadLayers(Data.Map MapData)
+        public void LoadLayers(Map MapData)
         {
             this.MapData = MapData;
             this.SetSize((int) Math.Round(MapData.Width * 32 * ZoomFactor), (int) Math.Round(MapData.Height * 32 * ZoomFactor));
@@ -603,7 +605,7 @@ namespace MKEditor.Widgets
                             MapData.Layers[layer].Tiles[y * MapData.Width + x] == null) continue;
                         int tileset_index = MapData.Layers[layer].Tiles[y * MapData.Width + x].TilesetIndex;
                         int tileset_id = MapData.TilesetIDs[tileset_index];
-                        Bitmap tilesetimage = Data.GameData.Tilesets[tileset_id].TilesetBitmap;
+                        Bitmap tilesetimage = Data.Tilesets[tileset_id].TilesetBitmap;
                         int mapx = x * 32;
                         int mapy = y * 32;
                         int tile_id = MapData.Layers[layer].Tiles[y * MapData.Width + x].TileID;
@@ -707,7 +709,7 @@ namespace MKEditor.Widgets
                     if (OriginDiffY > 0) sely -= OriginDiffY;
                     if (sely < 0) sely += MapViewer.CursorHeight + 1;
                     sely %= MapViewer.CursorHeight + 1;
-                    Data.TileData tiledata = MapViewer.TileDataList[sely * (MapViewer.CursorWidth + 1) + selx];
+                    TileData tiledata = MapViewer.TileDataList[sely * (MapViewer.CursorWidth + 1) + selx];
                     int tileid = -1;
                     int tilesetindex = -1;
                     int tilesetx = -1;
@@ -726,14 +728,14 @@ namespace MKEditor.Widgets
 
                     int MapPosition = actualy * MapData.Width + actualx;
                     if (actualx < 0 || actualx >= MapData.Width || actualy < 0 || actualy >= MapData.Height) continue;
-                    Data.TileData olddata = MapData.Layers[layer].Tiles[MapPosition];
+                    TileData olddata = MapData.Layers[layer].Tiles[MapPosition];
                     if (Blank)
                     {
                         MapData.Layers[layer].Tiles[MapPosition] = null;
                     }
                     else
                     {
-                        MapData.Layers[layer].Tiles[MapPosition] = new Data.TileData
+                        MapData.Layers[layer].Tiles[MapPosition] = new TileData
                         {
                             TilesetIndex = tilesetindex,
                             TileID = tileid
@@ -747,7 +749,7 @@ namespace MKEditor.Widgets
                         {
                             this.Sprites[layer.ToString()].Bitmap.Build(
                                 actualx * 32, actualy * 32,
-                                Data.GameData.Tilesets[MapData.TilesetIDs[tilesetindex]].TilesetBitmap,
+                                Data.Tilesets[MapData.TilesetIDs[tilesetindex]].TilesetBitmap,
                                 new Rect(tilesetx * 32, tilesety * 32, 32, 32)
                             );
                         }

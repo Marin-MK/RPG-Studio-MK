@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace MKEditor.Data
+namespace MKEditor.Game
 {
-    public class Map : Serializable
+    public class Map : Serializable, ICloneable
     {
         public int ID;
-        public string Name;
+        public string DevName;
+        public string DisplayName;
         public int Width;
         public int Height;
         public List<Layer> Layers;
         public List<int> TilesetIDs;
         public Dictionary<int, Event> Events = new Dictionary<int, Event>();
+
+        // Used only for the editor to track which maps exist in the order list
+        public bool Added = false;
 
         public Map() { }
 
@@ -22,7 +23,8 @@ namespace MKEditor.Data
             : base(path)
         {
             this.ID = GetVar<int>("id");
-            this.Name = GetVar<string>("name");
+            this.DevName = GetVar<string>("name");
+            this.DisplayName = this.DevName;
             this.Width = GetVar<int>("width");
             this.Height = GetVar<int>("height");
             this.Layers = new List<Layer>();
@@ -56,9 +58,32 @@ namespace MKEditor.Data
             }
         }
 
+        public void SetSize(int width, int height)
+        {
+            this.Width = width;
+            this.Height = height;
+            this.Layers = new List<Layer>() { new Layer("Layer 1") };
+            for (int i = 0; i < width * height; i++) this.Layers[0].Tiles.Add(null);
+            this.TilesetIDs = new List<int>() { 1 };
+        }
+
         public override string ToString()
         {
-            return this.Name;
+            return this.DevName;
+        }
+
+        public object Clone()
+        {
+            Map o = new Map();
+            o.ID = this.ID;
+            o.DevName = this.DevName;
+            o.DisplayName = this.DisplayName;
+            o.Width = this.Width;
+            o.Height = this.Height;
+            o.Layers = new List<Layer>(this.Layers);
+            o.TilesetIDs = new List<int>(this.TilesetIDs);
+            o.Events = new Dictionary<int, Event>(this.Events);
+            return o;
         }
     }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MKEditor.Game;
 using ODL;
 
 namespace MKEditor.Widgets
@@ -12,7 +13,7 @@ namespace MKEditor.Widgets
         TabView TabView;
 
         Container allmapcontainer;
-        TreeView mapview;
+        public TreeView mapview;
 
         public MapSelectTab(object Parent, string Name = "mapSelectTab")
             : base(Parent, Name)
@@ -36,35 +37,76 @@ namespace MKEditor.Widgets
 
             mapview = new TreeView(allmapcontainer);
             mapview.SetWidth(212);
-            List<TreeNode> Nodes = new List<TreeNode>();
-            foreach (KeyValuePair<int, Data.Map> kvp in Data.GameData.Maps)
-            {
-                Nodes.Add(new TreeNode() { Object = kvp.Value });
-            }
-            mapview.SetNodes(Nodes);
             mapview.OnSelectedNodeChanged += delegate (object sender, MouseEventArgs e)
             {
-                SetMap(mapview.SelectedNode.Object as Data.Map);
+                SetMap(mapview.SelectedNode.Object as Game.Map);
             };
-            mapview.SetContextMenuList(new List<IMenuItem>()
+            allmapcontainer.SetContextMenuList(new List<IMenuItem>()
             {
-                new MenuItem("New Map"),
+                new MenuItem("New Map")
+                {
+                    OnLeftClick = NewMap
+                },
+                new MenuItem("Edit Map")
+                {
+                    OnLeftClick = EditMap,
+                    IsClickable = delegate (object sender, ConditionEventArgs e)
+                    {
+                        e.ConditionValue = mapview.HoveringNode != null;
+                    }
+                },
                 new MenuSeparator(),
-                new MenuItem("Edit Map") { OnLeftClick = OpenMapProperties },
-                new MenuItem("Cut"),
-                new MenuItem("Copy") { Shortcut = "Ctrl+C" },
-                new MenuItem("Paste") { Shortcut = "Ctrl+V", IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = false; } },
-                new MenuSeparator(),
-                new MenuItem("Delete") { Shortcut = "Del" }
+                new MenuItem("Delete")
+                {
+                    Shortcut = "Del",
+                    IsClickable = delegate (object sender, ConditionEventArgs e)
+                    {
+                        e.ConditionValue = mapview.HoveringNode != null;
+                    }
+                }
             });
             OnWidgetSelected += WidgetSelected;
         }
 
-        public void SetMap(Data.Map Map)
+        public List<TreeNode> PopulateList(List<object> Maps, bool first = false)
         {
-            // Changes mapviewer, layerstab and tilesettab to match the new map
+            List<TreeNode> nodes = new List<TreeNode>();
+            for (int i = (first ? 0 : 1); i < Maps.Count; i++)
+            {
+                if (Maps[i] is int)
+                {
+                    nodes.Add(new TreeNode() { Object = Data.Maps[(int) Maps[i]] });
+                    Data.Maps[(int) Maps[i]].Added = true;
+                }
+                else
+                {
+                    List<object> list = (List<object>) Maps[i];
+                    TreeNode n = new TreeNode();
+                    n.Object = Data.Maps[(int) list[0]];
+                    Data.Maps[(int) list[0]].Added = true;
+                    n.Nodes = PopulateList(list);
+                    nodes.Add(n);
+                }
+            }
+            if (first)
+            {
+                foreach (KeyValuePair<int, Map> kvp in Data.Maps)
+                {
+                    if (!kvp.Value.Added)
+                    {
+                        nodes.Add(new TreeNode() { Object = kvp.Value });
+                        kvp.Value.Added = true;
+                        Editor.ProjectSettings.MapOrder.Add(kvp.Key);
+                    }
+                }
+                mapview.SetNodes(nodes);
+            }
+            return nodes;
+        }
+
+        public void SetMap(Map Map)
+        {
             MapViewer.SetMap(Map);
-            StatusBar.SetMap(Map);
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
@@ -79,9 +121,36 @@ namespace MKEditor.Widgets
             allmapcontainer.VScrollBar.SetSize(8, Size.Height - 31);
         }
 
-        private void OpenMapProperties(object sender, MouseEventArgs e)
+        private void NewMap(object sender, MouseEventArgs e)
         {
-            MapPropertiesWindow mpw = new MapPropertiesWindow(mapview.SelectedNode.Object as Data.Map, this.Window);
+            Map Map = new Map();
+            Map.DevName = "Untitled Map";
+            Map.DisplayName = "Untitled Map";
+            Map.SetSize(15, 15);
+            MapPropertiesWindow mpw = new MapPropertiesWindow(Map, this.Window);
+            mpw.OnClosed += delegate (object _, EventArgs ev)
+            {
+                if (mpw.UpdateMapViewer)
+                {
+                    if (mapview.HoveringNode != null)
+                    {
+
+                    }
+                }
+            };
+        }
+
+        private void EditMap(object sender, MouseEventArgs e)
+        {
+            Map map = mapview.SelectedNode.Object as Map;
+            MapPropertiesWindow mpw = new MapPropertiesWindow(map, this.Window);
+            mpw.OnClosed += delegate (object _, EventArgs ev)
+            {
+                if (mpw.UpdateMapViewer)
+                {
+                    MapViewer.SetMap(map);
+                }
+            };
         }
     }
 }

@@ -8,6 +8,7 @@ namespace MKEditor.Widgets
     {
         public List<TreeNode> Nodes        { get; protected set; } = new List<TreeNode>();
         public TreeNode       SelectedNode { get; protected set; }
+        public TreeNode       HoveringNode { get; protected set; }
 
         public EventHandler<MouseEventArgs> OnSelectedNodeChanged;
 
@@ -81,6 +82,7 @@ namespace MKEditor.Widgets
             if (node.Nodes.Count > 0)
             {
                 int count = node.GetDisplayedNodeCount();
+                if (node.Nodes.Count > 0) count -= node.Nodes[node.Nodes.Count - 1].GetDisplayedNodeCount();
                 if (count > 0) Sprites["list"].Bitmap.DrawLine(x, y + 8, x, y + 8 + count * 24, new Color(64, 104, 146));
                 Utilities.DrawCollapseBox(Sprites["list"].Bitmap as Bitmap, x - 5, y + 3, node.Collapsed);
                 if (!node.Collapsed)
@@ -99,6 +101,7 @@ namespace MKEditor.Widgets
         {
             base.HoverChanged(sender, e);
             Sprites["hover"].Visible = WidgetIM.Hovering;
+            if (!WidgetIM.Hovering) HoveringNode = null;
             MouseMoving(sender, e);
         }
 
@@ -106,10 +109,21 @@ namespace MKEditor.Widgets
         {
             base.MouseMoving(sender, e);
             if (!WidgetIM.Hovering) return;
+            int rx = e.X - this.Viewport.X + Position.X - ScrolledPosition.X;
             int ry = e.Y - this.Viewport.Y + Position.Y - ScrolledPosition.Y;
             int globalindex = (int) Math.Floor(ry / 24d);
             Sprites["hover"].Visible = true;
             Sprites["hover"].Y = globalindex * 24;
+            int index = 0;
+            TreeNode OldHoveringNode = HoveringNode;
+            TreeNode n = null;
+            for (int i = 0; i < this.Nodes.Count; i++)
+            {
+                n = this.Nodes[i].FindNodeIndex(globalindex - index);
+                if (n != null) break;
+                index += this.Nodes[i].GetDisplayedNodeCount() + 1;
+            }
+            HoveringNode = n;
         }
 
         public override void MouseDown(object sender, MouseEventArgs e)
@@ -117,7 +131,7 @@ namespace MKEditor.Widgets
             base.MouseDown(sender, e);
             if (!WidgetIM.Hovering) return;
             TreeNode oldselected = this.SelectedNode;
-            if (e.LeftButton && !e.OldLeftButton)
+            if (e.LeftButton && !e.OldLeftButton || e.RightButton && !e.OldRightButton)
             {
                 int rx = e.X - this.Viewport.X + Position.X - ScrolledPosition.X;
                 int ry = e.Y - this.Viewport.Y + Position.Y - ScrolledPosition.Y;

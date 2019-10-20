@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ODL;
+using MKEditor.Game;
 
 namespace MKEditor.Widgets
 {
@@ -87,8 +88,7 @@ namespace MKEditor.Widgets
             for (int i = 0; i < TilesetIDs.Count; i++)
             {
                 int tilesetid = TilesetIDs[i];
-                Data.Tileset tileset = Data.GameData.Tilesets[tilesetid];
-                tileset.EnsureBitmap();
+                Tileset tileset = Data.Tilesets[tilesetid];
                 CollapsibleContainer c = new CollapsibleContainer(TilesetStackPanel);
                 c.SetText(tileset.Name);
                 c.SetMargin(0, 0, 0, 8);
@@ -103,7 +103,7 @@ namespace MKEditor.Widgets
             }
         }
 
-        public void SelectTile(Data.TileData tile)
+        public void SelectTile(TileData tile)
         {
             TilesetIndex = tile.TilesetIndex;
             TileStartX = TileEndX = tile.TileID % 8;
@@ -183,7 +183,7 @@ namespace MKEditor.Widgets
                     for (int x = sx; x <= ex; x++)
                     {
                         int tileid = y * 8 + x;
-                        MapViewer.TileDataList.Add(new Data.TileData() { TileID = tileid, TilesetIndex = TilesetIndex });
+                        MapViewer.TileDataList.Add(new TileData() { TileID = tileid, TilesetIndex = TilesetIndex });
                     }
                 }
                 Cursor.SetVisible(true);

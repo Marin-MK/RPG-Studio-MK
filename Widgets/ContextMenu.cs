@@ -14,7 +14,7 @@ namespace MKEditor.Widgets
         public ContextMenu(object Parent, string Name = "contextMenu")
             : base(Parent, Name)
         {
-            this.SetZIndex(Window.ActiveWidget is UIManager ? 500 : (Window.ActiveWidget as Widget).ZIndex + 500);
+            this.SetZIndex(Window.ActiveWidget is UIManager ? 9 : (Window.ActiveWidget as Widget).ZIndex + 9);
             this.SetWidth(192);
             this.Sprites["bg"] = new RectSprite(this.Viewport);
             (this.Sprites["bg"] as RectSprite).SetColor(Color.BLACK, new Color(45, 69, 107));

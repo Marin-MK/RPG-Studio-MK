@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using ODL;
+using MKEditor.Game;
 
 namespace MKEditor.Widgets
 {
     public class LayerWidget : Widget
     {
         public MapViewer MapViewer { get { return (Parent.Parent.Parent.Parent as LayersTab).MapViewer; } }
-        public List<Data.Layer> Layers { get; private set; }
+        public List<Layer> Layers { get; private set; }
         public int SelectedLayer { get; private set; }
 
         public LayerWidget(object Parent, string Name = "layerWidget")
@@ -22,7 +23,7 @@ namespace MKEditor.Widgets
             WidgetIM.OnMouseDown += MouseDown;
         }
 
-        public void SetLayers(List<Data.Layer> Layers)
+        public void SetLayers(List<Layer> Layers)
         {
             if (this.Layers != Layers)
             {

@@ -15,6 +15,8 @@ namespace MKEditor.Widgets
         public int MinValue = -999999;
         public int Increment = 1;
 
+        public EventHandler<EventArgs> OnValueChanged;
+
         public NumericBox(object Parent, string Name = "numericBox")
             : base(Parent, Name)
         {
@@ -34,6 +36,7 @@ namespace MKEditor.Widgets
             if (this.Value != Value)
             {
                 this.Value = Value;
+                if (OnValueChanged != null) OnValueChanged.Invoke(null, new EventArgs());
                 Redraw();
             }
         }

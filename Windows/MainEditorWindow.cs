@@ -1,28 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using MKEditor.Data;
+using MKEditor.Game;
 using MKEditor.Widgets;
 using ODL;
 
 namespace MKEditor
 {
-    public class WidgetWindow : Window
+    public class MainEditorWindow : Window
     {
         public UIManager UI;
         public bool Blocked = false;
         public IContainer ActiveWidget;
         public List<IContainer> Widgets = new List<IContainer>();
 
-        public WidgetWindow()
+        public MainEditorWindow()
         {
+            Editor.LoadGeneralSettings();
             Utilities.Initialize();
+            Editor.LoadProjectSettings();
 
-            GameData.Initialize("D:\\Desktop\\MK\\MK\\data");
-
-            this.SetSize(1080, 720);
+            this.SetText("MK Editor");
             this.SetMinimumSize(600, 400);
             this.Initialize();
+
+            Data.Initialize();
+
             using (Bitmap b = new Bitmap(9, 14)) // Set cursor
             {
                 Color gray = new Color(55, 51, 55);
@@ -58,7 +61,10 @@ namespace MKEditor
                 b.Lock();
                 Graphics.SetCursor(b);
             }
+
             this.UI = new UIManager(this);
+
+            // Widgets may now be created
 
             Grid layout = new Grid(this);
             layout.SetRows(
@@ -223,13 +229,14 @@ namespace MKEditor
 
             status.MapViewer = mv;
 
-            // Set initial map
-            Map map = null;
-            foreach (Map m in GameData.Maps.Values) { map = m; break; }
-            mst.SetMap(map);
 
-            // TEMP: Create map properties window
-            //new MapPropertiesWindow(map, this);
+            // Set list of maps & initial map
+            mst.PopulateList(Editor.ProjectSettings.MapOrder, true);
+            int id;
+            if (Editor.ProjectSettings.MapOrder[0] is List<object>) id = (int) ((List<object>) Editor.ProjectSettings.MapOrder[0])[0];
+            else id = (int) Editor.ProjectSettings.MapOrder[0];
+            mst.SetMap(Data.Maps[id]);
+
 
             this.OnMouseDown += UI.MouseDown;
             this.OnMousePress += UI.MousePress;
@@ -241,17 +248,31 @@ namespace MKEditor
             this.OnTick += Tick;
             this.UI.Update();
             this.Start();
+
+            if (Editor.GeneralSettings.WasMaximized) SDL2.SDL.SDL_MaximizeWindow(SDL_Window);
+            else
+            {
+                SetPosition(Editor.GeneralSettings.LastX, Editor.GeneralSettings.LastY);
+                SetSize(Editor.GeneralSettings.LastWidth, Editor.GeneralSettings.LastHeight);
+                this.UI.WindowResized(null, new WindowEventArgs(Width, Height));
+            }
         }
 
         public void SetActiveWidget(IContainer Widget)
         {
             this.ActiveWidget = Widget;
             if (!Widgets.Contains(Widget)) Widgets.Add(Widget);
+            if (Graphics.LastMouseEvent is MouseEventArgs) Graphics.LastMouseEvent.Handled = true;
         }
 
         public void SetOverlayOpacity(byte Opacity)
         {
             TopSprite.Opacity = Opacity;
+        }
+
+        public void SetOverlayZIndex(int Z)
+        {
+            TopViewport.Z = Z;
         }
 
         private void Tick(object sender, EventArgs e)

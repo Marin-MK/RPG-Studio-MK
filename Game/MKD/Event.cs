@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace MKEditor.Data
+namespace MKEditor.Game
 {
     public class Event : Serializable
     {
@@ -75,7 +72,7 @@ namespace MKEditor.Data
             : base(path)
         {
             this.Type = GetVar<string>("0", VariableType.ArrayElement);
-            bool hasparam = (bool) GameData.Exec($"!{GetPath("1", VariableType.ArrayElement)}.nil?");
+            bool hasparam = (bool) Data.Exec($"!{GetPath("1", VariableType.ArrayElement)}.nil?");
             if (hasparam)
             {
                 this.Param = GetVar<object>("1", VariableType.ArrayElement);

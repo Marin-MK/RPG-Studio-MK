@@ -10,7 +10,7 @@ namespace MKEditor.Widgets
         public Viewport                     Viewport         { get; set; }
         public Size                         Size             { get; protected set; } = new Size(50, 50);
         public Point                        Position         { get; protected set; } = new Point(0, 0);
-        public WidgetWindow                 Window           { get; protected set; }
+        public MainEditorWindow                 Window           { get; protected set; }
         public bool                         AutoResize       = false;
         public Size                         MinimumSize      { get; protected set; } = new Size(1, 1);
         public Size                         MaximumSize      { get; protected set; } = new Size(9999, 9999);
@@ -135,9 +135,9 @@ namespace MKEditor.Widgets
         public void SetParent(object Parent, int Index = -1)
         {
             if (this.Parent != null) this.Parent.Remove(this);
-            if (Parent is WidgetWindow)
+            if (Parent is MainEditorWindow)
             {
-                this.Window = Parent as WidgetWindow;
+                this.Window = Parent as MainEditorWindow;
                 this.Parent = this.Window.UI;
             }
             else if (Parent is UIManager)
@@ -173,7 +173,7 @@ namespace MKEditor.Widgets
 
         public object GetParentWindow()
         {
-            if (Parent is PopupWindow || Parent is WidgetWindow) return Parent;
+            if (Parent is PopupWindow || Parent is MainEditorWindow) return Parent;
             else if (Parent is UIManager) return Window;
             else return (Parent as Widget).GetParentWindow();
         }

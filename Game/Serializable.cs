@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using MKEditor.Data;
 
-namespace MKEditor.Data
+namespace MKEditor.Game
 {
     public class Serializable
     {
@@ -18,7 +17,7 @@ namespace MKEditor.Data
 
         public dynamic Exec(string Code)
         {
-            return GameData.Exec(Code);
+            return Data.Exec(Code);
         }
 
         public string GetPath(string Variable, VariableType VarType = VariableType.Normal)
@@ -33,13 +32,13 @@ namespace MKEditor.Data
 
         public bool Nil(string Variable, VariableType VarType = VariableType.Normal)
         {
-            return GameData.Exec($"{GetPath(Variable, VarType)}.nil?");
+            return Data.Exec($"{GetPath(Variable, VarType)}.nil?");
         }
 
         public dynamic GetVar<T>(string Variable, VariableType VarType = VariableType.Normal)
         {
             if (Nil(Variable, VarType)) return null;
-            dynamic obj = GameData.Exec(GetPath(Variable, VarType));
+            dynamic obj = Data.Exec(GetPath(Variable, VarType));
             System.Type type = typeof(T);
             if (type == typeof(string))
             {
@@ -109,7 +108,7 @@ namespace MKEditor.Data
         public List<T> GetKeys<T>(string Variable, VariableType VarType = VariableType.Normal)
         {
             System.Type type = typeof(T);
-            object[] _obj = GameData.Exec($"{GetPath(Variable, VarType)}.keys").ToArray();
+            object[] _obj = Data.Exec($"{GetPath(Variable, VarType)}.keys").ToArray();
             if (type == typeof(string))
             {
                 List<string> obj = new List<string>(Array.ConvertAll(_obj, x =>
@@ -130,7 +129,7 @@ namespace MKEditor.Data
 
         public int GetCount(string Variable, VariableType VarType = VariableType.Normal)
         {
-            return GameData.Exec(GetPath(Variable, VarType)).ToArray().Length;
+            return Data.Exec(GetPath(Variable, VarType)).ToArray().Length;
         }
     }
 

@@ -13,6 +13,8 @@ namespace MKEditor.Widgets
 
         TextEntryField TextEntryField;
 
+        public EventHandler<EventArgs> OnTextChanged;
+
         public TextBox(object Parent, string Name = "textBox")
             : base(Parent, Name)
         {
@@ -24,6 +26,7 @@ namespace MKEditor.Widgets
         public void SetText(string Text)
         {
             TextEntryField.SetText(Text);
+            if (OnTextChanged != null) OnTextChanged.Invoke(null, new EventArgs());
         }
 
         public void SetCaretIndex(int Index)
@@ -269,6 +272,7 @@ namespace MKEditor.Widgets
             {
                 Redraw();
             }
+            if ((Parent as TextBox).OnTextChanged != null) (Parent as TextBox).OnTextChanged.Invoke(null, new EventArgs());
         }
 
         private void UpdateSelection()

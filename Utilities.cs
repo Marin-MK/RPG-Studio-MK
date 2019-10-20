@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using ODL;
 using static SDL2.SDL;
@@ -7,6 +8,8 @@ namespace MKEditor
 {
     public static class Utilities
     {
+        public static string InstalledPath = "D:\\Desktop\\MK\\editor\\bin\\Debug";
+
         public static string GetRubyRequirements()
         {
             return @"
@@ -140,6 +143,17 @@ end
             }
         }
 
+        public static void Swap<T>(this List<T> List, int Index1, int Index2)
+        {
+            if (Index1 == Index2) return;
+            int min = Index1 > Index2 ? Index2 : Index1;
+            int max = Index1 > Index2 ? Index1 : Index2;
+            List.Insert(min, List[max]);
+            List.Insert(max + 1, List[min + 1]);
+            List.RemoveAt(min + 1);
+            List.RemoveAt(max + 1);
+        }
+
         public static string Digits(int Number, int Digits)
         {
             string num = Number.ToString();
@@ -154,6 +168,7 @@ end
         
         public static void Initialize()
         {
+            System.IO.Directory.SetCurrentDirectory(InstalledPath);
             IconSheet = new Bitmap("icons.png");
         }
     }

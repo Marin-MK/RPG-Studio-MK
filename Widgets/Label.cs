@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ODL;
 
 namespace MKEditor.Widgets
@@ -14,6 +15,7 @@ namespace MKEditor.Widgets
             : base(Parent, Name)
         {
             Sprites["text"] = new Sprite(this.Viewport);
+            this.Font = Font.Get("Fonts/ProductSans-M", 12);
         }
 
         public void SetText(string Text)
@@ -21,6 +23,10 @@ namespace MKEditor.Widgets
             if (this.Text != Text)
             {
                 this.Text = Text;
+                while (this.Text.Contains("\r"))
+                {
+                    this.Text = this.Text.Replace("\r", "");
+                }
                 Redraw();
             }
         }
@@ -63,6 +69,69 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap.DrawText(this.Text, this.TextColor);
             Sprites["text"].Bitmap.Lock();
             base.Draw();
+        }
+    }
+
+    public class MultilineLabel : Label
+    {
+        public MultilineLabel(object Parent, string Name = "multilineLabel")
+            : base(Parent, Name)
+        {
+            
+        }
+
+        protected override void Draw()
+        {
+            List<string> Words = new List<string>();
+            foreach (string word in this.Text.Split(' '))
+            {
+                if (word.Contains("\n"))
+                {
+                    List<string> splits = new List<string>(word.Split('\n'));
+                    for (int i = 0; i < splits.Count; i++)
+                    {
+                        Words.Add(splits[i]);
+                        if (i != splits.Count - 1) Words.Add("\n");
+                    }
+                }
+                else
+                {
+                    Words.Add(word);
+                }
+            }
+            List<string> Lines = new List<string>() { "" };
+            int width = Size.Width;
+            for (int i = 0; i < Words.Count; i++)
+            {
+                if (Words[i] == "\n")
+                {
+                    if (Lines[Lines.Count - 1].Length > 0) Lines[Lines.Count - 1] = Lines[Lines.Count - 1].Remove(Lines[Lines.Count - 1].Length - 1);
+                    Lines.Add("");
+                    continue;
+                }
+                string text = Lines[Lines.Count - 1] + Words[i];
+                Size s = Font.TextSize(text);
+                if (s.Width >= width)
+                {
+                    if (Lines[Lines.Count - 1].Length > 0) Lines[Lines.Count - 1] = Lines[Lines.Count - 1].Remove(Lines[Lines.Count - 1].Length - 1);
+                    Lines.Add(Words[i] + " ");
+                }
+                else
+                {
+                    Lines[Lines.Count - 1] += Words[i] + " ";
+                }
+            }
+            if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
+            SetSize(Size.Width, (Font.Size + 2) * Lines.Count);
+            Sprites["text"].Bitmap = new Bitmap(Size);
+            Sprites["text"].Bitmap.Unlock();
+            Sprites["text"].Bitmap.Font = this.Font;
+            for (int i = 0; i < Lines.Count; i++)
+            {
+                Sprites["text"].Bitmap.DrawText(Lines[i], 0, (Font.Size + 2) * i, Color.WHITE);
+            }
+            Sprites["text"].Bitmap.Lock();
+            this.Drawn = true;
         }
     }
 }

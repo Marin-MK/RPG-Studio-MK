@@ -6,26 +6,44 @@ using System.Threading.Tasks;
 using IronRuby;
 using Microsoft.Scripting.Hosting;
 
-namespace MKEditor.Data
+namespace MKEditor.Game
 {
-    public static class GameData
+    public static class Data
     {
-        public static ScriptEngine Engine;
+        public static string ProjectPath;
         public static string DataPath;
+
+        public static ScriptEngine Engine;
         public static Dictionary<int, Map> Maps = new Dictionary<int, Map>();
         public static List<Tileset> Tilesets = new List<Tileset>();
         public static Dictionary<string, Species> Species = new Dictionary<string, Species>();
 
-        public static void Initialize(string DataPath)
+        public static void Initialize()
         {
-            while (DataPath.Contains('\\')) DataPath = DataPath.Replace('\\', '/');
-            GameData.DataPath = DataPath;
             Engine = Ruby.CreateEngine();
             Engine.Execute(Utilities.GetRubyRequirements());
             LoadSpecies();
             LoadTilesets();
             LoadMaps(); // TODO: Event commands/conditions
             // TODO: Map Connections
+        }
+
+        public static void SetProjectPath(string ProjectFilePath)
+        {
+            string path = ProjectFilePath;
+            while (path.Contains("\\")) path = path.Replace('\\', '/');
+            List<string> splits = new List<string>(path.Split('/'));
+            string projectfile = splits[splits.Count - 1];
+            splits.RemoveAt(splits.Count - 1);
+            path = "";
+            for (int i = 0; i < splits.Count; i++)
+            {
+                path += splits[i];
+                if (i != splits.Count - 1) path += "/";
+            }
+            ProjectPath = path;
+            DataPath = path + "/data";
+            Editor.ProjectFilePath = path + "/" + projectfile;
         }
 
         public static void LoadFile(string Filename, string GlobalVar)

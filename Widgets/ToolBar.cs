@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ODL;
+using MKEditor.Game;
 
 namespace MKEditor.Widgets
 {
@@ -124,7 +125,7 @@ namespace MKEditor.Widgets
             {
                 TilesetTab.Cursor.SetPosition(0, 0);
                 TilesetTab.Cursor.SetVisible(false);
-                MapViewer.TileDataList = new List<Data.TileData>() { null };
+                MapViewer.TileDataList = new List<TileData>() { null };
                 MapViewer.CursorWidth = 0;
                 MapViewer.CursorHeight = 0;
                 TilesetTab.UpdateCursorPosition();

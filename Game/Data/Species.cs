@@ -1,11 +1,7 @@
-﻿using Microsoft.Scripting.Hosting;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace MKEditor.Data
+namespace MKEditor.Game
 {
     public class Species : Serializable
     {
@@ -113,7 +109,7 @@ namespace MKEditor.Data
             List<int> levelkeys = GetKeys<int>("level", VariableType.Struct);
             foreach (int key in levelkeys)
             {
-                bool array = GameData.Exec($"{GetPath("level", VariableType.Struct)}[{key}].is_a?(Array)");
+                bool array = Data.Exec($"{GetPath("level", VariableType.Struct)}[{key}].is_a?(Array)");
                 object value;
                 if (array)
                 {
@@ -143,7 +139,7 @@ namespace MKEditor.Data
         {
             this.Mode = GetVar<string>("mode", VariableType.HashSymbol);
             this.Species = GetVar<string>("species", VariableType.HashSymbol);
-            bool num = GameData.Exec($"{GetPath("argument", VariableType.HashSymbol)}.is_a?(Integer)");
+            bool num = Data.Exec($"{GetPath("argument", VariableType.HashSymbol)}.is_a?(Integer)");
             if (num)
             {
                 this.Argument = GetVar<int>("argument", VariableType.HashSymbol);

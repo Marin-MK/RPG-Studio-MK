@@ -7,13 +7,16 @@ namespace MKEditor.Widgets
     public class ListBox : Widget
     {
         public List<ListItem> Items = new List<ListItem>();
-        public int SelectedIndex = -1;
+        public int SelectedIndex { get { return ListDrawer.SelectedIndex; } }
         public string ButtonText;
+        public bool HasButton { get { return ButtonText != null; } }
 
         public ListItem SelectedItem { get { return SelectedIndex == -1 ? null : Items[SelectedIndex]; } }
 
         public Container MainContainer;
         public ListDrawer ListDrawer;
+
+        public EventHandler<EventArgs> OnSelectionChanged;
 
         public ListBox(object Parent, string Name = "listBox")
             : base(Parent, Name)
@@ -70,6 +73,28 @@ namespace MKEditor.Widgets
             ListDrawer.SetWidth(MainContainer.Size.Width);
             MainContainer.VScrollBar.SetSize(8, Size.Height - 4);
         }
+
+        public void SetSelectedIndex(int idx)
+        {
+            ListDrawer.SelectedIndex = idx;
+            if (idx == -1)
+            {
+                ListDrawer.Sprites["selection"].Visible = false;
+            }
+            else
+            {
+                ListDrawer.Sprites["selection"].Visible = true;
+                ListDrawer.Sprites["selection"].Y = 20 * idx;
+            }
+            if (OnSelectionChanged != null) OnSelectionChanged.Invoke(null, new EventArgs());
+        }
+
+        protected override void Draw()
+        {
+            ListDrawer.SetSize(ListDrawer.Size.Width, 20 * (Items.Count + 1));
+            ListDrawer.ForceRedraw();
+            base.Draw();
+        }
     }
 
     public class ListItem
@@ -97,11 +122,15 @@ namespace MKEditor.Widgets
     public class ListDrawer : Widget
     {
         public EventHandler<EventArgs> OnButtonClicked;
+        bool HasButton { get { return (Parent.Parent as ListBox).HasButton; } }
         private bool HoveringButton = false;
+        public int SelectedIndex = -1;
 
         public ListDrawer(object Parent, string Name = "listDrawer")
             : base(Parent, Name)
         {
+            Sprites["selection"] = new Sprite(this.Viewport, new SolidBitmap(Size.Width, 20, new Color(28, 50, 73)));
+            Sprites["selection"].Visible = false;
             Sprites["text"] = new Sprite(this.Viewport);
             Sprites["hover"] = new Sprite(this.Viewport, new SolidBitmap(2, 20, new Color(59, 227, 255)));
             Sprites["hover"].Visible = false;
@@ -110,6 +139,18 @@ namespace MKEditor.Widgets
             WidgetIM.OnMouseDown += MouseDown;
             Sprites["btn"] = new Sprite(this.Viewport);
             Sprites["btn"].X = 7;
+        }
+
+        public override void SizeChanged(object sender, SizeEventArgs e)
+        {
+            base.SizeChanged(sender, e);
+            (Sprites["selection"].Bitmap as SolidBitmap).SetSize(Size.Width, 20);
+        }
+
+        public void ForceRedraw()
+        {
+            this.Draw();
+            MouseMoving(null, Graphics.LastMouseEvent);
         }
 
         public void RedrawButton()
@@ -153,10 +194,10 @@ namespace MKEditor.Widgets
             int rx = e.X - Viewport.X;
             int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
             int index = (int) Math.Floor(ry / 20d);
+            if (!HasButton && index == (Parent.Parent as ListBox).Items.Count) return;
             Sprites["hover"].Visible = false;
             bool OldHover = HoveringButton;
             HoveringButton = false;
-            (Parent.Parent as ListBox).SelectedIndex = -1;
             if (!WidgetIM.Hovering) { }
             else if (index == (Parent.Parent as ListBox).Items.Count) // Hovering over button
             {
@@ -166,7 +207,6 @@ namespace MKEditor.Widgets
             {
                 Sprites["hover"].Visible = true;
                 Sprites["hover"].Y = index * 20;
-                (Parent.Parent as ListBox).SelectedIndex = index;
             }
             if (OldHover != HoveringButton) RedrawButton();
         }
@@ -180,7 +220,21 @@ namespace MKEditor.Widgets
         public override void MouseDown(object sender, MouseEventArgs e)
         {
             base.MouseDown(sender, e);
-            if (HoveringButton && OnButtonClicked != null) OnButtonClicked.Invoke(sender, e);
+            if (!WidgetIM.Hovering) return;
+            if (HoveringButton)
+            {
+                Sprites["selection"].Visible = false;
+                SelectedIndex = -1;
+                if (OnButtonClicked != null) OnButtonClicked.Invoke(sender, e);
+                if ((Parent.Parent as ListBox).OnSelectionChanged != null) (Parent.Parent as ListBox).OnSelectionChanged.Invoke(null, new EventArgs());
+            }
+            else if (Sprites["hover"].Visible)
+            {
+                Sprites["selection"].Y = Sprites["hover"].Y;
+                Sprites["selection"].Visible = true;
+                SelectedIndex = Sprites["hover"].Y / 20;
+                if ((Parent.Parent as ListBox).OnSelectionChanged != null) (Parent.Parent as ListBox).OnSelectionChanged.Invoke(null, new EventArgs());
+            }
         }
     }
 }

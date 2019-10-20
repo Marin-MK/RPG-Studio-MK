@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using ODL;
 
-namespace MKEditor.Data
+namespace MKEditor.Game
 {
     public class Tileset : Serializable
     {
@@ -53,15 +53,16 @@ namespace MKEditor.Data
             this.Passabilities.AddRange(new Passability[maxcount - Passabilities.Count]);
             this.Priorities.AddRange(new int?[maxcount - Priorities.Count]);
             this.Tags.AddRange(new int?[maxcount - Tags.Count]);
+            this.CreateBitmap();
         }
 
-        public void EnsureBitmap(bool Redraw = false)
+        public void CreateBitmap(bool Redraw = false)
         {
             if (this.TilesetBitmap == null || Redraw)
             {
                 if (this.TilesetBitmap != null) this.TilesetBitmap.Dispose();
                 
-                string GfxFolder = Directory.GetParent(GameData.DataPath).FullName + "\\gfx";
+                string GfxFolder = Directory.GetParent(Data.DataPath).FullName + "\\gfx";
                 Bitmap bmp = new Bitmap($"{GfxFolder}\\tilesets\\{this.GraphicName}.png");
                 this.TilesetBitmap = bmp;
                 int tileycount = (int) Math.Floor(bmp.Height / 32d);
@@ -80,28 +81,9 @@ namespace MKEditor.Data
             }
         }
 
-        public static Tileset GetTileset()
+        public override string ToString()
         {
-            Tileset t = new Tileset();
-            t.Name = "Common";
-            t.GraphicName = "common";
-            t.Passabilities = new List<Passability>()
-            {
-                Passability.All, Passability.All, Passability.All, Passability.All, Passability.All, Passability.All, Passability.All, Passability.All,
-                Passability.All, Passability.All, Passability.All, Passability.All, Passability.All, Passability.None, Passability.None, Passability.None,
-                Passability.None, Passability.None, Passability.None, Passability.None, Passability.All, Passability.All, Passability.None, Passability.None,
-                Passability.None, Passability.None, Passability.None, Passability.None, Passability.None, Passability.None, Passability.All, Passability.All,
-                Passability.None, Passability.None, Passability.None, Passability.None, Passability.None, Passability.None, Passability.All, Passability.None,
-                Passability.None, Passability.None, Passability.None, Passability.None, Passability.All, Passability.All, Passability.All, Passability.None,
-                Passability.None, Passability.All, Passability.All, Passability.None, Passability.All, Passability.None, Passability.None, Passability.None,
-                Passability.None, Passability.All, Passability.All, Passability.None, Passability.All, Passability.All, Passability.None, Passability.None
-            };
-            t.Priorities = new List<int?>();
-            t.Tags = new List<int?>();
-
-            t.EnsureBitmap();
-
-            return t;
+            return this.Name;
         }
     }
 }

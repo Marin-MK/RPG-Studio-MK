@@ -8,39 +8,27 @@ namespace MKEditor.Widgets
         public bool Blocked = false;
         public string DisplayName { get; protected set; }
 
+        public EventHandler<EventArgs> OnClosed;
+
         public PopupWindow(object Parent, string Name = "popupWindow")
             : base(Parent, Name)
         {
             Window.SetOverlayOpacity(128);
-            // The black overlay over the main window has its own viewport with z = 1000.
-            // So we have to go one higher to make it ignore this window in the overlay darkening.
-            this.SetZIndex(1001);
             Sprites["window"] = new RectSprite(this.Viewport, new Size(this.Size.Width - 14, this.Size.Height - 14),
                 new Color(59, 227, 255), new Color(40, 62, 84));
-            Sprites["shadow_bottom"] = new Sprite(this.Viewport, new SolidBitmap(new Size(this.Size.Width - 14, 14), new Color(0, 0, 0, 55)));
-            Sprites["shadow_bottom"].X = 14;
-            Sprites["shadow_bottom"].Y = this.Size.Height - 14;
-            Sprites["shadow_right"] = new Sprite(this.Viewport, new SolidBitmap(new Size(14, this.Size.Height - 28), new Color(0, 0, 0, 55)));
-            Sprites["shadow_right"].X = this.Size.Width - 14;
-            Sprites["shadow_right"].Y = 14;
             Sprites["name"] = new Sprite(this.Viewport);
             Sprites["name"].X = 5;
             Sprites["name"].Y = 3;
             this.WindowLayer = Window.ActiveWidget.WindowLayer + 1;
             this.Window.SetActiveWidget(this);
-
+            Window.SetOverlayZIndex(WindowLayer * 10 - 1);
+            this.SetZIndex(WindowLayer * 10);
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            (Sprites["window"] as RectSprite).SetSize(this.Size.Width - 14, this.Size.Height - 14);
-            
-            (Sprites["shadow_bottom"].Bitmap as SolidBitmap).SetSize(this.Size.Width - 14, 14);
-            Sprites["shadow_bottom"].Y = this.Size.Height - 14;
-            
-            (Sprites["shadow_right"].Bitmap as SolidBitmap).SetSize(14, this.Size.Height - 28);
-            Sprites["shadow_right"].X = this.Size.Width - 14;
+            (Sprites["window"] as RectSprite).SetSize(this.Size.Width, this.Size.Height);
         }
 
         public override void ParentSizeChanged(object sender, SizeEventArgs e)
@@ -53,7 +41,7 @@ namespace MKEditor.Widgets
         {
             int width = Window.Width;
             int height = Window.Height;
-            this.SetPosition(width / 2 - (this.Size.Width - 14) / 2, height / 2 - (this.Size.Height - 14) / 2);
+            this.SetPosition(width / 2 - (this.Size.Width) / 2, height / 2 - (this.Size.Height) / 2);
         }
 
         public void SetName(string Name)
@@ -69,12 +57,33 @@ namespace MKEditor.Widgets
             Sprites["name"].Bitmap.Lock();
         }
 
+        public void Close()
+        {
+            Dispose();
+            if (OnClosed != null) OnClosed.Invoke(null, new EventArgs());
+        }
+
         public override void Dispose()
         {
             if (this.Window.ActiveWidget == this)
             {
+                // Remove current widget/window
                 this.Window.Widgets.RemoveAt(Window.Widgets.Count - 1);
-                this.Window.SetActiveWidget(Window.Widgets[Window.Widgets.Count - 1]);
+                // Set the last (undisposed) widget as active
+                for (int i = 0; i < Window.Widgets.Count; i++)
+                {
+                    IContainer widget = Window.Widgets[Window.Widgets.Count - i - 1];
+                    if (widget is Widget && (widget as Widget).Disposed)
+                    {
+                        Window.Widgets.RemoveAt(Window.Widgets.Count - i - 1);
+                        i--;
+                        continue;
+                    }
+                    Window.SetActiveWidget(widget);
+                    break;
+                }
+                // Update overlay Z
+                Window.SetOverlayZIndex(Window.ActiveWidget.WindowLayer * 10 - 1);
             }
             base.Dispose();
         }

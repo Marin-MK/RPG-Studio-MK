@@ -1,16 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using ODL;
+using MKEditor.Game;
 
 namespace MKEditor.Widgets
 {
     public class MapPropertiesWindow : PopupWindow
     {
-        public MapPropertiesWindow(Data.Map Map, object Parent, string Name = "mapPropertiesWindow")
+        public Map Map;
+        public Map Clone;
+
+        public bool UpdateMapViewer = false;
+
+        TextBox MapName;
+        TextBox DisplayName;
+        NumericBox Width;
+        NumericBox Height;
+        ListBox Tilesets;
+        ListBox Autotiles;
+
+        Button OKButton;
+        Button CancelButton;
+
+        public MapPropertiesWindow(Map Map, object Parent, string Name = "mapPropertiesWindow")
             : base(Parent, Name)
         {
-            this.SetName($"Map Properties - {Utilities.Digits(Map.ID, 3)}: {Map.Name}");
-            this.SetSize(540, 524);
+            this.Map = Map;
+            this.Clone = this.Map.Clone() as Map;
+            this.SetName($"Map Properties - {Utilities.Digits(Map.ID, 3)}: {Map.DevName}");
+            this.SetSize(540, 460);
             this.Center();
             Label settings = new Label(this);
             settings.SetText("Info");
@@ -24,42 +42,62 @@ namespace MKEditor.Widgets
             Font f = Font.Get("Fonts/ProductSans-M", 12);
 
             Label namelabel = new Label(box1);
-            namelabel.SetText("Map Name:");
+            namelabel.SetText("Working Name:");
             namelabel.SetFont(f);
             namelabel.SetPosition(7, 6);
-            TextBox mapname = new TextBox(box1);
-            mapname.SetPosition(6, 22);
-            mapname.SetSize(136, 27);
+            MapName = new TextBox(box1);
+            MapName.SetPosition(6, 22);
+            MapName.SetSize(136, 27);
+            MapName.SetText(Map.DevName);
+            MapName.OnTextChanged += delegate (object sender, EventArgs e)
+            {
+                this.Map.DevName = MapName.Text;
+            };
 
             Label displaynamelabel = new Label(box1);
-            displaynamelabel.SetText("Display Name:");
+            displaynamelabel.SetText("In-game Name:");
             displaynamelabel.SetFont(f);
             displaynamelabel.SetPosition(7, 52);
-            TextBox displayname = new TextBox(box1);
-            displayname.SetPosition(6, 68);
-            displayname.SetSize(136, 27);
+            DisplayName = new TextBox(box1);
+            DisplayName.SetPosition(6, 68);
+            DisplayName.SetSize(136, 27);
+            DisplayName.SetText(Map.DisplayName);
+            DisplayName.OnTextChanged += delegate (object sender, EventArgs e)
+            {
+                this.Map.DisplayName = DisplayName.Text;
+            };
 
             Label widthlabel = new Label(box1);
             widthlabel.SetText("Width:");
             widthlabel.SetFont(f);
             widthlabel.SetPosition(7, 99);
-            NumericBox width = new NumericBox(box1);
-            width.SetPosition(6, 115);
-            width.MinValue = 1;
-            width.MaxValue = 255;
-            width.SetSize(66, 27);
+            Width = new NumericBox(box1);
+            Width.SetPosition(6, 115);
+            Width.MinValue = 1;
+            Width.MaxValue = 255;
+            Width.SetSize(66, 27);
+            Width.SetValue(this.Map.Width);
+            Width.OnValueChanged += delegate (object sender, EventArgs e)
+            {
+                this.Map.Width = Width.Value;
+            };
 
             Label heightlabel = new Label(box1);
             heightlabel.SetText("Height:");
             heightlabel.SetFont(f);
             heightlabel.SetPosition(78, 99);
-            NumericBox height = new NumericBox(box1);
-            height.SetPosition(77, 115);
-            height.MinValue = 1;
-            height.MaxValue = 255;
-            height.SetSize(66, 27);
+            Height = new NumericBox(box1);
+            Height.SetPosition(77, 115);
+            Height.MinValue = 1;
+            Height.MaxValue = 255;
+            Height.SetSize(66, 27);
+            Height.SetValue(this.Map.Height);
+            Height.OnValueChanged += delegate (object sender, EventArgs e)
+            {
+                this.Map.Height = Height.Value;
+            };
 
-            ListBox Tilesets = new ListBox(box1);
+            Tilesets = new ListBox(box1);
             Tilesets.SetPosition(162, 22);
             Tilesets.SetItems(new List<ListItem>()
             {
@@ -76,13 +114,42 @@ namespace MKEditor.Widgets
                 new ListItem("Objects"),
                 new ListItem("Misc.")
             });
+            List<ListItem> items = new List<ListItem>();
+            for (int i = 0; i < this.Map.TilesetIDs.Count; i++)
+            {
+                int id = this.Map.TilesetIDs[i];
+                Tileset tileset = Data.Tilesets[id];
+                items.Add(new ListItem(tileset));
+            }
+            Tilesets.SetItems(items);
             Tilesets.SetButtonText("Add Tileset");
             Tilesets.ListDrawer.SetContextMenuList(new List<IMenuItem>()
             {
-                new MenuItem("Move Tileset Up") { OnLeftClick = MoveTilesetUp },
-                new MenuItem("Move Tileset Down") { OnLeftClick = MoveTilesetDown },
+                new MenuItem("Move Tileset Up")
+                {
+                    IsClickable = delegate (object sender, ConditionEventArgs e)
+                    {
+                        e.ConditionValue = Tilesets.SelectedIndex > 0;
+                    },
+                    OnLeftClick = MoveTilesetUp
+                },
+                new MenuItem("Move Tileset Down")
+                {
+                    IsClickable = delegate (object sender, ConditionEventArgs e)
+                    {
+                        e.ConditionValue = Tilesets.SelectedIndex < Tilesets.Items.Count - 1;
+                    },
+                    OnLeftClick = MoveTilesetDown
+                },
                 new MenuSeparator(),
-                new MenuItem("Remove Tileset") { OnLeftClick = RemoveTileset }
+                new MenuItem("Remove Tileset")
+                {
+                    IsClickable = delegate (object sender, ConditionEventArgs e)
+                    {
+                        e.ConditionValue = Tilesets.Items.Count > 1;
+                    },
+                    OnLeftClick = RemoveTileset
+                }
             });
             // Makes it so you can right click on the whole widget, except for the last 20 pixels (which is the button)
             Tilesets.ListDrawer.OnContextMenuOpening += delegate (object sender, CancelEventArgs e)
@@ -96,7 +163,7 @@ namespace MKEditor.Widgets
             tilesetslabel.SetFont(f);
             tilesetslabel.SetPosition(163, 6);
 
-            ListBox Autotiles = new ListBox(box1);
+            Autotiles = new ListBox(box1);
             Autotiles.SetPosition(312, 22);
             Autotiles.SetItems(new List<ListItem>()
             {
@@ -106,10 +173,31 @@ namespace MKEditor.Widgets
             Autotiles.SetButtonText("Add Autotile");
             Autotiles.ListDrawer.SetContextMenuList(new List<IMenuItem>()
             {
-                new MenuItem("Move Autotile Up") { OnLeftClick = MoveAutotileUp },
-                new MenuItem("Move Autotile Down") { OnLeftClick = MoveAutotileDown },
+                new MenuItem("Move Autotile Up")
+                {
+                    IsClickable = delegate (object sender, ConditionEventArgs e)
+                    {
+                        e.ConditionValue = Autotiles.SelectedIndex > 0;
+                    },
+                    OnLeftClick = MoveAutotileUp
+                },
+                new MenuItem("Move Autotile Down")
+                {
+                    IsClickable = delegate (object sender, ConditionEventArgs e)
+                    {
+                        e.ConditionValue = Autotiles.SelectedIndex < Autotiles.Items.Count - 1;
+                    },
+                    OnLeftClick = MoveAutotileDown
+                },
                 new MenuSeparator(),
-                new MenuItem("Remove Autotile") { OnLeftClick = RemoveAutotile }
+                new MenuItem("Remove Autotile")
+                {
+                    IsClickable = delegate (object sender, ConditionEventArgs e)
+                    {
+                        e.ConditionValue = Autotiles.Items.Count > 1;
+                    },
+                    OnLeftClick = RemoveAutotile
+                }
             });
             // Makes it so you can right click on the whole widget, except for the last 20 pixels (which is the button)
             Autotiles.ListDrawer.OnContextMenuOpening += delegate (object sender, CancelEventArgs e)
@@ -122,26 +210,61 @@ namespace MKEditor.Widgets
             autotileslabel.SetText("Autotiles:");
             autotileslabel.SetFont(f);
             autotileslabel.SetPosition(313, 6);
+
+            OKButton = new Button(this);
+            OKButton.SetText("OK");
+            OKButton.SetPosition(359, 421);
+            OKButton.OnClicked += OK;
+
+            CancelButton = new Button(this);
+            CancelButton.SetText("Cancel");
+            CancelButton.SetPosition(448, 421);
+            CancelButton.OnClicked += Cancel;
         }
 
         public void AddTileset(object sender, EventArgs e)
         {
-            Console.WriteLine("Add Tileset");
+            TilesetPicker picker = new TilesetPicker(this.Map, Window);
+            picker.OnClosed += delegate (object _, EventArgs ev)
+            {
+                if (picker.ChosenTilesetID != -1)
+                {
+                    this.Map.TilesetIDs.Add(picker.ChosenTilesetID);
+                    this.Tilesets.Items.Add(new ListItem(Data.Tilesets[picker.ChosenTilesetID]));
+                    this.Tilesets.Redraw();
+                }
+            };
         }
 
         public void MoveTilesetUp(object sender, EventArgs e)
         {
-            Console.WriteLine("Move Tileset Up");
+            if (Tilesets.SelectedIndex > 0)
+            {
+                Tilesets.Items.Swap(Tilesets.SelectedIndex - 1, Tilesets.SelectedIndex);
+                Map.TilesetIDs.Swap(Tilesets.SelectedIndex - 1, Tilesets.SelectedIndex);
+                Tilesets.Redraw();
+            }
         }
 
         public void MoveTilesetDown(object sender, EventArgs e)
         {
-            Console.WriteLine("Move Tileset Down");
+            if (Tilesets.SelectedIndex < Tilesets.Items.Count - 1)
+            {
+                Tilesets.Items.Swap(Tilesets.SelectedIndex + 1, Tilesets.SelectedIndex);
+                Map.TilesetIDs.Swap(Tilesets.SelectedIndex + 1, Tilesets.SelectedIndex);
+                Tilesets.Redraw();
+            }
         }
 
         public void RemoveTileset(object sender, EventArgs e)
         {
-            Console.WriteLine("Remove Tileset");
+            if (Tilesets.Items.Count > 1)
+            {
+                Tilesets.Items.RemoveAt(Tilesets.SelectedIndex);
+                Map.TilesetIDs.RemoveAt(Tilesets.SelectedIndex);
+                Tilesets.SetSelectedIndex(-1);
+                Tilesets.Redraw();
+            }
         }
 
         public void AddAutotile(object sender, EventArgs e)
@@ -151,17 +274,97 @@ namespace MKEditor.Widgets
 
         public void MoveAutotileUp(object sender, EventArgs e)
         {
-            Console.WriteLine("Move Autotile Up");
+            if (Autotiles.SelectedIndex > 0)
+            {
+                Autotiles.Items.Swap(Autotiles.SelectedIndex - 1, Autotiles.SelectedIndex);
+                // to do: swap map autotiles
+                Autotiles.Redraw();
+            }
         }
 
         public void MoveAutotileDown(object sender, EventArgs e)
         {
-            Console.WriteLine("Move Autotile Down");
+            if (Autotiles.SelectedIndex < Autotiles.Items.Count - 1)
+            {
+                Autotiles.Items.Swap(Autotiles.SelectedIndex + 1, Autotiles.SelectedIndex);
+                // to do: swap map autotiles
+                Autotiles.Redraw();
+            }
         }
 
         public void RemoveAutotile(object sender, EventArgs e)
         {
-            Console.WriteLine("Remove Autotile");
+            if (Autotiles.Items.Count > 1)
+            {
+                Autotiles.Items.RemoveAt(Autotiles.SelectedIndex);
+                // to do: remove map autotile
+                Autotiles.SetSelectedIndex(-1);
+                Autotiles.Redraw();
+            }
+        }
+
+        public void OK(object sender, EventArgs e)
+        {
+            this.UpdateMapViewer = true;
+            if (Map.Width != Clone.Width || Map.Height != Clone.Height)
+            {
+                int diffw = Map.Width - Clone.Width;
+                bool diffwneg = diffw < 0;
+                diffw = Math.Abs(diffw);
+                int diffh = Map.Height - Clone.Height;
+                bool diffhneg = diffh < 0;
+                diffh = Math.Abs(diffh);
+                for (int layer = 0; layer < Map.Layers.Count; layer++)
+                {
+                    for (int y = 0; y < Clone.Height; y++)
+                    {
+                        for (int i = 0; i < diffw; i++)
+                        {
+                            if (diffwneg) Map.Layers[layer].Tiles.RemoveAt(y * Map.Width + Map.Width);
+                            else Map.Layers[layer].Tiles.Insert(y * Map.Width + Clone.Width, null);
+                        }
+                    }
+                }
+                for (int layer = 0; layer < Map.Layers.Count; layer++)
+                {
+                    if (diffhneg) Map.Layers[layer].Tiles.RemoveRange(Map.Width * Map.Height, diffh * Map.Width);
+                    else
+                    {
+                        for (int i = 0; i < diffh * Map.Width; i++)
+                        {
+                            Map.Layers[layer].Tiles.Add(null);
+                        }
+                    }
+                }
+            }
+            if (Map.TilesetIDs != Clone.TilesetIDs)
+            {
+                bool warn = false;
+                for (int layer = 0; layer < Map.Layers.Count; layer++)
+                {
+                    for (int i = 0; i < Map.Width * Map.Height; i++)
+                    {
+                        if (Map.Layers[layer].Tiles[i] == null) continue;
+                        int tilesetID = Clone.TilesetIDs[Map.Layers[layer].Tiles[i].TilesetIndex];
+                        if (!Map.TilesetIDs.Contains(tilesetID))
+                        {
+                            warn = true;
+                            Map.Layers[layer].Tiles[i] = null;
+                        }
+                        else Map.Layers[layer].Tiles[i].TilesetIndex = Map.TilesetIDs.IndexOf(tilesetID);
+                    }
+                }
+                if (warn)
+                {
+                    new MessageBox("Warning", "One of the deleted tilesets was still in use. Those tiles have been deleted from the map.");
+                }
+            }
+            Close();
+        }
+
+        public void Cancel(object sender, EventArgs e)
+        {
+            Close();
         }
     }
 

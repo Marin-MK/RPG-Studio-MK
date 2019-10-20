@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ODL;
+using MKEditor.Game;
 
 namespace MKEditor.Widgets
 {
@@ -8,7 +9,7 @@ namespace MKEditor.Widgets
     {
         public TilesetTab TilesetTab;
         public MapViewer MapViewer;
-        public Data.Map Map { get { return this.MapViewer.Map; } }
+        public Map Map { get { return this.MapViewer.Map; } }
         public TabView TabView;
         public TabContainer MainContainer;
 
@@ -91,8 +92,8 @@ namespace MKEditor.Widgets
 
         public void NewLayer(object sender, EventArgs e)
         {
-            Data.Layer layer = new Data.Layer($"Layer {SelectedLayer + 2}");
-            layer.Tiles = new List<Data.TileData>();
+            Layer layer = new Layer($"Layer {SelectedLayer + 2}");
+            layer.Tiles = new List<TileData>();
             for (int i = 0; i < Map.Width * Map.Height; i++) layer.Tiles.Add(null);
             Map.Layers.Insert(SelectedLayer + 1, layer);
             UpdateNames();
@@ -111,7 +112,7 @@ namespace MKEditor.Widgets
         public void MoveLayerUp(object sender, EventArgs e)
         {
             if (SelectedLayer >= Map.Layers.Count - 1) return;
-            Data.Layer layer1 = Map.Layers[SelectedLayer + 1];
+            Layer layer1 = Map.Layers[SelectedLayer + 1];
             Map.Layers[SelectedLayer + 1] = Map.Layers[SelectedLayer];
             Map.Layers[SelectedLayer] = layer1;
             UpdateNames();
@@ -124,7 +125,7 @@ namespace MKEditor.Widgets
         public void MoveLayerDown(object sender, EventArgs e)
         {
             if (SelectedLayer <= 0) return;
-            Data.Layer layer1 = Map.Layers[SelectedLayer - 1];
+            Layer layer1 = Map.Layers[SelectedLayer - 1];
             Map.Layers[SelectedLayer - 1] = Map.Layers[SelectedLayer];
             Map.Layers[SelectedLayer] = layer1;
             UpdateNames();
