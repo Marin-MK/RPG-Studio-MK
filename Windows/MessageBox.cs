@@ -5,10 +5,14 @@ namespace MKEditor.Widgets
 {
     public class MessageBox : PopupWindow
     {
-        MultilineLabel label;
-        Button OKButton;
+        public int Result = 0;
 
-        public MessageBox(string Title, string Message)
+        MultilineLabel label;
+        Button Button1;
+        Button Button2;
+        Button Button3;
+
+        public MessageBox(string Title, string Message, ButtonTypes type = ButtonTypes.OK)
             : base(Graphics.Windows[0], "messageBox")
         {
             SetName(Title);
@@ -16,19 +20,66 @@ namespace MKEditor.Widgets
             label = new MultilineLabel(this);
             label.SetText(Message);
 
-            OKButton = new Button(this);
-            OKButton.SetText("OK");
-            OKButton.OnClicked += delegate (object sender, EventArgs e)
+            if (type == ButtonTypes.OK)
             {
-                Close();
-            };
+                Button3 = new Button(this);
+                Button3.SetText("OK");
+                Button3.OnClicked += delegate (object sender, EventArgs e)
+                {
+                    Result = 0;
+                    Close();
+                };
+            }
+            else if (type == ButtonTypes.OKCancel || type == ButtonTypes.YesNo)
+            {
+                Button2 = new Button(this);
+                Button2.SetText(type == ButtonTypes.OKCancel ? "OK" : "Yes");
+                Button2.OnClicked += delegate (object sender, EventArgs e)
+                {
+                    Result = 0;
+                    Close();
+                };
+                Button3 = new Button(this);
+                Button3.SetText(type == ButtonTypes.OKCancel ? "Cancel" : "No");
+                Button3.OnClicked += delegate (object sender, EventArgs e)
+                {
+                    Result = 1;
+                    Close();
+                };
+            }
+            else if (type == ButtonTypes.YesNoCancel)
+            {
+                Button1 = new Button(this);
+                Button1.SetText("Yes");
+                Button1.OnClicked += delegate (object sender, EventArgs e)
+                {
+                    Result = 0;
+                    Close();
+                };
+                Button2 = new Button(this);
+                Button2.SetText("No");
+                Button2.OnClicked += delegate (object sender, EventArgs e)
+                {
+                    Result = 1;
+                    Close();
+                };
+                Button3 = new Button(this);
+                Button3.SetText("Cancel");
+                Button3.OnClicked += delegate (object sender, EventArgs e)
+                {
+                    Result = 2;
+                    Close();
+                };
+            }
 
             SetSize(300, 150);
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
-            OKButton.SetPosition(Size.Width - OKButton.Size.Width - 1, Size.Height - OKButton.Size.Height - 1);
+            Button3.SetPosition(Size.Width - Button3.Size.Width - 1, Size.Height - Button3.Size.Height - 1);
+            if (Button2 != null) Button2.SetPosition(Button3.Position.X - Button2.Size.Width, Button3.Position.Y);
+            if (Button1 != null) Button1.SetPosition(Button2.Position.X - Button1.Size.Width, Button3.Position.Y);
             label.SetSize(Size.Width - 20, 1);
             label.OnSizeChanged += delegate (object s, SizeEventArgs ev)
             {
@@ -37,5 +88,13 @@ namespace MKEditor.Widgets
             base.SizeChanged(sender, e);
             Center();
         }
+    }
+
+    public enum ButtonTypes
+    {
+        OK,
+        OKCancel,
+        YesNo,
+        YesNoCancel
     }
 }

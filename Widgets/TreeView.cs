@@ -66,6 +66,7 @@ namespace MKEditor.Widgets
 
         private int DrawNode(TreeNode node, int x, int y, bool FirstGeneration, bool LastNode)
         {
+            if (node == SelectedNode) Sprites["selector"].Y = y;
             node.PixelsIndented = x;
             Font f = Font.Get("Fonts/ProductSans-M", 14);
             this.Sprites["list"].Bitmap.Font = f;
@@ -95,6 +96,13 @@ namespace MKEditor.Widgets
                 }
             }
             return y;
+        }
+
+        public void SetSelectedNode(TreeNode node)
+        {
+            SelectedNode = node;
+            if (OnSelectedNodeChanged != null) OnSelectedNodeChanged.Invoke(this, Graphics.LastMouseEvent);
+            Redraw();
         }
 
         public override void HoverChanged(object sender, MouseEventArgs e)
@@ -149,34 +157,11 @@ namespace MKEditor.Widgets
                 if (rx < nodex + 10 && rx > nodex - 10)
                 {
                     n.Collapsed = !n.Collapsed;
-                    if (n.Collapsed && n.ContainsNode(SelectedNode))
-                    {
-                        SelectedNode = n;
-                        this.Sprites["selector"].Y = globalindex * 24;
-                    }
-                    else if (n != SelectedNode)
-                    {
-                        int sindex = 0;
-                        for (int i = 0; i < this.Nodes.Count; i++)
-                        {
-                            if (this.Nodes[i] == SelectedNode) break;
-                            sindex++;
-                            if (!this.Nodes[i].ContainsNode(SelectedNode))
-                            {
-                                sindex += this.Nodes[i].GetDisplayedNodeCount();
-                            }
-                            else
-                            {
-                                sindex += this.Nodes[i].GetNodeIndex(SelectedNode);
-                            }
-                        }
-                        this.Sprites["selector"].Y = sindex * 24;
-                    }
+                    if (n.Collapsed && n.ContainsNode(SelectedNode)) SelectedNode = n;
                 }
                 else
                 {
                     SelectedNode = n;
-                    this.Sprites["selector"].Y = globalindex * 24;
                 }
             }
             if (SelectedNode != oldselected)
@@ -233,17 +218,22 @@ namespace MKEditor.Widgets
             return false;
         }
 
-        public int GetNodeIndex(TreeNode n)
+        public TreeNode RemoveNode(TreeNode n)
         {
-            int index = 1;
-            for (int i = 0; i < this.Nodes.Count; i++)
+            for (int i = 0; i < Nodes.Count; i++)
             {
-                index++;
-                if (this.Nodes[i] == n) return index;
-                int idx = this.Nodes[i].GetNodeIndex(n);
-                if (idx != -1) return index + idx;
+                if (Nodes[i] == n)
+                {
+                    Nodes.RemoveAt(i);
+                    if (Nodes.Count == 0) return this;
+                    return i >= Nodes.Count ? Nodes[i - 1] : Nodes[i];
+                }
+                else if (Nodes[i].ContainsNode(n))
+                {
+                    return Nodes[i].RemoveNode(n);
+                }
             }
-            return -1;
+            return null;
         }
     }
 }

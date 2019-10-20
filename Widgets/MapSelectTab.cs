@@ -58,10 +58,11 @@ namespace MKEditor.Widgets
                 new MenuSeparator(),
                 new MenuItem("Delete")
                 {
+                    OnLeftClick = DeleteMap,
                     Shortcut = "Del",
                     IsClickable = delegate (object sender, ConditionEventArgs e)
                     {
-                        e.ConditionValue = mapview.HoveringNode != null;
+                        e.ConditionValue = mapview.HoveringNode != null && mapview.Nodes.Count > 1;
                     }
                 }
             });
@@ -124,6 +125,16 @@ namespace MKEditor.Widgets
         private void NewMap(object sender, MouseEventArgs e)
         {
             Map Map = new Map();
+            int i = 1;
+            while (true)
+            {
+                if (!Data.Maps.ContainsKey(i))
+                {
+                    Map.ID = i;
+                    break;
+                }
+                i++;
+            }
             Map.DevName = "Untitled Map";
             Map.DisplayName = "Untitled Map";
             Map.SetSize(15, 15);
@@ -132,12 +143,46 @@ namespace MKEditor.Widgets
             {
                 if (mpw.UpdateMapViewer)
                 {
+                    Data.Maps.Add(Map.ID, Map);
+                    TreeNode node = new TreeNode() { Object = Map };
                     if (mapview.HoveringNode != null)
                     {
-
+                        AddIDToMap(Editor.ProjectSettings.MapOrder, (mapview.HoveringNode.Object as Map).ID, Map.ID);
+                        mapview.HoveringNode.Nodes.Add(node);
+                        mapview.HoveringNode.Collapsed = false;
                     }
+                    else
+                    {
+                        Editor.ProjectSettings.MapOrder.Add(Map.ID);
+                        mapview.Nodes.Add(node);
+                    }
+                    mapview.SetSelectedNode(node);
                 }
             };
+        }
+
+        private bool AddIDToMap(List<object> collection, int ParentID, int ChildID)
+        {
+            for (int i = 0; i < collection.Count; i++)
+            {
+                object o = collection[i];
+                if (o is int)
+                {
+                    if ((int) o == ParentID)
+                    {
+                        if (i == 0) // Already in this parent's node list
+                            collection.Add(ChildID);
+                        else // Create new node list
+                            collection[i] = new List<object>() { ParentID, ChildID };
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (AddIDToMap((List<object>) o, ParentID, ChildID)) break;
+                }
+            }
+            return false;
         }
 
         private void EditMap(object sender, MouseEventArgs e)
@@ -151,6 +196,75 @@ namespace MKEditor.Widgets
                     MapViewer.SetMap(map);
                 }
             };
+        }
+
+        private void DeleteMap(object sender, MouseEventArgs e)
+        {
+            if (mapview.Nodes.Count <= 1) return;
+            string message = "Are you sure you want to delete this map?";
+            if (mapview.HoveringNode.Nodes.Count > 0) message += " All of its children will also be deleted.";
+            MessageBox confirm = new MessageBox("Warning", message, ButtonTypes.YesNoCancel);
+            confirm.OnClosed += delegate (object s, EventArgs ev)
+            {
+                if (confirm.Result == 0) // Yes
+                {
+                    DeleteMapRecursively(mapview.HoveringNode);
+                    for (int i = 0; i < mapview.Nodes.Count; i++)
+                    {
+                        if (mapview.Nodes[i] == mapview.HoveringNode)
+                        {
+                            mapview.Nodes.RemoveAt(i);
+                            mapview.SetSelectedNode(i >= mapview.Nodes.Count ? mapview.Nodes[i - 1] : mapview.Nodes[i]);
+                        }
+                        else if (mapview.Nodes[i].ContainsNode(mapview.HoveringNode))
+                        {
+                            mapview.SetSelectedNode(mapview.Nodes[i].RemoveNode(mapview.HoveringNode));
+                        }
+                    }
+                    RemoveID(Editor.ProjectSettings.MapOrder, (mapview.HoveringNode.Object as Map).ID, true);
+                    mapview.Redraw();
+                }
+            };
+        }
+
+        private void DeleteMapRecursively(TreeNode node)
+        {
+            for (int i = 0; i < node.Nodes.Count; i++)
+            {
+                DeleteMapRecursively(node.Nodes[i]);
+            }
+            Data.Maps.Remove((node.Object as Map).ID);
+        }
+
+        private void RemoveID(List<object> collection, int ID, bool first = false)
+        {
+            for (int i = (first ? 0 : 1); i < collection.Count; i++)
+            {
+                if (collection[i] is int)
+                {
+                    if ((int) collection[i] == ID)
+                    {
+                        collection.RemoveAt(i);
+                        break;
+                    }
+                }
+                else
+                {
+                    List<object> sub = (List<object>) collection[i];
+                    if (sub[0] is int && (int) sub[0] == ID)
+                    {
+                        collection.RemoveAt(i);
+                    }
+                    else if (sub[1] is int && (int) sub[1] == ID && sub.Count == 2)
+                    {
+                        collection[i] = (int) sub[0];
+                    }
+                    else
+                    {
+                        RemoveID(sub, ID);
+                    }
+                }
+            }
         }
     }
 }

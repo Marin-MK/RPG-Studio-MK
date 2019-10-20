@@ -98,6 +98,7 @@ namespace MKEditor
                         new MenuItem("New"),
                         new MenuItem("Open") { Shortcut = "Ctrl+O" },
                         new MenuItem("Save") { Shortcut = "Ctrl+S" },
+                        new MenuSeparator(),
                         new MenuItem("Close Project"),
                         new MenuItem("Exit Editor")
                     }
@@ -120,11 +121,7 @@ namespace MKEditor
                 {
                     Items = new List<IMenuItem>()
                     {
-                        new MenuItem("Focus Selected Layer"),
-                        new MenuItem("Show Grid"),
-                        new MenuItem("Zoom 1:1"),
-                        new MenuItem("Zoom 1:2"),
-                        new MenuItem("Zoom 1:4")
+                        new MenuItem("Show/Hide Grid")
                     }
                 },
                 new MenuItem("Game")
