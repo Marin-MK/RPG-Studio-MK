@@ -168,7 +168,8 @@ end
         
         public static void Initialize()
         {
-            System.IO.Directory.SetCurrentDirectory(InstalledPath);
+            //Console.WriteLine(System.IO.Directory.GetCurrentDirectory());
+            //System.IO.Directory.SetCurrentDirectory(InstalledPath);
             IconSheet = new Bitmap("icons.png");
         }
     }
