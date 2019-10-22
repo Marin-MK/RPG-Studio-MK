@@ -78,8 +78,8 @@ namespace MKEditor.Widgets
 
             RegisterShortcuts(new List<Shortcut>()
             {
-                new Shortcut(new Key(Keycode.H, Keycode.CTRL), new EventHandler<EventArgs>(ToggleVisibilityLayer), true),
-                new Shortcut(new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer))
+                new Shortcut(this, new Key(Keycode.H, Keycode.CTRL), new EventHandler<EventArgs>(ToggleVisibilityLayer), true),
+                new Shortcut(this, new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer))
             });
 
             SetSize(283, 200); // Dummy size so the sprites can be drawn properly

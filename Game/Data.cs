@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using IronRuby;
-using Microsoft.Scripting.Hosting;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace MKEditor.Game
 {
@@ -13,15 +14,15 @@ namespace MKEditor.Game
         public static string ProjectPath;
         public static string DataPath;
 
-        public static ScriptEngine Engine;
+        //public static ScriptEngine Engine;
         public static Dictionary<int, Map> Maps = new Dictionary<int, Map>();
         public static List<Tileset> Tilesets = new List<Tileset>();
         public static Dictionary<string, Species> Species = new Dictionary<string, Species>();
 
         public static void Initialize()
         {
-            Engine = Ruby.CreateEngine();
-            Engine.Execute(Utilities.GetRubyRequirements());
+            //Engine = Ruby.CreateEngine();
+            //Engine.Execute(Utilities.GetRubyRequirements());
             LoadSpecies();
             LoadTilesets();
             LoadMaps(); // TODO: Event commands/conditions
@@ -48,60 +49,141 @@ namespace MKEditor.Game
 
         public static void LoadFile(string Filename, string GlobalVar)
         {
-            while (Filename.Contains('\\')) Filename = Filename.Replace('\\', '/');
-            Engine.Execute($"{GlobalVar} = FileUtils.load_data(\"{DataPath}/{Filename}\")");
+            //while (Filename.Contains('\\')) Filename = Filename.Replace('\\', '/');
+            //Engine.Execute($"{GlobalVar} = FileUtils.load_data(\"{DataPath}/{Filename}\")");
         }
 
         public static dynamic Exec(string Code)
         {
-            return Engine.Execute(Code);
+            return null;
+            //return Engine.Execute(Code);
         }
 
         public static void LoadSpecies()
         {
-            LoadFile("species.mkd", "$species");
-            List<string> keys = Array.ConvertAll((object[]) Exec($"$species.keys").ToArray(), x => x.ToString()).ToList();
-            foreach (string key in keys)
+            StreamReader sr = new StreamReader(File.OpenRead(DataPath + "/species.mkd"));
+            string content = sr.ReadToEnd();
+            sr.Close();
+            Dictionary<string, object> data = JsonConvert.DeserializeObject<Dictionary<string, object>>(content);
+            if ((string) data[":type"] != ":species")
             {
-                Species[key] = new Species($"$species[:{key}]");
+                throw new Exception("Invalid data type for species.mkd - Expected to contain species data but found " + data[":type"] + ".");
             }
-            Exec($"$species = nil");
+            Dictionary<string, object> AllSpecies = ((JObject) data[":data"]).ToObject<Dictionary<string, object>>();
+            foreach (string key in AllSpecies.Keys)
+            {
+                Species s = new Species(((JObject) AllSpecies[key]).ToObject<Dictionary<string, object>>()); ;
+                Species[s.IntName] = s;
+            }
+        }
+
+        public static void SaveSpecies()
+        {
+            Dictionary<string, object> Main = new Dictionary<string, object>();
+            Main[":type"] = ":species";
+            Dictionary<string, object> list = new Dictionary<string, object>();
+            foreach (KeyValuePair<string, Species> kvp in Species)
+            {
+                list[":" + kvp.Key] = kvp.Value.ToJSON();
+            }
+            Main[":data"] = list;
+            string jsonstring = JsonConvert.SerializeObject(Main);
+            StreamWriter sw = new StreamWriter(File.OpenWrite(DataPath + "/species_editor.mkd"));
+            sw.Write(jsonstring);
+            sw.Close();
         }
 
         public static void LoadTilesets()
         {
-            LoadFile($"tilesets.mkd", "$tilesets");
-            int tilesets = Exec($"$tilesets.size");
-            for (int i = 0; i < tilesets; i++)
+            StreamReader sr = new StreamReader(File.OpenRead(DataPath + "/tilesets.mkd"));
+            string content = sr.ReadToEnd();
+            sr.Close();
+            Dictionary<string, object> data = JsonConvert.DeserializeObject<Dictionary<string, object>>(content);
+            if ((string) data[":type"] != ":tilesets")
             {
-                bool nil = Exec($"$tilesets[{i}].nil?");
-                if (nil) Tilesets.Add(null);
-                else
+                throw new Exception("Invalid data type for tilesets.mkd - Expected to contain tileset data but found " + data[":type"] + ".");
+            }
+            List<object> AllTilests = ((JArray) data[":data"]).ToObject<List<object>>();
+            for (int i = 0; i < AllTilests.Count; i++)
+            {
+                if (AllTilests[i] == null) Tilesets.Add(null);
+                else Tilesets.Add(new Tileset(((JObject) AllTilests[i]).ToObject<Dictionary<string, object>>()));
+            }
+            SaveTileset();
+        }
+
+        public static void SaveTileset()
+        {
+            Dictionary<string, object> Main = new Dictionary<string, object>();
+            Main[":type"] = ":tilesets";
+            List<object> list = new List<object>();
+            for (int i = 0; i < Tilesets.Count; i++)
+            {
+                if (Tilesets[i] == null) list.Add(null);
+                else list.Add(Tilesets[i].ToJSON());
+            }
+            Main[":data"] = list;
+            string jsonstring = JsonConvert.SerializeObject(Main);
+            StreamWriter sw = new StreamWriter(File.OpenWrite(DataPath + "/tilesets_editor.mkd"));
+            sw.Write(jsonstring);
+            sw.Close();
+        }
+
+        public static List<string> GetMapIDs(string path)
+        {
+            List<string> Filenames = new List<string>();
+            foreach (string file in Directory.GetFiles(path))
+            {
+                string realfile = file;
+                while (realfile.Contains('\\')) realfile = realfile.Replace('\\', '/');
+                string name = realfile.Split('/').Last();
+                if (name.StartsWith("map") && name.EndsWith(".mkd"))
                 {
-                    Tilesets.Add(new Tileset($"$tilesets[{i}]"));
+                    name = name.Substring(3, name.Length - 7);
+                    int id;
+                    bool valid = int.TryParse(name, out id);
+                    if (valid) Filenames.Add(realfile);
                 }
             }
-            Exec("$tilesets = nil");
+            foreach (string dir in Directory.GetDirectories(path))
+            {
+                string realdir = dir;
+                while (realdir.Contains('\\')) realdir = realdir.Replace('\\', '/');
+                Filenames.AddRange(GetMapIDs(realdir));
+            }
+            return Filenames;
         }
 
         public static void LoadMaps()
         {
-            List<int> maps = Array.ConvertAll(
-                (object[]) Exec(
-                    $"Dir.glob(\"{DataPath}/maps/*\")" +
-                    $".select {{ |f| f =~ /#{{\"{DataPath}/maps/\"}}map\\d+.mkd/ }}" +
-                    $".map {{ |f| f.sub(\"{DataPath}/maps/map\", \"\")" +
-                                 $".sub(/.mkd/, \"\")" +
-                    $"}}").ToArray(),
-                x => Convert.ToInt32(x.ToString())
-            ).ToList();
-            for (int i = 0; i < maps.Count; i++)
+            List<string> Filenames = GetMapIDs(DataPath + "/maps");
+            foreach (string filename in Filenames)
             {
-                string n = maps[i].ToString();
-                if (n.Length == 1) n = '0' + n;
-                if (n.Length == 2) n = '0' + n;
-                LoadFile($"maps/map{n}.mkd", $"$map{n}");
-                Maps[maps[i]] = new Map($"$map{n}");
+                StreamReader sr = new StreamReader(File.OpenRead(filename));
+                string content = sr.ReadToEnd();
+                sr.Close();
+                Dictionary<string, object> data = JsonConvert.DeserializeObject<Dictionary<string, object>>(content);
+                if ((string) data[":type"] != ":map")
+                {
+                    throw new Exception("Invalid data type for '" + filename + "' - Expected to contain map data but found " + data[":type"] + ".");
+                }
+                Map map = new Map(((JObject) data[":data"]).ToObject<Dictionary<string, object>>());
+                Maps[map.ID] = map;
+            }
+            SaveMaps();
+        }
+
+        public static void SaveMaps()
+        {
+            foreach (KeyValuePair<int, Map> kvp in Maps)
+            {
+                Dictionary<string, object> Main = new Dictionary<string, object>();
+                Main[":type"] = ":map";
+                Main[":data"] = kvp.Value.ToJSON();
+                string jsonstring = JsonConvert.SerializeObject(Main);
+                StreamWriter sw = new StreamWriter(File.OpenWrite(DataPath + "/maps/map" + Utilities.Digits(kvp.Value.ID, 3) + "_editor.mkd"));
+                sw.Write(jsonstring);
+                sw.Close();
             }
         }
     }

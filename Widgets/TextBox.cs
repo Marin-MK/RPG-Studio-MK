@@ -76,8 +76,6 @@ namespace MKEditor.Widgets
 
         bool TextEntry = false;
 
-        int CaretSelectionDistance = 0;
-
         public TextEntryField(object Parent, string Name = "textEntryField")
             : base(Parent, Name)
         {

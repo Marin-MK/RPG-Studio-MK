@@ -769,12 +769,14 @@ namespace MKEditor.Widgets
 
     public class Shortcut
     {
+        public Widget Widget;
         public Key Key;
         public EventHandler<EventArgs> Event;
         public bool GlobalShortcut = false;
 
-        public Shortcut(Key Key, EventHandler<EventArgs> Event, bool GlobalShortcut = false)
+        public Shortcut(Widget Widget, Key Key, EventHandler<EventArgs> Event, bool GlobalShortcut = false)
         {
+            this.Widget = Widget;
             this.Key = Key;
             this.Event = Event;
             this.GlobalShortcut = GlobalShortcut;

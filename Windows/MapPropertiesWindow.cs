@@ -27,7 +27,7 @@ namespace MKEditor.Widgets
         {
             this.Map = Map;
             this.Clone = this.Map.Clone() as Map;
-            this.SetName($"Map Properties - {Utilities.Digits(Map.ID, 3)}: {Map.DevName}");
+            this.SetTitle($"Map Properties - {Utilities.Digits(Map.ID, 3)}: {Map.DevName}");
             this.SetSize(540, 460);
             this.Center();
             Label settings = new Label(this);

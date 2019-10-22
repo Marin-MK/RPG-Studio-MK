@@ -1,134 +1,31 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{184A0B8F-7476-4017-98CB-A36271049168}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>MKEditor</RootNamespace>
-    <AssemblyName>MKEditor</AssemblyName>
-    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>MKEditor.Program</StartupObject>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationIcon>logo-64x64.ico</ApplicationIcon>
-  </PropertyGroup>
+
   <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
   </ItemGroup>
+
   <ItemGroup>
-    <Reference Include="IronRuby, Version=1.1.3.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\EssentialsSaveFile\EssentialsSaveFile\bin\Debug\IronRuby.dll</HintPath>
+    <Reference Include="IronRuby">
+      <HintPath>obj\Debug\netcoreapp3.0\IronRuby.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.Dynamic, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\EssentialsSaveFile\EssentialsSaveFile\bin\Debug\Microsoft.Dynamic.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Scripting, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\EssentialsSaveFile\EssentialsSaveFile\bin\Debug\Microsoft.Scripting.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Scripting.Metadata, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\EssentialsSaveFile\EssentialsSaveFile\bin\Debug\Microsoft.Scripting.Metadata.dll</HintPath>
+    <Reference Include="Microsoft.Scripting">
+      <HintPath>obj\Debug\netcoreapp3.0\Microsoft.Scripting.dll</HintPath>
     </Reference>
     <Reference Include="odl">
-      <HintPath>..\..\..\..\Documents\Visual Studio 2015\Projects\odl\odl\bin\Debug\odl.dll</HintPath>
+      <HintPath>obj\Debug\netcoreapp3.0\odl.dll</HintPath>
     </Reference>
     <Reference Include="SDL2-CS">
-      <HintPath>..\..\..\..\Documents\Visual Studio 2015\Projects\odl\odl\bin\Debug\SDL2-CS.dll</HintPath>
+      <HintPath>obj\Debug\netcoreapp3.0\SDL2-CS.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Editor.cs" />
-    <Compile Include="Game\Data\Species.cs" />
-    <Compile Include="Game\Data\Type.cs" />
-    <Compile Include="Game\Serializable.cs" />
-    <Compile Include="Keycodes.cs" />
-    <Compile Include="Margin.cs" />
-    <Compile Include="Widgets\Button.cs" />
-    <Compile Include="Widgets\CheckBox.cs" />
-    <Compile Include="Widgets\ColoredBox.cs" />
-    <Compile Include="Widgets\ContextMenu.cs" />
-    <Compile Include="Widgets\CursorWidget.cs" />
-    <Compile Include="Widgets\IconButton.cs" />
-    <Compile Include="Widgets\Label.cs" />
-    <Compile Include="Widgets\ListBox.cs" />
-    <Compile Include="Widgets\StatusBar.cs" />
-    <Compile Include="Widgets\ZoomControl.cs" />
-    <Compile Include="Windows\MessageBox.cs" />
-    <Compile Include="Windows\MapPropertiesWindow.cs" />
-    <Compile Include="Widgets\MapSelectTab.cs" />
-    <Compile Include="Widgets\MenuBar.cs" />
-    <Compile Include="Widgets\MenuItem.cs" />
-    <Compile Include="Widgets\ModeButton.cs" />
-    <Compile Include="Widgets\NumericBox.cs" />
-    <Compile Include="Widgets\PlayButton.cs" />
-    <Compile Include="Windows\PopupWindow.cs" />
-    <Compile Include="Widgets\SaveButton.cs" />
-    <Compile Include="Widgets\TabView.cs" />
-    <Compile Include="Widgets\TextBox.cs" />
-    <Compile Include="Widgets\ToolBar.cs" />
-    <Compile Include="Widgets\TreeView.cs" />
-    <Compile Include="Game\MKD\Event.cs" />
-    <Compile Include="Game\MKD\EventCommands.cs" />
-    <Compile Include="Game\MKD\EventConditions.cs" />
-    <Compile Include="Game\Data.cs" />
-    <Compile Include="Game\MKD\Map.cs" />
-    <Compile Include="Game\MKD\Tileset.cs" />
-    <Compile Include="Widgets\CollapsibleContainer.cs" />
-    <Compile Include="Utilities.cs" />
-    <Compile Include="Widgets\Container.cs" />
-    <Compile Include="Widgets\Grid.cs" />
-    <Compile Include="Widgets\GridSize.cs" />
-    <Compile Include="Widgets\HStackPanel.cs" />
-    <Compile Include="Widgets\ILayout.cs" />
-    <Compile Include="Widgets\LayersTab.cs" />
-    <Compile Include="Widgets\LayerWidget.cs" />
-    <Compile Include="Widgets\MapViewer.cs" />
-    <Compile Include="Widgets\HScrollBar.cs" />
-    <Compile Include="Widgets\VScrollBar.cs" />
-    <Compile Include="Widgets\PictureBox.cs" />
-    <Compile Include="Widgets\TilesetTab.cs" />
-    <Compile Include="Widgets\VStackPanel.cs" />
-    <Compile Include="Windows\TilesetPicker.cs" />
-    <Compile Include="Windows\MainEditorWindow.cs" />
-    <Compile Include="MouseInputManager.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="UIManager.cs" />
-    <Compile Include="Widgets\IContainer.cs" />
-    <Compile Include="Widgets\Widget.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="logo-64x64.ico" />
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
 </Project>

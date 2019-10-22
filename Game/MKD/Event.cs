@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 
 namespace MKEditor.Game
 {
-    public class Event : Serializable
+    public class Event
     {
         public int ID;
         public string Name;
@@ -12,22 +13,47 @@ namespace MKEditor.Game
         public List<EventPage> Pages = new List<EventPage>();
         public EventSettings Settings;
 
-        public Event(string path)
-            : base(path)
+        public Event(Dictionary<string, object> Data)
         {
-            this.Name = GetVar<string>("name");
-            this.X = GetVar<int>("x");
-            this.Y = GetVar<int>("y");
-            int pagecount = GetCount("pages");
-            for (int i = 0; i < pagecount; i++)
+            if (Data.ContainsKey("^c"))
             {
-                this.Pages.Add(new EventPage(GetPath($"pages[{i}]")));
+                if ((string) Data["^c"] != "MKD::Event") throw new Exception("Invalid class - Expected class of type MKD::Event but got " + (string) Data["^c"] + ".");
             }
-            this.Settings = new EventSettings(GetPath("settings"));
+            else
+            {
+                throw new Exception("Could not find a ^c key to identify this class.");
+            }
+            this.ID = Convert.ToInt32(Data["@id"]);
+            this.Name = (string) Data["@name"];
+            this.X = Convert.ToInt32(Data["@x"]);
+            this.Y = Convert.ToInt32(Data["@y"]);
+            foreach (object o in ((JArray) Data["@pages"]).ToObject<List<object>>())
+            {
+                this.Pages.Add(new EventPage(((JObject) o).ToObject<Dictionary<string, object>>()));
+            }
+            this.Settings = new EventSettings(((JObject) Data["@settings"]).ToObject<Dictionary<string, object>>());
+        }
+
+        public Dictionary<string, object> ToJSON()
+        {
+            Dictionary<string, object> Data = new Dictionary<string, object>();
+            Data["^c"] = "MKD::Event";
+            Data["@id"] = ID;
+            Data["@name"] = Name;
+            Data["@x"] = X;
+            Data["@y"] = Y;
+            List<Dictionary<string, object>> pages = new List<Dictionary<string, object>>();
+            foreach (EventPage page in Pages)
+            {
+                pages.Add(page.ToJSON());
+            }
+            Data["@pages"] = pages;
+            Data["@settings"] = Settings.ToJSON();
+            return Data;
         }
     }
 
-    public class EventPage : Serializable
+    public class EventPage
     {
         public List<IEventCommand> Commands { get { throw new NotImplementedException(); } }
         public List<IEventCondition> Conditions { get { throw new NotImplementedException(); } }
@@ -35,65 +61,120 @@ namespace MKEditor.Game
         public List<EventTrigger> Triggers = new List<EventTrigger>();
         public AutoMoveRoute AutoMoveRoute;
 
-        public EventPage(string path)
-            : base(path)
+        public EventPage(Dictionary<string, object> Data)
         {
-            this.Graphic = new EventGraphic(GetPath("graphic"));
-            int triggercount = GetCount("triggers");
-            for (int i = 0; i < triggercount; i++)
+            if (Data.ContainsKey("^c"))
             {
-                this.Triggers.Add(new EventTrigger(GetPath($"triggers[{i}]")));
+                if ((string) Data["^c"] != "MKD::Event::Page") throw new Exception("Invalid class - Expected class of type MKD::Event::Page but got " + (string) Data["^c"] + ".");
             }
-            this.AutoMoveRoute = new AutoMoveRoute(GetPath("automoveroute"));
+            else
+            {
+                throw new Exception("Could not find a ^c key to identify this class.");
+            }
+            foreach (object o in ((JArray) Data["@commands"]).ToObject<List<object>>())
+            {
+                // o is [0, :cmd, data] as JArray
+            }
+            foreach (object o in ((JArray) Data["@conditions"]).ToObject<List<object>>())
+            {
+                // o is [0, :cmd, data] as JArray
+            }
+            this.Graphic = new EventGraphic(((JObject) Data["@graphic"]).ToObject<Dictionary<string, object>>());
+            foreach (object o in ((JArray) Data["@triggers"]).ToObject<List<object>>())
+            {
+                this.Triggers.Add(new EventTrigger(((JArray) o).ToObject<List<object>>()));
+            }
+            this.AutoMoveRoute = new AutoMoveRoute(((JObject) Data["@automoveroute"]).ToObject<Dictionary<string, object>>());
+        }
+
+        public Dictionary<string, object> ToJSON()
+        {
+            Dictionary<string, object> Data = new Dictionary<string, object>();
+            Data["^c"] = "MKD::Event::Page";
+            Data["@graphic"] = Graphic.ToJSON();
+            Data["@automoveroute"] = AutoMoveRoute.ToJSON();
+            List<List<object>> triggers = new List<List<object>>();
+            foreach (EventTrigger trigger in Triggers) triggers.Add(trigger.ToJSON());
+            Data["@triggers"] = triggers;
+            // Add commands
+            // Add conditions
+            return Data;
         }
     }
 
-    public class EventGraphic : Serializable
+    public class EventGraphic
     {
         public string Type;
         public object Param;
         public int Direction;
 
-        public EventGraphic(string path)
-            : base(path)
+        public EventGraphic(Dictionary<string, object> Data)
         {
-            this.Type = GetVar<string>("type", VariableType.HashSymbol);
-            if (!Nil("param", VariableType.HashSymbol)) this.Param = GetVar<string>("param", VariableType.HashSymbol);
-            this.Direction = GetVar<int>("direction", VariableType.HashSymbol);
+            this.Type = ((string) Data[":type"]).Replace(":", "");
+            this.Direction = Convert.ToInt32(Data[":direction"]);
+            if (Data[":param"] is int) this.Param = Convert.ToInt32(Data[":param"]);
+            else if (Data[":param"] is string) this.Param = (string) Data[":param"];
+            else this.Param = Data[":param"];
+        }
+
+        public Dictionary<string, object> ToJSON()
+        {
+            Dictionary<string, object> Data = new Dictionary<string, object>();
+            Data[":type"] = ":" + Type;
+            Data[":direction"] = Direction;
+            Data[":param"] = Param;
+            return Data;
         }
     }
 
-    public class EventTrigger : Serializable
+    public class EventTrigger
     {
         public string Type;
         public object Param;
 
-        public EventTrigger(string path)
-            : base(path)
+        public EventTrigger(List<object> Data)
         {
-            this.Type = GetVar<string>("0", VariableType.ArrayElement);
-            bool hasparam = (bool) Data.Exec($"!{GetPath("1", VariableType.ArrayElement)}.nil?");
-            if (hasparam)
+            this.Type = ((string) Data[0]).Replace(":", "");
+            if (Data.Count > 1)
             {
-                this.Param = GetVar<object>("1", VariableType.ArrayElement);
+                throw new NotImplementedException();
             }
         }
-    }
 
-    public class AutoMoveRoute: Serializable
-    {
-        public int Frequency;
-        public List<string> Commands;
-
-        public AutoMoveRoute(string path)
-            : base(path)
+        public List<object> ToJSON()
         {
-            this.Frequency = GetVar<int>("frequency", VariableType.HashSymbol);
-            this.Commands = GetList<string>("commands", VariableType.HashSymbol);
+            List<object> Data = new List<object>();
+            Data.Add(":" + Type);
+            return Data;
         }
     }
 
-    public class EventSettings : Serializable
+    public class AutoMoveRoute
+    {
+        public int Frequency;
+        public List<string> Commands = new List<string>();
+
+        public AutoMoveRoute(Dictionary<string, object> Data)
+        {
+            this.Frequency = Convert.ToInt32(Data[":frequency"]);
+            foreach (object o in ((JArray) Data[":commands"]).ToObject<List<object>>())
+            {
+                this.Commands.Add(((string) o).Replace(":", ""));
+            }
+        }
+
+        public Dictionary<string, object> ToJSON()
+        {
+            Dictionary<string, object> Data = new Dictionary<string, object>();
+            Data[":frequency"] = Frequency;
+            List<string> commands = new List<string>();
+            foreach (string command in Commands) commands.Add(":" + command);
+            Data[":commands"] = commands;
+            return Data;
+        }
+    }
+
+    public class EventSettings
     {
         public int Priority;
         public bool Passable;
@@ -101,14 +182,33 @@ namespace MKEditor.Game
         public bool ResetPositionOnTransfer;
         public float Speed;
 
-        public EventSettings(string path)
-            : base(path)
+        public EventSettings(Dictionary<string, object> Data)
         {
-            this.Priority = GetVar<int>("priority");
-            this.Passable = GetVar<bool>("passable");
-            this.CanStartSurfingHere = GetVar<bool>("can_start_surfing_here");
-            this.ResetPositionOnTransfer = GetVar<bool>("reset_position_on_transfer");
-            this.Speed = GetVar<float>("speed");
+            if (Data.ContainsKey("^c"))
+            {
+                if ((string) Data["^c"] != "MKD::Event::Settings") throw new Exception("Invalid class - Expected class of type MKD::Event::Settings but got " + (string) Data["^c"] + ".");
+            }
+            else
+            {
+                throw new Exception("Could not find a ^c key to identify this class.");
+            }
+            this.Priority = Convert.ToInt32(Data["@priority"]);
+            this.Passable = (bool) Data["@passable"];
+            this.CanStartSurfingHere = (bool) Data["@can_start_surfing_here"];
+            this.ResetPositionOnTransfer = (bool) Data["@reset_position_on_transfer"];
+            this.Speed = (float) Convert.ToDouble(Data["@speed"]);
+        }
+
+        public Dictionary<string, object> ToJSON()
+        {
+            Dictionary<string, object> Data = new Dictionary<string, object>();
+            Data["^c"] = "MKD::Event::Settings";
+            Data["@priority"] = Priority;
+            Data["@passable"] = Passable;
+            Data["@can_start_surfing_here"] = CanStartSurfingHere;
+            Data["@reset_position_on_transfer"] = ResetPositionOnTransfer;
+            Data["@speed"] = Speed;
+            return Data;
         }
     }
 }

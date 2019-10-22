@@ -1,17 +1,18 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 
 namespace MKEditor.Game
 {
-    public class Map : Serializable, ICloneable
+    public class Map : ICloneable
     {
         public int ID;
         public string DevName;
         public string DisplayName;
         public int Width;
         public int Height;
-        public List<Layer> Layers;
-        public List<int> TilesetIDs;
+        public List<Layer> Layers = new List<Layer>();
+        public List<int> TilesetIDs = new List<int>();
         public Dictionary<int, Event> Events = new Dictionary<int, Event>();
 
         // Used only for the editor to track which maps exist in the order list
@@ -19,43 +20,69 @@ namespace MKEditor.Game
 
         public Map() { }
 
-        public Map(string path)
-            : base(path)
+        public Map(Dictionary<string, object> Data)
         {
-            this.ID = GetVar<int>("id");
-            this.DevName = GetVar<string>("name");
-            this.DisplayName = this.DevName;
-            this.Width = GetVar<int>("width");
-            this.Height = GetVar<int>("height");
-            this.Layers = new List<Layer>();
-            int layercount = GetCount("tiles");
-            for (int i = 0; i < layercount; i++)
+            if (Data.ContainsKey("^c"))
             {
-                this.Layers.Insert(i, new Layer($"Layer {i + 1}"));
-                int tilecount = GetCount($"tiles[{i}]");
-                for (int j = 0; j < tilecount; j++)
+                if ((string) Data["^c"] != "MKD::Map") throw new Exception("Invalid class - Expected class of type MKD::Map but got " + (string) Data["^c"] + ".");
+            }
+            else
+            {
+                throw new Exception("Could not find a ^c key to identify this class.");
+            }
+            this.ID = Convert.ToInt32(Data["@id"]);
+            this.DevName = (string) Data["@dev_name"];
+            this.DisplayName = (string) Data["@display_name"];
+            this.Width = Convert.ToInt32(Data["@width"]);
+            this.Height = Convert.ToInt32(Data["@height"]);
+            foreach (object layer in ((JArray) Data["@tiles"]).ToObject<List<object>>())
+            {
+                Layer l = new Layer("Layer " + (Layers.Count + 1).ToString());
+                foreach (object tile in ((JArray) layer).ToObject<List<object>>())
                 {
-                    List<object> tile = GetList<object>($"tiles[{i}][{j}]");
-                    if (tile == null)
-                    {
-                        this.Layers[i].Tiles.Insert(j, null);
-                    }
+                    if (tile == null) l.Tiles.Add(null);
                     else
                     {
-                        TileData data = new TileData();
-                        data.TilesetIndex = (int) tile[0];
-                        data.TileID = (int) tile[1];
-                        this.Layers[i].Tiles.Insert(j, data);
+                        List<object> tiledata = ((JArray) tile).ToObject<List<object>>();
+                        int TilesetIndex = Convert.ToInt32(tiledata[0]);
+                        int TileID = Convert.ToInt32(tiledata[1]);
+                        l.Tiles.Add(new TileData() { TilesetIndex = TilesetIndex, TileID = TileID });
                     }
                 }
+                this.Layers.Add(l);
             }
-            this.TilesetIDs = GetList<int>("tilesets");
-            List<int> eventkeys = GetKeys<int>("events");
-            foreach (int eventid in eventkeys)
+            this.TilesetIDs = ((JArray) Data["@tilesets"]).ToObject<List<int>>();
+
+            foreach(KeyValuePair<string, object> kvp in ((JObject) Data["@events"]).ToObject<Dictionary<string, object>>())
             {
-                this.Events[eventid] = new Event(GetPath($"events[{eventid}]"));
-                this.Events[eventid].ID = eventid;
+                Event e = new Event(((JObject) kvp.Value).ToObject<Dictionary<string, object>>());
+                this.Events[e.ID] = e;
             }
+        }
+
+        public Dictionary<string, object> ToJSON()
+        {
+            Dictionary<string, object> Data = new Dictionary<string, object>();
+            Data["^c"] = "MKD::Map";
+            Data["@id"] = ID;
+            Data["@dev_name"] = DevName;
+            Data["@display_name"] = DisplayName;
+            Data["@width"] = Width;
+            Data["@height"] = Height;
+            List<List<object>> layers = new List<List<object>>();
+            for (int i = 0; i < Layers.Count; i++)
+            {
+                layers.Add(Layers[i].ToJSON());
+            }
+            Data["@tiles"] = layers;
+            Data["@tilesets"] = TilesetIDs;
+            Dictionary<int, Dictionary<string, object>> events = new Dictionary<int, Dictionary<string, object>>();
+            foreach (KeyValuePair<int, Event> kvp in Events)
+            {
+                events[kvp.Key] = kvp.Value.ToJSON();
+            }
+            Data["@events"] = events;
+            return Data;
         }
 
         public void SetSize(int width, int height)
@@ -69,7 +96,7 @@ namespace MKEditor.Game
 
         public override string ToString()
         {
-            return this.DevName;
+            return this.DisplayName;
         }
 
         public object Clone()
@@ -96,6 +123,17 @@ namespace MKEditor.Game
         public Layer(string Name)
         {
             this.Name = Name;
+        }
+
+        public List<object> ToJSON()
+        {
+            List<object> Data = new List<object>();
+            for (int i = 0; i < Tiles.Count; i++)
+            {
+                if (Tiles[i] == null) Data.Add(null);
+                else Data.Add(new List<object>() { Tiles[i].TilesetIndex, Tiles[i].TileID });
+            }
+            return Data;
         }
     }
 

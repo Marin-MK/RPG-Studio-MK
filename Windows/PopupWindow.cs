@@ -6,7 +6,7 @@ namespace MKEditor.Widgets
     public class PopupWindow : Widget
     {
         public bool Blocked = false;
-        public string DisplayName { get; protected set; }
+        public string Title { get; protected set; }
 
         public EventHandler<EventArgs> OnClosed;
 
@@ -16,9 +16,9 @@ namespace MKEditor.Widgets
             Window.SetOverlayOpacity(128);
             Sprites["window"] = new RectSprite(this.Viewport, new Size(this.Size.Width - 14, this.Size.Height - 14),
                 new Color(59, 227, 255), new Color(40, 62, 84));
-            Sprites["name"] = new Sprite(this.Viewport);
-            Sprites["name"].X = 5;
-            Sprites["name"].Y = 3;
+            Sprites["title"] = new Sprite(this.Viewport);
+            Sprites["title"].X = 5;
+            Sprites["title"].Y = 3;
             this.WindowLayer = Window.ActiveWidget.WindowLayer + 1;
             this.Window.SetActiveWidget(this);
             Window.SetOverlayZIndex(WindowLayer * 10 - 1);
@@ -44,17 +44,17 @@ namespace MKEditor.Widgets
             this.SetPosition(width / 2 - (this.Size.Width) / 2, height / 2 - (this.Size.Height) / 2);
         }
 
-        public void SetName(string Name)
+        public void SetTitle(string Title)
         {
-            this.DisplayName = Name;
+            this.Title = Title;
             Font f = Font.Get("Fonts/ProductSans-B", 14);
-            Size s = f.TextSize(Name);
-            if (Sprites["name"].Bitmap != null) Sprites["name"].Bitmap.Dispose();
-            Sprites["name"].Bitmap = new Bitmap(s);
-            Sprites["name"].Bitmap.Unlock();
-            Sprites["name"].Bitmap.Font = f;
-            Sprites["name"].Bitmap.DrawText(Name, Color.WHITE);
-            Sprites["name"].Bitmap.Lock();
+            Size s = f.TextSize(Title);
+            if (Sprites["title"].Bitmap != null) Sprites["title"].Bitmap.Dispose();
+            Sprites["title"].Bitmap = new Bitmap(s);
+            Sprites["title"].Bitmap.Unlock();
+            Sprites["title"].Bitmap.Font = f;
+            Sprites["title"].Bitmap.DrawText(Title, Color.WHITE);
+            Sprites["title"].Bitmap.Lock();
         }
 
         public void Close()

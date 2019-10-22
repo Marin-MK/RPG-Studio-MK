@@ -23,7 +23,7 @@ namespace MKEditor.Widgets
             : base(Parent, Name)
         {
             this.Map = Map;
-            SetName("Add Tileset");
+            SetTitle("Add Tileset");
 
             Label pickerlabel = new Label(this);
             pickerlabel.SetText("Tilesets");

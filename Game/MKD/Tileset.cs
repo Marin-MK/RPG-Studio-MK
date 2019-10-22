@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json.Linq;
 using ODL;
 
 namespace MKEditor.Game
 {
-    public class Tileset : Serializable
+    public class Tileset
     {
         public int ID;
         public string Name;
@@ -22,38 +23,55 @@ namespace MKEditor.Game
 
         }
 
-        public Tileset(string path)
-            : base(path)
+        public Tileset(Dictionary<string, object> Data)
         {
-            this.ID = GetVar<int>("id");
-            this.Name = GetVar<string>("name");
-            this.GraphicName = GetVar<string>("graphic_name");
-            List<int> _Passabilities = GetList<int>("passabilities");
-            this.Passabilities = new List<Passability>();
-            for (int i = 0; i < _Passabilities.Count; i++)
+            if (Data.ContainsKey("^c"))
             {
-                this.Passabilities.Add((Passability) _Passabilities[i]);
+                if ((string) Data["^c"] != "MKD::Tileset") throw new Exception("Invalid class - Expected class of type MKD::Tileset but got " + (string) Data["^c"] + ".");
             }
-            List<object> _priorities = GetList<object>("priorities");
-            this.Priorities = new List<int?>();
-            for (int i = 0; i < _priorities.Count; i++)
+            else
             {
-                if (_priorities[i] is int) this.Priorities.Add((int)_priorities[i]);
-                else this.Priorities.Add(null);
+                throw new Exception("Could not find a ^c key to identify this class.");
             }
-            List<object> _tags = GetList<object>("tags");
-            this.Tags = new List<int?>();
-            for (int i = 0; i < _tags.Count; i++)
+            this.ID = Convert.ToInt32(Data["@id"]);
+            this.Name = (string) Data["@name"];
+            this.GraphicName = (string) Data["@graphic_name"];
+            Priorities = new List<int?>();
+            foreach (object o in ((JArray) Data["@priorities"]).ToObject<List<object>>())
             {
-                if (_tags[i] is int) this.Tags.Add((int) _tags[i]);
-                else this.Tags.Add(null);
+                if (o is null) Priorities.Add(null);
+                else Priorities.Add(Convert.ToInt32(o));
             }
-            // Make sure the three arrays are just as big
+            Passabilities = new List<Passability>();
+            foreach (object o in ((JArray) Data["@passabilities"]).ToObject<List<object>>())
+            {
+                Passabilities.Add((Passability) Convert.ToInt32(o));
+            }
+            Tags = new List<int?>();
+            foreach (object o in ((JArray) Data["@tags"]).ToObject<List<object>>())
+            {
+                if (o is null) Tags.Add(null);
+                else Tags.Add(Convert.ToInt32(o));
+            }
+            // Make sure the three arrays are just as big; trailing nulls may be left out if the data is edited externally
             int maxcount = Math.Max(Math.Max(Passabilities.Count, Priorities.Count), Tags.Count);
             this.Passabilities.AddRange(new Passability[maxcount - Passabilities.Count]);
             this.Priorities.AddRange(new int?[maxcount - Priorities.Count]);
             this.Tags.AddRange(new int?[maxcount - Tags.Count]);
             this.CreateBitmap();
+        }
+
+        public Dictionary<string, object> ToJSON()
+        {
+            Dictionary<string, object> Data = new Dictionary<string, object>();
+            Data["^c"] = "MKD::Tileset";
+            Data["@id"] = ID;
+            Data["@name"] = Name;
+            Data["@graphic_name"] = GraphicName;
+            Data["@priorities"] = Priorities;
+            Data["@passabilities"] = Passabilities;
+            Data["@tags"] = Tags;
+            return Data;
         }
 
         public void CreateBitmap(bool Redraw = false)

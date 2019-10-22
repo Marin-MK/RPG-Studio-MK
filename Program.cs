@@ -23,7 +23,7 @@ namespace MKEditor
                 Editor.GeneralSettings.LastY = y;
                 Editor.GeneralSettings.LastWidth = w;
                 Editor.GeneralSettings.LastHeight = h;
-                SDL2.SDL.SDL_WindowFlags flags = (SDL2.SDL.SDL_WindowFlags) SDL2.SDL.SDL_GetWindowFlags(win.SDL_Window);
+                SDL2.SDL.SDL_WindowFlags flags = (SDL2.SDL.SDL_WindowFlags)SDL2.SDL.SDL_GetWindowFlags(win.SDL_Window);
                 Editor.GeneralSettings.WasMaximized = (flags & SDL2.SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED) == SDL2.SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED;
                 Editor.DumpGeneralSettings();
             };

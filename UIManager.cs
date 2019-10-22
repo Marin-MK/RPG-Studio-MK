@@ -197,6 +197,8 @@ namespace MKEditor
             {
                 if (!s.GlobalShortcut) continue; // Handled by the Widget it's bound to
 
+                if (s.Widget.WindowLayer < Window.ActiveWidget.WindowLayer || !s.Widget.IsVisible() || s.Widget.Disposed) continue;
+
                 Key k = s.Key;
                 bool Valid = Input.Trigger((SDL2.SDL.SDL_Keycode) k.MainKey);
                 if (!Valid) continue;

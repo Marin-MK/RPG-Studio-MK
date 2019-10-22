@@ -15,7 +15,7 @@ namespace MKEditor.Widgets
         public MessageBox(string Title, string Message, ButtonTypes type = ButtonTypes.OK)
             : base(Graphics.Windows[0], "messageBox")
         {
-            SetName(Title);
+            SetTitle(Title);
             
             label = new MultilineLabel(this);
             label.SetText(Message);
