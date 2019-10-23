@@ -9,10 +9,10 @@ namespace MKEditor
     {
         public MainEditorWindow Window { get; protected set; }
         public Point AdjustedPosition { get { return new Point(0, 0); } set { throw new MethodNotSupportedException(this); } }
-        public Size AdjustedSize { get { return new Size(0, 0); } }
         public Point Position { get { return new Point(0, 0); } }
         public int ScrolledX { get { return 0; } set { throw new MethodNotSupportedException(this); } }
         public int ScrolledY { get { return 0; } set { throw new MethodNotSupportedException(this); } }
+        public int ZIndex { get { return 0; } }
         public Point ScrolledPosition { get { return new Point(0, 0); } }
         public Size Size { get { return new Size(this.Window.Width, this.Window.Height); } }
         public Viewport Viewport { get { return this.Window.Viewport; } }

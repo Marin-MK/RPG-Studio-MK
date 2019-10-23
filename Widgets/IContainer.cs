@@ -11,7 +11,7 @@ namespace MKEditor.Widgets
         Size Size { get; }
         List<Widget> Widgets { get; }
         Point AdjustedPosition { get; }
-        Size AdjustedSize { get; }
+        int ZIndex { get; }
 
         int ScrolledX { get; set; }
         int ScrolledY { get; set; }

@@ -44,32 +44,27 @@ namespace MKEditor.Widgets
             {
                 new MenuItem("New Layer")
                 {
-                    Icon = Icon.New,
                     OnLeftClick = NewLayer
                 },
                 new MenuSeparator(),
                 new MenuItem("Toggle Visibility")
                 {
-                    Icon = Icon.Eye,
                     Shortcut = "Ctrl+H",
                     OnLeftClick = ToggleVisibilityLayer
                 },
                 new MenuItem("Move Layer Up")
                 {
-                    Icon = Icon.Up,
                     OnLeftClick = MoveLayerUp,
                     IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = SelectedLayer < Map.Layers.Count - 1; }
                 },
                 new MenuItem("Move Layer Down")
                 {
-                    Icon = Icon.Down,
                     OnLeftClick = MoveLayerDown,
                     IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = SelectedLayer > 0; }
                 },
                 new MenuSeparator(),
                 new MenuItem("Delete Layer")
                 {
-                    Icon = Icon.Delete,
                     Shortcut = "Del",
                     OnLeftClick = DeleteLayer,
                     IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Map.Layers.Count > 1; }

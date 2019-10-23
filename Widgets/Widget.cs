@@ -6,26 +6,95 @@ namespace MKEditor.Widgets
 {
     public class Widget : IDisposable, IContainer
     {
-        public string                       Name;
-        public Viewport                     Viewport         { get; set; }
-        public Size                         Size             { get; protected set; } = new Size(50, 50);
-        public Point                        Position         { get; protected set; } = new Point(0, 0);
-        public MainEditorWindow                 Window           { get; protected set; }
-        public bool                         AutoResize       = false;
-        public Size                         MinimumSize      { get; protected set; } = new Size(1, 1);
-        public Size                         MaximumSize      { get; protected set; } = new Size(9999, 9999);
-        public Color                        BackgroundColor  { get; protected set; } = new Color(255, 255, 255, 0);
-        public Dictionary<string, ISprite>  Sprites          { get; protected set; } = new Dictionary<string, ISprite>();
-        public List<Widget>                 Widgets          { get; protected set; } = new List<Widget>();
-        public MouseInputManager            WidgetIM         { get; protected set; }
-        public IContainer                   Parent           { get; set; }
-        public bool                         Disposed         { get; protected set; } = false;
-        public Point                        AdjustedPosition { get; protected set; } = new Point(0, 0);
-        public Size                         AdjustedSize     { get; protected set; } = new Size(50, 50);
-        public bool                         Visible          { get; protected set; } = true;
-        public bool                         SelectedWidget   = false;
-        public bool                         Dock             = false;
+        /// <summary>
+        /// The unique name of the widget by which it is stored and referenced in its parent widget.
+        /// </summary>
+        public string Name;
+
+        /// <summary>
+        /// The viewport of this widget. Influenced by position, size, parent position and size, scroll values, etc.
+        /// </summary>
+        public Viewport Viewport { get; set; }
+
+        /// <summary>
+        /// Full size of this widget. Can be smaller if viewport exceeds parent container, but never bigger.
+        /// </summary>
+        public Size Size { get; protected set; } = new Size(50, 50);
+
+        /// <summary>
+        /// Relative position to parent container.
+        /// </summary>
+        public Point Position { get; protected set; } = new Point(0, 0);
+
+        /// <summary>
+        /// Main window associated with this widget.
+        /// </summary>
+        public MainEditorWindow Window { get; protected set; }
+
+        /// <summary>
+        /// Whether or not the widget should automatically resize based on its children's positions and sizes.
+        /// </summary>
+        public bool AutoResize = false;
+
+        /// <summary>
+        /// Minimum possible size for this widget.
+        /// </summary>
+        public Size MinimumSize { get; protected set; } = new Size(1, 1);
+
+        /// <summary>
+        /// Maximum possible size for this widget.
+        /// </summary>
+        public Size MaximumSize { get; protected set; } = new Size(9999, 9999);
+
+        /// <summary>
+        /// Background color of this widget.
+        /// </summary>
+        public Color BackgroundColor { get; protected set; } = new Color(255, 255, 255, 0);
+
+        /// <summary>
+        /// The list of sprites that create the graphics of this widget. All sprites MUST be stored in here to be properly displayed.
+        /// </summary>
+        public Dictionary<string, ISprite> Sprites { get; protected set; } = new Dictionary<string, ISprite>();
+
+        /// <summary>
+        /// Children widgets of this widget.
+        /// </summary>
+        public List<Widget> Widgets { get; protected set; } = new List<Widget>();
+
+        /// <summary>
+        /// This object aids in fetching mouse input.
+        /// </summary>
+        public MouseInputManager WidgetIM { get; protected set; }
+
+        /// <summary>
+        /// The parent of this widget.
+        /// </summary>
+        public IContainer Parent { get; set; }
+
+        /// <summary>
+        /// Whether or not this widget has been disposed.
+        /// </summary>
+        public bool Disposed { get; protected set; } = false;
+
+        /// <summary>
+        /// Used for determining the viewport boundaries.
+        /// </summary>
+        public Point AdjustedPosition { get; protected set; } = new Point(0, 0);
+
+        /// <summary>
+        /// Whether or not this widget itself is visible. Actual visibility may vary based on parent visibility.
+        /// </summary>
+        public bool Visible { get; protected set; } = true;
+
+        /// <summary>
+        /// Whether or not this widget is the currently active and selected widget.
+        /// </summary>
+        public bool SelectedWidget = false;
+
         private int _ZIndex = 0;
+        /// <summary>
+        /// Relative Z Index of this widget and its viewport. Actual Z Index may vary based on parent Z Index.
+        /// </summary>
         public int ZIndex
         {
             get
@@ -36,11 +105,30 @@ namespace MKEditor.Widgets
             protected set { _ZIndex = value; }
         }
 
-        public List<IMenuItem>              ContextMenuList  { get; protected set; }
-        public bool                         ShowContextMenu  { get; protected set; } = false;
-        public List<Shortcut>               Shortcuts        { get; protected set; } = new List<Shortcut>();
-        public bool                         ConsiderInAutoScroll = true;
+        /// <summary>
+        /// The list of right-click menu options to show when this widget is right-clicked.
+        /// </summary>
+        public List<IMenuItem> ContextMenuList { get; protected set; }
+
+        /// <summary>
+        /// Whether or not to show the context menu if this widget is right-clicked.
+        /// </summary>
+        public bool ShowContextMenu { get; protected set; } = false;
+
+        /// <summary>
+        /// The list of keyboard shortcuts associated with this widget. Can be global shortcuts.
+        /// </summary>
+        public List<Shortcut> Shortcuts { get; protected set; } = new List<Shortcut>();
+
+        /// <summary>
+        /// Whether or not this widget should be considered when determining scrollbar size and position for autoscroll.
+        /// </summary>
+        public bool ConsiderInAutoScroll = true;
+
         private int _WindowLayer = 0;
+        /// <summary>
+        /// Which pseudo-window or layer this widget is on.
+        /// </summary>
         public int WindowLayer
         {
             get
@@ -53,11 +141,30 @@ namespace MKEditor.Widgets
             }
         }
 
-        public  bool       HAutoScroll       = false;
-        public  bool       VAutoScroll       = false;
-        public  int        ScrolledX         { get; set; } = 0;
-        public  int        ScrolledY         { get; set; } = 0;
-        public  Point      ScrolledPosition
+        /// <summary>
+        /// Whether or not this widget should scroll horizontally if its children exceeds this widget's boundaries.
+        /// </summary>
+        public bool HAutoScroll = false;
+
+        /// <summary>
+        /// Whether or not this widget should scroll vertically if its children exceeds this widget's boundaries.
+        /// </summary>
+        public bool VAutoScroll = false;
+
+        /// <summary>
+        /// How far this widget has scrolled horizontally with autoscroll.
+        /// </summary>
+        public int ScrolledX { get; set; } = 0;
+
+        /// <summary>
+        /// How far this widget has scrolled horizontally with autoscroll.
+        /// </summary>
+        public int ScrolledY { get; set; } = 0;
+
+        /// <summary>
+        /// Relative position of this widget including scroll values.
+        /// </summary>
+        public Point ScrolledPosition
         {
             get
             {
@@ -67,40 +174,156 @@ namespace MKEditor.Widgets
                 );
             }
         }
-        public  int        MaxChildWidth     = 0;
-        public  int        MaxChildHeight    = 0;
-        public  HScrollBar HScrollBar        { get; protected set; }
-        public  VScrollBar VScrollBar        { get; protected set; }
 
-        public Margin Margin          { get; protected set; } = new Margin();
-        public int    GridRowStart    = 0;
-        public int    GridRowEnd      = 0;
-        public int    GridColumnStart = 0;
-        public int    GridColumnEnd   = 0;
+        /// <summary>
+        /// The total width occupied by this widget's children.
+        /// </summary>
+        public int MaxChildWidth = 0;
 
-        protected bool Drawn      = false;
-        protected bool RedrawSize = false;
+        /// <summary>
+        /// The total height occupied by this widget's children.
+        /// </summary>
+        public int MaxChildHeight = 0;
+
+        /// <summary>
+        /// The ScrollBar for scrolling horizontally.
+        /// </summary>
+        public HScrollBar HScrollBar { get; protected set; }
+
+        /// <summary>
+        /// The ScrollBar for scrolling vertically.
+        /// </summary>
+        public VScrollBar VScrollBar { get; protected set; }
+
+        /// <summary>
+        /// The margin to use for grids and stackpanels.
+        /// </summary>
+        public Margin Margin { get; protected set; } = new Margin();
+
+        /// <summary>
+        /// Which grid row this widget starts in.
+        /// </summary>
+        public int GridRowStart = 0;
+
+        /// <summary>
+        /// Which grid row this widget ends in.
+        /// </summary>
+        public int GridRowEnd = 0;
+
+        /// <summary>
+        /// Which grid column this widget starts in.
+        /// </summary>
+        public int GridColumnStart = 0;
+
+        /// <summary>
+        /// Which grid column this widget ends in.
+        /// </summary>
+        public int GridColumnEnd = 0;
+
+        /// <summary>
+        /// A list of timers used for time-sensitive events
+        /// </summary>
+        public List<Timer> Timers { get; protected set; } = new List<Timer>();
+
+        /// <summary>
+        /// Whether or not to redraw this widget.
+        /// </summary>
+        protected bool Drawn = false;
         
+        /// <summary>
+        /// Called whenever this widget is left clicked.
+        /// </summary>
         public EventHandler<MouseEventArgs> OnLeftClick;
+
+        /// <summary>
+        /// Called once whenever a new mouse button is pressed.
+        /// </summary>
         public EventHandler<MouseEventArgs> OnMouseDown;
+
+        /// <summary>
+        /// Called while a mouse button is being held down.
+        /// </summary>
         public EventHandler<MouseEventArgs> OnMousePress;
+
+        /// <summary>
+        /// Called once whenever a mouse button is released.
+        /// </summary>
         public EventHandler<MouseEventArgs> OnMouseUp;
+
+        /// <summary>
+        /// Called once per mouse wheel scroll.
+        /// </summary>
         public EventHandler<MouseEventArgs> OnMouseWheel;
+
+        /// <summary>
+        /// Called while the mouse is moving.
+        /// </summary>
         public EventHandler<MouseEventArgs> OnMouseMoving;
+
+        /// <summary>
+        /// Called when this widget becomes the active widget.
+        /// </summary>
         public EventHandler<MouseEventArgs> OnWidgetSelected;
+
+        /// <summary>
+        /// Called when this widget is no longer the active widget.
+        /// </summary>
         public EventHandler<EventArgs> OnWidgetDeselected;
+
+        /// <summary>
+        /// Called when a button is being is pressed.
+        /// </summary>
         public EventHandler<TextInputEventArgs> OnTextInput;
+
+        /// <summary>
+        /// Called when this widget's relative position changes.
+        /// </summary>
         public EventHandler<EventArgs> OnPositionChanged;
+
+        /// <summary>
+        /// Called when this widget's relative size changes.
+        /// </summary>
         public EventHandler<SizeEventArgs> OnSizeChanged;
+
+        /// <summary>
+        /// Called when this widget's parent relative size changes.
+        /// </summary>
         public EventHandler<SizeEventArgs> OnParentSizeChanged;
+
+        /// <summary>
+        /// Called when a child's relative size changes.
+        /// </summary>
         public EventHandler<SizeEventArgs> OnChildBoundsChanged;
+
+        /// <summary>
+        /// Called before this widget is disposed.
+        /// </summary>
         public EventHandler<EventArgs> OnDisposing;
+
+        /// <summary>
+        /// Called after this widget is disposed.
+        /// </summary>
         public EventHandler<EventArgs> OnDisposed;
+
+        /// <summary>
+        /// Called when the autoscroll scrollbars are being scrolled.
+        /// </summary>
         public EventHandler<EventArgs> OnScrolling;
+
+        /// <summary>
+        /// Called before the right-click menu would open. Is cancellable.
+        /// </summary>
         public EventHandler<CancelEventArgs> OnContextMenuOpening;
 
+        /// <summary>
+        /// Creates a new Widget object.
+        /// </summary>
+        /// <param name="Parent">The Parent widget.</param>
+        /// <param name="Name">The unique name to give this widget by which to store it.</param>
+        /// <param name="Index">Optional index parameter. Used internally for stackpanels.</param>
         public Widget(object Parent, string Name = "widget", int Index = -1)
         {
+            // Children of ILayout widgets (Grid, StackPanel) aren't added directly, but rather get a LayoutContainer as a parent and copy their viewport.
             if (Parent is ILayout && !(this is LayoutContainer))
             {
                 if (Parent is VStackPanel && Index != -1) (Parent as VStackPanel).Insert(Index, this);
@@ -109,13 +332,19 @@ namespace MKEditor.Widgets
             else
             {
                 this.SetParent(Parent, Index);
+                // Create new viewport directly on the window's renderer.
                 this.Viewport = new Viewport(this.Window.Renderer, 0, 0, this.Size);
-                this.Viewport.Z = this.Parent.Viewport.Z;
+                // Z index by default copies parent viewport's z. If changed later, SetZIndex will modify the value.
+                this.Viewport.Z = this.Parent.ZIndex;
             }
+            // Ensures this name is unique by adding an integer at the end.
             this.Name = this.Parent.GetName(Name);
+            // The background sprite responsible for the BackgroundColor.
             this.Sprites["_bg"] = new Sprite(this.Viewport);
             this.Sprites["_bg"].Bitmap = new SolidBitmap(this.Size, this.BackgroundColor);
+            // In the same viewport as all other sprites, but at a very large negative Z index.
             this.Sprites["_bg"].Z = -999999999;
+            // Set some default events.
             this.OnLeftClick = new EventHandler<MouseEventArgs>(this.LeftClick);
             this.OnMouseMoving = new EventHandler<MouseEventArgs>(this.MouseMoving);
             this.OnWidgetDeselected = new EventHandler<EventArgs>(this.WidgetDeselected);
@@ -124,17 +353,69 @@ namespace MKEditor.Widgets
             this.OnSizeChanged = new EventHandler<SizeEventArgs>(this.SizeChanged);
             this.OnParentSizeChanged = new EventHandler<SizeEventArgs>(this.ParentSizeChanged);
             this.OnChildBoundsChanged = new EventHandler<SizeEventArgs>(this.ChildBoundsChanged);
+            // Creates the input manager object responsible for fetching mouse input.
             this.WidgetIM = new MouseInputManager(this);
             this.WidgetIM.OnRightClick += RightClick_ContextMenu;
-
-            SetZIndex(0);
-            //Sprites["bounds"] = new Sprite(this.Viewport);
-            //Sprites["bounds"].Z = 999999;
         }
 
+        /// <summary>
+        /// Initializes the list of right-click menu options.
+        /// </summary>
+        /// <param name="Items">The list of menu items.</param>
+        public virtual void SetContextMenuList(List<IMenuItem> Items)
+        {
+            AssertUndisposed();
+            this.ContextMenuList = Items;
+            this.ShowContextMenu = Items.Count > 0;
+        }
+
+        /// <summary>
+        /// Initializes the list of shortcuts.
+        /// </summary>
+        /// <param name="Shortcuts">The list of shortcuts.</param>
+        public void RegisterShortcuts(List<Shortcut> Shortcuts)
+        {
+            AssertUndisposed();
+            // De-register old global shortcuts in the UIManager object.
+            foreach (Shortcut s in this.Shortcuts)
+            {
+                if (s.GlobalShortcut) this.Window.UI.DeregisterShortcut(s);
+            }
+            this.Shortcuts = Shortcuts;
+            // Register global shortcuts in the UIManager object.
+            foreach (Shortcut s in this.Shortcuts)
+            {
+                if (s.GlobalShortcut) this.Window.UI.RegisterShortcut(s);
+            }
+        }
+
+        /// <summary>
+        /// Sets the Z Index of this widget and viewport.
+        /// </summary>
+        /// <param name="ZIndex">The new Z Index.</param>
+        public void SetZIndex(int ZIndex)
+        {
+            AssertUndisposed();
+            // Only update if value changed.
+            if (this.ZIndex != ZIndex)
+            {
+                this.ZIndex = ZIndex;
+                // this.ZIndex takes parent Z Index into account.
+                this.Viewport.Z = this.ZIndex;
+            }
+        }
+
+        /// <summary>
+        /// Registers this widget under the parent widget.
+        /// </summary>
+        /// <param name="Parent">The Parent widget.</param>
+        /// <param name="Index">Optional index for stackpanel parents.</param>
         public void SetParent(object Parent, int Index = -1)
         {
+            AssertUndisposed();
+            // De-registers this widget from former parent if present.
             if (this.Parent != null) this.Parent.Remove(this);
+            // MainEditorWindow isn't a widget, instead use its UI (UIManager) field.
             if (Parent is MainEditorWindow)
             {
                 this.Window = Parent as MainEditorWindow;
@@ -150,234 +431,58 @@ namespace MKEditor.Widgets
                 this.Window = (Parent as Widget).Window;
                 this.Parent = Parent as IContainer;
             }
+            // Insert widget at specific index for stackpanels
             if (Index != -1 && this.Parent is VStackPanel) (this.Parent as VStackPanel).Insert(Index, this);
+            // Or add to the end of the list otherwise
             else this.Parent.Add(this);
         }
 
-        public void SetVisible(bool Visible)
-        {
-            if (this.Visible != Visible)
-            {
-                this.Visible = Visible;
-                this.Viewport.Visible = Visible;
-                this.Widgets.ForEach(w => w.SetVisible(Visible));
-            }
-        }
-
-        public bool IsVisible()
-        {
-            if (!this.Visible) return false;
-            if (Parent is Widget) return (Parent as Widget).IsVisible();
-            return true;
-        }
-
+        /// <summary>
+        /// Returns the pseudo-parent window. PopupWindow objects are Widgets, but seen as "Pseudo-windows".
+        /// </summary>
         public object GetParentWindow()
         {
+            AssertUndisposed();
             if (Parent is PopupWindow || Parent is MainEditorWindow) return Parent;
             else if (Parent is UIManager) return Window;
             else return (Parent as Widget).GetParentWindow();
         }
 
-        public void SetZIndex(int ZIndex)
-        {
-            if (this.ZIndex != ZIndex)
-            {
-                this.ZIndex = ZIndex;
-                this.Viewport.Z = this.ZIndex;
-            }
-        }
-
-        public virtual void SetContextMenuList(List<IMenuItem> Items)
-        {
-            this.ContextMenuList = Items;
-            this.ShowContextMenu = Items.Count > 0;
-        }
-
-        public void RegisterShortcuts(List<Shortcut> Shortcuts)
-        {
-            foreach (Shortcut s in this.Shortcuts)
-            {
-                if (s.GlobalShortcut) this.Window.UI.DeregisterShortcut(s);
-            }
-            this.Shortcuts = Shortcuts;
-            foreach (Shortcut s in this.Shortcuts)
-            {
-                if (s.GlobalShortcut) this.Window.UI.RegisterShortcut(s);
-            }
-        }
-
-        public virtual void Dispose()
+        /// <summary>
+        /// Set visibility for this widget and all children.
+        /// </summary>
+        /// <param name="Visible">Boolean visibility value.</param>
+        public void SetVisible(bool Visible)
         {
             AssertUndisposed();
-            if (this.OnDisposing != null) this.OnDisposing.Invoke(this, new EventArgs());
-            this.Disposed = true;
-            this.Viewport.Dispose();
-            for (int i = 0; i < this.Widgets.Count; i++)
+            // Only update if a different value
+            if (this.Visible != Visible)
             {
-                if (this.Widgets[i] != null)
-                {
-                    this.Widgets[i].Dispose();
-                    i--;
-                }
-            }
-            this.Parent.Widgets.Remove(this);
-            this.Viewport = null;
-            this.Sprites = null;
-            if (this.OnDisposed != null) this.OnDisposed.Invoke(this, new EventArgs());
-        }
-
-        private void AssertUndisposed()
-        {
-            if (this.Disposed)
-            {
-                throw new ObjectDisposedException(this.Name);
+                this.Visible = Visible;
+                this.Viewport.Visible = Visible;
+                // Sets all children to be invisible.
+                // Note that this overwrites their own visibility value.
+                // After making a parent invisible, all its children will become invisible, and visible again when the parent becomes visible.
+                // This means if you needed one of the children invisible, you would need to make them invisible again manually.
+                this.Widgets.ForEach(w => w.SetVisible(Visible));
             }
         }
 
-        public void Redraw()
+        /// <summary>
+        /// Returns whether this widget is visible.
+        /// </summary>
+        public bool IsVisible()
         {
             AssertUndisposed();
-            this.Drawn = false;
+            // Should be identical to Viewport.Visible.
+            if (!this.Visible) return false;
+            if (Parent is Widget) return (Parent as Widget).IsVisible();
+            return true;
         }
 
-        protected virtual void Draw()
-        {
-            AssertUndisposed();
-            this.Drawn = true;
-            this.RedrawSize = false;
-        }
-
-        public virtual void Update()
-        {
-            AssertUndisposed();
-
-            if (this.SelectedWidget)
-            {
-                foreach (Shortcut s in this.Shortcuts)
-                {
-                    if (s.GlobalShortcut) continue; // Handled by the UIManager
-
-                    Key k = s.Key;
-                    bool Valid = Input.Trigger((SDL2.SDL.SDL_Keycode) k.MainKey);
-                    if (!Valid) continue;
-
-                    // Modifiers
-                    foreach (Keycode mod in k.Modifiers)
-                    {
-                        bool onefound = false;
-                        List<SDL2.SDL.SDL_Keycode> codes = new List<SDL2.SDL.SDL_Keycode>();
-                        if (mod == Keycode.CTRL) { codes.Add(SDL2.SDL.SDL_Keycode.SDLK_LCTRL); codes.Add(SDL2.SDL.SDL_Keycode.SDLK_RCTRL); }
-                        else if (mod == Keycode.SHIFT) { codes.Add(SDL2.SDL.SDL_Keycode.SDLK_LSHIFT); codes.Add(SDL2.SDL.SDL_Keycode.SDLK_RSHIFT); }
-                        else if (mod == Keycode.ALT) { codes.Add(SDL2.SDL.SDL_Keycode.SDLK_LALT); codes.Add(SDL2.SDL.SDL_Keycode.SDLK_RALT); }
-                        else codes.Add((SDL2.SDL.SDL_Keycode) mod);
-
-                        for (int i = 0; i < codes.Count; i++)
-                        {
-                            if (Input.Press(codes[i]))
-                            {
-                                onefound = true;
-                                break;
-                            }
-                        }
-
-                        if (!onefound)
-                        {
-                            Valid = false;
-                            break;
-                        }
-                    }
-
-                    if (!Valid) continue;
-
-                    s.Event.Invoke(this, new EventArgs());
-                }
-            }
-
-            this.WidgetIM.Update(this.Viewport.Rect);
-            if (!this.Drawn) this.Draw();
-            for (int i = 0; i < this.Widgets.Count; i++)
-            {
-                this.Widgets[i].Update();
-            }
-        }
-
-        private void RightClick_ContextMenu(object sender, MouseEventArgs e)
-        {
-            if (ShowContextMenu && ContextMenuList != null && ContextMenuList.Count > 0)
-            {
-                bool cont = true;
-                if (OnContextMenuOpening != null)
-                {
-                    CancelEventArgs args = new CancelEventArgs();
-                    OnContextMenuOpening.Invoke(sender, args);
-                    if (args.Cancel) cont = false;
-                }
-                if (cont)
-                {
-                    ContextMenu cm = new ContextMenu(this.Window);
-                    cm.SetItems(ContextMenuList);
-                    Size s = cm.Size;
-                    int x = e.X;
-                    int y = e.Y;
-                    if (e.X + s.Width >= Window.Width) x -= s.Width;
-                    if (e.Y + s.Height >= Window.Height) y -= s.Height;
-                    x = Math.Max(0, x);
-                    y = Math.Max(0, y);
-                    cm.SetPosition(x, y);
-                }
-            }
-        }
-        public virtual void MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.LeftButton != e.OldLeftButton && this.WidgetIM.Hovering)
-            {
-                Redraw();
-            }
-        }
-        public virtual void MousePress(object sender, MouseEventArgs e) { }
-        public virtual void MouseUp(object sender, MouseEventArgs e)
-        {
-            if (e.LeftButton != e.OldLeftButton && this.WidgetIM.ClickedLeftInArea == true) Redraw();
-        }
-        public virtual void MouseWheel(object sender, MouseEventArgs e) { }
-        public virtual void MouseMoving(object sender, MouseEventArgs e) { }
-        public virtual void HoverChanged(object sender, MouseEventArgs e)
-        {
-            Redraw();
-        }
-        public virtual void LeftClick(object sender, MouseEventArgs e) { }
-        public virtual void WidgetSelected(object sender, MouseEventArgs e)
-        {
-            this.Window.UI.SetSelectedWidget(this);
-        }
-        public virtual void WidgetDeselected(object sender, EventArgs e) { }
-        public virtual void TextInput(object sender, TextInputEventArgs e) { }
-        public virtual void PositionChanged(object sender, EventArgs e)
-        {
-            UpdateAutoScroll();
-        }
-        public virtual void SizeChanged(object sender, SizeEventArgs e)
-        {
-            //if (Sprites["bounds"].Bitmap != null) Sprites["bounds"].Bitmap.Dispose();
-            //Sprites["bounds"].Bitmap = new Bitmap(Size);
-            //Sprites["bounds"].Bitmap.Unlock();
-            //Sprites["bounds"].Bitmap.DrawRect(Size, Color.BLACK);
-            //Sprites["bounds"].Bitmap.Lock();
-            UpdateAutoScroll();
-            UpdateLayout();
-            for (int i = 0; i < this.Widgets.Count;i ++)
-            {
-                Widget w = this.Widgets[i];
-                // Docking; to do
-                // if (!(w is AutoVScrollBar) && w.Dock) w.SetSize(this.Size);
-            }
-        }
-        public virtual void ParentSizeChanged(object sender, SizeEventArgs e) { }
-        public virtual void ChildBoundsChanged(object sender, SizeEventArgs e)
-        {
-            UpdateAutoScroll();
-        }
-
+        /// <summary>
+        /// Updates the scrollbars based on children boundaries.
+        /// </summary>
         public void UpdateAutoScroll()
         {
             if (!HAutoScroll && !VAutoScroll) return;
@@ -475,6 +580,9 @@ namespace MKEditor.Widgets
             this.UpdateBounds();
         }
 
+        /// <summary>
+        /// Links the given HScrollBar with this widget.
+        /// </summary>
         public void SetHScrollBar(HScrollBar hsb)
         {
             this.HScrollBar = hsb;
@@ -482,6 +590,9 @@ namespace MKEditor.Widgets
             hsb.LinkedWidget = this;
         }
 
+        /// <summary>
+        /// Links the given VScrollBar with this widget.
+        /// </summary>
         public void SetVScrollBar(VScrollBar vsb)
         {
             this.VScrollBar = vsb;
@@ -489,6 +600,9 @@ namespace MKEditor.Widgets
             vsb.LinkedWidget = this;
         }
 
+        /// <summary>
+        /// Updates this viewport's boundaries if it exceeds the parent viewport's boundaries and applies scrolling.
+        /// </summary>
         public void UpdateBounds()
         {
             AssertUndisposed();
@@ -545,42 +659,60 @@ namespace MKEditor.Widgets
                 this.Viewport.Height -= DiffHeight;
             }
             this.AdjustedPosition = new Point(DiffX, DiffY);
-            this.AdjustedSize = new Size(DiffWidth, DiffHeight);
             foreach (Widget w in this.Widgets)
             {
                 w.UpdateBounds();
             }
         }
 
-        public Widget SetPosition(int X, int Y)
+        /// <summary>
+        /// Changes the relative position of this widget.
+        /// </summary>
+        public void SetPosition(int X, int Y)
         {
-            return this.SetPosition(new Point(X, Y));
+            this.SetPosition(new Point(X, Y));
         }
-        public virtual Widget SetPosition(Point p)
+        /// <summary>
+        /// Changes the relative position of this widget.
+        /// </summary>
+        public virtual void SetPosition(Point p)
         {
             AssertUndisposed();
             this.Position = p;
+            // Update the viewport boundaries
             UpdateBounds();
             this.OnPositionChanged.Invoke(this, new EventArgs());
-            return this;
         }
 
-        public Widget SetWidth(int Width)
+        /// <summary>
+        /// Sets the width of this widget.
+        /// </summary>
+        public void SetWidth(int Width)
         {
-            return this.SetSize(Width, this.Size.Height);
+            this.SetSize(Width, this.Size.Height);
         }
-        public Widget SetHeight(int Height)
+        /// <summary>
+        /// Sets the height of this widget.
+        /// </summary>
+        public void SetHeight(int Height)
         {
-            return this.SetSize(this.Size.Width, Height);
+            this.SetSize(this.Size.Width, Height);
         }
-        public Widget SetSize(int Width, int Height)
+        /// <summary>
+        /// Sets the size of this widget.
+        /// </summary>
+        public void SetSize(int Width, int Height)
         {
-            return SetSize(new Size(Width, Height));
+            this.SetSize(new Size(Width, Height));
         }
-        public virtual Widget SetSize(Size size)
+        /// <summary>
+        /// Sets the size of this widget.
+        /// </summary>
+        public virtual void SetSize(Size size)
         {
             AssertUndisposed();
             Size oldsize = this.Size;
+            // Ensures the new size doesn't exceed the set minimum and maximum values.
             if (size.Width < MinimumSize.Width) size.Width = MinimumSize.Width;
             else if (size.Width > MaximumSize.Width) size.Width = MaximumSize.Width;
             if (size.Height < MinimumSize.Height) size.Height = MinimumSize.Height;
@@ -588,11 +720,13 @@ namespace MKEditor.Widgets
             if (oldsize.Width != size.Width || oldsize.Height != size.Height)
             {
                 this.Size = size;
+                // Update the background sprite's size
                 (this.Sprites["_bg"].Bitmap as SolidBitmap).SetSize(this.Size);
                 this.Viewport.Width = this.Size.Width;
                 this.Viewport.Height = this.Size.Height;
-                this.RedrawSize = true;
+                // Updates the viewport boundaries
                 this.UpdateBounds();
+                // Executes all events associated with resizing a widget.
                 this.OnSizeChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));
                 this.Widgets.ForEach(w =>
                 {
@@ -608,28 +742,38 @@ namespace MKEditor.Widgets
                     prnt.OnChildBoundsChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));
                 }
             }
-            return this;
         }
 
-        public Widget SetBackgroundColor(byte r, byte g, byte b, byte a = 255)
+        /// <summary>
+        /// Sets the background color of this widget.
+        /// </summary>
+        public void SetBackgroundColor(byte r, byte g, byte b, byte a = 255)
         {
-            return this.SetBackgroundColor(new Color(r, g, b, a));
+            this.SetBackgroundColor(new Color(r, g, b, a));
         }
-        public Widget SetBackgroundColor(Color c)
+        /// <summary>
+        /// Sets the background color of this widget.
+        /// </summary>
+        public void SetBackgroundColor(Color c)
         {
             AssertUndisposed();
             this.BackgroundColor = c;
             (this.Sprites["_bg"].Bitmap as SolidBitmap).SetColor(c);
-            return this;
         }
 
-        List<Timer> Timers = new List<Timer>();
-
+        /// <summary>
+        /// Sets a timer.
+        /// </summary>
+        /// <param name="identifier">Unique string identifier.</param>
+        /// <param name="milliseconds">Number of milliseconds to run the timer for.</param>
         public void SetTimer(string identifier, long milliseconds)
         {
             Timers.Add(new Timer(identifier, DateTime.Now.Ticks, 10000 * milliseconds));
         }
 
+        /// <summary>
+        /// Returns whether or not the specified timer's time has elapsed.
+        /// </summary>
         public bool TimerPassed(string identifier)
         {
             Timer t = Timers.Find(timer => timer.Identifier == identifier);
@@ -637,11 +781,17 @@ namespace MKEditor.Widgets
             return DateTime.Now.Ticks >= t.StartTime + t.Timespan;
         }
 
+        /// <summary>
+        /// Returns whether or not the specified timer exists.
+        /// </summary>
         public bool TimerExists(string identifier)
         {
             return Timers.Exists(t => t.Identifier == identifier);
         }
 
+        /// <summary>
+        /// Destroys the specified timer object.
+        /// </summary>
         public void DestroyTimer(string identifier)
         {
             Timer t = Timers.Find(timer => timer.Identifier == identifier);
@@ -649,6 +799,9 @@ namespace MKEditor.Widgets
             Timers.Remove(t);
         }
 
+        /// <summary>
+        /// Resets the specified timer with the former timespan.
+        /// </summary>
         public void ResetTimer(string identifier)
         {
             Timer t = Timers.Find(timer => timer.Identifier == identifier);
@@ -656,6 +809,9 @@ namespace MKEditor.Widgets
             t.StartTime = DateTime.Now.Ticks;
         }
 
+        /// <summary>
+        /// Adds a Widget object to this widget.
+        /// </summary>
         public virtual void Add(Widget w)
         {
             if (this.Widgets.Exists(wgt => wgt.Name == w.Name))
@@ -665,6 +821,9 @@ namespace MKEditor.Widgets
             this.Widgets.Add(w);
         }
 
+        /// <summary>
+        /// Fetches a child widget by name.
+        /// </summary>
         public virtual Widget Get(string Name)
         {
             foreach (Widget w in this.Widgets)
@@ -681,6 +840,9 @@ namespace MKEditor.Widgets
             return null;
         }
 
+        /// <summary>
+        /// Removes a child widget.
+        /// </summary>
         public virtual Widget Remove(Widget w)
         {
             for (int i = 0; i < this.Widgets.Count; i++)
@@ -694,6 +856,9 @@ namespace MKEditor.Widgets
             return null;
         }
 
+        /// <summary>
+        /// Finds a unique name for the given string by adding an integer to the end.
+        /// </summary>
         public virtual string GetName(string Name)
         {
             int i = 1;
@@ -705,65 +870,292 @@ namespace MKEditor.Widgets
             }
         }
 
-        public Widget SetMargin(int all)
+        /// <summary>
+        /// Sets the margin for this widget. Used for grids and stackpanels.
+        /// </summary>
+        public void SetMargin(int all)
         {
-            return this.SetMargin(all, all, all, all);
+            this.SetMargin(all, all, all, all);
         }
-        public Widget SetMargin(int horizontal, int vertical)
+        /// <summary>
+        /// Sets the margin for this widget. Used for grids and stackpanels.
+        /// </summary>
+        public void SetMargin(int horizontal, int vertical)
         {
-            return this.SetMargin(horizontal, vertical, horizontal, vertical);
+            this.SetMargin(horizontal, vertical, horizontal, vertical);
         }
-        public Widget SetMargin(int left, int up, int right, int down)
+        /// <summary>
+        /// Sets the margin for this widget. Used for grids and stackpanels.
+        /// </summary>
+        public void SetMargin(int left, int up, int right, int down)
         {
             this.Margin = new Margin(left, up, right, down);
             this.UpdateLayout();
-            return this;
         }
 
-        public Widget SetGridRow(int Row)
+        /// <summary>
+        /// Sets the grid row this widget is in. Used for grids.
+        /// </summary>
+        /// <param name="Row"></param>
+        /// <returns></returns>
+        public void SetGridRow(int Row)
         {
-            return this.SetGridRow(Row, Row);
+            this.SetGridRow(Row, Row);
         }
-        public Widget SetGridRow(int RowStart, int RowEnd)
+        /// <summary>
+        /// Sets the grid row this widget starts and ends in. Used for grids.
+        /// </summary>
+        /// <param name="RowStart"></param>
+        /// <param name="RowEnd"></param>
+        /// <returns></returns>
+        public void SetGridRow(int RowStart, int RowEnd)
         {
             this.GridRowStart = RowStart;
             this.GridRowEnd = RowEnd;
             this.UpdateLayout();
-            return this;
         }
 
-        public Widget SetGridColumn(int Column)
+        /// <summary>
+        /// Sets the grid column this widget is in. Used for grids.
+        /// </summary>
+        /// <param name="Column"></param>
+        /// <returns></returns>
+        public void SetGridColumn(int Column)
         {
-            return this.SetGridColumn(Column, Column);
+            this.SetGridColumn(Column, Column);
         }
-        public Widget SetGridColumn(int ColumnStart, int ColumnEnd)
+        /// <summary>
+        /// Sets the grid column this widget starts and ends in. Used for grids.
+        /// </summary>
+        public void SetGridColumn(int ColumnStart, int ColumnEnd)
         {
             this.GridColumnStart = ColumnStart;
             this.GridColumnEnd = ColumnEnd;
             this.UpdateLayout();
-            return this;
         }
 
-        public Widget SetGrid(int Row, int Column)
+        /// <summary>
+        /// Sets the grid row and column this widget is in. Used for grids.
+        /// </summary>
+        /// <param name="Row"></param>
+        /// <param name="Column"></param>
+        /// <returns></returns>
+        public void SetGrid(int Row, int Column)
         {
-            return this.SetGrid(Row, Row, Column, Column);
+            this.SetGrid(Row, Row, Column, Column);
         }
-        public Widget SetGrid(int RowStart, int RowEnd, int ColumnStart, int ColumnEnd)
+        /// <summary>
+        /// Sets the grid row and column this widget starts and ends in. Used for grids.
+        /// </summary>
+        public void SetGrid(int RowStart, int RowEnd, int ColumnStart, int ColumnEnd)
         {
             this.GridRowStart = RowStart;
             this.GridRowEnd = RowEnd;
             this.GridColumnStart = ColumnStart;
             this.GridColumnEnd = ColumnEnd;
             this.UpdateLayout();
-            return this;
         }
 
-        public void UpdateLayout()
+        /// <summary>
+        /// Updates the grid or stackpanel's layout.
+        /// </summary>
+        public virtual void UpdateLayout()
         {
             if (this.Parent is ILayout)
             {
                 (this.Parent as ILayout).NeedUpdate = true;
             }
+        }
+
+        /// <summary>
+        /// Disposes this widget, its viewport and all its children.
+        /// </summary>
+        public virtual void Dispose()
+        {
+            AssertUndisposed();
+            if (this.OnDisposing != null) this.OnDisposing.Invoke(this, new EventArgs());
+            // Mark this widget as disposed.
+            this.Disposed = true;
+            // Dispose the viewport and all its sprites.
+            this.Viewport.Dispose();
+            for (int i = 0; i < this.Widgets.Count; i++)
+            {
+                if (this.Widgets[i] != null)
+                {
+                    this.Widgets[i].Dispose();
+                    // Disposing a widget automatically removes it from its parent's widget list,
+                    // Hence we have to update our iterator.
+                    i--;
+                }
+            }
+            // Remove this widget from the parent's widget list.
+            this.Parent.Widgets.Remove(this);
+            // Set viewport and sprites to null to ensure no methods can use them anymore.
+            this.Viewport = null;
+            this.Sprites = null;
+            if (this.OnDisposed != null) this.OnDisposed.Invoke(this, new EventArgs());
+        }
+
+        /// <summary>
+        /// Ensures this widget is not disposed by raising an exception if it is.
+        /// </summary>
+        protected void AssertUndisposed()
+        {
+            if (this.Disposed)
+            {
+                throw new ObjectDisposedException(this.Name);
+            }
+        }
+
+        /// <summary>
+        /// Marks the sprites as needing an redraw next iteration.
+        /// This allows you to call Redraw multiple times at once, as it will only redraw once in the next iteration.
+        /// </summary>
+        public void Redraw()
+        {
+            AssertUndisposed();
+            this.Drawn = false;
+        }
+
+        /// <summary>
+        /// The method that redraws this widget and its sprites.
+        /// </summary>
+        protected virtual void Draw()
+        {
+            AssertUndisposed();
+            this.Drawn = true;
+        }
+
+        /// <summary>
+        /// Updates this widget and its children. Do not put excessive logic in here.
+        /// </summary>
+        public virtual void Update()
+        {
+            AssertUndisposed();
+
+            // If this widget is active
+            if (this.SelectedWidget)
+            {
+                // Execute shortcuts if their buttons is being triggered.
+                foreach (Shortcut s in this.Shortcuts)
+                {
+                    if (s.GlobalShortcut) continue; // Handled by the UIManager
+
+                    Key k = s.Key;
+                    bool Valid = Input.Trigger((SDL2.SDL.SDL_Keycode)k.MainKey);
+                    if (!Valid) continue;
+
+                    // Modifiers
+                    foreach (Keycode mod in k.Modifiers)
+                    {
+                        bool onefound = false;
+                        List<SDL2.SDL.SDL_Keycode> codes = new List<SDL2.SDL.SDL_Keycode>();
+                        if (mod == Keycode.CTRL) { codes.Add(SDL2.SDL.SDL_Keycode.SDLK_LCTRL); codes.Add(SDL2.SDL.SDL_Keycode.SDLK_RCTRL); }
+                        else if (mod == Keycode.SHIFT) { codes.Add(SDL2.SDL.SDL_Keycode.SDLK_LSHIFT); codes.Add(SDL2.SDL.SDL_Keycode.SDLK_RSHIFT); }
+                        else if (mod == Keycode.ALT) { codes.Add(SDL2.SDL.SDL_Keycode.SDLK_LALT); codes.Add(SDL2.SDL.SDL_Keycode.SDLK_RALT); }
+                        else codes.Add((SDL2.SDL.SDL_Keycode)mod);
+
+                        for (int i = 0; i < codes.Count; i++)
+                        {
+                            if (Input.Press(codes[i]))
+                            {
+                                onefound = true;
+                                break;
+                            }
+                        }
+
+                        if (!onefound)
+                        {
+                            Valid = false;
+                            break;
+                        }
+                    }
+
+                    if (!Valid) continue;
+
+                    // Execute this shortcut's event.
+                    s.Event.Invoke(this, new EventArgs());
+                }
+            }
+
+            // Updates the MouseInputManager in case this widget's boundaries changes.
+            this.WidgetIM.Update(this.Viewport.Rect);
+            // If this widget needs a redraw, perform the redraw
+            if (!this.Drawn) this.Draw();
+            // Update child widgets
+            for (int i = 0; i < this.Widgets.Count; i++)
+            {
+                this.Widgets[i].Update();
+            }
+        }
+
+        /// <summary>
+        /// Responsible for opening the right-click menu when this widget is right-clicked.
+        /// </summary>
+        private void RightClick_ContextMenu(object sender, MouseEventArgs e)
+        {
+            if (ShowContextMenu && ContextMenuList != null && ContextMenuList.Count > 0)
+            {
+                bool cont = true;
+                if (OnContextMenuOpening != null)
+                {
+                    CancelEventArgs args = new CancelEventArgs();
+                    OnContextMenuOpening.Invoke(sender, args);
+                    if (args.Cancel) cont = false;
+                }
+                if (cont)
+                {
+                    ContextMenu cm = new ContextMenu(this.Window);
+                    cm.SetItems(ContextMenuList);
+                    Size s = cm.Size;
+                    int x = e.X;
+                    int y = e.Y;
+                    if (e.X + s.Width >= Window.Width) x -= s.Width;
+                    if (e.Y + s.Height >= Window.Height) y -= s.Height;
+                    x = Math.Max(0, x);
+                    y = Math.Max(0, y);
+                    cm.SetPosition(x, y);
+                }
+            }
+        }
+        public virtual void MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton != e.OldLeftButton && this.WidgetIM.Hovering)
+            {
+                Redraw();
+            }
+        }
+        public virtual void MousePress(object sender, MouseEventArgs e) { }
+        public virtual void MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton != e.OldLeftButton && this.WidgetIM.ClickedLeftInArea == true) Redraw();
+        }
+        public virtual void MouseWheel(object sender, MouseEventArgs e) { }
+        public virtual void MouseMoving(object sender, MouseEventArgs e) { }
+        public virtual void HoverChanged(object sender, MouseEventArgs e)
+        {
+            Redraw();
+        }
+        public virtual void LeftClick(object sender, MouseEventArgs e) { }
+        public virtual void WidgetSelected(object sender, MouseEventArgs e)
+        {
+            this.Window.UI.SetSelectedWidget(this);
+        }
+        public virtual void WidgetDeselected(object sender, EventArgs e) { }
+        public virtual void TextInput(object sender, TextInputEventArgs e) { }
+        public virtual void PositionChanged(object sender, EventArgs e)
+        {
+            UpdateAutoScroll();
+        }
+        public virtual void SizeChanged(object sender, SizeEventArgs e)
+        {
+            UpdateAutoScroll();
+            UpdateLayout();
+        }
+        public virtual void ParentSizeChanged(object sender, SizeEventArgs e) { }
+        public virtual void ChildBoundsChanged(object sender, SizeEventArgs e)
+        {
+            UpdateAutoScroll();
         }
     }
 
@@ -774,6 +1166,13 @@ namespace MKEditor.Widgets
         public EventHandler<EventArgs> Event;
         public bool GlobalShortcut = false;
 
+        /// <summary>
+        /// Creates a new Shortcut object.
+        /// </summary>
+        /// <param name="Widget">The widget that needs to be visible and available for global shortcuts to work.</param>
+        /// <param name="Key">The actual key combination required to activate this shortcut.</param>
+        /// <param name="Event">The event to trigger when the key is pressed.</param>
+        /// <param name="GlobalShortcut">Whether the given widget needs to be active, or if this is a global shortcut.</param>
         public Shortcut(Widget Widget, Key Key, EventHandler<EventArgs> Event, bool GlobalShortcut = false)
         {
             this.Widget = Widget;
@@ -783,33 +1182,18 @@ namespace MKEditor.Widgets
         }
     }
 
-    public enum Icon
-    {
-        NONE,
-
-        Plus = '\uf067',
-        New = Plus,
-        Add = Plus,
-
-        Eye = '\uf06e',
-        Visible = Eye,
-
-        TrashCan = '\uf2ed',
-        Delete = TrashCan,
-        Remove = TrashCan,
-
-        Down = '\uf063',
-        Up = '\uf062',
-
-        Eraser = '\uf12d'
-    }
-
-    class Timer
+    public class Timer
     {
         public string Identifier;
         public long StartTime;
         public long Timespan;
 
+        /// <summary>
+        /// Creates a new Timer object.
+        /// </summary>
+        /// <param name="identifier">The unique identifier string.</param>
+        /// <param name="starttime">The time at which this Timer started.</param>
+        /// <param name="timespan">The timespan this Timer is active for.</param>
         public Timer(string identifier, long starttime, long timespan)
         {
             this.Identifier = identifier;

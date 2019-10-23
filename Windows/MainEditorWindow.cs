@@ -86,9 +86,9 @@ namespace MKEditor
             Color DividerColor = new Color(79, 108, 159);
 
             // Header + Menubar
-            MenuBar menu = new MenuBar(layout)
-                .SetBackgroundColor(28, 50, 73)
-                .SetGrid(0, 0, 0, 4) as MenuBar;
+            MenuBar menu = new MenuBar(layout);
+            menu.SetBackgroundColor(28, 50, 73);
+            menu.SetGrid(0, 0, 0, 4);
             menu.SetItems(new List<MenuItem>()
             {
                 new MenuItem("File")
@@ -149,9 +149,9 @@ namespace MKEditor
 
 
             // Blue 1px separator
-            new Widget(layout)
-                .SetBackgroundColor(DividerColor)
-                .SetGrid(2, 2, 0, 4);
+            Widget Blue1pxSeparator = new Widget(layout);
+            Blue1pxSeparator.SetBackgroundColor(DividerColor);
+            Blue1pxSeparator.SetGrid(2, 2, 0, 4);
 
 
             // Left sidebar
@@ -159,17 +159,18 @@ namespace MKEditor
             mst.SetGrid(3, 0);
 
             // Left sidebar divider
-            new Widget(layout)
-                .SetBackgroundColor(79, 108, 159)
-                .SetGrid(3, 3, 1, 1);
+            Widget LeftSidebarDivider = new Widget(layout);
+            LeftSidebarDivider.SetBackgroundColor(79, 108, 159);
+            LeftSidebarDivider.SetGrid(3, 3, 1, 1);
 
             // Right sidebar divider
-            new Widget(layout)
-                .SetBackgroundColor(DividerColor)
-                .SetGrid(3, 3, 3, 3);
+            Widget RightSidebarDivider = new Widget(layout);
+            RightSidebarDivider.SetBackgroundColor(DividerColor);
+            RightSidebarDivider.SetGrid(3, 3, 3, 3);
 
             // Right sidebar
-            Grid rightcontainer = new Grid(layout).SetGrid(3, 4) as Grid;
+            Grid rightcontainer = new Grid(layout);
+            rightcontainer.SetGrid(3, 4);
             rightcontainer.SetRows(new GridSize(5), new GridSize(1, Unit.Pixels), new GridSize(2));
             rightcontainer.SetColumns(new GridSize(1));
             rightcontainer.SetBackgroundColor(40, 44, 52);
@@ -179,9 +180,9 @@ namespace MKEditor
             TilesetTab tt = new TilesetTab(rightcontainer);
 
             // Inner right sidebar divider
-            new Widget(rightcontainer)
-                .SetBackgroundColor(DividerColor)
-                .SetGrid(1, 0);
+            Widget InnerRightSidebarDivider = new Widget(rightcontainer);
+            InnerRightSidebarDivider.SetBackgroundColor(DividerColor);
+            InnerRightSidebarDivider.SetGrid(1, 0);
 
             // Layers part of right sidebar
             LayersTab lt = new LayersTab(rightcontainer);
@@ -193,9 +194,9 @@ namespace MKEditor
             mv.SetGrid(3, 2);
 
             // Status bar divider
-            new Widget(layout)
-                .SetBackgroundColor(DividerColor)
-                .SetGrid(4, 4, 0, 4);
+            Widget StatusBarDivider = new Widget(layout);
+            StatusBarDivider.SetBackgroundColor(DividerColor);
+            StatusBarDivider.SetGrid(4, 4, 0, 4);
 
             // Status bar
             StatusBar status = new StatusBar(layout);

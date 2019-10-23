@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using ODL;
-using static SDL2.SDL;
 
 namespace MKEditor
 {

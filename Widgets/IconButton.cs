@@ -5,7 +5,6 @@ namespace MKEditor.Widgets
 {
     public class IconButton : Widget
     {
-        public Icon Icon;
         public int IconX;
         public int IconY;
         public bool Toggleable = false;
