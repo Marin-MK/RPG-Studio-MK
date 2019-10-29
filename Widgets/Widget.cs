@@ -335,7 +335,8 @@ namespace MKEditor.Widgets
                 // Create new viewport directly on the window's renderer.
                 this.Viewport = new Viewport(this.Window.Renderer, 0, 0, this.Size);
                 // Z index by default copies parent viewport's z. If changed later, SetZIndex will modify the value.
-                this.Viewport.Z = this.Parent.ZIndex;
+                this.Viewport.Z = this.ZIndex;
+                if (this.Parent is Widget) this.Viewport.Visible = (this.Parent as Widget).IsVisible() ? this.Visible : false;
             }
             // Ensures this name is unique by adding an integer at the end.
             this.Name = this.Parent.GetName(Name);
@@ -435,6 +436,11 @@ namespace MKEditor.Widgets
             if (Index != -1 && this.Parent is VStackPanel) (this.Parent as VStackPanel).Insert(Index, this);
             // Or add to the end of the list otherwise
             else this.Parent.Add(this);
+            if (this.Viewport != null)
+            {
+                this.Viewport.Z = this.ZIndex;
+                this.Viewport.Visible = (this.Parent as Widget).IsVisible() ? this.Visible : false;
+            }
         }
 
         /// <summary>
@@ -464,8 +470,18 @@ namespace MKEditor.Widgets
                 // Note that this overwrites their own visibility value.
                 // After making a parent invisible, all its children will become invisible, and visible again when the parent becomes visible.
                 // This means if you needed one of the children invisible, you would need to make them invisible again manually.
-                this.Widgets.ForEach(w => w.SetVisible(Visible));
+                this.Widgets.ForEach(w => w.SetViewportVisible(Visible));
             }
+        }
+
+        /// <summary>
+        /// Used for setting viewport visibility without changing actual visible property (used for children-parent visbility)
+        /// </summary>
+        /// <param name="Visible">Boolean visibilty value.</param>
+        protected void SetViewportVisible(bool Visible)
+        {
+            this.Viewport.Visible = Visible ? (this.Visible ? true : false) : false;
+            this.Widgets.ForEach(w => w.SetViewportVisible(Visible));
         }
 
         /// <summary>
@@ -474,10 +490,7 @@ namespace MKEditor.Widgets
         public bool IsVisible()
         {
             AssertUndisposed();
-            // Should be identical to Viewport.Visible.
-            if (!this.Visible) return false;
-            if (Parent is Widget) return (Parent as Widget).IsVisible();
-            return true;
+            return Viewport.Visible;
         }
 
         /// <summary>
@@ -614,7 +627,7 @@ namespace MKEditor.Widgets
 
             int ScrolledX = this.Position.X - this.ScrolledPosition.X;
             int ScrolledY = this.Position.Y - this.ScrolledPosition.Y;
-            if (this is HScrollBar || this is VScrollBar) ScrolledX = ScrolledY = 0;
+            //if (this is HScrollBar || this is VScrollBar) ScrolledX = ScrolledY = 0;
 
             this.Viewport.X = this.Position.X + this.Parent.Viewport.X - Parent.AdjustedPosition.X - ScrolledX;
             this.Viewport.Y = this.Position.Y + this.Parent.Viewport.Y - Parent.AdjustedPosition.Y - ScrolledY;
@@ -841,7 +854,7 @@ namespace MKEditor.Widgets
         }
 
         /// <summary>
-        /// Removes a child widget.
+        /// Removes a child widget and returns the deregistered widget.
         /// </summary>
         public virtual Widget Remove(Widget w)
         {

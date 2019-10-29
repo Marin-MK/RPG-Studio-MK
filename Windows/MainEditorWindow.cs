@@ -155,8 +155,11 @@ namespace MKEditor
 
 
             // Left sidebar
-            MapSelectTab mst = new MapSelectTab(layout);
-            mst.SetGrid(3, 0);
+            Sidebar LeftSidebar = new Sidebar(layout);
+            LeftSidebar.SetGrid(3, 0);
+            
+            LeftSidebar.TabControl.CreateTab("Maps");
+            MapSelectPanel mst = new MapSelectPanel(LeftSidebar.TabControl.GetTab(0));
 
             // Left sidebar divider
             Widget LeftSidebarDivider = new Widget(layout);
@@ -176,17 +179,25 @@ namespace MKEditor
             rightcontainer.SetBackgroundColor(40, 44, 52);
 
 
+            // Top-Right sidebar
+            Sidebar TopRightSidebar = new Sidebar(rightcontainer);
+
             // Tileset part of right sidebar
-            TilesetTab tt = new TilesetTab(rightcontainer);
+            TopRightSidebar.TabControl.CreateTab("Tilesets");
+            TilesetsPanel tt = new TilesetsPanel(TopRightSidebar.TabControl.GetTab(0));
 
             // Inner right sidebar divider
             Widget InnerRightSidebarDivider = new Widget(rightcontainer);
             InnerRightSidebarDivider.SetBackgroundColor(DividerColor);
             InnerRightSidebarDivider.SetGrid(1, 0);
 
+            // Bottom-Right sidebar
+            Sidebar BottomRightSidebar = new Sidebar(rightcontainer);
+            BottomRightSidebar.SetGrid(2, 0);
+
             // Layers part of right sidebar
-            LayersTab lt = new LayersTab(rightcontainer);
-            lt.SetGrid(2, 0);
+            BottomRightSidebar.TabControl.CreateTab("Layers");
+            LayersPanel lt = new LayersPanel(BottomRightSidebar.TabControl.GetTab(0));
 
 
             // Center map viewer

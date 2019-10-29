@@ -8,7 +8,6 @@ namespace MKEditor.Widgets
     {
         public  List<TabContainer> Tabs          = new List<TabContainer>();
         private List<string>       Names         = new List<string>();
-        private List<int>          Widths        = new List<int>();
         public  int                SelectedIndex { get; protected set; } = -1;
         private int                HoveringIndex = -1;
 
@@ -18,6 +17,8 @@ namespace MKEditor.Widgets
             : base(Parent, Name)
         {
             Sprites["bg"] = new Sprite(this.Viewport, new SolidBitmap(78, 25, new Color(28, 50, 73)));
+            Sprites["header"] = new Sprite(this.Viewport, new SolidBitmap(1, 4, new Color(28, 50, 73)));
+            Sprites["header"].Y = 25;
             Sprites["text"] = new Sprite(this.Viewport);
             this.WidgetIM.OnMouseMoving += MouseMoving;
             this.WidgetIM.OnMouseDown += MouseDown;
@@ -25,16 +26,24 @@ namespace MKEditor.Widgets
 
         public void SelectTab(int Index)
         {
-            if (SelectedIndex != -1 && SelectedIndex < Tabs.Count)
+            if (Tabs.Count > 0)
             {
-                Tabs[SelectedIndex].SetVisible(false);
+                if (SelectedIndex != -1 && SelectedIndex < Tabs.Count)
+                {
+                    Tabs[SelectedIndex].SetVisible(false);
+                }
+                if (Index != -1 && Index < Tabs.Count)
+                {
+                    Tabs[Index].SetVisible(true);
+                    this.SelectedIndex = Index;
+                    Sprites["bg"].X = Index * 78;
+                    Sprites["bg"].Visible = true;
+                    if (this.OnSelectionChanged != null) this.OnSelectionChanged.Invoke(this, new EventArgs());
+                }
             }
-            if (Index != -1 && Index < Tabs.Count)
+            else
             {
-                Tabs[Index].SetVisible(true);
-                this.SelectedIndex = Index;
-                Sprites["bg"].X = Index * 78;
-                if (this.OnSelectionChanged != null) this.OnSelectionChanged.Invoke(this, new EventArgs());
+                Sprites["bg"].Visible = false;
             }
         }
 
@@ -48,8 +57,13 @@ namespace MKEditor.Widgets
             if (SelectedIndex == -1)
             {
                 if (Tabs.Count > 0) SelectTab(0);
-                else return;
+                else
+                {
+                    Sprites["bg"].Visible = false;
+                    return;
+                }
             }
+            Sprites["bg"].Visible = true;
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
             Sprites["text"].Bitmap = new Bitmap(Size);
             Font f = Font.Get("Fonts/Ubuntu-B", 15);
@@ -63,21 +77,25 @@ namespace MKEditor.Widgets
             base.Draw();
         }
 
-        public void CreateTab(string Name)
+        public TabContainer CreateTab(string Name)
         {
             TabContainer tc = new TabContainer(this);
-            tc.SetPosition(0, 26);
-            tc.SetSize(this.Size.Width, this.Size.Height - 26);
+            tc.SetPosition(0, 29);
+            tc.SetVisible(false);
+            tc.SetSize(this.Size.Width, this.Size.Height - 29);
             this.Tabs.Add(tc);
             this.Names.Add(Name);
+            return tc;
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
+            (Sprites["header"].Bitmap as SolidBitmap).SetSize(Size.Width, 4);
             foreach (TabContainer tc in this.Tabs)
             {
-                tc.SetSize(this.Size.Width, this.Size.Height - 26);
+                tc.SetSize(this.Size.Width, this.Size.Height - 29);
+                tc.Widgets.ForEach(w => w.SetSize(tc.Size));
             }
         }
 

@@ -5,31 +5,21 @@ using ODL;
 
 namespace MKEditor.Widgets
 {
-    public class MapSelectTab : Widget
+    public class MapSelectPanel : Widget
     {
         public MapViewer MapViewer;
         public StatusBar StatusBar;
 
-        TabView TabView;
-
         Container allmapcontainer;
         public TreeView mapview;
 
-        public MapSelectTab(object Parent, string Name = "mapSelectTab")
+        public MapSelectPanel(object Parent, string Name = "mapSelectTab")
             : base(Parent, Name)
         {
-            SetBackgroundColor(10, 23, 37);
+            Sprites["bar"] = new Sprite(this.Viewport, new SolidBitmap(1, Size.Height, new Color(28, 50, 73)));
 
-            TabView = new TabView(this);
-            TabView.CreateTab("Maps");
-
-            Sprites["header"] = new Sprite(this.Viewport, new SolidBitmap(Size.Width, 4, new Color(28, 50, 73)));
-            Sprites["header"].Y = 25;
-            Sprites["bar2"] = new Sprite(this.Viewport, new SolidBitmap(1, Size.Height, new Color(28, 50, 73)));
-            Sprites["bar2"].Y = 29;
-
-            allmapcontainer = new Container(TabView.GetTab(0));
-            allmapcontainer.SetPosition(0, 4);
+            allmapcontainer = new Container(this);
+            allmapcontainer.SetPosition(0, 1);
             allmapcontainer.VAutoScroll = true;
 
             VScrollBar vs = new VScrollBar(this);
@@ -41,6 +31,7 @@ namespace MKEditor.Widgets
             {
                 SetMap(mapview.SelectedNode.Object as Game.Map);
             };
+            mapview.TrailingBlank = 64;
             allmapcontainer.SetContextMenuList(new List<IMenuItem>()
             {
                 new MenuItem("New Map")
@@ -113,13 +104,11 @@ namespace MKEditor.Widgets
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            TabView.SetSize(this.Size);
-            allmapcontainer.SetSize(this.Size.Width - 11, this.Size.Height - 30);
-            (Sprites["header"].Bitmap as SolidBitmap).SetSize(Size.Width, 4);
-            Sprites["bar2"].X = Size.Width - 11;
-            (Sprites["bar2"].Bitmap as SolidBitmap).SetSize(1, Size.Height - 29);
-            allmapcontainer.VScrollBar.SetPosition(Size.Width - 9, 30);
-            allmapcontainer.VScrollBar.SetSize(8, Size.Height - 31);
+            allmapcontainer.SetSize(this.Size.Width - 11, this.Size.Height - 1);
+            Sprites["bar"].X = Size.Width - 11;
+            (Sprites["bar"].Bitmap as SolidBitmap).SetSize(1, Size.Height);
+            allmapcontainer.VScrollBar.SetPosition(Size.Width - 9, 1);
+            allmapcontainer.VScrollBar.SetSize(8, Size.Height - 2);
         }
 
         private void NewMap(object sender, MouseEventArgs e)

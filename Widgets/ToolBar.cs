@@ -8,7 +8,7 @@ namespace MKEditor.Widgets
     public class ToolBar : Widget
     {
         public MapViewer MapViewer;
-        public TilesetTab TilesetTab;
+        public TilesetsPanel TilesetTab;
         public StatusBar StatusBar;
 
         IconButton Cut;

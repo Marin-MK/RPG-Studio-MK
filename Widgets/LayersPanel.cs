@@ -5,35 +5,28 @@ using MKEditor.Game;
 
 namespace MKEditor.Widgets
 {
-    public class LayersTab : Widget
+    public class LayersPanel : Widget
     {
-        public TilesetTab TilesetTab;
+        public TilesetsPanel TilesetTab;
         public MapViewer MapViewer;
         public Map Map { get { return this.MapViewer.Map; } }
-        public TabView TabView;
-        public TabContainer MainContainer;
 
         public int SelectedLayer { get { return layerwidget.SelectedLayer; } }
 
         private Container layercontainer;
         public LayerWidget layerwidget;
 
-        public LayersTab(object Parent, string Name = "layersTab")
+        public LayersPanel(object Parent, string Name = "layersTab")
             : base(Parent, Name)
         {
-            SetBackgroundColor(10, 23, 37);
-
-            Sprites["bg"] = new Sprite(this.Viewport);
-            Sprites["bg"].Y = 25;
-
-            TabView = new TabView(this);
-            TabView.CreateTab("Layers");
-            MainContainer = TabView.GetTab(0);
+            Sprites["bar1"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(28, 50, 73)));
+            Sprites["bar2"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(28, 50, 73)));
+            Sprites["bar2"].X = 42;
 
             this.OnWidgetSelected += WidgetSelected;
 
-            layercontainer = new Container(MainContainer);
-            layercontainer.SetPosition(1, 4);
+            layercontainer = new Container(this);
+            layercontainer.SetPosition(1, 1);
             layercontainer.VAutoScroll = true;
 
             VScrollBar vs = new VScrollBar(this);
@@ -165,17 +158,12 @@ namespace MKEditor.Widgets
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            TabView.SetSize(Size);
-            layercontainer.SetSize(Size.Width - 12, Size.Height - 29);
-            layercontainer.VScrollBar.SetPosition(Size.Width - 9, 30);
-            layercontainer.VScrollBar.SetSize(8, Size.Height - 31);
-            if (Sprites["bg"].Bitmap != null) Sprites["bg"].Bitmap.Dispose();
-            Sprites["bg"].Bitmap = new Bitmap(Size.Width, Size.Height - 25);
-            Sprites["bg"].Bitmap.Unlock();
-            Sprites["bg"].Bitmap.FillRect(0, 0, Size.Width, 4, new Color(28, 50, 73));
-            Sprites["bg"].Bitmap.DrawLine(Size.Width - 11, 4, Size.Width - 11, Size.Height - 26, new Color(28, 50, 73));
-            Sprites["bg"].Bitmap.DrawLine(42, 4, 42, Size.Height - 26, new Color(28, 50, 73));
-            Sprites["bg"].Bitmap.Lock();
+            layercontainer.SetSize(Size.Width - 12, Size.Height - 1);
+            layercontainer.VScrollBar.SetPosition(Size.Width - 9, 1);
+            layercontainer.VScrollBar.SetSize(8, Size.Height - 2);
+            (Sprites["bar1"].Bitmap as SolidBitmap).SetSize(1, Size.Height);
+            (Sprites["bar2"].Bitmap as SolidBitmap).SetSize(1, Size.Height);
+            Sprites["bar1"].X = Size.Width - 11;
         }
 
         public void CreateLayers()

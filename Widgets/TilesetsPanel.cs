@@ -5,7 +5,7 @@ using MKEditor.Game;
 
 namespace MKEditor.Widgets
 {
-    public class TilesetTab : Widget
+    public class TilesetsPanel : Widget
     {
         public int           TilesetIndex    { get; protected set; } = 0;
         public int           TileStartX      { get; protected set; } = 0;
@@ -13,13 +13,11 @@ namespace MKEditor.Widgets
         public int           TileEndX        { get; protected set; } = 0;
         public int           TileEndY        { get; protected set; } = 0;
 
-        public LayersTab LayersTab;
+        public LayersPanel LayersTab;
         public MapViewer MapViewer;
         public ToolBar ToolBar;
 
         bool DraggingTileset = false;
-
-        TabView TabControl;
 
         // Tilesets tab
         Container TilesetContainer;
@@ -30,13 +28,10 @@ namespace MKEditor.Widgets
         List<CollapsibleContainer> TilesetContainers = new List<CollapsibleContainer>();
         List<PictureBox> TilesetImages = new List<PictureBox>();
 
-        public TilesetTab(object Parent, string Name = "tilesetTab")
+        public TilesetsPanel(object Parent, string Name = "tilesetTab")
             : base(Parent, Name)
         {
-            SetBackgroundColor(10, 23, 37);
-
-            Sprites["bg"] = new Sprite(this.Viewport);
-            Sprites["bg"].Y = 25;
+            Sprites["bar"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(28, 50, 73)));
 
             this.OnWidgetSelected += WidgetSelected;
 
@@ -45,19 +40,11 @@ namespace MKEditor.Widgets
             CursorIM.OnMouseUp += MouseUp;
             CursorIM.OnMouseMoving += MouseMoving;
 
-            TabControl = new TabView(this);
-            TabControl.CreateTab("Tilesets");
-            TabControl.CreateTab("Autotiles");
-            TabControl.OnSelectionChanged += delegate (object sender, EventArgs e)
-            {
-                if (TabControl.SelectedIndex == 0) UpdateCursorPosition();
-            };
-
-            TilesetContainer = new Container(TabControl.GetTab(0));
+            TilesetContainer = new Container(this);
             TilesetContainer.SetPosition(0, 5);
             TilesetContainer.VAutoScroll = true;
 
-            VScrollBar vs = new VScrollBar(TabControl.GetTab(0));
+            VScrollBar vs = new VScrollBar(this);
             TilesetContainer.SetVScrollBar(vs);
 
             Cursor = new CursorWidget(TilesetContainer);
@@ -116,16 +103,11 @@ namespace MKEditor.Widgets
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            TabControl.SetSize(Size);
-            TilesetContainer.SetSize(Size.Width - 11, TabControl.GetTab(0).Size.Height - 5);
-            TilesetContainer.VScrollBar.SetPosition(Size.Width - 9, 4);
-            TilesetContainer.VScrollBar.SetSize(8, Size.Height - 31);
-            if (Sprites["bg"].Bitmap != null) Sprites["bg"].Bitmap.Dispose();
-            Sprites["bg"].Bitmap = new Bitmap(Size.Width, Size.Height - 25);
-            Sprites["bg"].Bitmap.Unlock();
-            Sprites["bg"].Bitmap.FillRect(0, 0, Size.Width, 4, new Color(28, 50, 73));
-            Sprites["bg"].Bitmap.DrawLine(Size.Width - 11, 4, Size.Width - 11, Size.Height - 26, new Color(28, 50, 73));
-            Sprites["bg"].Bitmap.Lock();
+            TilesetContainer.SetSize(Size.Width - 11, Size.Height - 1);
+            TilesetContainer.VScrollBar.SetPosition(Size.Width - 9, 1);
+            TilesetContainer.VScrollBar.SetSize(8, Size.Height - 2);
+            Sprites["bar"].X = Size.Width - 11;
+            (Sprites["bar"].Bitmap as SolidBitmap).SetSize(1, Size.Height);
         }
 
         public override void Update()
@@ -136,7 +118,6 @@ namespace MKEditor.Widgets
 
         public void UpdateCursorPosition()
         {
-            if (TabControl.SelectedIndex != 0) return;
             LayoutContainer lc = TilesetStackPanel.Widgets[TilesetIndex] as LayoutContainer;
             CollapsibleContainer cc = lc.Widget as CollapsibleContainer;
             if (cc.Collapsed || ToolBar.EraserButton.Selected || MapViewer.SelectionOnMap)
@@ -242,7 +223,6 @@ namespace MKEditor.Widgets
             TilesetIndex = -1;
             X = -1;
             Y = -1;
-            if (TabControl.SelectedIndex != 0) return;
             if (!e.LeftButton && !e.RightButton) return;
             if (Parent.VScrollBar != null && (Parent.VScrollBar.Dragging || Parent.VScrollBar.Hovering)) return;
             Container cont = TilesetContainer;

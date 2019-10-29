@@ -8,8 +8,8 @@ namespace MKEditor.Widgets
     public class MapViewer : Widget
     {
         public Game.Map Map;
-        public TilesetTab TilesetTab;
-        public LayersTab LayersTab;
+        public TilesetsPanel TilesetTab;
+        public LayersPanel LayersTab;
         public ToolBar ToolBar;
         public StatusBar StatusBar;
 

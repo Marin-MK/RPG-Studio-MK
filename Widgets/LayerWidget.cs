@@ -7,7 +7,7 @@ namespace MKEditor.Widgets
 {
     public class LayerWidget : Widget
     {
-        public MapViewer MapViewer { get { return (Parent.Parent.Parent.Parent as LayersTab).MapViewer; } }
+        public MapViewer MapViewer { get { return (Parent.Parent as LayersPanel).MapViewer; } }
         public List<Layer> Layers { get; private set; }
         public int SelectedLayer { get; private set; }
 

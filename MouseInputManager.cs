@@ -28,17 +28,17 @@ namespace MKEditor
         public Rect Area;
 
         private bool _ClickedLeft = false;
-        public bool ClickedLeft { get { return Widget.Visible ? _ClickedLeft : false; } set { _ClickedLeft = value; } }
+        public bool ClickedLeft { get { return Widget.IsVisible() ? _ClickedLeft : false; } set { _ClickedLeft = value; } }
         private bool _ClickedRight = false;
-        public bool ClickedRight { get { return Widget.Visible ? _ClickedRight : false; } set { _ClickedRight = value; } }
+        public bool ClickedRight { get { return Widget.IsVisible() ? _ClickedRight : false; } set { _ClickedRight = value; } }
 
         private bool? _ClickedLeftInArea = null;
-        public bool? ClickedLeftInArea { get { return Widget.Visible ? _ClickedLeftInArea : false; } set { _ClickedLeftInArea = value; } }
+        public bool? ClickedLeftInArea { get { return Widget.IsVisible() ? _ClickedLeftInArea : false; } set { _ClickedLeftInArea = value; } }
         private bool? _ClickedRightInArea = null;
-        public bool? ClickedRightInArea { get { return Widget.Visible ? _ClickedRightInArea : false; } set { _ClickedRightInArea = value; } }
+        public bool? ClickedRightInArea { get { return Widget.IsVisible() ? _ClickedRightInArea : false; } set { _ClickedRightInArea = value; } }
 
         private bool _Hovering = false;
-        public bool Hovering { get { return Widget.Visible ? _Hovering : false; } set { _Hovering = value; } }
+        public bool Hovering { get { return Widget.IsVisible() ? _Hovering : false; } set { _Hovering = value; } }
 
         public MouseInputManager(Widget Widget)
         {
@@ -48,13 +48,13 @@ namespace MKEditor
 
         public bool ClickAnim()
         {
-            if (!Widget.Visible) return false;
+            if (!Widget.IsVisible()) return false;
             return ClickedLeftInArea == true && Hovering;
         }
 
         public bool HoverAnim()
         {
-            if (!Widget.Visible) return false;
+            if (!Widget.IsVisible()) return false;
             return Hovering && ClickedLeftInArea != false || ClickedLeftInArea == true;
         }
 
@@ -76,7 +76,7 @@ namespace MKEditor
         public void MouseDown(MouseEventArgs e)
         {
             if (!Ready()) return;
-            if (!Widget.Visible) return;
+            if (!Widget.IsVisible()) return;
 
             if (!(Widget.Window.ActiveWidget is UIManager))
             {
@@ -112,7 +112,7 @@ namespace MKEditor
         public void MousePress(MouseEventArgs e)
         {
             if (!Ready()) return;
-            if (!Widget.Visible) return;
+            if (!Widget.IsVisible()) return;
             if (WidgetInaccessible()) return;
 
             if (this.OnMousePress != null) this.OnMousePress.Invoke(this, e);
@@ -121,7 +121,7 @@ namespace MKEditor
         public void MouseUp(MouseEventArgs e)
         {
             if (!Ready()) return;
-            if (!Widget.Visible) return;
+            if (!Widget.IsVisible()) return;
             //if (WidgetInaccessible()) return; // If a button opens up a context menu, the mouse-up event shouldn't be ignored because of that menu.
 
             if (!e.LeftButton && e.OldLeftButton)
@@ -150,7 +150,7 @@ namespace MKEditor
         public void MouseWheel(MouseEventArgs e)
         {
             if (!Ready()) return;
-            if (!Widget.Visible) return;
+            if (!Widget.IsVisible()) return;
             if (WidgetInaccessible()) return;
 
             if (e.WheelY != 0 && this.OnMouseWheel != null) this.OnMouseWheel.Invoke(this, e);
@@ -159,7 +159,7 @@ namespace MKEditor
         public void MouseMoving(MouseEventArgs e)
         {
             if (!Ready()) return;
-            if (!Widget.Visible) return;
+            if (!Widget.IsVisible()) return;
             if (WidgetInaccessible()) return;
 
             bool oldhover = this.Hovering;

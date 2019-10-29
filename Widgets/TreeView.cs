@@ -10,6 +10,8 @@ namespace MKEditor.Widgets
         public TreeNode       SelectedNode { get; protected set; }
         public TreeNode       HoveringNode { get; protected set; }
 
+        public int TrailingBlank = 0;
+
         public EventHandler<MouseEventArgs> OnSelectedNodeChanged;
 
         public TreeView(object Parent, string Name = "treeView")
@@ -48,7 +50,7 @@ namespace MKEditor.Widgets
                 items += this.Nodes[i].GetDisplayedNodeCount();
             }
             int height = items * 24;
-            this.SetHeight(height);
+            this.SetHeight(height + TrailingBlank);
             this.Sprites["list"].Bitmap = new Bitmap(this.Size.Width, height);
             this.Sprites["list"].Bitmap.Unlock();
             
@@ -119,11 +121,16 @@ namespace MKEditor.Widgets
             if (!WidgetIM.Hovering) return;
             int rx = e.X - this.Viewport.X + Position.X - ScrolledPosition.X;
             int ry = e.Y - this.Viewport.Y + Position.Y - ScrolledPosition.Y;
+            if (ry >= Size.Height - TrailingBlank)
+            {
+                Sprites["hover"].Visible = false;
+                HoveringNode = null;
+                return;
+            }
             int globalindex = (int) Math.Floor(ry / 24d);
             Sprites["hover"].Visible = true;
             Sprites["hover"].Y = globalindex * 24;
             int index = 0;
-            TreeNode OldHoveringNode = HoveringNode;
             TreeNode n = null;
             for (int i = 0; i < this.Nodes.Count; i++)
             {
@@ -143,6 +150,7 @@ namespace MKEditor.Widgets
             {
                 int rx = e.X - this.Viewport.X + Position.X - ScrolledPosition.X;
                 int ry = e.Y - this.Viewport.Y + Position.Y - ScrolledPosition.Y;
+                if (ry >= Size.Height - TrailingBlank) return;
                 int globalindex = (int) Math.Floor(ry / 24d);
                 int index = 0;
                 TreeNode n = null;
@@ -154,7 +162,7 @@ namespace MKEditor.Widgets
                 }
                 if (n == null) return;
                 int nodex = n.PixelsIndented;
-                if (rx < nodex + 10 && rx > nodex - 10)
+                if (n.Nodes.Count > 0 && rx < nodex + 10 && rx > nodex - 10)
                 {
                     n.Collapsed = !n.Collapsed;
                     if (n.Collapsed && n.ContainsNode(SelectedNode)) SelectedNode = n;
