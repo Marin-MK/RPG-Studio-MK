@@ -10,7 +10,7 @@ namespace MKEditor.Widgets
         public MapViewer MapViewer;
         public StatusBar StatusBar;
 
-        Container allmapcontainer;
+        public Container allmapcontainer;
         public TreeView mapview;
 
         public MapSelectPanel(object Parent, string Name = "mapSelectTab")

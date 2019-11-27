@@ -8,11 +8,13 @@ namespace MKEditor
     {
         static void Main(params string[] args)
         {
+            Console.WriteLine($"Platform: {Graphics.GetPlatform()}");
             if (args.Length == 0) args = new string[1] { "D:\\Desktop\\MK\\mk\\project.mkproj" };
             if (args.Length > 0) Data.SetProjectPath(args[0]);
             Graphics.Start();
             MainEditorWindow win = new MainEditorWindow();
             win.Show();
+            Utilities.PickFile();
             win.OnClosing += delegate (object sender, CancelEventArgs e)
             {
                 int x, y;

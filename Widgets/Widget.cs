@@ -461,17 +461,10 @@ namespace MKEditor.Widgets
         public void SetVisible(bool Visible)
         {
             AssertUndisposed();
-            // Only update if a different value
-            if (this.Visible != Visible)
-            {
-                this.Visible = Visible;
-                this.Viewport.Visible = Visible;
-                // Sets all children to be invisible.
-                // Note that this overwrites their own visibility value.
-                // After making a parent invisible, all its children will become invisible, and visible again when the parent becomes visible.
-                // This means if you needed one of the children invisible, you would need to make them invisible again manually.
-                this.Widgets.ForEach(w => w.SetViewportVisible(Visible));
-            }
+            this.Visible = Visible;
+            this.Viewport.Visible = (Parent as Widget).IsVisible() ? Visible : false;
+            // Sets all children to the new visibility state.
+            this.Widgets.ForEach(w => w.SetViewportVisible(Visible));
         }
 
         /// <summary>
@@ -480,7 +473,7 @@ namespace MKEditor.Widgets
         /// <param name="Visible">Boolean visibilty value.</param>
         protected void SetViewportVisible(bool Visible)
         {
-            this.Viewport.Visible = Visible ? (this.Visible ? true : false) : false;
+            this.Viewport.Visible = (Parent as Widget).IsVisible() ? Visible : false;
             this.Widgets.ForEach(w => w.SetViewportVisible(Visible));
         }
 
@@ -584,7 +577,15 @@ namespace MKEditor.Widgets
                     }
                     else if (VScrollBar != null)
                     {
+                        Console.WriteLine("=== before ===");
+                        Console.WriteLine(VScrollBar.Viewport.Visible);
                         VScrollBar.SetVisible(false);
+                        Console.WriteLine(VScrollBar.Viewport.Visible);
+                        Console.WriteLine("prnt: " + VScrollBar.Parent.ToString());
+                        Console.WriteLine("prnt.vis: " + (VScrollBar.Parent as Widget).Visible.ToString());
+                        Console.WriteLine("prnt.viewp.vis: " + (VScrollBar.Parent as Widget).Viewport.Visible.ToString());
+                        Console.WriteLine("prnt.isvis(): " + (VScrollBar.Parent as Widget).IsVisible().ToString());
+                        Console.WriteLine("=== after ===\n\n");
                         ScrolledY = 0;
                     }
                 }

@@ -36,6 +36,12 @@
     <Reference Include="odl">
       <HintPath>..\odl\bin\Debug\netcoreapp3.0\odl.dll</HintPath>
     </Reference>
+    <Reference Include="Plugin.FilePicker">
+      <HintPath>bin\Debug\netcoreapp3.0\Plugin.FilePicker.dll</HintPath>
+    </Reference>
+    <Reference Include="Plugin.FilePicker.Abstractions">
+      <HintPath>bin\Debug\netcoreapp3.0\Plugin.FilePicker.Abstractions.dll</HintPath>
+    </Reference>
     <Reference Include="SDL2-CS">
       <HintPath>bin\Debug\netcoreapp3.0\SDL2-CS.dll</HintPath>
     </Reference>

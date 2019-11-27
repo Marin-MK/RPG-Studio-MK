@@ -165,6 +165,11 @@ end
 
         public static Bitmap IconSheet;
         
+        public static void PickFile()
+        {
+            
+        }
+
         public static void Initialize()
         {
             //Console.WriteLine(System.IO.Directory.GetCurrentDirectory());

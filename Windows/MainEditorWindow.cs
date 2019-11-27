@@ -20,6 +20,8 @@ namespace MKEditor
             Utilities.Initialize();
             Editor.LoadProjectSettings();
 
+            bool LoadHomeScreen = false;
+
             this.SetText("MK Editor");
             this.SetMinimumSize(600, 400);
             this.Initialize();
@@ -75,20 +77,13 @@ namespace MKEditor
                 new GridSize(1, Unit.Pixels),
                 new GridSize(26, Unit.Pixels)
             );
-            layout.SetColumns(
-                new GridSize(222, Unit.Pixels),
-                new GridSize(1, Unit.Pixels),
-                new GridSize(1),
-                new GridSize(1, Unit.Pixels),
-                new GridSize(283, Unit.Pixels)
-            );
 
             Color DividerColor = new Color(79, 108, 159);
 
             // Header + Menubar
             MenuBar menu = new MenuBar(layout);
             menu.SetBackgroundColor(28, 50, 73);
-            menu.SetGrid(0, 0, 0, 4);
+            menu.SetGridRow(0);
             menu.SetItems(new List<MenuItem>()
             {
                 new MenuItem("File")
@@ -145,107 +140,68 @@ namespace MKEditor
 
             // Toolbar (modes, icons, etc)
             ToolBar toolbar = new ToolBar(layout);
-            toolbar.SetGrid(1, 1, 0, 4);
+            toolbar.SetGridRow(1);
 
 
             // Blue 1px separator
             Widget Blue1pxSeparator = new Widget(layout);
             Blue1pxSeparator.SetBackgroundColor(DividerColor);
-            Blue1pxSeparator.SetGrid(2, 2, 0, 4);
+            Blue1pxSeparator.SetGridRow(2);
 
 
-            // Left sidebar
-            Sidebar LeftSidebar = new Sidebar(layout);
-            LeftSidebar.SetGrid(3, 0);
-            
-            LeftSidebar.TabControl.CreateTab("Maps");
-            MapSelectPanel mst = new MapSelectPanel(LeftSidebar.TabControl.GetTab(0));
-
-            // Left sidebar divider
-            Widget LeftSidebarDivider = new Widget(layout);
-            LeftSidebarDivider.SetBackgroundColor(79, 108, 159);
-            LeftSidebarDivider.SetGrid(3, 3, 1, 1);
-
-            // Right sidebar divider
-            Widget RightSidebarDivider = new Widget(layout);
-            RightSidebarDivider.SetBackgroundColor(DividerColor);
-            RightSidebarDivider.SetGrid(3, 3, 3, 3);
-
-            // Right sidebar
-            Grid rightcontainer = new Grid(layout);
-            rightcontainer.SetGrid(3, 4);
-            rightcontainer.SetRows(new GridSize(5), new GridSize(1, Unit.Pixels), new GridSize(2));
-            rightcontainer.SetColumns(new GridSize(1));
-            rightcontainer.SetBackgroundColor(40, 44, 52);
-
-
-            // Top-Right sidebar
-            Sidebar TopRightSidebar = new Sidebar(rightcontainer);
-
-            // Tileset part of right sidebar
-            TopRightSidebar.TabControl.CreateTab("Tilesets");
-            TilesetsPanel tt = new TilesetsPanel(TopRightSidebar.TabControl.GetTab(0));
-
-            // Inner right sidebar divider
-            Widget InnerRightSidebarDivider = new Widget(rightcontainer);
-            InnerRightSidebarDivider.SetBackgroundColor(DividerColor);
-            InnerRightSidebarDivider.SetGrid(1, 0);
-
-            // Bottom-Right sidebar
-            Sidebar BottomRightSidebar = new Sidebar(rightcontainer);
-            BottomRightSidebar.SetGrid(2, 0);
-
-            // Layers part of right sidebar
-            BottomRightSidebar.TabControl.CreateTab("Layers");
-            LayersPanel lt = new LayersPanel(BottomRightSidebar.TabControl.GetTab(0));
-
-
-            // Center map viewer
-            MapViewer mv = new MapViewer(layout);
-            mv.SetGrid(3, 2);
+            MainEditorWidget mew = new MainEditorWidget(layout);
+            mew.SetGridRow(3);
 
             // Status bar divider
             Widget StatusBarDivider = new Widget(layout);
             StatusBarDivider.SetBackgroundColor(DividerColor);
-            StatusBarDivider.SetGrid(4, 4, 0, 4);
+            StatusBarDivider.SetGridRow(4);
 
             // Status bar
             StatusBar status = new StatusBar(layout);
-            status.SetGrid(5, 5, 0, 4);
-
-
+            status.SetGridRow(5);
 
             // Link the UI pieces together
-            mv.LayersTab = lt;
-            mv.TilesetTab = tt;
-            mv.ToolBar = toolbar;
-            mv.StatusBar = status;
+            mew.mv.LayersTab = mew.lt;
+            mew.mv.TilesetTab = mew.tt;
+            mew.mv.ToolBar = toolbar;
+            mew.mv.StatusBar = status;
 
-            lt.TilesetTab = tt;
-            lt.MapViewer = mv;
+            mew.lt.TilesetTab = mew.tt;
+            mew.lt.MapViewer = mew.mv;
 
-            tt.LayersTab = lt;
-            tt.MapViewer = mv;
-            tt.ToolBar = toolbar;
+            mew.tt.LayersTab = mew.lt;
+            mew.tt.MapViewer = mew.mv;
+            mew.tt.ToolBar = toolbar;
 
-            mst.MapViewer = mv;
+            mew.mst.MapViewer = mew.mv;
 
-            toolbar.MapViewer = mv;
-            toolbar.TilesetTab = tt;
+            toolbar.MapViewer = mew.mv;
+            toolbar.TilesetTab = mew.tt;
             toolbar.StatusBar = status;
 
-            mst.StatusBar = status;
+            mew.mst.StatusBar = status;
 
-            status.MapViewer = mv;
+            status.MapViewer = mew.mv;
 
 
             // Set list of maps & initial map
-            mst.PopulateList(Editor.ProjectSettings.MapOrder, true);
+            mew.mst.PopulateList(Editor.ProjectSettings.MapOrder, true);
             int id;
             if (Editor.ProjectSettings.MapOrder[0] is List<object>) id = (int) ((List<object>) Editor.ProjectSettings.MapOrder[0])[0];
             else id = (int) Editor.ProjectSettings.MapOrder[0];
-            mst.SetMap(Data.Maps[id]);
+            mew.mst.SetMap(Data.Maps[id]);
 
+            if (LoadHomeScreen)
+            {
+                mew.SetVisible(false);
+                status.SetVisible(false);
+                toolbar.SetVisible(false);
+            }
+            else
+            {
+
+            }
 
             this.OnMouseDown += UI.MouseDown;
             this.OnMousePress += UI.MousePress;
