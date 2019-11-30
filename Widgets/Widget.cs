@@ -577,15 +577,7 @@ namespace MKEditor.Widgets
                     }
                     else if (VScrollBar != null)
                     {
-                        Console.WriteLine("=== before ===");
-                        Console.WriteLine(VScrollBar.Viewport.Visible);
                         VScrollBar.SetVisible(false);
-                        Console.WriteLine(VScrollBar.Viewport.Visible);
-                        Console.WriteLine("prnt: " + VScrollBar.Parent.ToString());
-                        Console.WriteLine("prnt.vis: " + (VScrollBar.Parent as Widget).Visible.ToString());
-                        Console.WriteLine("prnt.viewp.vis: " + (VScrollBar.Parent as Widget).Viewport.Visible.ToString());
-                        Console.WriteLine("prnt.isvis(): " + (VScrollBar.Parent as Widget).IsVisible().ToString());
-                        Console.WriteLine("=== after ===\n\n");
                         ScrolledY = 0;
                     }
                 }
@@ -991,7 +983,9 @@ namespace MKEditor.Widgets
             // Mark this widget as disposed.
             this.Disposed = true;
             // Dispose the viewport and all its sprites.
-            this.Viewport.Dispose();
+            // Viewport may already be null if a child of a layoutcontainer has been disposed
+            // because they share the same viewport.
+            if (this.Viewport != null && !this.Viewport.Disposed) this.Viewport.Dispose();
             for (int i = 0; i < this.Widgets.Count; i++)
             {
                 if (this.Widgets[i] != null)
@@ -1007,6 +1001,8 @@ namespace MKEditor.Widgets
             // Set viewport and sprites to null to ensure no methods can use them anymore.
             this.Viewport = null;
             this.Sprites = null;
+            if (Parent is LayoutContainer) 
+                (Parent as Widget).Dispose();
             if (this.OnDisposed != null) this.OnDisposed.Invoke(this, new EventArgs());
         }
 

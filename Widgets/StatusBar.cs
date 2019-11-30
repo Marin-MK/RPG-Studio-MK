@@ -100,7 +100,7 @@ namespace MKEditor.Widgets
 
         public void RemoveCursorText()
         {
-            Sprites["cursor"].Bitmap.Dispose();
+            if (Sprites["cursor"].Bitmap != null) Sprites["cursor"].Bitmap.Dispose();
             DrawnX = -1;
             DrawnY = -1;
         }

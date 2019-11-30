@@ -273,5 +273,14 @@ namespace MKEditor
         {
             this.Shortcuts.Remove(s);
         }
+
+        public void SetBackgroundColor(Color c)
+        {
+            (BGSprite.Bitmap as SolidBitmap).SetColor(c);
+        }
+        public void SetBackgroundColor(byte r, byte g, byte b, byte a = 255)
+        {
+            (BGSprite.Bitmap as SolidBitmap).SetColor(r, g, b, a);
+        }
     }
 }

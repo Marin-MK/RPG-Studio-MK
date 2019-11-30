@@ -57,35 +57,35 @@ namespace MKEditor
                 GeneralSettings = new GeneralSettings();
             }
         }
+
+        public static void MakeRecentProject()
+        {
+            for (int i = 0; i < GeneralSettings.RecentFiles.Count; i++)
+            {
+                if (GeneralSettings.RecentFiles[i][1] == ProjectFilePath) // Project file paths match - same project
+                {
+                    GeneralSettings.RecentFiles.RemoveAt(i);
+                }
+            }
+            GeneralSettings.RecentFiles.Add(new List<string>() { ProjectSettings.ProjectName, ProjectFilePath });
+        }
     }
 
     [Serializable]
     public class ProjectSettings
     {
         public List<object> MapOrder = new List<object>();
-
-        public ProjectSettings()
-        {
-            this.MapOrder = new List<object>() { };
-        }
+        public string ProjectName = "Untitled Game";
     }
 
     [Serializable]
     public class GeneralSettings
     {
-        public bool WasMaximized;
-        public int LastWidth;
-        public int LastHeight;
-        public int LastX;
-        public int LastY;
-
-        public GeneralSettings()
-        {
-            WasMaximized = true;
-            LastWidth = 600;
-            LastHeight = 600;
-            LastX = 50;
-            LastY = 50;
-        }
+        public bool WasMaximized = true;
+        public int LastWidth = 600;
+        public int LastHeight = 600;
+        public int LastX = 50;
+        public int LastY = 50;
+        public List<List<string>> RecentFiles = new List<List<string>>();
     }
 }

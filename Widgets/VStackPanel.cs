@@ -85,10 +85,6 @@ namespace MKEditor.Widgets
                     w.SetHeight(e.Height);
                     this.UpdateHeight();
                 };
-                w.OnDisposed += delegate (object sender, EventArgs e)
-                {
-                    c.Dispose();
-                };
                 w.Viewport = new Viewport(w.Window.Renderer, 0, 0, w.Size);
             }
             return w;

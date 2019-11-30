@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using ODL;
 
@@ -7,63 +8,6 @@ namespace MKEditor
 {
     public static class Utilities
     {
-        public static string InstalledPath = "D:\\Desktop\\MK\\editor\\bin\\Debug";
-
-        public static string GetRubyRequirements()
-        {
-            return @"
-load_assembly 'IronRuby.Libraries', 'IronRuby.StandardLibrary.Zlib'
-
-class Species
-  Moveset = Struct.new(:level, :tms, :tutor, :evolution, :egg)
-end
-Stats = Struct.new(:hp, :attack, :defense, :spatk, :spdef, :speed)
-
-module MKD
-  class Tileset; end
-  class Map; end
-  class Event
-    class Page; end
-    class Settings; end
-  end
-end
-
-def validate_mkd(data, filename = nil)
-  errmsg = nil
-  if !data.is_a?(Hash)
-    errmsg = ""File content is not a Hash.""
-  elsif !data[:type]
-    errmsg = ""File content does not contain a type header key.""
-  elsif !data[:data]
-    errmsg = ""File content does not contain a data header key.""
-  end
-  if errmsg
-    raise ""Invalid MKD file#{filename ? "" - #{filename}"" : "".""}\n\n"" + errmsg
-  end
-end
-
-module FileUtils
-  module_function
-
-  def load_data(filename)
-    data = File.open(filename, 'rb') do |f|
-      next Marshal.load(Zlib::Inflate.inflate(Marshal.load(f)).reverse)
-    end
-    validate_mkd(data, filename)
-    return data[:data]
-  end
-
-  def save_data(filename, type, data)
-    f = File.new(filename, 'wb')
-    Marshal.dump(Zlib::Deflate.deflate(Marshal.dump({type: type, data: data}).reverse), f)
-    f.close
-    return nil
-  end
-end
-
-";
-        }
-
         public static void DrawCollapseBox(Bitmap b, int x, int y, bool collapsed)
         {
             b.SetPixel(x, y + 2, 17, 33, 50);
@@ -164,17 +108,38 @@ end
         }
 
         public static Bitmap IconSheet;
-        
-        public static void PickFile()
-        {
-            
-        }
 
         public static void Initialize()
         {
-            //Console.WriteLine(System.IO.Directory.GetCurrentDirectory());
-            //System.IO.Directory.SetCurrentDirectory(InstalledPath);
             IconSheet = new Bitmap("icons.png");
+        }
+
+        public static void OpenLink(string url)
+        {
+            try
+            {
+                Process.Start(url);
+            }
+            catch
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    url = url.Replace("&", "^&");
+                    Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process.Start("xdg-open", url);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start("open", url);
+                }
+                else
+                {
+                    throw new Exception("Failed to open link '" + url + "'.");
+                }
+            }
         }
     }
 }

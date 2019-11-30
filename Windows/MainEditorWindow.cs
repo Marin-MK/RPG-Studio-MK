@@ -14,19 +14,20 @@ namespace MKEditor
         public IContainer ActiveWidget;
         public List<IContainer> Widgets = new List<IContainer>();
 
-        public MainEditorWindow()
+        public Grid MainGridLayout;
+        public MenuBar MenuBar;
+        public StatusBar StatusBar;
+        public ToolBar ToolBar;
+        public HomeScreen HomeScreen;
+
+        public MainEditorWindow(string[] args)
         {
             Editor.LoadGeneralSettings();
             Utilities.Initialize();
-            Editor.LoadProjectSettings();
-
-            bool LoadHomeScreen = false;
 
             this.SetText("MK Editor");
             this.SetMinimumSize(600, 400);
             this.Initialize();
-
-            Data.Initialize();
 
             using (Bitmap b = new Bitmap(9, 14)) // Set cursor
             {
@@ -68,8 +69,9 @@ namespace MKEditor
 
             // Widgets may now be created
 
-            Grid layout = new Grid(this);
-            layout.SetRows(
+            MainGridLayout = new Grid(this);
+            MainGridLayout.SetSize(Width, Height);
+            MainGridLayout.SetRows(
                 new GridSize(32, Unit.Pixels),
                 new GridSize(31, Unit.Pixels),
                 new GridSize(1, Unit.Pixels),
@@ -81,10 +83,10 @@ namespace MKEditor
             Color DividerColor = new Color(79, 108, 159);
 
             // Header + Menubar
-            MenuBar menu = new MenuBar(layout);
-            menu.SetBackgroundColor(28, 50, 73);
-            menu.SetGridRow(0);
-            menu.SetItems(new List<MenuItem>()
+            MenuBar = new MenuBar(MainGridLayout);
+            MenuBar.SetBackgroundColor(28, 50, 73);
+            MenuBar.SetGridRow(0);
+            MenuBar.SetItems(new List<MenuItem>()
             {
                 new MenuItem("File")
                 {
@@ -139,68 +141,46 @@ namespace MKEditor
 
 
             // Toolbar (modes, icons, etc)
-            ToolBar toolbar = new ToolBar(layout);
-            toolbar.SetGridRow(1);
+            ToolBar = new ToolBar(MainGridLayout);
+            ToolBar.SetGridRow(1);
 
 
             // Blue 1px separator
-            Widget Blue1pxSeparator = new Widget(layout);
+            Widget Blue1pxSeparator = new Widget(MainGridLayout);
             Blue1pxSeparator.SetBackgroundColor(DividerColor);
             Blue1pxSeparator.SetGridRow(2);
 
-
-            MainEditorWidget mew = new MainEditorWidget(layout);
-            mew.SetGridRow(3);
-
             // Status bar divider
-            Widget StatusBarDivider = new Widget(layout);
+            Widget StatusBarDivider = new Widget(MainGridLayout);
             StatusBarDivider.SetBackgroundColor(DividerColor);
             StatusBarDivider.SetGridRow(4);
 
             // Status bar
-            StatusBar status = new StatusBar(layout);
-            status.SetGridRow(5);
+            StatusBar = new StatusBar(MainGridLayout);
+            StatusBar.SetGridRow(5);
 
-            // Link the UI pieces together
-            mew.mv.LayersTab = mew.lt;
-            mew.mv.TilesetTab = mew.tt;
-            mew.mv.ToolBar = toolbar;
-            mew.mv.StatusBar = status;
+            ToolBar.StatusBar = StatusBar;
 
-            mew.lt.TilesetTab = mew.tt;
-            mew.lt.MapViewer = mew.mv;
-
-            mew.tt.LayersTab = mew.lt;
-            mew.tt.MapViewer = mew.mv;
-            mew.tt.ToolBar = toolbar;
-
-            mew.mst.MapViewer = mew.mv;
-
-            toolbar.MapViewer = mew.mv;
-            toolbar.TilesetTab = mew.tt;
-            toolbar.StatusBar = status;
-
-            mew.mst.StatusBar = status;
-
-            status.MapViewer = mew.mv;
-
-
-            // Set list of maps & initial map
-            mew.mst.PopulateList(Editor.ProjectSettings.MapOrder, true);
-            int id;
-            if (Editor.ProjectSettings.MapOrder[0] is List<object>) id = (int) ((List<object>) Editor.ProjectSettings.MapOrder[0])[0];
-            else id = (int) Editor.ProjectSettings.MapOrder[0];
-            mew.mst.SetMap(Data.Maps[id]);
+            bool LoadHomeScreen = true;
+            // If an argument was passed, load that project file and skip the home screen
+            if (args.Length > 0 && args[0].Contains("project.mkproj"))
+            {
+                Data.SetProjectPath(args[0]);
+                LoadHomeScreen = false;
+            }
 
             if (LoadHomeScreen)
             {
-                mew.SetVisible(false);
-                status.SetVisible(false);
-                toolbar.SetVisible(false);
+                StatusBar.SetVisible(false);
+                ToolBar.SetVisible(false);
+                UI.SetBackgroundColor(10, 23, 37);
+                HomeScreen = new HomeScreen(MainGridLayout);
+                HomeScreen.SetGridRow(3);
             }
             else
             {
-
+                CreateEditor();
+                Editor.MakeRecentProject();
             }
 
             this.OnMouseDown += UI.MouseDown;
@@ -221,6 +201,49 @@ namespace MKEditor
                 SetSize(Editor.GeneralSettings.LastWidth, Editor.GeneralSettings.LastHeight);
                 this.UI.WindowResized(null, new WindowEventArgs(Width, Height));
             }
+        }
+
+        public void CreateEditor()
+        {
+            if (HomeScreen != null) HomeScreen.Dispose();
+
+            Editor.LoadProjectSettings();
+            Data.LoadGameData();
+
+            MainEditorWidget mew = new MainEditorWidget(MainGridLayout);
+            mew.SetGridRow(3);
+
+            // Link the UI pieces together
+            mew.mv.LayersTab = mew.lt;
+            mew.mv.TilesetTab = mew.tt;
+            mew.mv.ToolBar = ToolBar;
+            mew.mv.StatusBar = StatusBar;
+
+            mew.lt.TilesetTab = mew.tt;
+            mew.lt.MapViewer = mew.mv;
+
+            mew.tt.LayersTab = mew.lt;
+            mew.tt.MapViewer = mew.mv;
+            mew.tt.ToolBar = ToolBar;
+
+            mew.mst.MapViewer = mew.mv;
+
+            ToolBar.MapViewer = mew.mv;
+            ToolBar.TilesetTab = mew.tt;
+            mew.mst.StatusBar = StatusBar;
+
+            StatusBar.MapViewer = mew.mv;
+            // Set list of maps & initial map
+            mew.mst.PopulateList(Editor.ProjectSettings.MapOrder, true);
+            int id;
+            if (Editor.ProjectSettings.MapOrder[0] is List<object>) id = (int)((List<object>) Editor.ProjectSettings.MapOrder[0])[0];
+            else id = (int) Editor.ProjectSettings.MapOrder[0];
+            mew.mst.SetMap(Data.Maps[id]);
+
+            MainGridLayout.UpdateLayout();
+
+            StatusBar.SetVisible(true);
+            ToolBar.SetVisible(true);
         }
 
         public void SetActiveWidget(IContainer Widget)

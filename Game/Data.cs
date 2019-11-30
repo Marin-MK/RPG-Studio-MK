@@ -12,17 +12,15 @@ namespace MKEditor.Game
     public static class Data
     {
         public static string ProjectPath;
+        public static string ProjectFilePath;
         public static string DataPath;
 
-        //public static ScriptEngine Engine;
         public static Dictionary<int, Map> Maps = new Dictionary<int, Map>();
         public static List<Tileset> Tilesets = new List<Tileset>();
         public static Dictionary<string, Species> Species = new Dictionary<string, Species>();
 
-        public static void Initialize()
+        public static void LoadGameData()
         {
-            //Engine = Ruby.CreateEngine();
-            //Engine.Execute(Utilities.GetRubyRequirements());
             LoadSpecies();
             LoadTilesets();
             LoadMaps(); // TODO: Event commands/conditions
@@ -44,19 +42,8 @@ namespace MKEditor.Game
             }
             ProjectPath = path;
             DataPath = path + "/data";
-            Editor.ProjectFilePath = path + "/" + projectfile;
-        }
-
-        public static void LoadFile(string Filename, string GlobalVar)
-        {
-            //while (Filename.Contains('\\')) Filename = Filename.Replace('\\', '/');
-            //Engine.Execute($"{GlobalVar} = FileUtils.load_data(\"{DataPath}/{Filename}\")");
-        }
-
-        public static dynamic Exec(string Code)
-        {
-            return null;
-            //return Engine.Execute(Code);
+            ProjectFilePath = path + "/project.mkproj";
+            Editor.ProjectFilePath = ProjectFilePath;
         }
 
         public static void LoadSpecies()
