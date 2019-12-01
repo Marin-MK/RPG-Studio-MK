@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using MKEditor.Game;
 using MKEditor.Widgets;
 using ODL;
@@ -25,7 +24,7 @@ namespace MKEditor
             Editor.LoadGeneralSettings();
             Utilities.Initialize();
 
-            this.SetText("MK Editor");
+            this.SetText("RPG Studio MK");
             this.SetMinimumSize(600, 400);
             this.Initialize();
 

@@ -462,9 +462,7 @@ namespace MKEditor.Widgets
         {
             AssertUndisposed();
             this.Visible = Visible;
-            this.Viewport.Visible = (Parent as Widget).IsVisible() ? Visible : false;
-            // Sets all children to the new visibility state.
-            this.Widgets.ForEach(w => w.SetViewportVisible(Visible));
+            SetViewportVisible(Visible);
         }
 
         /// <summary>
@@ -473,7 +471,12 @@ namespace MKEditor.Widgets
         /// <param name="Visible">Boolean visibilty value.</param>
         protected void SetViewportVisible(bool Visible)
         {
-            this.Viewport.Visible = (Parent as Widget).IsVisible() ? Visible : false;
+            Widget parent = Parent as Widget;
+            // Since LayoutContainer copies the viewport of this Widget, it will always
+            // match the visibility of this widget and therefore give undesireable results.
+            // Use its parent instead, which is the stackpanel or grid.
+            if (parent is LayoutContainer) parent = parent.Parent as Widget;
+            this.Viewport.Visible = (parent as Widget).IsVisible() ? Visible : false;
             this.Widgets.ForEach(w => w.SetViewportVisible(Visible));
         }
 

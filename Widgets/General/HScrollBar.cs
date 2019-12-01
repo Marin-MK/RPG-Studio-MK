@@ -34,8 +34,8 @@ namespace MKEditor.Widgets
             this.Value = 0;
             this.SliderIM = new MouseInputManager(this);
             this.SliderIM.OnMouseMoving += SliderMouseMoving;
-            this.SliderIM.OnMouseDown += SliderMouseRight;
-            this.SliderIM.OnMouseUp += SliderMouseLeft;
+            this.SliderIM.OnMouseDown += SliderMouseDown;
+            this.SliderIM.OnMouseUp += SliderMouseUp;
             this.SliderIM.OnHoverChanged += SliderHoverChanged;
         }
 
@@ -109,7 +109,7 @@ namespace MKEditor.Widgets
             }
         }
 
-        private void SliderMouseRight(object sender, MouseEventArgs e)
+        private void SliderMouseDown(object sender, MouseEventArgs e)
         {
             if (e.LeftButton && !e.OldLeftButton && this.SliderIM.Hovering)
             {
@@ -118,12 +118,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        private void SliderMouseLeft(object sender, MouseEventArgs e)
+        private void SliderMouseUp(object sender, MouseEventArgs e)
         {
-            if (!e.LeftButton && e.OldLeftButton && this.SliderIM.ClickedLeftInArea == true)
-            {
-                Redraw();
-            }
+            Redraw();
         }
 
         private void SliderHoverChanged(object sender, MouseEventArgs e)

@@ -300,7 +300,12 @@ namespace MKEditor.Widgets
 
         public void RedrawLayers()
         {
+            double oldvaluex = HScrollBar.Value;
+            double oldvaluey = VScrollBar.Value;
             MapWidget.RedrawLayers();
+            PositionMap();
+            HScrollBar.SetValue(oldvaluex);
+            VScrollBar.SetValue(oldvaluey);
         }
 
         public void CreateLayerBitmaps()

@@ -22,7 +22,8 @@ namespace MKEditor.Widgets
             : base(Parent, Name)
         {
             SetBackgroundColor(28, 50, 73);
-            Sprites["map"] = new Sprite(this.Viewport, "home_map.png");
+            Sprites["map"] = new Sprite(this.Viewport);
+            if (System.IO.File.Exists("home_map.png")) Sprites["map"].Bitmap = new Bitmap("home_map.png");
             Sprites["sidebar"] = new Sprite(this.Viewport, "home_side.png");
             Sprites["logo"] = new Sprite(this.Viewport, "home_logo.png");
             Sprites["logo"].X = 33;
@@ -632,17 +633,20 @@ namespace MKEditor.Widgets
                 double factor = Size.Height / (double) Sprites["sidebar"].Bitmap.Height;
                 Sprites["sidebar"].ZoomY = factor;
             }
-            int dx = Size.Width - Sprites["map"].Bitmap.Width;
-            int dy = Size.Height - Sprites["map"].Bitmap.Height;
-            double px = dx / (double) Sprites["map"].Bitmap.Width;
-            double py = dy / (double) Sprites["map"].Bitmap.Height;
-            if (dx != 0 || dy != 0)
+            if (Sprites["map"].Bitmap != null)
             {
-                // Zooms the sprite (maintaining aspect ratio) and centers it
-                if (px > py) Sprites["map"].ZoomX = Sprites["map"].ZoomY = 1 + px;
-                else Sprites["map"].ZoomX = Sprites["map"].ZoomY = 1 + py;
-                Sprites["map"].X = Size.Width / 2 - (int) Math.Round(Sprites["map"].Bitmap.Width * Sprites["map"].ZoomX / 2d);
-                Sprites["map"].Y = Size.Height / 2 - (int) Math.Round(Sprites["map"].Bitmap.Height * Sprites["map"].ZoomY / 2d);
+                int dx = Size.Width - Sprites["map"].Bitmap.Width;
+                int dy = Size.Height - Sprites["map"].Bitmap.Height;
+                double px = dx / (double) Sprites["map"].Bitmap.Width;
+                double py = dy / (double) Sprites["map"].Bitmap.Height;
+                if (dx != 0 || dy != 0)
+                {
+                    // Zooms the sprite (maintaining aspect ratio) and centers it
+                    if (px > py) Sprites["map"].ZoomX = Sprites["map"].ZoomY = 1 + px;
+                    else Sprites["map"].ZoomX = Sprites["map"].ZoomY = 1 + py;
+                    Sprites["map"].X = Size.Width / 2 - (int) Math.Round(Sprites["map"].Bitmap.Width * Sprites["map"].ZoomX / 2d);
+                    Sprites["map"].Y = Size.Height / 2 - (int) Math.Round(Sprites["map"].Bitmap.Height * Sprites["map"].ZoomY / 2d);
+                }
             }
             if (Sprites["files"].Bitmap != null) Sprites["files"].Bitmap.Dispose();
             int height = Size.Height - 190;
@@ -681,44 +685,134 @@ namespace MKEditor.Widgets
                 Sprites["files"].Bitmap.DrawText(path, 30, 48 * i + 22, Color.WHITE);
             }
             Sprites["files"].Bitmap.Lock();
-            if (Size.Width < 690)
-            {
 
-            }
-            else if (Size.Width < 850)
+            int windowheight = Window.Height;
+
+            bool Hor3 = true;
+            bool CenterY = false;
+            bool Hor2Ver1 = false;
+            bool Ver3 = false;
+            bool Invis = false;
+            bool HorSM = true;
+            bool VerSM = false;
+            bool InvisSM = false;
+
+            if (Size.Width < 1180)
             {
-                YoutubeButton.SetVisible(false);
-                TwitterButton.SetVisible(false);
+                Hor3 = false;
+                Hor2Ver1 = true;
             }
-            else if (Size.Width < 930)
+            if (Size.Width < 930)
             {
-                NewProjectButton.SetPosition(520, 4);
-                OpenProjectButton.SetPosition(520, 210);
-                TutorialsButton.SetPosition(520, 415);
-                YoutubeButton.SetPosition(Size.Width - 89, Size.Height - 87);
-                TwitterButton.SetPosition(Size.Width - 89, Size.Height - 180);
-                YoutubeButton.SetVisible(true);
-                TwitterButton.SetVisible(true);
+                Hor2Ver1 = false;
+                Ver3 = true;
+                HorSM = false;
+                VerSM = true;
             }
-            else if (Size.Width < 1180)
+            if (Size.Width < 860)
+            {
+                VerSM = false;
+                InvisSM = true;
+            }
+            if (Size.Width < 780)
+            {
+                Ver3 = false;
+                Invis = true;
+                InvisSM = false;
+                VerSM = true;
+            }
+
+            if (Hor3 && HorSM && windowheight < 500)
+            {
+                HorSM = false;
+                InvisSM = true;
+                CenterY = true;
+                if (Size.Width < 1210)
+                {
+                    Hor3 = false;
+                    CenterY = false;
+                    VerSM = true;
+                    InvisSM = false;
+                    Invis = true;
+                }
+                else if (Size.Width >= 1300)
+                {
+                    VerSM = true;
+                    InvisSM = false;
+                }
+            }
+
+            if (Hor2Ver1 && windowheight < 650)
+            {
+                Hor2Ver1 = false;
+                Invis = true;
+                HorSM = false;
+                VerSM = true;
+            }
+
+            if (Ver3)
+            {
+                if (windowheight < 720)
+                {
+                    Ver3 = false;
+                    Invis = true;
+                    HorSM = false;
+                    VerSM = true;
+                }
+                else if (windowheight >= 810)
+                {
+                    VerSM = false;
+                    HorSM = true;
+                    InvisSM = false;
+                }
+            }
+
+            NewProjectButton.SetVisible(true);
+            OpenProjectButton.SetVisible(true);
+            TutorialsButton.SetVisible(true);
+            if (Hor3)
+            {
+                int y = CenterY ? Size.Height / 2 - NewProjectButton.Size.Height / 2 : 108;
+                int addx = CenterY ? 30 : 0;
+                NewProjectButton.SetPosition(445 + addx, y);
+                OpenProjectButton.SetPosition(690 + addx, y);
+                TutorialsButton.SetPosition(935 + addx, y);
+            }
+            else if (Hor2Ver1)
             {
                 NewProjectButton.SetPosition(445, 108);
                 OpenProjectButton.SetPosition(690, 108);
                 TutorialsButton.SetPosition(445, 329);
-                YoutubeButton.SetPosition(Size.Width - 89, Size.Height - 87);
-                TwitterButton.SetPosition(Size.Width - 182, Size.Height - 87);
-                YoutubeButton.SetVisible(true);
-                TwitterButton.SetVisible(true);
             }
-            else
+            else if (Ver3)
             {
-                NewProjectButton.SetPosition(445, 108);
-                OpenProjectButton.SetPosition(690, 108);
-                TutorialsButton.SetPosition(935, 108);
+                NewProjectButton.SetPosition(520, 4);
+                OpenProjectButton.SetPosition(520, 210);
+                TutorialsButton.SetPosition(520, 415);
+            }
+            else if (Invis)
+            {
+                NewProjectButton.SetVisible(false);
+                OpenProjectButton.SetVisible(false);
+                TutorialsButton.SetVisible(false);
+            }
+
+            YoutubeButton.SetVisible(true);
+            TwitterButton.SetVisible(true);
+            if (HorSM)
+            {
                 YoutubeButton.SetPosition(Size.Width - 89, Size.Height - 87);
                 TwitterButton.SetPosition(Size.Width - 182, Size.Height - 87);
-                YoutubeButton.SetVisible(true);
-                TwitterButton.SetVisible(true);
+            }
+            else if (VerSM)
+            {
+                YoutubeButton.SetPosition(Size.Width - 89, Size.Height - 87);
+                TwitterButton.SetPosition(Size.Width - 89, Size.Height - 180);
+            }
+            else if (InvisSM)
+            {
+                YoutubeButton.SetVisible(false);
+                TwitterButton.SetVisible(false);
             }
         }
 
