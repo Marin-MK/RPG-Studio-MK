@@ -462,6 +462,19 @@ namespace MKEditor.Widgets
         {
             AssertUndisposed();
             this.Visible = Visible;
+            Widget parent = Parent as Widget;
+            // Since LayoutContainer copies the viewport of this Widget, it will always
+            // match the visibility of this widget and therefore give undesireable results.
+            // Use its parent instead, which is the stackpanel or grid.
+            if (parent is LayoutContainer) parent = parent.Parent as Widget;
+            if ((parent as Widget).IsVisible())
+            {
+                Viewport.Visible = Visible;
+            }
+            else
+            {
+                Viewport.Visible = false;
+            }
             SetViewportVisible(Visible);
         }
 
@@ -469,14 +482,29 @@ namespace MKEditor.Widgets
         /// Used for setting viewport visibility without changing actual visible property (used for children-parent visbility)
         /// </summary>
         /// <param name="Visible">Boolean visibilty value.</param>
-        protected void SetViewportVisible(bool Visible)
+        protected void SetViewportVisible(bool Visible, bool Initial = false)
         {
             Widget parent = Parent as Widget;
             // Since LayoutContainer copies the viewport of this Widget, it will always
             // match the visibility of this widget and therefore give undesireable results.
             // Use its parent instead, which is the stackpanel or grid.
             if (parent is LayoutContainer) parent = parent.Parent as Widget;
-            this.Viewport.Visible = (parent as Widget).IsVisible() ? Visible : false;
+            if ((parent as Widget).IsVisible())
+            {
+                if (!this.Visible && !Viewport.Visible && Visible)
+                {
+
+                }
+                else if (this.Visible && !Viewport.Visible && Visible)
+                {
+                    Viewport.Visible = true;
+                }
+                else if (this.Visible && Viewport.Visible && !Visible)
+                {
+                    Viewport.Visible = false;
+                }
+            }
+            else this.Viewport.Visible = false;
             this.Widgets.ForEach(w => w.SetViewportVisible(Visible));
         }
 
