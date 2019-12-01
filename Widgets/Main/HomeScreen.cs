@@ -609,6 +609,11 @@ namespace MKEditor.Widgets
             WidgetIM.OnMouseMoving += MouseMoving;
             WidgetIM.OnHoverChanged += HoverChanged;
             WidgetIM.OnMouseDown += MouseDown;
+
+            TextArea t = new TextArea(this);
+            t.SetPosition(100, 300);
+            t.SetSize(100, 20);
+            t.OnWidgetSelected.Invoke(null, null);
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)

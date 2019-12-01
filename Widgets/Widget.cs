@@ -491,18 +491,8 @@ namespace MKEditor.Widgets
             if (parent is LayoutContainer) parent = parent.Parent as Widget;
             if ((parent as Widget).IsVisible())
             {
-                if (!this.Visible && !Viewport.Visible && Visible)
-                {
-
-                }
-                else if (this.Visible && !Viewport.Visible && Visible)
-                {
-                    Viewport.Visible = true;
-                }
-                else if (this.Visible && Viewport.Visible && !Visible)
-                {
-                    Viewport.Visible = false;
-                }
+                if (this.Visible && Viewport.Visible != Visible)
+                    Viewport.Visible = Visible;
             }
             else this.Viewport.Visible = false;
             this.Widgets.ForEach(w => w.SetViewportVisible(Visible));
