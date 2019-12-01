@@ -33,7 +33,9 @@ namespace MKEditor.Widgets
             layercontainer.SetVScrollBar(vs);
 
             layerwidget = new LayerWidget(layercontainer);
-            layerwidget.SetContextMenuList(new List<IMenuItem>()
+
+
+            this.SetContextMenuList(new List<IMenuItem>()
             {
                 new MenuItem("New Layer")
                 {
@@ -42,31 +44,32 @@ namespace MKEditor.Widgets
                 new MenuSeparator(),
                 new MenuItem("Toggle Visibility")
                 {
-                    Shortcut = "Ctrl+H",
-                    OnLeftClick = ToggleVisibilityLayer
+                    //Shortcut = "Ctrl+H",
+                    OnLeftClick = ToggleVisibilityLayer,
+                    IsClickable = delegate (object sender, ConditionEventArgs e ) { e.ConditionValue = layerwidget.HoveringIndex >= 0; }
                 },
                 new MenuItem("Move Layer Up")
                 {
                     OnLeftClick = MoveLayerUp,
-                    IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = SelectedLayer < Map.Layers.Count - 1; }
+                    IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = SelectedLayer < Map.Layers.Count - 1 && layerwidget.HoveringIndex >= 0; }
                 },
                 new MenuItem("Move Layer Down")
                 {
                     OnLeftClick = MoveLayerDown,
-                    IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = SelectedLayer > 0; }
+                    IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = SelectedLayer > 0 && layerwidget.HoveringIndex >= 0; }
                 },
                 new MenuSeparator(),
                 new MenuItem("Delete Layer")
                 {
                     Shortcut = "Del",
                     OnLeftClick = DeleteLayer,
-                    IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Map.Layers.Count > 1; }
+                    IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Map.Layers.Count > 1 && layerwidget.HoveringIndex >= 0; }
                 }
             });
 
             RegisterShortcuts(new List<Shortcut>()
             {
-                new Shortcut(this, new Key(Keycode.H, Keycode.CTRL), new EventHandler<EventArgs>(ToggleVisibilityLayer), true),
+                //new Shortcut(this, new Key(Keycode.H, Keycode.CTRL), new EventHandler<EventArgs>(ToggleVisibilityLayer), true),
                 new Shortcut(this, new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer))
             });
 
@@ -80,12 +83,15 @@ namespace MKEditor.Widgets
 
         public void NewLayer(object sender, EventArgs e)
         {
-            Layer layer = new Layer($"Layer {SelectedLayer + 2}");
+            int selected = SelectedLayer;
+            if (layerwidget.HoveringIndex == -1) // Add to bottom (lowest layer) if not hovering over a layer
+                selected = -1;
+            Layer layer = new Layer($"Layer {selected + 2}");
             layer.Tiles = new List<TileData>();
             for (int i = 0; i < Map.Width * Map.Height; i++) layer.Tiles.Add(null);
-            Map.Layers.Insert(SelectedLayer + 1, layer);
+            Map.Layers.Insert(selected + 1, layer);
             UpdateNames();
-            int oldselected = SelectedLayer;
+            int oldselected = selected;
             MapViewer.RedrawLayers();
             CreateLayers();
             layerwidget.UpdateLayers();

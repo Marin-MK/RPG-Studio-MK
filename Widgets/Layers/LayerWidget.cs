@@ -10,6 +10,7 @@ namespace MKEditor.Widgets
         public MapViewer MapViewer { get { return (Parent.Parent as LayersPanel).MapViewer; } }
         public List<Layer> Layers { get; private set; }
         public int SelectedLayer { get; private set; }
+        public int HoveringIndex { get; private set; } = -1;
 
         public LayerWidget(object Parent, string Name = "layerWidget")
             : base(Parent, Name)
@@ -87,7 +88,11 @@ namespace MKEditor.Widgets
         public override void HoverChanged(object sender, MouseEventArgs e)
         {
             base.HoverChanged(sender, e);
-            if (!WidgetIM.Hovering) Sprites["selector"].Visible = false;
+            if (!WidgetIM.Hovering)
+            {
+                Sprites["selector"].Visible = false;
+                HoveringIndex = -1;
+            }
         }
 
         public override void MouseMoving(object sender, MouseEventArgs e)
@@ -96,11 +101,13 @@ namespace MKEditor.Widgets
             if (!WidgetIM.Hovering)
             {
                 Sprites["selector"].Visible = false;
+                HoveringIndex = -1;
                 return;
             }
             int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
             Sprites["selector"].Y = 24 * (int) Math.Floor(ry / 24d);
             Sprites["selector"].Visible = true;
+            HoveringIndex = (int) Math.Floor(ry / 24d);
         }
 
         public override void MouseDown(object sender, MouseEventArgs e)
