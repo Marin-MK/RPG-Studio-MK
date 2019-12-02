@@ -612,7 +612,11 @@ namespace MKEditor.Widgets
 
             TextArea t = new TextArea(this);
             t.SetPosition(100, 300);
-            t.SetSize(100, 20);
+            t.SetSize(200, 24);
+            t.SetFont(Font.Get("Fonts/Ubuntu-B", 16));
+            t.SetTextY(2);
+            t.SetCaretY(4);
+            t.SetInitialText("Home Sweet Home");
             t.OnWidgetSelected.Invoke(null, null);
         }
 

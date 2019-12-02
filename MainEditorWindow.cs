@@ -61,7 +61,7 @@ namespace MKEditor
                 b.SetPixel(6, 11, white);
                 b.SetPixel(6, 12, white);
                 b.Lock();
-                Graphics.SetCursor(b);
+                Input.SetCursor(b);
             }
 
             this.UI = new UIManager(this);
