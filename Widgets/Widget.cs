@@ -116,6 +116,13 @@ namespace MKEditor.Widgets
         public bool ShowContextMenu { get; protected set; } = false;
 
         /// <summary>
+        /// The help text to show when hovering over this widget.
+        /// </summary>
+        public string HelpText { get; protected set; }
+
+        public HelpText HelpTextWidget { get; protected set; }
+
+        /// <summary>
         /// The list of keyboard shortcuts associated with this widget. Can be global shortcuts.
         /// </summary>
         public List<Shortcut> Shortcuts { get; protected set; } = new List<Shortcut>();
@@ -357,6 +364,8 @@ namespace MKEditor.Widgets
             // Creates the input manager object responsible for fetching mouse input.
             this.WidgetIM = new MouseInputManager(this);
             this.WidgetIM.OnRightClick += RightClick_ContextMenu;
+            this.WidgetIM.OnHoverChanged += HoverChanged;
+            this.WidgetIM.OnMouseMoving += MouseMoving;
         }
 
         /// <summary>
@@ -368,6 +377,11 @@ namespace MKEditor.Widgets
             AssertUndisposed();
             this.ContextMenuList = Items;
             this.ShowContextMenu = Items.Count > 0;
+        }
+
+        public void SetHelpText(string Text)
+        {
+            this.HelpText = Text;
         }
 
         /// <summary>
@@ -1022,7 +1036,7 @@ namespace MKEditor.Widgets
             // Set viewport and sprites to null to ensure no methods can use them anymore.
             this.Viewport = null;
             this.Sprites = null;
-            if (Parent is LayoutContainer) 
+            if (Parent is LayoutContainer && !(Parent as Widget).Disposed)
                 (Parent as Widget).Dispose();
             if (this.OnDisposed != null) this.OnDisposed.Invoke(this, new EventArgs());
         }
@@ -1063,6 +1077,17 @@ namespace MKEditor.Widgets
         public virtual void Update()
         {
             AssertUndisposed();
+
+            if (TimerPassed("helptext") && !string.IsNullOrEmpty(HelpText) && HelpTextWidget == null)
+            {
+                HelpTextWidget = new HelpText(Window.UI);
+                HelpTextWidget.SetText(HelpText);
+                HelpTextWidget.SetPosition(Graphics.LastMouseEvent.X, Graphics.LastMouseEvent.Y - HelpTextWidget.Size.Height);
+                if (HelpTextWidget.Position.X + HelpTextWidget.Size.Width >= Window.Width)
+                    HelpTextWidget.SetPosition(Graphics.LastMouseEvent.X - HelpTextWidget.Size.Width, HelpTextWidget.Position.Y);
+                if (HelpTextWidget.Position.Y - HelpTextWidget.Size.Height < 0)
+                    HelpTextWidget.SetPosition(HelpTextWidget.Position.X, Graphics.LastMouseEvent.Y);
+            }
 
             // If this widget is active
             if (this.SelectedWidget)
@@ -1162,10 +1187,21 @@ namespace MKEditor.Widgets
             if (e.LeftButton != e.OldLeftButton && this.WidgetIM.ClickedLeftInArea == true) Redraw();
         }
         public virtual void MouseWheel(object sender, MouseEventArgs e) { }
-        public virtual void MouseMoving(object sender, MouseEventArgs e) { }
+        public virtual void MouseMoving(object sender, MouseEventArgs e)
+        {
+            if (TimerExists("helptext")) ResetTimer("helptext");
+        }
         public virtual void HoverChanged(object sender, MouseEventArgs e)
         {
             Redraw();
+            if (WidgetIM.Hovering)
+                SetTimer("helptext", 1000);
+            else if (TimerExists("helptext"))
+            {
+                if (HelpTextWidget != null) HelpTextWidget.Dispose();
+                HelpTextWidget = null;
+                DestroyTimer("helptext");
+            }
         }
         public virtual void LeftClick(object sender, MouseEventArgs e) { }
         public virtual void WidgetSelected(object sender, MouseEventArgs e)

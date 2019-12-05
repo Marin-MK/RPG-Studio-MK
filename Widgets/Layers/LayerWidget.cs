@@ -37,16 +37,14 @@ namespace MKEditor.Widgets
 
         public void UpdateLayers()
         {
-            if (Layers.Count * 24 > Size.Height)
-            {
-                SetHeight(Layers.Count * 24);
-            }
+            SetHeight(Layers.Count * 24);
             Redraw();
         }
 
         public void SetSelectedLayer(int layerindex)
         {
             SelectedLayer = layerindex;
+            Editor.ProjectSettings.LastLayer = layerindex;
             Redraw();
         }
 

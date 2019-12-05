@@ -10,6 +10,7 @@ namespace MKEditor.Widgets
         public Map Map;
         public Map Clone;
 
+        public bool UnsavedChanges = false;
         public bool UpdateMapViewer = false;
 
         TextBox MapName;
@@ -48,7 +49,7 @@ namespace MKEditor.Widgets
             MapName = new TextBox(box1);
             MapName.SetPosition(6, 22);
             MapName.SetSize(136, 27);
-            MapName.SetText(Map.DevName);
+            MapName.SetInitialText(Map.DevName);
             MapName.OnTextChanged += delegate (object sender, EventArgs e)
             {
                 this.Map.DevName = MapName.Text;
@@ -61,7 +62,7 @@ namespace MKEditor.Widgets
             DisplayName = new TextBox(box1);
             DisplayName.SetPosition(6, 68);
             DisplayName.SetSize(136, 27);
-            DisplayName.SetText(Map.DisplayName);
+            DisplayName.SetInitialText(Map.DisplayName);
             DisplayName.OnTextChanged += delegate (object sender, EventArgs e)
             {
                 this.Map.DisplayName = DisplayName.Text;
@@ -308,6 +309,7 @@ namespace MKEditor.Widgets
             this.UpdateMapViewer = true;
             if (Map.Width != Clone.Width || Map.Height != Clone.Height)
             {
+                UnsavedChanges = true;
                 int diffw = Map.Width - Clone.Width;
                 bool diffwneg = diffw < 0;
                 diffw = Math.Abs(diffw);
@@ -339,6 +341,7 @@ namespace MKEditor.Widgets
             }
             if (Map.TilesetIDs != Clone.TilesetIDs)
             {
+                UnsavedChanges = true;
                 bool warn = false;
                 for (int layer = 0; layer < Map.Layers.Count; layer++)
                 {
@@ -359,6 +362,8 @@ namespace MKEditor.Widgets
                     new MessageBox("Warning", "One of the deleted tilesets was still in use. Those tiles have been deleted from the map.");
                 }
             }
+            if (Map.DevName != Clone.DevName ||
+                Map.DisplayName != Clone.DisplayName) UnsavedChanges = true;
             Close();
         }
 

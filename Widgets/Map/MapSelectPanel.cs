@@ -29,7 +29,7 @@ namespace MKEditor.Widgets
             mapview.SetWidth(212);
             mapview.OnSelectedNodeChanged += delegate (object sender, MouseEventArgs e)
             {
-                SetMap(mapview.SelectedNode.Object as Game.Map);
+                SetMap(mapview.SelectedNode.Object as Map, true);
             };
             mapview.TrailingBlank = 64;
             allmapcontainer.SetContextMenuList(new List<IMenuItem>()
@@ -63,7 +63,7 @@ namespace MKEditor.Widgets
         public List<TreeNode> PopulateList(List<object> Maps, bool first = false)
         {
             List<TreeNode> nodes = new List<TreeNode>();
-            for (int i = (first ? 0 : 1); i < Maps.Count; i++)
+            for (int i = (first ? 0 : 2); i < Maps.Count; i++)
             {
                 if (Maps[i] is int)
                 {
@@ -75,6 +75,7 @@ namespace MKEditor.Widgets
                     List<object> list = (List<object>) Maps[i];
                     TreeNode n = new TreeNode();
                     n.Object = Data.Maps[(int) list[0]];
+                    n.Collapsed = (bool) list[1];
                     Data.Maps[(int) list[0]].Added = true;
                     n.Nodes = PopulateList(list);
                     nodes.Add(n);
@@ -96,9 +97,33 @@ namespace MKEditor.Widgets
             return nodes;
         }
 
-        public void SetMap(Map Map)
+        public void SetMap(Map Map, bool CalledFromTreeView = false)
         {
             MapViewer.SetMap(Map);
+            Editor.ProjectSettings.LastMapID = Map.ID;
+            Editor.ProjectSettings.LastLayer = 0;
+            if (!CalledFromTreeView) // Has yet to update the selection
+            {
+                TreeNode node = null;
+                for (int i = 0; i < mapview.Nodes.Count; i++)
+                {
+                    if ((mapview.Nodes[i].Object as Map).ID == Map.ID)
+                    {
+                        node = mapview.Nodes[i];
+                        break;
+                    }
+                    else
+                    {
+                        TreeNode n = mapview.Nodes[i].FindNode(n => (n.Object as Map).ID == Map.ID);
+                        if (n != null)
+                        {
+                            node = n;
+                            break;
+                        }
+                    }
+                }
+                mapview.SetSelectedNode(node);
+            }
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
@@ -113,6 +138,7 @@ namespace MKEditor.Widgets
 
         private void NewMap(object sender, MouseEventArgs e)
         {
+            Editor.UnsavedChanges = true;
             Map Map = new Map();
             int i = 1;
             while (true)
@@ -155,20 +181,42 @@ namespace MKEditor.Widgets
             for (int i = 0; i < collection.Count; i++)
             {
                 object o = collection[i];
-                if (o is int)
+                if (o is bool) continue;
+                else if (o is int)
                 {
                     if ((int) o == ParentID)
                     {
                         if (i == 0) // Already in this parent's node list
                             collection.Add(ChildID);
                         else // Create new node list
-                            collection[i] = new List<object>() { ParentID, ChildID };
+                            collection[i] = new List<object>() { ParentID, false, ChildID };
                         return true;
                     }
                 }
                 else
                 {
-                    if (AddIDToMap((List<object>) o, ParentID, ChildID)) break;
+                    if (AddIDToMap((List<object>)o, ParentID, ChildID)) break;
+                }
+            }
+            return false;
+        }
+
+        public bool SetCollapsed(List<object> collection, int MapID, bool IsCollapsed)
+        {
+            for (int i = 0; i < collection.Count; i++)
+            {
+                object o = collection[i];
+                if (o is List<object>)
+                {
+                    List<object> sub = o as List<object>;
+                    if ((int) sub[0] == MapID)
+                    {
+                        (collection[i] as List<object>)[1] = IsCollapsed;
+                    }
+                    else
+                    {
+                        SetCollapsed(collection[i] as List<object>, MapID, IsCollapsed);
+                    }
                 }
             }
             return false;
@@ -180,6 +228,7 @@ namespace MKEditor.Widgets
             MapPropertiesWindow mpw = new MapPropertiesWindow(map, this.Window);
             mpw.OnClosed += delegate (object _, EventArgs ev)
             {
+                if (mpw.UnsavedChanges) Editor.UnsavedChanges = true;
                 if (mpw.UpdateMapViewer)
                 {
                     MapViewer.SetMap(map);
@@ -197,6 +246,7 @@ namespace MKEditor.Widgets
             {
                 if (confirm.Result == 0) // Yes
                 {
+                    Editor.UnsavedChanges = true;
                     DeleteMapRecursively(mapview.HoveringNode);
                     for (int i = 0; i < mapview.Nodes.Count; i++)
                     {
@@ -227,9 +277,10 @@ namespace MKEditor.Widgets
 
         private void RemoveID(List<object> collection, int ID, bool first = false)
         {
-            for (int i = (first ? 0 : 1); i < collection.Count; i++)
+            for (int i = (first ? 0 : 2); i < collection.Count; i++)
             {
-                if (collection[i] is int)
+                if (collection[i] is bool) continue;
+                else if (collection[i] is int)
                 {
                     if ((int) collection[i] == ID)
                     {
@@ -244,7 +295,7 @@ namespace MKEditor.Widgets
                     {
                         collection.RemoveAt(i);
                     }
-                    else if (sub[1] is int && (int) sub[1] == ID && sub.Count == 2)
+                    else if (sub.Count == 3 && sub[2] is int && (int) sub[2] == ID)
                     {
                         collection[i] = (int) sub[0];
                     }

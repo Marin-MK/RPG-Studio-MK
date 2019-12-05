@@ -7,7 +7,7 @@ namespace MKEditor.Widgets
 {
     public class MapViewer : Widget
     {
-        public Game.Map Map;
+        public Map Map;
         public TilesetsPanel TilesetTab;
         public LayersPanel LayersTab;
         public ToolBar ToolBar;
@@ -37,7 +37,7 @@ namespace MKEditor.Widgets
         public int MapTileX = 0;
         public int MapTileY = 0;
         public Location CursorOrigin;
-        public List<Game.TileData> TileDataList = new List<Game.TileData>();
+        public List<TileData> TileDataList = new List<Game.TileData>();
         public int CursorWidth = 0;
         public int CursorHeight = 0;
         public Point OriginDrawPoint;
@@ -49,8 +49,6 @@ namespace MKEditor.Widgets
         public CursorWidget Cursor;
         public MapImageWidget MapWidget;
         public Widget DummyWidget;
-
-        MouseEventArgs LastMouseEvent;
 
         public MapViewer(object Parent, string Name = "mapViewer")
             : base(Parent, Name)
@@ -96,10 +94,12 @@ namespace MKEditor.Widgets
             UpdateSize();
         }
 
-        public void SetZoomFactor(double factor)
+        public void SetZoomFactor(double factor, bool FromStatusBar = false)
         {
             this.ZoomFactor = factor;
+            Editor.ProjectSettings.LastZoomFactor = factor;
             MapWidget.SetZoomFactor(factor);
+            if (!FromStatusBar) StatusBar.ZoomControl.SetZoomFactor(factor, true);
             PositionMap();
             MouseMoving(null, Graphics.LastMouseEvent);
         }
@@ -347,7 +347,6 @@ namespace MKEditor.Widgets
 
         public override void MouseMoving(object sender, MouseEventArgs e)
         {
-            LastMouseEvent = e;
             int oldmousex = RelativeMouseX;
             int oldmousey = RelativeMouseY;
             // Cursor placement
@@ -427,7 +426,8 @@ namespace MKEditor.Widgets
         {
             base.MouseWheel(sender, e);
             if (!Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LCTRL) && !Input.Press(SDL2.SDL.SDL_Keycode.SDLK_RCTRL)) return;
-            StatusBar.ZoomControl.SetLevel(StatusBar.ZoomControl.Level + (e.WheelY > 0 ? 1 : -1));
+            if (e.WheelY > 0) StatusBar.ZoomControl.IncreaseZoom();
+            else StatusBar.ZoomControl.DecreaseZoom();
         }
 
         public void UpdateTilePlacement(int oldx = -1, int oldy = -1, int newx = -1, int newy = -1)
@@ -749,6 +749,7 @@ namespace MKEditor.Widgets
                     
                     if (olddata != MapData.Layers[layer].Tiles[MapPosition])
                     {
+                        Editor.UnsavedChanges = true;
                         this.Sprites[layer.ToString()].Bitmap.FillRect(actualx * 32, actualy * 32, 32, 32, Color.ALPHA);
                         if (!Blank)
                         {

@@ -76,6 +76,11 @@ namespace MKEditor.Widgets
             SetSize(283, 200); // Dummy size so the sprites can be drawn properly
         }
 
+        public void SetSelectedLayer(int LayerIndex)
+        {
+            layerwidget.SetSelectedLayer(LayerIndex);
+        }
+
         public void UpdateNames()
         {
             for (int i = 0; i < Map.Layers.Count; i++) Map.Layers[i].Name = $"Layer {i + 1}";
@@ -84,6 +89,7 @@ namespace MKEditor.Widgets
         public void NewLayer(object sender, EventArgs e)
         {
             int selected = SelectedLayer;
+            Editor.UnsavedChanges = true;
             if (layerwidget.HoveringIndex == -1) // Add to bottom (lowest layer) if not hovering over a layer
                 selected = -1;
             Layer layer = new Layer($"Layer {selected + 2}");
@@ -106,6 +112,7 @@ namespace MKEditor.Widgets
         public void MoveLayerUp(object sender, EventArgs e)
         {
             if (SelectedLayer >= Map.Layers.Count - 1) return;
+            Editor.UnsavedChanges = true;
             Layer layer1 = Map.Layers[SelectedLayer + 1];
             Map.Layers[SelectedLayer + 1] = Map.Layers[SelectedLayer];
             Map.Layers[SelectedLayer] = layer1;
@@ -119,6 +126,7 @@ namespace MKEditor.Widgets
         public void MoveLayerDown(object sender, EventArgs e)
         {
             if (SelectedLayer <= 0) return;
+            Editor.UnsavedChanges = true;
             Layer layer1 = Map.Layers[SelectedLayer - 1];
             Map.Layers[SelectedLayer - 1] = Map.Layers[SelectedLayer];
             Map.Layers[SelectedLayer] = layer1;
@@ -133,6 +141,7 @@ namespace MKEditor.Widgets
         {
             if (Map.Layers.Count > 1)
             {
+                Editor.UnsavedChanges = true;
                 Map.Layers.RemoveAt(SelectedLayer);
                 UpdateNames();
                 int oldselected = SelectedLayer;

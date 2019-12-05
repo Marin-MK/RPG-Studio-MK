@@ -122,7 +122,7 @@ namespace MKEditor.Widgets
                 }
             }
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
-            SetSize(Size.Width, (Font.Size + 2) * Lines.Count);
+            SetSize(Size.Width, (Font.Size + 4) * Lines.Count);
             Sprites["text"].Bitmap = new Bitmap(Size);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = this.Font;

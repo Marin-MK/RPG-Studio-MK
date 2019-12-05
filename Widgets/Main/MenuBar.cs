@@ -11,8 +11,6 @@ namespace MKEditor.Widgets
         public int SelectedIndex { get; private set; }
 
         ContextMenu ActiveMenu;
-        int ActiveMenuIndex = -1;
-        bool DisposeAfterLeaveMenu = false;
 
         public MenuBar(object Parent, string Name = "menuBar")
             : base(Parent, Name)
@@ -25,6 +23,11 @@ namespace MKEditor.Widgets
             WidgetIM.OnMouseDown += MouseDown;
             WidgetIM.OnMousePress += MousePress;
             WidgetIM.OnMouseUp += MouseUp;
+
+            RegisterShortcuts(new List<Shortcut>()
+            {
+                new Shortcut(this, new Key(Keycode.S, Keycode.CTRL), delegate (object sender, EventArgs e) { Editor.SaveProject(); }, true)
+            });
         }
 
         public void SetItems(List<MenuItem> Items)
@@ -107,64 +110,8 @@ namespace MKEditor.Widgets
             base.MouseDown(sender, e);
             if (e.LeftButton != e.OldLeftButton && e.LeftButton)
             {
-                if (SelectedIndex != -1 && SelectedItem is MenuItem && SelectedItem.Items.Count > 0)
-                {
-                    // If the menu has already been disposed by the MouseInputManager (since you clicked outside the ContextMenu),
-                    // It'll have disposed the menu but the ActiveMenuIndex variable hasn't been updated yet (which we can hereby use
-                    // to determine if we need to open a new menu or not.)
-                    if (ActiveMenuIndex != -1 && ActiveMenuIndex == SelectedIndex)
-                    {
-                        ActiveMenuIndex = -1;
-                    }
-                    else
-                    {
-                        ShowItem(SelectedIndex);
-                    }
-                }
-            }
-        }
-
-        public override void MousePress(object sender, MouseEventArgs e)
-        {
-            base.MousePress(sender, e);
-            if (e.LeftButton == e.OldLeftButton && e.LeftButton)
-            {
-                if (ActiveMenuIndex != -1 && SelectedIndex != -1 && SelectedIndex != ActiveMenuIndex)
-                {
-                    if (Items[SelectedIndex].Items.Count > 0) ShowItem(SelectedIndex);
-                }
-                if (ActiveMenu is ContextMenu && !ActiveMenu.Disposed && ActiveMenu.WidgetIM.Hovering && !DisposeAfterLeaveMenu)
-                {
-                    DisposeAfterLeaveMenu = true;
-                }
-            }
-        }
-
-        public override void MouseUp(object sender, MouseEventArgs e)
-        {
-            base.MouseUp(sender, e);
-            if (e.LeftButton != e.OldLeftButton && !e.LeftButton)
-            {
-                if (ActiveMenu is ContextMenu && !ActiveMenu.Disposed)
-                {
-                    if (ActiveMenu.SelectedItem is MenuItem)
-                    {
-                        if ((ActiveMenu.SelectedItem as MenuItem).OnLeftClick != null)
-                        {
-                            (ActiveMenu.SelectedItem as MenuItem).OnLeftClick.Invoke(sender, e);
-                        }
-                        ActiveMenu.Dispose();
-                        ActiveMenuIndex = -1;
-                    }
-                    else
-                    {
-                        if (!ActiveMenu.WidgetIM.Hovering && DisposeAfterLeaveMenu)
-                        {
-                            ActiveMenu.Dispose();
-                            ActiveMenuIndex = -1;
-                        }
-                    }
-                }
+                if (SelectedIndex != -1)
+                    ShowItem(SelectedIndex);
             }
         }
 
@@ -174,17 +121,11 @@ namespace MKEditor.Widgets
             {
                 ActiveMenu.Dispose();
             }
-            DisposeAfterLeaveMenu = false;
             ActiveMenu = new ContextMenu(Window);
             ActiveMenu.SetInnerColor(10, 23, 37);
             ActiveMenu.SetOuterColor(79, 108, 159);
             ActiveMenu.SetPosition(WidthUntil(index), Size.Height + 1);
             ActiveMenu.SetItems(SelectedItem.Items);
-            ActiveMenu.OnItemInvoked = delegate (object sender, EventArgs e)
-            {
-                ActiveMenuIndex = -1;
-            };
-            ActiveMenuIndex = index;
         }
 
         private int WidthUntil(int index)

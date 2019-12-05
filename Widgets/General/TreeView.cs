@@ -165,6 +165,8 @@ namespace MKEditor.Widgets
                 if (n.Nodes.Count > 0 && rx < nodex + 10 && rx > nodex - 10)
                 {
                     n.Collapsed = !n.Collapsed;
+                    int mapid = (n.Object as Game.Map).ID;
+                    (Parent.Parent as MapSelectPanel).SetCollapsed(Editor.ProjectSettings.MapOrder, mapid, n.Collapsed);
                     if (n.Collapsed && n.ContainsNode(SelectedNode)) SelectedNode = n;
                 }
                 else
@@ -239,6 +241,21 @@ namespace MKEditor.Widgets
                 else if (Nodes[i].ContainsNode(n))
                 {
                     return Nodes[i].RemoveNode(n);
+                }
+            }
+            return null;
+        }
+
+        public TreeNode FindNode(Predicate<TreeNode> match)
+        {
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                bool it = match.Invoke(Nodes[i]);
+                if (it) return Nodes[i];
+                else
+                {
+                    TreeNode n = Nodes[i].FindNode(match);
+                    if (n != null) return n;
                 }
             }
             return null;

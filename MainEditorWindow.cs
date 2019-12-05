@@ -13,6 +13,7 @@ namespace MKEditor
         public IContainer ActiveWidget;
         public List<IContainer> Widgets = new List<IContainer>();
 
+        private MainEditorWidget mew;
         public Grid MainGridLayout;
         public MenuBar MenuBar;
         public StatusBar StatusBar;
@@ -21,48 +22,13 @@ namespace MKEditor
 
         public MainEditorWindow(string[] args)
         {
+            Editor.MainWindow = this;
             Editor.LoadGeneralSettings();
             Utilities.Initialize();
 
             this.SetText("RPG Studio MK");
             this.SetMinimumSize(600, 400);
             this.Initialize();
-
-            using (Bitmap b = new Bitmap(9, 14)) // Set cursor
-            {
-                Color gray = new Color(55, 51, 55);
-                Color white = Color.WHITE;
-                b.Unlock();
-                b.DrawLine(0, 0, 0, 12, gray);
-                b.DrawLine(1, 0, 8, 7, gray);
-                b.SetPixel(8, 8, gray);
-                b.SetPixel(8, 9, gray);
-                b.SetPixel(7, 9, gray);
-                b.SetPixel(6, 9, gray);
-                b.SetPixel(6, 10, gray);
-                b.SetPixel(7, 11, gray);
-                b.SetPixel(7, 12, gray);
-                b.SetPixel(7, 13, gray);
-                b.SetPixel(6, 13, gray);
-                b.SetPixel(5, 13, gray);
-                b.SetPixel(4, 12, gray);
-                b.SetPixel(4, 11, gray);
-                b.SetPixel(3, 10, gray);
-                b.SetPixel(2, 11, gray);
-                b.SetPixel(1, 12, gray);
-                b.DrawLine(1, 1, 1, 11, white);
-                b.DrawLine(2, 2, 2, 10, white);
-                b.DrawLine(3, 3, 3, 9, white);
-                b.DrawLine(4, 4, 4, 10, white);
-                b.DrawLine(5, 5, 5, 12, white);
-                b.DrawLine(6, 6, 6, 8, white);
-                b.SetPixel(7, 7, white);
-                b.SetPixel(7, 8, white);
-                b.SetPixel(6, 11, white);
-                b.SetPixel(6, 12, white);
-                b.Lock();
-                Input.SetCursor(b);
-            }
 
             this.UI = new UIManager(this);
 
@@ -91,12 +57,31 @@ namespace MKEditor
                 {
                     Items = new List<IMenuItem>()
                     {
-                        new MenuItem("New"),
-                        new MenuItem("Open") { Shortcut = "Ctrl+O" },
-                        new MenuItem("Save") { Shortcut = "Ctrl+S" },
+                        new MenuItem("New")
+                        {
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(NewProject); }
+                        },
+                        new MenuItem("Open")
+                        {
+                            Shortcut = "Ctrl+O",
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(OpenProject); }
+                        },
+                        new MenuItem("Save")
+                        {
+                            Shortcut = "Ctrl+S",
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.SaveProject(); },
+                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; }
+                        },
                         new MenuSeparator(),
-                        new MenuItem("Close Project"),
+                        new MenuItem("Close Project")
+                        {
+                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; },
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(CloseProject); }
+                        },
                         new MenuItem("Exit Editor")
+                        {
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(ExitEditor); }
+                        }
                     }
                 },
                 new MenuItem("Edit")
@@ -209,7 +194,7 @@ namespace MKEditor
             Editor.LoadProjectSettings();
             Data.LoadGameData();
 
-            MainEditorWidget mew = new MainEditorWidget(MainGridLayout);
+            mew = new MainEditorWidget(MainGridLayout);
             mew.SetGridRow(3);
 
             // Link the UI pieces together
@@ -232,17 +217,80 @@ namespace MKEditor
             mew.mst.StatusBar = StatusBar;
 
             StatusBar.MapViewer = mew.mv;
+
             // Set list of maps & initial map
             mew.mst.PopulateList(Editor.ProjectSettings.MapOrder, true);
-            int id;
-            if (Editor.ProjectSettings.MapOrder[0] is List<object>) id = (int)((List<object>) Editor.ProjectSettings.MapOrder[0])[0];
-            else id = (int) Editor.ProjectSettings.MapOrder[0];
-            mew.mst.SetMap(Data.Maps[id]);
 
             MainGridLayout.UpdateLayout();
 
             StatusBar.SetVisible(true);
             ToolBar.SetVisible(true);
+
+            int mapid = Editor.ProjectSettings.LastMapID;
+            if (!Data.Maps.ContainsKey(mapid))
+            {
+                if (Editor.ProjectSettings.MapOrder[0] is List<object>) mapid = (int) ((List<object>)Editor.ProjectSettings.MapOrder[0])[0];
+                else mapid = (int) Editor.ProjectSettings.MapOrder[0];
+            }
+            int lastlayer = Editor.ProjectSettings.LastLayer;
+            mew.mst.SetMap(Data.Maps[mapid]);
+
+            mew.lt.SetSelectedLayer(lastlayer);
+
+            mew.mv.SetZoomFactor(Editor.ProjectSettings.LastZoomFactor);
+        }
+
+        public void EnsureSaved(Action Continue)
+        {
+            if (!Editor.UnsavedChanges)
+            {
+                Continue();
+                return;
+            }
+            MessageBox box = new MessageBox("Warning", "The game contains unsaved changed. Are you sure you would like to proceed? All unsaved changes will be lost.",
+                new List<string>() { "Save", "Continue", "Cancel" });
+            box.OnButtonPressed += delegate (object sender, EventArgs e)
+            {
+                if (box.Result == 0) // Save
+                {
+                    Editor.SaveProject();
+                    Continue();
+                }
+                else if (box.Result == 1)
+                {
+                    Continue();
+                }
+            };
+        }
+
+        public void NewProject()
+        {
+            CloseProject();
+            Editor.NewProject();
+        }
+
+        public void OpenProject()
+        {
+            CloseProject();
+            Editor.OpenProject();
+        }
+
+        public void CloseProject()
+        {
+            if (mew != null) mew.Dispose();
+            mew = null;
+            StatusBar.SetVisible(false);
+            ToolBar.SetVisible(false);
+            HomeScreen = new HomeScreen(MainGridLayout);
+            HomeScreen.SetGridRow(3);
+            MainGridLayout.UpdateLayout();
+            Data.ClearProjectData();
+            Editor.ClearProjectData();
+        }
+
+        public void ExitEditor()
+        {
+            this.Dispose();
         }
 
         public void SetActiveWidget(IContainer Widget)

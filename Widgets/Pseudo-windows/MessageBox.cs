@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ODL;
 
 namespace MKEditor.Widgets
@@ -12,67 +13,104 @@ namespace MKEditor.Widgets
         Button Button2;
         Button Button3;
 
-        public MessageBox(string Title, string Message, ButtonTypes type = ButtonTypes.OK)
+        public ButtonTypes ButtonType;
+        public List<string> Buttons;
+
+        public EventHandler<EventArgs> OnButtonPressed;
+
+        public MessageBox(string Title, string Message, ButtonTypes type = ButtonTypes.OK, List<string> _buttons = null)
             : base(Graphics.Windows[0], "messageBox")
         {
+            this.ButtonType = type;
+            this.Buttons = _buttons;
             SetTitle(Title);
-            
             label = new MultilineLabel(this);
             label.SetText(Message);
 
-            if (type == ButtonTypes.OK)
+            switch (ButtonType)
+            {
+                case ButtonTypes.OK:
+                    Buttons = new List<string>() { "OK" };
+                    break;
+                case ButtonTypes.OKCancel:
+                    Buttons = new List<string>() { "OK", "Cancel" };
+                    break;
+                case ButtonTypes.YesNo:
+                    Buttons = new List<string>() { "Yes", "No" };
+                    break;
+                case ButtonTypes.YesNoCancel:
+                    Buttons = new List<string>() { "Yes", "No", "Cancel" };
+                    break;
+                case ButtonTypes.Custom: break;
+                default:
+                    throw new Exception("Invalid ButtonType");
+            }
+
+            if (Buttons.Count == 1)
             {
                 Button3 = new Button(this);
-                Button3.SetText("OK");
+                Button3.SetText(Buttons[0]);
                 Button3.OnClicked += delegate (object sender, EventArgs e)
                 {
                     Result = 0;
+                    if (OnButtonPressed != null) OnButtonPressed.Invoke(null, new EventArgs());
                     Close();
                 };
             }
-            else if (type == ButtonTypes.OKCancel || type == ButtonTypes.YesNo)
+            else if (Buttons.Count == 2)
             {
                 Button2 = new Button(this);
-                Button2.SetText(type == ButtonTypes.OKCancel ? "OK" : "Yes");
+                Button2.SetText(Buttons[0]);
                 Button2.OnClicked += delegate (object sender, EventArgs e)
                 {
                     Result = 0;
+                    if (OnButtonPressed != null) OnButtonPressed.Invoke(null, new EventArgs());
                     Close();
                 };
                 Button3 = new Button(this);
-                Button3.SetText(type == ButtonTypes.OKCancel ? "Cancel" : "No");
+                Button3.SetText(Buttons[1]);
                 Button3.OnClicked += delegate (object sender, EventArgs e)
                 {
                     Result = 1;
+                    if (OnButtonPressed != null) OnButtonPressed.Invoke(null, new EventArgs());
                     Close();
                 };
             }
-            else if (type == ButtonTypes.YesNoCancel)
+            else if (Buttons.Count == 3)
             {
                 Button1 = new Button(this);
-                Button1.SetText("Yes");
+                Button1.SetText(Buttons[0]);
                 Button1.OnClicked += delegate (object sender, EventArgs e)
                 {
                     Result = 0;
+                    if (OnButtonPressed != null) OnButtonPressed.Invoke(null, new EventArgs());
                     Close();
                 };
                 Button2 = new Button(this);
-                Button2.SetText("No");
+                Button2.SetText(Buttons[1]);
                 Button2.OnClicked += delegate (object sender, EventArgs e)
                 {
                     Result = 1;
+                    if (OnButtonPressed != null) OnButtonPressed.Invoke(null, new EventArgs());
                     Close();
                 };
                 Button3 = new Button(this);
-                Button3.SetText("Cancel");
+                Button3.SetText(Buttons[2]);
                 Button3.OnClicked += delegate (object sender, EventArgs e)
                 {
                     Result = 2;
+                    if (OnButtonPressed != null) OnButtonPressed.Invoke(null, new EventArgs());
                     Close();
                 };
             }
 
             SetSize(300, 150);
+        }
+
+        public MessageBox(string Title, string Message, List<string> Buttons)
+            : this(Title, Message, ButtonTypes.Custom, Buttons)
+        {
+
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
@@ -92,6 +130,7 @@ namespace MKEditor.Widgets
 
     public enum ButtonTypes
     {
+        Custom,
         OK,
         OKCancel,
         YesNo,

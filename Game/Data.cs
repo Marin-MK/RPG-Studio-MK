@@ -17,6 +17,16 @@ namespace MKEditor.Game
         public static List<Tileset> Tilesets = new List<Tileset>();
         public static Dictionary<string, Species> Species = new Dictionary<string, Species>();
 
+        public static void ClearProjectData()
+        {
+            ProjectPath = null;
+            ProjectFilePath = null;
+            DataPath = null;
+            Maps.Clear();
+            Tilesets.Clear();
+            Species.Clear();
+        }
+
         public static void LoadGameData()
         {
             LoadSpecies();
@@ -73,7 +83,8 @@ namespace MKEditor.Game
             }
             Main[":data"] = list;
             string jsonstring = JsonConvert.SerializeObject(Main);
-            StreamWriter sw = new StreamWriter(File.OpenWrite(DataPath + "/species_editor.mkd"));
+            if (File.Exists(DataPath + "/species.mkd")) File.Delete(DataPath + "/species.mkd");
+            StreamWriter sw = new StreamWriter(File.OpenWrite(DataPath + "/species.mkd"));
             sw.Write(jsonstring);
             sw.Close();
         }
@@ -94,10 +105,9 @@ namespace MKEditor.Game
                 if (AllTilests[i] == null) Tilesets.Add(null);
                 else Tilesets.Add(new Tileset(((JObject) AllTilests[i]).ToObject<Dictionary<string, object>>()));
             }
-            SaveTileset();
         }
 
-        public static void SaveTileset()
+        public static void SaveTilesets()
         {
             Dictionary<string, object> Main = new Dictionary<string, object>();
             Main[":type"] = ":tilesets";
@@ -109,11 +119,15 @@ namespace MKEditor.Game
             }
             Main[":data"] = list;
             string jsonstring = JsonConvert.SerializeObject(Main);
-            StreamWriter sw = new StreamWriter(File.OpenWrite(DataPath + "/tilesets_editor.mkd"));
+            if (File.Exists(DataPath + "/tilesets.mkd")) File.Delete(DataPath + "/tilesets.mkd");
+            StreamWriter sw = new StreamWriter(File.OpenWrite(DataPath + "/tilesets.mkd"));
             sw.Write(jsonstring);
             sw.Close();
         }
 
+        /// <summary>
+        /// Returns a list of map files in the given folder.
+        /// </summary>
         public static List<string> GetMapIDs(string path)
         {
             List<string> Filenames = new List<string>();
@@ -130,6 +144,7 @@ namespace MKEditor.Game
                     if (valid) Filenames.Add(realfile);
                 }
             }
+            // Subdirectories
             foreach (string dir in Directory.GetDirectories(path))
             {
                 string realdir = dir;
@@ -155,18 +170,24 @@ namespace MKEditor.Game
                 Map map = new Map(((JObject) data[":data"]).ToObject<Dictionary<string, object>>());
                 Maps[map.ID] = map;
             }
-            SaveMaps();
         }
 
         public static void SaveMaps()
         {
+            // Delete all old map files
+            foreach (string map in GetMapIDs(DataPath + "/maps"))
+            {
+                File.Delete(map);
+            }
+            // And create the new map files
             foreach (KeyValuePair<int, Map> kvp in Maps)
             {
                 Dictionary<string, object> Main = new Dictionary<string, object>();
                 Main[":type"] = ":map";
                 Main[":data"] = kvp.Value.ToJSON();
                 string jsonstring = JsonConvert.SerializeObject(Main);
-                StreamWriter sw = new StreamWriter(File.OpenWrite(DataPath + "/maps/map" + Utilities.Digits(kvp.Value.ID, 3) + "_editor.mkd"));
+                string file = DataPath + "/maps/map" + Utilities.Digits(kvp.Value.ID, 3) + ".mkd";
+                StreamWriter sw = new StreamWriter(File.OpenWrite(file));
                 sw.Write(jsonstring);
                 sw.Close();
             }

@@ -96,6 +96,8 @@ namespace MKEditor.Game
             List<List<object>> triggers = new List<List<object>>();
             foreach (EventTrigger trigger in Triggers) triggers.Add(trigger.ToJSON());
             Data["@triggers"] = triggers;
+            Data["@commands"] = new List<string>();
+            Data["@conditions"] = new List<string>();
             // Add commands
             // Add conditions
             return Data;

@@ -242,7 +242,7 @@ namespace MKEditor
 
         public void SetSelectedWidget(Widget w)
         {
-            if (this.SelectedWidget != null)
+            if (this.SelectedWidget != null && !this.SelectedWidget.Disposed)
             {
                 this.SelectedWidget.SelectedWidget = false;
                 this.SelectedWidget.OnWidgetDeselected.Invoke(this, new EventArgs());

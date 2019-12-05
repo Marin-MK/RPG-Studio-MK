@@ -30,6 +30,7 @@ namespace MKEditor.Widgets
             Sprites["icon"].X = 3;
             Sprites["icon"].Y = 2;
 
+            WidgetIM.OnMouseDown += MouseDown;
             WidgetIM.OnHoverChanged += UpdateSelector;
             WidgetIM.OnMouseMoving += UpdateSelector;
             OnWidgetSelected += WidgetSelected;
@@ -55,6 +56,15 @@ namespace MKEditor.Widgets
         {
             int ry = e.Y - Viewport.Y;
             //Sprites["selector"].Visible = WidgetIM.Hovering && ry < 42;
+        }
+
+        public override void MouseDown(object sender, MouseEventArgs e)
+        {
+            base.MouseDown(sender, e);
+            if (WidgetIM.Hovering)
+            {
+                Editor.SaveProject();
+            }
         }
     }
 }

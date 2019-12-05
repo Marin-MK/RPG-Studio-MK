@@ -8,7 +8,7 @@ namespace MKEditor.Widgets
         IconButton ZoomOut;
         IconButton ZoomIn;
 
-        public int Level { get; protected set; }
+        public double Factor { get; protected set; } = 1;
 
         public ZoomControl(object Parent, string Name = "zoomControl")
             : base(Parent, Name)
@@ -19,7 +19,7 @@ namespace MKEditor.Widgets
             ZoomOut.SetSelectorOffset(-2);
             ZoomOut.OnLeftClick += delegate (object sender, MouseEventArgs e)
             {
-                SetLevel(Level - 1);
+                DecreaseZoom();
             };
             ZoomIn = new IconButton(this);
             ZoomIn.Selectable = false;
@@ -28,46 +28,58 @@ namespace MKEditor.Widgets
             ZoomIn.SetSelectorOffset(-2);
             ZoomIn.OnLeftClick += delegate (object sender, MouseEventArgs e)
             {
-                SetLevel(Level + 1);
+                IncreaseZoom();
             };
 
             Sprites["text"] = new Sprite(this.Viewport);
 
-            SetLevel(0);
             SetSize(88, 26);
         }
 
-        public void SetLevel(int Level)
+        public void SetZoomFactor(double Factor, bool FromMapViewer = false)
         {
-            if (Level < -3) Level = -3;
-            if (Level > 3) Level = 3;
-            if (this.Level != Level)
+            if (this.Factor != Factor)
             {
-                this.Level = Level;
-                double f = 1;
-                if (Level == -3) f = 0.125;
-                if (Level == -2) f = 0.25;
-                if (Level == -1) f = 0.5;
-                if (Level == 1) f = 2;
-                if (Level == 2) f = 3;
-                if (Level == 3) f = 4;
-                (Parent as StatusBar).MapViewer.SetZoomFactor(f);
+                this.Factor = Factor;
+                if (!FromMapViewer) (Parent as StatusBar).MapViewer.SetZoomFactor(Factor, true);
                 Redraw();
             }
+        }
+
+        public void IncreaseZoom()
+        {
+            if (this.Factor == 0.125) SetZoomFactor(0.25);
+            else if (this.Factor == 0.25) SetZoomFactor(0.5);
+            else if (this.Factor == 0.5) SetZoomFactor(1.0);
+            else if (this.Factor == 1.0) SetZoomFactor(2.0);
+            else if (this.Factor == 2.0) SetZoomFactor(3.0);
+            else if (this.Factor == 3.0) SetZoomFactor(4.0);
+        }
+
+        public void DecreaseZoom()
+        {
+            if (this.Factor == 0.25) SetZoomFactor(0.125);
+            else if (this.Factor == 0.5) SetZoomFactor(0.25);
+            else if (this.Factor == 1.0) SetZoomFactor(0.5);
+            else if (this.Factor == 2.0) SetZoomFactor(1.0);
+            else if (this.Factor == 3.0) SetZoomFactor(2.0);
+            else if (this.Factor == 4.0) SetZoomFactor(3.0);
         }
 
         protected override void Draw()
         {
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
             Font f = Font.Get("Fonts/ProductSans-M", 14);
+
             string text = "";
-            if (Level == -3) text = "12.5%";
-            if (Level == -2) text = "25%";
-            if (Level == -1) text = "50%";
-            if (Level == 0) text = "100%";
-            if (Level == 1) text = "200%";
-            if (Level == 2) text = "300%";
-            if (Level == 3) text = "400%";
+            if (100 * this.Factor / Math.Floor(100 * this.Factor) == 0)
+            {
+                text = (100 * this.Factor).ToString() + "%";
+            }
+            else
+            {
+                text = (Math.Round(1000 * this.Factor) / 10d).ToString() + "%";
+            }
             Size s = f.TextSize(text);
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Font = f;

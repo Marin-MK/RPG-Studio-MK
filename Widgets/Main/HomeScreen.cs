@@ -569,6 +569,7 @@ namespace MKEditor.Widgets
             NewProjectButton.SetPosition(445, 108);
             NewProjectButton.SetText("New Project");
             NewProjectButton.SetIcon("home_icon_new");
+            NewProjectButton.SetHelpText("Create a new project.");
             NewProjectButton.WidgetIM.OnLeftClick += delegate (object sender, MouseEventArgs e)
             {
                 NewProject();
@@ -578,6 +579,7 @@ namespace MKEditor.Widgets
             OpenProjectButton.SetPosition(690, 108);
             OpenProjectButton.SetText("Open Project");
             OpenProjectButton.SetIcon("home_icon_openfile");
+            OpenProjectButton.SetHelpText("Open an existing project by selecting its project file.");
             OpenProjectButton.WidgetIM.OnLeftClick += delegate (object sender, MouseEventArgs e)
             {
                 OpenProject();
@@ -586,6 +588,7 @@ namespace MKEditor.Widgets
             TutorialsButton = new HomeScreenButton(this);
             TutorialsButton.SetPosition(935, 108);
             TutorialsButton.SetText("Tutorials");
+            TutorialsButton.SetHelpText("Click this button to be directed to various tutorials and documentation for RPG Studio MK.");
             TutorialsButton.SetIcon("home_icon_tutorials");
             TutorialsButton.WidgetIM.OnLeftClick += delegate (object sender, MouseEventArgs e)
             {
@@ -594,6 +597,7 @@ namespace MKEditor.Widgets
 
             YoutubeButton = new PictureBox(this);
             YoutubeButton.Sprite.Bitmap = new Bitmap("home_icon_youtube.png");
+            YoutubeButton.SetHelpText("Visit MK's YouTube account.");
             YoutubeButton.WidgetIM.OnLeftClick += delegate (object sender, MouseEventArgs e)
             {
                 new MessageBox("Oops!", "MK does not have a YouTube channel yet!");
@@ -601,6 +605,7 @@ namespace MKEditor.Widgets
             
             TwitterButton = new PictureBox(this);
             TwitterButton.Sprite.Bitmap = new Bitmap("home_icon_twitter.png");
+            TwitterButton.SetHelpText("Visit MK's Twitter account.");
             TwitterButton.WidgetIM.OnLeftClick += delegate (object sender, MouseEventArgs e)
             {
                 Utilities.OpenLink("http://twitter.com/MKStarterKit");
@@ -609,15 +614,6 @@ namespace MKEditor.Widgets
             WidgetIM.OnMouseMoving += MouseMoving;
             WidgetIM.OnHoverChanged += HoverChanged;
             WidgetIM.OnMouseDown += MouseDown;
-
-            TextArea t = new TextArea(this);
-            t.SetPosition(100, 300);
-            t.SetSize(200, 24);
-            t.SetFont(Font.Get("Fonts/Ubuntu-B", 16));
-            t.SetTextY(2);
-            t.SetCaretY(4);
-            t.SetInitialText("Home Sweet Home");
-            t.OnWidgetSelected.Invoke(null, null);
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
@@ -869,37 +865,12 @@ namespace MKEditor.Widgets
 
         public void NewProject()
         {
-            new MessageBox("Oops!", "This feature has not been implemented yet.\nTo get started, please use the \"Open Project\" feature and choose the MK Starter Kit.");
+            Editor.NewProject();
         }
 
         public void OpenProject()
         {
-            OpenFile of = new OpenFile();
-            of.SetFilters(new List<FileFilter>()
-            {
-                new FileFilter("MK Project File", "mkproj")
-            });
-            string lastfolder = "";
-            if (Editor.GeneralSettings.RecentFiles.Count > 0)
-            {
-                string path = Editor.GeneralSettings.RecentFiles[0][1];
-                while (path.Contains("/")) path = path.Replace("/", "\\");
-                List<string> folders = path.Split('\\').ToList();
-                for (int i = 0; i < folders.Count - 1; i++)
-                {
-                    lastfolder += folders[i];
-                    if (i != folders.Count - 2) lastfolder += "\\";
-                }
-            }
-            of.SetInitialDirectory(lastfolder);
-            of.SetTitle("Choose a project file...");
-            string result = of.Show();
-            if (!string.IsNullOrEmpty(result))
-            {
-                Data.SetProjectPath(result);
-                Window.CreateEditor();
-                Editor.MakeRecentProject();
-            }
+            Editor.OpenProject();
         }
 
         public void LoadRecentProject(int index)
