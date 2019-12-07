@@ -85,6 +85,12 @@ namespace MKEditor
                 {
                     Items = new List<IMenuItem>()
                     {
+                        /*new MenuItem("Import Maps")
+                        {
+                            HelpText = "Import Maps made with RPG Maker XP.",
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.ImportMaps(); },
+                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; }
+                        },*/
                         new MenuItem("New")
                         {
                             HelpText = "Create a new project.",

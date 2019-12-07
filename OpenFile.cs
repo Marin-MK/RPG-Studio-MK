@@ -13,31 +13,31 @@ namespace MKEditor
         public IntPtr dlgOwner = IntPtr.Zero;
         public IntPtr instance = IntPtr.Zero;
 
-        public String filter = null;
-        public String customFilter = null;
+        public string filter = null;
+        public string customFilter = null;
         public int maxCustFilter = 0;
         public int filterIndex = 0;
 
-        public String file = null;
+        public IntPtr file = IntPtr.Zero;
         public int maxFile = 0;
 
-        public String fileTitle = null;
+        public string fileTitle = null;
         public int maxFileTitle = 0;
 
-        public String initialDir = null;
+        public string initialDir = null;
 
-        public String title = null;
+        public string title = null;
 
         public int flags = 0;
         public short fileOffset = 0;
         public short fileExtension = 0;
 
-        public String defExt = null;
+        public string defExt = null;
 
         public IntPtr custData = IntPtr.Zero;
         public IntPtr hook = IntPtr.Zero;
 
-        public String templateName = null;
+        public string templateName = null;
 
         public IntPtr reservedPtr = IntPtr.Zero;
         public int reservedInt = 0;
@@ -63,8 +63,8 @@ namespace MKEditor
 
             ofn.filter = "All Files (*.*)\0*.*";
 
-            ofn.file = new string(new char[256]);
-            ofn.maxFile = ofn.file.Length;
+            ofn.file = Marshal.StringToBSTR(new string(new char[256]));
+            ofn.maxFile = 256;
 
             ofn.fileTitle = new string(new char[64]);
             ofn.maxFileTitle = ofn.fileTitle.Length;
@@ -82,7 +82,6 @@ namespace MKEditor
         {
             while (Dir.Contains("/")) Dir = Dir.Replace("/", "\\");
             ofn.initialDir = Dir;
-            
         }
 
         public void SetFilters(List<FileFilter> Filters)
@@ -95,16 +94,40 @@ namespace MKEditor
             ofn.filter = filter;
         }
 
-        public string Show()
+        public void SetAllowMultiple(bool Allow)
+        {
+            if ((ofn.flags & 0x00000200) != 0x00000200) // Allow Multiple
+                if (Allow) ofn.flags |= 0x00000200;
+            else
+                if (!Allow) ofn.flags -= 0x00000200;
+
+            if ((ofn.flags & 0x00080000) != 0x00080000) // Normal Explorer style
+                if (Allow) ofn.flags |= 0x00080000;
+            else
+                if (!Allow) ofn.flags -= 0x00080000;
+        }
+
+        public object Show()
         {
             string olddir = System.IO.Directory.GetCurrentDirectory();
-            string ret = null;
-            if (GetOpenFileName(ofn))
-            {
-                ret = ofn.file;
-            }
+            bool Valid = GetOpenFileName(ofn);
             System.IO.Directory.SetCurrentDirectory(olddir);
-            return ret;
+            if (Valid)
+            {
+                string FirstFile = null;
+                List<string> Files = new List<string>();
+                string File = null;
+                do
+                {
+                    File = Marshal.PtrToStringAuto(ofn.file);
+                    if (FirstFile == null) FirstFile = File;
+                    else if (!string.IsNullOrEmpty(File)) Files.Add(FirstFile + "\\" + File);
+                    ofn.file = (IntPtr) ((long) (ofn.file) + File.Length * 2 + 2);
+                } while (!string.IsNullOrEmpty(File));
+                if (Files.Count == 0) return FirstFile;
+                return Files;
+            }
+            return null;
         }
     }
 

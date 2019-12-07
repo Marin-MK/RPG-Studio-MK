@@ -100,6 +100,28 @@ namespace MKEditor
             ClearProjectData();
         }
 
+        public static void ImportMaps()
+        {
+            OpenFile of = new OpenFile();
+            of.SetFilters(new List<FileFilter>()
+            {
+                new FileFilter("RPG Maker Map", "rxdata")
+            });
+            of.SetTitle("Pick map(s)");
+            of.SetAllowMultiple(true);
+            object ret = of.Show();
+            List<string> Files = new List<string>();
+            if (ret is string) Files.Add(ret as string);
+            else if (ret is List<string>) Files = ret as List<string>;
+            else return; // No files picked
+            foreach (string s in Files)
+            {
+                // Load file
+                // Rxdata (Ruby) to C#!
+                Console.WriteLine(s);
+            }
+        }
+
         public static void NewProject()
         {
             new Widgets.MessageBox("Oops!", "This feature has not been implemented yet.\nTo get started, please use the \"Open Project\" feature and choose the MK Starter Kit.");
@@ -126,7 +148,7 @@ namespace MKEditor
             }
             of.SetInitialDirectory(lastfolder);
             of.SetTitle("Choose a project file...");
-            string result = of.Show();
+            string result = of.Show() as string;
             if (!string.IsNullOrEmpty(result))
             {
                 CloseProject();

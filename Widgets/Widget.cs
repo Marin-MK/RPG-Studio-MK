@@ -434,13 +434,10 @@ namespace MKEditor.Widgets
         public void SetZIndex(int ZIndex)
         {
             AssertUndisposed();
-            // Only update if value changed.
-            if (this.ZIndex != ZIndex)
-            {
-                this.ZIndex = ZIndex;
-                // this.ZIndex takes parent Z Index into account.
-                this.Viewport.Z = this.ZIndex;
-            }
+            this.ZIndex = ZIndex;
+            // this.ZIndex takes parent Z Index into account.
+            this.Viewport.Z = this.ZIndex;
+            this.Widgets.ForEach(w => w.SetZIndex(w.ZIndex));
         }
 
         /// <summary>

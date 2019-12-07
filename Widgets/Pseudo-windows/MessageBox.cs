@@ -8,6 +8,8 @@ namespace MKEditor.Widgets
     {
         public int Result = 0;
 
+        public string Message { get; protected set; }
+
         MultilineLabel label;
         Button Button1;
         Button Button2;
@@ -23,7 +25,9 @@ namespace MKEditor.Widgets
         {
             this.ButtonType = type;
             this.Buttons = _buttons;
+
             SetTitle(Title);
+            this.Message = Message;
 
             label = new MultilineLabel(this);
             label.SetText(Message);

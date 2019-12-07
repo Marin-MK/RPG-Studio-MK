@@ -25,6 +25,15 @@ namespace MKEditor.Widgets
             this.SetZIndex(WindowLayer * 10);
         }
 
+        public void MakePriorityWindow()
+        {
+            if (Window.ActiveWidget == this) return;
+            this.WindowLayer = Window.ActiveWidget.WindowLayer + 1;
+            this.Window.SetActiveWidget(this);
+            Window.SetOverlayZIndex(WindowLayer * 10 - 1);
+            this.SetZIndex(WindowLayer * 10);
+        }
+
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);

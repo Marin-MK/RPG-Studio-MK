@@ -28,9 +28,35 @@ namespace MKEditor
                 Editor.GeneralSettings.WasMaximized = (flags & SDL2.SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED) == SDL2.SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED;
                 Editor.DumpGeneralSettings();
             };
+            bool Error = false;
+            Widgets.MessageBox ErrorBox = null;
+            win.OnWindowSizeChanged += delegate (object sender, WindowEventArgs e)
+            {
+                if (ErrorBox != null && !ErrorBox.Disposed) ErrorBox.SetSize(win.Width, win.Height);
+            };
             while (Graphics.CanUpdate())
             {
-                Graphics.Update();
+                try
+                {
+                    if (ErrorBox != null && !ErrorBox.Disposed)
+                    {
+                        ErrorBox.MakePriorityWindow();
+                    }
+                    Graphics.Update();
+                }
+                catch (Exception ex)
+                {
+                    if (!Error)
+                    {
+                        string msg = ex.GetType() + " : " + ex.Message + "\n\n" + ex.StackTrace;
+                        ErrorBox = new Widgets.MessageBox("Error!", msg, new System.Collections.Generic.List<string>() { "Quit" });
+                        ErrorBox.SetSize(win.Width, win.Height);
+                        ErrorBox.OnDisposed += delegate (object sender, EventArgs e)
+                        {
+                            Editor.ExitEditor();
+                        };
+                    }
+                }
             }
             Graphics.Stop();
         }
