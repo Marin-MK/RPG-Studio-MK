@@ -167,20 +167,25 @@ namespace MKEditor.Widgets
             }
         }
 
+        public void TryClick(object sender, MouseEventArgs e)
+        {
+            if ((this.SelectedItem as MenuItem).LastClickable)
+            {
+                if ((SelectedItem as MenuItem).OnLeftClick != null)
+                {
+                    (SelectedItem as MenuItem).OnLeftClick.Invoke(sender, e);
+                }
+                if (OnItemInvoked != null) OnItemInvoked.Invoke(sender, new EventArgs());
+                this.Dispose();
+            }
+        }
+
         public override void MouseDown(object sender, MouseEventArgs e)
         {
             base.MouseDown(sender, e);
             if (WidgetIM.Hovering && this.SelectedItem != null && this.SelectedItem is MenuItem)
             {
-                if ((this.SelectedItem as MenuItem).LastClickable)
-                {
-                    if ((SelectedItem as MenuItem).OnLeftClick != null)
-                    {
-                        (SelectedItem as MenuItem).OnLeftClick.Invoke(sender, e);
-                    }
-                    if (OnItemInvoked != null) OnItemInvoked.Invoke(sender, new EventArgs());
-                    this.Dispose();
-                }
+                TryClick(sender, e);
             }
         }
     }

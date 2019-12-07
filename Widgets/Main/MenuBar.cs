@@ -11,6 +11,9 @@ namespace MKEditor.Widgets
         public int SelectedIndex { get; private set; }
 
         ContextMenu ActiveMenu;
+        bool ActiveMenuHovered = false;
+        int ActiveMenuIndex = -1;
+        bool IgnorePress = false;
 
         public MenuBar(object Parent, string Name = "menuBar")
             : base(Parent, Name)
@@ -105,13 +108,37 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MousePress(object sender, MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
-            if (e.LeftButton != e.OldLeftButton && e.LeftButton)
+            base.MousePress(sender, e);
+            if (!e.LeftButton || IgnorePress) return;
+            if (ActiveMenu == null && SelectedIndex != -1)
             {
-                if (SelectedIndex != -1)
+                ShowItem(SelectedIndex);
+            }
+            else if (ActiveMenu != null)
+            {
+                if (ActiveMenuIndex != SelectedIndex && SelectedIndex != -1)
+                {
                     ShowItem(SelectedIndex);
+                }
+            }
+        }
+
+        public override void MouseUp(object sender, MouseEventArgs e)
+        {
+            base.MouseUp(sender, e);
+            if (e.LeftButton != e.OldLeftButton && !e.LeftButton)
+            {
+                if (this.ActiveMenuHovered)
+                {
+                    if (ActiveMenu == null) this.ActiveMenuHovered = false;
+                    else
+                    {
+                        if (!ActiveMenu.WidgetIM.Hovering) this.ActiveMenuHovered = false;
+                    }
+                }
+                IgnorePress = false;
             }
         }
 
@@ -121,11 +148,33 @@ namespace MKEditor.Widgets
             {
                 ActiveMenu.Dispose();
             }
+            this.MouseAlwaysActive = true;
             ActiveMenu = new ContextMenu(Window);
+            ActiveMenu.OnDisposed += delegate (object sender, EventArgs e)
+            {
+                this.MouseAlwaysActive = false;
+                this.ActiveMenuHovered = false;
+                this.ActiveMenuIndex = -1;
+                this.ActiveMenu = null;
+            };
+            ActiveMenu.WidgetIM.OnHoverChanged += delegate (object sender, MouseEventArgs e)
+            {
+                if (ActiveMenu.WidgetIM.Hovering)
+                    this.ActiveMenuHovered = true;
+            };
+            ActiveMenu.WidgetIM.OnMouseUp += delegate (object sender, MouseEventArgs e)
+            {
+                if (e.LeftButton != e.OldLeftButton && !e.LeftButton)
+                {
+                    if (!ActiveMenu.WidgetIM.Hovering) IgnorePress = true;
+                    if (this.ActiveMenuHovered && ActiveMenu.SelectedItem != null) ActiveMenu.TryClick(sender, e);
+                }
+            };
             ActiveMenu.SetInnerColor(10, 23, 37);
             ActiveMenu.SetOuterColor(79, 108, 159);
             ActiveMenu.SetPosition(WidthUntil(index), Size.Height + 1);
             ActiveMenu.SetItems(SelectedItem.Items);
+            ActiveMenuIndex = index;
         }
 
         private int WidthUntil(int index)

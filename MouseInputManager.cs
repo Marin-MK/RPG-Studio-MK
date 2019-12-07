@@ -67,10 +67,11 @@ namespace MKEditor
             }
         }
 
-        public bool WidgetInaccessible()
+        public bool WidgetAccessible()
         {
-            if (Widget.WindowLayer < Widget.Window.ActiveWidget.WindowLayer) return true;
-            return false;
+            if (Widget.MouseAlwaysActive) return true;
+            if (Widget.WindowLayer < Widget.Window.ActiveWidget.WindowLayer) return false;
+            return true;
         }
 
         public void MouseDown(MouseEventArgs e)
@@ -88,7 +89,7 @@ namespace MKEditor
                 }
             }
 
-            if (WidgetInaccessible()) return;
+            if (!WidgetAccessible()) return;
 
             if (e.LeftButton && !e.OldLeftButton)
             {
@@ -113,7 +114,7 @@ namespace MKEditor
         {
             if (!Ready()) return;
             if (!Widget.IsVisible()) return;
-            if (WidgetInaccessible()) return;
+            if (!WidgetAccessible()) return;
 
             if (this.OnMousePress != null) this.OnMousePress.Invoke(this, e);
         }
@@ -122,7 +123,7 @@ namespace MKEditor
         {
             if (!Ready()) return;
             if (!Widget.IsVisible()) return;
-            //if (WidgetInaccessible()) return; // If a button opens up a context menu, the mouse-up event shouldn't be ignored because of that menu.
+            //if (!WidgetAccessible()) return; // If a button opens up a context menu, the mouse-up event shouldn't be ignored because of that menu.
 
             if (!e.LeftButton && e.OldLeftButton)
             {
@@ -151,7 +152,7 @@ namespace MKEditor
         {
             if (!Ready()) return;
             if (!Widget.IsVisible()) return;
-            if (WidgetInaccessible()) return;
+            if (!WidgetAccessible()) return;
 
             if (e.WheelY != 0 && this.OnMouseWheel != null) this.OnMouseWheel.Invoke(this, e);
         }
@@ -160,7 +161,7 @@ namespace MKEditor
         {
             if (!Ready()) return;
             if (!Widget.IsVisible()) return;
-            if (WidgetInaccessible()) return;
+            if (!WidgetAccessible()) return;
 
             bool oldhover = this.Hovering;
             this.Hovering = e.InArea(this.Area);

@@ -236,6 +236,11 @@ namespace MKEditor.Widgets
         /// Whether or not to redraw this widget.
         /// </summary>
         protected bool Drawn = false;
+
+        /// <summary>
+        /// Whether or not the mouse is always active, even when a menu or window is above this widget.
+        /// </summary>
+        public bool MouseAlwaysActive = false;
         
         /// <summary>
         /// Called whenever this widget is left clicked.
