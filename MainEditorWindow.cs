@@ -13,7 +13,7 @@ namespace MKEditor
         public IContainer ActiveWidget;
         public List<IContainer> Widgets = new List<IContainer>();
 
-        private MainEditorWidget mew;
+        public MainEditorWidget MainEditorWidget;
         public Grid MainGridLayout;
         public MenuBar MenuBar;
         public StatusBar StatusBar;
@@ -28,7 +28,7 @@ namespace MKEditor
 
             this.OnClosing += delegate (object sender, CancelEventArgs e)
             {
-                if (!string.IsNullOrEmpty(Data.ProjectPath))
+                if (!Editor.InProject)
                 {
                     // Save window upon top-right Exit button
                     //e.Cancel = true;
@@ -44,8 +44,24 @@ namespace MKEditor
             Editor.LoadGeneralSettings();
             Utilities.Initialize();
 
+            #region Grid
             MainGridLayout = new Grid(this);
             MainGridLayout.SetSize(Width, Height);
+            /* 0 m m m m m m m m m m m m m
+             * 1 t t t t t t t t t t t t t
+             * 2 - - - - - - - - - - - - -
+             * 3 a a a a a a a a a a a a a
+             *   a a a a a a a a a a a a a
+             *   a a a a a a a a a a a a a
+             *   a a a a a a a a a a a a a
+             *   a a a a a a a a a a a a a
+             * 4 - - - - - - - - - - - - -
+             * 5 s s s s s s s s s s s s s
+             * m => menubar
+             * t => toolbar
+             * a => main editor area
+             * s => statusbar
+             * - => divider*/
             MainGridLayout.SetRows(
                 new GridSize(32, Unit.Pixels),
                 new GridSize(31, Unit.Pixels),
@@ -55,6 +71,8 @@ namespace MKEditor
                 new GridSize(26, Unit.Pixels)
             );
 
+            #endregion
+            #region Menubar + Toolbar
             Color DividerColor = new Color(79, 108, 159);
 
             // Header + Menubar
@@ -69,15 +87,18 @@ namespace MKEditor
                     {
                         new MenuItem("New")
                         {
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(NewProject); }
+                            HelpText = "Create a new project.",
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(Editor.NewProject); }
                         },
                         new MenuItem("Open")
                         {
+                            HelpText = "Open an existing project.",
                             Shortcut = "Ctrl+O",
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(OpenProject); }
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(Editor.OpenProject); }
                         },
                         new MenuItem("Save")
                         {
+                            HelpText = "Save all changes in the current project.",
                             Shortcut = "Ctrl+S",
                             OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.SaveProject(); },
                             IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; }
@@ -85,12 +106,14 @@ namespace MKEditor
                         new MenuSeparator(),
                         new MenuItem("Close Project")
                         {
+                            HelpText = "Close this project and return to the welcome screen.",
                             IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; },
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(CloseProject); }
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(Editor.CloseProject); }
                         },
                         new MenuItem("Exit Editor")
                         {
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(ExitEditor); }
+                            HelpText = "Close this project and quit the program.",
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(Editor.ExitEditor); }
                         }
                     }
                 },
@@ -113,22 +136,45 @@ namespace MKEditor
                     Items = new List<IMenuItem>()
                     {
                         new MenuItem("Show/Hide Grid")
+                        {
+                            HelpText = "Toggles the visibility of the map grid.\nCurrently unavailable."
+                        }
                     }
                 },
                 new MenuItem("Game")
                 {
                     Items = new List<IMenuItem>()
                     {
-                        new MenuItem("Play Game") { Shortcut = "F12" },
+                        new MenuItem("Play Game")
+                        {
+                            Shortcut = "F12",
+                            HelpText = "Play the game.",
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.StartGame(); },
+                            IsClickable = delegate (object sender, ConditionEventArgs e ) { e.ConditionValue = Editor.InProject; }
+                        },
                         new MenuItem("Open Game Folder")
+                        {
+                            HelpText = "Opens the file explorer and navigates to the project folder.",
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.OpenGameFolder(); },
+                            IsClickable = delegate (object sender, ConditionEventArgs e ) { e.ConditionValue = Editor.InProject; }
+                        }
                     }
                 },
                 new MenuItem("Help")
                 {
                     Items = new List<IMenuItem>()
                     {
-                        new MenuItem("Help") { Shortcut = "F1" },
-                        new MenuItem("About MK Editor")
+                        new MenuItem("Help")
+                        {
+                            Shortcut = "F1",
+                            HelpText = "Opens the help window.",
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { OpenHelpWindow(); }
+                        },
+                        new MenuItem("About RPG Studio MK")
+                        {
+                            HelpText = "Shows information about this program.",
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { OpenAboutWindow(); }
+                        }
                     }
                 }
             });
@@ -137,8 +183,8 @@ namespace MKEditor
             // Toolbar (modes, icons, etc)
             ToolBar = new ToolBar(MainGridLayout);
             ToolBar.SetGridRow(1);
-
-
+            #endregion
+            #region Dividers
             // Blue 1px separator
             Widget Blue1pxSeparator = new Widget(MainGridLayout);
             Blue1pxSeparator.SetBackgroundColor(DividerColor);
@@ -148,12 +194,13 @@ namespace MKEditor
             Widget StatusBarDivider = new Widget(MainGridLayout);
             StatusBarDivider.SetBackgroundColor(DividerColor);
             StatusBarDivider.SetGridRow(4);
-
+            #endregion
+            #region Statusbar
             // Status bar
             StatusBar = new StatusBar(MainGridLayout);
             StatusBar.SetGridRow(5);
-
             ToolBar.StatusBar = StatusBar;
+            #endregion
 
             bool LoadHomeScreen = true;
             // If an argument was passed, load that project file and skip the home screen
@@ -177,6 +224,7 @@ namespace MKEditor
                 Editor.MakeRecentProject();
             }
 
+            #region Events
             this.OnMouseDown += UI.MouseDown;
             this.OnMousePress += UI.MousePress;
             this.OnMouseUp += UI.MouseUp;
@@ -187,6 +235,7 @@ namespace MKEditor
             this.OnTick += Tick;
             this.UI.Update();
             this.Start();
+            #endregion
 
             if (Editor.GeneralSettings.WasMaximized) SDL2.SDL.SDL_MaximizeWindow(SDL_Window);
             else
@@ -204,32 +253,32 @@ namespace MKEditor
             Editor.LoadProjectSettings();
             Data.LoadGameData();
 
-            mew = new MainEditorWidget(MainGridLayout);
-            mew.SetGridRow(3);
+            MainEditorWidget = new MainEditorWidget(MainGridLayout);
+            MainEditorWidget.SetGridRow(3);
 
             // Link the UI pieces together
-            mew.mv.LayersTab = mew.lt;
-            mew.mv.TilesetTab = mew.tt;
-            mew.mv.ToolBar = ToolBar;
-            mew.mv.StatusBar = StatusBar;
+            MainEditorWidget.mv.LayersTab = MainEditorWidget.lt;
+            MainEditorWidget.mv.TilesetTab = MainEditorWidget.tt;
+            MainEditorWidget.mv.ToolBar = ToolBar;
+            MainEditorWidget.mv.StatusBar = StatusBar;
 
-            mew.lt.TilesetTab = mew.tt;
-            mew.lt.MapViewer = mew.mv;
+            MainEditorWidget.lt.TilesetTab = MainEditorWidget.tt;
+            MainEditorWidget.lt.MapViewer = MainEditorWidget.mv;
 
-            mew.tt.LayersTab = mew.lt;
-            mew.tt.MapViewer = mew.mv;
-            mew.tt.ToolBar = ToolBar;
+            MainEditorWidget.tt.LayersTab = MainEditorWidget.lt;
+            MainEditorWidget.tt.MapViewer = MainEditorWidget.mv;
+            MainEditorWidget.tt.ToolBar = ToolBar;
 
-            mew.mst.MapViewer = mew.mv;
+            MainEditorWidget.mst.MapViewer = MainEditorWidget.mv;
 
-            ToolBar.MapViewer = mew.mv;
-            ToolBar.TilesetTab = mew.tt;
-            mew.mst.StatusBar = StatusBar;
+            ToolBar.MapViewer = MainEditorWidget.mv;
+            ToolBar.TilesetTab = MainEditorWidget.tt;
+            MainEditorWidget.mst.StatusBar = StatusBar;
 
-            StatusBar.MapViewer = mew.mv;
+            StatusBar.MapViewer = MainEditorWidget.mv;
 
             // Set list of maps & initial map
-            mew.mst.PopulateList(Editor.ProjectSettings.MapOrder, true);
+            MainEditorWidget.mst.PopulateList(Editor.ProjectSettings.MapOrder, true);
 
             MainGridLayout.UpdateLayout();
 
@@ -243,11 +292,27 @@ namespace MKEditor
                 else mapid = (int) Editor.ProjectSettings.MapOrder[0];
             }
             int lastlayer = Editor.ProjectSettings.LastLayer;
-            mew.mst.SetMap(Data.Maps[mapid]);
+            MainEditorWidget.mst.SetMap(Data.Maps[mapid]);
 
-            mew.lt.SetSelectedLayer(lastlayer);
+            MainEditorWidget.lt.SetSelectedLayer(lastlayer);
 
-            mew.mv.SetZoomFactor(Editor.ProjectSettings.LastZoomFactor);
+            MainEditorWidget.mv.SetZoomFactor(Editor.ProjectSettings.LastZoomFactor);
+        }
+
+        public void OpenHelpWindow()
+        {
+            new MessageBox("Help",
+                "As there is no built-in wiki or documentation yet, please direct any questions to the official Discord server or Twitter account.");
+        }
+        
+        public void OpenAboutWindow()
+        {
+            new MessageBox("About RPG Studio MK",
+                "This program is intended to be an editor for games made with the MK Starter Kit.\n" +
+                "It was created by Marin, with additional support of various other individuals.\n" +
+                "\n" +
+                "Please turn to the GitHub page for a full credits list."
+            );
         }
 
         public void EnsureSaved(Action Function)
@@ -271,36 +336,6 @@ namespace MKEditor
                     Function();
                 }
             };
-        }
-
-        public void NewProject()
-        {
-            CloseProject();
-            Editor.NewProject();
-        }
-
-        public void OpenProject()
-        {
-            CloseProject();
-            Editor.OpenProject();
-        }
-
-        public void CloseProject()
-        {
-            if (mew != null) mew.Dispose();
-            mew = null;
-            StatusBar.SetVisible(false);
-            ToolBar.SetVisible(false);
-            HomeScreen = new HomeScreen(MainGridLayout);
-            HomeScreen.SetGridRow(3);
-            MainGridLayout.UpdateLayout();
-            Data.ClearProjectData();
-            Editor.ClearProjectData();
-        }
-
-        public void ExitEditor()
-        {
-            this.Dispose();
         }
 
         public void SetActiveWidget(IContainer Widget)

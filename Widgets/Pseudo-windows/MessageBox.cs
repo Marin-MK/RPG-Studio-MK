@@ -24,9 +24,10 @@ namespace MKEditor.Widgets
             this.ButtonType = type;
             this.Buttons = _buttons;
             SetTitle(Title);
+
             label = new MultilineLabel(this);
             label.SetText(Message);
-
+            
             switch (ButtonType)
             {
                 case ButtonTypes.OK:
@@ -115,15 +116,14 @@ namespace MKEditor.Widgets
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
+            base.SizeChanged(sender, e);
             Button3.SetPosition(Size.Width - Button3.Size.Width - 1, Size.Height - Button3.Size.Height - 1);
             if (Button2 != null) Button2.SetPosition(Button3.Position.X - Button2.Size.Width, Button3.Position.Y);
             if (Button1 != null) Button1.SetPosition(Button2.Position.X - Button1.Size.Width, Button3.Position.Y);
             label.SetSize(Size.Width - 20, 1);
-            label.OnSizeChanged += delegate (object s, SizeEventArgs ev)
-            {
-                label.SetPosition(10, Size.Height / 2 - label.Size.Height / 2 - 6);
-            };
-            base.SizeChanged(sender, e);
+            label.RedrawText();
+            label.SetPosition(10, Size.Height / 2 - label.Size.Height / 2 - 2);
+            if (Size.Height - label.Size.Height < 100) SetSize(Size.Width + 100, Size.Height + 50);
             Center();
         }
     }

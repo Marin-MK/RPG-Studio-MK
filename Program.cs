@@ -8,7 +8,9 @@ namespace MKEditor
     {
         static void Main(params string[] args)
         {
-            Console.WriteLine($"Platform: {Graphics.GetPlatform()}");
+            OperatingSystem os = Editor.GetOperatingSystem();
+            Console.WriteLine($"Platform: {os.Platform} ({Editor.Platform})");
+            Console.WriteLine($"Version: {os.VersionString}");
             Graphics.Start();
             MainEditorWindow win = new MainEditorWindow(args);
             win.Show();

@@ -114,30 +114,80 @@ namespace MKEditor
             IconSheet = new Bitmap("icons.png");
         }
 
+        /// <summary>
+        /// Formats the file path based on the platform.
+        /// </summary>
+        public static string FormatPath(string Path, Platform Platform)
+        {
+            if (Platform == Platform.Windows)
+            {
+                while (Path.Contains("/")) Path = Path.Replace("/", "\\");
+            }
+            else
+            {
+                while (Path.Contains("\\")) Path = Path.Replace("\\", "/");
+            }
+            return Path;
+        }
+
+        /// <summary>
+        /// Opens the link in the browser.
+        /// </summary>
         public static void OpenLink(string url)
         {
-            try
+            if (Editor.Platform == Platform.Windows)
             {
-                Process.Start(url);
+                url = url.Replace("&", "^&");
+                Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
             }
-            catch
+            else if (Editor.Platform == Platform.Linux)
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                Process.Start("xdg-open", url);
+            }
+            else if (Editor.Platform == Platform.MacOS)
+            {
+                Process.Start("open", url);
+            }
+            else
+            {
+                try
                 {
-                    url = url.Replace("&", "^&");
-                    Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+                    Process.Start(url);
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    Process.Start("xdg-open", url);
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    Process.Start("open", url);
-                }
-                else
+                catch
                 {
                     throw new Exception("Failed to open link '" + url + "'.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Opens the folder in the file explorer.
+        /// </summary>
+        public static void OpenFolder(string Folder)
+        {
+            string path = FormatPath(Folder, Editor.Platform);
+            if (Editor.Platform == Platform.Windows)
+            {
+                Process.Start("explorer.exe", path);
+            }
+            else if (Editor.Platform == Platform.Linux)
+            {
+                Process.Start("xdg-open", path);
+            }
+            else if (Editor.Platform == Platform.MacOS)
+            {
+                Process.Start("open", $"-R \"{path}\"");
+            }
+            else
+            {
+                try
+                {
+                    Process.Start($"\"{Folder}\"");
+                }
+                catch
+                {
+                    throw new Exception("Failed to open file explorer '" + path + "'.");
                 }
             }
         }

@@ -9,7 +9,7 @@ namespace MKEditor.Widgets
     {
         public string Text;
         public List<IMenuItem> Items;
-        public bool Checkable;
+        public string HelpText;
         public string Shortcut;
         public EventHandler<ODL.MouseEventArgs> OnLeftClick;
         public EventHandler<ODL.ConditionEventArgs> IsClickable;
@@ -18,7 +18,6 @@ namespace MKEditor.Widgets
         public MenuItem(string Text)
         {
             this.Text = Text;
-            this.Checkable = false;
             this.Items = new List<IMenuItem>();
         }
     }

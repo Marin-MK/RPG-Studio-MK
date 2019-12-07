@@ -13,8 +13,8 @@ namespace MKEditor.Widgets
             : base(Parent, Name)
         {
             Sprites["rect"] = new RectSprite(this.Viewport);
-            (Sprites["rect"] as RectSprite).SetOuterColor(Color.BLACK);
-            (Sprites["rect"] as RectSprite).SetInnerColor(89, 103, 154);
+            (Sprites["rect"] as RectSprite).SetOuterColor(62, 72, 82); // Color.BLACK
+            (Sprites["rect"] as RectSprite).SetInnerColor(42, 52, 61); // 89, 103, 154
             Sprites["text"] = new Sprite(this.Viewport);
             Sprites["text"].X = Sprites["text"].Y = 7;
         }
@@ -27,6 +27,13 @@ namespace MKEditor.Widgets
             string splitters = " `~!@#$%^&*()-=+[]{}\\|;:'\",.<>/?\n";
             for (int i = 0; i < Text.Length; i++)
             {
+                if (Text[i] == '\n')
+                {
+                    Lines.Add(lastline + lastword);
+                    lastline = "";
+                    lastword = "";
+                    continue;
+                }
                 lastword += Text[i];
                 if (splitters.Contains(Text[i]))
                 {

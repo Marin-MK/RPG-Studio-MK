@@ -6,12 +6,31 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Reflection;
+using ODL;
 
 namespace MKEditor
 {
     public static class Editor
     {
         public static bool UnsavedChanges = false;
+        private static Platform? _platform;
+        /// <summary>
+        /// The current OS.
+        /// </summary>
+        public static Platform Platform
+        {
+            get
+            {
+                if (_platform != null) return (Platform)_platform;
+                string p = SDL2.SDL.SDL_GetPlatform();
+                if (p == "Windows") _platform = Platform.Windows;
+                if (p == "Linux") _platform = Platform.Linux;
+                if (p == "Mac OS X") _platform = Platform.MacOS;
+                if (p == "iOS") _platform = Platform.IOS;
+                if (p == "Android") _platform = Platform.Android;
+                return (Platform)_platform;
+            }
+        }
 
         public static MainEditorWindow MainWindow;
         public static bool InProject { get { return !string.IsNullOrEmpty(ProjectFilePath); } }
@@ -28,6 +47,11 @@ namespace MKEditor
             string VersionName = "Version";
             if (Version[0] == '0') VersionName = "Alpha";
             return VersionName + " " + Version;
+        }
+
+        public static OperatingSystem GetOperatingSystem()
+        {
+            return Environment.OSVersion;
         }
 
         public static void DumpProjectSettings()
@@ -62,6 +86,20 @@ namespace MKEditor
             UnsavedChanges = false;
         }
 
+        public static void CloseProject()
+        {
+            if (!InProject) return;
+            if (MainWindow.MainEditorWidget != null) MainWindow.MainEditorWidget.Dispose();
+            MainWindow.MainEditorWidget = null;
+            MainWindow.StatusBar.SetVisible(false);
+            MainWindow.ToolBar.SetVisible(false);
+            MainWindow.HomeScreen = new Widgets.HomeScreen(MainWindow.MainGridLayout);
+            MainWindow.HomeScreen.SetGridRow(3);
+            MainWindow.MainGridLayout.UpdateLayout();
+            Game.Data.ClearProjectData();
+            ClearProjectData();
+        }
+
         public static void NewProject()
         {
             new Widgets.MessageBox("Oops!", "This feature has not been implemented yet.\nTo get started, please use the \"Open Project\" feature and choose the MK Starter Kit.");
@@ -91,6 +129,7 @@ namespace MKEditor
             string result = of.Show();
             if (!string.IsNullOrEmpty(result))
             {
+                CloseProject();
                 Game.Data.SetProjectPath(result);
                 MainWindow.CreateEditor();
                 MakeRecentProject();
@@ -113,6 +152,16 @@ namespace MKEditor
         {
             MainWindow.StatusBar.QueueMessage("Game starting...");
             Process.Start(Game.Data.ProjectPath + "/mkxp.exe");
+        }
+
+        public static void OpenGameFolder()
+        {
+            Utilities.OpenFolder(Game.Data.ProjectPath);
+        }
+
+        public static void ExitEditor()
+        {
+            MainWindow.Dispose();
         }
 
         public static void DumpGeneralSettings()
@@ -174,5 +223,15 @@ namespace MKEditor
         public int LastX = 50;
         public int LastY = 50;
         public List<List<string>> RecentFiles = new List<List<string>>();
+    }
+
+    public enum Platform
+    {
+        Unknown,
+        Windows,
+        Linux,
+        MacOS,
+        IOS,
+        Android
     }
 }

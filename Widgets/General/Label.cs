@@ -23,10 +23,6 @@ namespace MKEditor.Widgets
             if (this.Text != Text)
             {
                 this.Text = Text;
-                while (this.Text.Contains("\r"))
-                {
-                    this.Text = this.Text.Replace("\r", "");
-                }
                 Redraw();
             }
         }
@@ -80,7 +76,7 @@ namespace MKEditor.Widgets
             
         }
 
-        protected override void Draw()
+        public void RedrawText()
         {
             List<string> Words = new List<string>();
             foreach (string word in this.Text.Split(' '))
@@ -131,6 +127,11 @@ namespace MKEditor.Widgets
                 Sprites["text"].Bitmap.DrawText(Lines[i], 0, (Font.Size + 2) * i, Color.WHITE);
             }
             Sprites["text"].Bitmap.Lock();
+        }
+
+        protected override void Draw()
+        {
+            this.RedrawText();
             this.Drawn = true;
         }
     }

@@ -13,6 +13,7 @@ namespace MKEditor.Widgets
         ContextMenu ActiveMenu;
         bool ActiveMenuHovered = false;
         int ActiveMenuIndex = -1;
+        int LastActiveMenuIndex = -1;
         bool IgnorePress = false;
 
         public MenuBar(object Parent, string Name = "menuBar")
@@ -111,12 +112,16 @@ namespace MKEditor.Widgets
         public override void MousePress(object sender, MouseEventArgs e)
         {
             base.MousePress(sender, e);
-            if (!e.LeftButton || IgnorePress) return;
+            if (!e.LeftButton) return;
             if (ActiveMenu == null && SelectedIndex != -1)
             {
-                ShowItem(SelectedIndex);
+                if (!IgnorePress || IgnorePress && SelectedIndex != LastActiveMenuIndex)
+                {
+                    ShowItem(SelectedIndex);
+                    IgnorePress = false;
+                }
             }
-            else if (ActiveMenu != null)
+            else if (ActiveMenu != null && !IgnorePress)
             {
                 if (ActiveMenuIndex != SelectedIndex && SelectedIndex != -1)
                 {
@@ -175,6 +180,7 @@ namespace MKEditor.Widgets
             ActiveMenu.SetPosition(WidthUntil(index), Size.Height + 1);
             ActiveMenu.SetItems(SelectedItem.Items);
             ActiveMenuIndex = index;
+            LastActiveMenuIndex = index;
         }
 
         private int WidthUntil(int index)

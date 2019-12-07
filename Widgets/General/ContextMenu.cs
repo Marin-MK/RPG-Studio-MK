@@ -25,7 +25,9 @@ namespace MKEditor.Widgets
             this.WidgetIM.OnHoverChanged += HoverChanged;
             this.WidgetIM.OnMouseMoving += MouseMoving;
             this.WidgetIM.OnMouseDown += MouseDown;
-
+            this.OnHelpTextWidgetCreated += HelpTextWidgetCreated;
+            this.OnFetchHelpText += FetchHelpText;
+            
             this.WindowLayer = Window.ActiveWidget.WindowLayer + 1;
             this.Window.SetActiveWidget(this);
         }
@@ -100,6 +102,7 @@ namespace MKEditor.Widgets
                 this.Window.Widgets.RemoveAt(Window.Widgets.Count - 1);
                 this.Window.SetActiveWidget(Window.Widgets[Window.Widgets.Count - 1]);
             }
+            if (HelpTextWidget != null) HelpTextWidget.Dispose();
             base.Dispose();
         }
 
@@ -141,6 +144,7 @@ namespace MKEditor.Widgets
                 this.SelectedItem = null;
                 return;
             }
+            IMenuItem OldSelected = SelectedItem;
             for (int i = 0; i < this.Items.Count; i++)
             {
                 if (Items[i] is MenuItem)
@@ -165,6 +169,11 @@ namespace MKEditor.Widgets
                     y += 5;
                 }
             }
+            if (OldSelected != SelectedItem)
+            {
+                if (HelpTextWidget != null) HelpTextWidget.Dispose();
+                HelpTextWidget = null;
+            }
         }
 
         public void TryClick(object sender, MouseEventArgs e)
@@ -186,6 +195,21 @@ namespace MKEditor.Widgets
             if (WidgetIM.Hovering && this.SelectedItem != null && this.SelectedItem is MenuItem)
             {
                 TryClick(sender, e);
+            }
+        }
+
+        public void HelpTextWidgetCreated(object sender, EventArgs e)
+        {
+            HelpTextWidget.SetZIndex(this.ZIndex);
+        }
+
+        public override void FetchHelpText(object sender, FetchEventArgs e)
+        {
+            base.FetchHelpText(sender, e);
+            e.Value = null;
+            if (SelectedItem != null && SelectedItem is MenuItem)
+            {
+                e.Value = (SelectedItem as MenuItem).HelpText;
             }
         }
     }

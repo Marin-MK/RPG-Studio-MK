@@ -328,6 +328,19 @@ namespace MKEditor.Widgets
         public EventHandler<CancelEventArgs> OnContextMenuOpening;
 
         /// <summary>
+        /// Called upon creation of the help text widget.
+        /// </summary>
+        public EventHandler<EventArgs> OnHelpTextWidgetCreated;
+
+        /// <summary>
+        /// Called whenever the help text is to be retrieved.
+        /// </summary>
+        public EventHandler<FetchEventArgs> OnFetchHelpText;
+
+
+
+
+        /// <summary>
         /// Creates a new Widget object.
         /// </summary>
         /// <param name="Parent">The Parent widget.</param>
@@ -371,6 +384,7 @@ namespace MKEditor.Widgets
             this.WidgetIM.OnRightClick += RightClick_ContextMenu;
             this.WidgetIM.OnHoverChanged += HoverChanged;
             this.WidgetIM.OnMouseMoving += MouseMoving;
+            this.OnFetchHelpText += FetchHelpText;
         }
 
         /// <summary>
@@ -384,6 +398,10 @@ namespace MKEditor.Widgets
             this.ShowContextMenu = Items.Count > 0;
         }
 
+        /// <summary>
+        /// Sets the help message that appears when hovering over the widget.
+        /// </summary>
+        /// <param name="Text"></param>
         public void SetHelpText(string Text)
         {
             this.HelpText = Text;
@@ -1083,15 +1101,30 @@ namespace MKEditor.Widgets
         {
             AssertUndisposed();
 
-            if (TimerPassed("helptext") && !string.IsNullOrEmpty(HelpText) && HelpTextWidget == null)
+            if (TimerPassed("helptext") && HelpTextWidget == null)
             {
-                HelpTextWidget = new HelpText(Window.UI);
-                HelpTextWidget.SetText(HelpText);
-                HelpTextWidget.SetPosition(Graphics.LastMouseEvent.X, Graphics.LastMouseEvent.Y - HelpTextWidget.Size.Height);
-                if (HelpTextWidget.Position.X + HelpTextWidget.Size.Width >= Window.Width)
-                    HelpTextWidget.SetPosition(Graphics.LastMouseEvent.X - HelpTextWidget.Size.Width, HelpTextWidget.Position.Y);
-                if (HelpTextWidget.Position.Y - HelpTextWidget.Size.Height < 0)
-                    HelpTextWidget.SetPosition(HelpTextWidget.Position.X, Graphics.LastMouseEvent.Y);
+                string text = "";
+                if (OnFetchHelpText != null)
+                {
+                    FetchEventArgs args = new FetchEventArgs();
+                    OnFetchHelpText.Invoke(null, args);
+                    text = args.Value as string;
+                }
+                if (!string.IsNullOrEmpty(text))
+                {
+                    HelpTextWidget = new HelpText(Window.UI);
+                    HelpTextWidget.SetText(text);
+                    HelpTextWidget.SetPosition(Graphics.LastMouseEvent.X + 10, Graphics.LastMouseEvent.Y + 14);
+
+                    if (HelpTextWidget.Position.X + HelpTextWidget.Size.Width >= Window.Width)
+                        HelpTextWidget.SetPosition(Graphics.LastMouseEvent.X - HelpTextWidget.Size.Width - 10, HelpTextWidget.Position.Y);
+
+                    if (HelpTextWidget.Position.Y + HelpTextWidget.Size.Height + 14 >= Window.Height)
+                        HelpTextWidget.SetPosition(HelpTextWidget.Position.X, Graphics.LastMouseEvent.Y - HelpTextWidget.Size.Height - 14);
+
+                    if (OnHelpTextWidgetCreated != null)
+                        OnHelpTextWidgetCreated.Invoke(null, new EventArgs());
+                }
             }
 
             // If this widget is active
@@ -1228,6 +1261,10 @@ namespace MKEditor.Widgets
         public virtual void ChildBoundsChanged(object sender, SizeEventArgs e)
         {
             UpdateAutoScroll();
+        }
+        public virtual void FetchHelpText(object sender, FetchEventArgs e)
+        {
+            e.Value = this.HelpText;
         }
     }
 
