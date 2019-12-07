@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Reflection;
 
 namespace MKEditor
 {
@@ -17,6 +18,17 @@ namespace MKEditor
         public static string ProjectFilePath;
         public static ProjectSettings ProjectSettings;
         public static GeneralSettings GeneralSettings;
+
+        public static string GetVersionString()
+        {
+            // Changed in Project Settings -> Package -> Package Version (stored in .csproj)
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            string Version = FileVersionInfo.GetVersionInfo(assembly.Location).ProductVersion;
+            if (string.IsNullOrEmpty(Version)) Version = "0.0.1";
+            string VersionName = "Version";
+            if (Version[0] == '0') VersionName = "Alpha";
+            return VersionName + " " + Version;
+        }
 
         public static void DumpProjectSettings()
         {
@@ -39,6 +51,8 @@ namespace MKEditor
             {
                 ProjectSettings = new ProjectSettings();
             }
+            if (ProjectSettings.LastZoomFactor == 0) ProjectSettings.LastZoomFactor = 1;
+            if (ProjectSettings.ProjectName.Length == 0) ProjectSettings.ProjectName = "Untitled Game";
         }
 
         public static void ClearProjectData()
@@ -92,7 +106,7 @@ namespace MKEditor
             Game.Data.SaveSpecies();
             UnsavedChanges = false;
             long time = (long) Math.Round((DateTime.Now - t1).TotalMilliseconds);
-            MainWindow.StatusBar.QueueMessage($"Saved project ({time}ms).");
+            MainWindow.StatusBar.QueueMessage($"Saved project ({time}ms)");
         }
 
         public static void StartGame()
@@ -122,6 +136,10 @@ namespace MKEditor
             {
                 GeneralSettings = new GeneralSettings();
             }
+            if (GeneralSettings.LastWidth < MainWindow.MinimumSize.Width) GeneralSettings.LastWidth = MainWindow.MinimumSize.Width;
+            if (GeneralSettings.LastHeight < MainWindow.MinimumSize.Height) GeneralSettings.LastHeight = MainWindow.MinimumSize.Height;
+            if (GeneralSettings.LastX < 0) GeneralSettings.LastX = 0;
+            if (GeneralSettings.LastY < 0) GeneralSettings.LastY = 0;
         }
 
         public static void MakeRecentProject()

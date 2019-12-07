@@ -22,17 +22,27 @@ namespace MKEditor
 
         public MainEditorWindow(string[] args)
         {
-            Editor.MainWindow = this;
-            Editor.LoadGeneralSettings();
-            Utilities.Initialize();
-
-            this.SetText("RPG Studio MK");
             this.SetMinimumSize(600, 400);
+            this.SetText("RPG Studio MK");
             this.Initialize();
+
+            this.OnClosing += delegate (object sender, CancelEventArgs e)
+            {
+                if (!string.IsNullOrEmpty(Data.ProjectPath))
+                {
+                    // Save window upon top-right Exit button
+                    //e.Cancel = true;
+                    //EnsureSaved(Dispose);
+                }
+            };
 
             this.UI = new UIManager(this);
 
             // Widgets may now be created
+
+            Editor.MainWindow = this;
+            Editor.LoadGeneralSettings();
+            Utilities.Initialize();
 
             MainGridLayout = new Grid(this);
             MainGridLayout.SetSize(Width, Height);
@@ -240,11 +250,11 @@ namespace MKEditor
             mew.mv.SetZoomFactor(Editor.ProjectSettings.LastZoomFactor);
         }
 
-        public void EnsureSaved(Action Continue)
+        public void EnsureSaved(Action Function)
         {
             if (!Editor.UnsavedChanges)
             {
-                Continue();
+                Function();
                 return;
             }
             MessageBox box = new MessageBox("Warning", "The game contains unsaved changed. Are you sure you would like to proceed? All unsaved changes will be lost.",
@@ -254,11 +264,11 @@ namespace MKEditor
                 if (box.Result == 0) // Save
                 {
                     Editor.SaveProject();
-                    Continue();
+                    Function();
                 }
-                else if (box.Result == 1)
+                else if (box.Result == 1) // Continue
                 {
-                    Continue();
+                    Function();
                 }
             };
         }

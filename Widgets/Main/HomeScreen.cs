@@ -31,7 +31,7 @@ namespace MKEditor.Widgets
             Sprites["text"] = new Sprite(this.Viewport, new Bitmap(360, 160));
             Sprites["text"].Bitmap.Font = Font.Get("Fonts/Ubuntu-R", 18); ;
             Sprites["text"].Bitmap.Unlock();
-            Sprites["text"].Bitmap.DrawText("Alpha 0.0.1", 348, 88, Color.WHITE, DrawOptions.RightAlign);
+            Sprites["text"].Bitmap.DrawText(Editor.GetVersionString(), 348, 88, Color.WHITE, DrawOptions.RightAlign);
             Sprites["text"].Bitmap.Font = Font.Get("Fonts/Ubuntu-B", 22);
             Sprites["text"].Bitmap.DrawText("Recent Projects:", 38, 126, Color.WHITE, DrawOptions.Underlined);
             Sprites["text"].Bitmap.Lock();
@@ -620,6 +620,7 @@ namespace MKEditor.Widgets
         {
             base.SizeChanged(sender, e);
 
+            #region Shadow
             Sprites["topright"].X = Size.Width - 21;
             Sprites["bottomleft"].Y = Size.Height - 21;
             Sprites["bottomright"].X = Sprites["topright"].X;
@@ -630,7 +631,9 @@ namespace MKEditor.Widgets
             Sprites["top"].ZoomX = Size.Width - 42;
             Sprites["right"].ZoomY = Sprites["left"].ZoomY;
             Sprites["bottom"].ZoomX = Sprites["top"].ZoomX;
+            #endregion
 
+            #region Sidebar
             Sprites["sidebar"].SrcRect.Height = Sprites["sidebar"].Bitmap.Height;
             if (Size.Height <= Sprites["sidebar"].Bitmap.Height) Sprites["sidebar"].SrcRect.Height = Size.Height;
             else
@@ -638,6 +641,9 @@ namespace MKEditor.Widgets
                 double factor = Size.Height / (double) Sprites["sidebar"].Bitmap.Height;
                 Sprites["sidebar"].ZoomY = factor;
             }
+            #endregion
+
+            #region Map
             if (Sprites["map"].Bitmap != null)
             {
                 int dx = Size.Width - Sprites["map"].Bitmap.Width;
@@ -653,6 +659,9 @@ namespace MKEditor.Widgets
                     Sprites["map"].Y = Size.Height / 2 - (int) Math.Round(Sprites["map"].Bitmap.Height * Sprites["map"].ZoomY / 2d);
                 }
             }
+            #endregion
+
+            #region Recent Files
             if (Sprites["files"].Bitmap != null) Sprites["files"].Bitmap.Dispose();
             int height = Size.Height - 190;
             if (height < 1) return;
@@ -690,7 +699,9 @@ namespace MKEditor.Widgets
                 Sprites["files"].Bitmap.DrawText(path, 30, 48 * i + 22, Color.WHITE);
             }
             Sprites["files"].Bitmap.Lock();
+            #endregion
 
+            #region Buttons
             int windowheight = Window.Height;
 
             bool Hor3 = true;
@@ -819,6 +830,7 @@ namespace MKEditor.Widgets
                 YoutubeButton.SetVisible(false);
                 TwitterButton.SetVisible(false);
             }
+            #endregion
         }
 
         public override void HoverChanged(object sender, MouseEventArgs e)
@@ -875,6 +887,17 @@ namespace MKEditor.Widgets
 
         public void LoadRecentProject(int index)
         {
+            if (!System.IO.File.Exists(Editor.GeneralSettings.RecentFiles[index][1]))
+            {
+                MessageBox box = new MessageBox("Error", "No project file could be found in this folder.");
+                box.OnDisposing += delegate (object sender, EventArgs e)
+                {
+                    Editor.GeneralSettings.RecentFiles.RemoveAt(index);
+                    SizeChanged(null, new SizeEventArgs(Size));
+                    MouseMoving(null, Graphics.LastMouseEvent);
+                };
+                return;
+            }
             Data.SetProjectPath(Editor.GeneralSettings.RecentFiles[index][1]);
             Window.CreateEditor();
             Editor.MakeRecentProject();
