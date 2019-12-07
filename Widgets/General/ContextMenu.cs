@@ -210,6 +210,7 @@ namespace MKEditor.Widgets
             if (SelectedItem != null && SelectedItem is MenuItem)
             {
                 e.Value = (SelectedItem as MenuItem).HelpText;
+                if (!(SelectedItem as MenuItem).LastClickable) e.Value = e.Value + "\nUnavailable.";
             }
         }
     }
