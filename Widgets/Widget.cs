@@ -1124,7 +1124,15 @@ namespace MKEditor.Widgets
                 }
             }
 
-            // If this widget is active
+            // If this widget is not active/accessible
+            if (this.WindowLayer < this.Window.ActiveWidget.WindowLayer || !this.IsVisible())
+            {
+                if (TimerExists("helptext")) ResetTimer("helptext");
+                if (HelpTextWidget != null) HelpTextWidget.Dispose();
+                HelpTextWidget = null;
+            }
+
+            // If this widget is active and selected
             if (this.SelectedWidget && this.WindowLayer >= this.Window.ActiveWidget.WindowLayer && this.IsVisible())
             {
                 // Execute shortcuts if their buttons is being triggered.

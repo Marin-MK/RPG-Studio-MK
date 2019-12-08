@@ -6,6 +6,12 @@ namespace MKEditor
 {
     public class Program
     {
+        /// <summary>
+        /// Whether or not exceptions should be caught and displayed.
+        /// If false, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
+        /// </summary>
+        static bool CatchErrors = true;
+
         static void Main(params string[] args)
         {
             OperatingSystem os = Editor.GetOperatingSystem();
@@ -13,7 +19,6 @@ namespace MKEditor
             Console.WriteLine($"Version: {os.VersionString}");
             Graphics.Start();
             MainEditorWindow win = new MainEditorWindow(args);
-            bool CatchErrors = false;
             win.Show();
             win.OnClosing += delegate (object sender, CancelEventArgs e)
             {
