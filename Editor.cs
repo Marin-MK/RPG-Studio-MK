@@ -160,6 +160,7 @@ namespace MKEditor
 
         public static void SaveProject()
         {
+            if (!InProject) return;
             DateTime t1 = DateTime.Now;
             DumpProjectSettings();
             Game.Data.SaveTilesets();

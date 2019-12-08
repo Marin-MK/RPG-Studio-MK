@@ -1125,7 +1125,7 @@ namespace MKEditor.Widgets
             }
 
             // If this widget is active
-            if (this.SelectedWidget)
+            if (this.SelectedWidget && this.WindowLayer >= this.Window.ActiveWidget.WindowLayer && this.IsVisible())
             {
                 // Execute shortcuts if their buttons is being triggered.
                 foreach (Shortcut s in this.Shortcuts)

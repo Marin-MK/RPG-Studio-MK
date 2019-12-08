@@ -13,6 +13,7 @@ namespace MKEditor
             Console.WriteLine($"Version: {os.VersionString}");
             Graphics.Start();
             MainEditorWindow win = new MainEditorWindow(args);
+            bool CatchErrors = false;
             win.Show();
             win.OnClosing += delegate (object sender, CancelEventArgs e)
             {
@@ -36,27 +37,31 @@ namespace MKEditor
             };
             while (Graphics.CanUpdate())
             {
-                try
+                if (CatchErrors)
                 {
-                    if (ErrorBox != null && !ErrorBox.Disposed)
+                    try
                     {
-                        ErrorBox.MakePriorityWindow();
-                    }
-                    Graphics.Update();
-                }
-                catch (Exception ex)
-                {
-                    if (!Error)
-                    {
-                        string msg = ex.GetType() + " : " + ex.Message + "\n\n" + ex.StackTrace;
-                        ErrorBox = new Widgets.MessageBox("Error!", msg, new System.Collections.Generic.List<string>() { "Quit" });
-                        ErrorBox.SetSize(win.Width, win.Height);
-                        ErrorBox.OnDisposed += delegate (object sender, EventArgs e)
+                        if (ErrorBox != null && !ErrorBox.Disposed)
                         {
-                            Editor.ExitEditor();
-                        };
+                            ErrorBox.MakePriorityWindow();
+                        }
+                        Graphics.Update();
+                    }
+                    catch (Exception ex)
+                    {
+                        if (!Error)
+                        {
+                            string msg = ex.GetType() + " : " + ex.Message + "\n\n" + ex.StackTrace;
+                            ErrorBox = new Widgets.MessageBox("Error!", msg, new System.Collections.Generic.List<string>() { "Quit" });
+                            ErrorBox.SetSize(win.Width, win.Height);
+                            ErrorBox.OnDisposed += delegate (object sender, EventArgs e)
+                            {
+                                Editor.ExitEditor();
+                            };
+                        }
                     }
                 }
+                else Graphics.Update();
             }
             Graphics.Stop();
         }

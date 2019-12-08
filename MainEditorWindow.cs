@@ -30,7 +30,7 @@ namespace MKEditor
             {
                 if (!Editor.InProject)
                 {
-                    // Save window upon top-right Exit button
+                    // Save window when closing with the top-right X button
                     //e.Cancel = true;
                     //EnsureSaved(Dispose);
                 }
@@ -121,20 +121,6 @@ namespace MKEditor
                             HelpText = "Close this project and quit the program.",
                             OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(Editor.ExitEditor); }
                         }
-                    }
-                },
-                new MenuItem("Edit")
-                {
-                    Items = new List<IMenuItem>()
-                    {
-                        new MenuItem("Cut"),
-                        new MenuItem("Copy") { Shortcut = "Ctrl+C" },
-                        new MenuItem("Paste") { Shortcut = "Ctrl+V" },
-                        new MenuSeparator(),
-                        new MenuItem("Undo") { Shortcut = "Ctrl+Z" },
-                        new MenuItem("Redo") { Shortcut = "Ctrl+Y" },
-                        new MenuSeparator(),
-                        new MenuItem("Delete") { Shortcut = "Del" }
                     }
                 },
                 new MenuItem("View")
