@@ -49,6 +49,7 @@ namespace MKEditor.Widgets
         public CursorWidget Cursor;
         public MapImageWidget MapWidget;
         public Widget DummyWidget;
+        public GridBackground GridBackground;
 
         public MapViewer(object Parent, string Name = "mapViewer")
             : base(Parent, Name)
@@ -91,6 +92,7 @@ namespace MKEditor.Widgets
                 if (Graphics.LastMouseEvent != null) MouseMoving(sender, Graphics.LastMouseEvent);
             };
             MainContainer.SetVScrollBar(VScrollBar);
+            GridBackground = new GridBackground(MainContainer);
             UpdateSize();
         }
 
@@ -99,6 +101,7 @@ namespace MKEditor.Widgets
             this.ZoomFactor = factor;
             Editor.ProjectSettings.LastZoomFactor = factor;
             MapWidget.SetZoomFactor(factor);
+            GridBackground.SetTileSize((int) Math.Round(32 * this.ZoomFactor));
             if (!FromStatusBar) StatusBar.ZoomControl.SetZoomFactor(factor, true);
             PositionMap();
             MouseMoving(null, Graphics.LastMouseEvent);
@@ -336,6 +339,8 @@ namespace MKEditor.Widgets
             }
             MapWidget.SetPosition(x, y);
             MapWidget.SetSize((int) Math.Round(Map.Width * 32 * ZoomFactor), (int) Math.Round(Map.Height * 32 * ZoomFactor));
+            GridBackground.SetPosition(MapWidget.Position);
+            GridBackground.SetSize(MapWidget.Size);
             DummyWidget.SetSize(2 * x + MapWidget.Size.Width, 2 * y + MapWidget.Size.Height);
             if (Map.Width * 32 * ZoomFactor >= Viewport.Width || Map.Height * 32 * ZoomFactor >= Viewport.Height)
             {
@@ -530,8 +535,6 @@ namespace MKEditor.Widgets
             : base(Parent, Name)
         {
             SetBackgroundColor(73, 89, 109);
-            Sprites["grid"] = new Sprite(this.Viewport);
-            Sprites["grid"].Z = 999999;
             this.MapViewer = this.Parent.Parent as MapViewer;
         }
 
@@ -541,7 +544,6 @@ namespace MKEditor.Widgets
             {
                 Sprites[i.ToString()].ZoomX = Sprites[i.ToString()].ZoomY = factor;
             }
-            Sprites["grid"].ZoomX = Sprites["grid"].ZoomY = factor;
             this.ZoomFactor = factor;
         }
 
@@ -550,29 +552,6 @@ namespace MKEditor.Widgets
             this.MapData = MapData;
             this.SetSize((int) Math.Round(MapData.Width * 32 * ZoomFactor), (int) Math.Round(MapData.Height * 32 * ZoomFactor));
             RedrawLayers();
-            RedrawGrid();
-        }
-
-        public void RedrawGrid()
-        {
-            if (Sprites["grid"].Bitmap != null) Sprites["grid"].Bitmap.Dispose();
-            Sprites["grid"].Bitmap = new Bitmap(MapData.Width * 32, MapData.Height * 32);
-            Sprites["grid"].Bitmap.Unlock();
-            Color c = new Color(0, 13, 26, 128);
-            for (int y = 0; y < MapData.Height * 32; y++)
-            {
-                for (int x = 0; x < MapData.Width * 32; x++)
-                {
-                    bool draw = false;
-                    if (x > 0 && x % 32 == 0 && y % 2 == 0) draw = true;
-                    if (y > 0 && y % 32 == 0 && x % 2 == 0) draw = true;
-                    if (draw)
-                    {
-                        Sprites["grid"].Bitmap.SetPixel(x, y, c);
-                    }
-                }
-            }
-            Sprites["grid"].Bitmap.Lock();
         }
 
         public void SetLayerVisible(int layerindex, bool Visible)
@@ -585,7 +564,7 @@ namespace MKEditor.Widgets
         {
             foreach (string s in this.Sprites.Keys)
             {
-                if (s != "_bg" && s != "grid") this.Sprites[s].Dispose();
+                if (s != "_bg") this.Sprites[s].Dispose();
             }
             for (int i = 0; i < MapData.Layers.Count; i++)
             {
