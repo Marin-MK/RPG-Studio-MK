@@ -18,6 +18,8 @@ namespace MKEditor.Widgets
         PictureBox YoutubeButton;
         PictureBox TwitterButton;
 
+        MultilineLabel NoProjects;
+
         public HomeScreen(object Parent, string Name = "homeScreen")
             : base(Parent, Name)
         {
@@ -614,6 +616,12 @@ namespace MKEditor.Widgets
             WidgetIM.OnMouseMoving += MouseMoving;
             WidgetIM.OnHoverChanged += HoverChanged;
             WidgetIM.OnMouseDown += MouseDown;
+
+            NoProjects = new MultilineLabel(this);
+            NoProjects.SetSize(320, 100);
+            NoProjects.SetPosition(40, 170);
+            NoProjects.SetText("You haven't opened any projects recently.\nGet started by creating or opening a project!");
+            NoProjects.SetFont(Font.Get("Fonts/Ubuntu-R", 15));
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
@@ -699,6 +707,7 @@ namespace MKEditor.Widgets
                 Sprites["files"].Bitmap.DrawText(path, 30, 48 * i + 22, Color.WHITE);
             }
             Sprites["files"].Bitmap.Lock();
+            NoProjects.SetVisible(Editor.GeneralSettings.RecentFiles.Count == 0);
             #endregion
 
             #region Buttons
