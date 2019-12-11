@@ -10,7 +10,9 @@ namespace MKEditor
         /// Whether or not exceptions should be caught and displayed.
         /// If false, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
         /// </summary>
-        static bool CatchErrors = true;
+        static bool CatchErrors = false;
+
+        public static bool ThrownError = false;
 
         static void Main(params string[] args)
         {
@@ -34,7 +36,6 @@ namespace MKEditor
                 Editor.GeneralSettings.WasMaximized = (flags & SDL2.SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED) == SDL2.SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED;
                 Editor.DumpGeneralSettings();
             };
-            bool Error = false;
             Widgets.MessageBox ErrorBox = null;
             win.OnWindowSizeChanged += delegate (object sender, WindowEventArgs e)
             {
@@ -50,11 +51,11 @@ namespace MKEditor
                         {
                             ErrorBox.MakePriorityWindow();
                         }
-                        Graphics.Update();
+                        Graphics.Update(ThrownError);
                     }
                     catch (Exception ex)
                     {
-                        if (!Error)
+                        if (!ThrownError)
                         {
                             string msg = ex.GetType() + " : " + ex.Message + "\n\n" + ex.StackTrace;
                             ErrorBox = new Widgets.MessageBox("Error!", msg, new System.Collections.Generic.List<string>() { "Quit" });
@@ -63,6 +64,7 @@ namespace MKEditor
                             {
                                 Editor.ExitEditor();
                             };
+                            ThrownError = true;
                         }
                     }
                 }

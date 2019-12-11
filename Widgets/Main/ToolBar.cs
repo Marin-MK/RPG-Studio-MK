@@ -7,6 +7,8 @@ namespace MKEditor.Widgets
 {
     public class ToolBar : Widget
     {
+        public MainEditorWindow MainWindow;
+
         public MapViewer MapViewer;
         public TilesetsPanel TilesetTab;
         public StatusBar StatusBar;
@@ -18,10 +20,10 @@ namespace MKEditor.Widgets
         IconButton Undo;
         IconButton Redo;
 
-        ModeButton MappingMode;
-        ModeButton EventingMode;
-        ModeButton ScriptingMode;
-        ModeButton DatabaseMode;
+        public ModeButton MappingMode;
+        public ModeButton EventingMode;
+        public ModeButton ScriptingMode;
+        public ModeButton DatabaseMode;
 
         Container ActionContainer;
         Container CopyContainer;
@@ -45,15 +47,31 @@ namespace MKEditor.Widgets
             MappingMode = new ModeButton("Maps", 23, this);
             MappingMode.SetPosition(4, 0);
             MappingMode.SetSelected(true);
+            MappingMode.OnSelection += delegate (object sender, EventArgs e)
+            {
+                Editor.SetMode("MAPPING");
+            };
 
             EventingMode = new ModeButton("Events", 24, this);
             EventingMode.SetPosition(MappingMode.Position.X + MappingMode.Size.Width + 12, 0);
+            EventingMode.OnSelection += delegate (object sender, EventArgs e)
+            {
+                Editor.SetMode("EVENTING");
+            };
 
             ScriptingMode = new ModeButton("Scripts", 25, this);
             ScriptingMode.SetPosition(EventingMode.Position.X + EventingMode.Size.Width + 12, 0);
+            ScriptingMode.OnSelection += delegate (object sender, EventArgs e)
+            {
+                Editor.SetMode("SCRIPTING");
+            };
 
             DatabaseMode = new ModeButton("Database", 26, this);
             DatabaseMode.SetPosition(ScriptingMode.Position.X + ScriptingMode.Size.Width + 12, 0);
+            DatabaseMode.OnSelection += delegate (object sender, EventArgs e)
+            {
+                Editor.SetMode("DATABASE");
+            };
 
             ActionContainer = new Container(this);
             ActionContainer.SetPosition(DatabaseMode.Position.X + DatabaseMode.Size.Width + 12, 3);
@@ -138,6 +156,11 @@ namespace MKEditor.Widgets
 
             PlayButton = new PlayButton(this);
             SaveButton = new SaveButton(this);
+        }
+
+        public void Refresh()
+        {
+
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)

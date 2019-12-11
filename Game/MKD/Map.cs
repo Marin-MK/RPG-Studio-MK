@@ -99,6 +99,30 @@ namespace MKEditor.Game
             return this.DisplayName;
         }
 
+        public void RemoveTileset(int TilesetID)
+        {
+            int idx = this.TilesetIDs.IndexOf(TilesetID);
+            for (int i = 0; i < Layers.Count; i++)
+            {
+                for (int j = 0; j < Layers[i].Tiles.Count; j++)
+                {
+                    TileData tile = Layers[i].Tiles[j];
+                    if (tile == null) continue;
+                    if (tile.TilesetIndex == idx) Layers[i].Tiles[j] = null;
+                }
+            }
+            this.TilesetIDs.Remove(TilesetID);
+            for (int i = 0; i < Layers.Count; i++)
+            {
+                for (int j = 0; j < Layers[i].Tiles.Count; j++)
+                {
+                    TileData tile = Layers[i].Tiles[j];
+                    if (tile == null) continue;
+                    if (tile.TilesetIndex > idx) Layers[i].Tiles[j].TilesetIndex -= 1;
+                }
+            }
+        }
+
         public object Clone()
         {
             Map o = new Map();

@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Reflection;
 using ODL;
+using MKEditor.Widgets;
 
 namespace MKEditor
 {
@@ -77,6 +78,8 @@ namespace MKEditor
             }
             if (ProjectSettings.LastZoomFactor == 0) ProjectSettings.LastZoomFactor = 1;
             if (ProjectSettings.ProjectName.Length == 0) ProjectSettings.ProjectName = "Untitled Game";
+            if (string.IsNullOrEmpty(ProjectSettings.LastMode)) ProjectSettings.LastMode = "MAPPING";
+            if (ProjectSettings.TilesetCapacity == 0) ProjectSettings.TilesetCapacity = 25;
         }
 
         public static void ClearProjectData()
@@ -187,6 +190,99 @@ namespace MKEditor
             MainWindow.Dispose();
         }
 
+        public static void SetMode(string Mode, bool Force = false)
+        {
+            if (Mode == ProjectSettings.LastMode && !Force) return;
+            if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
+            MainWindow.MainEditorWidget = null;
+
+            string OldMode = ProjectSettings.LastMode;
+            ProjectSettings.LastMode = Mode;
+
+            MainWindow.StatusBar.SetVisible(true);
+            MainWindow.ToolBar.SetVisible(true);
+
+            if (Mode == "MAPPING")
+            {
+                MainWindow.ToolBar.MappingMode.SetSelected(true, Force);
+
+                MainWindow.MainEditorWidget = new MappingWidget(MainWindow.MainGridLayout);
+                MainWindow.MainEditorWidget.SetGridRow(3);
+
+                // Link the UI pieces together
+                MainWindow.MapWidget.mv.LayersTab = MainWindow.MapWidget.lt;
+                MainWindow.MapWidget.mv.TilesetTab = MainWindow.MapWidget.tt;
+                MainWindow.MapWidget.mv.ToolBar = MainWindow.ToolBar;
+                MainWindow.MapWidget.mv.StatusBar = MainWindow.StatusBar;
+                
+                MainWindow.MapWidget.lt.TilesetTab = MainWindow.MapWidget.tt;
+                MainWindow.MapWidget.lt.MapViewer = MainWindow.MapWidget.mv;
+
+                MainWindow.MapWidget.tt.LayersTab = MainWindow.MapWidget.lt;
+                MainWindow.MapWidget.tt.MapViewer = MainWindow.MapWidget.mv;
+                MainWindow.MapWidget.tt.ToolBar = MainWindow.ToolBar;
+
+                MainWindow.MapWidget.mst.MapViewer = MainWindow.MapWidget.mv;
+                
+                MainWindow.ToolBar.MapViewer = MainWindow.MapWidget.mv;
+                MainWindow.ToolBar.TilesetTab = MainWindow.MapWidget.tt;
+                MainWindow.MapWidget.mst.StatusBar = MainWindow.StatusBar;
+
+                MainWindow.StatusBar.MapViewer = MainWindow.MapWidget.mv;
+
+                // Set list of maps & initial map
+                MainWindow.MapWidget.mst.PopulateList(Editor.ProjectSettings.MapOrder, true);
+
+                int mapid = ProjectSettings.LastMapID;
+                if (!Game.Data.Maps.ContainsKey(mapid))
+                {
+                    if (ProjectSettings.MapOrder[0] is List<object>) mapid = (int)((List<object>) ProjectSettings.MapOrder[0])[0];
+                    else mapid = (int) ProjectSettings.MapOrder[0];
+                }
+                int lastlayer = ProjectSettings.LastLayer;
+                MainWindow.MapWidget.mst.SetMap(Game.Data.Maps[mapid]);
+
+                MainWindow.MapWidget.lt.SetSelectedLayer(lastlayer);
+
+                MainWindow.MapWidget.mv.SetZoomFactor(ProjectSettings.LastZoomFactor);
+            }
+            else if (OldMode == "MAPPING")
+            {
+                MainWindow.ToolBar.MapViewer = null;
+                MainWindow.ToolBar.TilesetTab = null;
+                MainWindow.StatusBar.MapViewer = null;
+            }
+            if (Mode == "EVENTING")
+            {
+                MainWindow.ToolBar.EventingMode.SetSelected(true, Force);
+            }
+            else if (OldMode == "EVENTING")
+            {
+
+            }
+            if (Mode == "SCRIPTING")
+            {
+                MainWindow.ToolBar.ScriptingMode.SetSelected(true, Force);
+            }
+            else if (OldMode == "SCRIPTING")
+            {
+
+            }
+            if (Mode == "DATABASE")
+            {
+                MainWindow.ToolBar.DatabaseMode.SetSelected(true, Force);
+                MainWindow.MainEditorWidget = new DatabaseWidget(MainWindow.MainGridLayout);
+                MainWindow.MainEditorWidget.SetGridRow(3);
+            }
+            else if (OldMode == "DATABASE")
+            {
+
+            }
+            MainWindow.MainGridLayout.UpdateLayout();
+            MainWindow.StatusBar.Refresh();
+            MainWindow.ToolBar.Refresh();
+        }
+
         public static void DumpGeneralSettings()
         {
             IFormatter formatter = new BinaryFormatter();
@@ -232,9 +328,11 @@ namespace MKEditor
     {
         public List<object> MapOrder = new List<object>();
         public string ProjectName = "Untitled Game";
+        public string LastMode = "MAPPING";
         public int LastMapID = 1;
         public int LastLayer = 1;
         public double LastZoomFactor = 1;
+        public int TilesetCapacity = 25;
     }
 
     [Serializable]

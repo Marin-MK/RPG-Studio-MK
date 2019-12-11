@@ -13,7 +13,11 @@ namespace MKEditor
         public IContainer ActiveWidget;
         public List<IContainer> Widgets = new List<IContainer>();
 
-        public MainEditorWidget MainEditorWidget;
+        public Widget MainEditorWidget;
+
+        public MappingWidget MapWidget { get { return MainEditorWidget as MappingWidget; } }
+        public DatabaseWidget DatabaseWidget { get { return MainEditorWidget as DatabaseWidget; } }
+
         public Grid MainGridLayout;
         public MenuBar MenuBar;
         public StatusBar StatusBar;
@@ -175,6 +179,7 @@ namespace MKEditor
             // Toolbar (modes, icons, etc)
             ToolBar = new ToolBar(MainGridLayout);
             ToolBar.SetGridRow(1);
+            ToolBar.MainWindow = this;
             #endregion
             #region Dividers
             // Blue 1px separator
@@ -192,6 +197,7 @@ namespace MKEditor
             StatusBar = new StatusBar(MainGridLayout);
             StatusBar.SetGridRow(5);
             ToolBar.StatusBar = StatusBar;
+            StatusBar.MainWindow = this;
             #endregion
 
             bool LoadHomeScreen = true;
@@ -245,50 +251,7 @@ namespace MKEditor
             Editor.LoadProjectSettings();
             Data.LoadGameData();
 
-            MainEditorWidget = new MainEditorWidget(MainGridLayout);
-            MainEditorWidget.SetGridRow(3);
-
-            // Link the UI pieces together
-            MainEditorWidget.mv.LayersTab = MainEditorWidget.lt;
-            MainEditorWidget.mv.TilesetTab = MainEditorWidget.tt;
-            MainEditorWidget.mv.ToolBar = ToolBar;
-            MainEditorWidget.mv.StatusBar = StatusBar;
-
-            MainEditorWidget.lt.TilesetTab = MainEditorWidget.tt;
-            MainEditorWidget.lt.MapViewer = MainEditorWidget.mv;
-
-            MainEditorWidget.tt.LayersTab = MainEditorWidget.lt;
-            MainEditorWidget.tt.MapViewer = MainEditorWidget.mv;
-            MainEditorWidget.tt.ToolBar = ToolBar;
-
-            MainEditorWidget.mst.MapViewer = MainEditorWidget.mv;
-
-            ToolBar.MapViewer = MainEditorWidget.mv;
-            ToolBar.TilesetTab = MainEditorWidget.tt;
-            MainEditorWidget.mst.StatusBar = StatusBar;
-
-            StatusBar.MapViewer = MainEditorWidget.mv;
-
-            // Set list of maps & initial map
-            MainEditorWidget.mst.PopulateList(Editor.ProjectSettings.MapOrder, true);
-
-            MainGridLayout.UpdateLayout();
-
-            StatusBar.SetVisible(true);
-            ToolBar.SetVisible(true);
-
-            int mapid = Editor.ProjectSettings.LastMapID;
-            if (!Data.Maps.ContainsKey(mapid))
-            {
-                if (Editor.ProjectSettings.MapOrder[0] is List<object>) mapid = (int) ((List<object>)Editor.ProjectSettings.MapOrder[0])[0];
-                else mapid = (int) Editor.ProjectSettings.MapOrder[0];
-            }
-            int lastlayer = Editor.ProjectSettings.LastLayer;
-            MainEditorWidget.mst.SetMap(Data.Maps[mapid]);
-
-            MainEditorWidget.lt.SetSelectedLayer(lastlayer);
-
-            MainEditorWidget.mv.SetZoomFactor(Editor.ProjectSettings.LastZoomFactor);
+            Editor.SetMode(Editor.ProjectSettings.LastMode, true);
         }
 
         public void OpenHelpWindow()

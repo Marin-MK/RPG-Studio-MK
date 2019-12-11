@@ -27,6 +27,8 @@ namespace MKEditor.Widgets
             WidgetIM.OnMouseDown += MouseDown;
             WidgetIM.OnMouseUp += MouseUp;
             WidgetIM.OnMousePress += MousePress;
+
+            SetSize(66, 27);
         }
 
         public void SetValue(int Value)

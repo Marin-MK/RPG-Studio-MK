@@ -36,7 +36,7 @@ namespace MKEditor.Widgets
             for (int i = 1; i < Data.Tilesets.Count; i++)
             {
                 Tileset tileset = Data.Tilesets[i];
-                items.Add(new ListItem($"{Utilities.Digits(i, 3)}: {tileset.Name}", tileset));
+                items.Add(new ListItem($"{Utilities.Digits(i, 3)}: {tileset?.Name}", tileset));
             }
             Tilesets.SetItems(items);
             Tilesets.OnSelectionChanged += delegate (object sender, EventArgs e)
@@ -83,28 +83,32 @@ namespace MKEditor.Widgets
         public void UpdatePreview()
         {
             Tileset data = Tilesets.Items[Tilesets.SelectedIndex].Object as Tileset;
+            tileset.Sprite.Bitmap = null;
+            tileset.SetSize(1, 1);
+            if (data == null) return;
             tileset.Sprite.Bitmap = data.TilesetListBitmap;
-            if (data.TilesetListBitmap != null)
-            {
-                tileset.SetSize(data.TilesetListBitmap.Width, data.TilesetListBitmap.Height);
-            }
-            else
-            {
-                tileset.SetSize(1, 1);
-            }
+            tileset.SetSize(data.TilesetListBitmap.Width, data.TilesetListBitmap.Height);
             scroll.VScrollBar.SetValue(0);
         }
 
         public void OK(object sender, EventArgs e)
         {
-            this.ChosenTilesetID = (Tilesets.Items[Tilesets.SelectedIndex].Object as Tileset).ID;
-            if (this.Map.TilesetIDs.Contains(this.ChosenTilesetID))
+            Tileset t = (Tilesets.Items[Tilesets.SelectedIndex].Object as Tileset);
+            if (t == null)
             {
-                new MessageBox("Error", "This map already contains this tileset. Please pick a different tileset.");
+                new MessageBox("Error", "This tileset doesn't have a graphic. Please pick a different tileset.");
             }
             else
             {
-                Close();
+                this.ChosenTilesetID = t.ID;
+                if (this.Map.TilesetIDs.Contains(this.ChosenTilesetID))
+                {
+                    new MessageBox("Error", "This map already contains this tileset. Please pick a different tileset.");
+                }
+                else
+                {
+                    Close();
+                }
             }
         }
 

@@ -3,14 +3,14 @@ using ODL;
 
 namespace MKEditor.Widgets
 {
-    public class MainEditorWidget : Widget
+    public class MappingWidget : Widget
     {
         public MapViewer mv;
         public TilesetsPanel tt;
         public MapSelectPanel mst;
         public LayersPanel lt;
 
-        public MainEditorWidget(object Parent, string Name = "mainEditorWidget")
+        public MappingWidget(object Parent, string Name = "mappingWidget")
             : base(Parent, Name)
         {
             Grid layout = new Grid(this);

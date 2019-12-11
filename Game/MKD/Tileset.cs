@@ -11,9 +11,9 @@ namespace MKEditor.Game
         public int ID;
         public string Name;
         public string GraphicName;
-        public List<Passability> Passabilities;
-        public List<int?> Priorities;
-        public List<int?> Tags;
+        public List<Passability> Passabilities = new List<Passability>();
+        public List<int?> Priorities = new List<int?>();
+        public List<int?> Tags = new List<int?>();
 
         public Bitmap TilesetBitmap;
         public Bitmap TilesetListBitmap;
@@ -74,14 +74,28 @@ namespace MKEditor.Game
             return Data;
         }
 
+        public void SetGraphic(string GraphicName)
+        {
+            if (this.GraphicName != GraphicName)
+            {
+                this.GraphicName = GraphicName;
+                this.CreateBitmap(true);
+                int tileycount = (int) Math.Floor(TilesetBitmap.Height / 32d);
+                int size = tileycount * 8;
+                this.Passabilities.AddRange(new Passability[size - Passabilities.Count]);
+                this.Priorities.AddRange(new int?[size - Priorities.Count]);
+                this.Tags.AddRange(new int?[size - Tags.Count]);
+            }
+        }
+
         public void CreateBitmap(bool Redraw = false)
         {
             if (this.TilesetBitmap == null || Redraw)
             {
                 if (this.TilesetBitmap != null) this.TilesetBitmap.Dispose();
+                if (this.TilesetListBitmap != null) this.TilesetListBitmap.Dispose();
                 
-                string GfxFolder = Directory.GetParent(Data.DataPath).FullName + "\\gfx";
-                Bitmap bmp = new Bitmap($"{GfxFolder}\\tilesets\\{this.GraphicName}.png");
+                Bitmap bmp = new Bitmap($"{Game.Data.ProjectPath}\\gfx\\tilesets\\{this.GraphicName}.png");
                 this.TilesetBitmap = bmp;
                 int tileycount = (int) Math.Floor(bmp.Height / 32d);
 

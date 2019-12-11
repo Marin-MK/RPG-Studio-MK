@@ -103,8 +103,11 @@ namespace MKEditor.Game
             for (int i = 0; i < AllTilests.Count; i++)
             {
                 if (AllTilests[i] == null) Tilesets.Add(null);
-                else Tilesets.Add(new Tileset(((JObject) AllTilests[i]).ToObject<Dictionary<string, object>>()));
+                else Tilesets.Add(new Tileset(((JObject)AllTilests[i]).ToObject<Dictionary<string, object>>()));
             }
+            int MaxID = Tilesets.Count;
+            int Missing = Editor.ProjectSettings.TilesetCapacity - MaxID + 1;
+            for (int i = 0; i < Missing; i++) Tilesets.Add(null);
         }
 
         public static void SaveTilesets()

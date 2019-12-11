@@ -57,6 +57,7 @@ namespace MKEditor.Widgets
         protected override void Draw()
         {
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
+            if (string.IsNullOrEmpty(this.Text)) return;
             Size s = this.Font.TextSize(this.Text);
             this.SetSize(s);
             Sprites["text"].Bitmap = new Bitmap(s);

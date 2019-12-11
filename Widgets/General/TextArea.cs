@@ -10,7 +10,7 @@ namespace MKEditor.Widgets
         public string Text { get; protected set; } = "";
         public int TextY { get; protected set; } = 0;
         public int CaretY { get; protected set; } = 2;
-        public int CaretHeight { get; protected set; } = 16;
+        public int CaretHeight { get; protected set; } = 13;
         public Font Font { get; protected set; } = Font.Get("Fonts/ProductSans-M", 14);
 
         public bool EnteringText = false;
@@ -25,6 +25,8 @@ namespace MKEditor.Widgets
         public int SelectionEndIndex = -1;
 
         public int SelectionStartX = -1;
+
+        public EventHandler<EventArgs> OnTextChanged;
 
         public TextArea(object Parent, string Name = "newTextBox")
             : base(Parent, Name)
@@ -47,7 +49,9 @@ namespace MKEditor.Widgets
             this.Text = Text;
             X = 0;
             RX = 0;
+            CaretIndex = 0;
             DrawText();
+            if (OnTextChanged != null) OnTextChanged.Invoke(null, new EventArgs());
         }
 
         public void SetFont(Font f)
@@ -103,7 +107,11 @@ namespace MKEditor.Widgets
         {
             base.TextInput(sender, e);
             string text = this.Text;
-            if (!string.IsNullOrEmpty(e.Text))
+            if (e.Text == "\n")
+            {
+                Window.UI.SetSelectedWidget(null);
+            }
+            else if (!string.IsNullOrEmpty(e.Text))
             {
                 if (SelectionStartIndex != -1 && SelectionStartIndex != SelectionEndIndex) DeleteSelection();
                 InsertText(CaretIndex, e.Text);
@@ -139,8 +147,9 @@ namespace MKEditor.Widgets
             }
             if (this.Text != text)
             {
-                if ((Parent as TextBox).OnTextChanged != null) (Parent as TextBox).OnTextChanged.Invoke(null, new EventArgs());
+                if (this.OnTextChanged != null) this.OnTextChanged.Invoke(null, new EventArgs());
             }
+            if (OnTextChanged != null) OnTextChanged.Invoke(null, new EventArgs());
             DrawText();
         }
 

@@ -6,13 +6,13 @@ namespace MKEditor.Widgets
     public class Button : Widget
     {
         public string Text { get; protected set; }
+        public Font Font { get; protected set; } = Font.Get("Fonts/ProductSans-B", 14);
 
         public EventHandler<EventArgs> OnClicked;
 
         public Button(object Parent, string Name = "button")
             : base(Parent, Name)
         {
-            SetSize(85, 33);
             Bitmap b = new Bitmap(10, 10);
             #region Corner piece
             b.Unlock();
@@ -62,30 +62,20 @@ namespace MKEditor.Widgets
             b.SetPixel(5, 9, 1, 0, 1, 99);
             b.Lock();
             #endregion
+
             Sprites["topleft"] = new Sprite(this.Viewport, b);
+
             Sprites["bottomleft"] = new Sprite(this.Viewport, b);
             Sprites["bottomleft"].MirrorY = true;
-            Sprites["bottomleft"].Y = Size.Height - 10;
+            
             Sprites["topright"] = new Sprite(this.Viewport, b);
             Sprites["topright"].MirrorX = true;
-            Sprites["topright"].X = Size.Width - 10;
+            
             Sprites["bottomright"] = new Sprite(this.Viewport, b);
             Sprites["bottomright"].MirrorX = Sprites["bottomright"].MirrorY = true;
-            Sprites["bottomright"].X = Sprites["topright"].X;
-            Sprites["bottomright"].Y = Sprites["bottomleft"].Y;
-
-            Sprites["filler"] = new Sprite(this.Viewport, new Bitmap(73, 21));
-            Sprites["filler"].Bitmap.Unlock();
-            Sprites["filler"].Bitmap.FillRect(0, 0, 73, 21, Color.WHITE);
-            Sprites["filler"].Bitmap.SetPixel(0, 0, Color.ALPHA);
-            Sprites["filler"].Bitmap.SetPixel(72, 0, Color.ALPHA);
-            Sprites["filler"].Bitmap.SetPixel(0, 20, Color.ALPHA);
-            Sprites["filler"].Bitmap.SetPixel(72, 20, Color.ALPHA);
-            Sprites["filler"].Bitmap.Lock();
-            Sprites["filler"].X = Sprites["filler"].Y = 6;
-            Sprites["filler"].Color = new Color(64, 104, 146);
 
             Bitmap hor = new Bitmap(6, 1);
+            #region Horizontal piece
             hor.Unlock();
             hor.SetPixel(0, 0, 0, 22, 44, 6);
             hor.SetPixel(1, 0, 0, 22, 44, 6);
@@ -94,8 +84,10 @@ namespace MKEditor.Widgets
             hor.SetPixel(4, 0, 0, 2, 4, 64);
             hor.SetPixel(5, 0, 0, 1, 4, 108);
             hor.Lock();
+            #endregion
 
             Bitmap vert = new Bitmap(1, 6);
+            #region Vertical piece
             vert.Unlock();
             vert.SetPixel(0, 0, 0, 22, 44, 6);
             vert.SetPixel(0, 1, 0, 22, 44, 6);
@@ -104,29 +96,39 @@ namespace MKEditor.Widgets
             vert.SetPixel(0, 4, 0, 2, 4, 64);
             vert.SetPixel(0, 5, 0, 1, 4, 108);
             vert.Lock();
+            #endregion
 
             Sprites["left"] = new Sprite(this.Viewport, hor);
             Sprites["left"].Y = 10;
-            Sprites["left"].ZoomY = Size.Height - 20;
             Sprites["right"] = new Sprite(this.Viewport, hor);
-            Sprites["right"].X = Sprites["topright"].X + 4;
             Sprites["right"].Y = Sprites["left"].Y;
-            Sprites["right"].ZoomY = Sprites["left"].ZoomY;
             Sprites["right"].MirrorX = true;
 
             Sprites["top"] = new Sprite(this.Viewport, vert);
             Sprites["top"].X = 10;
-            Sprites["top"].ZoomX = Size.Width - 20;
             Sprites["bottom"] = new Sprite(this.Viewport, vert);
             Sprites["bottom"].X = Sprites["top"].X;
-            Sprites["bottom"].Y = Sprites["bottomleft"].Y + 4;
-            Sprites["bottom"].ZoomX = Sprites["top"].ZoomX;
             Sprites["bottom"].MirrorY = true;
+
+            Sprites["filler"] = new Sprite(this.Viewport);
+            Sprites["filler"].X = Sprites["filler"].Y = 6;
+            Sprites["filler"].Color = new Color(64, 104, 146);
 
             Sprites["text"] = new Sprite(this.Viewport);
 
             WidgetIM.OnHoverChanged += HoverChanged;
             WidgetIM.OnMouseDown += MouseDown;
+
+            SetSize(85, 33);
+        }
+
+        public void SetFont(Font f)
+        {
+            if (this.Font != f)
+            {
+                this.Font = f;
+                RedrawText();
+            }
         }
 
         public void SetText(string Text)
@@ -134,17 +136,49 @@ namespace MKEditor.Widgets
             if (this.Text != Text)
             {
                 this.Text = Text;
-                if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
-                Font f = Font.Get("Fonts/ProductSans-B", 14);
-                Size s = f.TextSize(Text);
-                Sprites["text"].Bitmap = new Bitmap(s);
-                Sprites["text"].Bitmap.Unlock();
-                Sprites["text"].Bitmap.Font = f;
-                Sprites["text"].Bitmap.DrawText(Text, Color.WHITE);
-                Sprites["text"].Bitmap.Lock();
-                Sprites["text"].X = Size.Width / 2 - s.Width / 2;
-                Sprites["text"].Y = 7;
+                RedrawText();
             }
+        }
+
+        public void RedrawText()
+        {
+            if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
+            if (string.IsNullOrEmpty(this.Text)) return;
+            Size s = this.Font.TextSize(Text);
+            Sprites["text"].Bitmap = new Bitmap(s);
+            Sprites["text"].Bitmap.Unlock();
+            Sprites["text"].Bitmap.Font = this.Font;
+            Sprites["text"].Bitmap.DrawText(Text, Color.WHITE);
+            Sprites["text"].Bitmap.Lock();
+            Sprites["text"].X = Size.Width / 2 - s.Width / 2;
+            Sprites["text"].Y = Size.Height / 2 - 9;
+        }
+
+        public override void SizeChanged(object sender, SizeEventArgs e)
+        {
+            base.SizeChanged(sender, e);
+            if (Sprites["filler"].Bitmap != null) Sprites["filler"].Bitmap.Dispose();
+            Sprites["filler"].Bitmap = new Bitmap(Size.Width - 12, Size.Height - 12);
+            Sprites["filler"].Bitmap.Unlock();
+            Sprites["filler"].Bitmap.FillRect(0, 0, Size.Width - 12, Size.Height - 12, Color.WHITE);
+            Sprites["filler"].Bitmap.SetPixel(0, 0, Color.ALPHA);
+            Sprites["filler"].Bitmap.SetPixel(Size.Width - 13, 0, Color.ALPHA);
+            Sprites["filler"].Bitmap.SetPixel(0, Size.Height - 13, Color.ALPHA);
+            Sprites["filler"].Bitmap.SetPixel(Size.Width- 13, Size.Height - 13, Color.ALPHA);
+            Sprites["filler"].Bitmap.Lock();
+
+            Sprites["bottomleft"].Y = Size.Height - 10;
+            Sprites["topright"].X = Size.Width - 10;
+            Sprites["bottomright"].X = Sprites["topright"].X;
+            Sprites["bottomright"].Y = Sprites["bottomleft"].Y;
+
+            Sprites["right"].X = Sprites["topright"].X + 4;
+            Sprites["left"].ZoomY = Size.Height - 20;
+            Sprites["right"].ZoomY = Sprites["left"].ZoomY;
+
+            Sprites["top"].ZoomX = Size.Width - 20;
+            Sprites["bottom"].Y = Sprites["bottomleft"].Y + 4;
+            Sprites["bottom"].ZoomX = Sprites["top"].ZoomX;
         }
 
         public override void HoverChanged(object sender, MouseEventArgs e)

@@ -8,7 +8,6 @@ namespace MKEditor.Widgets
     {
         public double SliderSize     { get; protected set; }
         public double Value          { get; protected set; }
-        public bool   SliderVisible  { get; protected set; } = true;
         public bool   Hovering       { get { return SliderIM.Hovering; } }
         public bool   Dragging       { get { return SliderIM.ClickedLeftInArea == true; } }
         public Rect   MouseInputRect { get; set; }
@@ -69,12 +68,6 @@ namespace MKEditor.Widgets
             }
         }
 
-        public void SetSliderVisible(bool value)
-        {
-            this.SliderVisible = value;
-            this.Sprites["slider"].Visible = value;
-        }
-
         protected override void Draw()
         {
             int height = this.Size.Height;
@@ -118,7 +111,7 @@ namespace MKEditor.Widgets
 
         private void SliderMouseDown(object sender, MouseEventArgs e)
         {
-            if (!SliderVisible) return;
+            if (!IsVisible()) return;
             if (e.LeftButton && !e.OldLeftButton && this.SliderIM.Hovering)
             {
                 this.SliderRY = e.Y - this.Viewport.Y - (this.SliderRect.Y - this.Viewport.Y);
@@ -138,7 +131,7 @@ namespace MKEditor.Widgets
 
         public void UpdateSlider(MouseEventArgs e)
         {
-            if (!SliderVisible) return;
+            if (!IsVisible()) return;
             int height = this.Size.Height;
             int sliderheight = (int) Math.Round(height * this.SliderSize);
             height -= sliderheight;
@@ -154,19 +147,19 @@ namespace MKEditor.Widgets
 
         public void ScrollUp()
         {
-            if (!SliderVisible) return;
+            if (!IsVisible()) return;
             this.SetValue((LinkedWidget.ScrolledY - 11d) / (LinkedWidget.MaxChildHeight - LinkedWidget.Viewport.Height));
         }
 
         public void ScrollDown()
         {
-            if (!SliderVisible) return;
+            if (!IsVisible()) return;
             this.SetValue((LinkedWidget.ScrolledY + 11d) / (LinkedWidget.MaxChildHeight - LinkedWidget.Viewport.Height));
         }
 
         public override void MouseWheel(object sender, MouseEventArgs e)
         {
-            if (!SliderVisible) return;
+            if (!IsVisible()) return;
             // If a HScrollBar exists
             if (LinkedWidget.HScrollBar != null)
             {

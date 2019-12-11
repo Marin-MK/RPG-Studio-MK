@@ -42,9 +42,9 @@ namespace MKEditor.Widgets
             SetSize(27 + s.Width, 31);
         }
 
-        public void SetSelected(bool Selected)
+        public void SetSelected(bool Selected, bool Starting = false)
         {
-            if (this.Selected != Selected)
+            if (this.Selected != Selected || Starting)
             {
                 if (Selected)
                 {
@@ -56,8 +56,11 @@ namespace MKEditor.Widgets
                     }
                 }
                 this.Selected = Selected;
-                if (Selected && this.OnSelection != null) this.OnSelection.Invoke(this, new EventArgs());
-                if (!Selected && this.OnDeselection != null) this.OnDeselection.Invoke(this, new EventArgs());
+                if (!Starting)
+                {
+                    if (Selected && this.OnSelection != null) this.OnSelection.Invoke(this, new EventArgs());
+                    if (!Selected && this.OnDeselection != null) this.OnDeselection.Invoke(this, new EventArgs());
+                }
                 Redraw();
             }
         }

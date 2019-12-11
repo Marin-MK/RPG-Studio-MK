@@ -7,6 +7,8 @@ namespace MKEditor.Widgets
 {
     public class StatusBar : Widget
     {
+        public MainEditorWindow MainWindow;
+
         public MapViewer MapViewer;
 
         public ZoomControl ZoomControl;
@@ -68,7 +70,7 @@ namespace MKEditor.Widgets
 
         public void RemoveText()
         {
-            Sprites["text"].Bitmap.Dispose();
+            if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
@@ -149,6 +151,26 @@ namespace MKEditor.Widgets
                     
                     DrawCursor(MapViewer.TopLeftX, MapViewer.TopLeftY, MapViewer.CursorWidth, MapViewer.CursorHeight);
                 }
+            }
+            else
+            {
+                RemoveCursorText();
+            }
+        }
+
+        public void Refresh()
+        {
+            if (MainWindow.MainEditorWidget is MappingWidget)
+            {
+                SetMap(MainWindow.MapWidget.mv.Map);
+                ZoomControl.SetVisible(true);
+                Sprites["line2"].Visible = true;
+            }
+            else
+            {
+                if (Sprites["map"].Bitmap != null) Sprites["map"].Bitmap.Dispose();
+                ZoomControl.SetVisible(false);
+                Sprites["line2"].Visible = false;
             }
         }
 

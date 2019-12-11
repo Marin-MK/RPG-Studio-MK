@@ -337,7 +337,10 @@ namespace MKEditor.Widgets
         /// </summary>
         public EventHandler<FetchEventArgs> OnFetchHelpText;
 
-
+        /// <summary>
+        /// Called whenever SetVisibility() is called.
+        /// </summary>
+        public EventHandler<EventArgs> OnVisibilityChanged;
 
 
         /// <summary>
@@ -510,6 +513,7 @@ namespace MKEditor.Widgets
                 Viewport.Visible = false;
             }
             SetViewportVisible(Visible);
+            if (this.OnVisibilityChanged != null) this.OnVisibilityChanged.Invoke(null, new EventArgs());
         }
 
         /// <summary>
@@ -592,8 +596,12 @@ namespace MKEditor.Widgets
                         {
                             this.ScrolledX = OldMaxChildWidth - this.Viewport.Width;
                         }
-                        HScrollBar.SetValue((double)this.ScrolledX / (MaxChildWidth - this.Viewport.Width));
-                        HScrollBar.SetSliderSize((double)this.Viewport.Width / MaxChildWidth);
+                        if (this.ScrolledX > MaxChildWidth - this.Viewport.Width)
+                        {
+                            this.ScrolledX = MaxChildWidth - this.Viewport.Width;
+                        }
+                        HScrollBar.SetValue((double) this.ScrolledX / (MaxChildWidth - this.Viewport.Width));
+                        HScrollBar.SetSliderSize((double) this.Viewport.Width / MaxChildWidth);
                         HScrollBar.MouseInputRect = this.Viewport.Rect;
                         HScrollBar.SetVisible(true);
                     }
@@ -608,26 +616,21 @@ namespace MKEditor.Widgets
                 {
                     if (MaxChildHeight > this.Size.Height)
                     {
-                        bool ActuallyVisible = MaxChildHeight > this.Size.Height;
                         if (VScrollBar == null)
                         {
                             throw new Exception("Autoscroll was enabled, but no scrollbar has been defined.");
                         }
-                        if (ActuallyVisible)
+                        if (OldMaxChildHeight - this.Viewport.Height > 0 && this.ScrolledY > OldMaxChildHeight - this.Viewport.Height)
                         {
-                            if (OldMaxChildHeight - this.Viewport.Height > 0 && this.ScrolledY > OldMaxChildHeight - this.Viewport.Height)
-                            {
-                                this.ScrolledY = OldMaxChildHeight - this.Viewport.Height;
-                            }
-                            if (this.ScrolledY > MaxChildHeight - this.Viewport.Height)
-                            {
-                                this.ScrolledY = MaxChildHeight - this.Viewport.Height;
-                            }
+                            this.ScrolledY = OldMaxChildHeight - this.Viewport.Height;
                         }
-                        VScrollBar.SetValue((double)this.ScrolledY / (MaxChildHeight - this.Viewport.Height));
-                        VScrollBar.SetSliderSize((double)this.Viewport.Height / MaxChildHeight);
+                        if (this.ScrolledY > MaxChildHeight - this.Viewport.Height)
+                        {
+                            this.ScrolledY = MaxChildHeight - this.Viewport.Height;
+                        }
+                        VScrollBar.SetValue((double) this.ScrolledY / (MaxChildHeight - this.Viewport.Height));
+                        VScrollBar.SetSliderSize((double) this.Viewport.Height / MaxChildHeight);
                         VScrollBar.MouseInputRect = this.Viewport.Rect;
-                        VScrollBar.SetSliderVisible(ActuallyVisible);
                         VScrollBar.SetVisible(true);
                     }
                     else if (VScrollBar != null)
@@ -1076,7 +1079,7 @@ namespace MKEditor.Widgets
         /// Marks the sprites as needing an redraw next iteration.
         /// This allows you to call Redraw multiple times at once, as it will only redraw once in the next iteration.
         /// </summary>
-        public void Redraw()
+        public virtual void Redraw()
         {
             AssertUndisposed();
             this.Drawn = false;
