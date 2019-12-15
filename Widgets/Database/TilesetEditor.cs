@@ -376,11 +376,16 @@ namespace MKEditor.Widgets
                 throw new Exception($"Input management incorrect (rx,ry) = ({rx},{ry})");
             }
             this.Tileset.Passabilities[TileY * 8 + TileX] = pass;
-            Bitmap bmp = FourDirList.TilesetBox.Sprites["controls"].Bitmap;
-            bmp.Unlock();
-            bmp.FillRect(TileX * 33, TileY * 33, 32, 32, Color.ALPHA);
+            Bitmap bmp4dir = FourDirList.TilesetBox.Sprites["controls"].Bitmap;
+            bmp4dir.Unlock();
+            bmp4dir.FillRect(TileX * 33, TileY * 33, 32, 32, Color.ALPHA);
             FourDirDrawTile(TileX, TileY);
-            bmp.Lock();
+            bmp4dir.Lock();
+            Bitmap bmppass = PassageList.TilesetBox.Sprites["controls"].Bitmap;
+            bmppass.Unlock();
+            bmppass.FillRect(TileX * 33, TileY * 33, 32, 32, Color.ALPHA);
+            PassageDrawTile(TileX, TileY);
+            bmppass.Lock();
         }
 
         public void FourDirDrawTile(int TileX, int TileY)
@@ -457,11 +462,16 @@ namespace MKEditor.Widgets
             else pass = Game.Passability.None;
             this.Tileset.Passabilities[TileY * 8 + TileX] = pass;
 
-            Bitmap bmp = PassageList.TilesetBox.Sprites["controls"].Bitmap;
-            bmp.Unlock();
-            bmp.FillRect(TileX * 33, TileY * 33, 32, 32, Color.ALPHA);
+            Bitmap bmp4dir = FourDirList.TilesetBox.Sprites["controls"].Bitmap;
+            bmp4dir.Unlock();
+            bmp4dir.FillRect(TileX * 33, TileY * 33, 32, 32, Color.ALPHA);
+            FourDirDrawTile(TileX, TileY);
+            bmp4dir.Lock();
+            Bitmap bmppass = PassageList.TilesetBox.Sprites["controls"].Bitmap;
+            bmppass.Unlock();
+            bmppass.FillRect(TileX * 33, TileY * 33, 32, 32, Color.ALPHA);
             PassageDrawTile(TileX, TileY);
-            bmp.Lock();
+            bmppass.Lock();
         }
 
         public void PassageDrawTile(int TileX, int TileY)
