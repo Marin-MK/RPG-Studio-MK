@@ -37,11 +37,17 @@ namespace MKEditor.Widgets
         public int MapTileX = 0;
         public int MapTileY = 0;
         public Location CursorOrigin;
-        public List<TileData> TileDataList = new List<Game.TileData>();
+        public List<TileData> TileDataList = new List<TileData>();
         public int CursorWidth = 0;
         public int CursorHeight = 0;
         public Point OriginDrawPoint;
         public bool SelectionOnMap = false;
+
+        public bool MiddleMouseScrolling = false;
+        public int MiddleScrolledX = 0;
+        public int MiddleScrolledY = 0;
+        public int LastMouseX = 0;
+        public int LastMouseY = 0;
 
         public double ZoomFactor = 1.0;
 
@@ -352,51 +358,71 @@ namespace MKEditor.Widgets
 
         public override void MouseMoving(object sender, MouseEventArgs e)
         {
-            int oldmousex = RelativeMouseX;
-            int oldmousey = RelativeMouseY;
-            // Cursor placement
-            if (MainContainer.HScrollBar != null && (MainContainer.HScrollBar.Dragging || MainContainer.HScrollBar.Hovering)) return;
-            if (MainContainer.VScrollBar != null && (MainContainer.VScrollBar.Dragging || MainContainer.VScrollBar.Hovering)) return;
-            int rx = e.X - MapWidget.Viewport.X;
-            int ry = e.Y - MapWidget.Viewport.Y;
-            if (e.X < MainContainer.Viewport.X || e.Y < MainContainer.Viewport.Y ||
-                e.X >= MainContainer.Viewport.X + MainContainer.Viewport.Width ||
-                e.Y >= MainContainer.Viewport.Y + MainContainer.Viewport.Height) // Off the Map Viewer area
+            if (MiddleMouseScrolling)
             {
-                Cursor.SetVisible(false);
-                MapTileX = -1;
-                MapTileY = -1;
-                RelativeMouseX = -1;
-                RelativeMouseY = -1;
-                return;
+                int dx = LastMouseX - e.X;
+                int dy = LastMouseY - e.Y;
+                MainContainer.ScrolledX += dx;// MiddleScrolledX + dx;
+                MainContainer.ScrolledY += dy;// MiddleScrolledY + dy;
+
+                MainContainer.ScrolledX = Math.Max(0, Math.Min(MainContainer.ScrolledX, MainContainer.MaxChildWidth - MainContainer.Viewport.Width));
+                MainContainer.ScrolledY = Math.Max(0, Math.Min(MainContainer.ScrolledY, MainContainer.MaxChildHeight - MainContainer.Viewport.Height));
+
+                LastMouseX = e.X;
+                LastMouseY = e.Y;
+
+                MainContainer.UpdateAutoScroll();
             }
-            int movedx = MapWidget.Position.X - MapWidget.ScrolledPosition.X;
-            int movedy = MapWidget.Position.Y - MapWidget.ScrolledPosition.Y;
-            if (movedx >= MapWidget.Position.X)
+            else
             {
-                movedx -= MapWidget.Position.X;
-                rx += movedx;
-            }
-            if (movedy >= MapWidget.Position.Y)
-            {
-                movedy -= MapWidget.Position.Y;
-                ry += movedy;
-            }
-            int tilex = (int) Math.Floor(rx / (32d * ZoomFactor));
-            int tiley = (int) Math.Floor(ry / (32d * ZoomFactor));
-            Cursor.SetVisible(true);
-            int cx = tilex * 32;
-            int cy = tiley * 32;
-            RelativeMouseX = cx;
-            RelativeMouseY = cy;
-            cx += MapWidget.Position.X;
-            cy += MapWidget.Position.Y;
-            MapTileX = tilex;
-            MapTileY = tiley;
-            UpdateCursorPosition();
-            if (oldmousex != RelativeMouseX || oldmousey != RelativeMouseY)
-            {
-                UpdateTilePlacement(oldmousex, oldmousey, RelativeMouseX, RelativeMouseY);
+                LastMouseX = e.X;
+                LastMouseY = e.Y;
+                int oldmousex = RelativeMouseX;
+                int oldmousey = RelativeMouseY;
+                // Cursor placement
+                if (MainContainer.HScrollBar != null && (MainContainer.HScrollBar.Dragging || MainContainer.HScrollBar.Hovering)) return;
+                if (MainContainer.VScrollBar != null && (MainContainer.VScrollBar.Dragging || MainContainer.VScrollBar.Hovering)) return;
+                int rx = e.X - MapWidget.Viewport.X;
+                int ry = e.Y - MapWidget.Viewport.Y;
+                if (e.X < MainContainer.Viewport.X || e.Y < MainContainer.Viewport.Y ||
+                    e.X >= MainContainer.Viewport.X + MainContainer.Viewport.Width ||
+                    e.Y >= MainContainer.Viewport.Y + MainContainer.Viewport.Height) // Off the Map Viewer area
+                {
+                    Cursor.SetVisible(false);
+                    MapTileX = -1;
+                    MapTileY = -1;
+                    RelativeMouseX = -1;
+                    RelativeMouseY = -1;
+                    return;
+                }
+                int movedx = MapWidget.Position.X - MapWidget.ScrolledPosition.X;
+                int movedy = MapWidget.Position.Y - MapWidget.ScrolledPosition.Y;
+                if (movedx >= MapWidget.Position.X)
+                {
+                    movedx -= MapWidget.Position.X;
+                    rx += movedx;
+                }
+                if (movedy >= MapWidget.Position.Y)
+                {
+                    movedy -= MapWidget.Position.Y;
+                    ry += movedy;
+                }
+                int tilex = (int) Math.Floor(rx / (32d * ZoomFactor));
+                int tiley = (int) Math.Floor(ry / (32d * ZoomFactor));
+                Cursor.SetVisible(true);
+                int cx = tilex * 32;
+                int cy = tiley * 32;
+                RelativeMouseX = cx;
+                RelativeMouseY = cy;
+                cx += MapWidget.Position.X;
+                cy += MapWidget.Position.Y;
+                MapTileX = tilex;
+                MapTileY = tiley;
+                UpdateCursorPosition();
+                if (oldmousex != RelativeMouseX || oldmousey != RelativeMouseY)
+                {
+                    UpdateTilePlacement(oldmousex, oldmousey, RelativeMouseX, RelativeMouseY);
+                }
             }
         }
 
@@ -418,13 +444,32 @@ namespace MKEditor.Widgets
             // Update position - to make sure you're drawing where the mouse is, not where the cursor is
             // (the cursor obviously follows the mouse with this call if they're not aligned (which they should be))
             MouseMoving(sender, e);
-            UpdateTilePlacement(RelativeMouseX, RelativeMouseY, RelativeMouseX, RelativeMouseY);
+            if (e.LeftButton != e.OldLeftButton && e.LeftButton ||
+                e.RightButton != e.OldRightButton && e.RightButton) 
+                UpdateTilePlacement(RelativeMouseX, RelativeMouseY, RelativeMouseX, RelativeMouseY);
+            else if (e.MiddleButton != e.OldMiddleButton && e.MiddleButton)
+            {
+                if (WidgetIM.Hovering)
+                {
+                    Input.SetCursor(SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_SIZEALL);
+                    this.MiddleMouseScrolling = true;
+                    this.MiddleScrolledX = MainContainer.ScrolledX;
+                    this.MiddleScrolledY = MainContainer.ScrolledY;
+                }
+            }
         }
 
         public override void MouseUp(object sender, MouseEventArgs e)
         {
             base.MouseUp(sender, e);
             if (!e.LeftButton && !e.RightButton) OriginDrawPoint = null;
+            if (e.MiddleButton != e.OldMiddleButton && !e.MiddleButton)
+            {
+                Input.SetCursor(SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
+                this.MiddleMouseScrolling = false;
+                this.MiddleScrolledX = 0;
+                this.MiddleScrolledY = 0;
+            }
         }
 
         public override void MouseWheel(object sender, MouseEventArgs e)
