@@ -342,7 +342,6 @@ namespace MKEditor.Widgets
                                     for (int i = Game.Data.Tilesets.Count - 1; i >= 0; i--)
                                     {
                                         if (i == NewValue) break;
-                                        Console.WriteLine("removing");
                                         foreach (KeyValuePair<int, Game.Map> kvp in Game.Data.Maps)
                                         {
                                             if (kvp.Value.TilesetIDs.Contains(i)) kvp.Value.RemoveTileset(i);

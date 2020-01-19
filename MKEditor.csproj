@@ -7,7 +7,7 @@
     <StartupObject />
     <Authors>Marijn Herrebout</Authors>
     <Product>RPG Studio MK</Product>
-    <Version>0.0.5</Version>
+    <Version>0.0.7</Version>
     <Platforms>AnyCPU;x64</Platforms>
     <AssemblyName>RPG Studio MK</AssemblyName>
   </PropertyGroup>
@@ -36,6 +36,9 @@
   <ItemGroup>
     <Reference Include="odl">
       <HintPath>..\odl\bin\Debug\netcoreapp3.0\odl.dll</HintPath>
+    </Reference>
+    <Reference Include="RubyDotNET">
+      <HintPath>..\rubydotnet\bin\Debug\netcoreapp3.0\RubyDotNET.dll</HintPath>
     </Reference>
     <Reference Include="SDL2-CS">
       <HintPath>bin\Debug\netcoreapp3.0\SDL2-CS.dll</HintPath>

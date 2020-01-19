@@ -118,6 +118,43 @@ namespace MKEditor.Widgets
 
         public void UpdateCursorPosition()
         {
+            int DiffX = TileEndX - TileStartX;
+            int DiffY = TileEndY - TileStartY;
+            int PosDiffX = 0;
+            int PosDiffY = 0;
+            Location origin = Location.BottomRight;
+            // If the origin is bottom right instead of top left
+            if (DiffX < 0)
+            {
+                DiffX = -DiffX;
+                PosDiffX = 33 * DiffX;
+                origin = Location.BottomLeft;
+            }
+            if (DiffY < 0)
+            {
+                DiffY = -DiffY;
+                PosDiffY = 33 * DiffY;
+                if (origin == Location.BottomLeft) origin = Location.TopLeft;
+                else origin = Location.TopRight;
+            }
+            MapViewer.CursorOrigin = origin;
+            MapViewer.TileDataList.Clear();
+            MapViewer.CursorWidth = DiffX;
+            MapViewer.CursorHeight = DiffY;
+            MapViewer.SelectionOnMap = false;
+            MapViewer.UpdateCursorPosition();
+            int sx = TileStartX < TileEndX ? TileStartX : TileEndX;
+            int ex = TileStartX < TileEndX ? TileEndX : TileStartX;
+            int sy = TileStartY < TileEndY ? TileStartY : TileEndY;
+            int ey = TileStartY < TileEndY ? TileEndY : TileStartY;
+            for (int y = sy; y <= ey; y++)
+            {
+                for (int x = sx; x <= ex; x++)
+                {
+                    int tileid = y * 8 + x;
+                    MapViewer.TileDataList.Add(new TileData() { TileID = tileid, TilesetIndex = TilesetIndex });
+                }
+            }
             LayoutContainer lc = TilesetStackPanel.Widgets[TilesetIndex] as LayoutContainer;
             CollapsibleContainer cc = lc.Widget as CollapsibleContainer;
             if (cc.Collapsed || ToolBar.EraserButton.Selected || MapViewer.SelectionOnMap)
@@ -128,46 +165,9 @@ namespace MKEditor.Widgets
             }
             else
             {
-                int DiffX = TileEndX - TileStartX;
-                int DiffY = TileEndY - TileStartY;
-                int PosDiffX = 0;
-                int PosDiffY = 0;
-                Location origin = Location.BottomRight;
-                // If the origin is bottom right instead of top left
-                if (DiffX < 0)
-                {
-                    DiffX = -DiffX;
-                    PosDiffX = 33 * DiffX;
-                    origin = Location.BottomLeft;
-                }
-                if (DiffY < 0)
-                {
-                    DiffY = -DiffY;
-                    PosDiffY = 33 * DiffY;
-                    if (origin == Location.BottomLeft) origin = Location.TopLeft;
-                    else origin = Location.TopRight;
-                }
-                Cursor.SetPosition(1 + TileStartX * 33 - PosDiffX, 19 + lc.Position.Y + TileStartY * 33 - PosDiffY);
-                Cursor.SetSize(32 * (DiffX + 1) + DiffX + 14, 32 * (DiffY + 1) + DiffY+14);
-                MapViewer.CursorOrigin = origin;
-                MapViewer.TileDataList.Clear();
-                MapViewer.CursorWidth = DiffX;
-                MapViewer.CursorHeight = DiffY;
-                MapViewer.SelectionOnMap = false;
-                MapViewer.UpdateCursorPosition();
-                int sx = TileStartX < TileEndX ? TileStartX : TileEndX;
-                int ex = TileStartX < TileEndX ? TileEndX : TileStartX;
-                int sy = TileStartY < TileEndY ? TileStartY : TileEndY;
-                int ey = TileStartY < TileEndY ? TileEndY : TileStartY;
-                for (int y = sy; y <= ey; y++)
-                {
-                    for (int x = sx; x <= ex; x++)
-                    {
-                        int tileid = y * 8 + x;
-                        MapViewer.TileDataList.Add(new TileData() { TileID = tileid, TilesetIndex = TilesetIndex });
-                    }
-                }
                 Cursor.SetVisible(true);
+                Cursor.SetPosition(1 + TileStartX * 33 - PosDiffX, 19 + lc.Position.Y + TileStartY * 33 - PosDiffY);
+                Cursor.SetSize(32 * (DiffX + 1) + DiffX + 14, 32 * (DiffY + 1) + DiffY + 14);
             }
         }
 

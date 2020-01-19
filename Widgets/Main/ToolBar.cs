@@ -158,6 +158,11 @@ namespace MKEditor.Widgets
             SaveButton = new SaveButton(this);
         }
 
+        public void SetDrawToolsVisible(bool Visible)
+        {
+            DrawToolsContainer.SetVisible(Visible);
+        }
+
         public void Refresh()
         {
 

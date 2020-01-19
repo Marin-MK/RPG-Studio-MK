@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Reflection;
 using ODL;
+using RubyDotNET;
 using MKEditor.Widgets;
 
 namespace MKEditor
@@ -117,6 +118,7 @@ namespace MKEditor
             if (ret is string) Files.Add(ret as string);
             else if (ret is List<string>) Files = ret as List<string>;
             else return; // No files picked
+            Console.WriteLine("Convert Map.rxdata to Map.mkd");
             foreach (string s in Files)
             {
                 // Load file
@@ -205,6 +207,7 @@ namespace MKEditor
             if (Mode == "MAPPING")
             {
                 MainWindow.ToolBar.MappingMode.SetSelected(true, Force);
+                MainWindow.ToolBar.SetDrawToolsVisible(true);
 
                 MainWindow.MainEditorWidget = new MappingWidget(MainWindow.MainGridLayout);
                 MainWindow.MainEditorWidget.SetGridRow(3);
@@ -271,6 +274,7 @@ namespace MKEditor
             if (Mode == "DATABASE")
             {
                 MainWindow.ToolBar.DatabaseMode.SetSelected(true, Force);
+                MainWindow.ToolBar.SetDrawToolsVisible(false);
                 MainWindow.MainEditorWidget = new DatabaseWidget(MainWindow.MainGridLayout);
                 MainWindow.MainEditorWidget.SetGridRow(3);
             }

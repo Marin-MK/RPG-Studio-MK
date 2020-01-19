@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MKEditor", "MKEditor.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "odl", "..\odl\odl.csproj", "{1FA7EE0C-63A3-456D-B4E1-BD952715B7FC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RubyDotNET", "..\rubydotnet\RubyDotNET.csproj", "{E7B1FF56-BB6B-4FA4-803A-4AC68A1520F2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,14 @@ Global
 		{1FA7EE0C-63A3-456D-B4E1-BD952715B7FC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1FA7EE0C-63A3-456D-B4E1-BD952715B7FC}.Release|x64.ActiveCfg = Release|x64
 		{1FA7EE0C-63A3-456D-B4E1-BD952715B7FC}.Release|x64.Build.0 = Release|x64
+		{E7B1FF56-BB6B-4FA4-803A-4AC68A1520F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7B1FF56-BB6B-4FA4-803A-4AC68A1520F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7B1FF56-BB6B-4FA4-803A-4AC68A1520F2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E7B1FF56-BB6B-4FA4-803A-4AC68A1520F2}.Debug|x64.Build.0 = Debug|Any CPU
+		{E7B1FF56-BB6B-4FA4-803A-4AC68A1520F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7B1FF56-BB6B-4FA4-803A-4AC68A1520F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7B1FF56-BB6B-4FA4-803A-4AC68A1520F2}.Release|x64.ActiveCfg = Release|Any CPU
+		{E7B1FF56-BB6B-4FA4-803A-4AC68A1520F2}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
