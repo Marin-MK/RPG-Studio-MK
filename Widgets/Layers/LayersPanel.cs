@@ -86,24 +86,18 @@ namespace MKEditor.Widgets
             layerwidget.SetSelectedLayer(LayerIndex);
         }
 
-        public void UpdateNames()
-        {
-            for (int i = 0; i < Map.Layers.Count; i++) Map.Layers[i].Name = $"Layer {i + 1}";
-        }
-
         public void NewLayer(object sender, EventArgs e)
         {
             int selected = SelectedLayer;
             Editor.UnsavedChanges = true;
             if (layerwidget.HoveringIndex == -1) // Add to top (highest layer) if not hovering over a layer
-                selected = Map.Layers.Count - 1;
-            Layer layer = new Layer($"Layer {selected + 2}");
-            layer.Tiles = new List<TileData>();
+                selected = -1;
+            Layer layer = new Layer($"New Layer");
+            layer.Tiles = new List<TileData>(Map.Width * Map.Height);
             for (int i = 0; i < Map.Width * Map.Height; i++) layer.Tiles.Add(null);
             MapViewer.CreateNewLayer(selected + 1, layer);
-            UpdateNames(); // Rename layers
             int oldselected = selected;
-            CreateLayers(); // Updates list to reflect new layer and name changes
+            CreateLayers(); // Updates list to reflect new layer
             layerwidget.SetSelectedLayer(oldselected + 1); // Update selected layer
         }
 
@@ -122,7 +116,6 @@ namespace MKEditor.Widgets
             if (SelectedLayer >= Map.Layers.Count - 1) return;
             Editor.UnsavedChanges = true;
             MapViewer.SwapLayers(SelectedLayer + 1, SelectedLayer);
-            UpdateNames();
             int oldselected = SelectedLayer;
             CreateLayers();
             layerwidget.SetSelectedLayer(oldselected + 1);
@@ -133,7 +126,6 @@ namespace MKEditor.Widgets
             if (SelectedLayer <= 0) return;
             Editor.UnsavedChanges = true;
             MapViewer.SwapLayers(SelectedLayer - 1, SelectedLayer);
-            UpdateNames();
             int oldselected = SelectedLayer;
             CreateLayers();
             layerwidget.SetSelectedLayer(oldselected - 1);
@@ -145,7 +137,6 @@ namespace MKEditor.Widgets
             {
                 Editor.UnsavedChanges = true;
                 MapViewer.DeleteLayer(SelectedLayer);
-                UpdateNames();
                 int oldselected = SelectedLayer - 1;
                 CreateLayers();
                 if (oldselected < 0) oldselected = 0;

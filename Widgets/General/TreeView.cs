@@ -100,10 +100,10 @@ namespace MKEditor.Widgets
             return y;
         }
 
-        public void SetSelectedNode(TreeNode node)
+        public void SetSelectedNode(TreeNode node, bool CallEvent = true)
         {
             SelectedNode = node;
-            if (OnSelectedNodeChanged != null) OnSelectedNodeChanged.Invoke(this, Graphics.LastMouseEvent);
+            if (CallEvent && OnSelectedNodeChanged != null) OnSelectedNodeChanged.Invoke(this, Graphics.LastMouseEvent);
             Redraw();
         }
 

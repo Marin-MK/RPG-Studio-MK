@@ -134,6 +134,10 @@ namespace MKEditor.Widgets
             SelectButton = new IconButton(DrawToolsContainer);
             SelectButton.SetIcon(19, 0);
             SelectButton.SetPosition(112, 0);
+            SelectButton.OnSelection += delegate (object sender, EventArgs e)
+            {
+                MapViewer.Cursor.SetVisible(false);
+            };
 
             EraserButton = new IconButton(DrawToolsContainer);
             EraserButton.SetIcon(20, 0);

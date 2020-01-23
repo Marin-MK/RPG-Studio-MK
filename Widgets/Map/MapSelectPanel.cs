@@ -122,7 +122,7 @@ namespace MKEditor.Widgets
                         }
                     }
                 }
-                mapview.SetSelectedNode(node);
+                mapview.SetSelectedNode(node, false);
             }
         }
 
