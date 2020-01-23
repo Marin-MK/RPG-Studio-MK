@@ -99,6 +99,11 @@ namespace MKEditor.Widgets
             GridBackground = new GridBackground(MainContainer);
             SelectionBackground = new SelectionBackground(MainContainer);
 
+            RegisterShortcuts(new List<Shortcut>()
+            {
+                new Shortcut(this, new Key(Keycode.ESCAPE), new EventHandler<EventArgs>(CancelSelection))
+            });
+
             Fade = new VignetteFade(this);
         }
 
@@ -198,6 +203,18 @@ namespace MKEditor.Widgets
                 MainContainer.VScrollBar.SetValue(0.5);
             }
             MainContainer.UpdateAutoScroll();
+        }
+
+        public void CancelSelection(object sender, EventArgs e)
+        {
+            if (SelectionX != -1 || SelectionY != -1 || SelectionWidth != 0 || SelectionHeight != 0 || SelectionBackground.Visible)
+            {
+                SelectionX = -1;
+                SelectionY = -1;
+                SelectionWidth = 0;
+                SelectionHeight = 0;
+                SelectionBackground.SetVisible(false);
+            }
         }
 
         public void UpdateSelection()
@@ -348,12 +365,6 @@ namespace MKEditor.Widgets
             bool Left = WidgetIM.ClickedLeftInArea == true;
             bool Right = WidgetIM.ClickedRightInArea == true;
 
-            if (ToolBar.SelectButton.Selected)
-            {
-                if (Right) Left = true;
-                Right = false;
-            }
-
             if (Left || Right)
             {
                 if (OriginPoint == null)
@@ -372,6 +383,14 @@ namespace MKEditor.Widgets
                     int ex = OriginPoint.X < MapTileX ? MapTileX : OriginPoint.X;
                     int sy = OriginPoint.Y < MapTileY ? OriginPoint.Y : MapTileY;
                     int ey = OriginPoint.Y < MapTileY ? MapTileY : OriginPoint.Y;
+                    if (sx < 0) sx = 0;
+                    else if (sx >= Map.Width) sx = Map.Width - 1;
+                    if (sy < 0) sy = 0;
+                    else if (sy >= Map.Height) sy = Map.Height - 1;
+                    if (ex < 0) ex = 0;
+                    else if (ex >= Map.Width) ex = Map.Width - 1;
+                    if (ey < 0) ey = 0;
+                    else if (ey >= Map.Height) ey = Map.Height - 1;
                     SelectionX = sx;
                     SelectionY = sy;
                     SelectionWidth = ex - sx + 1;
@@ -396,58 +415,72 @@ namespace MKEditor.Widgets
             }
             else if (Right)
             {
-                int Layer = this.LayersTab.SelectedLayer;
-                TileDataList.Clear();
-                
-                int OriginDiffX = MapTileX - OriginPoint.X;
-                int OriginDiffY = MapTileY - OriginPoint.Y;
-                CursorOrigin = Location.BottomRight;
-                if (OriginDiffX < 0)
+                if (ToolBar.SelectButton.Selected) // Selection tool
                 {
-                    OriginDiffX = -OriginDiffX;
-                    CursorOrigin = Location.BottomLeft;
-                }
-                if (OriginDiffY < 0)
-                {
-                    OriginDiffY = -OriginDiffY;
-                    if (CursorOrigin == Location.BottomLeft) CursorOrigin = Location.TopLeft;
-                    else CursorOrigin = Location.TopRight;
-                }
-                CursorWidth = OriginDiffX;
-                CursorHeight = OriginDiffY;
-                UpdateCursorPosition();
-                
-                if (CursorWidth == 0 && CursorHeight == 0)
-                {
-                    int MapTileIndex = MapTileY * Map.Width + MapTileX;
-                    if (MapTileX < 0 || MapTileX >= Map.Width || MapTileY < 0 || MapTileY >= Map.Height)
-                        ToolBar.EraserButton.SetSelected(true);
-                    else
+                    if (SelectionX != -1 || SelectionY != -1 || SelectionWidth != 0 || SelectionHeight != 0)
                     {
-                        TileData tile = Map.Layers[Layer].Tiles[MapTileIndex];
-                        if (tile == null) ToolBar.EraserButton.SetSelected(true);
-                        else TilesetTab.SelectTile(tile);
+                        SelectionX = -1;
+                        SelectionY = -1;
+                        SelectionWidth = 0;
+                        SelectionHeight = 0;
+                        UpdateSelection();
                     }
                 }
-                else
+                else // Pencil tool
                 {
-                    SelectionOnMap = true;
-                    ToolBar.EraserButton.SetSelected(false);
-                    int sx = OriginPoint.X < MapTileX ? OriginPoint.X : MapTileX;
-                    int ex = OriginPoint.X < MapTileX ? MapTileX : OriginPoint.X;
-                    int sy = OriginPoint.Y < MapTileY ? OriginPoint.Y : MapTileY;
-                    int ey = OriginPoint.Y < MapTileY ? MapTileY : OriginPoint.Y;
-                    for (int y = sy; y <= ey; y++)
+                    int Layer = this.LayersTab.SelectedLayer;
+                    TileDataList.Clear();
+
+                    int OriginDiffX = MapTileX - OriginPoint.X;
+                    int OriginDiffY = MapTileY - OriginPoint.Y;
+                    CursorOrigin = Location.BottomRight;
+                    if (OriginDiffX < 0)
                     {
-                        for (int x = sx; x <= ex; x++)
+                        OriginDiffX = -OriginDiffX;
+                        CursorOrigin = Location.BottomLeft;
+                    }
+                    if (OriginDiffY < 0)
+                    {
+                        OriginDiffY = -OriginDiffY;
+                        if (CursorOrigin == Location.BottomLeft) CursorOrigin = Location.TopLeft;
+                        else CursorOrigin = Location.TopRight;
+                    }
+                    CursorWidth = OriginDiffX;
+                    CursorHeight = OriginDiffY;
+                    UpdateCursorPosition();
+
+                    if (CursorWidth == 0 && CursorHeight == 0)
+                    {
+                        int MapTileIndex = MapTileY * Map.Width + MapTileX;
+                        if (MapTileX < 0 || MapTileX >= Map.Width || MapTileY < 0 || MapTileY >= Map.Height)
+                            ToolBar.EraserButton.SetSelected(true);
+                        else
                         {
-                            int index = y * Map.Width + x;
-                            if (x < 0 || x >= Map.Width || y < 0 || y >= Map.Height)
-                                TileDataList.Add(null);
-                            else
+                            TileData tile = Map.Layers[Layer].Tiles[MapTileIndex];
+                            if (tile == null) ToolBar.EraserButton.SetSelected(true);
+                            else TilesetTab.SelectTile(tile);
+                        }
+                    }
+                    else
+                    {
+                        SelectionOnMap = true;
+                        ToolBar.EraserButton.SetSelected(false);
+                        int sx = OriginPoint.X < MapTileX ? OriginPoint.X : MapTileX;
+                        int ex = OriginPoint.X < MapTileX ? MapTileX : OriginPoint.X;
+                        int sy = OriginPoint.Y < MapTileY ? OriginPoint.Y : MapTileY;
+                        int ey = OriginPoint.Y < MapTileY ? MapTileY : OriginPoint.Y;
+                        for (int y = sy; y <= ey; y++)
+                        {
+                            for (int x = sx; x <= ex; x++)
                             {
-                                TileData tile = Map.Layers[Layer].Tiles[index];
-                                TileDataList.Add(tile);
+                                int index = y * Map.Width + x;
+                                if (x < 0 || x >= Map.Width || y < 0 || y >= Map.Height)
+                                    TileDataList.Add(null);
+                                else
+                                {
+                                    TileData tile = Map.Layers[Layer].Tiles[index];
+                                    TileDataList.Add(tile);
+                                }
                             }
                         }
                     }
@@ -669,6 +702,19 @@ namespace MKEditor.Widgets
                 for (int j = 0; j < SelArea; j++)
                 {
                     bool Blank = blanktile;
+
+                    int actualx = MapTileX + (j % (MapViewer.CursorWidth + 1));
+                    int actualy = MapTileY + (int) Math.Floor((double) j / (MapViewer.CursorWidth + 1));
+                    int MapPosition = actualy * MapData.Width + actualx;
+                    if (actualx < 0 || actualx >= MapData.Width || actualy < 0 || actualy >= MapData.Height) continue;
+                    if (MapViewer.SelectionX != -1 && MapViewer.SelectionY != -1 && MapViewer.SelectionWidth != 0 && MapViewer.SelectionHeight != 0 && MapViewer.SelectionBackground.Visible)
+                    {
+                        // NOT within the selection
+                        if (!(actualx >= MapViewer.SelectionX && actualx < MapViewer.SelectionX + MapViewer.SelectionWidth &&
+                              actualy >= MapViewer.SelectionY && actualy < MapViewer.SelectionY + MapViewer.SelectionHeight))
+                            continue;
+                    }
+
                     int selx = j % (MapViewer.CursorWidth + 1);
                     if (OriginDiffX < 0) selx -= OriginDiffX;
                     if (OriginDiffX > 0) selx -= OriginDiffX;
@@ -679,6 +725,7 @@ namespace MKEditor.Widgets
                     if (OriginDiffY > 0) sely -= OriginDiffY;
                     if (sely < 0) sely += MapViewer.CursorHeight + 1;
                     sely %= MapViewer.CursorHeight + 1;
+
                     TileData tiledata = MapViewer.TileDataList[sely * (MapViewer.CursorWidth + 1) + selx];
                     int tileid = -1;
                     int tilesetindex = -1;
@@ -693,11 +740,6 @@ namespace MKEditor.Widgets
                     }
                     else Blank = true;
 
-                    int actualx = MapTileX + (j % (MapViewer.CursorWidth + 1));
-                    int actualy = MapTileY + (int) Math.Floor((double) j / (MapViewer.CursorWidth + 1));
-
-                    int MapPosition = actualy * MapData.Width + actualx;
-                    if (actualx < 0 || actualx >= MapData.Width || actualy < 0 || actualy >= MapData.Height) continue;
                     TileData olddata = MapData.Layers[layer].Tiles[MapPosition];
                     if (Blank)
                     {

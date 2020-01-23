@@ -19,6 +19,7 @@ namespace MKEditor
         public EventHandler<MouseEventArgs> OnMouseUp;
         public EventHandler<MouseEventArgs> OnLeftClick;
         public EventHandler<MouseEventArgs> OnRightClick;
+        public EventHandler<MouseEventArgs> OnMiddleClick;
         public EventHandler<MouseEventArgs> OnMouseWheel;
         public EventHandler<MouseEventArgs> OnHoverChanged;
 
@@ -31,11 +32,15 @@ namespace MKEditor
         public bool ClickedLeft { get { return Widget.IsVisible() ? _ClickedLeft : false; } set { _ClickedLeft = value; } }
         private bool _ClickedRight = false;
         public bool ClickedRight { get { return Widget.IsVisible() ? _ClickedRight : false; } set { _ClickedRight = value; } }
+        private bool _ClickedMiddle = false;
+        public bool ClickedMiddle { get { return Widget.IsVisible() ? _ClickedMiddle : false; } set { _ClickedMiddle = value; } }
 
         private bool? _ClickedLeftInArea = null;
         public bool? ClickedLeftInArea { get { return Widget.IsVisible() ? _ClickedLeftInArea : false; } set { _ClickedLeftInArea = value; } }
         private bool? _ClickedRightInArea = null;
         public bool? ClickedRightInArea { get { return Widget.IsVisible() ? _ClickedRightInArea : false; } set { _ClickedRightInArea = value; } }
+        private bool? _ClickedMiddleInArea = null;
+        public bool? ClickedMiddleInArea { get { return Widget.IsVisible() ? _ClickedMiddleInArea : false; } set { _ClickedMiddleInArea = value; } }
 
         private bool _Hovering = false;
         public bool Hovering { get { return Widget.IsVisible() ? _Hovering : false; } set { _Hovering = value; } }
@@ -105,6 +110,20 @@ namespace MKEditor
             {
                 this.ClickedRight = true;
                 this.ClickedRightInArea = e.InArea(this.Area);
+                if (this.ClickedRightInArea == true)
+                {
+                    if (this.Widget.OnWidgetSelected != null) this.Widget.OnWidgetSelected.Invoke(this, e);
+                }
+            }
+
+            if (e.MiddleButton && !e.OldMiddleButton)
+            {
+                this.ClickedMiddle = true;
+                this.ClickedMiddleInArea = e.InArea(this.Area);
+                if (this.ClickedMiddleInArea == true)
+                {
+                    if (this.Widget.OnWidgetSelected != null) this.Widget.OnWidgetSelected.Invoke(this, e);
+                }
             }
 
             if (this.OnMouseDown != null) this.OnMouseDown.Invoke(this, e);
@@ -143,6 +162,16 @@ namespace MKEditor
                 }
                 this.ClickedRight = false;
                 this.ClickedRightInArea = null;
+            }
+
+            if (!e.MiddleButton && e.MiddleButton)
+            {
+                if (ClickedMiddleInArea == true && Hovering)
+                {
+                    if (this.OnMiddleClick != null) this.OnMiddleClick.Invoke(this, e);
+                }
+                this.ClickedMiddle = false;
+                this.ClickedMiddleInArea = false;
             }
 
             if (this.OnMouseUp != null) this.OnMouseUp.Invoke(this, e);
