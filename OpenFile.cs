@@ -63,13 +63,12 @@ namespace MKEditor
 
             ofn.filter = "All Files (*.*)\0*.*";
 
-            ofn.file = Marshal.StringToBSTR(new string(new char[256]));
-            ofn.maxFile = 256;
+            ofn.file = Marshal.StringToBSTR(new string(new char[16384]));
+            ofn.maxFile = 16384;
 
             ofn.fileTitle = new string(new char[64]);
             ofn.maxFileTitle = ofn.fileTitle.Length;
 
-            ofn.initialDir = "C:\\";
             ofn.defExt = "mkproj";
         }
 

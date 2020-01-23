@@ -11,6 +11,7 @@ namespace MKEditor.Widgets
         public List<Layer> Layers { get; private set; }
         public int SelectedLayer { get; private set; }
         public int HoveringIndex { get; private set; } = -1;
+        public TextBox RenameBox;
 
         public LayerWidget(object Parent, string Name = "layerWidget")
             : base(Parent, Name)
@@ -29,10 +30,10 @@ namespace MKEditor.Widgets
             if (this.Layers != Layers)
             {
                 this.Layers = Layers;
-                SetSize(278, Layers.Count * 24);
                 SelectedLayer = Layers.Count - 1;
                 Redraw();
             }
+            SetSize(278, Layers.Count * 24);
         }
 
         public void UpdateLayers()
@@ -52,6 +53,29 @@ namespace MKEditor.Widgets
         {
             MapViewer.SetLayerVisible(layerindex, visible);
             Redraw();
+        }
+
+        public void RenameLayer(int Index)
+        {
+            RenameBox = new TextBox(this);
+            RenameBox.Name = Index.ToString();
+            RenameBox.SetPosition(50, (Layers.Count - Index - 1) * 24 + 1);
+            RenameBox.SetSize(Size.Width - 58, 22);
+            RenameBox.SetInitialText(Layers[Index].Name);
+            RenameBox.TextArea.SelectAll();
+            RenameBox.TextArea.OnWidgetDeselected += delegate (object sender, EventArgs e)
+            {
+                if (Layers[Index].Name != RenameBox.Text && !string.IsNullOrEmpty(RenameBox.Text))
+                {
+                    Layers[Index].Name = RenameBox.Text;
+                    Redraw();
+                }
+                RenameBox.Dispose();
+                RenameBox = null;
+                Input.SetCursor(SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
+                Window.UI.SetSelectedWidget((Parent.Parent as LayersPanel));
+            };
+            RenameBox.TextArea.OnWidgetSelected.Invoke(null, null);
         }
 
         protected override void Draw()

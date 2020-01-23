@@ -63,7 +63,7 @@ namespace MKEditor
              * 5 s s s s s s s s s s s s s
              * m => menubar
              * t => toolbar
-             * a => main editor area
+             * a => main editor area (divided in a grid of its own)
              * s => statusbar
              * - => divider*/
             MainGridLayout.SetRows(
@@ -89,12 +89,6 @@ namespace MKEditor
                 {
                     Items = new List<IMenuItem>()
                     {
-                        /*new MenuItem("Import Maps")
-                        {
-                            HelpText = "Import Maps made with RPG Maker XP.",
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.ImportMaps(); },
-                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; }
-                        },*/
                         new MenuItem("New")
                         {
                             HelpText = "Create a new project.",
@@ -111,6 +105,12 @@ namespace MKEditor
                             HelpText = "Save all changes in the current project.",
                             Shortcut = "Ctrl+S",
                             OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.SaveProject(); },
+                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; }
+                        },
+                        new MenuItem("Import Maps")
+                        {
+                            HelpText = "Import Maps made with RPG Maker XP.",
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.ImportMaps(); },
                             IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; }
                         },
                         new MenuSeparator(),

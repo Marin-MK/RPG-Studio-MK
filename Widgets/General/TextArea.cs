@@ -92,7 +92,7 @@ namespace MKEditor.Widgets
             base.WidgetSelected(sender, e);
             EnteringText = true;
             Input.StartTextInput();
-            SetTimer("idle", 400);  
+            SetTimer("idle", 400);
         }
 
         public override void WidgetDeselected(object sender, EventArgs e)
@@ -110,6 +110,7 @@ namespace MKEditor.Widgets
             if (e.Text == "\n")
             {
                 Window.UI.SetSelectedWidget(null);
+                return;
             }
             else if (!string.IsNullOrEmpty(e.Text))
             {
@@ -358,41 +359,19 @@ namespace MKEditor.Widgets
             {
                 if (Input.Trigger(SDL_Keycode.SDLK_a))
                 {
-                    MoveCaretRight(this.Text.Length - CaretIndex);
-                    SelectionStartIndex = 0;
-                    SelectionEndIndex = this.Text.Length;
-                    SelectionStartX = 0;
-                    RepositionSprites();
+                    SelectAll();
                 }
                 if (Input.Trigger(SDL_Keycode.SDLK_x))
                 {
-                    if (SelectionStartIndex != -1)
-                    {
-                        int startidx = SelectionStartIndex > SelectionEndIndex ? SelectionEndIndex : SelectionStartIndex;
-                        int endidx = SelectionStartIndex > SelectionEndIndex ? SelectionStartIndex : SelectionEndIndex;
-                        string text = this.Text.Substring(startidx, endidx - startidx);
-                        SDL_SetClipboardText(text);
-                        DeleteSelection();
-                        DrawText();
-                    }
+                    CutSelection();
                 }
                 if (Input.Trigger(SDL_Keycode.SDLK_c))
                 {
-                    if (SelectionStartIndex != -1)
-                    {
-                        int startidx = SelectionStartIndex > SelectionEndIndex ? SelectionEndIndex : SelectionStartIndex;
-                        int endidx = SelectionStartIndex > SelectionEndIndex ? SelectionStartIndex : SelectionEndIndex;
-                        string text = this.Text.Substring(startidx, endidx - startidx);
-                        SDL_SetClipboardText(text);
-                    }
+                    CopySelection();
                 }
                 if (Input.Trigger(SDL_Keycode.SDLK_v) || TimerPassed("paste"))
                 {
-                    if (TimerPassed("paste")) ResetTimer("paste");
-                    string text = SDL_GetClipboardText();
-                    if (SelectionStartIndex != -1 && SelectionStartIndex != SelectionEndIndex) DeleteSelection();
-                    InsertText(CaretIndex, text);
-                    DrawText();
+                    PasteText();
                 }
             }
 
@@ -464,7 +443,7 @@ namespace MKEditor.Widgets
         public void ResetIdle()
         {
             Sprites["caret"].Visible = true;
-            ResetTimer("idle");
+            if (TimerExists("idle")) ResetTimer("idle");
         }
 
         /// <summary>
@@ -717,6 +696,60 @@ namespace MKEditor.Widgets
                     Sprites["filler"].Visible = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Selects all text.
+        /// </summary>
+        public void SelectAll()
+        {
+            MoveCaretRight(this.Text.Length - CaretIndex);
+            SelectionStartIndex = 0;
+            SelectionEndIndex = this.Text.Length;
+            SelectionStartX = 0;
+            RepositionSprites();
+        }
+
+        /// <summary>
+        /// Copies the selected text to the clipboard and deletes the selection.
+        /// </summary>
+        public void CutSelection()
+        {
+            if (SelectionStartIndex != -1)
+            {
+                int startidx = SelectionStartIndex > SelectionEndIndex ? SelectionEndIndex : SelectionStartIndex;
+                int endidx = SelectionStartIndex > SelectionEndIndex ? SelectionStartIndex : SelectionEndIndex;
+                string text = this.Text.Substring(startidx, endidx - startidx);
+                SDL_SetClipboardText(text);
+                DeleteSelection();
+                DrawText();
+            }
+        }
+
+        /// <summary>
+        /// Copies the selected text to the clipboard.
+        /// </summary>
+        public void CopySelection()
+        {
+            if (SelectionStartIndex != -1)
+            {
+                int startidx = SelectionStartIndex > SelectionEndIndex ? SelectionEndIndex : SelectionStartIndex;
+                int endidx = SelectionStartIndex > SelectionEndIndex ? SelectionStartIndex : SelectionEndIndex;
+                string text = this.Text.Substring(startidx, endidx - startidx);
+                SDL_SetClipboardText(text);
+            }
+        }
+
+        /// <summary>
+        /// Pastes text from the clipboard to the text field.
+        /// </summary>
+        public void PasteText()
+        {
+            if (TimerPassed("paste")) ResetTimer("paste");
+            string text = SDL_GetClipboardText();
+            if (SelectionStartIndex != -1 && SelectionStartIndex != SelectionEndIndex) DeleteSelection();
+            InsertText(CaretIndex, text);
+            DrawText();
         }
 
         public override void MouseDown(object sender, MouseEventArgs e)

@@ -101,7 +101,7 @@ namespace MKEditor.Widgets
             else
             {
                 this.ChosenTilesetID = t.ID;
-                if (this.Map.TilesetIDs.Contains(this.ChosenTilesetID))
+                if (this.Map != null && this.Map.TilesetIDs.Contains(this.ChosenTilesetID))
                 {
                     new MessageBox("Error", "This map already contains this tileset. Please pick a different tileset.");
                 }

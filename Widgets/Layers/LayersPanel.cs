@@ -23,7 +23,7 @@ namespace MKEditor.Widgets
             Sprites["bar2"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(28, 50, 73)));
             Sprites["bar2"].X = 42;
 
-            this.OnWidgetSelected += WidgetSelected;
+            this.OnWidgetSelected = WidgetSelected;
 
             layercontainer = new Container(this);
             layercontainer.SetPosition(1, 1);
@@ -34,12 +34,16 @@ namespace MKEditor.Widgets
 
             layerwidget = new LayerWidget(layercontainer);
 
-
             this.SetContextMenuList(new List<IMenuItem>()
             {
                 new MenuItem("New Layer")
                 {
                     OnLeftClick = NewLayer
+                },
+                new MenuItem("Rename Layer")
+                {
+                    Shortcut = "F2",
+                    OnLeftClick = RenameLayer
                 },
                 new MenuSeparator(),
                 new MenuItem("Toggle Visibility")
@@ -70,7 +74,8 @@ namespace MKEditor.Widgets
             RegisterShortcuts(new List<Shortcut>()
             {
                 //new Shortcut(this, new Key(Keycode.H, Keycode.CTRL), new EventHandler<EventArgs>(ToggleVisibilityLayer), true),
-                new Shortcut(this, new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer))
+                new Shortcut(this, new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer)),
+                new Shortcut(this, new Key(Keycode.F2), new EventHandler<EventArgs>(RenameLayer))
             });
 
             SetSize(283, 200); // Dummy size so the sprites can be drawn properly
@@ -90,18 +95,21 @@ namespace MKEditor.Widgets
         {
             int selected = SelectedLayer;
             Editor.UnsavedChanges = true;
-            if (layerwidget.HoveringIndex == -1) // Add to bottom (lowest layer) if not hovering over a layer
-                selected = -1;
+            if (layerwidget.HoveringIndex == -1) // Add to top (highest layer) if not hovering over a layer
+                selected = Map.Layers.Count - 1;
             Layer layer = new Layer($"Layer {selected + 2}");
             layer.Tiles = new List<TileData>();
             for (int i = 0; i < Map.Width * Map.Height; i++) layer.Tiles.Add(null);
-            Map.Layers.Insert(selected + 1, layer);
-            UpdateNames();
+            MapViewer.CreateNewLayer(selected + 1, layer);
+            UpdateNames(); // Rename layers
             int oldselected = selected;
-            MapViewer.RedrawLayers();
-            CreateLayers();
-            layerwidget.UpdateLayers();
-            layerwidget.SetSelectedLayer(oldselected + 1);
+            CreateLayers(); // Updates list to reflect new layer and name changes
+            layerwidget.SetSelectedLayer(oldselected + 1); // Update selected layer
+        }
+
+        public void RenameLayer(object sender, EventArgs e)
+        {
+            layerwidget.RenameLayer(SelectedLayer);
         }
 
         public void ToggleVisibilityLayer(object sender, EventArgs e)
@@ -113,12 +121,9 @@ namespace MKEditor.Widgets
         {
             if (SelectedLayer >= Map.Layers.Count - 1) return;
             Editor.UnsavedChanges = true;
-            Layer layer1 = Map.Layers[SelectedLayer + 1];
-            Map.Layers[SelectedLayer + 1] = Map.Layers[SelectedLayer];
-            Map.Layers[SelectedLayer] = layer1;
+            MapViewer.SwapLayers(SelectedLayer + 1, SelectedLayer);
             UpdateNames();
             int oldselected = SelectedLayer;
-            MapViewer.RedrawLayers();
             CreateLayers();
             layerwidget.SetSelectedLayer(oldselected + 1);
         }
@@ -127,12 +132,9 @@ namespace MKEditor.Widgets
         {
             if (SelectedLayer <= 0) return;
             Editor.UnsavedChanges = true;
-            Layer layer1 = Map.Layers[SelectedLayer - 1];
-            Map.Layers[SelectedLayer - 1] = Map.Layers[SelectedLayer];
-            Map.Layers[SelectedLayer] = layer1;
+            MapViewer.SwapLayers(SelectedLayer - 1, SelectedLayer);
             UpdateNames();
             int oldselected = SelectedLayer;
-            MapViewer.RedrawLayers();
             CreateLayers();
             layerwidget.SetSelectedLayer(oldselected - 1);
         }
@@ -142,14 +144,13 @@ namespace MKEditor.Widgets
             if (Map.Layers.Count > 1)
             {
                 Editor.UnsavedChanges = true;
-                Map.Layers.RemoveAt(SelectedLayer);
+                MapViewer.DeleteLayer(SelectedLayer);
                 UpdateNames();
-                int oldselected = SelectedLayer;
-                MapViewer.RedrawLayers();
+                int oldselected = SelectedLayer - 1;
                 CreateLayers();
-                if (oldselected == 0) oldselected += 1;
+                if (oldselected < 0) oldselected = 0;
                 layerwidget.UpdateLayers();
-                layerwidget.SetSelectedLayer(Map.Layers.Count - 1);
+                layerwidget.SetSelectedLayer(oldselected);
             }
         }
 
@@ -200,6 +201,12 @@ namespace MKEditor.Widgets
                 }
             }
             base.Update();
+        }
+
+        public override void WidgetSelected(object sender, MouseEventArgs e)
+        {
+            if (layerwidget.RenameBox == null || !layerwidget.RenameBox.WidgetIM.Hovering)
+                Window.UI.SetSelectedWidget(this);
         }
     }
 }

@@ -242,11 +242,18 @@ namespace MKEditor
 
         public void SetSelectedWidget(Widget w)
         {
+            if (this.SelectedWidget == w) return;
             if (this.SelectedWidget != null && !this.SelectedWidget.Disposed)
             {
                 this.SelectedWidget.SelectedWidget = false;
+                Widget selbefore = this.SelectedWidget;
                 this.SelectedWidget.OnWidgetDeselected.Invoke(this, new EventArgs());
-                this.SelectedWidget.Redraw();
+                if (!selbefore.Disposed) selbefore.Redraw();
+                // Possible if OnWidgetDeselected itself called SetSelectedWidget on a different widget.
+                // In that case we should skip the setting-bit below, as it would
+                // set the selected widget to null AFTER the previous SetSelectedWidget call.
+                if (selbefore != this.SelectedWidget)
+                    return;
             }
             this.SelectedWidget = w;
             if (w != null)

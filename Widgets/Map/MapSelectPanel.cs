@@ -140,16 +140,7 @@ namespace MKEditor.Widgets
         {
             Editor.UnsavedChanges = true;
             Map Map = new Map();
-            int i = 1;
-            while (true)
-            {
-                if (!Data.Maps.ContainsKey(i))
-                {
-                    Map.ID = i;
-                    break;
-                }
-                i++;
-            }
+            Map.ID = Editor.GetFreeMapID();
             Map.DevName = "Untitled Map";
             Map.DisplayName = "Untitled Map";
             Map.SetSize(15, 15);
@@ -158,47 +149,9 @@ namespace MKEditor.Widgets
             {
                 if (mpw.UpdateMapViewer)
                 {
-                    Data.Maps.Add(Map.ID, Map);
-                    TreeNode node = new TreeNode() { Object = Map };
-                    if (mapview.HoveringNode != null)
-                    {
-                        AddIDToMap(Editor.ProjectSettings.MapOrder, (mapview.HoveringNode.Object as Map).ID, Map.ID);
-                        mapview.HoveringNode.Nodes.Add(node);
-                        mapview.HoveringNode.Collapsed = false;
-                    }
-                    else
-                    {
-                        Editor.ProjectSettings.MapOrder.Add(Map.ID);
-                        mapview.Nodes.Add(node);
-                    }
-                    mapview.SetSelectedNode(node);
+                    Editor.AddMap(Map, mapview.HoveringNode == null ? 0 : (mapview.HoveringNode.Object as Map).ID);
                 }
             };
-        }
-
-        private bool AddIDToMap(List<object> collection, int ParentID, int ChildID)
-        {
-            for (int i = 0; i < collection.Count; i++)
-            {
-                object o = collection[i];
-                if (o is bool) continue;
-                else if (o is int)
-                {
-                    if ((int) o == ParentID)
-                    {
-                        if (i == 0) // Already in this parent's node list
-                            collection.Add(ChildID);
-                        else // Create new node list
-                            collection[i] = new List<object>() { ParentID, false, ChildID };
-                        return true;
-                    }
-                }
-                else
-                {
-                    if (AddIDToMap((List<object>)o, ParentID, ChildID)) break;
-                }
-            }
-            return false;
         }
 
         public bool SetCollapsed(List<object> collection, int MapID, bool IsCollapsed)

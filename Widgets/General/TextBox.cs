@@ -33,6 +33,12 @@ namespace MKEditor.Widgets
             TextArea.SetInitialText(Text);
         }
 
+        public void SetCaretIndex(int Index)
+        {
+            TextArea.CaretIndex = Index;
+            TextArea.RepositionSprites();
+        }
+
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             TextArea.SetSize(Size.Width - 6, Size.Height - 6);
