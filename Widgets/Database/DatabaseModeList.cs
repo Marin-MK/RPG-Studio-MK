@@ -4,33 +4,21 @@ using ODL;
 
 namespace MKEditor.Widgets
 {
-    public class DatabaseList : Widget
+    public class DatabaseModeList : Widget
     {
-        public TilesetEditor TilesetEditor;
+        public DatabaseWidget DBWidget;
 
-        List<List<string>> Tabs = new List<List<string>>();
-
-        Container ListContainer;
-        public ListDrawer DataList;
-        public Button ChangeAmountButton;
+        public List<List<string>> Tabs = new List<List<string>>();
 
         public int SelectedIndex = -1;
 
-        public DatabaseList(object Parent, string Name = "databaseList")
+        public DatabaseModeList(object Parent, string Name = "databaseList")
             : base(Parent, Name)
         {
             SetBackgroundColor(10, 23, 37);
 
             Sprites["bg"] = new Sprite(this.Viewport);
             Sprites["text"] = new Sprite(this.Viewport);
-
-            Sprites["header"] = new Sprite(this.Viewport);
-            Sprites["header"].X = 166;
-            Sprites["header"].Y = 10;
-
-            Sprites["listbox"] = new Sprite(this.Viewport);
-            Sprites["listbox"].X = 156;
-            Sprites["listbox"].Y = 39;
 
             Bitmap c = new Bitmap(20, 20);
             #region Shadow Corner
@@ -256,156 +244,12 @@ namespace MKEditor.Widgets
                 new List<string>() { "Animations", "database_animations" },
                 new List<string>() { "System", "database_system" }
             };
-
-            ListContainer = new Container(this);
-            ListContainer.SetPosition(159, 44);
-            ListContainer.VAutoScroll = true;
-
-            VScrollBar vs = new VScrollBar(this);
-            vs.SetPosition(344, 41);
-            ListContainer.SetVScrollBar(vs);
-
-            DataList = new ListDrawer(ListContainer);
-            List<ListItem> Tilesets = new List<ListItem>();
-            for (int i = 1; i < Game.Data.Tilesets.Count; i++)
-            {
-                Game.Tileset t = Game.Data.Tilesets[i];
-                Tilesets.Add(new ListItem($"{Utilities.Digits(i, 3)}: {t?.Name}", t));
-            }
-            DataList.SetItems(Tilesets);
-            DataList.OnSelectionChanged += delegate (object sender, EventArgs e)
-            {
-                TilesetEditor.SetTileset(DataList.SelectedItem.Object as Game.Tileset, DataList.SelectedIndex + 1);
-            };
-
-            ChangeAmountButton = new Button(this);
-            ChangeAmountButton.SetSize(155, 37);
-            ChangeAmountButton.SetText("Change Amount...");
-            ChangeAmountButton.OnClicked += delegate (object sender, EventArgs e)
-            {
-                PopupWindow win = new PopupWindow(Window);
-                win.SetSize(270, 125);
-                win.SetTitle("Set tileset capacity");
-                Label label = new Label(win);
-                label.SetText("Set the maximum available number of tilesets.");
-                label.SetPosition(5, 35);
-                Label label2 = new Label(win);
-                label2.SetText("Capacity:");
-                label2.SetPosition(75, 60);
-                NumericBox num = new NumericBox(win);
-                num.SetSize(66, 27);
-                num.SetPosition(130, 55);
-                num.SetValue(Editor.ProjectSettings.TilesetCapacity);
-                num.MinValue = 1;
-                Button CancelButton = new Button(win);
-                CancelButton.SetText("Cancel");
-                CancelButton.SetPosition(win.Size.Width - CancelButton.Size.Width - 5, win.Size.Height - CancelButton.Size.Height - 5);
-                CancelButton.OnClicked += delegate (object sender, EventArgs e) { win.Close(); };
-                Button OKButton = new Button(win);
-                OKButton.SetText("OK");
-                OKButton.SetPosition(CancelButton.Position.X - OKButton.Size.Width, CancelButton.Position.Y);
-                OKButton.OnClicked += delegate (object sender, EventArgs e)
-                {
-                    int NewValue = num.Value;
-                    if (NewValue == Editor.ProjectSettings.TilesetCapacity)
-                    {
-                        win.Close();
-                        return;
-                    }
-                    else if (NewValue > Editor.ProjectSettings.TilesetCapacity)
-                    {
-                        int Extra = NewValue - Editor.ProjectSettings.TilesetCapacity;
-                        for (int i = 0; i < Extra; i++) Game.Data.Tilesets.Add(null);
-                        Editor.ProjectSettings.TilesetCapacity = NewValue;
-                        RefreshList();
-                        win.Close();
-                    }
-                    else
-                    {
-                        int Lost = Editor.ProjectSettings.TilesetCapacity - NewValue;
-                        int DefinedCount = 0;
-                        for (int i = Game.Data.Tilesets.Count - 1; i >= 0; i--)
-                        {
-                            if (i == NewValue) break;
-                            if (Game.Data.Tilesets[i] != null) DefinedCount++;
-                        }
-                        if (DefinedCount > 0)
-                        {
-                            MessageBox box = new MessageBox("Warning",
-                                $"By resizing the tileset capacity from {Editor.ProjectSettings.TilesetCapacity} to {NewValue}, {Lost} entries will be removed, " +
-                                $"of which {DefinedCount} {(DefinedCount == 1 ? "is a" : "are")} defined tileset{(DefinedCount == 1 ? "" : "s")}.\n" +
-                                "Would you like to proceed and delete these tilesets?", ButtonTypes.YesNoCancel);
-                            box.OnButtonPressed += delegate (object sender, EventArgs e)
-                            {
-                                if (box.Result == 0) // Yes -> resize tileset capacity and delete tilesets
-                                {
-                                    for (int i = Game.Data.Tilesets.Count - 1; i >= 0; i--)
-                                    {
-                                        if (i == NewValue) break;
-                                        foreach (KeyValuePair<int, Game.Map> kvp in Game.Data.Maps)
-                                        {
-                                            if (kvp.Value.TilesetIDs.Contains(i)) kvp.Value.RemoveTileset(i);
-                                        }
-                                        if (Game.Data.Tilesets[i] != null)
-                                        {
-                                            Game.Data.Tilesets[i].TilesetBitmap.Dispose();
-                                            Game.Data.Tilesets[i].TilesetListBitmap.Dispose();
-                                        }
-                                        Game.Data.Tilesets[i] = null;
-                                    }
-                                    Game.Data.Tilesets.RemoveRange(NewValue + 1, Lost);
-                                    Editor.ProjectSettings.TilesetCapacity = NewValue;
-                                    RefreshList();
-                                    win.Close();
-                                }
-                                else // No, cancel -> do nothing
-                                {
-                                    win.Close();
-                                }
-                            };
-                        }
-                        else
-                        {
-                            Game.Data.Tilesets.RemoveRange(NewValue + 1, Lost);
-                            Editor.ProjectSettings.TilesetCapacity = NewValue;
-                            RefreshList();
-                            win.Close();
-                        }
-                    }
-                };
-                win.Center();
-            };
-
-            SetSelectedIndex(5);
-        }
-
-        public void RefreshList()
-        {
-            List<ListItem> Tilesets = new List<ListItem>();
-            for (int i = 1; i < Game.Data.Tilesets.Count; i++)
-            {
-                Game.Tileset t = Game.Data.Tilesets[i];
-                Tilesets.Add(new ListItem($"{Utilities.Digits(i, 3)}: {t?.Name}", t));
-            }
-            DataList.SetItems(Tilesets);
-            DataList.Redraw();
-            if (DataList.SelectedIndex >= Tilesets.Count) DataList.SetSelectedIndex(Tilesets.Count - 1);
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            ListContainer.SetSize(180, Size.Height - 81);
-            ListContainer.VScrollBar.SetSize(ListContainer.VScrollBar.Size.Width, Size.Height - 42);
-            ChangeAmountButton.SetPosition(173, Size.Height - 37);
-            DataList.SetSize(ListContainer.Size);
-            if (Sprites["listbox"].Bitmap != null) Sprites["listbox"].Bitmap.Dispose();
-            Sprites["listbox"].Bitmap = new Bitmap(198, Size.Height - 39);
-            Sprites["listbox"].Bitmap.Unlock();
-            Sprites["listbox"].Bitmap.DrawLine(0, 0, 197, 0, new Color(28, 50, 73));
-            Sprites["listbox"].Bitmap.DrawLine(186, 1, 186, Size.Height - 40, new Color(28, 50, 73));
-            Sprites["listbox"].Bitmap.DrawLine(197, 1, 197, Size.Height - 40, new Color(28, 50, 73));
-            Sprites["listbox"].Bitmap.Lock();
+            if (Size.Height < 41 * Tabs.Count) SetSize(355, 41 * Tabs.Count);
         }
 
         public void SetSelectedIndex(int Index)
@@ -413,14 +257,9 @@ namespace MKEditor.Widgets
             if (this.SelectedIndex != Index)
             {
                 this.SelectedIndex = Index;
-                if (Sprites["header"].Bitmap != null) Sprites["header"].Bitmap.Dispose();
-                Font f = Font.Get("Fonts/Ubuntu-B", 20);
-                Sprites["header"].Bitmap = new Bitmap(f.TextSize(Tabs[SelectedIndex][0]));
-                Sprites["header"].Bitmap.Font = f;
-                Sprites["header"].Bitmap.Unlock();
-                Sprites["header"].Bitmap.DrawText(Tabs[SelectedIndex][0], Color.WHITE);
-                Sprites["header"].Bitmap.Lock();
-                Redraw();
+                DBWidget.DBDataList.RedrawHeader();
+                DBWidget.DBDataList.SetSelectedIndex(0);
+                this.Redraw();
             }
         }
 

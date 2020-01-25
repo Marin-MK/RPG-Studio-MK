@@ -324,7 +324,7 @@ namespace MKEditor
                                 set.CreateBitmap();
                                 if (MainWindow.DatabaseWidget != null)
                                 {
-                                    MainWindow.DatabaseWidget.DBList.RefreshList();
+                                    MainWindow.DatabaseWidget.DBDataList.RefreshList();
                                 }
                                 data.TilesetIDs = new List<int>() { set.ID };
                                 cont();

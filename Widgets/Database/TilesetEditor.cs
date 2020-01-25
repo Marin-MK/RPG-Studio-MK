@@ -6,7 +6,7 @@ namespace MKEditor.Widgets
 {
     public class TilesetEditor : Widget
     {
-        public DatabaseList DBList;
+        public DatabaseDataList DBDataList;
 
         TabView TabView;
         TabContainer PassageContainer;
@@ -94,9 +94,9 @@ namespace MKEditor.Widgets
             {
                 if (this.Tileset == null) return;
                 this.Tileset.Name = NameBox.Text;
-                ListItem item = DBList.DataList.Items[TilesetID - 1];
+                ListItem item = DBDataList.DataList.Items[TilesetID - 1];
                 item.Name = item.Name.Split(':')[0] + ": " + this.Tileset.Name;
-                DBList.DataList.Redraw();
+                DBDataList.DataList.Redraw();
             };
 
             GraphicLabel = new Label(SharedContainer);
@@ -214,10 +214,10 @@ namespace MKEditor.Widgets
                 t.SetGraphic(GraphicName);
                 Game.Data.Tilesets[TilesetID] = t;
                 this.Tileset = t;
-                ListItem item = DBList.DataList.Items[TilesetID - 1];
+                ListItem item = DBDataList.DataList.Items[TilesetID - 1];
                 item.Object = this.Tileset;
                 item.Name = item.Name.Split(':')[0] + ": " + this.Tileset.Name;
-                DBList.DataList.Redraw();
+                DBDataList.DataList.Redraw();
                 this.SetTileset(this.Tileset, TilesetID);
             }
             else if (this.Tileset.GraphicName != GraphicName)
@@ -264,10 +264,10 @@ namespace MKEditor.Widgets
         {
             this.Tileset.TilesetBitmap.Dispose();
             this.Tileset.TilesetListBitmap.Dispose();
-            ListItem item = DBList.DataList.Items[TilesetID - 1];
+            ListItem item = DBDataList.DataList.Items[TilesetID - 1];
             item.Name = item.Name.Split(':')[0] + ": ";
             item.Object = null;
-            DBList.DataList.Redraw();
+            DBDataList.DataList.Redraw();
             Game.Data.Tilesets[TilesetID] = null;
             this.SetTileset(null, TilesetID);
         }
