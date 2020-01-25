@@ -637,10 +637,37 @@ namespace MKEditor.Widgets
             // This resets the two points tiles are drawn in between if the mouse has gone off the map (otherwise it'd draw a line between
             // the last point on the map and the current point on the map)
             bool blanktile = MapViewer.ToolBar.EraserButton.Selected;
-            this.Sprites[layer.ToString()].Bitmap.Unlock();
             bool line = !(oldx == newx && oldy == newy);
             List<Point> TempCoords = new List<Point>();
-            if (line) // Draw tiles between several tiles - use simple line drawing algorithm to determine the tiles to draw on
+            if (MapViewer.ToolBar.FillButton.Selected)
+            {
+                int sx, sy, ex, ey;
+                if (MapViewer.SelectionX != -1 && MapViewer.SelectionY != -1 && MapViewer.SelectionWidth != 0 && MapViewer.SelectionHeight != 0 && MapViewer.SelectionBackground.Visible)
+                {
+                    int mx = (int) Math.Floor(newx / 32d);
+                    int my = (int) Math.Floor(newy / 32d);
+                    sx = MapViewer.SelectionX;
+                    ex = MapViewer.SelectionX + MapViewer.SelectionWidth;
+                    sy = MapViewer.SelectionY;
+                    ey = MapViewer.SelectionY + MapViewer.SelectionHeight;
+                    if (!(mx >= sx && mx < ex && my >= sy && my < ey)) return; // Outside selection
+                }
+                else
+                {
+                    sx = 0;
+                    sy = 0;
+                    ex = MapData.Width;
+                    ey = MapData.Height;
+                }
+                for (int y = sy; y < ey; y++)
+                {
+                    for (int x = sx; x < ex; x++)
+                    {
+                        TempCoords.Add(new Point(x, y));
+                    }
+                }
+            }
+            else if (line) // Draw tiles between several tiles - use simple line drawing algorithm to determine the tiles to draw on
             {
                 int x1 = oldx;
                 int y1 = oldy;
@@ -674,6 +701,8 @@ namespace MKEditor.Widgets
             {
                 TempCoords.Add(new Point((int) Math.Floor(newx / 32d), (int) Math.Floor(newy / 32d)));
             }
+
+            this.Sprites[layer.ToString()].Bitmap.Unlock();
 
             for (int i = 0; i < TempCoords.Count; i++)
             {
