@@ -44,7 +44,7 @@ namespace MKEditor.Widgets
         /// <summary>
         /// Maximum possible size for this widget.
         /// </summary>
-        public Size MaximumSize { get; protected set; } = new Size(9999, 9999);
+        public Size MaximumSize { get; protected set; } = new Size(-1, -1);
 
         /// <summary>
         /// Background color of this widget.
@@ -778,9 +778,9 @@ namespace MKEditor.Widgets
             Size oldsize = this.Size;
             // Ensures the new size doesn't exceed the set minimum and maximum values.
             if (size.Width < MinimumSize.Width) size.Width = MinimumSize.Width;
-            else if (size.Width > MaximumSize.Width) size.Width = MaximumSize.Width;
+            else if (size.Width > MaximumSize.Width && MaximumSize.Width != -1) size.Width = MaximumSize.Width;
             if (size.Height < MinimumSize.Height) size.Height = MinimumSize.Height;
-            else if (size.Height > MaximumSize.Height) size.Height = MaximumSize.Height;
+            else if (size.Height > MaximumSize.Height && MaximumSize.Height != -1) size.Height = MaximumSize.Height;
             if (oldsize.Width != size.Width || oldsize.Height != size.Height)
             {
                 this.Size = size;
