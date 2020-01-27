@@ -16,6 +16,9 @@ namespace MKEditor.Game
         public Dictionary<int, Event> Events = new Dictionary<int, Event>();
         public Dictionary<string, List<Connection>> Connections = new Dictionary<string, List<Connection>>();
 
+        public int SaveX = 0;
+        public int SaveY = 0;
+
         // Used only for the editor to track which maps exist in the order list
         public bool Added = false;
 
@@ -67,6 +70,8 @@ namespace MKEditor.Game
             this.Connections.Add(":west", new List<Connection>());
             if (this.ID == 6)
                 this.Connections[":west"].Add(new Connection(5, 5));
+            if (this.ID == 5)
+                this.Connections[":east"].Add(new Connection(-5, 6));
         }
 
         public Dictionary<string, object> ToJSON()
@@ -175,6 +180,29 @@ namespace MKEditor.Game
                 if (Tiles[i] == null) Data.Add(null);
                 else Data.Add(new List<object>() { Tiles[i].TilesetIndex, Tiles[i].TileID });
             }
+            return Data;
+        }
+    }
+
+    public class MapConnection
+    {
+        public List<Dictionary<List<int>, int>> Maps = new List<Dictionary<List<int>, int>>();
+
+        public Dictionary<string, object> ToJSON()
+        {
+            Dictionary<string, object> Data = new Dictionary<string, object>();
+            Data["^c"] = "MKD::MapConnections";
+            List<Dictionary<string, int>> maps = new List<Dictionary<string, int>>();
+            foreach (Dictionary<List<int>, int> System in this.Maps)
+            {
+                Dictionary<string, int> NewSystem = new Dictionary<string, int>();
+                foreach (KeyValuePair<List<int>, int> Connection in System)
+                {
+                    NewSystem.Add($"[{Connection.Key[0]}, {Connection.Key[1]}]", Connection.Value);
+                }
+                maps.Add(NewSystem);
+            }
+            Data["@maps"] = maps;
             return Data;
         }
     }

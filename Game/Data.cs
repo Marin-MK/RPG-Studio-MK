@@ -173,6 +173,18 @@ namespace MKEditor.Game
                 Map map = new Map(((JObject) data[":data"]).ToObject<Dictionary<string, object>>());
                 Maps[map.ID] = map;
             }
+
+            int a = 7,
+                b = 8,
+                c = 9,
+                d = 10;
+
+            Maps[a].Connections[":west"].Add(new Connection(1, b));
+            Maps[b].Connections[":east"].Add(new Connection(-1, a));
+            Maps[a].Connections[":east"].Add(new Connection(2, c));
+            Maps[c].Connections[":west"].Add(new Connection(-2, a));
+            Maps[c].Connections[":south"].Add(new Connection(1, d));
+            Maps[d].Connections[":north"].Add(new Connection(-1, c));
         }
 
         public static void SaveMaps()
@@ -193,6 +205,83 @@ namespace MKEditor.Game
                 StreamWriter sw = new StreamWriter(File.OpenWrite(file));
                 sw.Write(jsonstring);
                 sw.Close();
+            }
+            SaveMapConnections();
+        }
+
+        public static void SaveMapConnections()
+        {
+            List<int> SeenMaps = new List<int>();
+            MapConnection mc = new MapConnection();
+            foreach (KeyValuePair<int, Map> kvp in Maps)
+            {
+                if (SeenMaps.Contains(kvp.Value.ID)) continue;
+                SeenMaps.Add(kvp.Value.ID);
+                // Loads all connections (and all those connections, etc) of one map (= one connection system)
+                List<int> Comprising = new List<int>();
+                LocateConnections(kvp.Value, SeenMaps, Comprising);
+                if (Comprising.Count == 0) continue;
+                int LowestX = 0;
+                int LowestY = 0;
+                foreach (int MapID in Comprising)
+                {
+                    if (Maps[MapID].SaveX < LowestX) LowestX = Maps[MapID].SaveX;
+                    if (Maps[MapID].SaveY < LowestY) LowestY = Maps[MapID].SaveY;
+                }
+                LowestX = Math.Abs(LowestX);
+                LowestY = Math.Abs(LowestY);
+                Dictionary<List<int>, int> sys = new Dictionary<List<int>, int>();
+                foreach (int MapID in Comprising)
+                {
+                    sys.Add(new List<int>() { Maps[MapID].SaveX + LowestX, Maps[MapID].SaveY + LowestY }, MapID);
+                    Maps[MapID].SaveX = Maps[MapID].SaveY = 0;
+                }
+                sys.Add(new List<int>() { kvp.Value.SaveX + LowestX, kvp.Value.SaveY + LowestY }, kvp.Key);
+                kvp.Value.SaveX = kvp.Value.SaveY = 0;
+                mc.Maps.Add(sys);
+            }
+            Dictionary<string, object> Main = new Dictionary<string, object>();
+            Main[":type"] = ":map_connections";
+            Main[":data"] = mc.ToJSON();
+            string jsonstring = JsonConvert.SerializeObject(Main);
+            string file = DataPath + "/maps/connections.mkd";
+            if (File.Exists(DataPath + "/maps/connections.mkd")) File.Delete(DataPath + "/maps/connections.mkd");
+            StreamWriter sw = new StreamWriter(File.OpenWrite(file));
+            sw.Write(jsonstring);
+            sw.Close();
+        }
+
+        public static void LocateConnections(Map Map, List<int> SeenMaps, List<int> Comprising)
+        {
+            foreach (KeyValuePair<string, List<Connection>> kvp in Map.Connections)
+            {
+                for (int i = 0; i < kvp.Value.Count; i++)
+                {
+                    Map m = Maps[kvp.Value[i].MapID];
+                    if (SeenMaps.Contains(m.ID)) continue;
+                    switch (kvp.Key)
+                    {
+                        case ":north":
+                            m.SaveX = Map.SaveX + kvp.Value[i].Offset;
+                            m.SaveY = Map.SaveY - m.Height;
+                            break;
+                        case ":east":
+                            m.SaveX = Map.SaveX + Map.Width;
+                            m.SaveY = Map.SaveY + kvp.Value[i].Offset;
+                            break;
+                        case ":south":
+                            m.SaveX = Map.SaveX + kvp.Value[i].Offset;
+                            m.SaveY = Map.SaveY + Map.Height;
+                            break;
+                        case ":west":
+                            m.SaveX = Map.SaveX - m.Width;
+                            m.SaveY = Map.SaveY + kvp.Value[i].Offset;
+                            break;
+                    }
+                    SeenMaps.Add(m.ID);
+                    Comprising.Add(m.ID);
+                    LocateConnections(m, SeenMaps, Comprising);
+                }
             }
         }
     }

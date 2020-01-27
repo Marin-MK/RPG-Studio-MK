@@ -566,8 +566,8 @@ namespace MKEditor.Widgets
         {
             int Width = (int) Math.Round(MapData.Width * 32 * ZoomFactor);
             int Height = (int) Math.Round(MapData.Height * 32 * ZoomFactor);
-            if (Side == ":north" || Side == ":south") Height = (int) Math.Round(6 * 32 * ZoomFactor);
-            else if (Side == ":east" || Side == ":west") Width = (int) Math.Round(6 * 32 * ZoomFactor);
+            if (Side == ":north" || Side == ":south") Height = (int) Math.Round(Math.Min(6, MapData.Height) * 32 * ZoomFactor);
+            else if (Side == ":east" || Side == ":west") Width = (int) Math.Round(Math.Min(6, MapData.Width) * 32 * ZoomFactor);
             this.SetSize(Width, Height);
         }
 
@@ -643,6 +643,10 @@ namespace MKEditor.Widgets
         {
             List<Bitmap> bmps = new List<Bitmap>();
             Map m = Data.Maps[MapID];
+            if (SX < 0) SX = 0;
+            if (SY < 0) SY = 0;
+            if (SX + Width > m.Width) Width = m.Width - SX;
+            if (SY + Height > m.Height) Height = m.Height - SY;
             for (int layer = 0; layer < m.Layers.Count; layer++)
             {
                 bmps.Add(new Bitmap(Width * 32, Height * 32));
