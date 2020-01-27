@@ -14,6 +14,7 @@ namespace MKEditor.Game
         public List<Layer> Layers = new List<Layer>();
         public List<int> TilesetIDs = new List<int>();
         public Dictionary<int, Event> Events = new Dictionary<int, Event>();
+        public Dictionary<string, List<Connection>> Connections = new Dictionary<string, List<Connection>>();
 
         // Used only for the editor to track which maps exist in the order list
         public bool Added = false;
@@ -58,6 +59,14 @@ namespace MKEditor.Game
                 Event e = new Event(((JObject) kvp.Value).ToObject<Dictionary<string, object>>());
                 this.Events[e.ID] = e;
             }
+
+            this.Connections = new Dictionary<string, List<Connection>>();
+            this.Connections.Add(":north", new List<Connection>());
+            this.Connections.Add(":east", new List<Connection>());
+            this.Connections.Add(":south", new List<Connection>());
+            this.Connections.Add(":west", new List<Connection>());
+            if (this.ID == 6)
+                this.Connections[":west"].Add(new Connection(5, 5));
         }
 
         public Dictionary<string, object> ToJSON()
@@ -82,6 +91,14 @@ namespace MKEditor.Game
                 events[kvp.Key] = kvp.Value.ToJSON();
             }
             Data["@events"] = events;
+            Dictionary<string, List<List<int>>> connections = new Dictionary<string, List<List<int>>>();
+            foreach (KeyValuePair<string, List<Connection>> kvp in Connections)
+            {
+                List<List<int>> l = new List<List<int>>();
+                for (int i = 0; i < kvp.Value.Count; i++) l.Add(kvp.Value[i].ToJSON());
+                connections[kvp.Key] = l;
+            }
+            Data["@connections"] = connections;
             return Data;
         }
 
@@ -134,6 +151,7 @@ namespace MKEditor.Game
             o.Layers = new List<Layer>(this.Layers);
             o.TilesetIDs = new List<int>(this.TilesetIDs);
             o.Events = new Dictionary<int, Event>(this.Events);
+            o.Connections = new Dictionary<string, List<Connection>>(this.Connections);
             return o;
         }
     }
@@ -158,6 +176,23 @@ namespace MKEditor.Game
                 else Data.Add(new List<object>() { Tiles[i].TilesetIndex, Tiles[i].TileID });
             }
             return Data;
+        }
+    }
+
+    public class Connection
+    {
+        public int Offset;
+        public int MapID;
+
+        public Connection(int Offset, int MapID)
+        {
+            this.Offset = Offset;
+            this.MapID = MapID;
+        }
+
+        public List<int> ToJSON()
+        {
+            return new List<int>() { Offset, MapID };
         }
     }
 

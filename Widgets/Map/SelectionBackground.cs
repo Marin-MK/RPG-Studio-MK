@@ -32,6 +32,23 @@ namespace MKEditor.Widgets
             base.Update();
         }
 
+        public void SetSideVisible(string Side, bool Visible)
+        {
+            Sprites[Side].Visible = Visible;
+        }
+
+        public void SetInterval(int Interval)
+        {
+            if (this.Interval != Interval)
+            {
+                DestroyTimer("offset");
+                if (Interval > 0)
+                {
+                    SetTimer("offset", Interval);
+                }
+            }
+        }
+
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             Sprites["right"].X = this.Size.Width - 1;

@@ -58,8 +58,8 @@ namespace MKEditor.Widgets
         public Container MainContainer;
         public CursorWidget Cursor;
         public MapImageWidget MapWidget;
+        public List<MapImageWidget> ConnWidgets;
         public Widget DummyWidget;
-        public GridBackground GridBackground;
         public SelectionBackground SelectionBackground;
         public VignetteFade Fade;
 
@@ -96,13 +96,14 @@ namespace MKEditor.Widgets
                 if (Graphics.LastMouseEvent != null) MouseMoving(sender, Graphics.LastMouseEvent);
             };
             MainContainer.SetVScrollBar(VScrollBar);
-            GridBackground = new GridBackground(MainContainer);
             SelectionBackground = new SelectionBackground(MainContainer);
 
             RegisterShortcuts(new List<Shortcut>()
             {
                 new Shortcut(this, new Key(Keycode.ESCAPE), new EventHandler<EventArgs>(CancelSelection))
             });
+
+            ConnWidgets = new List<MapImageWidget>();
 
             Fade = new VignetteFade(this);
         }
@@ -112,7 +113,7 @@ namespace MKEditor.Widgets
             this.ZoomFactor = factor;
             Editor.ProjectSettings.LastZoomFactor = factor;
             MapWidget.SetZoomFactor(factor);
-            GridBackground.SetTileSize((int) Math.Round(32 * this.ZoomFactor));
+            ConnWidgets.ForEach(w => w.SetZoomFactor(factor));
             if (!FromStatusBar) StatusBar.ZoomControl.SetZoomFactor(factor, true);
             PositionMap();
             MouseMoving(null, Graphics.LastMouseEvent);
@@ -146,8 +147,39 @@ namespace MKEditor.Widgets
             this.CreateLayerBitmaps();
             this.LayersTab.CreateLayers();
             TilesetTab.SelectTile(new TileData() { TilesetIndex = 0, TileID = 0 });
-            if (MainContainer.HScrollBar != null) MainContainer.HScrollBar.SetValue(0.5);
-            if (MainContainer.VScrollBar != null) MainContainer.VScrollBar.SetValue(0.5);
+            RedrawConnections();
+            //if (MainContainer.HScrollBar != null) MainContainer.HScrollBar.SetValue(0.5);
+            //if (MainContainer.VScrollBar != null) MainContainer.VScrollBar.SetValue(0.5);
+        }
+
+        public void RedrawConnections()
+        {
+            ConnWidgets.ForEach(w => w.Dispose());
+            ConnWidgets.Clear();
+            foreach (KeyValuePair<string, List<Connection>> kvp in Map.Connections)
+            {
+                for (int i = 0; i < kvp.Value.Count; i++)
+                {
+                    MapImageWidget miw = new MapImageWidget(MainContainer);
+                    miw.SetDarkOverlay(200);
+                    miw.LoadLayers(Data.Maps[kvp.Value[i].MapID], kvp.Key, kvp.Value[i].Offset);
+                    ConnWidgets.Add(miw);
+                }
+            }
+            UpdateConnections();
+        }
+
+        public void UpdateConnections()
+        {
+            for (int i = 0; i < ConnWidgets.Count; i++)
+            {
+                MapImageWidget miw = ConnWidgets[i];
+                int Offset = (int) Math.Round(32d * miw.Offset * ZoomFactor);
+                if (miw.Side == ":north") miw.SetPosition(MapWidget.Position.X + Offset, MapWidget.Position.Y - miw.Size.Height);
+                else if (miw.Side == ":east") miw.SetPosition(MapWidget.Position.X + MapWidget.Size.Width, MapWidget.Position.Y + Offset);
+                else if (miw.Side == ":south") miw.SetPosition(MapWidget.Position.X + Offset, MapWidget.Position.Y + MapWidget.Size.Height);
+                else if (miw.Side == ":west") miw.SetPosition(MapWidget.Position.X - miw.Size.Width, MapWidget.Position.Y + Offset);
+            }
         }
 
         public void CreateNewLayer(int Index, Game.Layer LayerData)
@@ -193,8 +225,7 @@ namespace MKEditor.Widgets
             }
             MapWidget.SetPosition(x, y);
             MapWidget.SetSize((int) Math.Round(Map.Width * 32 * ZoomFactor), (int) Math.Round(Map.Height * 32 * ZoomFactor));
-            GridBackground.SetPosition(MapWidget.Position);
-            GridBackground.SetSize(MapWidget.Size);
+            UpdateConnections();
             UpdateSelection();
             DummyWidget.SetSize(2 * x + MapWidget.Size.Width, 2 * y + MapWidget.Size.Height);
             if (Map.Width * 32 * ZoomFactor >= Viewport.Width || Map.Height * 32 * ZoomFactor >= Viewport.Height)
@@ -496,8 +527,12 @@ namespace MKEditor.Widgets
 
     public class MapImageWidget : Widget
     {
+        public GridBackground GridBackground;
         public MapViewer MapViewer;
         public Map MapData;
+
+        public string Side;
+        public int Offset;
 
         public double ZoomFactor = 1.0;
 
@@ -506,6 +541,9 @@ namespace MKEditor.Widgets
         {
             SetBackgroundColor(73, 89, 109);
             this.MapViewer = this.Parent.Parent as MapViewer;
+            this.GridBackground = new GridBackground(this);
+            Sprites["dark"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(0, 0, 0, 0)));
+            Sprites["dark"].Z = 99999999;
         }
 
         public void SetZoomFactor(double factor)
@@ -515,12 +553,38 @@ namespace MKEditor.Widgets
                 Sprites[i.ToString()].ZoomX = Sprites[i.ToString()].ZoomY = factor;
             }
             this.ZoomFactor = factor;
+            GridBackground.SetTileSize((int) Math.Round(32 * this.ZoomFactor));
+            UpdateSize();
         }
 
-        public void LoadLayers(Map MapData)
+        public void SetDarkOverlay(byte Opacity)
+        {
+            (Sprites["dark"].Bitmap as SolidBitmap).SetColor(0, 0, 0, Opacity);
+        }
+
+        public void UpdateSize()
+        {
+            int Width = (int) Math.Round(MapData.Width * 32 * ZoomFactor);
+            int Height = (int) Math.Round(MapData.Height * 32 * ZoomFactor);
+            if (Side == ":north" || Side == ":south") Height = (int) Math.Round(6 * 32 * ZoomFactor);
+            else if (Side == ":east" || Side == ":west") Width = (int) Math.Round(6 * 32 * ZoomFactor);
+            this.SetSize(Width, Height);
+        }
+
+        public override void SizeChanged(object sender, SizeEventArgs e)
+        {
+            base.SizeChanged(sender, e);
+            GridBackground.SetSize(this.Size);
+            (Sprites["dark"].Bitmap as SolidBitmap).SetSize(this.Size);
+        }
+
+        public void LoadLayers(Map MapData, string Side = "", int Offset = 0)
         {
             this.MapData = MapData;
-            this.SetSize((int) Math.Round(MapData.Width * 32 * ZoomFactor), (int) Math.Round(MapData.Height * 32 * ZoomFactor));
+            this.Side = Side;
+            this.Offset = Offset;
+            if (!string.IsNullOrEmpty(Side)) GridBackground.SetBorder(Side);
+            UpdateSize();
             RedrawLayers();
         }
 
@@ -575,52 +639,77 @@ namespace MKEditor.Widgets
             MapData.Layers[Index2] = l1;
         }
 
+        public List<Bitmap> GetBitmaps(int MapID, int SX, int SY, int Width, int Height)
+        {
+            List<Bitmap> bmps = new List<Bitmap>();
+            Map m = Data.Maps[MapID];
+            for (int layer = 0; layer < m.Layers.Count; layer++)
+            {
+                bmps.Add(new Bitmap(Width * 32, Height * 32));
+                bmps[layer].Unlock();
+                // Iterate through all vertical tiles
+                for (int y = SY; y < SY + Height; y++)
+                {
+                    // Iterate through all horizontal tiles
+                    for (int x = SX; x < SX + Width; x++)
+                    {
+                        // Each individual tile
+                        if (m.Layers[layer] == null || m.Layers[layer].Tiles == null ||
+                            y * m.Width + x >= m.Layers[layer].Tiles.Count ||
+                            m.Layers[layer].Tiles[y * m.Width + x] == null) continue;
+                        int tileset_index = m.Layers[layer].Tiles[y * m.Width + x].TilesetIndex;
+                        int tileset_id = m.TilesetIDs[tileset_index];
+                        Bitmap tilesetimage = Data.Tilesets[tileset_id].TilesetBitmap;
+                        int mapx = (x - SX) * 32;
+                        int mapy = (y - SY) * 32;
+                        int tile_id = m.Layers[layer].Tiles[y * m.Width + x].TileID;
+                        int tilesetx = tile_id % 8;
+                        int tilesety = (int) Math.Floor(tile_id / 8d);
+                        bmps[layer].Build(new Rect(mapx, mapy, 32, 32), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
+                    }
+                }
+                bmps[layer].Lock();
+            }
+            return bmps;
+        }
+
         public void RedrawLayers()
         {
-            Console.WriteLine("(Re)drawing layers");
             foreach (string s in this.Sprites.Keys)
             {
-                if (s != "_bg") this.Sprites[s].Dispose();
+                if (s != "_bg" && s != "dark") this.Sprites[s].Dispose();
             }
             // Create layers
             for (int i = 0; i < MapData.Layers.Count; i++)
             {
-                this.Sprites[i.ToString()] = new Sprite(this.Viewport, MapData.Width * 32, MapData.Height * 32);
+                this.Sprites[i.ToString()] = new Sprite(this.Viewport);
                 this.Sprites[i.ToString()].Z = i * 2;
-                this.Sprites[i.ToString()].Bitmap.Unlock();
                 this.Sprites[i.ToString()].Visible = MapData.Layers[i].Visible;
             }
-            // Draw tiles
-            for (int layer = 0; layer < MapData.Layers.Count; layer++)
+            int SX = 0;
+            int SY = 0;
+            int Width = MapData.Width;
+            int Height = MapData.Height;
+            if (this.Side == ":north")
             {
-                Bitmap layerbmp = this.Sprites[layer.ToString()].Bitmap as Bitmap;
-                // Iterate through all vertical tiles
-                for (int y = 0; y < MapData.Height; y++)
-                {
-                    // Iterate through all horizontal tiles
-                    for (int x = 0; x < MapData.Width; x++)
-                    {
-                        // Each individual tile
-                        if (MapData.Layers[layer] == null || MapData.Layers[layer].Tiles == null ||
-                            y * MapData.Width + x >= MapData.Layers[layer].Tiles.Count ||
-                            MapData.Layers[layer].Tiles[y * MapData.Width + x] == null) continue;
-                        int tileset_index = MapData.Layers[layer].Tiles[y * MapData.Width + x].TilesetIndex;
-                        int tileset_id = MapData.TilesetIDs[tileset_index];
-                        Bitmap tilesetimage = Data.Tilesets[tileset_id].TilesetBitmap;
-                        int mapx = x * 32;
-                        int mapy = y * 32;
-                        int tile_id = MapData.Layers[layer].Tiles[y * MapData.Width + x].TileID;
-                        int tilesetx = tile_id % 8;
-                        int tilesety = (int) Math.Floor(tile_id / 8d);
-                        layerbmp.Build(new Rect(mapx, mapy, 32, 32), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
-                    }
-                }
+                SY = MapData.Height - 7;
+                Height = 6;
             }
-            // Lock layers
-            for (int i = 0; i < MapData.Layers.Count; i++)
+            else if (this.Side == ":east")
             {
-                this.Sprites[i.ToString()].Bitmap.Lock();
+                Width = 6;
             }
+            else if (this.Side == ":south")
+            {
+                Height = 6;
+            }
+            else if (this.Side == ":west")
+            {
+                SX = MapData.Width - 7;
+                Width = 6;
+            }
+            List<Bitmap> bmps = GetBitmaps(MapData.ID, SX, SY, Width, Height);
+            for (int i = 0; i < bmps.Count; i++) Sprites[i.ToString()].Bitmap = bmps[i];
             // Zoom layers
             SetZoomFactor(ZoomFactor);
         }
