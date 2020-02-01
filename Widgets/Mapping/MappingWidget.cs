@@ -8,7 +8,7 @@ namespace MKEditor.Widgets
         public MapSelectPanel MapSelectPanel;
         public MapImageWidget MapImageWidget;
 
-        public TabView Submodes;
+        public SubmodeView Submodes;
 
         public Game.Map Map;
 
@@ -39,14 +39,18 @@ namespace MKEditor.Widgets
 
             // Left sidebar divider
             Widget LeftSidebarDivider = new Widget(layout);
-            LeftSidebarDivider.SetBackgroundColor(79, 108, 159);
+            LeftSidebarDivider.SetBackgroundColor(28, 50, 73);
             LeftSidebarDivider.SetGridColumn(1);
 
-            Submodes = new TabView(layout);
+            Submodes = new SubmodeView(layout);
             Submodes.OnSelectionChanged += delegate (object sender, EventArgs e)
             {
                 ChangeSubmode();
             };
+            Submodes.SetHeaderHeight(31);
+            Submodes.SetHeaderSelHeight(1);
+            Submodes.SetTextY(6);
+            
             Submodes.SetGridColumn(2);
             Submodes.CreateTab("Tiles");
             //Submodes.CreateTab("Events");
@@ -76,8 +80,24 @@ namespace MKEditor.Widgets
             MapImageWidget.SetParent(ActiveMapViewer.MainContainer);
             MapImageWidget.SetVisible(true);
             if (ActiveMapViewer.Map != null) ActiveMapViewer.PositionMap();
-            if (ActiveMapViewer is MapViewerConnections) MapImageWidget.GridBackground.SetVisible(false);
-            else MapImageWidget.GridBackground.SetVisible(true);
+
+            if (ActiveMapViewer is MapViewerTiles)
+            {
+                for (int i = 0; i < Map.Layers.Count; i++) MapImageWidget.Sprites[i.ToString()].Visible = Map.Layers[i].Visible;
+            }
+            else
+            {
+
+            }
+            if (ActiveMapViewer is MapViewerConnections)
+            {
+                MapImageWidget.GridBackground.SetVisible(false);
+                for (int i = 0; i < Map.Layers.Count; i++) MapImageWidget.Sprites[i.ToString()].Visible = true;
+            }
+            else
+            {
+                MapImageWidget.GridBackground.SetVisible(true);
+            }
             MapImageWidget.MapViewer = ActiveMapViewer;
             OldSelectedIndex = Submodes.SelectedIndex;
         }

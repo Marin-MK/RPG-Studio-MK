@@ -18,7 +18,7 @@ namespace MKEditor.Widgets
             Header.SetFont(Font.Get("Fonts/Ubuntu-B", 16));
             Header.SetPosition(5, 5);
 
-            Sprites["sep"] = new Sprite(this.Viewport, new SolidBitmap(288, 2, new Color(28, 50, 73)));
+            Sprites["sep"] = new Sprite(this.Viewport, new SolidBitmap(288, 1, new Color(28, 50, 73)));
             Sprites["sep"].Y = 30;
 
             Sprites["bar"] = new Sprite(this.Viewport, new SolidBitmap(1, Size.Height - 30, new Color(28, 50, 73)));
