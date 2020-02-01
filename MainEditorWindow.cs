@@ -81,7 +81,7 @@ namespace MKEditor
 
             // Header + Menubar
             MenuBar = new MenuBar(MainGridLayout);
-            MenuBar.SetBackgroundColor(28, 50, 73);
+            MenuBar.SetBackgroundColor(10, 23, 37);
             MenuBar.SetGridRow(0);
             MenuBar.SetItems(new List<MenuItem>()
             {
@@ -178,8 +178,8 @@ namespace MKEditor
 
             // Toolbar (modes, icons, etc)
             ToolBar = new ToolBar(MainGridLayout);
+            ToolBar.SetBackgroundColor(28, 50, 73);
             ToolBar.SetGridRow(1);
-            ToolBar.MainWindow = this;
             #endregion
             #region Dividers
             // Blue 1px separator
@@ -196,8 +196,6 @@ namespace MKEditor
             // Status bar
             StatusBar = new StatusBar(MainGridLayout);
             StatusBar.SetGridRow(5);
-            ToolBar.StatusBar = StatusBar;
-            StatusBar.MainWindow = this;
             #endregion
 
             bool LoadHomeScreen = true;
@@ -210,6 +208,10 @@ namespace MKEditor
 
             if (LoadHomeScreen)
             {
+                MainGridLayout.Rows[1] = new GridSize(0, Unit.Pixels);
+                MainGridLayout.Rows[4] = new GridSize(0, Unit.Pixels);
+                MainGridLayout.Rows[5] = new GridSize(0, Unit.Pixels);
+                MainGridLayout.UpdateContainers();
                 StatusBar.SetVisible(false);
                 ToolBar.SetVisible(false);
                 UI.SetBackgroundColor(10, 23, 37);
@@ -247,6 +249,11 @@ namespace MKEditor
         public void CreateEditor()
         {
             if (HomeScreen != null) HomeScreen.Dispose();
+
+            MainGridLayout.Rows[1] = new GridSize(31, Unit.Pixels);
+            MainGridLayout.Rows[4] = new GridSize(1, Unit.Pixels);
+            MainGridLayout.Rows[5] = new GridSize(26, Unit.Pixels);
+            MainGridLayout.UpdateContainers();
 
             Editor.LoadProjectSettings();
             Data.LoadGameData();

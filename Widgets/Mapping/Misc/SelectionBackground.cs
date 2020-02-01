@@ -34,7 +34,7 @@ namespace MKEditor.Widgets
 
         public void SetSideVisible(string Side, bool Visible)
         {
-            Sprites[Side].Visible = Visible;
+           //Sprites[Side].Visible = Visible;
         }
 
         public void SetInterval(int Interval)

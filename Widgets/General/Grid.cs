@@ -21,6 +21,13 @@ namespace MKEditor.Widgets
             this.Size = new Size(this.Parent.Size);
         }
 
+        public override void SizeChanged(object sender, SizeEventArgs e)
+        {
+            base.SizeChanged(sender, e);
+            UpdateContainers();
+            UpdateLayout();
+        }
+
         public override void Update()
         {
             if (this.RedrawContainers)

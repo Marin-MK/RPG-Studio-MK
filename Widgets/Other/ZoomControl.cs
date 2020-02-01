@@ -41,7 +41,7 @@ namespace MKEditor.Widgets
             if (this.Factor != Factor)
             {
                 this.Factor = Factor;
-                if (!FromMapViewer) (Parent as StatusBar).MapViewer.SetZoomFactor(Factor, true);
+                if (!FromMapViewer) Editor.MainWindow.MapWidget.SetZoomFactor(Factor, true);
                 Redraw();
             }
         }

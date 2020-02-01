@@ -10,7 +10,7 @@ namespace MKEditor
         /// Whether or not exceptions should be caught and displayed.
         /// If false, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
         /// </summary>
-        static bool CatchErrors = true
+        static bool CatchErrors = false
             ;
 
         public static bool ThrownError = false;

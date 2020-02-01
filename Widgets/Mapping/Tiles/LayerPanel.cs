@@ -5,10 +5,10 @@ using MKEditor.Game;
 
 namespace MKEditor.Widgets
 {
-    public class LayersPanel : Widget
+    public class LayerPanel : Widget
     {
-        public TilesetsPanel TilesetTab;
-        public MapViewer MapViewer;
+        public TilesetPanel TilesetPanel;
+        public MapViewerTiles MapViewer;
         public Map Map { get { return this.MapViewer.Map; } }
 
         public int SelectedLayer { get { return layerwidget.SelectedLayer; } }
@@ -16,17 +16,24 @@ namespace MKEditor.Widgets
         private Container layercontainer;
         public LayerWidget layerwidget;
 
-        public LayersPanel(object Parent, string Name = "layersTab")
+        public LayerPanel(object Parent, string Name = "layersTab")
             : base(Parent, Name)
         {
-            Sprites["bar1"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(28, 50, 73)));
-            Sprites["bar2"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(28, 50, 73)));
-            Sprites["bar2"].X = 42;
+            Label Header = new Label(this);
+            Header.SetText("Layers");
+            Header.SetFont(Font.Get("Fonts/Ubuntu-B", 16));
+            Header.SetPosition(5, 5);
+
+            Sprites["sep"] = new Sprite(this.Viewport, new SolidBitmap(288, 2, new Color(10, 23, 37)));
+            Sprites["sep"].Y = 30;
+
+            Sprites["slider"] = new Sprite(this.Viewport, new SolidBitmap(10, Size.Height - 34, new Color(10, 23, 37)));
+            Sprites["slider"].Y = 33;
 
             this.OnWidgetSelected = WidgetSelected;
 
             layercontainer = new Container(this);
-            layercontainer.SetPosition(1, 1);
+            layercontainer.SetPosition(1, 33);
             layercontainer.VAutoScroll = true;
 
             VScrollBar vs = new VScrollBar(this);
@@ -165,12 +172,11 @@ namespace MKEditor.Widgets
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            layercontainer.SetSize(Size.Width - 12, Size.Height - 1);
-            layercontainer.VScrollBar.SetPosition(Size.Width - 9, 1);
-            layercontainer.VScrollBar.SetSize(8, Size.Height - 2);
-            (Sprites["bar1"].Bitmap as SolidBitmap).SetSize(1, Size.Height);
-            (Sprites["bar2"].Bitmap as SolidBitmap).SetSize(1, Size.Height);
-            Sprites["bar1"].X = Size.Width - 11;
+            layercontainer.SetSize(Size.Width - 13, Size.Height - layercontainer.Position.Y);
+            layercontainer.VScrollBar.SetPosition(Size.Width - 10, 34);
+            layercontainer.VScrollBar.SetSize(8, Size.Height - 36);
+            Sprites["slider"].X = Size.Width - 11;
+            (Sprites["slider"].Bitmap as SolidBitmap).SetSize(10, Size.Height - 34);
         }
 
         public void CreateLayers()

@@ -130,7 +130,12 @@ namespace MKEditor.Widgets
         /// <summary>
         /// Whether or not this widget should be considered when determining scrollbar size and position for autoscroll.
         /// </summary>
-        public bool ConsiderInAutoScroll = true;
+        public bool ConsiderInAutoScrollCalculation = true;
+
+        /// <summary>
+        /// Whether or not this widget should be affected by the autoscroll of the parent widget.
+        /// </summary>
+        public bool ConsiderInAutoScrollPositioning = true;
 
         private int _WindowLayer = 0;
         /// <summary>
@@ -342,6 +347,11 @@ namespace MKEditor.Widgets
         /// </summary>
         public EventHandler<EventArgs> OnVisibilityChanged;
 
+        /// <summary>
+        /// Called whenever SetZIndex is called.
+        /// </summary>
+        public EventHandler<EventArgs> OnZIndexChanged;
+
 
         /// <summary>
         /// Creates a new Widget object.
@@ -388,6 +398,7 @@ namespace MKEditor.Widgets
             this.WidgetIM.OnHoverChanged += HoverChanged;
             this.WidgetIM.OnMouseMoving += MouseMoving;
             this.OnFetchHelpText += FetchHelpText;
+            this.SetVisible(true);
         }
 
         /// <summary>
@@ -414,7 +425,7 @@ namespace MKEditor.Widgets
         /// Initializes the list of shortcuts.
         /// </summary>
         /// <param name="Shortcuts">The list of shortcuts.</param>
-        public void RegisterShortcuts(List<Shortcut> Shortcuts)
+        public virtual void RegisterShortcuts(List<Shortcut> Shortcuts)
         {
             AssertUndisposed();
             // De-register old global shortcuts in the UIManager object.
@@ -434,13 +445,14 @@ namespace MKEditor.Widgets
         /// Sets the Z Index of this widget and viewport.
         /// </summary>
         /// <param name="ZIndex">The new Z Index.</param>
-        public void SetZIndex(int ZIndex)
+        public virtual void SetZIndex(int ZIndex)
         {
             AssertUndisposed();
             this.ZIndex = ZIndex;
             // this.ZIndex takes parent Z Index into account.
             this.Viewport.Z = this.ZIndex;
             this.Widgets.ForEach(w => w.SetZIndex(w.ZIndex));
+            if (this.OnZIndexChanged != null) this.OnZIndexChanged.Invoke(null, new EventArgs());
         }
 
         /// <summary>
@@ -448,11 +460,16 @@ namespace MKEditor.Widgets
         /// </summary>
         /// <param name="Parent">The Parent widget.</param>
         /// <param name="Index">Optional index for stackpanel parents.</param>
-        public void SetParent(object Parent, int Index = -1)
+        public virtual void SetParent(object Parent, int Index = -1)
         {
             AssertUndisposed();
+            bool New = true;
             // De-registers this widget from former parent if present.
-            if (this.Parent != null) this.Parent.Remove(this);
+            if (this.Parent != null)
+            {
+                this.Parent.Remove(this);
+                New = false;
+            }
             // MainEditorWindow isn't a widget, instead use its UI (UIManager) field.
             if (Parent is MainEditorWindow)
             {
@@ -478,6 +495,7 @@ namespace MKEditor.Widgets
                 this.Viewport.Z = this.ZIndex;
                 this.Viewport.Visible = (this.Parent as Widget).IsVisible() ? this.Visible : false;
             }
+            if (!New) UpdateBounds(); // Update position for the new parent
         }
 
         /// <summary>
@@ -495,7 +513,7 @@ namespace MKEditor.Widgets
         /// Set visibility for this widget and all children.
         /// </summary>
         /// <param name="Visible">Boolean visibility value.</param>
-        public void SetVisible(bool Visible)
+        public virtual void SetVisible(bool Visible)
         {
             AssertUndisposed();
             this.Visible = Visible;
@@ -504,7 +522,7 @@ namespace MKEditor.Widgets
             // match the visibility of this widget and therefore give undesireable results.
             // Use its parent instead, which is the stackpanel or grid.
             if (parent is LayoutContainer) parent = parent.Parent as Widget;
-            if ((parent as Widget).IsVisible())
+            if (parent == null || (parent as Widget).IsVisible())
             {
                 Viewport.Visible = Visible;
             }
@@ -527,7 +545,7 @@ namespace MKEditor.Widgets
             // match the visibility of this widget and therefore give undesireable results.
             // Use its parent instead, which is the stackpanel or grid.
             if (parent is LayoutContainer) parent = parent.Parent as Widget;
-            if ((parent as Widget).IsVisible())
+            if (parent == null || (parent as Widget).IsVisible())
             {
                 if (this.Visible && Viewport.Visible != Visible)
                     Viewport.Visible = Visible;
@@ -556,7 +574,7 @@ namespace MKEditor.Widgets
             MaxChildWidth = 0;
             this.Widgets.ForEach(wdgt =>
             {
-                if (!wdgt.Visible || !wdgt.ConsiderInAutoScroll) return;
+                if (!wdgt.Visible || !wdgt.ConsiderInAutoScrollCalculation) return;
                 int w = wdgt.Size.Width;
                 if (wdgt.Parent is LayoutContainer) w += (wdgt.Parent as LayoutContainer).Position.X;
                 else w += wdgt.Position.X;
@@ -567,7 +585,7 @@ namespace MKEditor.Widgets
             MaxChildHeight = 0;
             this.Widgets.ForEach(w =>
             {
-                if (!w.Visible || !w.ConsiderInAutoScroll) return;
+                if (!w.Visible || !w.ConsiderInAutoScrollCalculation) return;
                 int h = w.Size.Height;
                 if (w.Parent is LayoutContainer) h += (w.Parent as LayoutContainer).Position.Y;
                 else h += w.Position.Y;
@@ -678,7 +696,7 @@ namespace MKEditor.Widgets
 
             int ScrolledX = this.Position.X - this.ScrolledPosition.X;
             int ScrolledY = this.Position.Y - this.ScrolledPosition.Y;
-            if (!ConsiderInAutoScroll) ScrolledX = ScrolledY = 0;
+            if (!ConsiderInAutoScrollPositioning) ScrolledX = ScrolledY = 0;
 
             this.Viewport.X = this.Position.X + this.Parent.Viewport.X - Parent.AdjustedPosition.X - ScrolledX;
             this.Viewport.Y = this.Position.Y + this.Parent.Viewport.Y - Parent.AdjustedPosition.Y - ScrolledY;
@@ -791,7 +809,6 @@ namespace MKEditor.Widgets
                 // Updates the viewport boundaries
                 this.UpdateBounds();
                 // Executes all events associated with resizing a widget.
-                this.OnSizeChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));
                 this.Widgets.ForEach(w =>
                 {
                     Widget wdgt = w;
@@ -799,6 +816,7 @@ namespace MKEditor.Widgets
                     wdgt.OnParentSizeChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));
                     wdgt.OnSizeChanged.Invoke(this, new SizeEventArgs(this.Size));
                 });
+                this.OnSizeChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));
                 Redraw();
                 if (this.Parent is Widget && !(this is HScrollBar) && !(this is VScrollBar))
                 {

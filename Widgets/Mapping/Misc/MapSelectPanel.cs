@@ -7,19 +7,25 @@ namespace MKEditor.Widgets
 {
     public class MapSelectPanel : Widget
     {
-        public MapViewer MapViewer;
-        public StatusBar StatusBar;
-
         public Container allmapcontainer;
         public TreeView mapview;
 
         public MapSelectPanel(object Parent, string Name = "mapSelectTab")
             : base(Parent, Name)
         {
-            Sprites["bar"] = new Sprite(this.Viewport, new SolidBitmap(1, Size.Height, new Color(28, 50, 73)));
+            Label Header = new Label(this);
+            Header.SetText("All Maps");
+            Header.SetFont(Font.Get("Fonts/Ubuntu-B", 16));
+            Header.SetPosition(5, 5);
+
+            Sprites["sep"] = new Sprite(this.Viewport, new SolidBitmap(288, 2, new Color(28, 50, 73)));
+            Sprites["sep"].Y = 30;
+
+            Sprites["bar"] = new Sprite(this.Viewport, new SolidBitmap(1, Size.Height - 30, new Color(28, 50, 73)));
+            Sprites["bar"].Y = 30;
 
             allmapcontainer = new Container(this);
-            allmapcontainer.SetPosition(0, 1);
+            allmapcontainer.SetPosition(0, 35);
             allmapcontainer.VAutoScroll = true;
 
             VScrollBar vs = new VScrollBar(this);
@@ -99,7 +105,7 @@ namespace MKEditor.Widgets
 
         public void SetMap(Map Map, bool CalledFromTreeView = false)
         {
-            MapViewer.SetMap(Map);
+            Editor.MainWindow.MapWidget.SetMap(Map);
             Editor.ProjectSettings.LastMapID = Map.ID;
             Editor.ProjectSettings.LastLayer = 0;
             if (!CalledFromTreeView) // Has yet to update the selection
@@ -129,11 +135,11 @@ namespace MKEditor.Widgets
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            allmapcontainer.SetSize(this.Size.Width - 11, this.Size.Height - 1);
+            allmapcontainer.SetSize(this.Size.Width - 11, this.Size.Height - allmapcontainer.Position.Y);
             Sprites["bar"].X = Size.Width - 11;
-            (Sprites["bar"].Bitmap as SolidBitmap).SetSize(1, Size.Height);
-            allmapcontainer.VScrollBar.SetPosition(Size.Width - 9, 1);
-            allmapcontainer.VScrollBar.SetSize(8, Size.Height - 2);
+            (Sprites["bar"].Bitmap as SolidBitmap).SetSize(1, Size.Height - 30);
+            allmapcontainer.VScrollBar.SetPosition(Size.Width - 9, 33);
+            allmapcontainer.VScrollBar.SetSize(8, Size.Height - 35);
         }
 
         private void NewMap(object sender, MouseEventArgs e)
@@ -184,7 +190,7 @@ namespace MKEditor.Widgets
                 if (mpw.UnsavedChanges) Editor.UnsavedChanges = true;
                 if (mpw.UpdateMapViewer)
                 {
-                    MapViewer.SetMap(map);
+                    Editor.MainWindow.MapWidget.SetMap(map);
                 }
             };
         }

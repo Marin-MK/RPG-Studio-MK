@@ -7,12 +7,6 @@ namespace MKEditor.Widgets
 {
     public class ToolBar : Widget
     {
-        public MainEditorWindow MainWindow;
-
-        public MapViewer MapViewer;
-        public TilesetsPanel TilesetTab;
-        public StatusBar StatusBar;
-
         IconButton Cut;
         IconButton Copy;
         IconButton Paste;
@@ -27,14 +21,6 @@ namespace MKEditor.Widgets
 
         Container ActionContainer;
         Container CopyContainer;
-        Container DrawToolsContainer;
-
-        public IconButton PencilButton;
-        public IconButton FillButton;
-        public IconButton EllipseButton;
-        public IconButton RectButton;
-        public IconButton SelectButton;
-        public IconButton EraserButton;
 
         PlayButton PlayButton;
         SaveButton SaveButton;
@@ -42,8 +28,6 @@ namespace MKEditor.Widgets
         public ToolBar(object Parent, string Name = "toolBar")
             : base(Parent, Name)
         {
-            SetBackgroundColor(10, 23, 37);
-
             MappingMode = new ModeButton("Maps", 23, this);
             MappingMode.SetPosition(4, 0);
             MappingMode.SetSelected(true);
@@ -107,64 +91,8 @@ namespace MKEditor.Widgets
             Paste.SetIcon(2, 0);
             Paste.Selectable = false;
 
-            DrawToolsContainer = new Container(this);
-            DrawToolsContainer.SetPosition(Size.Width - 283 - 186, 3);
-            DrawToolsContainer.SetSize(186, 28);
-            DrawToolsContainer.Sprites["line1"] = new Sprite(DrawToolsContainer.Viewport, new SolidBitmap(1, 26, new Color(28, 50, 73)));
-            DrawToolsContainer.Sprites["line1"].X = 144;
-            DrawToolsContainer.Sprites["line2"] = new Sprite(DrawToolsContainer.Viewport, new SolidBitmap(1, 26, new Color(28, 50, 73)));
-            DrawToolsContainer.Sprites["line2"].X = 185;
-
-            PencilButton = new IconButton(DrawToolsContainer);
-            PencilButton.SetIcon(15, 0);
-            PencilButton.SetSelected(true);
-
-            FillButton = new IconButton(DrawToolsContainer);
-            FillButton.SetIcon(16, 0);
-            FillButton.SetPosition(28, 0);
-
-            EllipseButton = new IconButton(DrawToolsContainer);
-            EllipseButton.SetIcon(17, 0);
-            EllipseButton.SetPosition(56, 0);
-
-            RectButton = new IconButton(DrawToolsContainer);
-            RectButton.SetIcon(18, 0);
-            RectButton.SetPosition(84, 0);
-
-            SelectButton = new IconButton(DrawToolsContainer);
-            SelectButton.SetIcon(19, 0);
-            SelectButton.SetPosition(112, 0);
-            SelectButton.OnSelection += delegate (object sender, EventArgs e)
-            {
-                MapViewer.Cursor.SetVisible(false);
-            };
-
-            EraserButton = new IconButton(DrawToolsContainer);
-            EraserButton.SetIcon(20, 0);
-            EraserButton.SetPosition(153, 0);
-            EraserButton.Toggleable = true;
-            EraserButton.OnSelection += delegate (object sender, EventArgs e)
-            {
-                TilesetTab.Cursor.SetPosition(0, 0);
-                TilesetTab.Cursor.SetVisible(false);
-                MapViewer.TileDataList = new List<TileData>() { null };
-                MapViewer.CursorWidth = 0;
-                MapViewer.CursorHeight = 0;
-                TilesetTab.UpdateCursorPosition();
-                MapViewer.UpdateCursorPosition();
-            };
-            EraserButton.OnDeselection += delegate (object sender, EventArgs e)
-            {
-                TilesetTab.UpdateCursorPosition();
-            };
-
             PlayButton = new PlayButton(this);
             SaveButton = new SaveButton(this);
-        }
-
-        public void SetDrawToolsVisible(bool Visible)
-        {
-            DrawToolsContainer.SetVisible(Visible);
         }
 
         public void Refresh()
@@ -175,12 +103,11 @@ namespace MKEditor.Widgets
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            DrawToolsContainer.SetPosition(Size.Width - 283 - 186, 3);
             PlayButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width, 2);
             SaveButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width - 7 - SaveButton.Size.Width, 2);
             if (Size.Width < 800)
             {
-                DrawToolsContainer.SetPosition(SaveButton.Position.X - 185, 3);
+                
             }
             else if (Size.Width < 895)
             {

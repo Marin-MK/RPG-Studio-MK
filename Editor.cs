@@ -132,8 +132,12 @@ namespace MKEditor
             MainWindow.MainEditorWidget = null;
             MainWindow.StatusBar.SetVisible(false);
             MainWindow.ToolBar.SetVisible(false);
-            MainWindow.HomeScreen = new Widgets.HomeScreen(MainWindow.MainGridLayout);
+            MainWindow.HomeScreen = new HomeScreen(MainWindow.MainGridLayout);
             MainWindow.HomeScreen.SetGridRow(3);
+            MainWindow.MainGridLayout.Rows[1] = new GridSize(0, Unit.Pixels);
+            MainWindow.MainGridLayout.Rows[4] = new GridSize(0, Unit.Pixels);
+            MainWindow.MainGridLayout.Rows[5] = new GridSize(0, Unit.Pixels);
+            MainWindow.MainGridLayout.UpdateContainers();
             MainWindow.MainGridLayout.UpdateLayout();
             Game.Data.ClearProjectData();
             ClearProjectData();
@@ -144,7 +148,7 @@ namespace MKEditor
             OpenFile of = new OpenFile();
             of.SetFilters(new List<FileFilter>()
             {
-                new FileFilter("RPG Maker Map", "rxdata")
+                new FileFilter("RPG Maker XP Map", "rxdata")
             });
             of.SetTitle("Pick map(s)");
             of.SetAllowMultiple(true);
@@ -153,7 +157,6 @@ namespace MKEditor
             if (ret is string) Files.Add(ret as string);
             else if (ret is List<string>) Files = ret as List<string>;
             else return; // No files picked
-            Console.WriteLine("Convert Map.rxdata to Map.mkd");
             InitializeRuby();
             string[] folders = Files[0].Split('\\');
             string parent = "";
@@ -344,7 +347,6 @@ namespace MKEditor
                     bool RemovedEvents = map.Events.Length > 0;
 
                     Table Tiles = map.Data.Convert<Table>();
-                    Tiles.Print();
                     int XSize = Tiles.XSize.ToInt32();
                     int YSize = Tiles.YSize.ToInt32();
                     int ZSize = Tiles.ZSize.ToInt32();
@@ -357,7 +359,6 @@ namespace MKEditor
                             {
                                 int idx = x + y * XSize + z * XSize * YSize;
                                 int tileid = Tiles.Data[idx].Convert<RubyInt>().ToInt32();
-                                Console.WriteLine($"({idx}: {tileid})");
                                 if (tileid < 384) RemovedAutotiles = true;
                                 if (tileid == 0) layer.Tiles.Add(null);
                                 else layer.Tiles.Add(new Game.TileData() { TilesetIndex = 0, TileID = tileid - 384 });
@@ -389,13 +390,16 @@ namespace MKEditor
                             Title = "Success";
                             Msg += ".";
                         }
-                        MessageBox box = new MessageBox(Title, Msg, new List<string>() { "Go to map", "OK" });
+                        List<string> options = new List<string>();
+                        if (ProjectSettings.LastMode != "MAPPING") options.Add("Go to Map");
+                        options.Add("OK");
+                        MessageBox box = new MessageBox(Title, Msg, options);
                         box.OnButtonPressed += delegate (object sender, EventArgs e)
                         {
-                            if (box.Result == 0) // Go to map
+                            if (options[box.Result] == "Go to Map") // Go to map
                             {
                                 SetMode("MAPPING");
-                                MainWindow.MapWidget.mst.SetMap(data);
+                                MainWindow.MapWidget.MapSelectPanel.SetMap(data);
                             }
                         };
                         infos.Free();
@@ -440,7 +444,7 @@ namespace MKEditor
             TreeNode node = new TreeNode() { Object = Map };
             if (MainWindow.MapWidget != null)
             {
-                TreeView mapview = MainWindow.MapWidget.mst.mapview;
+                TreeView mapview = MainWindow.MapWidget.MapSelectPanel.mapview;
                 if (mapview.HoveringNode != null)
                 {
                     mapview.HoveringNode.Nodes.Add(node);
@@ -559,34 +563,12 @@ namespace MKEditor
             if (Mode == "MAPPING")
             {
                 MainWindow.ToolBar.MappingMode.SetSelected(true, Force);
-                MainWindow.ToolBar.SetDrawToolsVisible(true);
 
                 MainWindow.MainEditorWidget = new MappingWidget(MainWindow.MainGridLayout);
                 MainWindow.MainEditorWidget.SetGridRow(3);
 
-                // Link the UI pieces together
-                MainWindow.MapWidget.mv.LayersTab = MainWindow.MapWidget.lt;
-                MainWindow.MapWidget.mv.TilesetTab = MainWindow.MapWidget.tt;
-                MainWindow.MapWidget.mv.ToolBar = MainWindow.ToolBar;
-                MainWindow.MapWidget.mv.StatusBar = MainWindow.StatusBar;
-                
-                MainWindow.MapWidget.lt.TilesetTab = MainWindow.MapWidget.tt;
-                MainWindow.MapWidget.lt.MapViewer = MainWindow.MapWidget.mv;
-
-                MainWindow.MapWidget.tt.LayersTab = MainWindow.MapWidget.lt;
-                MainWindow.MapWidget.tt.MapViewer = MainWindow.MapWidget.mv;
-                MainWindow.MapWidget.tt.ToolBar = MainWindow.ToolBar;
-
-                MainWindow.MapWidget.mst.MapViewer = MainWindow.MapWidget.mv;
-                
-                MainWindow.ToolBar.MapViewer = MainWindow.MapWidget.mv;
-                MainWindow.ToolBar.TilesetTab = MainWindow.MapWidget.tt;
-                MainWindow.MapWidget.mst.StatusBar = MainWindow.StatusBar;
-
-                MainWindow.StatusBar.MapViewer = MainWindow.MapWidget.mv;
-
                 // Set list of maps & initial map
-                MainWindow.MapWidget.mst.PopulateList(Editor.ProjectSettings.MapOrder, true);
+                MainWindow.MapWidget.MapSelectPanel.PopulateList(Editor.ProjectSettings.MapOrder, true);
 
                 int mapid = ProjectSettings.LastMapID;
                 if (!Game.Data.Maps.ContainsKey(mapid))
@@ -595,17 +577,14 @@ namespace MKEditor
                     else mapid = (int) ProjectSettings.MapOrder[0];
                 }
                 int lastlayer = ProjectSettings.LastLayer;
-                MainWindow.MapWidget.mst.SetMap(Game.Data.Maps[mapid]);
+                MainWindow.MapWidget.MapSelectPanel.SetMap(Game.Data.Maps[mapid]);
 
-                MainWindow.MapWidget.lt.SetSelectedLayer(lastlayer);
-
-                MainWindow.MapWidget.mv.SetZoomFactor(ProjectSettings.LastZoomFactor);
+                MainWindow.MapWidget.SetSelectedLayer(lastlayer);
+                MainWindow.MapWidget.SetZoomFactor(ProjectSettings.LastZoomFactor);
             }
             else if (OldMode == "MAPPING")
             {
-                MainWindow.ToolBar.MapViewer = null;
-                MainWindow.ToolBar.TilesetTab = null;
-                MainWindow.StatusBar.MapViewer = null;
+                
             }
             if (Mode == "EVENTING")
             {
@@ -626,7 +605,6 @@ namespace MKEditor
             if (Mode == "DATABASE")
             {
                 MainWindow.ToolBar.DatabaseMode.SetSelected(true, Force);
-                MainWindow.ToolBar.SetDrawToolsVisible(false);
                 MainWindow.MainEditorWidget = new DatabaseWidget(MainWindow.MainGridLayout);
                 MainWindow.MainEditorWidget.SetGridRow(3);
             }

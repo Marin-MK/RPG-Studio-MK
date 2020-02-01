@@ -18,11 +18,21 @@ namespace MKEditor.Widgets
             this.Font = Font.Get("Fonts/ProductSans-M", 12);
         }
 
-        public void SetText(string Text)
+        public void SetText(string Text, DrawOptions DrawOptions = ODL.DrawOptions.LeftAlign)
         {
             if (this.Text != Text)
             {
                 this.Text = Text;
+                this.DrawOptions = DrawOptions;
+                Redraw();
+            }
+        }
+
+        public void SetDrawOptions(DrawOptions DrawOptions = ODL.DrawOptions.LeftAlign)
+        {
+            if (this.DrawOptions != DrawOptions)
+            {
+                this.DrawOptions = DrawOptions;
                 Redraw();
             }
         }
@@ -45,25 +55,16 @@ namespace MKEditor.Widgets
             }
         }
 
-        public void SetDrawOptions(DrawOptions o)
-        {
-             if (this.DrawOptions != o)
-            {
-                this.DrawOptions = o;
-                Redraw();
-            }
-        }
-
         protected override void Draw()
         {
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
             if (string.IsNullOrEmpty(this.Text)) return;
-            Size s = this.Font.TextSize(this.Text);
+            Size s = this.Font.TextSize(this.Text, this.DrawOptions);
             this.SetSize(s);
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = this.Font;
-            Sprites["text"].Bitmap.DrawText(this.Text, this.TextColor);
+            Sprites["text"].Bitmap.DrawText(this.Text, this.TextColor, this.DrawOptions);
             Sprites["text"].Bitmap.Lock();
             base.Draw();
         }

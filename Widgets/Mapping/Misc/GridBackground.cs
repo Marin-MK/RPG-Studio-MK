@@ -10,25 +10,17 @@ namespace MKEditor.Widgets
         public int OffsetY = 0;
         public string Border;
 
-        SelectionBackground SelBG;
-
         public GridBackground(object Parent, string Name = "gridBackground")
             : base(Parent, Name)
         {
             Sprites["vert"] = new Sprite(this.Viewport);
             Sprites["hor"] = new Sprite(this.Viewport);
-            SelBG = new SelectionBackground(this);
-            SelBG.SetSideVisible("top", false);
-            SelBG.SetSideVisible("left", false);
-            SelBG.SetSideVisible("right", false);
-            SelBG.SetSideVisible("bottom", false);
             RedrawGrid();
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            SelBG.SetSize(this.Size);
             RedrawGrid();
         }
 
@@ -48,17 +40,6 @@ namespace MKEditor.Widgets
             {
                 this.TileSize = TileSize;
                 RedrawGrid();
-            }
-        }
-
-        public void SetBorder(string Border)
-        {
-            if (this.Border != Border)
-            {
-                if (Border == ":north") SelBG.SetSideVisible("bottom", true);
-                else if (Border == ":east") SelBG.SetSideVisible("left", true);
-                else if (Border == ":south") SelBG.SetSideVisible("top", true);
-                else if (Border == ":west") SelBG.SetSideVisible("right", true);
             }
         }
 

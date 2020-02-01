@@ -7,9 +7,7 @@ namespace MKEditor.Widgets
 {
     public class StatusBar : Widget
     {
-        public MainEditorWindow MainWindow;
-
-        public MapViewer MapViewer;
+        public MapViewerBase MapViewer;
 
         public ZoomControl ZoomControl;
 
@@ -138,18 +136,19 @@ namespace MKEditor.Widgets
                     RemoveText();
                 }
             }
-            if (MapViewer != null)
+            if (MapViewer != null && MapViewer is MapViewerTiles)
             {
-                if (MapViewer.TopLeftX < 0 || MapViewer.TopLeftY < 0 || MapViewer.TopLeftX >= MapViewer.Map.Width || MapViewer.TopLeftY >= MapViewer.Map.Height)
+                MapViewerTiles mvt = MapViewer as MapViewerTiles;
+                if (mvt.TopLeftX < 0 || mvt.TopLeftY < 0 || mvt.TopLeftX >= mvt.Map.Width || mvt.TopLeftY >= MapViewer.Map.Height)
                 {
                     RemoveCursorText();
                 }
-                else if (MapViewer.TopLeftX != DrawnX || MapViewer.TopLeftY != DrawnY ||
-                         MapViewer.CursorWidth != DrawnWidth || MapViewer.CursorHeight != DrawnHeight ||
+                else if (mvt.TopLeftX != DrawnX || mvt.TopLeftY != DrawnY ||
+                         mvt.CursorWidth != DrawnWidth || mvt.CursorHeight != DrawnHeight ||
                          Sprites["cursor"].Bitmap == null)
                 {
                     
-                    DrawCursor(MapViewer.TopLeftX, MapViewer.TopLeftY, MapViewer.CursorWidth, MapViewer.CursorHeight);
+                    DrawCursor(mvt.TopLeftX, mvt.TopLeftY, mvt.CursorWidth, mvt.CursorHeight);
                 }
             }
             else
@@ -160,9 +159,9 @@ namespace MKEditor.Widgets
 
         public void Refresh()
         {
-            if (MainWindow.MainEditorWidget is MappingWidget)
+            if (Editor.MainWindow.MainEditorWidget is MappingWidget)
             {
-                SetMap(MainWindow.MapWidget.mv.Map);
+                SetMap(Editor.MainWindow.MapWidget.Map);
                 ZoomControl.SetVisible(true);
                 Sprites["line2"].Visible = true;
             }

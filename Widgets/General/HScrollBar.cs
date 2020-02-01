@@ -27,7 +27,7 @@ namespace MKEditor.Widgets
             : base(Parent, Name)
         {
             this.Size = new Size(17, 60);
-            this.ConsiderInAutoScroll = false;
+            this.ConsiderInAutoScrollPositioning = this.ConsiderInAutoScrollCalculation = false;
             this.WidgetIM.OnMouseWheel += MouseWheel;
             this.Sprites["slider"] = new Sprite(this.Viewport);
             this.SliderSize = 0.25;

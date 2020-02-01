@@ -7,7 +7,7 @@ namespace MKEditor.Widgets
 {
     public class LayerWidget : Widget
     {
-        public MapViewer MapViewer { get { return (Parent.Parent as LayersPanel).MapViewer; } }
+        public MapViewerTiles MapViewer { get { return (Parent.Parent as LayerPanel).MapViewer; } }
         public List<Layer> Layers { get; private set; }
         public int SelectedLayer { get; private set; }
         public int HoveringIndex { get; private set; } = -1;
@@ -73,7 +73,7 @@ namespace MKEditor.Widgets
                 RenameBox.Dispose();
                 RenameBox = null;
                 Input.SetCursor(SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
-                Window.UI.SetSelectedWidget((Parent.Parent as LayersPanel));
+                Window.UI.SetSelectedWidget((Parent.Parent as LayerPanel));
             };
             RenameBox.TextArea.OnWidgetSelected.Invoke(null, null);
         }
@@ -95,8 +95,7 @@ namespace MKEditor.Widgets
                 if (i == SelectedLayer)
                 {
                     c = new Color(55, 187, 255);
-                    Sprites["bg"].Bitmap.FillRect(0, y, 39, 24, new Color(28, 50, 73));
-                    Sprites["bg"].Bitmap.FillRect(44, y, Size.Width - 44, 24, new Color(28, 50, 73));
+                    Sprites["bg"].Bitmap.FillRect(0, y, Size.Width, 24, new Color(19, 36, 55));
                     if (visible) Sprites["bg"].Bitmap.Build(8, y - 1, Utilities.IconSheet, new Rect(14 * 24, 24, 24, 24));
                 }
                 else if (visible) Sprites["bg"].Bitmap.Build(8, y - 1, Utilities.IconSheet, new Rect(14 * 24, 0, 24, 24));

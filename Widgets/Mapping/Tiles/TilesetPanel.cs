@@ -5,7 +5,7 @@ using MKEditor.Game;
 
 namespace MKEditor.Widgets
 {
-    public class TilesetsPanel : Widget
+    public class TilesetPanel : Widget
     {
         public int           TilesetIndex    { get; protected set; } = 0;
         public int           TileStartX      { get; protected set; } = 0;
@@ -13,9 +13,16 @@ namespace MKEditor.Widgets
         public int           TileEndX        { get; protected set; } = 0;
         public int           TileEndY        { get; protected set; } = 0;
 
-        public LayersPanel LayersTab;
-        public MapViewer MapViewer;
-        public ToolBar ToolBar;
+        Container DrawToolsContainer;
+        public IconButton PencilButton;
+        public IconButton FillButton;
+        public IconButton EllipseButton;
+        public IconButton RectButton;
+        public IconButton SelectButton;
+        public IconButton EraserButton;
+
+        public LayerPanel LayerPanel;
+        public MapViewerTiles MapViewer;
 
         bool DraggingTileset = false;
 
@@ -28,10 +35,19 @@ namespace MKEditor.Widgets
         List<CollapsibleContainer> TilesetContainers = new List<CollapsibleContainer>();
         List<PictureBox> TilesetImages = new List<PictureBox>();
 
-        public TilesetsPanel(object Parent, string Name = "tilesetTab")
+        public TilesetPanel(object Parent, string Name = "tilesetTab")
             : base(Parent, Name)
         {
-            Sprites["bar"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(28, 50, 73)));
+            Label Header = new Label(this);
+            Header.SetText("Tiles");
+            Header.SetFont(Font.Get("Fonts/Ubuntu-B", 16));
+            Header.SetPosition(5, 5);
+
+            Sprites["sep"] = new Sprite(this.Viewport, new SolidBitmap(288, 2, new Color(10, 23, 37)));
+            Sprites["sep"].Y = 50;
+
+            Sprites["slider"] = new Sprite(this.Viewport, new SolidBitmap(10, Size.Height - 34, new Color(10, 23, 37)));
+            Sprites["slider"].Y = 53;
 
             this.OnWidgetSelected += WidgetSelected;
 
@@ -41,7 +57,7 @@ namespace MKEditor.Widgets
             CursorIM.OnMouseMoving += MouseMoving;
 
             TilesetContainer = new Container(this);
-            TilesetContainer.SetPosition(0, 5);
+            TilesetContainer.SetPosition(0, 53);
             TilesetContainer.VAutoScroll = true;
 
             VScrollBar vs = new VScrollBar(this);
@@ -55,7 +71,62 @@ namespace MKEditor.Widgets
             TilesetStackPanel.SetWidth(264);
             TilesetStackPanel.SetPosition(8, 3);
 
-            SetSize(283, 200); // Dummy size so the sprites can be drawn properly
+            DrawToolsContainer = new Container(this);
+            DrawToolsContainer.SetPosition(46, 22);
+            DrawToolsContainer.SetSize(186, 28);
+            DrawToolsContainer.Sprites["line1"] = new Sprite(DrawToolsContainer.Viewport, new SolidBitmap(1, 26, new Color(28, 50, 73)));
+            DrawToolsContainer.Sprites["line1"].X = 144;
+            DrawToolsContainer.Sprites["line2"] = new Sprite(DrawToolsContainer.Viewport, new SolidBitmap(1, 26, new Color(28, 50, 73)));
+            DrawToolsContainer.Sprites["line2"].X = 185;
+
+            PencilButton = new IconButton(DrawToolsContainer);
+            PencilButton.SetIcon(15, 0);
+            PencilButton.SetSelected(true);
+
+            FillButton = new IconButton(DrawToolsContainer);
+            FillButton.SetIcon(16, 0);
+            FillButton.SetPosition(32, 0);
+
+            EllipseButton = new IconButton(DrawToolsContainer);
+            EllipseButton.SetIcon(17, 0);
+            EllipseButton.SetPosition(64, 0);
+
+            RectButton = new IconButton(DrawToolsContainer);
+            RectButton.SetIcon(18, 0);
+            RectButton.SetPosition(96, 0);
+
+            SelectButton = new IconButton(DrawToolsContainer);
+            SelectButton.SetIcon(19, 0);
+            SelectButton.SetPosition(128, 0);
+            SelectButton.OnSelection += delegate (object sender, EventArgs e)
+            {
+                MapViewer.Cursor.SetVisible(false);
+                Cursor.SetPosition(0, 0);
+                Cursor.SetVisible(false);
+            };
+            SelectButton.OnDeselection += delegate (object sender, EventArgs e)
+            {
+                UpdateCursor();
+            };
+
+            EraserButton = new IconButton(DrawToolsContainer);
+            EraserButton.SetIcon(20, 0);
+            EraserButton.SetPosition(160, 0);
+            EraserButton.Toggleable = true;
+            EraserButton.OnSelection += delegate (object sender, EventArgs e)
+            {
+                if (TilesetIndex != -1 || TileStartX != -1 || TileEndX != -1 || TileStartY != -1 || TileEndY != -1)
+                    SelectTile(null);
+            };
+            EraserButton.OnDeselection += delegate (object sender, EventArgs e)
+            {
+                if (TilesetIndex == -1 && TileStartX == -1 && TileEndX == -1 && TileStartY == -1 && TileEndY == -1 &&
+                    !MapViewer.SelectionOnMap)
+                    SelectTile(0, 0, 0);
+                else UpdateCursor();
+            };
+
+            SetSize(288, 200); // Dummy size so the sprites can be drawn properly
         }
 
         public void SetTilesets(List<int> TilesetIDs)
@@ -79,7 +150,7 @@ namespace MKEditor.Widgets
                 CollapsibleContainer c = new CollapsibleContainer(TilesetStackPanel);
                 c.SetText(tileset.Name);
                 c.SetMargin(0, 0, 0, 8);
-                c.OnCollapsedChanged += delegate (object sender, EventArgs e) { UpdateCursorPosition(); };
+                c.OnCollapsedChanged += delegate (object sender, EventArgs e) { UpdateCursor(); };
                 c.SetSize(TilesetContainer.Size.Width - 13, tileset.TilesetListBitmap.Height + 23);
                 TilesetContainers.Add(c);
                 PictureBox image = new PictureBox(c);
@@ -90,24 +161,53 @@ namespace MKEditor.Widgets
             }
         }
 
+        public void SelectTile(int TilesetIndex, int TileX, int TileY)
+        {
+            this.TilesetIndex = TilesetIndex;
+            this.TileStartX = this.TileEndX = TileX;
+            this.TileStartY = this.TileEndY = TileY;
+            MapViewer.SelectionOnMap = false;
+            if (EraserButton.Selected) EraserButton.SetSelected(false);
+            if (SelectButton.Selected)
+            {
+                SelectButton.SetSelected(false);
+                PencilButton.SetSelected(true);
+            }
+            UpdateCursor();
+        }
+
         public void SelectTile(TileData tile)
         {
-            TilesetIndex = tile.TilesetIndex;
-            TileStartX = TileEndX = tile.TileID % 8;
-            TileStartY = TileEndY = (int) Math.Floor(tile.TileID / 8d);
-            MapViewer.SelectionOnMap = false;
-            UpdateCursorPosition();
-            ToolBar.EraserButton.SetSelected(false);
+            if (tile == null)
+            {
+                TilesetIndex = -1;
+                TileStartX = TileEndX = -1;
+                TileStartY = TileEndY = -1;
+                EraserButton.SetSelected(true);
+                MapViewer.TileDataList = new List<TileData>() { };
+                for (int i = 0; i < MapViewer.CursorWidth * MapViewer.CursorHeight; i++)
+                    MapViewer.TileDataList.Add(null);
+                MapViewer.UpdateCursorPosition();
+            }
+            else
+            {
+                TilesetIndex = tile.TilesetIndex;
+                TileStartX = TileEndX = tile.TileID % 8;
+                TileStartY = TileEndY = (int) Math.Floor(tile.TileID / 8d);
+                MapViewer.SelectionOnMap = false;
+                EraserButton.SetSelected(false);
+            }
+            UpdateCursor();
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            TilesetContainer.SetSize(Size.Width - 11, Size.Height - 1);
-            TilesetContainer.VScrollBar.SetPosition(Size.Width - 9, 1);
-            TilesetContainer.VScrollBar.SetSize(8, Size.Height - 2);
-            Sprites["bar"].X = Size.Width - 11;
-            (Sprites["bar"].Bitmap as SolidBitmap).SetSize(1, Size.Height);
+            TilesetContainer.SetSize(Size.Width - 11, Size.Height - TilesetContainer.Position.Y - 1);
+            TilesetContainer.VScrollBar.SetPosition(Size.Width - 10, 54);
+            TilesetContainer.VScrollBar.SetSize(8, Size.Height - 56);
+            Sprites["slider"].X = Size.Width - 11;
+            (Sprites["slider"].Bitmap as SolidBitmap).SetSize(10, Size.Height - 54);
         }
 
         public override void Update()
@@ -116,8 +216,25 @@ namespace MKEditor.Widgets
             base.Update();
         }
 
-        public void UpdateCursorPosition()
+        public void UpdateCursor()
         {
+            if (MapViewer.SelectionOnMap)
+            {
+                TilesetIndex = TileStartX = TileEndX = TileStartY = TileEndY = -1;
+            }
+            if (TilesetIndex == -1 || TileStartX == -1 || TileEndX == -1 || TileStartY == -1 || TileEndY == -1 ||
+                SelectButton.Selected)
+            {
+                Cursor.SetPosition(0, 0);
+                Cursor.SetVisible(false);
+                TilesetContainer.UpdateAutoScroll();
+                return;
+            }
+            if (SelectButton.Selected)
+            {
+                SelectButton.SetSelected(false);
+                PencilButton.SetSelected(true);
+            }
             int DiffX = TileEndX - TileStartX;
             int DiffY = TileEndY - TileStartY;
             int PosDiffX = 0;
@@ -157,7 +274,7 @@ namespace MKEditor.Widgets
             }
             LayoutContainer lc = TilesetStackPanel.Widgets[TilesetIndex] as LayoutContainer;
             CollapsibleContainer cc = lc.Widget as CollapsibleContainer;
-            if (cc.Collapsed || ToolBar.EraserButton.Selected || MapViewer.SelectionOnMap)
+            if (cc.Collapsed || EraserButton.Selected || MapViewer.SelectionOnMap)
             {
                 Cursor.SetPosition(0, 0);
                 Cursor.SetVisible(false);
@@ -185,7 +302,7 @@ namespace MKEditor.Widgets
                 if (idx != TilesetIndex) return;
                 TileEndX = x;
                 TileEndY = y;
-                UpdateCursorPosition();
+                UpdateCursor();
             }
         }
 
@@ -200,15 +317,7 @@ namespace MKEditor.Widgets
             if (idx != -1 && x != -1 && y != -1)
             {
                 DraggingTileset = true;
-                TilesetIndex = idx;
-                TileStartX = TileEndX = x;
-                TileStartY = TileEndY = y;
-                MapViewer.SelectionOnMap = false;
-                UpdateCursorPosition();
-                if (ToolBar.EraserButton.Selected)
-                {
-                    ToolBar.EraserButton.SetSelected(false);
-                }
+                SelectTile(idx, x, y);
             }
         }
 

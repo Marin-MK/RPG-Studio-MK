@@ -15,6 +15,7 @@ namespace MKEditor.Widgets
         public Widget LinkedWidget;
 
         public int MinSliderHeight = 8;
+        double OriginalSize = 0.1;
 
         public EventHandler<EventArgs> OnValueChanged;
         public EventHandler<DirectionEventArgs> OnControlScrolling;
@@ -27,7 +28,7 @@ namespace MKEditor.Widgets
             : base(Parent, Name)
         {
             this.Size = new Size(17, 60);
-            this.ConsiderInAutoScroll = false;
+            this.ConsiderInAutoScrollPositioning = this.ConsiderInAutoScrollCalculation = false;
             this.WidgetIM.OnMouseWheel += MouseWheel;
             this.Sprites["slider"] = new Sprite(this.Viewport);
             this.SliderSize = 0.25;
@@ -56,8 +57,15 @@ namespace MKEditor.Widgets
             }
         }
 
+        public override void SetSize(Size size)
+        {
+            base.SetSize(size);
+            SetSliderSize(OriginalSize);
+        }
+
         public void SetSliderSize(double size)
         {
+            OriginalSize = size;
             double minsize = (double) MinSliderHeight / this.Size.Height;
             size = Math.Max(Math.Min(size, 1), 0);
             size = Math.Max(size, minsize);

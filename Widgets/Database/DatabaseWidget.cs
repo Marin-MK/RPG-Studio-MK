@@ -54,7 +54,7 @@ namespace MKEditor.Widgets
             DBModeList = new DatabaseModeList(DBContainer);
             DBModeList.DBWidget = this;
             DBDataList = new DatabaseDataList(DBContainer);
-            DBDataList.ConsiderInAutoScroll = false;
+            DBDataList.ConsiderInAutoScrollPositioning = DBDataList.ConsiderInAutoScrollCalculation = false;
             DBDataList.SetPosition(156, 0);
             DBDataList.DBWidget = this;
 
