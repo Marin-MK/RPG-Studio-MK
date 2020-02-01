@@ -24,6 +24,7 @@ namespace MKEditor.Widgets
                 for (int i = 0; i < kvp.Value.Count; i++)
                 {
                     MapImageWidget miw = new MapImageWidget(MainContainer, "miw");
+                    miw.GridBackground.SetVisible(false);
                     miw.SetDarkOverlay(200);
                     miw.LoadLayers(Data.Maps[kvp.Value[i].MapID], kvp.Key, kvp.Value[i].Offset);
                     ConnWidgets.Add(miw);

@@ -119,8 +119,37 @@ namespace MKEditor.Widgets
             if (MainContainer.VScrollBar != null) MainContainer.VScrollBar.SetValue(0.5);
         }
 
+        bool OldHVisible;
+        int OldScrollWidth;
+        int OldMapWidth;
+
+        bool OldVVisible;
+        int OldScrollHeight;
+        int OldMapHeight;
+
         public virtual void PositionMap()
         {
+            if (Editor.MainWindow.MapWidget.Submodes.SelectedIndex != -1 && this != Editor.MainWindow.MapWidget.ActiveMapViewer) return;
+            // Ensures the scrollbars end up at roughly the same place when zooming
+            bool HExist = OldHVisible;
+            double ScrolledX = 0.5;
+            if (HExist) ScrolledX = (double) MainContainer.ScrolledX / OldScrollWidth;
+            else
+            {
+                int rx = Graphics.LastMouseEvent.X - MapWidget.Viewport.X;
+                rx = Math.Max(0, Math.Min(rx, OldMapWidth));
+                ScrolledX = (double) rx / OldMapWidth;
+            }
+            bool VExist = OldVVisible;
+            double ScrolledY = 0.5;
+            if (VExist) ScrolledY = (double) MainContainer.ScrolledY / OldScrollHeight;
+            else
+            {
+                int ry = Graphics.LastMouseEvent.Y - MapWidget.Viewport.Y;
+                ry = Math.Max(0, Math.Min(ry, OldMapHeight));
+                ScrolledY = (double) ry / OldMapHeight;
+            }
+
             int x = 0;
             if (Map.Width * 32 * ZoomFactor < MainContainer.Viewport.Width)
             {
@@ -142,12 +171,19 @@ namespace MKEditor.Widgets
             MapWidget.SetPosition(x, y);
             MapWidget.SetSize((int) Math.Round(Map.Width * 32 * ZoomFactor), (int) Math.Round(Map.Height * 32 * ZoomFactor));
             DummyWidget.SetSize(2 * x + MapWidget.Size.Width, 2 * y + MapWidget.Size.Height);
+            MainContainer.UpdateAutoScroll();
             if (Map.Width * 32 * ZoomFactor >= Viewport.Width || Map.Height * 32 * ZoomFactor >= Viewport.Height)
             {
-                MainContainer.HScrollBar.SetValue(0.5);
-                MainContainer.VScrollBar.SetValue(0.5);
+                MainContainer.ScrolledX = (int) Math.Round((MainContainer.MaxChildWidth - MainContainer.Viewport.Width) * ScrolledX);
+                MainContainer.ScrolledY = (int) Math.Round((MainContainer.MaxChildHeight - MainContainer.Viewport.Height) * ScrolledY);
+                MainContainer.UpdateAutoScroll();
             }
-            MainContainer.UpdateAutoScroll();
+            OldHVisible = MainContainer.HScrollBar.Visible;
+            OldVVisible = MainContainer.VScrollBar.Visible;
+            OldScrollWidth = MainContainer.MaxChildWidth - MainContainer.Viewport.Width;
+            OldScrollHeight = MainContainer.MaxChildHeight - MainContainer.Viewport.Height;
+            OldMapWidth = MapWidget.Viewport.Width;
+            OldMapHeight = MapWidget.Viewport.Height;
         }
 
         public override void MouseMoving(object sender, MouseEventArgs e)

@@ -8,13 +8,13 @@ namespace MKEditor.Widgets
         public MapSelectPanel MapSelectPanel;
         public MapImageWidget MapImageWidget;
 
-        TabView Submodes;
+        public TabView Submodes;
 
         public Game.Map Map;
 
         public MapViewerTiles MapViewerTiles;
         //public MapViewerEvents MapViewerEvents;
-        public MapViewerBase MapViewerConnections;
+        public MapViewerConnections MapViewerConnections;
         //public MapViewerEncounters MapViewerEncounters;
         //public MapViewerProperties MapViewerProperties;
 
@@ -55,7 +55,7 @@ namespace MKEditor.Widgets
             //Submodes.CreateTab("Properties");
             MapViewerTiles = new MapViewerTiles(Submodes.GetTab(0));
             //MapViewerEvents = new MapViewerEvents(Submodes.GetTab(1));
-            MapViewerConnections = new MapViewerBase(Submodes.GetTab(1));
+            MapViewerConnections = new MapViewerConnections(Submodes.GetTab(1));
             //MapViewerEncounters = new MapViewerEncounters(Submodes.GetTab(3));
             //MapViewerProperties = new MapViewerProperties(Submodes.GetTab(4));
 
@@ -68,12 +68,18 @@ namespace MKEditor.Widgets
             //mapViewerProperties.MapWidget = MapImageWidget;
         }
 
+        int OldSelectedIndex = -1;
+
         public void ChangeSubmode()
         {
+            if (OldSelectedIndex == Submodes.SelectedIndex) return;
             MapImageWidget.SetParent(ActiveMapViewer.MainContainer);
             MapImageWidget.SetVisible(true);
             if (ActiveMapViewer.Map != null) ActiveMapViewer.PositionMap();
+            if (ActiveMapViewer is MapViewerConnections) MapImageWidget.GridBackground.SetVisible(false);
+            else MapImageWidget.GridBackground.SetVisible(true);
             MapImageWidget.MapViewer = ActiveMapViewer;
+            OldSelectedIndex = Submodes.SelectedIndex;
         }
 
         public void SetSelectedLayer(int Index)
@@ -88,7 +94,7 @@ namespace MKEditor.Widgets
             MapViewerConnections.SetZoomFactor(Factor, FromStatusBar);
             //MapViewerEncounters.SetZoomFactor(Factor, FromStatusBar);
             //MapViewerProperties.SetZoomFactor(Factor, FromStatusBar);
-            if (Submodes.SelectedIndex != -1) ActiveMapViewer.PositionMap();
+            //if (Submodes.SelectedIndex != -1) ActiveMapViewer.PositionMap();
         }
 
         public void SetMap(Game.Map Map)
@@ -100,13 +106,13 @@ namespace MKEditor.Widgets
             MapViewerConnections.SetMap(Map);
             //MapViewerEncounters.SetMap(Map);
             //MapViewerProperties.SetMap(Map);
-            if (Submodes.SelectedIndex != -1) ActiveMapViewer.PositionMap();
+            //if (Submodes.SelectedIndex != -1) ActiveMapViewer.PositionMap();
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            ActiveMapViewer.PositionMap();
+            //if (Submodes.SelectedIndex != -1) ActiveMapViewer.PositionMap();
         }
     }
 }
