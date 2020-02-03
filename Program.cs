@@ -10,13 +10,19 @@ namespace MKEditor
         /// Whether or not exceptions should be caught and displayed.
         /// If false, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
         /// </summary>
-        static bool CatchErrors = false
+        static bool CatchErrors = true
             ;
 
         public static bool ThrownError = false;
 
         static void Main(params string[] args)
         {
+            if (args.Length > 0)
+            {
+                string ThisFile = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                string ParentDir = System.IO.Directory.GetParent(ThisFile).FullName;
+                System.IO.Directory.SetCurrentDirectory(ParentDir);
+            }
             OperatingSystem os = Editor.GetOperatingSystem();
             Console.WriteLine($"Platform: {os.Platform} ({Editor.Platform})");
             Console.WriteLine($"Version: {os.VersionString}");

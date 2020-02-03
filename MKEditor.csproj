@@ -7,41 +7,28 @@
     <StartupObject />
     <Authors>Marijn Herrebout</Authors>
     <Product>RPG Studio MK</Product>
-    <Version>0.1.0</Version>
-    <Platforms>AnyCPU;x64</Platforms>
+    <Version>0.1.1</Version>
+    <Platforms>Debug;x86</Platforms>
     <AssemblyName>RPG Studio MK</AssemblyName>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <PlatformTarget>x64</PlatformTarget>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    <PackageReference Include="SDL2-CS" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="odl">
-      <HintPath>..\odl\bin\Debug\netcoreapp3.0\odl.dll</HintPath>
+      <HintPath>..\odl\bin\x86\Debug\netcoreapp3.0\odl.dll</HintPath>
     </Reference>
     <Reference Include="RubyDotNET">
-      <HintPath>..\rubydotnet\bin\Debug\netcoreapp3.0\RubyDotNET.dll</HintPath>
+      <HintPath>..\rubydotnet\bin\x86\Debug\netcoreapp3.0\RubyDotNET.dll</HintPath>
     </Reference>
     <Reference Include="SDL2-CS">
-      <HintPath>bin\Debug\netcoreapp3.0\SDL2-CS.dll</HintPath>
+      <HintPath>..\odl\bin\x86\Debug\netcoreapp3.0\SDL2-CS.dll</HintPath>
     </Reference>
   </ItemGroup>
 

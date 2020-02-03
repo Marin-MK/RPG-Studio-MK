@@ -32,7 +32,6 @@ namespace MKEditor.Game
             LoadSpecies();
             LoadTilesets();
             LoadMaps(); // TODO: Event commands/conditions
-            // TODO: Map Connections
         }
 
         public static void SetProjectPath(string ProjectFilePath)

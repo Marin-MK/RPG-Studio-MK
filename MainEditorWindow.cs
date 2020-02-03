@@ -41,6 +41,7 @@ namespace MKEditor
             };
 
             this.UI = new UIManager(this);
+            this.UI.SetBackgroundColor(10, 23, 37);
 
             // Widgets may now be created
 
@@ -198,15 +199,15 @@ namespace MKEditor
             StatusBar.SetGridRow(5);
             #endregion
 
-            bool LoadHomeScreen = true;
             // If an argument was passed, load that project file and skip the home screen
             if (args.Length > 0 && args[0].Contains("project.mkproj"))
             {
+                Console.WriteLine(args[0]);
                 Data.SetProjectPath(args[0]);
-                LoadHomeScreen = false;
+                CreateEditor();
+                Editor.MakeRecentProject();
             }
-
-            if (LoadHomeScreen)
+            else
             {
                 MainGridLayout.Rows[1] = new GridSize(0, Unit.Pixels);
                 MainGridLayout.Rows[4] = new GridSize(0, Unit.Pixels);
@@ -214,14 +215,8 @@ namespace MKEditor
                 MainGridLayout.UpdateContainers();
                 StatusBar.SetVisible(false);
                 ToolBar.SetVisible(false);
-                UI.SetBackgroundColor(10, 23, 37);
                 HomeScreen = new HomeScreen(MainGridLayout);
                 HomeScreen.SetGridRow(3);
-            }
-            else
-            {
-                CreateEditor();
-                Editor.MakeRecentProject();
             }
 
             #region Events

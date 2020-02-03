@@ -68,10 +68,6 @@ namespace MKEditor.Game
             this.Connections.Add(":east", new List<Connection>());
             this.Connections.Add(":south", new List<Connection>());
             this.Connections.Add(":west", new List<Connection>());
-            if (this.ID == 6)
-                this.Connections[":west"].Add(new Connection(5, 5));
-            if (this.ID == 5)
-                this.Connections[":east"].Add(new Connection(-5, 6));
         }
 
         public Dictionary<string, object> ToJSON()
