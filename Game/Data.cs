@@ -173,18 +173,6 @@ namespace MKEditor.Game
                 Map map = new Map(((JObject) data[":data"]).ToObject<Dictionary<string, object>>());
                 Maps[map.ID] = map;
             }
-
-            int a = 7,
-                b = 8,
-                c = 9,
-                d = 10;
-
-            Maps[a].Connections[":west"].Add(new Connection(1, b));
-            Maps[b].Connections[":east"].Add(new Connection(-1, a));
-            Maps[a].Connections[":east"].Add(new Connection(2, c));
-            Maps[c].Connections[":west"].Add(new Connection(-2, a));
-            Maps[c].Connections[":south"].Add(new Connection(1, d));
-            Maps[d].Connections[":north"].Add(new Connection(-1, c));
         }
 
         public static void SaveMaps()

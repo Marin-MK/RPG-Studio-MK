@@ -20,6 +20,7 @@ namespace MKEditor
             OperatingSystem os = Editor.GetOperatingSystem();
             Console.WriteLine($"Platform: {os.Platform} ({Editor.Platform})");
             Console.WriteLine($"Version: {os.VersionString}");
+            Console.WriteLine($"Editor Version: {Editor.GetVersionString()}");
             Graphics.Start();
             MainEditorWindow win = new MainEditorWindow(args);
             win.Show();

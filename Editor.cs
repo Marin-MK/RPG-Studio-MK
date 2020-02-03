@@ -24,7 +24,7 @@ namespace MKEditor
         {
             get
             {
-                if (_platform != null) return (Platform)_platform;
+                if (_platform != null) return (Platform) _platform;
                 string p = SDL2.SDL.SDL_GetPlatform();
                 if (p == "Windows") _platform = Platform.Windows;
                 if (p == "Linux") _platform = Platform.Linux;
@@ -64,7 +64,7 @@ namespace MKEditor
 
             RubyDotNET.Module mRPG = new RubyDotNET.Module("RPG");
             Table.CreateClass();
-            Tone.CreateClass();
+            RubyDotNET.Tone.CreateClass();
             RubyDotNET.Color.CreateClass();
             AudioFile.CreateClass();
             Map.CreateClass();
