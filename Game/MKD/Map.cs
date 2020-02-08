@@ -6,6 +6,10 @@ namespace MKEditor.Game
 {
     public class Map : ICloneable
     {
+        /*
+         * [0, tileset_index, tile_id]
+         * [1, autotile_index, combination_id]
+         */
         public int ID;
         public string DevName;
         public string DisplayName;
@@ -48,9 +52,11 @@ namespace MKEditor.Game
                     else
                     {
                         List<object> tiledata = ((JArray) tile).ToObject<List<object>>();
-                        int TilesetIndex = Convert.ToInt32(tiledata[0]);
-                        int TileID = Convert.ToInt32(tiledata[1]);
-                        l.Tiles.Add(new TileData() { TilesetIndex = TilesetIndex, TileID = TileID });
+                        if (tiledata.Count == 2) tiledata.Insert(0, 0);
+                        int TileType = Convert.ToInt32(tiledata[0]);
+                        int Index = Convert.ToInt32(tiledata[1]);
+                        int ID = Convert.ToInt32(tiledata[2]);
+                        l.Tiles.Add(new TileData() { TileType = (TileType) TileType, Index = Index, ID = ID });
                     }
                 }
                 this.Layers.Add(l);
@@ -126,7 +132,7 @@ namespace MKEditor.Game
                 {
                     TileData tile = Layers[i].Tiles[j];
                     if (tile == null) continue;
-                    if (tile.TilesetIndex == idx) Layers[i].Tiles[j] = null;
+                    if (tile.TileType == TileType.Tileset && tile.Index == idx) Layers[i].Tiles[j] = null;
                 }
             }
             this.TilesetIDs.Remove(TilesetID);
@@ -136,7 +142,7 @@ namespace MKEditor.Game
                 {
                     TileData tile = Layers[i].Tiles[j];
                     if (tile == null) continue;
-                    if (tile.TilesetIndex > idx) Layers[i].Tiles[j].TilesetIndex -= 1;
+                    if (tile.TileType == TileType.Tileset && tile.Index > idx) Layers[i].Tiles[j].Index -= 1;
                 }
             }
         }
@@ -174,10 +180,16 @@ namespace MKEditor.Game
             for (int i = 0; i < Tiles.Count; i++)
             {
                 if (Tiles[i] == null) Data.Add(null);
-                else Data.Add(new List<object>() { Tiles[i].TilesetIndex, Tiles[i].TileID });
+                else Data.Add(new List<object>() { Convert.ToInt32(Tiles[i].TileType), Tiles[i].Index, Tiles[i].ID });
             }
             return Data;
         }
+    }
+
+    public enum TileType
+    {
+        Tileset = 0,
+        Autotile = 1
     }
 
     public class MapConnection
@@ -222,8 +234,9 @@ namespace MKEditor.Game
 
     public class TileData
     {
-        public int TilesetIndex;
-        public int TileID;
+        public TileType TileType;
+        public int Index;
+        public int ID;
     }
 
     public enum Passability

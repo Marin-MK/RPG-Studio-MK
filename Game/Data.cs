@@ -15,6 +15,7 @@ namespace MKEditor.Game
 
         public static Dictionary<int, Map> Maps = new Dictionary<int, Map>();
         public static List<Tileset> Tilesets = new List<Tileset>();
+        public static List<Autotile> Autotiles = new List<Autotile>();
         public static Dictionary<string, Species> Species = new Dictionary<string, Species>();
 
         public static void ClearProjectData()
@@ -31,6 +32,7 @@ namespace MKEditor.Game
         {
             LoadSpecies();
             LoadTilesets();
+            LoadAutotiles();
             LoadMaps(); // TODO: Event commands/conditions
         }
 
@@ -107,6 +109,27 @@ namespace MKEditor.Game
             int MaxID = Tilesets.Count;
             int Missing = Editor.ProjectSettings.TilesetCapacity - MaxID + 1;
             for (int i = 0; i < Missing; i++) Tilesets.Add(null);
+        }
+
+        public static void LoadAutotiles()
+        {
+            StreamReader sr = new StreamReader(File.OpenRead(DataPath + "/autotiles.mkd"));
+            string content = sr.ReadToEnd();
+            sr.Close();
+            Dictionary<string, object> data = JsonConvert.DeserializeObject<Dictionary<string, object>>(content);
+            if ((string) data[":type"] != ":autotiles")
+            {
+                throw new Exception("Invalid data type for autotiles.mkd - Expected to contain autotile data but found " + data[":type"] + ".");
+            }
+            List<object> AllAutotiles = ((JArray) data[":data"]).ToObject<List<object>>();
+            for (int i = 0; i < AllAutotiles.Count; i++)
+            {
+                if (AllAutotiles[i] == null) Autotiles.Add(null);
+                else Autotiles.Add(new Autotile(((JObject) AllAutotiles[i]).ToObject<Dictionary<string, object>>()));
+            }
+            int MaxID = Autotiles.Count;
+            int Missing = Editor.ProjectSettings.AutotileCapacity - MaxID + 1;
+            for (int i = 0; i < Missing; i++) Autotiles.Add(null);
         }
 
         public static void SaveTilesets()

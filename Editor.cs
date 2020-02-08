@@ -116,6 +116,7 @@ namespace MKEditor
             if (ProjectSettings.ProjectName.Length == 0) ProjectSettings.ProjectName = "Untitled Game";
             if (string.IsNullOrEmpty(ProjectSettings.LastMode)) ProjectSettings.LastMode = "MAPPING";
             if (ProjectSettings.TilesetCapacity == 0) ProjectSettings.TilesetCapacity = 25;
+            if (ProjectSettings.AutotileCapacity == 0) ProjectSettings.AutotileCapacity = 25;
         }
 
         public static void ClearProjectData()
@@ -361,7 +362,7 @@ namespace MKEditor
                                 int tileid = Tiles.Data[idx].Convert<RubyInt>().ToInt32();
                                 if (tileid < 384) RemovedAutotiles = true;
                                 if (tileid == 0) layer.Tiles.Add(null);
-                                else layer.Tiles.Add(new Game.TileData() { TilesetIndex = 0, TileID = tileid - 384 });
+                                else layer.Tiles.Add(new Game.TileData() { TileType = Game.TileType.Tileset, Index = 0, ID = tileid - 384 });
                             }
                         }
                         data.Layers.Add(layer);
@@ -667,6 +668,7 @@ namespace MKEditor
         public int LastLayer = 1;
         public double LastZoomFactor = 1;
         public int TilesetCapacity = 25;
+        public int AutotileCapacity = 25;
     }
 
     [Serializable]

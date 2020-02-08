@@ -140,14 +140,15 @@ namespace MKEditor.Widgets
                         if (m.Layers[layer] == null || m.Layers[layer].Tiles == null ||
                             y * m.Width + x >= m.Layers[layer].Tiles.Count ||
                             m.Layers[layer].Tiles[y * m.Width + x] == null) continue;
-                        int tileset_index = m.Layers[layer].Tiles[y * m.Width + x].TilesetIndex;
+                        if (m.Layers[layer].Tiles[y * m.Width + x].TileType == TileType.Autotile) throw new Exception("Cannot draw autotiles yet.");
+                        int tileset_index = m.Layers[layer].Tiles[y * m.Width + x].Index;
                         int tileset_id = m.TilesetIDs[tileset_index];
                         Bitmap tilesetimage = Data.Tilesets[tileset_id].TilesetBitmap;
                         int mapx = (x - SX) * 32;
                         int mapy = (y - SY) * 32;
-                        int tile_id = m.Layers[layer].Tiles[y * m.Width + x].TileID;
+                        int tile_id = m.Layers[layer].Tiles[y * m.Width + x].ID;
                         int tilesetx = tile_id % 8;
-                        int tilesety = (int)Math.Floor(tile_id / 8d);
+                        int tilesety = (int) Math.Floor(tile_id / 8d);
                         bmps[layer].Build(new Rect(mapx, mapy, 32, 32), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
                     }
                 }
@@ -329,16 +330,18 @@ namespace MKEditor.Widgets
                     sely %= MapViewer.CursorHeight + 1;
 
                     TileData tiledata = MapViewer.TileDataList[sely * (MapViewer.CursorWidth + 1) + selx];
+                    TileType tiletype = TileType.Tileset;
                     int tileid = -1;
                     int tilesetindex = -1;
                     int tilesetx = -1;
                     int tilesety = -1;
                     if (tiledata != null)
                     {
-                        tileid = tiledata.TileID;
-                        tilesetindex = tiledata.TilesetIndex;
+                        tiletype = tiledata.TileType;
+                        tileid = tiledata.ID;
+                        tilesetindex = tiledata.Index;
                         tilesetx = tileid % 8;
-                        tilesety = (int)Math.Floor(tileid / 8d);
+                        tilesety = (int) Math.Floor(tileid / 8d);
                     }
                     else Blank = true;
 
@@ -351,22 +354,30 @@ namespace MKEditor.Widgets
                     {
                         MapData.Layers[layer].Tiles[MapPosition] = new TileData
                         {
-                            TilesetIndex = tilesetindex,
-                            TileID = tileid
+                            TileType = tiletype,
+                            Index = tilesetindex,
+                            ID = tileid
                         };
                     }
 
                     if (olddata != MapData.Layers[layer].Tiles[MapPosition])
                     {
-                        Editor.UnsavedChanges = true;
-                        this.Sprites[layer.ToString()].Bitmap.FillRect(actualx * 32, actualy * 32, 32, 32, Color.ALPHA);
-                        if (!Blank)
+                        if (tiletype == TileType.Tileset)
                         {
-                            this.Sprites[layer.ToString()].Bitmap.Build(
-                                actualx * 32, actualy * 32,
-                                Data.Tilesets[MapData.TilesetIDs[tilesetindex]].TilesetBitmap,
-                                new Rect(tilesetx * 32, tilesety * 32, 32, 32)
-                            );
+                            Editor.UnsavedChanges = true;
+                            this.Sprites[layer.ToString()].Bitmap.FillRect(actualx * 32, actualy * 32, 32, 32, Color.ALPHA);
+                            if (!Blank)
+                            {
+                                this.Sprites[layer.ToString()].Bitmap.Build(
+                                    actualx * 32, actualy * 32,
+                                    Data.Tilesets[MapData.TilesetIDs[tilesetindex]].TilesetBitmap,
+                                    new Rect(tilesetx * 32, tilesety * 32, 32, 32)
+                                );
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("Cannot draw autotiles yet.");
                         }
                     }
                 }

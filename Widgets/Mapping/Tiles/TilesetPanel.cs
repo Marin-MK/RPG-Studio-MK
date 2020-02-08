@@ -191,9 +191,10 @@ namespace MKEditor.Widgets
             }
             else
             {
-                TilesetIndex = tile.TilesetIndex;
-                TileStartX = TileEndX = tile.TileID % 8;
-                TileStartY = TileEndY = (int) Math.Floor(tile.TileID / 8d);
+                if (tile.TileType == TileType.Autotile) throw new Exception("Cannot select autotile yet.");
+                TilesetIndex = tile.Index;
+                TileStartX = TileEndX = tile.ID % 8;
+                TileStartY = TileEndY = (int) Math.Floor(tile.ID / 8d);
                 MapViewer.SelectionOnMap = false;
                 EraserButton.SetSelected(false);
             }
@@ -269,7 +270,7 @@ namespace MKEditor.Widgets
                 for (int x = sx; x <= ex; x++)
                 {
                     int tileid = y * 8 + x;
-                    MapViewer.TileDataList.Add(new TileData() { TileID = tileid, TilesetIndex = TilesetIndex });
+                    MapViewer.TileDataList.Add(new TileData() { TileType = TileType.Tileset, Index = TilesetIndex, ID = tileid });
                 }
             }
             LayoutContainer lc = TilesetStackPanel.Widgets[TilesetIndex] as LayoutContainer;

@@ -92,7 +92,7 @@ namespace MKEditor.Widgets
             this.Map = Map;
             LayerPanel.CreateLayers();
             TilesetPanel.SetTilesets(Map.TilesetIDs);
-            TilesetPanel.SelectTile(new TileData() { TilesetIndex = 0, TileID = 0 });
+            TilesetPanel.SelectTile(new TileData() { TileType = TileType.Tileset, Index = 0, ID = 0 });
             base.SetMap(Map);
         }
 

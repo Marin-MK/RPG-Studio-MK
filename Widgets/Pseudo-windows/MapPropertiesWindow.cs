@@ -347,14 +347,14 @@ namespace MKEditor.Widgets
                 {
                     for (int i = 0; i < Map.Width * Map.Height; i++)
                     {
-                        if (Map.Layers[layer].Tiles[i] == null) continue;
-                        int tilesetID = Clone.TilesetIDs[Map.Layers[layer].Tiles[i].TilesetIndex];
+                        if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Autotile) continue;
+                        int tilesetID = Clone.TilesetIDs[Map.Layers[layer].Tiles[i].Index];
                         if (!Map.TilesetIDs.Contains(tilesetID))
                         {
                             warn = true;
                             Map.Layers[layer].Tiles[i] = null;
                         }
-                        else Map.Layers[layer].Tiles[i].TilesetIndex = Map.TilesetIDs.IndexOf(tilesetID);
+                        else Map.Layers[layer].Tiles[i].Index = Map.TilesetIDs.IndexOf(tilesetID);
                     }
                 }
                 if (warn)
