@@ -279,7 +279,7 @@ namespace MKEditor.Widgets
             if (SharedContainer.Sprites["bg"].Bitmap != null) SharedContainer.Sprites["bg"].Bitmap.Dispose();
 
             int sw = 585;
-            int sh = Size.Height - 64;
+            int sh = Math.Max(101, Size.Height - 64);
 
             if (Window.Width < 980)
             {
