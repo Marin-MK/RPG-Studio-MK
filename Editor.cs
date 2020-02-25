@@ -523,14 +523,17 @@ namespace MKEditor
         public static void SaveProject()
         {
             if (!InProject) return;
+            MainWindow.StatusBar.QueueMessage("Saving project...");
+            Graphics.UpdateGraphics(); // Overrides default Logic/Visual update loop by immediately updating just the graphics.
             DateTime t1 = DateTime.Now;
             DumpProjectSettings();
             Game.Data.SaveTilesets();
+            Game.Data.SaveAutotiles();
             Game.Data.SaveMaps();
             Game.Data.SaveSpecies();
             UnsavedChanges = false;
             long time = (long) Math.Round((DateTime.Now - t1).TotalMilliseconds);
-            MainWindow.StatusBar.QueueMessage($"Saved project ({time}ms)");
+            MainWindow.StatusBar.QueueMessage($"Saved project ({time}ms)", true);
         }
 
         public static void StartGame()

@@ -16,14 +16,13 @@ namespace MKEditor.Widgets
         PictureBox tileset;
         Container scroll;
 
-        Button OKButton;
-        Button CancelButton;
-
         public TilesetPicker(Map Map, object Parent, string Name = "tilesetPicker")
             : base(Parent, Name)
         {
             this.Map = Map;
             SetTitle("Add Tileset");
+            SetSize(506, 498);
+            Center();
 
             Label pickerlabel = new Label(this);
             pickerlabel.SetText("Tilesets");
@@ -64,18 +63,8 @@ namespace MKEditor.Widgets
 
             tileset = new PictureBox(scroll);
 
-            OKButton = new Button(this);
-            OKButton.SetPosition(330, 459);
-            OKButton.SetText("OK");
-            OKButton.OnClicked += OK;
-
-            CancelButton = new Button(this);
-            CancelButton.SetPosition(419, 459);
-            CancelButton.SetText("Cancel");
-            CancelButton.OnClicked += Cancel;
-
-            SetSize(506, 498);
-            Center();
+            CreateButton("Cancel", Cancel);
+            CreateButton("OK", OK);
 
             Tilesets.SetSelectedIndex(0);
         }

@@ -8,7 +8,7 @@ namespace MKEditor.Widgets
     public class MapPropertiesWindow : PopupWindow
     {
         public Map Map;
-        public Map Clone;
+        public Map OldMap;
 
         public bool UnsavedChanges = false;
         public bool UpdateMapViewer = false;
@@ -20,14 +20,11 @@ namespace MKEditor.Widgets
         ListBox Tilesets;
         ListBox Autotiles;
 
-        Button OKButton;
-        Button CancelButton;
-
         public MapPropertiesWindow(Map Map, object Parent, string Name = "mapPropertiesWindow")
             : base(Parent, Name)
         {
-            this.Map = Map;
-            this.Clone = this.Map.Clone() as Map;
+            this.OldMap = Map;
+            this.Map = Map.Clone() as Map;
             this.SetTitle($"Map Properties - {Utilities.Digits(Map.ID, 3)}: {Map.DevName}");
             this.SetSize(540, 460);
             this.Center();
@@ -100,29 +97,14 @@ namespace MKEditor.Widgets
 
             Tilesets = new ListBox(box1);
             Tilesets.SetPosition(162, 22);
-            Tilesets.SetItems(new List<ListItem>()
-            {
-                new ListItem("Common"),
-                new ListItem("Trees"),
-                new ListItem("Outdoor"),
-                new ListItem("Mountains"),
-                new ListItem("Sea"),
-                new ListItem("Houses"),
-                new ListItem("Skyscrapers"),
-                new ListItem("Rivers"),
-                new ListItem("Animals"),
-                new ListItem("Pokémon"),
-                new ListItem("Objects"),
-                new ListItem("Misc.")
-            });
-            List<ListItem> items = new List<ListItem>();
+            List<ListItem> tilesetitems = new List<ListItem>();
             for (int i = 0; i < this.Map.TilesetIDs.Count; i++)
             {
                 int id = this.Map.TilesetIDs[i];
                 Tileset tileset = Data.Tilesets[id];
-                items.Add(new ListItem(tileset));
+                tilesetitems.Add(new ListItem(tileset));
             }
-            Tilesets.SetItems(items);
+            Tilesets.SetItems(tilesetitems);
             Tilesets.SetButtonText("Add Tileset");
             Tilesets.ListDrawer.SetContextMenuList(new List<IMenuItem>()
             {
@@ -166,40 +148,15 @@ namespace MKEditor.Widgets
 
             Autotiles = new ListBox(box1);
             Autotiles.SetPosition(312, 22);
-            Autotiles.SetItems(new List<ListItem>()
+            List<ListItem> autotileitems = new List<ListItem>();
+            for (int i = 0; i < this.Map.AutotileIDs.Count; i++)
             {
-                new ListItem("Sea Tiles"),
-                new ListItem("Flowers")
-            });
+                int id = this.Map.AutotileIDs[i];
+                Autotile autotile = Data.Autotiles[id];
+                autotileitems.Add(new ListItem(autotile));
+            }
+            Autotiles.SetItems(autotileitems);
             Autotiles.SetButtonText("Add Autotile");
-            Autotiles.ListDrawer.SetContextMenuList(new List<IMenuItem>()
-            {
-                new MenuItem("Move Autotile Up")
-                {
-                    IsClickable = delegate (object sender, ConditionEventArgs e)
-                    {
-                        e.ConditionValue = Autotiles.SelectedIndex > 0;
-                    },
-                    OnLeftClick = MoveAutotileUp
-                },
-                new MenuItem("Move Autotile Down")
-                {
-                    IsClickable = delegate (object sender, ConditionEventArgs e)
-                    {
-                        e.ConditionValue = Autotiles.SelectedIndex < Autotiles.Items.Count - 1;
-                    },
-                    OnLeftClick = MoveAutotileDown
-                },
-                new MenuSeparator(),
-                new MenuItem("Remove Autotile")
-                {
-                    IsClickable = delegate (object sender, ConditionEventArgs e)
-                    {
-                        e.ConditionValue = Autotiles.Items.Count > 1;
-                    },
-                    OnLeftClick = RemoveAutotile
-                }
-            });
             // Makes it so you can right click on the whole widget, except for the last 20 pixels (which is the button)
             Autotiles.ListDrawer.OnContextMenuOpening += delegate (object sender, CancelEventArgs e)
             {
@@ -212,15 +169,8 @@ namespace MKEditor.Widgets
             autotileslabel.SetFont(f);
             autotileslabel.SetPosition(313, 6);
 
-            OKButton = new Button(this);
-            OKButton.SetText("OK");
-            OKButton.SetPosition(359, 421);
-            OKButton.OnClicked += OK;
-
-            CancelButton = new Button(this);
-            CancelButton.SetText("Cancel");
-            CancelButton.SetPosition(448, 421);
-            CancelButton.OnClicked += Cancel;
+            CreateButton("Cancel", Cancel);
+            CreateButton("OK", OK);
         }
 
         public void AddTileset(object sender, EventArgs e)
@@ -270,60 +220,63 @@ namespace MKEditor.Widgets
 
         public void AddAutotile(object sender, EventArgs e)
         {
-            Console.WriteLine("Add Autotile");
-        }
-
-        public void MoveAutotileUp(object sender, EventArgs e)
-        {
-            if (Autotiles.SelectedIndex > 0)
+            AutotilePicker picker = new AutotilePicker(this.Map, Window);
+            picker.OnClosed += delegate (object sender2, EventArgs e2)
             {
-                Autotiles.Items.Swap(Autotiles.SelectedIndex - 1, Autotiles.SelectedIndex);
-                // to do: swap map autotiles
-                Autotiles.Redraw();
-            }
-        }
-
-        public void MoveAutotileDown(object sender, EventArgs e)
-        {
-            if (Autotiles.SelectedIndex < Autotiles.Items.Count - 1)
-            {
-                Autotiles.Items.Swap(Autotiles.SelectedIndex + 1, Autotiles.SelectedIndex);
-                // to do: swap map autotiles
-                Autotiles.Redraw();
-            }
-        }
-
-        public void RemoveAutotile(object sender, EventArgs e)
-        {
-            if (Autotiles.Items.Count > 1)
-            {
-                Autotiles.Items.RemoveAt(Autotiles.SelectedIndex);
-                // to do: remove map autotile
-                Autotiles.SetSelectedIndex(-1);
-                Autotiles.Redraw();
-            }
+                bool update = false;
+                if (Map.AutotileIDs.Count != picker.ResultIDs.Count) update = true;
+                if (!update)
+                {
+                    for (int i = 0; i < picker.ResultIDs.Count; i++)
+                    {
+                        if (picker.ResultIDs[i] != Map.AutotileIDs[i])
+                        {
+                            update = true;
+                            break;
+                        }
+                    }
+                }
+                if (update)
+                {
+                    Map.AutotileIDs = picker.ResultIDs;
+                    List<ListItem> autotileitems = new List<ListItem>();
+                    for (int i = 0; i < this.Map.AutotileIDs.Count; i++)
+                    {
+                        int id = this.Map.AutotileIDs[i];
+                        Autotile autotile = Data.Autotiles[id];
+                        autotileitems.Add(new ListItem(autotile));
+                    }
+                    Autotiles.SetItems(autotileitems);
+                }
+            };
         }
 
         public void OK(object sender, EventArgs e)
         {
             this.UpdateMapViewer = true;
-            if (Map.Width != Clone.Width || Map.Height != Clone.Height)
+            Action Continue = null;
+            Action Finalize = delegate
+            {
+                Close();
+            };
+            // Resizes Map
+            if (Map.Width != OldMap.Width || Map.Height != OldMap.Height)
             {
                 UnsavedChanges = true;
-                int diffw = Map.Width - Clone.Width;
+                int diffw = Map.Width - OldMap.Width;
                 bool diffwneg = diffw < 0;
                 diffw = Math.Abs(diffw);
-                int diffh = Map.Height - Clone.Height;
+                int diffh = Map.Height - OldMap.Height;
                 bool diffhneg = diffh < 0;
                 diffh = Math.Abs(diffh);
                 for (int layer = 0; layer < Map.Layers.Count; layer++)
                 {
-                    for (int y = 0; y < Clone.Height; y++)
+                    for (int y = 0; y < OldMap.Height; y++)
                     {
                         for (int i = 0; i < diffw; i++)
                         {
                             if (diffwneg) Map.Layers[layer].Tiles.RemoveAt(y * Map.Width + Map.Width);
-                            else Map.Layers[layer].Tiles.Insert(y * Map.Width + Clone.Width, null);
+                            else Map.Layers[layer].Tiles.Insert(y * Map.Width + OldMap.Width, null);
                         }
                     }
                 }
@@ -339,7 +292,21 @@ namespace MKEditor.Widgets
                     }
                 }
             }
-            if (Map.TilesetIDs != Clone.TilesetIDs)
+            // Marks name change
+            if (Map.DevName != OldMap.DevName || Map.DisplayName != OldMap.DisplayName) UnsavedChanges = true;
+            // Updates tilesets
+            bool tilesetschanged = false;
+            if (Map.TilesetIDs.Count != OldMap.TilesetIDs.Count) tilesetschanged = true;
+            if (!tilesetschanged)
+                for (int i = 0; i < Map.TilesetIDs.Count; i++)
+                {
+                    if (Map.TilesetIDs[i] != OldMap.TilesetIDs[i])
+                    {
+                        tilesetschanged = true;
+                        break;
+                    }
+                }
+            if (tilesetschanged)
             {
                 UnsavedChanges = true;
                 bool warn = false;
@@ -348,23 +315,142 @@ namespace MKEditor.Widgets
                     for (int i = 0; i < Map.Width * Map.Height; i++)
                     {
                         if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Autotile) continue;
-                        int tilesetID = Clone.TilesetIDs[Map.Layers[layer].Tiles[i].Index];
+                        int tilesetID = OldMap.TilesetIDs[Map.Layers[layer].Tiles[i].Index];
                         if (!Map.TilesetIDs.Contains(tilesetID))
                         {
                             warn = true;
-                            Map.Layers[layer].Tiles[i] = null;
+                            break;
                         }
-                        else Map.Layers[layer].Tiles[i].Index = Map.TilesetIDs.IndexOf(tilesetID);
                     }
                 }
                 if (warn)
                 {
-                    new MessageBox("Warning", "One of the deleted tilesets was still in use. Those tiles have been deleted from the map.");
+                    MessageBox msg = new MessageBox("Warning", "One of the deleted tilesets was still in use. By choosing to continue, tiles of that tileset will be deleted.", new List<string>() { "Continue", "Cancel" });
+                    msg.OnButtonPressed += delegate (object sender2, EventArgs e2)
+                    {
+                        if (msg.Result == 0) // Continue
+                        {
+                            for (int layer = 0; layer < Map.Layers.Count; layer++)
+                            {
+                                for (int i = 0; i < Map.Width * Map.Height; i++)
+                                {
+                                    if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Autotile) continue;
+                                    int tilesetID = OldMap.TilesetIDs[Map.Layers[layer].Tiles[i].Index];
+                                    if (!Map.TilesetIDs.Contains(tilesetID))
+                                    {
+                                        Map.Layers[layer].Tiles[i] = null;
+                                    }
+                                    else Map.Layers[layer].Tiles[i].Index = Map.TilesetIDs.IndexOf(tilesetID);
+                                }
+                            }
+                            Continue();
+                        }
+                        else if (msg.Result == 1) // Cancel
+                        {
+                            UnsavedChanges = false;
+                            UpdateMapViewer = false;
+                        }
+                    };
+                }
+                else
+                {
+                    for (int layer = 0; layer < Map.Layers.Count; layer++)
+                    {
+                        for (int i = 0; i < Map.Width * Map.Height; i++)
+                        {
+                            if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Autotile) continue;
+                            int tilesetID = OldMap.TilesetIDs[Map.Layers[layer].Tiles[i].Index];
+                            if (!Map.TilesetIDs.Contains(tilesetID))
+                            {
+                                throw new Exception("Impossible-to-reach code has been reached.");
+                            }
+                            else Map.Layers[layer].Tiles[i].Index = Map.TilesetIDs.IndexOf(tilesetID);
+                        }
+                    }
+                    Continue();
                 }
             }
-            if (Map.DevName != Clone.DevName ||
-                Map.DisplayName != Clone.DisplayName) UnsavedChanges = true;
-            Close();
+            Continue = delegate
+            {
+                // Updates autotiles
+                bool autotileschanged = false;
+                if (Map.AutotileIDs.Count != OldMap.AutotileIDs.Count) autotileschanged = true;
+                if (!autotileschanged)
+                    for (int i = 0; i < Map.AutotileIDs.Count; i++)
+                    {
+                        if (Map.AutotileIDs[i] != OldMap.AutotileIDs[i])
+                        {
+                            autotileschanged = true;
+                            break;
+                        }
+                    }
+                if (autotileschanged)
+                {
+                    UnsavedChanges = true;
+                    bool warn = false;
+                    for (int layer = 0; layer < Map.Layers.Count; layer++)
+                    {
+                        for (int i = 0; i < Map.Width * Map.Height; i++)
+                        {
+                            if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Tileset) continue;
+                            int autotileID = OldMap.AutotileIDs[Map.Layers[layer].Tiles[i].Index];
+                            if (!Map.AutotileIDs.Contains(autotileID))
+                            {
+                                warn = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (warn)
+                    {
+                        MessageBox msg = new MessageBox("Warning", "One of the deleted autotiles was still in use. By choosing to continue, tiles of that autotile will be deleted.", new List<string>() { "Continue", "Cancel" });
+                        msg.OnButtonPressed += delegate (object sender2, EventArgs e2)
+                        {
+                            if (msg.Result == 0) // Continue
+                            {
+                                for (int layer = 0; layer < Map.Layers.Count; layer++)
+                                {
+                                    for (int i = 0; i < Map.Width * Map.Height; i++)
+                                    {
+                                        if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Tileset) continue;
+                                        int autotileID = OldMap.AutotileIDs[Map.Layers[layer].Tiles[i].Index];
+                                        if (!Map.AutotileIDs.Contains(autotileID))
+                                        {
+                                            Map.Layers[layer].Tiles[i] = null;
+                                        }
+                                        else Map.Layers[layer].Tiles[i].Index = Map.AutotileIDs.IndexOf(autotileID);
+                                    }
+                                }
+                                Finalize();
+                            }
+                            else if (msg.Result == 1) // Cancel
+                            {
+                                UnsavedChanges = false;
+                                UpdateMapViewer = false;
+                            }
+                        };
+                    }
+                    else
+                    {
+                        for (int layer = 0; layer < Map.Layers.Count; layer++)
+                        {
+                            for (int i = 0; i < Map.Width * Map.Height; i++)
+                            {
+                                if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Tileset) continue;
+                                int autotileID = OldMap.AutotileIDs[Map.Layers[layer].Tiles[i].Index];
+                                if (!Map.AutotileIDs.Contains(autotileID))
+                                {
+                                    throw new Exception("Impossible-to-reach code has been reached.");
+                                }
+                                else Map.Layers[layer].Tiles[i].Index = Map.AutotileIDs.IndexOf(autotileID);
+                            }
+                        }
+                        Finalize();
+                    }
+                }
+                if (!autotileschanged) Finalize();
+            };
+            if (!tilesetschanged) Continue();
         }
 
         public void Cancel(object sender, EventArgs e)

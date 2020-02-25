@@ -35,7 +35,7 @@ namespace MKEditor.Widgets
             mapview.SetWidth(212);
             mapview.OnSelectedNodeChanged += delegate (object sender, MouseEventArgs e)
             {
-                SetMap(mapview.SelectedNode.Object as Map, true);
+                SetMap(Data.Maps[(int) mapview.SelectedNode.Object], true);
             };
             mapview.TrailingBlank = 64;
             allmapcontainer.SetContextMenuList(new List<IMenuItem>()
@@ -73,14 +73,15 @@ namespace MKEditor.Widgets
             {
                 if (Maps[i] is int)
                 {
-                    nodes.Add(new TreeNode() { Object = Data.Maps[(int) Maps[i]] });
+                    nodes.Add(new TreeNode() { Name = Data.Maps[(int) Maps[i]].DevName, Object = (int) Maps[i] });
                     Data.Maps[(int) Maps[i]].Added = true;
                 }
                 else
                 {
                     List<object> list = (List<object>) Maps[i];
                     TreeNode n = new TreeNode();
-                    n.Object = Data.Maps[(int) list[0]];
+                    n.Name = Data.Maps[(int) list[0]].DevName;
+                    n.Object = (int) list[0];
                     n.Collapsed = (bool) list[1];
                     Data.Maps[(int) list[0]].Added = true;
                     n.Nodes = PopulateList(list);
@@ -93,7 +94,7 @@ namespace MKEditor.Widgets
                 {
                     if (!kvp.Value.Added)
                     {
-                        nodes.Add(new TreeNode() { Object = kvp.Value });
+                        nodes.Add(new TreeNode() { Name = kvp.Value.DevName, Object = kvp.Key });
                         kvp.Value.Added = true;
                         Editor.ProjectSettings.MapOrder.Add(kvp.Key);
                     }
@@ -113,14 +114,14 @@ namespace MKEditor.Widgets
                 TreeNode node = null;
                 for (int i = 0; i < mapview.Nodes.Count; i++)
                 {
-                    if ((mapview.Nodes[i].Object as Map).ID == Map.ID)
+                    if ((int) mapview.Nodes[i].Object == Map.ID)
                     {
                         node = mapview.Nodes[i];
                         break;
                     }
                     else
                     {
-                        TreeNode n = mapview.Nodes[i].FindNode(n => (n.Object as Map).ID == Map.ID);
+                        TreeNode n = mapview.Nodes[i].FindNode(n => (int) n.Object == Map.ID);
                         if (n != null)
                         {
                             node = n;
@@ -144,7 +145,6 @@ namespace MKEditor.Widgets
 
         private void NewMap(object sender, MouseEventArgs e)
         {
-            Editor.UnsavedChanges = true;
             Map Map = new Map();
             Map.ID = Editor.GetFreeMapID();
             Map.DevName = "Untitled Map";
@@ -155,7 +155,8 @@ namespace MKEditor.Widgets
             {
                 if (mpw.UpdateMapViewer)
                 {
-                    Editor.AddMap(Map, mapview.HoveringNode == null ? 0 : (mapview.HoveringNode.Object as Map).ID);
+                    Editor.UnsavedChanges = true;
+                    Editor.AddMap(Map, mapview.HoveringNode == null ? 0 : (int) mapview.HoveringNode.Object);
                 }
             };
         }
@@ -183,14 +184,15 @@ namespace MKEditor.Widgets
 
         private void EditMap(object sender, MouseEventArgs e)
         {
-            Map map = mapview.SelectedNode.Object as Map;
+            Map map = Data.Maps[(int) mapview.SelectedNode.Object];
             MapPropertiesWindow mpw = new MapPropertiesWindow(map, this.Window);
             mpw.OnClosed += delegate (object _, EventArgs ev)
             {
-                if (mpw.UnsavedChanges) Editor.UnsavedChanges = true;
                 if (mpw.UpdateMapViewer)
                 {
-                    Editor.MainWindow.MapWidget.SetMap(map);
+                    Data.Maps[map.ID] = mpw.Map;
+                    Editor.UnsavedChanges = mpw.UnsavedChanges;
+                    Editor.MainWindow.MapWidget.SetMap(mpw.Map);
                 }
             };
         }
@@ -219,7 +221,7 @@ namespace MKEditor.Widgets
                             mapview.SetSelectedNode(mapview.Nodes[i].RemoveNode(mapview.HoveringNode));
                         }
                     }
-                    RemoveID(Editor.ProjectSettings.MapOrder, (mapview.HoveringNode.Object as Map).ID, true);
+                    RemoveID(Editor.ProjectSettings.MapOrder, (int) mapview.HoveringNode.Object, true);
                     mapview.Redraw();
                 }
             };
@@ -231,7 +233,7 @@ namespace MKEditor.Widgets
             {
                 DeleteMapRecursively(node.Nodes[i]);
             }
-            Data.Maps.Remove((node.Object as Map).ID);
+            Data.Maps.Remove((int) node.Object);
         }
 
         private void RemoveID(List<object> collection, int ID, bool first = false)

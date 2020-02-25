@@ -226,7 +226,7 @@ namespace MKEditor.Widgets
 
         public override void MouseUp(object sender, MouseEventArgs e)
         {
-            MouseMoving(sender, e);
+            if (WidgetIM.Ready() && IsVisible() && WidgetIM.WidgetAccessible()) MouseMoving(sender, e);
             base.MouseUp(sender, e);
             if (e.MiddleButton != e.OldMiddleButton && !e.MiddleButton)
             {

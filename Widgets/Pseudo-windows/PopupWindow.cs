@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ODL;
 
 namespace MKEditor.Widgets
@@ -9,6 +10,7 @@ namespace MKEditor.Widgets
         public string Title { get; protected set; }
 
         public EventHandler<EventArgs> OnClosed;
+        List<Button> Buttons = new List<Button>();
 
         public PopupWindow(object Parent, string Name = "popupWindow")
             : base(Parent, Name)
@@ -23,6 +25,17 @@ namespace MKEditor.Widgets
             this.Window.SetActiveWidget(this);
             Window.SetOverlayZIndex(WindowLayer * 10 - 1);
             this.SetZIndex(WindowLayer * 10);
+        }
+
+        public void CreateButton(string Text, EventHandler<EventArgs> OnClicked)
+        {
+            Button b = new Button(this);
+            int x = Buttons.Count > 0 ? Buttons[Buttons.Count - 1].Position.X - b.Size.Width : Size.Width - b.Size.Width - 6;
+            int y = Size.Height - b.Size.Height - 5;
+            b.SetPosition(x, y);
+            b.SetText(Text);
+            b.OnClicked = OnClicked;
+            Buttons.Add(b);
         }
 
         public void MakePriorityWindow()

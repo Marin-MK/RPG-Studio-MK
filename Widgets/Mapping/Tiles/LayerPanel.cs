@@ -7,7 +7,7 @@ namespace MKEditor.Widgets
 {
     public class LayerPanel : Widget
     {
-        public TilesetPanel TilesetPanel;
+        public TilesPanel TilesPanel;
         public MapViewerTiles MapViewer;
         public Map Map { get { return this.MapViewer.Map; } }
 

@@ -6,10 +6,6 @@ namespace MKEditor.Game
 {
     public class Map : ICloneable
     {
-        /*
-         * [0, tileset_index, tile_id]
-         * [1, autotile_index, combination_id]
-         */
         public int ID;
         public string DevName;
         public string DisplayName;
@@ -17,6 +13,7 @@ namespace MKEditor.Game
         public int Height;
         public List<Layer> Layers = new List<Layer>();
         public List<int> TilesetIDs = new List<int>();
+        public List<int> AutotileIDs = new List<int>();
         public Dictionary<int, Event> Events = new Dictionary<int, Event>();
         public Dictionary<string, List<Connection>> Connections = new Dictionary<string, List<Connection>>();
 
@@ -62,6 +59,7 @@ namespace MKEditor.Game
                 this.Layers.Add(l);
             }
             this.TilesetIDs = ((JArray) Data["@tilesets"]).ToObject<List<int>>();
+            if (Data.ContainsKey("@autotiles")) this.AutotileIDs = ((JArray) Data["@autotiles"]).ToObject<List<int>>();
 
             foreach(KeyValuePair<string, object> kvp in ((JObject) Data["@events"]).ToObject<Dictionary<string, object>>())
             {
@@ -92,6 +90,7 @@ namespace MKEditor.Game
             }
             Data["@tiles"] = layers;
             Data["@tilesets"] = TilesetIDs;
+            Data["@autotiles"] = AutotileIDs;
             Dictionary<int, Dictionary<string, object>> events = new Dictionary<int, Dictionary<string, object>>();
             foreach (KeyValuePair<int, Event> kvp in Events)
             {
@@ -157,6 +156,7 @@ namespace MKEditor.Game
             o.Height = this.Height;
             o.Layers = new List<Layer>(this.Layers);
             o.TilesetIDs = new List<int>(this.TilesetIDs);
+            o.AutotileIDs = new List<int>(this.AutotileIDs);
             o.Events = new Dictionary<int, Event>(this.Events);
             o.Connections = new Dictionary<string, List<Connection>>(this.Connections);
             return o;
@@ -192,6 +192,7 @@ namespace MKEditor.Game
         Autotile = 1
     }
 
+    // MKD Data??
     public class MapConnection
     {
         public List<Dictionary<List<int>, int>> Maps = new List<Dictionary<List<int>, int>>();
@@ -215,6 +216,7 @@ namespace MKEditor.Game
         }
     }
 
+    // Used by the editor??
     public class Connection
     {
         public int Offset;

@@ -13,8 +13,8 @@ namespace MKEditor.Widgets
             : base(Parent, Name)
         {
             Sprites["rect"] = new RectSprite(this.Viewport);
-            (Sprites["rect"] as RectSprite).SetOuterColor(62, 72, 82); // Color.BLACK
-            (Sprites["rect"] as RectSprite).SetInnerColor(42, 52, 61); // 89, 103, 154
+            (Sprites["rect"] as RectSprite).SetOuterColor(55, 187, 255);
+            (Sprites["rect"] as RectSprite).SetInnerColor(48, 96, 148);
             Sprites["text"] = new Sprite(this.Viewport);
             Sprites["text"].X = Sprites["text"].Y = 7;
         }

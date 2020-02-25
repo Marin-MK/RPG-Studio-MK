@@ -39,11 +39,9 @@ namespace MKEditor.Widgets
 
         public void SetItems(List<ListItem> Items)
         {
-            if (this.Items != Items)
-            {
-                this.Items = Items;
-                Redraw();
-            }
+            this.Items = Items;
+            Redraw();
+            if (SelectedIndex >= Items.Count) SetSelectedIndex(Items.Count - 1);
         }
 
         public void SetFont(Font f)
@@ -213,7 +211,7 @@ namespace MKEditor.Widgets
 
         public override string ToString()
         {
-            return Name ?? Object.ToString();
+            return Name ?? (Object is null ? "" : Object.ToString());
         }
     }
 }

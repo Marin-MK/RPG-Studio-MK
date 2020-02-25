@@ -246,6 +246,11 @@ namespace MKEditor.Widgets
         /// Whether or not the mouse is always active, even when a menu or window is above this widget.
         /// </summary>
         public bool MouseAlwaysActive = false;
+
+        /// <summary>
+        /// Extra Data field, used to pass around certain information depending on the context.
+        /// </summary>
+        public object ObjectData;
         
         /// <summary>
         /// Called whenever this widget is left clicked.

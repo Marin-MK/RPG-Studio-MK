@@ -72,7 +72,7 @@ namespace MKEditor.Widgets
             node.PixelsIndented = x;
             Font f = Font.Get("Fonts/ProductSans-M", 14);
             this.Sprites["list"].Bitmap.Font = f;
-            string text = node.Object.ToString();
+            string text = node.Name ?? node.Object.ToString();
             Size s = f.TextSize(text);
             Color c = SelectedNode == node ? new Color(55, 187, 255) : Color.WHITE;
             this.Sprites["list"].Bitmap.DrawText(text, x + 12, y + 1, c);
@@ -184,6 +184,7 @@ namespace MKEditor.Widgets
 
     public class TreeNode
     {
+        public string Name;
         public object Object = "treeNode";
         public bool Collapsed = true;
         public List<TreeNode> Nodes = new List<TreeNode>();

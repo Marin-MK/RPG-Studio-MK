@@ -7,6 +7,7 @@ namespace MKEditor.Widgets
     {
         public string Text { get; protected set; }
         public Font Font { get; protected set; } = Font.Get("Fonts/ProductSans-B", 14);
+        public bool Clickable { get; protected set; } = true;
 
         public EventHandler<EventArgs> OnClicked;
 
@@ -140,6 +141,16 @@ namespace MKEditor.Widgets
             }
         }
 
+        public void SetClickable(bool Clickable)
+        {
+            if (this.Clickable != Clickable)
+            {
+                this.Clickable = Clickable;
+                if (this.Clickable) Sprites["filler"].Color = new Color(64, 104, 146);
+                else Sprites["filler"].Color = new Color(86, 108, 134);
+            }
+        }
+
         public void RedrawText()
         {
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
@@ -184,13 +195,13 @@ namespace MKEditor.Widgets
         public override void HoverChanged(object sender, MouseEventArgs e)
         {
             base.HoverChanged(sender, e);
-            Sprites["filler"].Color = WidgetIM.Hovering ? new Color(59, 227, 255) : new Color(64, 104, 146);
+            if (Clickable) Sprites["filler"].Color = WidgetIM.Hovering ? new Color(59, 227, 255) : new Color(64, 104, 146);
         }
 
         public override void MouseDown(object sender, MouseEventArgs e)
         {
             base.MouseDown(sender, e);
-            if (!WidgetIM.Hovering) return;
+            if (!WidgetIM.Hovering || !Clickable) return;
             if (OnClicked != null) OnClicked.Invoke(null, new EventArgs());
         }
     }

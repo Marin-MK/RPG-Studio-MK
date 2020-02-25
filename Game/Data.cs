@@ -111,6 +111,24 @@ namespace MKEditor.Game
             for (int i = 0; i < Missing; i++) Tilesets.Add(null);
         }
 
+        public static void SaveTilesets()
+        {
+            Dictionary<string, object> Main = new Dictionary<string, object>();
+            Main[":type"] = ":tilesets";
+            List<object> list = new List<object>();
+            for (int i = 0; i < Tilesets.Count; i++)
+            {
+                if (Tilesets[i] == null) list.Add(null);
+                else list.Add(Tilesets[i].ToJSON());
+            }
+            Main[":data"] = list;
+            string jsonstring = JsonConvert.SerializeObject(Main);
+            if (File.Exists(DataPath + "/tilesets.mkd")) File.Delete(DataPath + "/tilesets.mkd");
+            StreamWriter sw = new StreamWriter(File.OpenWrite(DataPath + "/tilesets.mkd"));
+            sw.Write(jsonstring);
+            sw.Close();
+        }
+
         public static void LoadAutotiles()
         {
             StreamReader sr = new StreamReader(File.OpenRead(DataPath + "/autotiles.mkd"));
@@ -132,20 +150,20 @@ namespace MKEditor.Game
             for (int i = 0; i < Missing; i++) Autotiles.Add(null);
         }
 
-        public static void SaveTilesets()
+        public static void SaveAutotiles()
         {
             Dictionary<string, object> Main = new Dictionary<string, object>();
-            Main[":type"] = ":tilesets";
+            Main[":type"] = ":autotiles";
             List<object> list = new List<object>();
-            for (int i = 0; i < Tilesets.Count; i++)
+            for (int i = 0; i < Autotiles.Count; i++)
             {
-                if (Tilesets[i] == null) list.Add(null);
-                else list.Add(Tilesets[i].ToJSON());
+                if (Autotiles[i] == null) list.Add(null);
+                else list.Add(Autotiles[i].ToJSON());
             }
             Main[":data"] = list;
             string jsonstring = JsonConvert.SerializeObject(Main);
-            if (File.Exists(DataPath + "/tilesets.mkd")) File.Delete(DataPath + "/tilesets.mkd");
-            StreamWriter sw = new StreamWriter(File.OpenWrite(DataPath + "/tilesets.mkd"));
+            if (File.Exists(DataPath + "/autotiles.mkd")) File.Delete(DataPath + "/autotiles.mkd");
+            StreamWriter sw = new StreamWriter(File.OpenWrite(DataPath + "/autotiles.mkd"));
             sw.Write(jsonstring);
             sw.Close();
         }

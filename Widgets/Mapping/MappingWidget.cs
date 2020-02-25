@@ -21,7 +21,7 @@ namespace MKEditor.Widgets
         public MapViewerBase ActiveMapViewer { get { return Submodes.Tabs[Submodes.SelectedIndex].Widgets[0] as MapViewerBase; } }
 
         // MapViewerTiles
-        public TilesetPanel TilesetPanel;
+        public TilesPanel TilesPanel;
         public LayerPanel LayerPanel;
 
         public MappingWidget(object Parent, string Name = "mappingWidget")

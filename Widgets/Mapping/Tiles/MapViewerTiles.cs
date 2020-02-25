@@ -7,7 +7,7 @@ namespace MKEditor.Widgets
 {
     public class MapViewerTiles : MapViewerBase
     {
-        public TilesetPanel TilesetPanel;
+        public TilesPanel TilesPanel;
         public LayerPanel LayerPanel;
 
         public Point OriginPoint;
@@ -57,10 +57,10 @@ namespace MKEditor.Widgets
             sidebargrid.SetColumns(new GridSize(1));
 
             // Tileset part of right sidebar
-            TilesetPanel = new TilesetPanel(sidebargrid);
-            TilesetPanel.SetBackgroundColor(28, 50, 73);
-            TilesetPanel.MapViewer = this;
-            (this.Parent.Parent.Parent.Parent.Parent as MappingWidget).TilesetPanel = TilesetPanel;
+            TilesPanel = new TilesPanel(sidebargrid);
+            TilesPanel.SetBackgroundColor(28, 50, 73);
+            TilesPanel.MapViewer = this;
+            (this.Parent.Parent.Parent.Parent.Parent as MappingWidget).TilesPanel = TilesPanel;
 
             // Inner right sidebar divider
             Widget InnerRightSidebarDivider = new Widget(sidebargrid);
@@ -91,8 +91,8 @@ namespace MKEditor.Widgets
         {
             this.Map = Map;
             LayerPanel.CreateLayers();
-            TilesetPanel.SetTilesets(Map.TilesetIDs);
-            TilesetPanel.SelectTile(new TileData() { TileType = TileType.Tileset, Index = 0, ID = 0 });
+            TilesPanel.SetMap(Map);
+            TilesPanel.SelectTile(new TileData() { TileType = TileType.Tileset, Index = 0, ID = 0 });
             base.SetMap(Map);
         }
 
@@ -166,7 +166,7 @@ namespace MKEditor.Widgets
             // Input handling
             if (Left)
             {
-                if (TilesetPanel.SelectButton.Selected) // Selection tool
+                if (TilesPanel.SelectButton.Selected) // Selection tool
                 {
                     int sx = OriginPoint.X < MapTileX ? OriginPoint.X : MapTileX;
                     int ex = OriginPoint.X < MapTileX ? MapTileX : OriginPoint.X;
@@ -191,10 +191,10 @@ namespace MKEditor.Widgets
                     int Layer = LayerPanel.SelectedLayer;
                     if (TileDataList.Count == 0)
                     {
-                        if (TilesetPanel.EraserButton.Selected) TileDataList.Add(null);
+                        if (TilesPanel.EraserButton.Selected) TileDataList.Add(null);
                         else
                         {
-                            TilesetPanel.SelectTile(null);
+                            TilesPanel.SelectTile(null);
                             TileDataList.Add(null);
                             throw new Exception($"The tile data list is empty, but the eraser tool is not selected.\nCan't find tiles to draw with.");
                         }
@@ -204,7 +204,7 @@ namespace MKEditor.Widgets
             }
             else if (Right)
             {
-                if (TilesetPanel.SelectButton.Selected) // Selection tool
+                if (TilesPanel.SelectButton.Selected) // Selection tool
                 {
                     if (SelectionX != -1 || SelectionY != -1 || SelectionWidth != 0 || SelectionHeight != 0)
                     {
@@ -240,18 +240,18 @@ namespace MKEditor.Widgets
                 {
                     int MapTileIndex = MapTileY * Map.Width + MapTileX;
                     if (MapTileX < 0 || MapTileX >= Map.Width || MapTileY < 0 || MapTileY >= Map.Height)
-                        TilesetPanel.SelectTile(null);
+                        TilesPanel.SelectTile(null);
                     else
                     {
                         TileData tile = Map.Layers[Layer].Tiles[MapTileIndex];
-                        if (tile == null) TilesetPanel.SelectTile(null);
-                        else TilesetPanel.SelectTile(tile);
+                        if (tile == null) TilesPanel.SelectTile(null);
+                        else TilesPanel.SelectTile(tile);
                     }
                 }
                 else
                 {
                     SelectionOnMap = true;
-                    TilesetPanel.EraserButton.SetSelected(false);
+                    TilesPanel.EraserButton.SetSelected(false);
                     int sx = OriginPoint.X < MapTileX ? OriginPoint.X : MapTileX;
                     int ex = OriginPoint.X < MapTileX ? MapTileX : OriginPoint.X;
                     int sy = OriginPoint.Y < MapTileY ? OriginPoint.Y : MapTileY;
@@ -317,9 +317,9 @@ namespace MKEditor.Widgets
                     movedy -= MapWidget.Position.Y;
                     ry += movedy;
                 }
-                int tilex = (int)Math.Floor(rx / (32d * ZoomFactor));
-                int tiley = (int)Math.Floor(ry / (32d * ZoomFactor));
-                if (!Editor.MainWindow.MapWidget.MapViewerTiles.TilesetPanel.SelectButton.Selected) Cursor.SetVisible(true);
+                int tilex = (int) Math.Floor(rx / (32d * ZoomFactor));
+                int tiley = (int) Math.Floor(ry / (32d * ZoomFactor));
+                if (!Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.SelectButton.Selected) Cursor.SetVisible(true);
                 int cx = tilex * 32;
                 int cy = tiley * 32;
                 RelativeMouseX = cx;
