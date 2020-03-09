@@ -7,61 +7,85 @@ namespace MKEditor.Widgets
 {
     public class MapViewerConnections : MapViewerBase
     {
-        public List<MapImageWidget> ConnWidgets;
-
         public MapViewerConnections(object Parent, string Name = "mapViewerConnections")
             : base(Parent, Name)
         {
-            ConnWidgets = new List<MapImageWidget>();
+            
+        }
+    }
+
+    public class MapConnectionWidget : MapImageWidget
+    {
+        public int MapID;
+        public string Side;
+        public int Offset;
+        public int PixelOffset => (int) Math.Round(this.Offset * 32 * ZoomFactor);
+        public int Depth;
+
+        public MapConnectionWidget(object Parent, string Name = "mapConnectionWidget")
+            : base(Parent, Name)
+        {
+
         }
 
-        public void RedrawConnections()
+        public override void UpdateSize()
         {
-            ConnWidgets.ForEach(w => w.Dispose());
-            ConnWidgets.Clear();
-            foreach (KeyValuePair<string, List<Connection>> kvp in Map.Connections)
+            int Width = (int) Math.Round(MapData.Width * 32 * ZoomFactor);
+            int Height = (int) Math.Round(MapData.Height * 32 * ZoomFactor);
+            if (Side == ":north" || Side == ":south") Height = (int) Math.Round(Math.Min(Depth, MapData.Height) * 32 * ZoomFactor);
+            else if (Side == ":east" || Side == ":west") Width = (int) Math.Round(Math.Min(Depth, MapData.Width) * 32 * ZoomFactor);
+            this.SetSize(Width, Height);
+        }
+
+        public override void LoadLayers(Map MapData, string Side = "", int Offset = 0)
+        {
+            this.MapID = MapData.ID;
+            this.MapData = MapData;
+            this.Side = Side;
+            this.Offset = Offset;
+            UpdateSize();
+            RedrawLayers();
+        }
+
+        public override void RedrawLayers()
+        {
+            foreach (string s in this.Sprites.Keys)
             {
-                for (int i = 0; i < kvp.Value.Count; i++)
-                {
-                    MapImageWidget miw = new MapImageWidget(MainContainer, "miw");
-                    miw.GridBackground.SetVisible(false);
-                    miw.SetDarkOverlay(200);
-                    miw.LoadLayers(Data.Maps[kvp.Value[i].MapID], kvp.Key, kvp.Value[i].Offset);
-                    ConnWidgets.Add(miw);
-                }
+                if (s != "_bg" && s != "dark") this.Sprites[s].Dispose();
             }
-            UpdateConnections();
-        }
-
-        public void UpdateConnections()
-        {
-            for (int i = 0; i < ConnWidgets.Count; i++)
+            // Create layers
+            for (int i = 0; i < MapData.Layers.Count; i++)
             {
-                MapImageWidget miw = ConnWidgets[i];
-                int Offset = (int) Math.Round(32d * miw.Offset * ZoomFactor);
-                if (miw.Side == ":north") miw.SetPosition(MapWidget.Position.X + Offset, MapWidget.Position.Y - miw.Size.Height);
-                else if (miw.Side == ":east") miw.SetPosition(MapWidget.Position.X + MapWidget.Size.Width, MapWidget.Position.Y + Offset);
-                else if (miw.Side == ":south") miw.SetPosition(MapWidget.Position.X + Offset, MapWidget.Position.Y + MapWidget.Size.Height);
-                else if (miw.Side == ":west") miw.SetPosition(MapWidget.Position.X - miw.Size.Width, MapWidget.Position.Y + Offset);
+                this.Sprites[i.ToString()] = new Sprite(this.Viewport);
+                this.Sprites[i.ToString()].Z = i * 2;
+                this.Sprites[i.ToString()].Visible = MapData.Layers[i].Visible;
             }
-        }
-
-        public override void PositionMap()
-        {
-            base.PositionMap();
-            UpdateConnections();
-        }
-
-        public override void SetMap(Map Map)
-        {
-            base.SetMap(Map);
-            RedrawConnections();
-        }
-
-        public override void SetZoomFactor(double factor, bool FromStatusBar = false)
-        {
-            base.SetZoomFactor(factor, FromStatusBar);
-            ConnWidgets.ForEach(w => w.SetZoomFactor(factor));
+            int SX = 0;
+            int SY = 0;
+            int Width = MapData.Width;
+            int Height = MapData.Height;
+            if (this.Side == ":north")
+            {
+                SY = MapData.Height - Depth;
+                Height = Depth;
+            }
+            else if (this.Side == ":east")
+            {
+                Width = Depth;
+            }
+            else if (this.Side == ":south")
+            {
+                Height = Depth;
+            }
+            else if (this.Side == ":west")
+            {
+                SX = MapData.Width - Depth;
+                Width = Depth;
+            }
+            List<Bitmap> bmps = GetBitmaps(MapData.ID, SX, SY, Width, Height);
+            for (int i = 0; i < bmps.Count; i++) Sprites[i.ToString()].Bitmap = bmps[i];
+            // Zoom layers
+            SetZoomFactor(ZoomFactor);
         }
     }
 }

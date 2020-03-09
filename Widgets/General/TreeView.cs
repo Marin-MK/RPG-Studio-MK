@@ -190,6 +190,11 @@ namespace MKEditor.Widgets
         public List<TreeNode> Nodes = new List<TreeNode>();
         public int PixelsIndented = 0;
 
+        public TreeNode()
+        {
+
+        }
+
         public int GetDisplayedNodeCount()
         {
             int count = 0;

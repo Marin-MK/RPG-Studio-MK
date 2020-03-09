@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 using System.Runtime.Versioning;
 using MKEditor.Game;
@@ -12,7 +13,7 @@ namespace MKEditor
         /// Whether or not exceptions should be caught and displayed.
         /// If false, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
         /// </summary>
-        static bool CatchErrors = true
+        static bool CatchErrors = false
             ;
 
         public static bool ThrownError = false;
@@ -21,9 +22,9 @@ namespace MKEditor
         {
             if (args.Length > 0)
             {
-                string ThisFile = System.Reflection.Assembly.GetExecutingAssembly().Location;
-                string ParentDir = System.IO.Directory.GetParent(ThisFile).FullName;
-                System.IO.Directory.SetCurrentDirectory(ParentDir);
+                string ThisFile = Assembly.GetExecutingAssembly().Location;
+                string ParentDir = Directory.GetParent(ThisFile).FullName;
+                Directory.SetCurrentDirectory(ParentDir);
             }
             Console.WriteLine("Launching RPG Studio MK.");
             OperatingSystem os = Editor.GetOperatingSystem();

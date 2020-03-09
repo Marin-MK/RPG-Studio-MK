@@ -10,12 +10,10 @@ namespace MKEditor.Widgets
         public GridBackground GridBackground;
         public MapViewerBase MapViewer;
         public Map MapData;
+        public Rect Rect;
 
         public int AnimateCount = 0;
         public List<List<int>> AnimatedAutotiles = new List<List<int>>();
-
-        public string Side;
-        public int Offset;
 
         public double ZoomFactor = 1.0;
 
@@ -46,29 +44,11 @@ namespace MKEditor.Widgets
             (Sprites["dark"].Bitmap as SolidBitmap).SetColor(0, 0, 0, Opacity);
         }
 
-        public void UpdateSize()
-        {
-            int Width = (int) Math.Round(MapData.Width * 32 * ZoomFactor);
-            int Height = (int) Math.Round(MapData.Height * 32 * ZoomFactor);
-            if (Side == ":north" || Side == ":south") Height = (int) Math.Round(Math.Min(6, MapData.Height) * 32 * ZoomFactor);
-            else if (Side == ":east" || Side == ":west") Width = (int) Math.Round(Math.Min(6, MapData.Width) * 32 * ZoomFactor);
-            this.SetSize(Width, Height);
-        }
-
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
             GridBackground.SetSize(this.Size);
             (Sprites["dark"].Bitmap as SolidBitmap).SetSize(this.Size);
-        }
-
-        public void LoadLayers(Map MapData, string Side = "", int Offset = 0)
-        {
-            this.MapData = MapData;
-            this.Side = Side;
-            this.Offset = Offset;
-            UpdateSize();
-            RedrawLayers();
         }
 
         public void SetLayerVisible(int layerindex, bool Visible)
@@ -224,7 +204,21 @@ namespace MKEditor.Widgets
             return bmps;
         }
 
-        public void RedrawLayers()
+        public virtual void UpdateSize()
+        {
+            int Width = (int) Math.Round(MapData.Width * 32 * ZoomFactor);
+            int Height = (int) Math.Round(MapData.Height * 32 * ZoomFactor);
+            this.SetSize(Width, Height);
+        }
+
+        public virtual void LoadLayers(Map MapData, string Side = "", int Offset = 0)
+        {
+            this.MapData = MapData;
+            UpdateSize();
+            RedrawLayers();
+        }
+
+        public virtual void RedrawLayers()
         {
             foreach (string s in this.Sprites.Keys)
             {
@@ -237,29 +231,7 @@ namespace MKEditor.Widgets
                 this.Sprites[i.ToString()].Z = i * 2;
                 this.Sprites[i.ToString()].Visible = MapData.Layers[i].Visible;
             }
-            int SX = 0;
-            int SY = 0;
-            int Width = MapData.Width;
-            int Height = MapData.Height;
-            if (this.Side == ":north")
-            {
-                SY = MapData.Height - 7;
-                Height = 6;
-            }
-            else if (this.Side == ":east")
-            {
-                Width = 6;
-            }
-            else if (this.Side == ":south")
-            {
-                Height = 6;
-            }
-            else if (this.Side == ":west")
-            {
-                SX = MapData.Width - 7;
-                Width = 6;
-            }
-            List<Bitmap> bmps = GetBitmaps(MapData.ID, SX, SY, Width, Height);
+            List<Bitmap> bmps = GetBitmaps(MapData.ID, 0, 0, MapData.Width, MapData.Height);
             for (int i = 0; i < bmps.Count; i++) Sprites[i.ToString()].Bitmap = bmps[i];
             // Zoom layers
             SetZoomFactor(ZoomFactor);

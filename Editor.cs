@@ -442,7 +442,7 @@ namespace MKEditor
             Game.Data.Maps.Add(Map.ID, Map);
             if (ParentID != 0) AddIDToMap(ProjectSettings.MapOrder, ParentID, Map.ID);
             else ProjectSettings.MapOrder.Add(Map.ID);
-            TreeNode node = new TreeNode() { Object = Map };
+            TreeNode node = new TreeNode() { Name = Map.DevName, Object = Map.ID };
             if (MainWindow.MapWidget != null)
             {
                 TreeView mapview = MainWindow.MapWidget.MapSelectPanel.mapview;

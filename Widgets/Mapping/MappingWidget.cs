@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using MKEditor.Game;
 using ODL;
 
 namespace MKEditor.Widgets
@@ -36,6 +38,18 @@ namespace MKEditor.Widgets
 
             // Left sidebar
             MapSelectPanel = new MapSelectPanel(layout);
+
+            Data.Maps[11].Connections[":east"] = new List<Connection>() { new Connection(-3, 5) };
+            Data.Maps[5].Connections[":west"] = new List<Connection>() { new Connection(3, 11) };
+
+            Data.Maps[5].Connections[":north"] = new List<Connection>() { new Connection(-7, 13) };
+            Data.Maps[13].Connections[":south"] = new List<Connection>() { new Connection(7, 5) };
+
+            Data.Maps[11].Connections[":north"] = new List<Connection>() { new Connection(-7, 12) };
+            Data.Maps[12].Connections[":south"] = new List<Connection>() { new Connection(7, 11) };
+
+            Data.Maps[12].Connections[":east"] = new List<Connection>() { new Connection(-3, 13) };
+            Data.Maps[13].Connections[":west"] = new List<Connection>() { new Connection(3, 12) };
 
             // Left sidebar divider
             Widget LeftSidebarDivider = new Widget(layout);

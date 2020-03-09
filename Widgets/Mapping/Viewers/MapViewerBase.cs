@@ -22,6 +22,10 @@ namespace MKEditor.Widgets
 
         public double ZoomFactor = 1.0;
 
+        public List<MapConnectionWidget> ConnectionWidgets = new List<MapConnectionWidget>();
+
+        public int Depth = 12;
+
         public Container MainContainer;
         public MapImageWidget MapWidget;
         public Widget DummyWidget;
@@ -85,6 +89,7 @@ namespace MKEditor.Widgets
             Editor.ProjectSettings.LastZoomFactor = factor;
             MapWidget.SetZoomFactor(factor);
             if (!FromStatusBar) Editor.MainWindow.StatusBar.ZoomControl.SetZoomFactor(factor, true);
+            ConnectionWidgets.ForEach(w => w.SetZoomFactor(factor));
             PositionMap();
             MouseMoving(null, Graphics.LastMouseEvent);
         }
@@ -117,6 +122,7 @@ namespace MKEditor.Widgets
             PositionMap();
             if (MainContainer.HScrollBar != null) MainContainer.HScrollBar.SetValue(0.5);
             if (MainContainer.VScrollBar != null) MainContainer.VScrollBar.SetValue(0.5);
+            RedrawConnectedMaps();
         }
 
         bool OldHVisible;
@@ -184,6 +190,7 @@ namespace MKEditor.Widgets
             OldScrollHeight = MainContainer.MaxChildHeight - MainContainer.Viewport.Height;
             OldMapWidth = MapWidget.Viewport.Width;
             OldMapHeight = MapWidget.Viewport.Height;
+            UpdateConnectionPositions();
         }
 
         public override void MouseMoving(object sender, MouseEventArgs e)
@@ -242,6 +249,43 @@ namespace MKEditor.Widgets
             if (!Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LCTRL) && !Input.Press(SDL2.SDL.SDL_Keycode.SDLK_RCTRL)) return;
             if (e.WheelY > 0) Editor.MainWindow.StatusBar.ZoomControl.IncreaseZoom();
             else Editor.MainWindow.StatusBar.ZoomControl.DecreaseZoom();
+        }
+
+        public void UpdateConnectionPositions()
+        {
+            for (int i = 0; i < ConnectionWidgets.Count; i++)
+            {
+                MapConnectionWidget mcw = ConnectionWidgets[i];
+                if (mcw.Side == ":north") mcw.SetPosition(MapWidget.Position.X + mcw.PixelOffset, MapWidget.Position.Y - mcw.Size.Height);
+                else if (mcw.Side == ":east") mcw.SetPosition(MapWidget.Position.X + MapWidget.Size.Width, MapWidget.Position.Y + mcw.PixelOffset);
+                else if (mcw.Side == ":south") mcw.SetPosition(MapWidget.Position.X + mcw.PixelOffset, MapWidget.Position.Y + MapWidget.Size.Height);
+                else if (mcw.Side == ":west") mcw.SetPosition(MapWidget.Position.X - mcw.Size.Width, MapWidget.Position.Y + mcw.PixelOffset);
+            }
+        }
+
+        public void RedrawConnectedMaps()
+        {
+            for (int i = 0; i < ConnectionWidgets.Count; i++)
+            {
+                ConnectionWidgets[i].Dispose();
+                ConnectionWidgets[i] = null;
+            }
+            ConnectionWidgets.Clear();
+            MapWidget.Rect = new Rect(0, 0, Map.Width, Map.Height);
+            foreach (string Direction in Map.Connections.Keys)
+            {
+                foreach (Connection c in Map.Connections[Direction])
+                {
+                    Map map = Data.Maps[c.MapID];
+                    MapConnectionWidget mcw = new MapConnectionWidget(MainContainer);
+                    mcw.Depth = this.Depth;
+                    mcw.GridBackground.SetVisible(false);
+                    mcw.SetDarkOverlay(200);
+                    mcw.LoadLayers(map, Direction, c.Offset);
+                    ConnectionWidgets.Add(mcw);
+                }
+            }
+            UpdateConnectionPositions();
         }
     }
 }
