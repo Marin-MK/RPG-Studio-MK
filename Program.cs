@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Reflection;
+using System.Runtime.Versioning;
 using MKEditor.Game;
 using ODL;
 
@@ -23,9 +25,16 @@ namespace MKEditor
                 string ParentDir = System.IO.Directory.GetParent(ThisFile).FullName;
                 System.IO.Directory.SetCurrentDirectory(ParentDir);
             }
+            Console.WriteLine("Launching RPG Studio MK.");
             OperatingSystem os = Editor.GetOperatingSystem();
-            Console.WriteLine($"Platform: {os.Platform} ({Editor.Platform})");
-            Console.WriteLine($"Version: {os.VersionString}");
+            string Framework = "";
+            string fw = Assembly.GetEntryAssembly().GetCustomAttribute<TargetFrameworkAttribute>().FrameworkName;
+            if (fw.Contains(".NETCoreApp")) Framework = ".NET Core ";
+            else if (fw.Contains(".NETFrameworkApp")) Framework = ".NET Framework ";
+            Framework += Environment.Version.ToString();
+            Console.WriteLine($"Framework: {Framework}");
+            Console.WriteLine($"OS Platform: {os.Platform} ({Editor.Platform})");
+            Console.WriteLine($"OS Version: {os.VersionString}");
             Console.WriteLine($"Editor Version: {Editor.GetVersionString()}");
             Graphics.Start();
             MainEditorWindow win = new MainEditorWindow(args);

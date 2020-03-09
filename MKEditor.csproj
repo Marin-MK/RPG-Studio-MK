@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <ApplicationIcon>logo-64x64.ico</ApplicationIcon>
     <StartupObject />
     <Authors>Marijn Herrebout</Authors>
     <Product>RPG Studio MK</Product>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <Platforms>Debug;x86</Platforms>
     <AssemblyName>RPG Studio MK</AssemblyName>
   </PropertyGroup>
@@ -22,13 +22,13 @@
 
   <ItemGroup>
     <Reference Include="odl">
-      <HintPath>..\odl\bin\x86\Debug\netcoreapp3.0\odl.dll</HintPath>
+      <HintPath>..\odl\bin\x86\Debug\netcoreapp3.1\odl.dll</HintPath>
     </Reference>
     <Reference Include="RubyDotNET">
-      <HintPath>..\rubydotnet\bin\x86\Debug\netcoreapp3.0\RubyDotNET.dll</HintPath>
+      <HintPath>..\rubydotnet\bin\x86\Debug\netcoreapp3.1\RubyDotNET.dll</HintPath>
     </Reference>
     <Reference Include="SDL2-CS">
-      <HintPath>..\odl\bin\x86\Debug\netcoreapp3.0\SDL2-CS.dll</HintPath>
+      <HintPath>..\odl\bin\x86\Debug\netcoreapp3.1\SDL2-CS.dll</HintPath>
     </Reference>
   </ItemGroup>
 
