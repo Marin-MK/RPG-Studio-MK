@@ -318,7 +318,7 @@ namespace MKEditor.Widgets
                             Autotile autotile = Data.Autotiles[MapData.AutotileIDs[idx]];
                             if (autotile.QuickIDs[TileX - 2] is null)
                             {
-                                AutotileTilePicker atp = new AutotileTilePicker(Window);
+                                AutotilePickerMap atp = new AutotilePickerMap(Window);
                                 atp.SetAutotile(autotile);
                                 atp.OnClosed += delegate (object sender, EventArgs e)
                                 {
@@ -336,7 +336,7 @@ namespace MKEditor.Widgets
                             {
                                 if (TimerExists("double") && !TimerPassed("double") && DoubleClickIndex == idx && DoubleClickX == TileX)
                                 {
-                                    AutotileTilePicker atp = new AutotileTilePicker(Window);
+                                    AutotilePickerMap atp = new AutotilePickerMap(Window);
                                     atp.SetAutotile(autotile);
                                     atp.OnClosed += delegate (object sender, EventArgs e)
                                     {

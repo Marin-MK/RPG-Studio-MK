@@ -175,14 +175,33 @@ namespace MKEditor.Widgets
 
         public void AddTileset(object sender, EventArgs e)
         {
-            TilesetPicker picker = new TilesetPicker(this.Map, Window);
-            picker.OnClosed += delegate (object _, EventArgs ev)
+            TilesetPickerMap picker = new TilesetPickerMap(this.Map, Window);
+            picker.OnClosed += delegate (object sender2, EventArgs e2)
             {
-                if (picker.ChosenTilesetID != -1)
+                bool update = false;
+                if (Map.TilesetIDs.Count != picker.ResultIDs.Count) update = true;
+                if (!update)
                 {
-                    this.Map.TilesetIDs.Add(picker.ChosenTilesetID);
-                    this.Tilesets.Items.Add(new ListItem(Data.Tilesets[picker.ChosenTilesetID]));
-                    this.Tilesets.Redraw();
+                    for (int i = 0; i < picker.ResultIDs.Count; i++)
+                    {
+                        if (picker.ResultIDs[i] != Map.TilesetIDs[i])
+                        {
+                            update = true;
+                            break;
+                        }
+                    }
+                }
+                if (update)
+                {
+                    Map.TilesetIDs = picker.ResultIDs;
+                    List<ListItem> tilesetitems = new List<ListItem>();
+                    for (int i = 0; i < this.Map.TilesetIDs.Count; i++)
+                    {
+                        int id = this.Map.TilesetIDs[i];
+                        Tileset tileset = Data.Tilesets[id];
+                        tilesetitems.Add(new ListItem(tileset));
+                    }
+                    Tilesets.SetItems(tilesetitems);
                 }
             };
         }
@@ -254,10 +273,89 @@ namespace MKEditor.Widgets
         public void OK(object sender, EventArgs e)
         {
             this.UpdateMapViewer = true;
-            Action Continue = null;
             Action Finalize = delegate
             {
                 Close();
+            };
+            Action Continue = delegate
+            {
+                // Updates autotiles
+                bool autotileschanged = false;
+                if (Map.AutotileIDs.Count != OldMap.AutotileIDs.Count) autotileschanged = true;
+                if (!autotileschanged)
+                    for (int i = 0; i < Map.AutotileIDs.Count; i++)
+                    {
+                        if (Map.AutotileIDs[i] != OldMap.AutotileIDs[i])
+                        {
+                            autotileschanged = true;
+                            break;
+                        }
+                    }
+                if (autotileschanged)
+                {
+                    UnsavedChanges = true;
+                    bool warn = false;
+                    for (int layer = 0; layer < Map.Layers.Count; layer++)
+                    {
+                        for (int i = 0; i < Map.Width * Map.Height; i++)
+                        {
+                            if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Tileset) continue;
+                            int autotileID = OldMap.AutotileIDs[Map.Layers[layer].Tiles[i].Index];
+                            if (!Map.AutotileIDs.Contains(autotileID))
+                            {
+                                warn = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (warn)
+                    {
+                        MessageBox msg = new MessageBox("Warning", "One of the deleted autotiles was still in use. By choosing to continue, tiles of that autotile will be deleted.", new List<string>() { "Continue", "Cancel" });
+                        msg.OnButtonPressed += delegate (object sender2, EventArgs e2)
+                        {
+                            if (msg.Result == 0) // Continue
+                            {
+                                for (int layer = 0; layer < Map.Layers.Count; layer++)
+                                {
+                                    for (int i = 0; i < Map.Width * Map.Height; i++)
+                                    {
+                                        if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Tileset) continue;
+                                        int autotileID = OldMap.AutotileIDs[Map.Layers[layer].Tiles[i].Index];
+                                        if (!Map.AutotileIDs.Contains(autotileID))
+                                        {
+                                            Map.Layers[layer].Tiles[i] = null;
+                                        }
+                                        else Map.Layers[layer].Tiles[i].Index = Map.AutotileIDs.IndexOf(autotileID);
+                                    }
+                                }
+                                Finalize();
+                            }
+                            else if (msg.Result == 1) // Cancel
+                            {
+                                UnsavedChanges = false;
+                                UpdateMapViewer = false;
+                            }
+                        };
+                    }
+                    else
+                    {
+                        for (int layer = 0; layer < Map.Layers.Count; layer++)
+                        {
+                            for (int i = 0; i < Map.Width * Map.Height; i++)
+                            {
+                                if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Tileset) continue;
+                                int autotileID = OldMap.AutotileIDs[Map.Layers[layer].Tiles[i].Index];
+                                if (!Map.AutotileIDs.Contains(autotileID))
+                                {
+                                    throw new Exception("Impossible-to-reach code has been reached.");
+                                }
+                                else Map.Layers[layer].Tiles[i].Index = Map.AutotileIDs.IndexOf(autotileID);
+                            }
+                        }
+                        Finalize();
+                    }
+                }
+                if (!autotileschanged) Finalize();
             };
             // Resizes Map
             if (Map.Width != OldMap.Width || Map.Height != OldMap.Height)
@@ -370,86 +468,6 @@ namespace MKEditor.Widgets
                     Continue();
                 }
             }
-            Continue = delegate
-            {
-                // Updates autotiles
-                bool autotileschanged = false;
-                if (Map.AutotileIDs.Count != OldMap.AutotileIDs.Count) autotileschanged = true;
-                if (!autotileschanged)
-                    for (int i = 0; i < Map.AutotileIDs.Count; i++)
-                    {
-                        if (Map.AutotileIDs[i] != OldMap.AutotileIDs[i])
-                        {
-                            autotileschanged = true;
-                            break;
-                        }
-                    }
-                if (autotileschanged)
-                {
-                    UnsavedChanges = true;
-                    bool warn = false;
-                    for (int layer = 0; layer < Map.Layers.Count; layer++)
-                    {
-                        for (int i = 0; i < Map.Width * Map.Height; i++)
-                        {
-                            if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Tileset) continue;
-                            int autotileID = OldMap.AutotileIDs[Map.Layers[layer].Tiles[i].Index];
-                            if (!Map.AutotileIDs.Contains(autotileID))
-                            {
-                                warn = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (warn)
-                    {
-                        MessageBox msg = new MessageBox("Warning", "One of the deleted autotiles was still in use. By choosing to continue, tiles of that autotile will be deleted.", new List<string>() { "Continue", "Cancel" });
-                        msg.OnButtonPressed += delegate (object sender2, EventArgs e2)
-                        {
-                            if (msg.Result == 0) // Continue
-                            {
-                                for (int layer = 0; layer < Map.Layers.Count; layer++)
-                                {
-                                    for (int i = 0; i < Map.Width * Map.Height; i++)
-                                    {
-                                        if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Tileset) continue;
-                                        int autotileID = OldMap.AutotileIDs[Map.Layers[layer].Tiles[i].Index];
-                                        if (!Map.AutotileIDs.Contains(autotileID))
-                                        {
-                                            Map.Layers[layer].Tiles[i] = null;
-                                        }
-                                        else Map.Layers[layer].Tiles[i].Index = Map.AutotileIDs.IndexOf(autotileID);
-                                    }
-                                }
-                                Finalize();
-                            }
-                            else if (msg.Result == 1) // Cancel
-                            {
-                                UnsavedChanges = false;
-                                UpdateMapViewer = false;
-                            }
-                        };
-                    }
-                    else
-                    {
-                        for (int layer = 0; layer < Map.Layers.Count; layer++)
-                        {
-                            for (int i = 0; i < Map.Width * Map.Height; i++)
-                            {
-                                if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Tileset) continue;
-                                int autotileID = OldMap.AutotileIDs[Map.Layers[layer].Tiles[i].Index];
-                                if (!Map.AutotileIDs.Contains(autotileID))
-                                {
-                                    throw new Exception("Impossible-to-reach code has been reached.");
-                                }
-                                else Map.Layers[layer].Tiles[i].Index = Map.AutotileIDs.IndexOf(autotileID);
-                            }
-                        }
-                        Finalize();
-                    }
-                }
-                if (!autotileschanged) Finalize();
-            };
             if (!tilesetschanged) Continue();
         }
 

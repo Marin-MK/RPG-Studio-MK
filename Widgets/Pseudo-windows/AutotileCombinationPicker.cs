@@ -5,14 +5,14 @@ using System.Collections.Generic;
 
 namespace MKEditor.Widgets
 {
-    public class AutotileTilePicker : PopupWindow
+    public class AutotilePickerMap : PopupWindow
     {
         public Autotile Autotile { get; protected set; }
         public int SelectedTileID { get; protected set; } = 0;
 
         CursorWidget Cursor;
 
-        public AutotileTilePicker(object Parent, string Name = "autotileTilePicker")
+        public AutotilePickerMap(object Parent, string Name = "autotileTilePicker")
             : base(Parent, Name)
         {
             SetTitle("Individual Tile Combinations");

@@ -117,10 +117,13 @@ namespace MKEditor.Game
                 else Tags.Add(Convert.ToInt32(o));
             }
             QuickIDs = new List<int?>() { null, null, null, null, null, null };
-            List<object> ids = ((JArray) Data["@quick_ids"]).ToObject<List<object>>();
-            for (int i = 0; i < 6; i++)
+            if (Data.ContainsKey("@quick_ids"))
             {
-                if (ids[i] != null) QuickIDs[i] = Convert.ToInt32(ids[i]);
+                List<object> ids = ((JArray) Data["@quick_ids"]).ToObject<List<object>>();
+                for (int i = 0; i < 6; i++)
+                {
+                    if (ids[i] != null) QuickIDs[i] = Convert.ToInt32(ids[i]);
+                }
             }
             this.AnimateSpeed = Convert.ToInt32(Data["@animate_speed"]);
             // Make sure the three arrays are just as big; trailing nulls may be left out if the data is edited externally

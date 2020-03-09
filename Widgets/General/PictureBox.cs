@@ -15,12 +15,16 @@ namespace MKEditor.Widgets
 
         public override void Update()
         {
-            if (this.Sprite.Bitmap != null)
+            if (this.Sprite.Bitmap != null && !this.Sprite.Bitmap.Disposed)
             {
                 if (this.Sprite.Bitmap.Width != this.Size.Width || this.Sprite.Bitmap.Height != this.Size.Height)
                 {
                     this.SetSize(this.Sprite.Bitmap.Width, this.Sprite.Bitmap.Height);
                 }
+            }
+            else
+            {
+                this.SetSize(1, 1);
             }
             base.Update();
         }
