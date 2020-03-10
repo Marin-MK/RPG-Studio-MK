@@ -77,6 +77,16 @@ namespace MKEditor.Widgets
         {
             this.Sprites[Index.ToString()].Dispose();
             this.Sprites.Remove(Index.ToString());
+            for (int y = 0; y < MapData.Height; y++)
+            {
+                for (int x = 0; x < MapData.Width; x++)
+                {
+                    TileData TileData = MapData.Layers[Index].Tiles[x + y * MapData.Width];
+                    if (TileData == null) continue;
+                    List<int> autotile = AnimatedAutotiles.Find(a => a[0] == Index && a[1] == x && a[2] == y);
+                    if (autotile != null) AnimatedAutotiles.Remove(autotile);
+                }
+            }
             for (int i = Index + 1; i < MapData.Layers.Count; i++)
             {
                 Sprite s = this.Sprites[i.ToString()] as Sprite;
@@ -95,6 +105,7 @@ namespace MKEditor.Widgets
             if (TimerPassed("frame"))
             {
                 ResetTimer("frame");
+                if (!Editor.GeneralSettings.ShowMapAnimations) return;
                 List<int> UpdateLayers = new List<int>();
                 AnimateCount++;
                 foreach (List<int> data in AnimatedAutotiles)
@@ -202,6 +213,31 @@ namespace MKEditor.Widgets
                 bmps[layer].Lock();
             }
             return bmps;
+        }
+
+        public void SetMapAnimations(bool Animations)
+        {
+            if (!Animations)
+            {
+                List<int> UpdateLayers = new List<int>();
+                AnimateCount++;
+                foreach (List<int> data in AnimatedAutotiles)
+                {
+                    if (!UpdateLayers.Contains(data[0])) UpdateLayers.Add(data[0]);
+                }
+                for (int i = 0; i < UpdateLayers.Count; i++)
+                {
+                    this.Sprites[UpdateLayers[i].ToString()].Bitmap.Unlock();
+                }
+                foreach (List<int> data in AnimatedAutotiles)
+                {
+                    DrawAutotile(data[0], data[1], data[2], data[3], data[4], 0);
+                }
+                for (int i = 0; i < UpdateLayers.Count; i++)
+                {
+                    this.Sprites[UpdateLayers[i].ToString()].Bitmap.Lock();
+                }
+            }
         }
 
         public virtual void UpdateSize()
@@ -435,8 +471,8 @@ namespace MKEditor.Widgets
                                 if (tileid != -1) // Only draws
                                 {
                                     AnimatedAutotiles.Add(new List<int>() { layer, actualx, actualy, MapData.AutotileIDs[index], tileid });
-                                    DrawAutotile(layer, actualx, actualy, MapData.AutotileIDs[index], tileid,
-                                        (int) Math.Floor((double) AnimateCount / Data.Autotiles[MapData.AutotileIDs[index]].AnimateSpeed));
+                                    int frame = Editor.GeneralSettings.ShowMapAnimations ? (int) Math.Floor((double) AnimateCount / Data.Autotiles[MapData.AutotileIDs[index]].AnimateSpeed) : 0;
+                                    DrawAutotile(layer, actualx, actualy, MapData.AutotileIDs[index], tileid, frame);
                                 }
                                 else // Draws and updates
                                 {
@@ -609,12 +645,14 @@ namespace MKEditor.Widgets
                     if (autotile.Format == AutotileFormat.Single)
                     {
                         AnimX = ((int) Math.Floor((double) AnimateCount / autotile.AnimateSpeed) * 32) % autotile.AutotileBitmap.Width;
+                        if (!Editor.GeneralSettings.ShowMapAnimations) AnimX = 0;
                         this.Sprites[Layer.ToString()].Bitmap.Build(new Rect(32 * X, 32 * Y, 32, 32), autotile.AutotileBitmap,
                             new Rect(AnimX, 0, 32, 32));
                     }
                     else
                     {
                         AnimX = ((int) Math.Floor((double) AnimateCount / autotile.AnimateSpeed) * 96) % autotile.AutotileBitmap.Width;
+                        if (!Editor.GeneralSettings.ShowMapAnimations) AnimX = 0;
                         List<int> Tiles = Autotile.AutotileCombinations[autotile.Format][ID];
                         for (int i = 0; i < 4; i++)
                         {

@@ -132,9 +132,11 @@ namespace MKEditor
                 {
                     Items = new List<IMenuItem>()
                     {
-                        new MenuItem("Show/Hide Grid")
+                        new MenuItem("Toggle Animations")
                         {
-                            HelpText = "Toggles the visibility of the map grid.\nCurrently unavailable."
+                            HelpText = "Toggles the animation of autotiles, fogs and panoramas.",
+                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; },
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.ToggleMapAnimations(); },
                         }
                     }
                 },

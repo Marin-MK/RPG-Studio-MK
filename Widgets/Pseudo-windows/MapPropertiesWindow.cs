@@ -106,45 +106,7 @@ namespace MKEditor.Widgets
             }
             Tilesets.SetItems(tilesetitems);
             Tilesets.SetButtonText("Add Tileset");
-            Tilesets.ListDrawer.SetContextMenuList(new List<IMenuItem>()
-            {
-                new MenuItem("Move Tileset Up")
-                {
-                    IsClickable = delegate (object sender, ConditionEventArgs e)
-                    {
-                        e.ConditionValue = Tilesets.SelectedIndex > 0;
-                    },
-                    OnLeftClick = MoveTilesetUp
-                },
-                new MenuItem("Move Tileset Down")
-                {
-                    IsClickable = delegate (object sender, ConditionEventArgs e)
-                    {
-                        e.ConditionValue = Tilesets.SelectedIndex < Tilesets.Items.Count - 1;
-                    },
-                    OnLeftClick = MoveTilesetDown
-                },
-                new MenuSeparator(),
-                new MenuItem("Remove Tileset")
-                {
-                    IsClickable = delegate (object sender, ConditionEventArgs e)
-                    {
-                        e.ConditionValue = Tilesets.Items.Count > 1;
-                    },
-                    OnLeftClick = RemoveTileset
-                }
-            });
-            // Makes it so you can right click on the whole widget, except for the last 20 pixels (which is the button)
-            Tilesets.ListDrawer.OnContextMenuOpening += delegate (object sender, CancelEventArgs e)
-            {
-                int ry = Graphics.LastMouseEvent.Y - Tilesets.ListDrawer.Viewport.Y + Tilesets.ListDrawer.Position.Y - Tilesets.ListDrawer.ScrolledPosition.Y;
-                if (ry >= Tilesets.ListDrawer.Size.Height - 20) e.Cancel = true;
-            };
             Tilesets.ListDrawer.OnButtonClicked += AddTileset;
-            Label tilesetslabel = new Label(box1);
-            tilesetslabel.SetText("Tilesets:");
-            tilesetslabel.SetFont(f);
-            tilesetslabel.SetPosition(163, 6);
 
             Autotiles = new ListBox(box1);
             Autotiles.SetPosition(312, 22);
@@ -157,13 +119,13 @@ namespace MKEditor.Widgets
             }
             Autotiles.SetItems(autotileitems);
             Autotiles.SetButtonText("Add Autotile");
-            // Makes it so you can right click on the whole widget, except for the last 20 pixels (which is the button)
-            Autotiles.ListDrawer.OnContextMenuOpening += delegate (object sender, CancelEventArgs e)
-            {
-                int ry = Graphics.LastMouseEvent.Y - Autotiles.ListDrawer.Viewport.Y + Autotiles.ListDrawer.Position.Y - Autotiles.ListDrawer.ScrolledPosition.Y;
-                if (ry >= Autotiles.ListDrawer.Size.Height - 20) e.Cancel = true;
-            };
             Autotiles.ListDrawer.OnButtonClicked += AddAutotile;
+
+            Label tilesetslabel = new Label(box1);
+            tilesetslabel.SetText("Tilesets:");
+            tilesetslabel.SetFont(f);
+            tilesetslabel.SetPosition(163, 6);
+
             Label autotileslabel = new Label(box1);
             autotileslabel.SetText("Autotiles:");
             autotileslabel.SetFont(f);
@@ -204,37 +166,6 @@ namespace MKEditor.Widgets
                     Tilesets.SetItems(tilesetitems);
                 }
             };
-        }
-
-        public void MoveTilesetUp(object sender, EventArgs e)
-        {
-            if (Tilesets.SelectedIndex > 0)
-            {
-                Tilesets.Items.Swap(Tilesets.SelectedIndex - 1, Tilesets.SelectedIndex);
-                Map.TilesetIDs.Swap(Tilesets.SelectedIndex - 1, Tilesets.SelectedIndex);
-                Tilesets.Redraw();
-            }
-        }
-
-        public void MoveTilesetDown(object sender, EventArgs e)
-        {
-            if (Tilesets.SelectedIndex < Tilesets.Items.Count - 1)
-            {
-                Tilesets.Items.Swap(Tilesets.SelectedIndex + 1, Tilesets.SelectedIndex);
-                Map.TilesetIDs.Swap(Tilesets.SelectedIndex + 1, Tilesets.SelectedIndex);
-                Tilesets.Redraw();
-            }
-        }
-
-        public void RemoveTileset(object sender, EventArgs e)
-        {
-            if (Tilesets.Items.Count > 1)
-            {
-                Tilesets.Items.RemoveAt(Tilesets.SelectedIndex);
-                Map.TilesetIDs.RemoveAt(Tilesets.SelectedIndex);
-                Tilesets.SetSelectedIndex(-1);
-                Tilesets.Redraw();
-            }
         }
 
         public void AddAutotile(object sender, EventArgs e)

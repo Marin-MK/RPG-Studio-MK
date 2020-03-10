@@ -24,7 +24,7 @@ namespace MKEditor.Widgets
 
         public List<MapConnectionWidget> ConnectionWidgets = new List<MapConnectionWidget>();
 
-        public int Depth = 12;
+        public int Depth = 10;
 
         public Container MainContainer;
         public MapImageWidget MapWidget;
@@ -146,6 +146,7 @@ namespace MKEditor.Widgets
                 rx = Math.Max(0, Math.Min(rx, OldMapWidth));
                 ScrolledX = (double) rx / OldMapWidth;
             }
+
             bool VExist = OldVVisible;
             double ScrolledY = 0.5;
             if (VExist) ScrolledY = (double) MainContainer.ScrolledY / OldScrollHeight;
@@ -156,29 +157,18 @@ namespace MKEditor.Widgets
                 ScrolledY = (double) ry / OldMapHeight;
             }
 
-            int x = 0;
-            if (Map.Width * 32 * ZoomFactor < MainContainer.Viewport.Width)
-            {
-                x = MainContainer.Viewport.Width / 2 - (int) Math.Round(Map.Width * 32 * ZoomFactor / 2d);
-            }
-            else
-            {
-                x = MainContainer.Viewport.Width / 4;
-            }
-            int y = 0;
-            if (Map.Height * 32 * ZoomFactor < MainContainer.Viewport.Height)
-            {
-                y = MainContainer.Viewport.Height / 2 - (int) Math.Round(Map.Height * 32 * ZoomFactor / 2d);
-            }
-            else
-            {
-                y = MainContainer.Viewport.Height / 4;
-            }
+            int w = (int) Math.Round(Map.Width * 32d * ZoomFactor);
+            int h = (int) Math.Round(Map.Height * 32d * ZoomFactor);
+            int x = MainContainer.Size.Width / 2 - w / 2;
+            int y = MainContainer.Size.Height / 2 - h / 2;
+            if (x - 12 * 32d * ZoomFactor < 0) x = (int) Math.Round(12 * 32d * ZoomFactor);
+            if (y - 12 * 32d * ZoomFactor < 0) y = (int) Math.Round(12 * 32d * ZoomFactor);
             MapWidget.SetPosition(x, y);
-            MapWidget.SetSize((int) Math.Round(Map.Width * 32 * ZoomFactor), (int) Math.Round(Map.Height * 32 * ZoomFactor));
-            DummyWidget.SetSize(2 * x + MapWidget.Size.Width, 2 * y + MapWidget.Size.Height);
+            MapWidget.SetSize(w, h);
+            UpdateConnectionPositions();
+            DummyWidget.SetSize(2 * x + w, 2 * y + h);
             MainContainer.UpdateAutoScroll();
-            if (Map.Width * 32 * ZoomFactor >= Viewport.Width || Map.Height * 32 * ZoomFactor >= Viewport.Height)
+            if (DummyWidget.Size.Width >= MainContainer.Viewport.Width || DummyWidget.Size.Height >= MainContainer.Viewport.Height)
             {
                 MainContainer.ScrolledX = (int) Math.Round((MainContainer.MaxChildWidth - MainContainer.Viewport.Width) * ScrolledX);
                 MainContainer.ScrolledY = (int) Math.Round((MainContainer.MaxChildHeight - MainContainer.Viewport.Height) * ScrolledY);
@@ -190,7 +180,6 @@ namespace MKEditor.Widgets
             OldScrollHeight = MainContainer.MaxChildHeight - MainContainer.Viewport.Height;
             OldMapWidth = MapWidget.Viewport.Width;
             OldMapHeight = MapWidget.Viewport.Height;
-            UpdateConnectionPositions();
         }
 
         public override void MouseMoving(object sender, MouseEventArgs e)
@@ -256,6 +245,8 @@ namespace MKEditor.Widgets
             for (int i = 0; i < ConnectionWidgets.Count; i++)
             {
                 MapConnectionWidget mcw = ConnectionWidgets[i];
+                mcw.SetZoomFactor(ZoomFactor);
+                mcw.UpdateSize();
                 if (mcw.Side == ":north") mcw.SetPosition(MapWidget.Position.X + mcw.PixelOffset, MapWidget.Position.Y - mcw.Size.Height);
                 else if (mcw.Side == ":east") mcw.SetPosition(MapWidget.Position.X + MapWidget.Size.Width, MapWidget.Position.Y + mcw.PixelOffset);
                 else if (mcw.Side == ":south") mcw.SetPosition(MapWidget.Position.X + mcw.PixelOffset, MapWidget.Position.Y + MapWidget.Size.Height);

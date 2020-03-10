@@ -279,7 +279,7 @@ namespace MKEditor.Widgets
         {
             if (ContainerIndex < AutotileContainers.Count) // Autotile
             {
-                if (ContainerIndex == 0)
+                if (ContainerIndex == 0 && SingleAutotileCount > 0)
                 {
                     if (TileX + TileY * 8 >= SingleAutotileCount) return;
                     for (int i = 0; i < AutotileContainers.Count; i++)
@@ -292,7 +292,7 @@ namespace MKEditor.Widgets
                 }
                 else
                 {
-                    int container = 1;
+                    int container = SingleAutotileCount == 0 ? 0 : 1;
                     int idx = -1;
                     bool found = false;
                     for (int i = 0; i < AutotileContainers.Count; i++)

@@ -51,6 +51,11 @@ namespace MKEditor.Widgets
             Data.Maps[12].Connections[":east"] = new List<Connection>() { new Connection(-3, 13) };
             Data.Maps[13].Connections[":west"] = new List<Connection>() { new Connection(3, 12) };
 
+            Data.Maps[6].Connections[":west"] = new List<Connection>() { new Connection(2, 7), new Connection(9, 8), new Connection(20, 9) };
+            Data.Maps[6].Connections[":east"] = new List<Connection>() { new Connection(2, 7), new Connection(9, 8), new Connection(20, 9) };
+            Data.Maps[6].Connections[":north"] = new List<Connection>() { new Connection(2, 7), new Connection(9, 8), new Connection(20, 9) };
+            Data.Maps[6].Connections[":south"] = new List<Connection>() { new Connection(1, 7), new Connection(10, 8), new Connection(22, 9) };
+
             // Left sidebar divider
             Widget LeftSidebarDivider = new Widget(layout);
             LeftSidebarDivider.SetBackgroundColor(28, 50, 73);
@@ -141,6 +146,11 @@ namespace MKEditor.Widgets
             //MapViewerEncounters.SetMap(Map);
             //MapViewerProperties.SetMap(Map);
             //if (Submodes.SelectedIndex != -1) ActiveMapViewer.PositionMap();
+        }
+
+        public void SetMapAnimations(bool Animations)
+        {
+            MapImageWidget.SetMapAnimations(Animations);
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)

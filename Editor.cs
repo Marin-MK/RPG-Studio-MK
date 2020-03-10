@@ -411,6 +411,12 @@ namespace MKEditor
             ImportMap(0);
         }
 
+        public static void ToggleMapAnimations()
+        {
+            GeneralSettings.ShowMapAnimations = !GeneralSettings.ShowMapAnimations;
+            MainWindow.MapWidget.SetMapAnimations(GeneralSettings.ShowMapAnimations);
+        }
+
         public static int GetFreeMapID()
         {
             int i = 1;
@@ -683,6 +689,7 @@ namespace MKEditor
         public int LastX = 50;
         public int LastY = 50;
         public List<List<string>> RecentFiles = new List<List<string>>();
+        public bool ShowMapAnimations = true;
     }
 
     public enum Platform
