@@ -31,7 +31,7 @@ namespace MKEditor
                 if (p == "Mac OS X") _platform = Platform.MacOS;
                 if (p == "iOS") _platform = Platform.IOS;
                 if (p == "Android") _platform = Platform.Android;
-                return (Platform)_platform;
+                return (Platform) _platform;
             }
         }
 
@@ -89,41 +89,6 @@ namespace MKEditor
             CommonEvent.CreateClass();
 
             MapInfo.CreateClass();
-        }
-
-        public static void DumpProjectSettings()
-        {
-            IFormatter formatter = new BinaryFormatter();
-            Stream stream = new FileStream(ProjectFilePath, FileMode.Create, FileAccess.Write);
-            formatter.Serialize(stream, ProjectSettings);
-            stream.Close();
-        }
-
-        public static void LoadProjectSettings()
-        {
-            if (File.Exists(ProjectFilePath))
-            {
-                IFormatter formatter = new BinaryFormatter();
-                Stream stream = new FileStream(ProjectFilePath, FileMode.Open, FileAccess.Read);
-                ProjectSettings = formatter.Deserialize(stream) as ProjectSettings;
-                stream.Close();
-            }
-            else
-            {
-                ProjectSettings = new ProjectSettings();
-            }
-            if (ProjectSettings.LastZoomFactor == 0) ProjectSettings.LastZoomFactor = 1;
-            if (ProjectSettings.ProjectName.Length == 0) ProjectSettings.ProjectName = "Untitled Game";
-            if (string.IsNullOrEmpty(ProjectSettings.LastMode)) ProjectSettings.LastMode = "MAPPING";
-            if (ProjectSettings.TilesetCapacity == 0) ProjectSettings.TilesetCapacity = 25;
-            if (ProjectSettings.AutotileCapacity == 0) ProjectSettings.AutotileCapacity = 25;
-        }
-
-        public static void ClearProjectData()
-        {
-            ProjectFilePath = null;
-            ProjectSettings = null;
-            UnsavedChanges = false;
         }
 
         public static void CloseProject()
@@ -209,7 +174,7 @@ namespace MKEditor
                 MapInfo info = null;
                 keys.EachWithIndex((obj, idx) =>
                 {
-                    if (obj.Convert<RubyInt>().ToInt32() == id)
+                    if (obj.Pointer != Internal.QNil && obj.Convert<RubyInt>().ToInt32() == id)
                         info = infos[keys[idx]].Convert<MapInfo>();
                 });
                 if (info == null)
@@ -591,6 +556,7 @@ namespace MKEditor
 
                 MainWindow.MapWidget.SetSelectedLayer(lastlayer);
                 MainWindow.MapWidget.SetZoomFactor(ProjectSettings.LastZoomFactor);
+                MainWindow.MapWidget.SetSubmode(ProjectSettings.LastMappingSubmode);
             }
             else if (OldMode == "MAPPING")
             {
@@ -627,6 +593,18 @@ namespace MKEditor
             MainWindow.ToolBar.Refresh();
         }
 
+        public static void MakeRecentProject()
+        {
+            for (int i = 0; i < GeneralSettings.RecentFiles.Count; i++)
+            {
+                if (GeneralSettings.RecentFiles[i][1] == ProjectFilePath) // Project file paths match - same project
+                {
+                    GeneralSettings.RecentFiles.RemoveAt(i);
+                }
+            }
+            GeneralSettings.RecentFiles.Add(new List<string>() { ProjectSettings.ProjectName, ProjectFilePath });
+        }
+
         public static void DumpGeneralSettings()
         {
             IFormatter formatter = new BinaryFormatter();
@@ -654,16 +632,40 @@ namespace MKEditor
             if (GeneralSettings.LastY < 0) GeneralSettings.LastY = 0;
         }
 
-        public static void MakeRecentProject()
+        public static void DumpProjectSettings()
         {
-            for (int i = 0; i < GeneralSettings.RecentFiles.Count; i++)
+            IFormatter formatter = new BinaryFormatter();
+            Stream stream = new FileStream(ProjectFilePath, FileMode.Create, FileAccess.Write);
+            formatter.Serialize(stream, ProjectSettings);
+            stream.Close();
+        }
+
+        public static void LoadProjectSettings()
+        {
+            if (File.Exists(ProjectFilePath))
             {
-                if (GeneralSettings.RecentFiles[i][1] == ProjectFilePath) // Project file paths match - same project
-                {
-                    GeneralSettings.RecentFiles.RemoveAt(i);
-                }
+                IFormatter formatter = new BinaryFormatter();
+                Stream stream = new FileStream(ProjectFilePath, FileMode.Open, FileAccess.Read);
+                ProjectSettings = formatter.Deserialize(stream) as ProjectSettings;
+                stream.Close();
             }
-            GeneralSettings.RecentFiles.Add(new List<string>() { ProjectSettings.ProjectName, ProjectFilePath });
+            else
+            {
+                ProjectSettings = new ProjectSettings();
+            }
+            if (ProjectSettings.LastZoomFactor == 0) ProjectSettings.LastZoomFactor = 1;
+            if (ProjectSettings.ProjectName.Length == 0) ProjectSettings.ProjectName = "Untitled Game";
+            if (string.IsNullOrEmpty(ProjectSettings.LastMode)) ProjectSettings.LastMode = "MAPPING";
+            if (string.IsNullOrEmpty(ProjectSettings.LastMappingSubmode)) ProjectSettings.LastMappingSubmode = "TILES";
+            if (ProjectSettings.TilesetCapacity == 0) ProjectSettings.TilesetCapacity = 25;
+            if (ProjectSettings.AutotileCapacity == 0) ProjectSettings.AutotileCapacity = 25;
+        }
+
+        public static void ClearProjectData()
+        {
+            ProjectFilePath = null;
+            ProjectSettings = null;
+            UnsavedChanges = false;
         }
     }
 
@@ -673,6 +675,7 @@ namespace MKEditor
         public List<object> MapOrder = new List<object>();
         public string ProjectName = "Untitled Game";
         public string LastMode = "MAPPING";
+        public string LastMappingSubmode = "TILES";
         public int LastMapID = 1;
         public int LastLayer = 1;
         public double LastZoomFactor = 1;

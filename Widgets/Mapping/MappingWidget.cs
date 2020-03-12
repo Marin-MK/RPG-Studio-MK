@@ -93,32 +93,46 @@ namespace MKEditor.Widgets
 
         int OldSelectedIndex = -1;
 
-        public void ChangeSubmode()
+        public void SetSelectedIndex(int Index)
         {
-            if (OldSelectedIndex == Submodes.SelectedIndex) return;
+            if (Index != Submodes.SelectedIndex) Submodes.SelectTab(Index);
+            if (MapImageWidget.Parent == ActiveMapViewer.MainContainer) return; // Already selected
+            Editor.ProjectSettings.LastMappingSubmode = new List<string>() { "TILES", "CONNECTIONS" }[Index];
             MapImageWidget.SetParent(ActiveMapViewer.MainContainer);
             MapImageWidget.SetVisible(true);
             if (ActiveMapViewer.Map != null) ActiveMapViewer.PositionMap();
 
-            if (ActiveMapViewer is MapViewerTiles)
+            if (ActiveMapViewer is MapViewerTiles) // Select Tiles submode
             {
                 for (int i = 0; i < Map.Layers.Count; i++) MapImageWidget.Sprites[i.ToString()].Visible = Map.Layers[i].Visible;
             }
-            else
+            else // Deselect Tiles submode
             {
 
             }
-            if (ActiveMapViewer is MapViewerConnections)
+            if (ActiveMapViewer is MapViewerConnections) // Select Connections submode
             {
                 MapImageWidget.GridBackground.SetVisible(false);
                 for (int i = 0; i < Map.Layers.Count; i++) MapImageWidget.Sprites[i.ToString()].Visible = true;
             }
-            else
+            else // Deselect Selections submode
             {
                 MapImageWidget.GridBackground.SetVisible(true);
             }
             MapImageWidget.MapViewer = ActiveMapViewer;
             OldSelectedIndex = Submodes.SelectedIndex;
+        }
+
+        public void ChangeSubmode()
+        {
+            if (OldSelectedIndex == Submodes.SelectedIndex) return;
+            this.SetSelectedIndex(Submodes.SelectedIndex);
+        }
+
+        public void SetSubmode(string Submode)
+        {
+            if (Submode == "TILES") SetSelectedIndex(0);
+            else if (Submode == "CONNECTIONS") SetSelectedIndex(1);
         }
 
         public void SetSelectedLayer(int Index)
