@@ -241,7 +241,7 @@ namespace MKEditor.Widgets
                     }
                     if (warn)
                     {
-                        MessageBox msg = new MessageBox("Warning", "One of the deleted autotiles was still in use. By choosing to continue, tiles of that autotile will be deleted.", new List<string>() { "Continue", "Cancel" });
+                        MessageBox msg = new MessageBox("Warning", "One of the deleted autotiles was still in use. By choosing to continue, tiles of that autotile will be deleted.", new List<string>() { "Continue", "Cancel" }, IconType.Warning);
                         msg.OnButtonPressed += delegate (object sender2, EventArgs e2)
                         {
                             if (msg.Result == 0) // Continue
@@ -354,7 +354,7 @@ namespace MKEditor.Widgets
                 }
                 if (warn)
                 {
-                    MessageBox msg = new MessageBox("Warning", "One of the deleted tilesets was still in use. By choosing to continue, tiles of that tileset will be deleted.", new List<string>() { "Continue", "Cancel" });
+                    MessageBox msg = new MessageBox("Warning", "One of the deleted tilesets was still in use. By choosing to continue, tiles of that tileset will be deleted.", new List<string>() { "Continue", "Cancel" }, IconType.Warning);
                     msg.OnButtonPressed += delegate (object sender2, EventArgs e2)
                     {
                         if (msg.Result == 0) // Continue

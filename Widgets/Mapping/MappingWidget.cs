@@ -97,12 +97,13 @@ namespace MKEditor.Widgets
         {
             if (Index != Submodes.SelectedIndex) Submodes.SelectTab(Index);
             if (MapImageWidget.Parent == ActiveMapViewer.MainContainer) return; // Already selected
-            Editor.ProjectSettings.LastMappingSubmode = new List<string>() { "TILES", "CONNECTIONS" }[Index];
+            string Submode = new List<string>() { "TILES", "CONNECTIONS" }[Index];
+            Editor.ProjectSettings.LastMappingSubmode = Submode;
             MapImageWidget.SetParent(ActiveMapViewer.MainContainer);
             MapImageWidget.SetVisible(true);
             if (ActiveMapViewer.Map != null) ActiveMapViewer.PositionMap();
 
-            if (ActiveMapViewer is MapViewerTiles) // Select Tiles submode
+            if (Submode == "TILES") // Select Tiles submode
             {
                 for (int i = 0; i < Map.Layers.Count; i++) MapImageWidget.Sprites[i.ToString()].Visible = Map.Layers[i].Visible;
             }
@@ -110,7 +111,7 @@ namespace MKEditor.Widgets
             {
 
             }
-            if (ActiveMapViewer is MapViewerConnections) // Select Connections submode
+            if (Submode == "CONNECTIONS") // Select Connections submode
             {
                 MapImageWidget.GridBackground.SetVisible(false);
                 for (int i = 0; i < Map.Layers.Count; i++) MapImageWidget.Sprites[i.ToString()].Visible = true;

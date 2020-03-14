@@ -15,7 +15,11 @@ namespace MKEditor
 {
     public static class Editor
     {
+        /// <summary>
+        /// Determines whether the user should be warned of unsaved changed before closing.
+        /// </summary>
         public static bool UnsavedChanges = false;
+
         private static Platform? _platform;
         /// <summary>
         /// The current OS.
@@ -35,12 +39,36 @@ namespace MKEditor
             }
         }
 
+        /// <summary>
+        /// The main Window object for the editor.
+        /// </summary>
         public static MainEditorWindow MainWindow;
+
+        /// <summary>
+        /// Whether the user is currently has a project open.
+        /// </summary>
         public static bool InProject { get { return !string.IsNullOrEmpty(ProjectFilePath); } }
+
+        /// <summary>
+        /// The path to the current project's project file.
+        /// </summary>
         public static string ProjectFilePath;
+
+        /// <summary>
+        /// Settings specific to the currently opened project.
+        /// </summary>
         public static ProjectSettings ProjectSettings;
+
+        /// <summary>
+        /// General settings for the editor as a whole.
+        /// </summary>
         public static GeneralSettings GeneralSettings;
 
+
+
+        /// <summary>
+        /// Returns the displayed string for the current editor version.
+        /// </summary>
         public static string GetVersionString()
         {
             // Changed in Project Settings -> Package -> Package Version (stored in .csproj)
@@ -52,11 +80,17 @@ namespace MKEditor
             return VersionName + " " + Version;
         }
 
+        /// <summary>
+        /// Returns the OperatingSystem object that corresponds with the in-use OS.
+        /// </summary>
         public static OperatingSystem GetOperatingSystem()
         {
             return Environment.OSVersion;
         }
 
+        /// <summary>
+        /// Initializes Ruby variables to allow Ruby methods to be called.
+        /// </summary>
         public static void InitializeRuby()
         {
             if (Internal.Initialized) return;
@@ -91,6 +125,9 @@ namespace MKEditor
             MapInfo.CreateClass();
         }
 
+        /// <summary>
+        /// Closes the currently active project, if existent.
+        /// </summary>
         public static void CloseProject()
         {
             if (!InProject) return;
@@ -109,6 +146,9 @@ namespace MKEditor
             ClearProjectData();
         }
 
+        /// <summary>
+        /// Sets in motion the process of importing maps.
+        /// </summary>
         public static void ImportMaps()
         {
             OpenFile of = new OpenFile();
@@ -223,7 +263,7 @@ namespace MKEditor
                                 data = null;
                                 tileset.Free();
                                 map.Free();
-                                MessageBox b = new MessageBox("Warning", $"Importing Map ({MapName})...\n\nAs no tileset was chosen, this map will not be imported.");
+                                MessageBox b = new MessageBox("Warning", $"Importing Map ({MapName})...\n\nAs no tileset was chosen, this map will not be imported.", IconType.Warning);
                                 b.OnButtonPressed += delegate (object sender, EventArgs e)
                                 {
                                     if (MapIndex < Files.Count - 1) ImportMap(MapIndex + 1);
@@ -236,7 +276,7 @@ namespace MKEditor
                         string filename = root + "\\Graphics\\Tilesets\\" + tileset.TilesetName.ToString() + ".png";
                         if (!File.Exists(filename)) // Graphic doesn't exist
                         {
-                            MessageBox b = new MessageBox("Error", $"Importing Map ({MapName})...\n\nThe tileset graphic could not be found. The tileset cannot be imported, and thus this map will not be imported.");
+                            MessageBox b = new MessageBox("Error", $"Importing Map ({MapName})...\n\nThe tileset graphic could not be found. The tileset cannot be imported, and thus this map will not be imported.", IconType.Error);
                             b.OnButtonPressed += delegate (object sender, EventArgs e)
                             {
                                 if (MapIndex < Files.Count - 1) ImportMap(MapIndex + 1);
@@ -359,7 +399,7 @@ namespace MKEditor
                         List<string> options = new List<string>();
                         if (ProjectSettings.LastMode != "MAPPING") options.Add("Go to Map");
                         options.Add("OK");
-                        MessageBox box = new MessageBox(Title, Msg, options);
+                        MessageBox box = new MessageBox(Title, Msg, options, IconType.Info);
                         box.OnButtonPressed += delegate (object sender, EventArgs e)
                         {
                             if (options[box.Result] == "Go to Map") // Go to map
@@ -376,12 +416,19 @@ namespace MKEditor
             ImportMap(0);
         }
 
+        /// <summary>
+        /// Starts or stops all map animations.
+        /// </summary>
         public static void ToggleMapAnimations()
         {
             GeneralSettings.ShowMapAnimations = !GeneralSettings.ShowMapAnimations;
             MainWindow.MapWidget.SetMapAnimations(GeneralSettings.ShowMapAnimations);
         }
 
+        /// <summary>
+        /// Returns the first unused map ID for the current project.
+        /// </summary>
+        /// <returns></returns>
         public static int GetFreeMapID()
         {
             int i = 1;
@@ -395,6 +442,10 @@ namespace MKEditor
             }
         }
 
+        /// <summary>
+        /// Returns the first unused tileset ID for the current project.
+        /// </summary>
+        /// <returns></returns>
         public static int GetFreeTilesetID()
         {
             int i = 1;
@@ -408,6 +459,11 @@ namespace MKEditor
             }
         }
 
+        /// <summary>
+        /// Adds a Map to the map list.
+        /// </summary>
+        /// <param name="Map">The new Map object.</param>
+        /// <param name="ParentID">The ID of the parent map.</param>
         public static void AddMap(Game.Map Map, int ParentID = 0)
         {
             Game.Data.Maps.Add(Map.ID, Map);
@@ -430,6 +486,12 @@ namespace MKEditor
             }
         }
 
+        /// <summary>
+        /// Adss a Map to the project's map order.
+        /// </summary>
+        /// <param name="collection">The collection to add the map to.</param>
+        /// <param name="ParentID">The parent ID of the map.</param>
+        /// <param name="ChildID">The child ID of the map.</param>
         public static bool AddIDToMap(List<object> collection, int ParentID, int ChildID)
         {
             for (int i = 0; i < collection.Count; i++)
@@ -455,11 +517,17 @@ namespace MKEditor
             return false;
         }
 
+        /// <summary>
+        /// Creates a new, blank project.
+        /// </summary>
         public static void NewProject()
         {
-            new MessageBox("Oops!", "This feature has not been implemented yet.\nTo get started, please use the \"Open Project\" feature and choose the MK Starter Kit.");
+            new MessageBox("Oops!", "This feature has not been implemented yet.\nTo get started, please use the \"Open Project\" feature and choose the MK Starter Kit.", IconType.Error);
         }
 
+        /// <summary>
+        /// Allows the user to pick a project file.
+        /// </summary>
         public static void OpenProject()
         {
             OpenFile of = new OpenFile();
@@ -491,6 +559,9 @@ namespace MKEditor
             }
         }
 
+        /// <summary>
+        /// Saves the current project.
+        /// </summary>
         public static void SaveProject()
         {
             if (!InProject) return;
@@ -507,22 +578,36 @@ namespace MKEditor
             MainWindow.StatusBar.QueueMessage($"Saved project ({time}ms)", true);
         }
 
+        /// <summary>
+        /// Runs the current project.
+        /// </summary>
         public static void StartGame()
         {
-            MainWindow.StatusBar.QueueMessage("Game starting...");
+            MainWindow.StatusBar.QueueMessage("Game starting...", true);
             Process.Start(Game.Data.ProjectPath + "/mkxp.exe");
         }
 
+        /// <summary>
+        /// Opens the game folder corresponding with the current project.
+        /// </summary>
         public static void OpenGameFolder()
         {
             Utilities.OpenFolder(Game.Data.ProjectPath);
         }
 
+        /// <summary>
+        /// Quits the editor entirely.
+        /// </summary>
         public static void ExitEditor()
         {
             MainWindow.Dispose();
         }
 
+        /// <summary>
+        /// Changes the active mode of the editor.
+        /// </summary>
+        /// <param name="Mode">The mode to switch to. MAPPING, EVENTING, SCRIPTING or DATABASE.</param>
+        /// <param name="Force">Whether or not to force a full redraw.</param>
         public static void SetMode(string Mode, bool Force = false)
         {
             if (Mode == ProjectSettings.LastMode && !Force) return;
@@ -535,7 +620,7 @@ namespace MKEditor
             MainWindow.StatusBar.SetVisible(true);
             MainWindow.ToolBar.SetVisible(true);
 
-            if (Mode == "MAPPING")
+            if (Mode == "MAPPING") // Select Mapping mode
             {
                 MainWindow.ToolBar.MappingMode.SetSelected(true, Force);
 
@@ -558,33 +643,33 @@ namespace MKEditor
                 MainWindow.MapWidget.SetZoomFactor(ProjectSettings.LastZoomFactor);
                 MainWindow.MapWidget.SetSubmode(ProjectSettings.LastMappingSubmode);
             }
-            else if (OldMode == "MAPPING")
+            else if (OldMode == "MAPPING") // Deselct Mapping mode
             {
                 
             }
-            if (Mode == "EVENTING")
+            if (Mode == "EVENTING") // Select Eventing mode
             {
                 MainWindow.ToolBar.EventingMode.SetSelected(true, Force);
             }
-            else if (OldMode == "EVENTING")
+            else if (OldMode == "EVENTING") // Deselect Eventing mode
             {
 
             }
-            if (Mode == "SCRIPTING")
+            if (Mode == "SCRIPTING") // Select Scripting mode
             {
                 MainWindow.ToolBar.ScriptingMode.SetSelected(true, Force);
             }
-            else if (OldMode == "SCRIPTING")
+            else if (OldMode == "SCRIPTING") // Deselect Script mode
             {
 
             }
-            if (Mode == "DATABASE")
+            if (Mode == "DATABASE") // Select Database mode
             {
                 MainWindow.ToolBar.DatabaseMode.SetSelected(true, Force);
                 MainWindow.MainEditorWidget = new DatabaseWidget(MainWindow.MainGridLayout);
                 MainWindow.MainEditorWidget.SetGridRow(3);
             }
-            else if (OldMode == "DATABASE")
+            else if (OldMode == "DATABASE") // Deselect Database mode
             {
 
             }
@@ -593,6 +678,9 @@ namespace MKEditor
             MainWindow.ToolBar.Refresh();
         }
 
+        /// <summary>
+        /// Adds the current project to the list of recently opened projects.
+        /// </summary>
         public static void MakeRecentProject()
         {
             for (int i = 0; i < GeneralSettings.RecentFiles.Count; i++)
@@ -605,6 +693,9 @@ namespace MKEditor
             GeneralSettings.RecentFiles.Add(new List<string>() { ProjectSettings.ProjectName, ProjectFilePath });
         }
 
+        /// <summary>
+        /// Saves the editor's general settings.
+        /// </summary>
         public static void DumpGeneralSettings()
         {
             IFormatter formatter = new BinaryFormatter();
@@ -613,6 +704,9 @@ namespace MKEditor
             stream.Close();
         }
 
+        /// <summary>
+        /// Loads the editor's general settings.
+        /// </summary>
         public static void LoadGeneralSettings()
         {
             if (File.Exists("editor.mkd"))
@@ -632,6 +726,9 @@ namespace MKEditor
             if (GeneralSettings.LastY < 0) GeneralSettings.LastY = 0;
         }
 
+        /// <summary>
+        /// Saves the current project's settings.
+        /// </summary>
         public static void DumpProjectSettings()
         {
             IFormatter formatter = new BinaryFormatter();
@@ -640,6 +737,9 @@ namespace MKEditor
             stream.Close();
         }
 
+        /// <summary>
+        /// Loads the current project's settings.
+        /// </summary>
         public static void LoadProjectSettings()
         {
             if (File.Exists(ProjectFilePath))
@@ -661,6 +761,9 @@ namespace MKEditor
             if (ProjectSettings.AutotileCapacity == 0) ProjectSettings.AutotileCapacity = 25;
         }
 
+        /// <summary>
+        /// Clears settings related to the current project. Usually only called after saving and closing a project.
+        /// </summary>
         public static void ClearProjectData()
         {
             ProjectFilePath = null;
@@ -672,26 +775,74 @@ namespace MKEditor
     [Serializable]
     public class ProjectSettings
     {
+        /// <summary>
+        /// The hierarchy of maps as seen in the map list.
+        /// </summary>
         public List<object> MapOrder = new List<object>();
+        /// <summary>
+        /// The name of the project.
+        /// </summary>
         public string ProjectName = "Untitled Game";
+        /// <summary>
+        /// The last-active mode of the project.
+        /// </summary>
         public string LastMode = "MAPPING";
+        /// <summary>
+        /// The last-active submode within the Mapping mode.
+        /// </summary>
         public string LastMappingSubmode = "TILES";
+        /// <summary>
+        /// The last selected Map.
+        /// </summary>
         public int LastMapID = 1;
+        /// <summary>
+        /// The last selected layer.
+        /// </summary>
         public int LastLayer = 1;
+        /// <summary>
+        /// The last zoom factor.
+        /// </summary>
         public double LastZoomFactor = 1;
+        /// <summary>
+        /// The maximum tileset capacity.
+        /// </summary>
         public int TilesetCapacity = 25;
+        /// <summary>
+        /// The maximum autotile capacity.
+        /// </summary>
         public int AutotileCapacity = 25;
     }
 
     [Serializable]
     public class GeneralSettings
     {
+        /// <summary>
+        /// Whether the editor window was maximized.
+        /// </summary>
         public bool WasMaximized = true;
+        /// <summary>
+        /// The last width the editor window had when it was not maximized.
+        /// </summary>
         public int LastWidth = 600;
+        /// <summary>
+        /// The last height the editor window had when it was not maximized.
+        /// </summary>
         public int LastHeight = 600;
+        /// <summary>
+        /// The last X position the editor window had when it was not maximized.
+        /// </summary>
         public int LastX = 50;
+        /// <summary>
+        /// The last Y position the editor window had when it was not maximized.
+        /// </summary>
         public int LastY = 50;
+        /// <summary>
+        /// The list of recently opened projects. May contain old/invalid paths.
+        /// </summary>
         public List<List<string>> RecentFiles = new List<List<string>>();
+        /// <summary>
+        /// Whether to play map animations.
+        /// </summary>
         public bool ShowMapAnimations = true;
     }
 

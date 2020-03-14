@@ -17,9 +17,9 @@ namespace MKEditor.Widgets
         {
             if (this.Sprite.Bitmap != null && !this.Sprite.Bitmap.Disposed)
             {
-                if (this.Sprite.Bitmap.Width != this.Size.Width || this.Sprite.Bitmap.Height != this.Size.Height)
+                if (this.Sprite.SrcRect.Width != this.Size.Width || this.Sprite.SrcRect.Height != this.Size.Height)
                 {
-                    this.SetSize(this.Sprite.Bitmap.Width, this.Sprite.Bitmap.Height);
+                    this.SetSize(this.Sprite.SrcRect.Width, this.Sprite.SrcRect.Height);
                 }
             }
             else

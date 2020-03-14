@@ -8,6 +8,13 @@ namespace MKEditor
 {
     public static class Utilities
     {
+        /// <summary>
+        /// Draws the collapsed or uncollapsed icon on a bitmap. Used for tileset boxes.
+        /// </summary>
+        /// <param name="b">The bitmap to draw the icon onto.</param>
+        /// <param name="x">The x position to draw the icon at.</param>
+        /// <param name="y">The y position to draw the icon at.</param>
+        /// <param name="collapsed">Whether the icon is collapsed or not.</param>
         public static void DrawCollapseBox(Bitmap b, int x, int y, bool collapsed)
         {
             b.SetPixel(x, y + 2, 17, 33, 50);
@@ -86,6 +93,13 @@ namespace MKEditor
             }
         }
 
+        /// <summary>
+        /// Swaps two <paramref name="List"/>&lt;<typeparamref name="T"/>&gt;  elements.
+        /// </summary>
+        /// <typeparam name="T">The type of list elements.</typeparam>
+        /// <param name="List">The list to modify.</param>
+        /// <param name="Index1">The first index to swap with the second index.</param>
+        /// <param name="Index2">The second index to swap with the first index.</param>
         public static void Swap<T>(this List<T> List, int Index1, int Index2)
         {
             if (Index1 == Index2) return;
@@ -97,6 +111,11 @@ namespace MKEditor
             List.RemoveAt(max + 1);
         }
 
+        /// <summary>
+        /// Ensures the given number has at least as many digits as specified by adding trailing zeroes.
+        /// </summary>
+        /// <param name="Number">The number to format.</param>
+        /// <param name="Digits">The number of digits.</param>
         public static string Digits(int Number, int Digits)
         {
             string num = Number.ToString();
@@ -107,8 +126,14 @@ namespace MKEditor
             return num;
         }
 
+        /// <summary>
+        /// The bitmap of sheet of icons from icons.png.
+        /// </summary>
         public static Bitmap IconSheet;
 
+        /// <summary>
+        /// Initializes the IconSheet bitmap.
+        /// </summary>
         public static void Initialize()
         {
             IconSheet = new Bitmap("icons.png");

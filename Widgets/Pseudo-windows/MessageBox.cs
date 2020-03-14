@@ -14,39 +14,50 @@ namespace MKEditor.Widgets
         Button Button1;
         Button Button2;
         Button Button3;
+        PictureBox Icon;
 
-        public ButtonTypes ButtonType;
+        public ButtonType ButtonType;
         public List<string> Buttons;
+        public IconType IconType;
 
         public EventHandler<EventArgs> OnButtonPressed;
 
-        public MessageBox(string Title, string Message, ButtonTypes type = ButtonTypes.OK, List<string> _buttons = null)
+        public MessageBox(string Title, string Message, ButtonType type = ButtonType.OK, IconType IconType = IconType.None, List<string> _buttons = null)
             : base(Graphics.Windows[0], "messageBox")
         {
             this.ButtonType = type;
             this.Buttons = _buttons;
+            this.IconType = IconType;
 
             SetTitle(Title);
             this.Message = Message;
+
+            if (IconType != IconType.None)
+            {
+                Icon = new PictureBox(this);
+                Icon.Sprite.Bitmap = new Bitmap("mbox_icons");
+                Icon.Sprite.SrcRect.Width = 32;
+                Icon.Sprite.SrcRect.X = 32 * (int) IconType;
+            }
 
             label = new MultilineLabel(this);
             label.SetText(Message);
             
             switch (ButtonType)
             {
-                case ButtonTypes.OK:
+                case ButtonType.OK:
                     Buttons = new List<string>() { "OK" };
                     break;
-                case ButtonTypes.OKCancel:
+                case ButtonType.OKCancel:
                     Buttons = new List<string>() { "OK", "Cancel" };
                     break;
-                case ButtonTypes.YesNo:
+                case ButtonType.YesNo:
                     Buttons = new List<string>() { "Yes", "No" };
                     break;
-                case ButtonTypes.YesNoCancel:
+                case ButtonType.YesNoCancel:
                     Buttons = new List<string>() { "Yes", "No", "Cancel" };
                     break;
-                case ButtonTypes.Custom: break;
+                case ButtonType.Custom: break;
                 default:
                     throw new Exception("Invalid ButtonType");
             }
@@ -112,8 +123,14 @@ namespace MKEditor.Widgets
             SetSize(300, 150);
         }
 
-        public MessageBox(string Title, string Message, List<string> Buttons)
-            : this(Title, Message, ButtonTypes.Custom, Buttons)
+        public MessageBox(string Title, string Message, List<string> Buttons, IconType IconType = IconType.None)
+            : this(Title, Message, ButtonType.Custom, IconType, Buttons)
+        {
+
+        }
+
+        public MessageBox(string Title, string Message, IconType IconType)
+            : this(Title, Message, ButtonType.OK, IconType)
         {
 
         }
@@ -124,20 +141,37 @@ namespace MKEditor.Widgets
             Button3.SetPosition(Size.Width - Button3.Size.Width - 1, Size.Height - Button3.Size.Height - 1);
             if (Button2 != null) Button2.SetPosition(Button3.Position.X - Button2.Size.Width, Button3.Position.Y);
             if (Button1 != null) Button1.SetPosition(Button2.Position.X - Button1.Size.Width, Button3.Position.Y);
-            label.SetSize(Size.Width - 20, 1);
+            int x = 10;
+            if (Icon != null)
+            {
+                x = 60;
+            }
+            label.SetSize(Size.Width - 10 - x, 1);
             label.RedrawText();
-            label.SetPosition(10, Size.Height / 2 - label.Size.Height / 2 - 2);
+            label.SetPosition(x, Size.Height / 2 - label.Size.Height / 2 - 2);
+            if (Icon != null)
+            {
+                Icon.SetPosition(14, Size.Height / 2 - 24);
+            }
             if (Size.Height - label.Size.Height < 100) SetSize(Size.Width + 100, Size.Height + 50);
             Center();
         }
     }
 
-    public enum ButtonTypes
+    public enum ButtonType
     {
         Custom,
         OK,
         OKCancel,
         YesNo,
         YesNoCancel
+    }
+
+    public enum IconType
+    {
+        None = -1,
+        Error = 0,
+        Warning = 1,
+        Info = 2
     }
 }

@@ -202,7 +202,7 @@ namespace MKEditor.Widgets
             if (mapview.Nodes.Count <= 1) return;
             string message = "Are you sure you want to delete this map?";
             if (mapview.HoveringNode.Nodes.Count > 0) message += " All of its children will also be deleted.";
-            MessageBox confirm = new MessageBox("Warning", message, ButtonTypes.YesNoCancel);
+            MessageBox confirm = new MessageBox("Warning", message, ButtonType.YesNoCancel, IconType.Warning);
             confirm.OnClosed += delegate (object s, EventArgs ev)
             {
                 if (confirm.Result == 0) // Yes

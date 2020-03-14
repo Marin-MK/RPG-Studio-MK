@@ -103,7 +103,7 @@ namespace MKEditor.Widgets
                             MessageBox box = new MessageBox("Warning",
                                 $"By resizing the tileset capacity from {Editor.ProjectSettings.TilesetCapacity} to {NewValue}, {Lost} entries will be removed, " +
                                 $"of which {DefinedCount} {(DefinedCount == 1 ? "is a" : "are")} defined tileset{(DefinedCount == 1 ? "" : "s")}.\n" +
-                                "Would you like to proceed and delete these tilesets?", ButtonTypes.YesNoCancel);
+                                "Would you like to proceed and delete these tilesets?", ButtonType.YesNoCancel, IconType.Warning);
                             box.OnButtonPressed += delegate (object sender, EventArgs e)
                             {
                                 if (box.Result == 0) // Yes -> resize tileset capacity and delete tilesets

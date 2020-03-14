@@ -8,20 +8,52 @@ namespace MKEditor
 {
     public class MainEditorWindow : Window
     {
+        /// <summary>
+        /// The main UI manager object.
+        /// </summary>
         public UIManager UI;
-        public bool Blocked = false;
+        /// <summary>
+        /// The active Widget in the window. Used for higher priority popup windows that overlay the old active widget.
+        /// </summary>
         public IContainer ActiveWidget;
+        /// <summary>
+        /// The list of former active widgets. Used to go back to an older active widget when the currently active widget closes.
+        /// </summary>
         public List<IContainer> Widgets = new List<IContainer>();
 
+        /// <summary>
+        /// The main active mode.
+        /// </summary>
         public Widget MainEditorWidget;
 
+        /// <summary>
+        /// The MappingWidget object of the mapping mode. Null if not active.
+        /// </summary>
         public MappingWidget MapWidget { get { return MainEditorWidget as MappingWidget; } }
+        /// <summary>
+        /// The DatabaseWidget object of the database mode. Null if not active.
+        /// </summary>
         public DatabaseWidget DatabaseWidget { get { return MainEditorWidget as DatabaseWidget; } }
 
+        /// <summary>
+        /// The main grid layout which divides menubar, toolbar, main area and statusbar from one another.
+        /// </summary>
         public Grid MainGridLayout;
+        /// <summary>
+        /// The menubar.
+        /// </summary>
         public MenuBar MenuBar;
+        /// <summary>
+        /// The status bar.
+        /// </summary>
         public StatusBar StatusBar;
+        /// <summary>
+        /// The toolbar.
+        /// </summary>
         public ToolBar ToolBar;
+        /// <summary>
+        /// The home screen, if shown.
+        /// </summary>
         public HomeScreen HomeScreen;
 
         public MainEditorWindow(string[] args)
@@ -243,8 +275,12 @@ namespace MKEditor
             }
         }
 
+        /// <summary>
+        /// Initializes the editor after the home screen has been shown.
+        /// </summary>
         public void CreateEditor()
         {
+            DateTime start = DateTime.Now;
             if (HomeScreen != null) HomeScreen.Dispose();
 
             MainGridLayout.Rows[1] = new GridSize(31, Unit.Pixels);
@@ -256,14 +292,22 @@ namespace MKEditor
             Data.LoadGameData();
 
             Editor.SetMode(Editor.ProjectSettings.LastMode, true);
+            TimeSpan time = DateTime.Now - start;
+            StatusBar.QueueMessage($"Project loaded ({time.Milliseconds}ms)", true, 5000);
         }
 
+        /// <summary>
+        /// Opens the Help window.
+        /// </summary>
         public void OpenHelpWindow()
         {
             new MessageBox("Help",
                 "As there is no built-in wiki or documentation yet, please direct any questions to the official Discord server or Twitter account.");
         }
         
+        /// <summary>
+        /// Open the About window.
+        /// </summary>
         public void OpenAboutWindow()
         {
             new MessageBox("About RPG Studio MK",
@@ -274,6 +318,10 @@ namespace MKEditor
             );
         }
 
+        /// <summary>
+        /// Prompts the user to save if there are unsaved changes.
+        /// </summary>
+        /// <param name="Function">The function to call if saved or continued.</param>
         public void EnsureSaved(Action Function)
         {
             if (!Editor.UnsavedChanges)
@@ -282,7 +330,7 @@ namespace MKEditor
                 return;
             }
             MessageBox box = new MessageBox("Warning", "The game contains unsaved changed. Are you sure you would like to proceed? All unsaved changes will be lost.",
-                new List<string>() { "Save", "Continue", "Cancel" });
+                new List<string>() { "Save", "Continue", "Cancel" }, IconType.Warning);
             box.OnButtonPressed += delegate (object sender, EventArgs e)
             {
                 if (box.Result == 0) // Save
@@ -297,6 +345,10 @@ namespace MKEditor
             };
         }
 
+        /// <summary>
+        /// Sets the main active widget.
+        /// </summary>
+        /// <param name="Widget">The widget to set as the main widget.</param>
         public void SetActiveWidget(IContainer Widget)
         {
             this.ActiveWidget = Widget;
@@ -304,16 +356,25 @@ namespace MKEditor
             if (Graphics.LastMouseEvent is MouseEventArgs) Graphics.LastMouseEvent.Handled = true;
         }
 
+        /// <summary>
+        /// Sets the opacity of the main window overlay.
+        /// </summary>
         public void SetOverlayOpacity(byte Opacity)
         {
             TopSprite.Opacity = Opacity;
         }
 
+        /// <summary>
+        /// Sets the Z index of the main window overlay's viewport.
+        /// </summary>
         public void SetOverlayZIndex(int Z)
         {
             TopViewport.Z = Z;
         }
 
+        /// <summary>
+        /// Updates the UIManager, and subsequently all widgets.
+        /// </summary>
         private void Tick(object sender, EventArgs e)
         {
             this.UI.Update();

@@ -85,14 +85,14 @@ namespace MKEditor.Widgets
             Tileset t = (Tilesets.Items[Tilesets.SelectedIndex].Object as Tileset);
             if (t == null)
             {
-                new MessageBox("Error", "This tileset doesn't have a graphic. Please pick a different tileset.");
+                new MessageBox("Error", "This tileset doesn't have a graphic. Please pick a different tileset.", IconType.Error);
             }
             else
             {
                 this.ChosenTilesetID = t.ID;
                 if (this.Map != null && this.Map.TilesetIDs.Contains(this.ChosenTilesetID))
                 {
-                    new MessageBox("Error", "This map already contains this tileset. Please pick a different tileset.");
+                    new MessageBox("Error", "This map already contains this tileset. Please pick a different tileset.", IconType.Error);
                 }
                 else
                 {

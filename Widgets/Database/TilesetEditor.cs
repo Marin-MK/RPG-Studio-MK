@@ -129,7 +129,7 @@ namespace MKEditor.Widgets
                 if (System.IO.Directory.GetParent(path).FullName != tilesetsfolder)
                 {
                     MessageBox box = new MessageBox("Error",
-                        "The selected file doesn't exist in the gfx/tilesets folder. Would you like to import it?", ButtonTypes.YesNo);
+                        "The selected file doesn't exist in the gfx/tilesets folder. Would you like to import it?", ButtonType.YesNo);
                     box.OnButtonPressed += delegate (object sender, EventArgs e)
                     {
                         if (box.Result == 0) // Yes
@@ -169,7 +169,7 @@ namespace MKEditor.Widgets
                 string file = GraphicBox.Text;
                 if (!System.IO.File.Exists(Game.Data.ProjectPath + "\\gfx\\tilesets\\" + file + ".png"))
                 {
-                    new MessageBox("Error", "No tileset with the name '" + file + "' exists in gfx/tilesets.");
+                    new MessageBox("Error", "No tileset with the name '" + file + "' exists in gfx/tilesets.", IconType.Error);
                 }
                 else
                 {
@@ -241,7 +241,7 @@ namespace MKEditor.Widgets
                     $"This tileset is currently being used by {Maps.Count} map{(plural ? "s" : "")}.\n" +
                     $"The tiles from this tileset that are being used on {(plural ? "those maps" : "that map")} will be deleted.\n" +
                     "Are you sure you'd like to delete those tiles?",
-                    new List<string>() { "Delete", "Cancel" });
+                    new List<string>() { "Delete", "Cancel" }, IconType.Warning);
                 box.OnButtonPressed += delegate (object sender, EventArgs e)
                 {
                     if (box.Result == 0) // Delete

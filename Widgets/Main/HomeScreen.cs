@@ -81,7 +81,7 @@ namespace MKEditor.Widgets
             YoutubeButton.SetHelpText("Visit MK's YouTube account.");
             YoutubeButton.WidgetIM.OnLeftClick += delegate (object sender, MouseEventArgs e)
             {
-                new MessageBox("Oops!", "MK does not have a YouTube channel yet!");
+                new MessageBox("Oops!", "MK does not have a YouTube channel yet!", IconType.Error);
             };
             
             TwitterButton = new PictureBox(this);
@@ -368,7 +368,7 @@ namespace MKEditor.Widgets
         {
             if (!System.IO.File.Exists(Editor.GeneralSettings.RecentFiles[index][1]))
             {
-                MessageBox box = new MessageBox("Error", "No project file could be found in this folder.");
+                MessageBox box = new MessageBox("Error", "No project file could be found in this folder.", IconType.Error);
                 box.OnDisposing += delegate (object sender, EventArgs e)
                 {
                     Editor.GeneralSettings.RecentFiles.RemoveAt(index);
@@ -384,7 +384,7 @@ namespace MKEditor.Widgets
 
         public void ShowTutorials()
         {
-            new MessageBox("Oops!", "MK does not have a dedicated wiki yet. You may find the information you're looking for on Discord, Twitter or GitHub, however.");
+            new MessageBox("Oops!", "MK does not have a dedicated wiki yet. You may find the information you're looking for on Discord, Twitter or GitHub, however.", IconType.Error);
         }
     }
 

@@ -16,7 +16,7 @@ namespace MKEditor
         static bool CatchErrors = false
             ;
 
-        public static bool ThrownError = false;
+        static bool ThrownError = false;
 
         static void Main(params string[] args)
         {
@@ -76,7 +76,7 @@ namespace MKEditor
                         if (!ThrownError)
                         {
                             string msg = ex.GetType() + " : " + ex.Message + "\n\n" + ex.StackTrace;
-                            ErrorBox = new Widgets.MessageBox("Error!", msg, new System.Collections.Generic.List<string>() { "Quit" });
+                            ErrorBox = new Widgets.MessageBox("Error!", msg, new System.Collections.Generic.List<string>() { "Quit" }, Widgets.IconType.Error);
                             ErrorBox.SetSize(win.Width, win.Height);
                             ErrorBox.OnDisposed += delegate (object sender, EventArgs e)
                             {

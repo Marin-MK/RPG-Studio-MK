@@ -21,7 +21,7 @@ namespace MKEditor.Widgets
             : base(Parent, Name)
         {
             SetBackgroundColor(73, 89, 109);
-            this.MapViewer = this.Parent.Parent as MapViewerBase;
+            this.MapViewer = this.Parent.Parent.Parent.Parent as MapViewerBase;
             this.GridBackground = new GridBackground(this);
             Sprites["dark"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(0, 0, 0, 0)));
             Sprites["dark"].Z = 99999999;
@@ -133,6 +133,11 @@ namespace MKEditor.Widgets
 
         public void SwapLayers(int Index1, int Index2)
         {
+            foreach (List<int> data in AnimatedAutotiles)
+            {
+                if (data[0] == Index1) data[0] = Index2;
+                else if (data[0] == Index2) data[0] = Index1;
+            }
             Sprite s1 = this.Sprites[Index1.ToString()] as Sprite;
             s1.Z = Index2 * 2;
             Sprite s2 = this.Sprites[Index2.ToString()] as Sprite;
