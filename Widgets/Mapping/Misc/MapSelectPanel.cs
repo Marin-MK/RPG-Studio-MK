@@ -73,19 +73,27 @@ namespace MKEditor.Widgets
             {
                 if (Maps[i] is int)
                 {
+                    if (!Data.Maps.ContainsKey((int) Maps[i])) continue;
                     nodes.Add(new TreeNode() { Name = Data.Maps[(int) Maps[i]].DevName, Object = (int) Maps[i] });
                     Data.Maps[(int) Maps[i]].Added = true;
                 }
                 else
                 {
                     List<object> list = (List<object>) Maps[i];
-                    TreeNode n = new TreeNode();
-                    n.Name = Data.Maps[(int) list[0]].DevName;
-                    n.Object = (int) list[0];
-                    n.Collapsed = (bool) list[1];
-                    Data.Maps[(int) list[0]].Added = true;
-                    n.Nodes = PopulateList(list);
-                    nodes.Add(n);
+                    if (!Data.Maps.ContainsKey((int) list[0]))
+                    {
+                        nodes.AddRange(PopulateList(list));
+                    }
+                    else
+                    {
+                        TreeNode n = new TreeNode();
+                        n.Name = Data.Maps[(int)list[0]].DevName;
+                        n.Object = (int) list[0];
+                        n.Collapsed = (bool)list[1];
+                        Data.Maps[(int) list[0]].Added = true;
+                        n.Nodes = PopulateList(list);
+                        nodes.Add(n);
+                    }
                 }
             }
             if (first)
@@ -191,6 +199,7 @@ namespace MKEditor.Widgets
                 if (mpw.UpdateMapViewer)
                 {
                     Data.Maps[map.ID] = mpw.Map;
+                    mapview.SelectedNode.Name = mpw.Map.DevName;
                     Editor.UnsavedChanges = mpw.UnsavedChanges;
                     Editor.MainWindow.MapWidget.SetMap(mpw.Map);
                 }

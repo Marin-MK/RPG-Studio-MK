@@ -21,6 +21,7 @@ namespace MKEditor.Widgets
             SetSize(24, 28);
             Sprites["icon"] = new Sprite(Viewport);
             Sprites["icon"].Bitmap = Utilities.IconSheet;
+            Sprites["icon"].DestroyBitmap = false;
             Sprites["icon"].SrcRect.Width = 24;
             Sprites["icon"].SrcRect.Height = 24;
             Sprites["selector"] = new Sprite(Viewport, new SolidBitmap(24, 2, 59, 227, 255));

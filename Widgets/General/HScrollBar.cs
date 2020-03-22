@@ -23,7 +23,7 @@ namespace MKEditor.Widgets
         private int SliderRX = 0;
         private MouseInputManager SliderIM;
 
-        public HScrollBar(object Parent, string Name = "vScrollBar")
+        public HScrollBar(object Parent, string Name = "hScrollBar")
             : base(Parent, Name)
         {
             this.Size = new Size(17, 60);
@@ -39,7 +39,7 @@ namespace MKEditor.Widgets
             this.SliderIM.OnHoverChanged += SliderHoverChanged;
         }
 
-        public void SetValue(double value)
+        public void SetValue(double value, bool CallEvent = true)
         {
             if (value < 0) value = 0;
             if (value > 1) value = 1;
@@ -51,7 +51,7 @@ namespace MKEditor.Widgets
                     LinkedWidget.ScrolledX = (int) Math.Round((LinkedWidget.MaxChildWidth - LinkedWidget.Viewport.Width) * this.Value);
                     LinkedWidget.UpdateBounds();
                 }
-                if (this.OnValueChanged != null) this.OnValueChanged.Invoke(this, new EventArgs());
+                if (CallEvent && this.OnValueChanged != null) this.OnValueChanged.Invoke(this, new EventArgs());
                 Redraw();
             }
         }

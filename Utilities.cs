@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using MKEditor.Game;
 using ODL;
 
 namespace MKEditor
@@ -215,6 +216,49 @@ namespace MKEditor
                     throw new Exception("Failed to open file explorer '" + path + "'.");
                 }
             }
+        }
+
+        public static Bitmap CreateMapPreview(Map Map)
+        {
+            Bitmap bmp = new Bitmap(Map.Width * 32, Map.Height * 32);
+            bmp.Unlock();
+            for (int layer = 0; layer < Map.Layers.Count; layer++)
+            {
+                for (int y = 0; y < Map.Height; y++)
+                {
+                    for (int x = 0; x < Map.Width; x++)
+                    {
+                        TileData tile = Map.Layers[layer].Tiles[x + y * Map.Width];
+                        if (tile == null) continue;
+                        if (tile.TileType == TileType.Tileset)
+                        {
+                            Bitmap tilesetimage = Data.Tilesets[Map.TilesetIDs[tile.Index]].TilesetBitmap;
+                            int tilesetx = tile.ID % 8;
+                            int tilesety = (int) Math.Floor(tile.ID / 8d);
+                            bmp.Build(new Rect(x * 32, y * 32, 32, 32), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
+                        }
+                        else if (tile.TileType == TileType.Autotile)
+                        {
+                            Autotile autotile = Data.Autotiles[Map.AutotileIDs[tile.Index]];
+                            if (autotile.Format == AutotileFormat.Single)
+                            {
+                                bmp.Build(new Rect(x * 32, y * 32, 32, 32), autotile.AutotileBitmap, new Rect(0, 0, 32, 32));
+                            }
+                            else
+                            {
+                                List<int> Tiles = Autotile.AutotileCombinations[autotile.Format][tile.ID];
+                                for (int i = 0; i < 4; i++)
+                                {
+                                    bmp.Build(new Rect(x * 32 + 16 * (i % 2), y * 32 + 16 * (int) Math.Floor(i / 2d), 16, 16), autotile.AutotileBitmap,
+                                        new Rect(16 * (Tiles[i] % 6), 16 * (int) Math.Floor(Tiles[i] / 6d), 16, 16));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            bmp.Lock();
+            return bmp;
         }
     }
 }

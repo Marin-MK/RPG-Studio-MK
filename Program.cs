@@ -34,7 +34,10 @@ namespace MKEditor
             else if (fw.Contains(".NETFrameworkApp")) Framework = ".NET Framework ";
             Framework += Environment.Version.ToString();
             Console.WriteLine($"Framework: {Framework}");
-            Console.WriteLine($"OS Platform: {os.Platform} ({Editor.Platform})");
+            SDL2.SDL.SDL_version v;
+            SDL2.SDL.SDL_GetVersion(out v);
+            Console.WriteLine($"SDL Version: {v.major}.{v.minor}.{v.patch}");
+            Console.WriteLine($"OS Platform: {os.Platform} ({Editor.Platform}) {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}");
             Console.WriteLine($"OS Version: {os.VersionString}");
             Console.WriteLine($"Editor Version: {Editor.GetVersionString()}");
             Graphics.Start();

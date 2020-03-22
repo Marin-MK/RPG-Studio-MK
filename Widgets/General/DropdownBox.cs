@@ -4,23 +4,25 @@ using ODL;
 
 namespace MKEditor.Widgets
 {
-    public class FileBrowserBox : Widget
+    public class DropdownBox : Widget
     {
         public string Text { get { return TextArea.Text; } }
+        public Color TextColor { get { return TextArea.TextColor; } }
+        public bool ReadOnly { get { return TextArea.ReadOnly; } }
 
         public TextArea TextArea;
 
         public EventHandler<EventArgs> OnTextChanged { get { return TextArea.OnTextChanged; } set { TextArea.OnTextChanged = value; } }
+        public EventHandler<EventArgs> OnDropDownClicked;
 
-        public EventHandler<ObjectEventArgs> OnFileChosen;
-
-        public FileBrowserBox(object Parent, string Name = "fileBrowserBox")
+        public DropdownBox(object Parent, string Name = "fileBrowserBox")
             : base(Parent, Name)
         {
             Sprites["bg"] = new Sprite(this.Viewport);
             TextArea = new TextArea(this);
             TextArea.SetPosition(3, 3);
             TextArea.SetCaretHeight(13);
+            TextArea.SetZIndex(1);
             SetSize(100, 21);
 
             WidgetIM.OnMouseDown += MouseDown;
@@ -42,6 +44,16 @@ namespace MKEditor.Widgets
             this.TextArea.SetFont(f);
         }
 
+        public void SetTextColor(Color c)
+        {
+            this.TextArea.SetTextColor(c);
+        }
+
+        public void SetReadOnly(bool ReadOnly)
+        {
+            this.TextArea.SetReadOnly(ReadOnly);
+        }
+
         protected override void Draw()
         {
             if (Sprites["bg"].Bitmap != null) Sprites["bg"].Bitmap.Dispose();
@@ -53,11 +65,12 @@ namespace MKEditor.Widgets
             Sprites["bg"].Bitmap.SetPixel(0, Size.Height - 1, Color.ALPHA);
             Sprites["bg"].Bitmap.SetPixel(Size.Width - 1, Size.Height - 1, Color.ALPHA);
             Sprites["bg"].Bitmap.FillRect(1, 1, Size.Width - 2, Size.Height - 2, 54, 81, 108);
-            Sprites["bg"].Bitmap.FillRect(Size.Width - 18, 1, 17, 19, 28, 50, 73);
-            Sprites["bg"].Bitmap.FillRect(Size.Width - 13, 9, 7, 2, Color.WHITE);
-            Sprites["bg"].Bitmap.DrawLine(Size.Width - 12, 11, Size.Width - 8, 11, Color.WHITE);
-            Sprites["bg"].Bitmap.DrawLine(Size.Width - 11, 12, Size.Width - 9, 12, Color.WHITE);
-            Sprites["bg"].Bitmap.SetPixel(Size.Width - 10, 13, Color.WHITE);
+            Sprites["bg"].Bitmap.FillRect(Size.Width - 18, 1, 17, Size.Height - 2, 28, 50, 73);
+            int y = (int) Math.Floor(Size.Height / 2d) - 1;
+            Sprites["bg"].Bitmap.FillRect(Size.Width - 13, y, 7, 2, Color.WHITE);
+            Sprites["bg"].Bitmap.DrawLine(Size.Width - 12, y + 2, Size.Width - 8, y + 2, Color.WHITE);
+            Sprites["bg"].Bitmap.DrawLine(Size.Width - 11, y + 3, Size.Width - 9, y + 3, Color.WHITE);
+            Sprites["bg"].Bitmap.SetPixel(Size.Width - 10, y + 4, Color.WHITE);
             Sprites["bg"].Bitmap.Lock();
             base.Draw();
         }
@@ -74,18 +87,7 @@ namespace MKEditor.Widgets
             if (rx >= Size.Width - 18 && rx < Size.Width - 1 &&
                 ry >= 1 && ry < Size.Height - 1)
             {
-                OpenFile of = new OpenFile();
-                of.SetFilters(new List<FileFilter>()
-                {
-                    new FileFilter("PNG Image", "png")
-                });
-                of.SetInitialDirectory(Game.Data.ProjectPath + "\\gfx\\tilesets");
-                of.SetTitle("Pick a tileset...");
-                object result = of.Show();
-                if (result != null)
-                {
-                    if (OnFileChosen != null) OnFileChosen.Invoke(null, new ObjectEventArgs(result));
-                }
+                if (OnDropDownClicked != null) OnDropDownClicked.Invoke(null, new EventArgs());
             };
         }
     }

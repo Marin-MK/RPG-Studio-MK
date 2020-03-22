@@ -15,7 +15,7 @@ namespace MKEditor.Game
         public List<int> TilesetIDs = new List<int>();
         public List<int> AutotileIDs = new List<int>();
         public Dictionary<int, Event> Events = new Dictionary<int, Event>();
-        public Dictionary<string, List<Connection>> Connections = new Dictionary<string, List<Connection>>();
+        public List<MapConnection> Connections = new List<MapConnection>();
 
         public int SaveX = 0;
         public int SaveY = 0;
@@ -67,11 +67,12 @@ namespace MKEditor.Game
                 this.Events[e.ID] = e;
             }
 
-            this.Connections = new Dictionary<string, List<Connection>>();
-            this.Connections.Add(":north", new List<Connection>());
-            this.Connections.Add(":east", new List<Connection>());
-            this.Connections.Add(":south", new List<Connection>());
-            this.Connections.Add(":west", new List<Connection>());
+            this.Connections = new List<MapConnection>();
+            foreach (object conn in ((JArray) Data["@connections"]).ToObject<List<object>>())
+            {
+                MapConnection c = new MapConnection(((JObject) conn).ToObject<Dictionary<string, object>>());
+                this.Connections.Add(c);
+            }
         }
 
         public Dictionary<string, object> ToJSON()
@@ -97,12 +98,10 @@ namespace MKEditor.Game
                 events[kvp.Key] = kvp.Value.ToJSON();
             }
             Data["@events"] = events;
-            Dictionary<string, List<List<int>>> connections = new Dictionary<string, List<List<int>>>();
-            foreach (KeyValuePair<string, List<Connection>> kvp in Connections)
+            List<object> connections = new List<object>();
+            foreach (MapConnection c in this.Connections)
             {
-                List<List<int>> l = new List<List<int>>();
-                for (int i = 0; i < kvp.Value.Count; i++) l.Add(kvp.Value[i].ToJSON());
-                connections[kvp.Key] = l;
+                connections.Add(c.ToJSON());
             }
             Data["@connections"] = connections;
             return Data;
@@ -158,7 +157,7 @@ namespace MKEditor.Game
             o.TilesetIDs = new List<int>(this.TilesetIDs);
             o.AutotileIDs = new List<int>(this.AutotileIDs);
             o.Events = new Dictionary<int, Event>(this.Events);
-            o.Connections = new Dictionary<string, List<Connection>>(this.Connections);
+            o.Connections = new List<MapConnection>(this.Connections);
             return o;
         }
     }
@@ -192,45 +191,43 @@ namespace MKEditor.Game
         Autotile = 1
     }
 
-    // MKD Data??
+    // MKD Data
     public class MapConnection
     {
-        public List<Dictionary<List<int>, int>> Maps = new List<Dictionary<List<int>, int>>();
+        public int MapID;
+        public int RelativeX;
+        public int RelativeY;
+
+        public MapConnection(int MapID, int RelativeX, int RelativeY)
+        {
+            this.MapID = MapID;
+            this.RelativeX = RelativeX;
+            this.RelativeY = RelativeY;
+        }
+
+        public MapConnection(Dictionary<string, object> Data)
+        {
+            if (Data.ContainsKey("^c"))
+            {
+                if ((string) Data["^c"] != "MKD::MapConnection") throw new Exception("Invalid class - Expected class of type MKD::MapConnection but got " + (string) Data["^c"] + ".");
+            }
+            else
+            {
+                throw new Exception("Could not find a ^c key to identify this class.");
+            }
+            this.MapID = Convert.ToInt32(Data["@map_id"]);
+            this.RelativeX = Convert.ToInt32(Data["@relative_x"]);
+            this.RelativeY = Convert.ToInt32(Data["@relative_y"]);
+        }
 
         public Dictionary<string, object> ToJSON()
         {
             Dictionary<string, object> Data = new Dictionary<string, object>();
-            Data["^c"] = "MKD::MapConnections";
-            List<Dictionary<string, int>> maps = new List<Dictionary<string, int>>();
-            foreach (Dictionary<List<int>, int> System in this.Maps)
-            {
-                Dictionary<string, int> NewSystem = new Dictionary<string, int>();
-                foreach (KeyValuePair<List<int>, int> Connection in System)
-                {
-                    NewSystem.Add($"[{Connection.Key[0]}, {Connection.Key[1]}]", Connection.Value);
-                }
-                maps.Add(NewSystem);
-            }
-            Data["@maps"] = maps;
+            Data["^c"] = "MKD::MapConnection";
+            Data["@map_id"] = this.MapID;
+            Data["@relative_x"] = this.RelativeX;
+            Data["@relative_y"] = this.RelativeY;
             return Data;
-        }
-    }
-
-    // Used by the editor??
-    public class Connection
-    {
-        public int Offset;
-        public int MapID;
-
-        public Connection(int Offset, int MapID)
-        {
-            this.Offset = Offset;
-            this.MapID = MapID;
-        }
-
-        public List<int> ToJSON()
-        {
-            return new List<int>() { Offset, MapID };
         }
     }
 

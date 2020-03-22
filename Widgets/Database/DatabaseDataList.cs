@@ -20,7 +20,6 @@ namespace MKEditor.Widgets
             : base(Parent, Name)
         {
             Sprites["listbox"] = new Sprite(this.Viewport);
-            Sprites["listbox"].Y = 39;
 
             Sprites["header"] = new Sprite(this.Viewport);
             Sprites["header"].X = 10;
@@ -31,7 +30,7 @@ namespace MKEditor.Widgets
             ListContainer.VAutoScroll = true;
 
             VScrollBar vslist = new VScrollBar(this);
-            vslist.SetPosition(188, 41);
+            vslist.SetPosition(187, 41);
             ListContainer.SetVScrollBar(vslist);
 
             DataList = new ListDrawer(ListContainer);
@@ -48,7 +47,7 @@ namespace MKEditor.Widgets
             };
 
             ChangeAmountButton = new Button(this);
-            ChangeAmountButton.SetSize(155, 37);
+            ChangeAmountButton.SetSize(154, 37);
             ChangeAmountButton.SetText("Change Amount...");
             ChangeAmountButton.OnClicked += delegate (object sender, EventArgs e)
             {
@@ -184,16 +183,16 @@ namespace MKEditor.Widgets
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            ListContainer.SetSize(180, Size.Height - 81);
+            ListContainer.SetSize(178, Size.Height - 81);
             ListContainer.VScrollBar.SetSize(ListContainer.VScrollBar.Size.Width, Size.Height - 42);
             ChangeAmountButton.SetPosition(17, Size.Height - 37);
             DataList.SetSize(ListContainer.Size);
             if (Sprites["listbox"].Bitmap != null) Sprites["listbox"].Bitmap.Dispose();
-            Sprites["listbox"].Bitmap = new Bitmap(198, Size.Height - 39);
+            Sprites["listbox"].Bitmap = new Bitmap(Size);
             Sprites["listbox"].Bitmap.Unlock();
-            Sprites["listbox"].Bitmap.DrawLine(0, 0, 197, 0, new Color(28, 50, 73));
-            Sprites["listbox"].Bitmap.DrawLine(186, 1, 186, Size.Height - 40, new Color(28, 50, 73));
-            Sprites["listbox"].Bitmap.DrawLine(197, 1, 197, Size.Height - 40, new Color(28, 50, 73));
+            Sprites["listbox"].Bitmap.DrawLine(0, 39, Size.Width - 1, 39, new Color(28, 50, 73));
+            Sprites["listbox"].Bitmap.DrawLine(Size.Width - 12, 40, Size.Width - 12, Size.Height - 1, new Color(28, 50, 73));
+            Sprites["listbox"].Bitmap.DrawLine(Size.Width - 1, 0, Size.Width - 1, Size.Height - 1, new Color(28, 50, 73));
             Sprites["listbox"].Bitmap.Lock();
         }
     }

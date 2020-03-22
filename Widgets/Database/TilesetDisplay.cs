@@ -43,6 +43,7 @@ namespace MKEditor.Widgets
                 return;
             }
             TilesetBox.Sprite.Bitmap = Tileset.TilesetListBitmap;
+            TilesetBox.Sprite.DestroyBitmap = false;
             TilesetBox.Sprites["controls"].Bitmap = new Bitmap(Tileset.TilesetListBitmap.Width, Tileset.TilesetListBitmap.Height);
             TilesetBox.SetSize(Tileset.TilesetListBitmap.Width, Tileset.TilesetListBitmap.Height);
             if (MainContainer.Size.Height - 4 > TilesetBox.Size.Height)

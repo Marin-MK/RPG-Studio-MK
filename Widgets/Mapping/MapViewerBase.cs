@@ -59,20 +59,22 @@ namespace MKEditor.Widgets
             Sprites["block"] = new Sprite(this.Viewport, new SolidBitmap(12, 12, new Color(64, 104, 146)));
             HScrollContainer = new Container(GridLayout);
             HScrollContainer.SetGridRow(1);
-            HScrollBar = new HScrollBar(HScrollContainer);
+            HScrollBar HScrollBar = new HScrollBar(HScrollContainer);
             HScrollBar.SetPosition(1, 2);
             HScrollBar.SetZIndex(1);
             HScrollBar.OnValueChanged += delegate (object sender, EventArgs e)
             {
+                Editor.MainWindow.MapWidget.SetHorizontalScroll(HScrollBar.Value);
                 if (Graphics.LastMouseEvent != null) MouseMoving(sender, Graphics.LastMouseEvent);
             };
             VScrollContainer = new Container(GridLayout);
             VScrollContainer.SetGridColumn(1);
-            VScrollBar = new VScrollBar(VScrollContainer);
+            VScrollBar VScrollBar = new VScrollBar(VScrollContainer);
             VScrollBar.SetPosition(2, 1);
             VScrollBar.SetZIndex(1);
             VScrollBar.OnValueChanged += delegate (object sender, EventArgs e)
             {
+                Editor.MainWindow.MapWidget.SetVerticalScroll(VScrollBar.Value);
                 if (Graphics.LastMouseEvent != null) MouseMoving(sender, Graphics.LastMouseEvent);
             };
 
@@ -109,8 +111,8 @@ namespace MKEditor.Widgets
             Sprites["block"].X = Sprites["vslider"].X - 1;
             Sprites["block"].Y = Sprites["hslider"].Y - 1;
 
-            HScrollBar.SetWidth(HScrollContainer.Size.Width - 2);
-            VScrollBar.SetHeight(VScrollContainer.Size.Height - 2);
+            MainContainer.HScrollBar.SetWidth(HScrollContainer.Size.Width - 2);
+            MainContainer.VScrollBar.SetHeight(VScrollContainer.Size.Height - 2);
             
             Fade.SetSize(MainContainer.Size);
         }
@@ -119,10 +121,12 @@ namespace MKEditor.Widgets
         {
             this.Map = Map;
             Editor.MainWindow.StatusBar.SetMap(Map);
+            RedrawConnectedMaps();
             PositionMap();
             if (MainContainer.HScrollBar != null) MainContainer.HScrollBar.SetValue(0.5);
             if (MainContainer.VScrollBar != null) MainContainer.VScrollBar.SetValue(0.5);
-            RedrawConnectedMaps();
+            UpdateConnectionPositions();
+            PositionMap();
         }
 
         bool OldHVisible;
@@ -159,10 +163,23 @@ namespace MKEditor.Widgets
 
             int w = (int) Math.Round(Map.Width * 32d * ZoomFactor);
             int h = (int) Math.Round(Map.Height * 32d * ZoomFactor);
-            int x = MainContainer.Size.Width / 2 - w / 2;
-            int y = MainContainer.Size.Height / 2 - h / 2;
-            if (x - 12 * 32d * ZoomFactor < 0) x = (int) Math.Round(12 * 32d * ZoomFactor);
-            if (y - 12 * 32d * ZoomFactor < 0) y = (int) Math.Round(12 * 32d * ZoomFactor);
+            int minx = MainContainer.Size.Width / 2 - w / 2;
+            int miny = MainContainer.Size.Height / 2 - h / 2;
+            if (minx - 12 * 32d * ZoomFactor < 0) minx = (int) Math.Round(12 * 32d * ZoomFactor);
+            if (miny - 12 * 32d * ZoomFactor < 0) miny = (int) Math.Round(12 * 32d * ZoomFactor);
+            int x = 0;
+            int y = 0;
+            foreach (MapConnection c in Map.Connections)
+            {
+                int leftx = (int) Math.Round((-c.RelativeX + 2) * 32d * ZoomFactor);
+                int rightx = (int) Math.Round((c.RelativeX - Map.Width + Data.Maps[c.MapID].Width + 2) * 32d * ZoomFactor);
+                int uppery = (int) Math.Round((-c.RelativeY + 2) * 32d * ZoomFactor);
+                int lowery = (int)Math.Round((c.RelativeY - Map.Height + Data.Maps[c.MapID].Height + 2) * 32d * ZoomFactor);
+                x = Math.Max(x, Math.Max(leftx, rightx));
+                y = Math.Max(y, Math.Max(uppery, lowery));
+            }
+            x = Math.Max(x, minx);
+            y = Math.Max(y, miny);
             MapWidget.SetPosition(x, y);
             MapWidget.SetSize(w, h);
             UpdateConnectionPositions();
@@ -198,6 +215,8 @@ namespace MKEditor.Widgets
                 MainContainer.ScrolledY = Math.Max(0, Math.Min(MainContainer.ScrolledY, MainContainer.MaxChildHeight - MainContainer.Viewport.Height));
 
                 MainContainer.UpdateAutoScroll();
+                Editor.MainWindow.MapWidget.SetHorizontalScroll(MainContainer.HScrollBar.Value);
+                Editor.MainWindow.MapWidget.SetVerticalScroll(MainContainer.VScrollBar.Value);
             }
         }
 
@@ -240,43 +259,30 @@ namespace MKEditor.Widgets
             else Editor.MainWindow.StatusBar.ZoomControl.DecreaseZoom();
         }
 
-        public void UpdateConnectionPositions()
+        public virtual void UpdateConnectionPositions()
         {
             for (int i = 0; i < ConnectionWidgets.Count; i++)
             {
                 MapConnectionWidget mcw = ConnectionWidgets[i];
                 mcw.SetZoomFactor(ZoomFactor);
                 mcw.UpdateSize();
-                if (mcw.Side == ":north") mcw.SetPosition(MapWidget.Position.X + mcw.PixelOffset, MapWidget.Position.Y - mcw.Size.Height);
-                else if (mcw.Side == ":east") mcw.SetPosition(MapWidget.Position.X + MapWidget.Size.Width, MapWidget.Position.Y + mcw.PixelOffset);
-                else if (mcw.Side == ":south") mcw.SetPosition(MapWidget.Position.X + mcw.PixelOffset, MapWidget.Position.Y + MapWidget.Size.Height);
-                else if (mcw.Side == ":west") mcw.SetPosition(MapWidget.Position.X - mcw.Size.Width, MapWidget.Position.Y + mcw.PixelOffset);
+                mcw.SetPosition(MapWidget.Position.X + (int) Math.Round(mcw.RelativeX * 32d * ZoomFactor),
+                    MapWidget.Position.Y + (int) Math.Round(mcw.RelativeY * 32d * ZoomFactor));
             }
         }
 
-        public void RedrawConnectedMaps()
+        public virtual void RedrawConnectedMaps()
         {
-            for (int i = 0; i < ConnectionWidgets.Count; i++)
-            {
-                ConnectionWidgets[i].Dispose();
-                ConnectionWidgets[i] = null;
-            }
+            foreach (MapConnectionWidget mcw in ConnectionWidgets) mcw.Dispose();
             ConnectionWidgets.Clear();
             MapWidget.Rect = new Rect(0, 0, Map.Width, Map.Height);
-            foreach (string Direction in Map.Connections.Keys)
+            foreach (MapConnection c in Map.Connections)
             {
-                foreach (Connection c in Map.Connections[Direction])
-                {
-                    Map map = Data.Maps[c.MapID];
-                    MapConnectionWidget mcw = new MapConnectionWidget(MainContainer);
-                    mcw.Depth = this.Depth;
-                    mcw.GridBackground.SetVisible(false);
-                    mcw.SetDarkOverlay(200);
-                    mcw.LoadLayers(map, Direction, c.Offset);
-                    ConnectionWidgets.Add(mcw);
-                }
+                Map map = Data.Maps[c.MapID];
+                MapConnectionWidget mcw = new MapConnectionWidget(MainContainer);
+                mcw.LoadLayers(map, c.RelativeX, c.RelativeY);
+                ConnectionWidgets.Add(mcw);
             }
-            UpdateConnectionPositions();
         }
     }
 }

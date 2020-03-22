@@ -27,7 +27,7 @@ namespace MKEditor.Widgets
                 ResetTimer("offset");
                 Offset += 1;
                 if (Offset >= 8) Offset = 0;
-                Redraw();
+                if (Visible) Redraw();
             }
             base.Update();
         }

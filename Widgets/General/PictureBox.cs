@@ -11,20 +11,24 @@ namespace MKEditor.Widgets
             : base(Parent, Name)
         {
             this.Sprites["sprite"] = new Sprite(this.Viewport);
+            this.AutoResize = true;
         }
 
         public override void Update()
         {
-            if (this.Sprite.Bitmap != null && !this.Sprite.Bitmap.Disposed)
+            if (this.AutoResize)
             {
-                if (this.Sprite.SrcRect.Width != this.Size.Width || this.Sprite.SrcRect.Height != this.Size.Height)
+                if (this.Sprite.Bitmap != null && !this.Sprite.Bitmap.Disposed)
                 {
-                    this.SetSize(this.Sprite.SrcRect.Width, this.Sprite.SrcRect.Height);
+                    if (this.Sprite.SrcRect.Width != this.Size.Width || this.Sprite.SrcRect.Height != this.Size.Height)
+                    {
+                        this.SetSize(this.Sprite.SrcRect.Width, this.Sprite.SrcRect.Height);
+                    }
                 }
-            }
-            else
-            {
-                this.SetSize(1, 1);
+                else
+                {
+                    this.SetSize(1, 1);
+                }
             }
             base.Update();
         }

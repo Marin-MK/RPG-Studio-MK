@@ -7,6 +7,10 @@ namespace MKEditor.Widgets
 {
     public class MapImageWidget : Widget
     {
+        public int MapID;
+        public int RelativeX;
+        public int RelativeY;
+
         public GridBackground GridBackground;
         public MapViewerBase MapViewer;
         public Map MapData;
@@ -24,7 +28,7 @@ namespace MKEditor.Widgets
             this.MapViewer = this.Parent.Parent.Parent.Parent as MapViewerBase;
             this.GridBackground = new GridBackground(this);
             Sprites["dark"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(0, 0, 0, 0)));
-            Sprites["dark"].Z = 99999999;
+            Sprites["dark"].Z = 999999;
             SetTimer("frame", (long) Math.Round(1000 / 60d)); // 60 FPS
         }
 
@@ -252,9 +256,12 @@ namespace MKEditor.Widgets
             this.SetSize(Width, Height);
         }
 
-        public virtual void LoadLayers(Map MapData, string Side = "", int Offset = 0)
+        public virtual void LoadLayers(Map MapData, int RelativeX = 0, int RelativeY = 0)
         {
             this.MapData = MapData;
+            this.MapID = MapData.ID;
+            this.RelativeX = RelativeX;
+            this.RelativeY = RelativeY;
             UpdateSize();
             RedrawLayers();
         }

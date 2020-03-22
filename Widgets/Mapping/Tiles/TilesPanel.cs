@@ -233,6 +233,7 @@ namespace MKEditor.Widgets
                 PictureBox image = new PictureBox(c);
                 image.SetPosition(0, 23);
                 image.Sprite.Bitmap = tileset.TilesetListBitmap;
+                image.Sprite.DestroyBitmap = false;
                 image.SetSize(image.Sprite.Bitmap.Width, image.Sprite.Bitmap.Height);
                 TilesetImages.Add(image);
             }

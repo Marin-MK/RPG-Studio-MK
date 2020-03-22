@@ -29,7 +29,7 @@ namespace MKEditor.Widgets
             DBContainer.OnSizeChanged += delegate (object sender, SizeEventArgs e)
             {
                 DBModeList.SetSize(DBContainer.Size);
-                DBDataList.SetSize(196, DBContainer.Size.Height);
+                DBDataList.SetSize(197, DBContainer.Size.Height);
                 DBModeList.Redraw();
                 if (DBModeList.Size.Height > DBContainer.Size.Height)
                 {
@@ -60,8 +60,7 @@ namespace MKEditor.Widgets
 
             MainContainer = new Container(MainGrid);
             MainContainer.SetGridColumn(1);
-            VignetteFade Fade = new VignetteFade(MainContainer);
-            MainContainer.OnSizeChanged += delegate (object sender, SizeEventArgs e) { MainWidget.SetSize(MainContainer.Size); Fade.SetSize(MainContainer.Size); };
+            MainContainer.OnSizeChanged += delegate (object sender, SizeEventArgs e) { MainWidget.SetSize(MainContainer.Size); };
             
             TilesetEditor te = new TilesetEditor(MainContainer);
             MainWidget = te;

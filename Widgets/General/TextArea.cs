@@ -12,6 +12,8 @@ namespace MKEditor.Widgets
         public int CaretY { get; protected set; } = 2;
         public int CaretHeight { get; protected set; } = 13;
         public Font Font { get; protected set; } = Font.Get("Fonts/ProductSans-M", 14);
+        public Color TextColor { get; protected set; } = Color.WHITE;
+        public bool ReadOnly { get; protected set; } = false;
 
         public bool EnteringText = false;
 
@@ -32,11 +34,13 @@ namespace MKEditor.Widgets
             : base(Parent, Name)
         {
             Sprites["text"] = new Sprite(this.Viewport);
+            Sprites["text"].Z = 2;
             Sprites["filler"] = new Sprite(this.Viewport, new SolidBitmap(1, 16, new Color(50, 50, 255, 100)));
             Sprites["filler"].Visible = false;
             Sprites["filler"].Y = 2;
             Sprites["caret"] = new Sprite(this.Viewport, new SolidBitmap(1, 16, Color.WHITE));
             Sprites["caret"].Y = 2;
+            Sprites["caret"].Z = 1;
             OnWidgetSelected += WidgetSelected;
             WidgetIM.OnMouseDown += MouseDown;
             WidgetIM.OnMouseMoving += MouseMoving;
@@ -79,6 +83,38 @@ namespace MKEditor.Widgets
             caret.SetSize(1, CaretHeight);
             SolidBitmap filler = Sprites["filler"].Bitmap as SolidBitmap;
             filler.SetSize(filler.BitmapWidth, CaretHeight);
+        }
+
+        public void SetTextColor(Color TextColor)
+        {
+            if (this.TextColor != TextColor)
+            {
+                this.TextColor = TextColor;
+                DrawText();
+            }
+        }
+
+        public void SetReadOnly(bool ReadOnly)
+        {
+            if (this.ReadOnly != ReadOnly)
+            {
+                this.ReadOnly = ReadOnly;
+                if (this.ReadOnly)
+                {
+                    EnteringText = false;
+                    Input.StopTextInput();
+                    CancelSelectionHidden();
+                }
+                else
+                {
+                    if (this.SelectedWidget)
+                    {
+                        EnteringText = true;
+                        Input.StartTextInput();
+                        SetTimer("idle", 400);
+                    }
+                }
+            }
         }
 
         public override void SizeChanged(object sender, SizeEventArgs e)
@@ -161,6 +197,7 @@ namespace MKEditor.Widgets
         /// <param name="Text">The text to insert.</param>
         public void InsertText(int InsertionIndex, string Text)
         {
+            if (this.ReadOnly) return;
             while (Text.Contains("\n")) Text = Text.Replace("\n", "");
             if (Text.Length == 0) return;
             int charw = Font.TextSize(this.Text.Substring(0, InsertionIndex) + Text).Width - Font.TextSize(this.Text.Substring(0, InsertionIndex)).Width;
@@ -187,6 +224,7 @@ namespace MKEditor.Widgets
         /// <param name="Count">Number of characters to delete.</param>
         public void RemoveText(int StartIndex, int Count = 1)
         {
+            if (this.ReadOnly) return;
             if (this.Text.Length == 0 || StartIndex < 0 || StartIndex >= this.Text.Length) return;
             string TextIncluding = this.Text.Substring(0, StartIndex + Count);
             int charw = Font.TextSize(TextIncluding).Width - Font.TextSize(this.Text.Substring(0, StartIndex)).Width;
@@ -216,6 +254,7 @@ namespace MKEditor.Widgets
         /// </summary>
         public void DeleteSelection()
         {
+            if (this.ReadOnly) return;
             int startidx = SelectionStartIndex > SelectionEndIndex ? SelectionEndIndex : SelectionStartIndex;
             int endidx = SelectionStartIndex > SelectionEndIndex ? SelectionStartIndex : SelectionEndIndex;
             CancelSelectionRight();
@@ -435,6 +474,8 @@ namespace MKEditor.Widgets
                 Sprites["caret"].Visible = !Sprites["caret"].Visible;
                 ResetTimer("idle");
             }
+
+            if (this.ReadOnly) Sprites["caret"].Visible = false;
         }
 
         /// <summary>
@@ -552,6 +593,7 @@ namespace MKEditor.Widgets
         /// <param name="Count">The number of characters to skip.</param>
         public void MoveCaretLeft(int Count = 1)
         {
+            if (this.ReadOnly) return;
             if (CaretIndex - Count < 0) return;
             string TextToCaret = this.Text.Substring(0, CaretIndex);
             int charw = Font.TextSize(TextToCaret).Width - Font.TextSize(TextToCaret.Substring(0, TextToCaret.Length - Count)).Width;
@@ -574,6 +616,7 @@ namespace MKEditor.Widgets
         /// <param name="Count">The number of characters to skip.</param>
         public void MoveCaretRight(int Count = 1)
         {
+            if (this.ReadOnly) return;
             if (CaretIndex + Count > this.Text.Length) return;
             string TextToCaret = this.Text.Substring(0, CaretIndex);
             string TextToCaretPlusOne = this.Text.Substring(0, CaretIndex + Count);
@@ -644,7 +687,7 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = this.Font;
-            Sprites["text"].Bitmap.DrawText(this.Text, Color.WHITE);
+            Sprites["text"].Bitmap.DrawText(this.Text, this.TextColor);
             Sprites["text"].Bitmap.Lock();
         }
 
@@ -703,6 +746,7 @@ namespace MKEditor.Widgets
         /// </summary>
         public void SelectAll()
         {
+            if (this.ReadOnly) return;
             MoveCaretRight(this.Text.Length - CaretIndex);
             SelectionStartIndex = 0;
             SelectionEndIndex = this.Text.Length;
@@ -715,6 +759,7 @@ namespace MKEditor.Widgets
         /// </summary>
         public void CutSelection()
         {
+            if (this.ReadOnly) return;
             if (SelectionStartIndex != -1)
             {
                 int startidx = SelectionStartIndex > SelectionEndIndex ? SelectionEndIndex : SelectionStartIndex;
@@ -745,6 +790,7 @@ namespace MKEditor.Widgets
         /// </summary>
         public void PasteText()
         {
+            if (this.ReadOnly) return;
             if (TimerPassed("paste")) ResetTimer("paste");
             string text = SDL_GetClipboardText();
             if (SelectionStartIndex != -1 && SelectionStartIndex != SelectionEndIndex) DeleteSelection();
@@ -755,7 +801,7 @@ namespace MKEditor.Widgets
         public override void MouseDown(object sender, MouseEventArgs e)
         {
             base.MouseDown(sender, e);
-            if (!WidgetIM.Hovering || this.Text.Length == 0) return;
+            if (!WidgetIM.Hovering || this.Text.Length == 0 || this.ReadOnly) return;
             if (SelectionStartIndex != -1 && SelectionStartIndex != SelectionEndIndex) CancelSelectionHidden();
             int OldRX = RX;
             int OldCaretIndex = CaretIndex;
@@ -802,7 +848,7 @@ namespace MKEditor.Widgets
         public override void MouseMoving(object sender, MouseEventArgs e)
         {
             base.MouseMoving(sender, e);
-            if (!e.LeftButton || WidgetIM.ClickedLeftInArea != true) return;
+            if (!e.LeftButton || WidgetIM.ClickedLeftInArea != true || this.ReadOnly) return;
             int OldRX = RX;
             int OldCaretIndex = CaretIndex;
             int rmx = e.X - Viewport.X;
@@ -844,11 +890,6 @@ namespace MKEditor.Widgets
                 SelectionEndIndex = CaretIndex;
                 RepositionSprites();
             }
-        }
-
-        public override void MouseUp(object sender, MouseEventArgs e)
-        {
-            base.MouseUp(sender, e);
         }
 
         public override void HoverChanged(object sender, MouseEventArgs e)

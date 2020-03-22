@@ -39,7 +39,7 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void SetSize(Size size)
+        public override Widget SetSize(Size size)
         {
             base.SetSize(size);
             for (int i = 0; i < this.Widgets.Count; i++)
@@ -48,6 +48,7 @@ namespace MKEditor.Widgets
                 w.SetHeight(size.Height);
             }
             this.UpdateLayout();
+            return this;
         }
     }
 }

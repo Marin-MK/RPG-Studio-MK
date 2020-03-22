@@ -14,6 +14,7 @@ namespace MKEditor.Widgets
         public int MaxValue = 999999;
         public int MinValue = -999999;
         public int Increment = 1;
+        public Color TextColor { get; protected set; } = Color.WHITE;
 
         public EventHandler<EventArgs> OnValueChanged;
 
@@ -39,6 +40,15 @@ namespace MKEditor.Widgets
             {
                 this.Value = Value;
                 if (OnValueChanged != null) OnValueChanged.Invoke(null, new EventArgs());
+                Redraw();
+            }
+        }
+
+        public void SetTextColor(Color TextColor)
+        {
+            if (this.TextColor != TextColor)
+            {
+                this.TextColor = TextColor;
                 Redraw();
             }
         }
@@ -101,7 +111,7 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = f;
-            Sprites["text"].Bitmap.DrawText(text, Color.WHITE);
+            Sprites["text"].Bitmap.DrawText(text, this.TextColor);
             Sprites["text"].X = Size.Width - 21 - s.Width;
             Sprites["text"].Y = 5;
             Sprites["text"].Bitmap.Lock();

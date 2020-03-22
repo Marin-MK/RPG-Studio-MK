@@ -39,23 +39,6 @@ namespace MKEditor.Widgets
             // Left sidebar
             MapSelectPanel = new MapSelectPanel(layout);
 
-            Data.Maps[11].Connections[":east"] = new List<Connection>() { new Connection(-3, 5) };
-            Data.Maps[5].Connections[":west"] = new List<Connection>() { new Connection(3, 11) };
-
-            Data.Maps[5].Connections[":north"] = new List<Connection>() { new Connection(-7, 13) };
-            Data.Maps[13].Connections[":south"] = new List<Connection>() { new Connection(7, 5) };
-
-            Data.Maps[11].Connections[":north"] = new List<Connection>() { new Connection(-7, 12) };
-            Data.Maps[12].Connections[":south"] = new List<Connection>() { new Connection(7, 11) };
-
-            Data.Maps[12].Connections[":east"] = new List<Connection>() { new Connection(-3, 13) };
-            Data.Maps[13].Connections[":west"] = new List<Connection>() { new Connection(3, 12) };
-
-            Data.Maps[6].Connections[":west"] = new List<Connection>() { new Connection(2, 7), new Connection(9, 8), new Connection(20, 9) };
-            Data.Maps[6].Connections[":east"] = new List<Connection>() { new Connection(2, 7), new Connection(9, 8), new Connection(20, 9) };
-            Data.Maps[6].Connections[":north"] = new List<Connection>() { new Connection(2, 7), new Connection(9, 8), new Connection(20, 9) };
-            Data.Maps[6].Connections[":south"] = new List<Connection>() { new Connection(1, 7), new Connection(10, 8), new Connection(22, 9) };
-
             // Left sidebar divider
             Widget LeftSidebarDivider = new Widget(layout);
             LeftSidebarDivider.SetBackgroundColor(28, 50, 73);
@@ -89,6 +72,9 @@ namespace MKEditor.Widgets
             MapViewerConnections.MapWidget = MapImageWidget;
             //MapViewerEncounters.MapWidget = MapImageWidget;
             //mapViewerProperties.MapWidget = MapImageWidget;
+
+            SetHorizontalScroll(0.5);
+            SetVerticalScroll(0.5);
         }
 
         int OldSelectedIndex = -1;
@@ -168,10 +154,22 @@ namespace MKEditor.Widgets
             MapImageWidget.SetMapAnimations(Animations);
         }
 
+        public void SetHorizontalScroll(double Value)
+        {
+            MapViewerTiles.MainContainer.HScrollBar.SetValue(Value, false);
+            MapViewerConnections.MainContainer.HScrollBar.SetValue(Value, false);
+        }
+
+        public void SetVerticalScroll(double Value)
+        {
+            MapViewerTiles.MainContainer.VScrollBar.SetValue(Value, false);
+            MapViewerConnections.MainContainer.VScrollBar.SetValue(Value, false);
+        }
+
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);
-            //if (Submodes.SelectedIndex != -1) ActiveMapViewer.PositionMap();
+            if (Submodes.SelectedIndex != -1) ActiveMapViewer.PositionMap();
         }
     }
 }

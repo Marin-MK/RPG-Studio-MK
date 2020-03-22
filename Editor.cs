@@ -628,7 +628,8 @@ namespace MKEditor
                 MainWindow.MainEditorWidget.SetGridRow(3);
 
                 // Set list of maps & initial map
-                MainWindow.MapWidget.MapSelectPanel.PopulateList(Editor.ProjectSettings.MapOrder, true);
+                List<TreeNode> Nodes = MainWindow.MapWidget.MapSelectPanel.PopulateList(Editor.ProjectSettings.MapOrder, true);
+                GenerateMapOrder(Nodes);
 
                 int mapid = ProjectSettings.LastMapID;
                 if (!Game.Data.Maps.ContainsKey(mapid))
@@ -676,6 +677,30 @@ namespace MKEditor
             MainWindow.MainGridLayout.UpdateLayout();
             MainWindow.StatusBar.Refresh();
             MainWindow.ToolBar.Refresh();
+        }
+
+        public static List<object> GenerateMapOrder(List<TreeNode> Nodes, bool Recursive = false)
+        {
+            List<object> List = new List<object>();
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                TreeNode n = Nodes[i];
+                if (n.Nodes.Count > 0)
+                {
+                    List<object> sublist = new List<object>() { (int) n.Object };
+                    sublist.AddRange(GenerateMapOrder(n.Nodes, true));
+                    List.Add(sublist);
+                }
+                else
+                {
+                    List.Add((int) n.Object);
+                }
+            }
+            if (!Recursive) // First call
+            {
+                Editor.ProjectSettings.MapOrder = List;
+            }
+            return List;
         }
 
         /// <summary>

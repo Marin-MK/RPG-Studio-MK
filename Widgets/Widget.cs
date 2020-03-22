@@ -774,28 +774,28 @@ namespace MKEditor.Widgets
         /// <summary>
         /// Sets the width of this widget.
         /// </summary>
-        public void SetWidth(int Width)
+        public Widget SetWidth(int Width)
         {
-            this.SetSize(Width, this.Size.Height);
+            return this.SetSize(Width, this.Size.Height);
         }
         /// <summary>
         /// Sets the height of this widget.
         /// </summary>
-        public void SetHeight(int Height)
+        public Widget SetHeight(int Height)
         {
-            this.SetSize(this.Size.Width, Height);
+            return this.SetSize(this.Size.Width, Height);
         }
         /// <summary>
         /// Sets the size of this widget.
         /// </summary>
-        public void SetSize(int Width, int Height)
+        public Widget SetSize(int Width, int Height)
         {
-            this.SetSize(new Size(Width, Height));
+            return this.SetSize(new Size(Width, Height));
         }
         /// <summary>
         /// Sets the size of this widget.
         /// </summary>
-        public virtual void SetSize(Size size)
+        public virtual Widget SetSize(Size size)
         {
             AssertUndisposed();
             Size oldsize = this.Size;
@@ -829,6 +829,7 @@ namespace MKEditor.Widgets
                     prnt.OnChildBoundsChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));
                 }
             }
+            return this;
         }
 
         /// <summary>
@@ -960,24 +961,25 @@ namespace MKEditor.Widgets
         /// <summary>
         /// Sets the margin for this widget. Used for grids and stackpanels.
         /// </summary>
-        public void SetMargin(int all)
+        public Widget SetMargin(int all)
         {
-            this.SetMargin(all, all, all, all);
+            return this.SetMargin(all, all, all, all);
         }
         /// <summary>
         /// Sets the margin for this widget. Used for grids and stackpanels.
         /// </summary>
-        public void SetMargin(int horizontal, int vertical)
+        public Widget SetMargin(int horizontal, int vertical)
         {
-            this.SetMargin(horizontal, vertical, horizontal, vertical);
+            return this.SetMargin(horizontal, vertical, horizontal, vertical);
         }
         /// <summary>
         /// Sets the margin for this widget. Used for grids and stackpanels.
         /// </summary>
-        public void SetMargin(int left, int up, int right, int down)
+        public Widget SetMargin(int left, int up, int right, int down)
         {
             this.Margin = new Margin(left, up, right, down);
             this.UpdateLayout();
+            return this;
         }
 
         /// <summary>
@@ -1066,17 +1068,10 @@ namespace MKEditor.Widgets
             // Dispose the viewport and all its sprites.
             // Viewport may already be null if a child of a layoutcontainer has been disposed
             // because they share the same viewport.
-            if (this.Viewport != null && !this.Viewport.Disposed) this.Viewport.Dispose();
-            for (int i = 0; i < this.Widgets.Count; i++)
-            {
-                if (this.Widgets[i] != null)
-                {
-                    this.Widgets[i].Dispose();
-                    // Disposing a widget automatically removes it from its parent's widget list,
-                    // Hence we have to update our iterator.
-                    i--;
-                }
-            }
+            if (this.Viewport != null && !this.Viewport.Disposed)
+                this.Viewport.Dispose();
+            // Dispose all child widgets
+            while (Widgets.Count > 0) Widgets[0].Dispose();
             // Remove this widget from the parent's widget list.
             this.Parent.Widgets.Remove(this);
             // Set viewport and sprites to null to ensure no methods can use them anymore.

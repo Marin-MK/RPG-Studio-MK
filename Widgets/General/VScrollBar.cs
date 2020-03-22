@@ -40,7 +40,7 @@ namespace MKEditor.Widgets
             this.SliderIM.OnHoverChanged += SliderHoverChanged;
         }
 
-        public void SetValue(double value)
+        public void SetValue(double value, bool CallEvent = true)
         {
             if (value < 0) value = 0;
             if (value > 1) value = 1;
@@ -52,15 +52,16 @@ namespace MKEditor.Widgets
                     LinkedWidget.ScrolledY = (int) Math.Round((LinkedWidget.MaxChildHeight - LinkedWidget.Viewport.Height) * this.Value);
                     LinkedWidget.UpdateBounds();
                 }
-                if (this.OnValueChanged != null) this.OnValueChanged.Invoke(this, new EventArgs());
+                if (CallEvent && this.OnValueChanged != null) this.OnValueChanged.Invoke(this, new EventArgs());
                 Redraw();
             }
         }
 
-        public override void SetSize(Size size)
+        public override Widget SetSize(Size size)
         {
             base.SetSize(size);
             SetSliderSize(OriginalSize);
+            return this;
         }
 
         public void SetSliderSize(double size)

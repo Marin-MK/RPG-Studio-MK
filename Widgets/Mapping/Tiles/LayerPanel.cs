@@ -55,7 +55,6 @@ namespace MKEditor.Widgets
                 new MenuSeparator(),
                 new MenuItem("Toggle Visibility")
                 {
-                    //Shortcut = "Ctrl+H",
                     OnLeftClick = ToggleVisibilityLayer,
                     IsClickable = delegate (object sender, ConditionEventArgs e ) { e.ConditionValue = layerwidget.HoveringIndex >= 0; }
                 },
@@ -80,7 +79,6 @@ namespace MKEditor.Widgets
 
             RegisterShortcuts(new List<Shortcut>()
             {
-                //new Shortcut(this, new Key(Keycode.H, Keycode.CTRL), new EventHandler<EventArgs>(ToggleVisibilityLayer), true),
                 new Shortcut(this, new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer)),
                 new Shortcut(this, new Key(Keycode.F2), new EventHandler<EventArgs>(RenameLayer))
             });

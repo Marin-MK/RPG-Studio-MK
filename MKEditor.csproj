@@ -8,7 +8,7 @@
     <Authors>Marijn Herrebout</Authors>
     <Product>RPG Studio MK</Product>
     <Version>0.3.0</Version>
-    <Platforms>Debug;x86</Platforms>
+    <Platforms>Debug;x86;x64</Platforms>
     <AssemblyName>RPG Studio MK</AssemblyName>
   </PropertyGroup>
 
@@ -22,13 +22,13 @@
 
   <ItemGroup>
     <Reference Include="odl">
-      <HintPath>..\odl\bin\x86\Debug\netcoreapp3.1\odl.dll</HintPath>
+      <HintPath>..\odl\bin\x64\Debug\netcoreapp3.1\odl.dll</HintPath>
     </Reference>
     <Reference Include="RubyDotNET">
-      <HintPath>..\rubydotnet\bin\x86\Debug\netcoreapp3.1\RubyDotNET.dll</HintPath>
+      <HintPath>..\rubydotnet\bin\x64\Debug\netcoreapp3.1\RubyDotNET.dll</HintPath>
     </Reference>
     <Reference Include="SDL2-CS">
-      <HintPath>..\odl\bin\x86\Debug\netcoreapp3.1\SDL2-CS.dll</HintPath>
+      <HintPath>..\odl\bin\x64\Debug\netcoreapp3.1\SDL2-CS.dll</HintPath>
     </Reference>
   </ItemGroup>
 

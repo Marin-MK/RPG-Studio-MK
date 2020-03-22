@@ -8,6 +8,7 @@ namespace MKEditor.Widgets
         public string Text { get; protected set; }
         public Font Font { get; protected set; } = Font.Get("Fonts/ProductSans-B", 14);
         public bool Clickable { get; protected set; } = true;
+        public Color TextColor { get; protected set; } = Color.WHITE;
 
         public EventHandler<EventArgs> OnClicked;
 
@@ -141,6 +142,15 @@ namespace MKEditor.Widgets
             }
         }
 
+        public void SetTextColor(Color TextColor)
+        {
+            if (this.TextColor != TextColor)
+            {
+                this.TextColor = TextColor;
+                RedrawText();
+            }
+        }
+
         public void SetClickable(bool Clickable)
         {
             if (this.Clickable != Clickable)
@@ -159,7 +169,7 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = this.Font;
-            Sprites["text"].Bitmap.DrawText(Text, Color.WHITE);
+            Sprites["text"].Bitmap.DrawText(Text, this.TextColor);
             Sprites["text"].Bitmap.Lock();
             Sprites["text"].X = Size.Width / 2 - s.Width / 2;
             Sprites["text"].Y = Size.Height / 2 - 9;
