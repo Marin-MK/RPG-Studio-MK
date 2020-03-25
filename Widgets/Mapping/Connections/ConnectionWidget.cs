@@ -52,7 +52,7 @@ namespace MKEditor.Widgets
             XBox.SetSize(66, 27);
             XBox.OnValueChanged += delegate (object sender, EventArgs e)
             {
-                if (Initialized) OffsetChanged();
+                if (Initialized) SetOffset(XBox.Value, YBox.Value);
             };
 
             YBox = new NumericBox(this);
@@ -60,7 +60,7 @@ namespace MKEditor.Widgets
             YBox.SetSize(66, 27);
             YBox.OnValueChanged += delegate (object sender, EventArgs e)
             {
-                if (Initialized) OffsetChanged();
+                if (Initialized) SetOffset(XBox.Value, YBox.Value);
             };
 
             ExitButton = new ExitButton(this);
@@ -70,6 +70,7 @@ namespace MKEditor.Widgets
             Sprites["hover"] = new Sprite(this.Viewport, new SolidBitmap(2, 120, new Color(47, 160, 193)));
             Sprites["hover"].Visible = false;
 
+            this.OnWidgetSelected += WidgetSelected;
             this.WidgetIM.OnMouseDown += MouseDown;
             this.WidgetIM.OnHoverChanged += HoverChanged;
 
@@ -79,15 +80,7 @@ namespace MKEditor.Widgets
         public override void MouseDown(object sender, MouseEventArgs e)
         {
             base.MouseDown(sender, e);
-            if (this.WidgetIM.Hovering)
-            {
-                foreach (Widget w in Parent.Parent.Widgets)
-                {
-                    if (((LayoutContainer) w).Widget is ConnectionWidget)
-                        ((ConnectionWidget) ((LayoutContainer) w).Widget).SetSelected(false);
-                }
-                this.SetSelected(true);
-            }
+            if (this.WidgetIM.Hovering) this.SetSelected(true);
         }
 
         public override void HoverChanged(object sender, MouseEventArgs e)
@@ -106,6 +99,14 @@ namespace MKEditor.Widgets
             if (this.Selected != Selected)
             {
                 this.Selected = Selected;
+                if (this.Selected)
+                {
+                    foreach (Widget w in Parent.Parent.Widgets)
+                    {
+                        if (((LayoutContainer) w).Widget is ConnectionWidget && ((LayoutContainer) w).Widget != this)
+                            ((ConnectionWidget) ((LayoutContainer) w).Widget).SetSelected(false);
+                    }
+                }
                 Color Color = Selected ? new Color(47, 160, 193) : Color.WHITE;
                 MapLabel.SetTextColor(Color);
                 XLabel.SetTextColor(Color);
@@ -122,16 +123,16 @@ namespace MKEditor.Widgets
             }
         }
 
-        public void OffsetChanged()
+        public void SetOffset(int RelativeX, int RelativeY)
         {
             MapConnectionWidget mcw = Editor.MainWindow.MapWidget.MapViewerConnections.ConnectionWidgets.Find(w => w.MapID == this.MapConnection.MapID);
-            this.MapConnection.RelativeX = XBox.Value;
-            this.MapConnection.RelativeY = YBox.Value;
+            this.MapConnection.RelativeX = RelativeX;
+            this.MapConnection.RelativeY = RelativeY;
             Game.MapConnection c = Game.Data.Maps[this.MapConnection.MapID].Connections.Find(conn => conn.MapID == Editor.MainWindow.MapWidget.Map.ID);
-            c.RelativeX = -XBox.Value;
-            c.RelativeY = -YBox.Value;
-            mcw.RelativeX = XBox.Value;
-            mcw.RelativeY = YBox.Value;
+            c.RelativeX = -RelativeX;
+            c.RelativeY = -RelativeY;
+            mcw.RelativeX = RelativeX;
+            mcw.RelativeY = RelativeY;
             Editor.MainWindow.MapWidget.MapViewerConnections.PositionMap();
         }
 
@@ -145,6 +146,104 @@ namespace MKEditor.Widgets
             XBox.SetValue(Connection.RelativeX);
             YBox.SetValue(Connection.RelativeY);
             Initialized = true;
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            MapConnectionWidget mcw = Editor.MainWindow.MapWidget.MapViewerConnections.ConnectionWidgets.Find(w => w.MapID == this.MapConnection.MapID);
+            if (this.Selected && (this.SelectedWidget || mcw.SelectedWidget))
+            {
+                if (Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_LEFT) || TimerPassed("left"))
+                {
+                    if (TimerPassed("left")) ResetTimer("left");
+                    SetOffset(this.MapConnection.RelativeX - 1, this.MapConnection.RelativeY);
+                }
+                if (Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_RIGHT) || TimerPassed("right"))
+                {
+                    if (TimerPassed("right")) ResetTimer("right");
+                    SetOffset(this.MapConnection.RelativeX + 1, this.MapConnection.RelativeY);
+                }
+                if (Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_UP) || TimerPassed("up"))
+                {
+                    if (TimerPassed("up")) ResetTimer("up");
+                    SetOffset(this.MapConnection.RelativeX, this.MapConnection.RelativeY - 1);
+                }
+                if (Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_DOWN) || TimerPassed("down"))
+                {
+                    if (TimerPassed("down")) ResetTimer("down");
+                    SetOffset(this.MapConnection.RelativeX, this.MapConnection.RelativeY + 1);
+                }
+
+                if (Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LEFT))
+                {
+                    if (!TimerExists("left_initial") && !TimerExists("left"))
+                    {
+                        SetTimer("left_initial", 300);
+                    }
+                    else if (TimerPassed("left_initial"))
+                    {
+                        DestroyTimer("left_initial");
+                        SetTimer("left", 50);
+                    }
+                }
+                else
+                {
+                    if (TimerExists("left")) DestroyTimer("left");
+                    if (TimerExists("left_initial")) DestroyTimer("left_initial");
+                }
+                if (Input.Press(SDL2.SDL.SDL_Keycode.SDLK_RIGHT))
+                {
+                    if (!TimerExists("right_initial") && !TimerExists("right"))
+                    {
+                        SetTimer("right_initial", 300);
+                    }
+                    else if (TimerPassed("right_initial"))
+                    {
+                        DestroyTimer("right_initial");
+                        SetTimer("right", 50);
+                    }
+                }
+                else
+                {
+                    if (TimerExists("right")) DestroyTimer("right");
+                    if (TimerExists("right_initial")) DestroyTimer("right_initial");
+                }
+                if (Input.Press(SDL2.SDL.SDL_Keycode.SDLK_UP))
+                {
+                    if (!TimerExists("up_initial") && !TimerExists("up"))
+                    {
+                        SetTimer("up_initial", 300);
+                    }
+                    else if (TimerPassed("up_initial"))
+                    {
+                        DestroyTimer("up_initial");
+                        SetTimer("up", 50);
+                    }
+                }
+                else
+                {
+                    if (TimerExists("up")) DestroyTimer("up");
+                    if (TimerExists("up_initial")) DestroyTimer("up_initial");
+                }
+                if (Input.Press(SDL2.SDL.SDL_Keycode.SDLK_DOWN))
+                {
+                    if (!TimerExists("down_initial") && !TimerExists("down"))
+                    {
+                        SetTimer("down_initial", 300);
+                    }
+                    else if (TimerPassed("down_initial"))
+                    {
+                        DestroyTimer("down_initial");
+                        SetTimer("down", 50);
+                    }
+                }
+                else
+                {
+                    if (TimerExists("down")) DestroyTimer("down");
+                    if (TimerExists("down_initial")) DestroyTimer("down_initial");
+                }
+            }
         }
     }
 

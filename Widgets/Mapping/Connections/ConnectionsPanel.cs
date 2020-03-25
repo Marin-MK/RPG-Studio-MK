@@ -58,6 +58,27 @@ namespace MKEditor.Widgets
             if (Map.Connections.Count > 0) ((ConnectionWidget) StackPanel.Widgets[0].Widgets[0]).SetSelected(true);
         }
 
+        public void SelectMap(Map Map)
+        {
+            foreach (LayoutContainer lc in StackPanel.Widgets)
+            {
+                Widget w = lc.Widget;
+                if (w is ConnectionWidget && ((ConnectionWidget) w).MapConnection.MapID == Map.ID)
+                    ((ConnectionWidget) w).SetSelected(true);
+            }
+        }
+
+        public ConnectionWidget GetSelectedConnectionWidget()
+        {
+            foreach (LayoutContainer lc in StackPanel.Widgets)
+            {
+                Widget w = lc.Widget;
+                if (w is ConnectionWidget && ((ConnectionWidget) w).Selected)
+                    return (ConnectionWidget) w;
+            }
+            return null;
+        }
+
         public void Disconnect(int MapID)
         {
             MapData.Connections.RemoveAll(c => c.MapID == MapID);

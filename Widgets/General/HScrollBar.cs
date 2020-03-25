@@ -48,8 +48,11 @@ namespace MKEditor.Widgets
                 this.Value = value;
                 if (LinkedWidget != null)
                 {
-                    LinkedWidget.ScrolledX = (int) Math.Round((LinkedWidget.MaxChildWidth - LinkedWidget.Viewport.Width) * this.Value);
-                    LinkedWidget.UpdateBounds();
+                    if (LinkedWidget.MaxChildWidth > LinkedWidget.Viewport.Width)
+                    {
+                        LinkedWidget.ScrolledX = (int) Math.Round((LinkedWidget.MaxChildWidth - LinkedWidget.Viewport.Width) * this.Value);
+                        LinkedWidget.UpdateBounds();
+                    }
                 }
                 if (CallEvent && this.OnValueChanged != null) this.OnValueChanged.Invoke(this, new EventArgs());
                 Redraw();

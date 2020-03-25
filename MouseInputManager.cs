@@ -42,6 +42,10 @@ namespace MKEditor
         private bool? _ClickedMiddleInArea = null;
         public bool? ClickedMiddleInArea { get { return Widget.IsVisible() ? _ClickedMiddleInArea : false; } set { _ClickedMiddleInArea = value; } }
 
+        public bool SelectWithLeftClick = true;
+        public bool SelectWithMiddleClick = true;
+        public bool SelectWithRightClick = true;
+
         private bool _Hovering = false;
         public bool Hovering { get { return Widget.IsVisible() ? _Hovering : false; } set { _Hovering = value; } }
 
@@ -100,7 +104,7 @@ namespace MKEditor
             {
                 this.ClickedLeft = true;
                 this.ClickedLeftInArea = e.InArea(this.Area);
-                if (this.ClickedLeftInArea == true)
+                if (this.ClickedLeftInArea == true && this.SelectWithLeftClick)
                 {
                     if (this.Widget.OnWidgetSelected != null) this.Widget.OnWidgetSelected.Invoke(this, e);
                 }
@@ -110,7 +114,7 @@ namespace MKEditor
             {
                 this.ClickedRight = true;
                 this.ClickedRightInArea = e.InArea(this.Area);
-                if (this.ClickedRightInArea == true)
+                if (this.ClickedRightInArea == true && this.SelectWithRightClick)
                 {
                     if (this.Widget.OnWidgetSelected != null) this.Widget.OnWidgetSelected.Invoke(this, e);
                 }
@@ -120,7 +124,7 @@ namespace MKEditor
             {
                 this.ClickedMiddle = true;
                 this.ClickedMiddleInArea = e.InArea(this.Area);
-                if (this.ClickedMiddleInArea == true)
+                if (this.ClickedMiddleInArea == true && this.SelectWithMiddleClick)
                 {
                     if (this.Widget.OnWidgetSelected != null) this.Widget.OnWidgetSelected.Invoke(this, e);
                 }

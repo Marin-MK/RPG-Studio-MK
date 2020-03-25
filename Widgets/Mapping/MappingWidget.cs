@@ -66,6 +66,7 @@ namespace MKEditor.Widgets
             //MapViewerProperties = new MapViewerProperties(Submodes.GetTab(4));
 
             MapImageWidget = new MapImageWidget(MapViewerTiles.MainContainer);
+            MapImageWidget.SetZIndex(3); // 1 for normal map connections, 2 for the selected map connection, so 3 for the main map.
 
             MapViewerTiles.MapWidget = MapImageWidget;
             //MapViewerEvents.MapWidget = MapImageWidget;
@@ -87,6 +88,7 @@ namespace MKEditor.Widgets
             Editor.ProjectSettings.LastMappingSubmode = Submode;
             MapImageWidget.SetParent(ActiveMapViewer.MainContainer);
             MapImageWidget.SetVisible(true);
+            ActiveMapViewer.ZoomByScroll = true; // Ensures it retains the scroll bar scroll value
             if (ActiveMapViewer.Map != null) ActiveMapViewer.PositionMap();
 
             if (Submode == "TILES") // Select Tiles submode
@@ -118,8 +120,15 @@ namespace MKEditor.Widgets
 
         public void SetSubmode(string Submode)
         {
-            if (Submode == "TILES") SetSelectedIndex(0);
-            else if (Submode == "CONNECTIONS") SetSelectedIndex(1);
+            if (Submode == "TILES")
+            {
+                SetSelectedIndex(0);
+            }
+            else if (Submode == "CONNECTIONS")
+            {
+                SetSelectedIndex(1);
+                Editor.MainWindow.UI.SetSelectedWidget(MapViewerConnections.ConnectionsPanel.GetSelectedConnectionWidget());
+            }
         }
 
         public void SetSelectedLayer(int Index)
@@ -158,6 +167,7 @@ namespace MKEditor.Widgets
         {
             MapViewerTiles.MainContainer.HScrollBar.SetValue(Value, false);
             MapViewerConnections.MainContainer.HScrollBar.SetValue(Value, false);
+            Console.WriteLine($"{MapViewerTiles} : {MapViewerTiles.MainContainer.ScrolledX}");
         }
 
         public void SetVerticalScroll(double Value)

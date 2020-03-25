@@ -44,7 +44,7 @@ namespace MKEditor.Widgets
             foreach (MapConnectionWidget mcw in ConnectionWidgets)
             {
                 mcw.Outline = new ColoredBox(MainContainer);
-                mcw.Outline.SetZIndex(3);
+                mcw.Outline.SetZIndex(5); // 1 for map connections, 2 for the selected map connection, 3 for the main map, 4 for tile overlaps, so 5 for outlines.
                 mcw.Outline.SetPosition(mcw.Position);
                 mcw.Outline.SetSize(mcw.Size);
             }
@@ -90,7 +90,7 @@ namespace MKEditor.Widgets
                 int nw = Math.Min(a.Position.X + a.Size.Width, b.Position.X + b.Size.Width) - nx;
                 int nh = Math.Min(a.Position.Y + a.Size.Height, b.Position.Y + b.Size.Height) - ny;
                 Widget overlapwidget = new Widget(MainContainer);
-                overlapwidget.SetZIndex(2);
+                overlapwidget.SetZIndex(4); // 1 for map connections, 2 for the selected map connection, 3 for the main map, so 4 for overlaps
                 overlapwidget.SetPosition(nx, ny);
                 overlapwidget.SetSize(nw, nh);
                 overlapwidget.SetBackgroundColor(255, 22, 47, 103);
@@ -108,6 +108,28 @@ namespace MKEditor.Widgets
         {
             this.GridBackground.SetVisible(false);
             this.SetDarkOverlay(192);
+            this.WidgetIM.OnMouseDown += MouseDown;
+            this.WidgetIM.SelectWithRightClick = false;
+            this.WidgetIM.SelectWithMiddleClick = false;
+            OnWidgetSelected += WidgetSelected;
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            Console.Write(Editor.MainWindow.UI.SelectedWidget);
+            if (Editor.MainWindow.UI.SelectedWidget is MapImageWidget) Console.Write(((MapImageWidget) Editor.MainWindow.UI.SelectedWidget).MapData.ID);
+            Console.WriteLine();
+        }
+
+        public override void MouseDown(object sender, MouseEventArgs e)
+        {
+            base.MouseDown(sender, e);
+            if (WidgetIM.Hovering && !e.Handled && e.LeftButton != e.OldLeftButton) // Ensure only one map connection is ever selected (saves an extra call when clicking an overlapping section)
+            {
+                e.Handled = true;
+                Editor.MainWindow.MapWidget.MapViewerConnections.ConnectionsPanel.SelectMap(this.MapData);
+            }
         }
 
         public override void RedrawLayers()

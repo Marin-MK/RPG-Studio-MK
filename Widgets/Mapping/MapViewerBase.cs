@@ -41,7 +41,6 @@ namespace MKEditor.Widgets
             this.WidgetIM.OnMouseDown += MouseDown;
             this.WidgetIM.OnMouseUp += MouseUp;
             this.WidgetIM.OnMouseWheel += MouseWheel;
-            this.OnWidgetSelected += WidgetSelected;
             GridLayout = new Grid(this);
             GridLayout.SetColumns(
                 new GridSize(1),
@@ -137,28 +136,31 @@ namespace MKEditor.Widgets
         int OldScrollHeight;
         int OldMapHeight;
 
+        public bool ZoomByScroll = false;
+
         public virtual void PositionMap()
         {
             if (Editor.MainWindow.MapWidget.Submodes.SelectedIndex != -1 && this != Editor.MainWindow.MapWidget.ActiveMapViewer) return;
             // Ensures the scrollbars end up at roughly the same place when zooming
-            bool HExist = OldHVisible;
             double ScrolledX = 0.5;
-            if (HExist) ScrolledX = (double) MainContainer.ScrolledX / OldScrollWidth;
-            else
-            {
-                int rx = Graphics.LastMouseEvent.X - MapWidget.Viewport.X;
-                rx = Math.Max(0, Math.Min(rx, OldMapWidth));
-                ScrolledX = (double) rx / OldMapWidth;
-            }
-
-            bool VExist = OldVVisible;
             double ScrolledY = 0.5;
-            if (VExist) ScrolledY = (double) MainContainer.ScrolledY / OldScrollHeight;
-            else
+            if (ZoomByScroll)
             {
-                int ry = Graphics.LastMouseEvent.Y - MapWidget.Viewport.Y;
-                ry = Math.Max(0, Math.Min(ry, OldMapHeight));
-                ScrolledY = (double) ry / OldMapHeight;
+                if (OldHVisible)
+                    ScrolledX = (double) MainContainer.ScrolledX / OldScrollWidth;
+                else
+                {
+                    int rx = Graphics.LastMouseEvent.X - MapWidget.Viewport.X;
+                    rx = Math.Max(0, Math.Min(rx, OldMapWidth));
+                    ScrolledX = (double) rx / OldMapWidth;
+                }
+                if (OldVVisible) ScrolledY = (double) MainContainer.ScrolledY / OldScrollHeight;
+                else
+                {
+                    int ry = Graphics.LastMouseEvent.Y - MapWidget.Viewport.Y;
+                    ry = Math.Max(0, Math.Min(ry, OldMapHeight));
+                    ScrolledY = (double)ry / OldMapHeight;
+                }
             }
 
             int w = (int) Math.Round(Map.Width * 32d * ZoomFactor);
@@ -197,6 +199,7 @@ namespace MKEditor.Widgets
             OldScrollHeight = MainContainer.MaxChildHeight - MainContainer.Viewport.Height;
             OldMapWidth = MapWidget.Viewport.Width;
             OldMapHeight = MapWidget.Viewport.Height;
+            ZoomByScroll = false;
         }
 
         public override void MouseMoving(object sender, MouseEventArgs e)
@@ -255,6 +258,7 @@ namespace MKEditor.Widgets
         {
             base.MouseWheel(sender, e);
             if (!Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LCTRL) && !Input.Press(SDL2.SDL.SDL_Keycode.SDLK_RCTRL)) return;
+            ZoomByScroll = true;
             if (e.WheelY > 0) Editor.MainWindow.StatusBar.ZoomControl.IncreaseZoom();
             else Editor.MainWindow.StatusBar.ZoomControl.DecreaseZoom();
         }
