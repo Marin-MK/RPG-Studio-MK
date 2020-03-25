@@ -268,9 +268,13 @@ namespace MKEditor.Widgets
 
         public virtual void RedrawLayers()
         {
-            foreach (string s in this.Sprites.Keys)
+            foreach (string key in this.Sprites.Keys)
             {
-                if (s != "_bg" && s != "dark") this.Sprites[s].Dispose();
+                if (key != "_bg" && key != "dark")
+                {
+                    this.Sprites[key].Dispose();
+                    this.Sprites.Remove(key);
+                }
             }
             // Create layers
             for (int i = 0; i < MapData.Layers.Count; i++)

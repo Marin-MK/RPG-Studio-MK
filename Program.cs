@@ -10,11 +10,10 @@ namespace MKEditor
     public class Program
     {
         /// <summary>
-        /// Whether or not exceptions should be caught and displayed.
+        /// Whether or not exceptions should be caught and displayed, and whether unsaved changes messages should be given.
         /// If false, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
         /// </summary>
-        static bool CatchErrors = false
-            ;
+        public static bool ReleaseMode = true;
 
         static bool ThrownError = false;
 
@@ -43,20 +42,6 @@ namespace MKEditor
             Graphics.Start();
             MainEditorWindow win = new MainEditorWindow(args);
             win.Show();
-            win.OnClosing += delegate (object sender, CancelEventArgs e)
-            {
-                int x, y;
-                SDL2.SDL.SDL_GetWindowPosition(win.SDL_Window, out x, out y);
-                int w, h;
-                SDL2.SDL.SDL_GetWindowSize(win.SDL_Window, out w, out h);
-                Editor.GeneralSettings.LastX = x;
-                Editor.GeneralSettings.LastY = y;
-                Editor.GeneralSettings.LastWidth = w;
-                Editor.GeneralSettings.LastHeight = h;
-                SDL2.SDL.SDL_WindowFlags flags = (SDL2.SDL.SDL_WindowFlags)SDL2.SDL.SDL_GetWindowFlags(win.SDL_Window);
-                Editor.GeneralSettings.WasMaximized = (flags & SDL2.SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED) == SDL2.SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED;
-                Editor.DumpGeneralSettings();
-            };
             Widgets.MessageBox ErrorBox = null;
             win.OnWindowSizeChanged += delegate (object sender, WindowEventArgs e)
             {
@@ -64,7 +49,7 @@ namespace MKEditor
             };
             while (Graphics.CanUpdate())
             {
-                if (CatchErrors)
+                if (ReleaseMode)
                 {
                     try
                     {

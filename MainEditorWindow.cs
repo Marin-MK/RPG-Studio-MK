@@ -64,11 +64,26 @@ namespace MKEditor
 
             this.OnClosing += delegate (object sender, CancelEventArgs e)
             {
-                if (!Editor.InProject)
+                int x, y;
+                SDL2.SDL.SDL_GetWindowPosition(this.SDL_Window, out x, out y);
+                int w, h;
+                SDL2.SDL.SDL_GetWindowSize(this.SDL_Window, out w, out h);
+                Editor.GeneralSettings.LastX = x;
+                Editor.GeneralSettings.LastY = y;
+                Editor.GeneralSettings.LastWidth = w;
+                Editor.GeneralSettings.LastHeight = h;
+                SDL2.SDL.SDL_WindowFlags flags = (SDL2.SDL.SDL_WindowFlags) SDL2.SDL.SDL_GetWindowFlags(this.SDL_Window);
+                Editor.GeneralSettings.WasMaximized = (flags & SDL2.SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED) == SDL2.SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED;
+                Editor.DumpGeneralSettings();
+
+                if (Editor.InProject)
                 {
                     // Save window when closing with the top-right X button
-                    //e.Cancel = true;
-                    //EnsureSaved(Dispose);
+                    if (Program.ReleaseMode)
+                    {
+                        e.Cancel = true;
+                        EnsureSaved(Dispose);
+                    }
                 }
             };
 

@@ -164,7 +164,7 @@ namespace MKEditor.Widgets
                 if (mpw.UpdateMapViewer)
                 {
                     Editor.UnsavedChanges = true;
-                    Editor.AddMap(Map, mapview.HoveringNode == null ? 0 : (int) mapview.HoveringNode.Object);
+                    Editor.AddMap(mpw.Map, mapview.HoveringNode == null ? 0 : (int) mapview.HoveringNode.Object);
                 }
             };
         }

@@ -79,7 +79,7 @@ namespace MKEditor.Widgets
 
             Cursor = new CursorWidget(MainContainer);
             Cursor.ConsiderInAutoScrollCalculation = false;
-            Cursor.SetZIndex(1);
+            Cursor.SetZIndex(6);
 
             RegisterShortcuts(new List<Shortcut>()
             {
