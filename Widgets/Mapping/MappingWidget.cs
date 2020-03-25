@@ -167,7 +167,6 @@ namespace MKEditor.Widgets
         {
             MapViewerTiles.MainContainer.HScrollBar.SetValue(Value, false);
             MapViewerConnections.MainContainer.HScrollBar.SetValue(Value, false);
-            Console.WriteLine($"{MapViewerTiles} : {MapViewerTiles.MainContainer.ScrolledX}");
         }
 
         public void SetVerticalScroll(double Value)

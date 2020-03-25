@@ -108,7 +108,6 @@ namespace MKEditor.Widgets
                 int TileY = (int) Math.Floor(ry / 34d);
                 Cursor.SetPosition(Sprites["tiles"].X + TileX * 34 - 7, Sprites["tiles"].Y + TileY * 34 - 7);
                 SelectedTileID = TileX + TileY * 8;
-                Console.WriteLine(SelectedTileID);
             }
         }
     }

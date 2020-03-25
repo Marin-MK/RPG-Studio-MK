@@ -495,7 +495,6 @@ namespace MKEditor.Widgets
                     }
                 }
             }
-            Console.WriteLine();
             this.Sprites[layer.ToString()].Bitmap.Lock();
         }
 

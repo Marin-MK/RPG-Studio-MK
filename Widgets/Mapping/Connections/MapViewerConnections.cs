@@ -114,14 +114,6 @@ namespace MKEditor.Widgets
             OnWidgetSelected += WidgetSelected;
         }
 
-        public override void Update()
-        {
-            base.Update();
-            Console.Write(Editor.MainWindow.UI.SelectedWidget);
-            if (Editor.MainWindow.UI.SelectedWidget is MapImageWidget) Console.Write(((MapImageWidget) Editor.MainWindow.UI.SelectedWidget).MapData.ID);
-            Console.WriteLine();
-        }
-
         public override void MouseDown(object sender, MouseEventArgs e)
         {
             base.MouseDown(sender, e);

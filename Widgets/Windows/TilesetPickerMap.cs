@@ -198,8 +198,8 @@ namespace MKEditor.Widgets
                 ActionButton.SetClickable(false);
                 return;
             }
-            if (TilesetBox.Sprite.Bitmap != null) TilesetBox.Sprite.Bitmap.Dispose();
-            TilesetBox.Sprite.Bitmap = tileset.TilesetListBitmap.Clone();
+            TilesetBox.Sprite.Bitmap = tileset.TilesetListBitmap;
+            TilesetBox.Sprite.DestroyBitmap = false;
         }
 
         private void ActionButtonClicked(object sender, EventArgs e)

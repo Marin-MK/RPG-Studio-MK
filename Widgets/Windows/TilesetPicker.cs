@@ -76,6 +76,7 @@ namespace MKEditor.Widgets
             tileset.SetSize(1, 1);
             if (data == null) return;
             tileset.Sprite.Bitmap = data.TilesetListBitmap;
+            tileset.Sprite.DestroyBitmap = false;
             tileset.SetSize(data.TilesetListBitmap.Width, data.TilesetListBitmap.Height);
             scroll.VScrollBar.SetValue(0);
         }
