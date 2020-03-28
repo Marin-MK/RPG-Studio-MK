@@ -122,11 +122,8 @@ namespace MKEditor.Widgets
             GraphicBox.SetSize(156, 21);
             GraphicBox.OnDropDownClicked += delegate (object sender, EventArgs e)
             {
-                OpenFile of = new OpenFile();
-                of.SetFilters(new List<FileFilter>()
-                {
-                    new FileFilter("PNG Image", "png")
-                });
+                OpenFileDialog of = new OpenFileDialog();
+                of.SetFilter(new FileFilter("PNG Image", "png"));
                 of.SetInitialDirectory(Game.Data.ProjectPath + "\\gfx\\tilesets");
                 of.SetTitle("Pick a tileset...");
                 object result = of.Show();

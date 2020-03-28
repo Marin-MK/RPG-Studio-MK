@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using MKEditor.Game;
 using ODL;
@@ -13,9 +14,9 @@ namespace MKEditor
         /// Whether or not exceptions should be caught and displayed, and whether unsaved changes messages should be given.
         /// If false, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
         /// </summary>
-        public static bool ReleaseMode = true;
+        public static bool ReleaseMode = false;
 
-        static bool ThrownError = false;
+        public static bool ThrownError = false;
 
         static void Main(params string[] args)
         {
@@ -26,6 +27,10 @@ namespace MKEditor
                 Directory.SetCurrentDirectory(ParentDir);
             }
             Console.WriteLine("Launching RPG Studio MK.");
+            if (!ReleaseMode)
+            {
+                Console.WriteLine("===============================\nProgram launched in Debug mode.\n===============================\n");
+            }
             OperatingSystem os = Editor.GetOperatingSystem();
             string Framework = "";
             string fw = Assembly.GetEntryAssembly().GetCustomAttribute<TargetFrameworkAttribute>().FrameworkName;

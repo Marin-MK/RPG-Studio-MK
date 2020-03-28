@@ -151,11 +151,8 @@ namespace MKEditor
         /// </summary>
         public static void ImportMaps()
         {
-            OpenFile of = new OpenFile();
-            of.SetFilters(new List<FileFilter>()
-            {
-                new FileFilter("RPG Maker XP Map", "rxdata")
-            });
+            OpenFileDialog of = new OpenFileDialog();
+            of.SetFilter(new FileFilter("RPG Maker XP Map", "rxdata"));
             of.SetTitle("Pick map(s)");
             of.SetAllowMultiple(true);
             object ret = of.Show();
@@ -530,11 +527,8 @@ namespace MKEditor
         /// </summary>
         public static void OpenProject()
         {
-            OpenFile of = new OpenFile();
-            of.SetFilters(new List<FileFilter>()
-            {
-                new FileFilter("MK Project File", "mkproj")
-            });
+            OpenFileDialog of = new OpenFileDialog();
+            of.SetFilter(new FileFilter("MK Project File", "mkproj"));
             string lastfolder = "";
             if (GeneralSettings.RecentFiles.Count > 0)
             {
@@ -552,10 +546,15 @@ namespace MKEditor
             string result = of.Show() as string;
             if (!string.IsNullOrEmpty(result))
             {
-                CloseProject();
-                Game.Data.SetProjectPath(result);
-                MainWindow.CreateEditor();
-                MakeRecentProject();
+                if (!result.EndsWith(".mkproj"))
+                    new MessageBox("Error", "Invalid project file.", ButtonType.OK, IconType.Error);
+                else
+                {
+                    CloseProject();
+                    Game.Data.SetProjectPath(result);
+                    MainWindow.CreateEditor();
+                    MakeRecentProject();
+                }
             }
         }
 

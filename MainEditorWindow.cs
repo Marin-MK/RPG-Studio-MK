@@ -79,7 +79,7 @@ namespace MKEditor
                 if (Editor.InProject)
                 {
                     // Save window when closing with the top-right X button
-                    if (Program.ReleaseMode)
+                    if (Program.ReleaseMode && !Program.ThrownError)
                     {
                         e.Cancel = true;
                         EnsureSaved(Dispose);

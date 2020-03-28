@@ -8,12 +8,8 @@
     <Authors>Marijn Herrebout</Authors>
     <Product>RPG Studio MK</Product>
     <Version>0.3.2</Version>
-    <Platforms>Debug;x86;x64</Platforms>
+    <Platforms>x64</Platforms>
     <AssemblyName>RPG Studio MK</AssemblyName>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,13 +18,13 @@
 
   <ItemGroup>
     <Reference Include="odl">
-      <HintPath>..\odl\bin\x64\Debug\netcoreapp3.1\odl.dll</HintPath>
+      <HintPath>..\odl\bin\Debug\netcoreapp3.1\odl.dll</HintPath>
     </Reference>
     <Reference Include="RubyDotNET">
       <HintPath>..\rubydotnet\bin\x64\Debug\netcoreapp3.1\RubyDotNET.dll</HintPath>
     </Reference>
     <Reference Include="SDL2-CS">
-      <HintPath>..\odl\bin\x64\Debug\netcoreapp3.1\SDL2-CS.dll</HintPath>
+      <HintPath>..\odl\bin\Debug\netcoreapp3.1\SDL2-CS.dll</HintPath>
     </Reference>
   </ItemGroup>
 
