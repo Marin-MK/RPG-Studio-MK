@@ -82,6 +82,7 @@ namespace MKEditor.Widgets
 
             Fade = new VignetteFade(MainContainer);
             Fade.ConsiderInAutoScrollCalculation = Fade.ConsiderInAutoScrollPositioning = false;
+            Fade.SetZIndex(7);
         }
 
         public virtual void SetZoomFactor(double factor, bool FromStatusBar = false)

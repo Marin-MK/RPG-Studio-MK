@@ -154,25 +154,26 @@ namespace MKEditor.Widgets
             MapConnectionWidget mcw = Editor.MainWindow.MapWidget.MapViewerConnections.ConnectionWidgets.Find(w => w.MapID == this.MapConnection.MapID);
             if (this.Selected && (this.SelectedWidget || mcw.SelectedWidget))
             {
+                int Diff = Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(SDL2.SDL.SDL_Keycode.SDLK_RSHIFT) ? 10 : 1;
                 if (Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_LEFT) || TimerPassed("left"))
                 {
                     if (TimerPassed("left")) ResetTimer("left");
-                    SetOffset(this.MapConnection.RelativeX - 1, this.MapConnection.RelativeY);
+                    SetOffset(this.MapConnection.RelativeX - Diff, this.MapConnection.RelativeY);
                 }
                 if (Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_RIGHT) || TimerPassed("right"))
                 {
                     if (TimerPassed("right")) ResetTimer("right");
-                    SetOffset(this.MapConnection.RelativeX + 1, this.MapConnection.RelativeY);
+                    SetOffset(this.MapConnection.RelativeX + Diff, this.MapConnection.RelativeY);
                 }
                 if (Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_UP) || TimerPassed("up"))
                 {
                     if (TimerPassed("up")) ResetTimer("up");
-                    SetOffset(this.MapConnection.RelativeX, this.MapConnection.RelativeY - 1);
+                    SetOffset(this.MapConnection.RelativeX, this.MapConnection.RelativeY - Diff);
                 }
                 if (Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_DOWN) || TimerPassed("down"))
                 {
                     if (TimerPassed("down")) ResetTimer("down");
-                    SetOffset(this.MapConnection.RelativeX, this.MapConnection.RelativeY + 1);
+                    SetOffset(this.MapConnection.RelativeX, this.MapConnection.RelativeY + Diff);
                 }
 
                 if (Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LEFT))
