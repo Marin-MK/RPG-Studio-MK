@@ -72,7 +72,8 @@ namespace MKEditor.Widgets
             }
             MapData.Layers.Insert(Index, LayerData);
             string key = Index.ToString();
-            Sprites[key] = new Sprite(this.Viewport, MapData.Width * 32, MapData.Height * 32);
+            Sprites[key] = new Sprite(this.Viewport);
+            Sprites[key].Bitmap = new LargeBitmap(MapData.Width * 32, MapData.Height * 32, 16 * 32, 16 * 32);
             Sprites[key].Z = Index;
             Sprites[key].ZoomX = Sprites[key].ZoomY = this.ZoomFactor;
         }
@@ -166,7 +167,7 @@ namespace MKEditor.Widgets
             if (SY + Height > m.Height) Height = m.Height - SY;
             for (int layer = 0; layer < m.Layers.Count; layer++)
             {
-                bmps.Add(new Bitmap(Width * 32, Height * 32));
+                bmps.Add(new LargeBitmap(Width * 32, Height * 32, 16 * 32, 16 * 32)); // 16x16 tile chunks
                 bmps[layer].Unlock();
                 // Iterate through all vertical tiles
                 for (int y = SY; y < SY + Height; y++)
