@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Versioning;
-using MKEditor.Game;
 using ODL;
 
 namespace MKEditor
@@ -16,16 +16,19 @@ namespace MKEditor
         /// </summary>
         public static bool ReleaseMode = false;
 
+        public static bool Verbose = false;
+
+
+        public static string ProjectFile = null;
         public static bool ThrownError = false;
 
         static void Main(params string[] args)
         {
-            if (args.Length > 0)
-            {
-                string ThisFile = Assembly.GetExecutingAssembly().Location;
-                string ParentDir = Directory.GetParent(ThisFile).FullName;
-                Directory.SetCurrentDirectory(ParentDir);
-            }
+            // Ensures the working directory becomes the editor directory
+            Directory.SetCurrentDirectory(Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName);
+            CommandLineHandler.Init();
+            bool StartProgram = CommandLineHandler.Parse(args.ToList());
+            if (!StartProgram) return;
             Console.WriteLine("Launching RPG Studio MK.");
             if (!ReleaseMode)
             {
@@ -47,7 +50,7 @@ namespace MKEditor
             Console.WriteLine($"OS Version: {os.VersionString}");
             Console.WriteLine($"Editor Version: {Editor.GetVersionString()}");
             Graphics.Start();
-            MainEditorWindow win = new MainEditorWindow(args);
+            MainEditorWindow win = new MainEditorWindow(ProjectFile);
             win.Show();
             Widgets.MessageBox ErrorBox = null;
             win.OnWindowSizeChanged += delegate (object sender, WindowEventArgs e)
@@ -71,7 +74,7 @@ namespace MKEditor
                         if (!ThrownError)
                         {
                             string msg = ex.GetType() + " : " + ex.Message + "\n\n" + ex.StackTrace;
-                            ErrorBox = new Widgets.MessageBox("Error!", msg, new System.Collections.Generic.List<string>() { "Quit" }, Widgets.IconType.Error);
+                            ErrorBox = new Widgets.MessageBox("Error!", msg, new List<string>() { "Quit" }, Widgets.IconType.Error);
                             ErrorBox.SetSize(win.Width, win.Height);
                             ErrorBox.OnDisposed += delegate (object sender, EventArgs e)
                             {

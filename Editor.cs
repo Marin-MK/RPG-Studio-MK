@@ -744,8 +744,8 @@ namespace MKEditor
             {
                 GeneralSettings = new GeneralSettings();
             }
-            if (GeneralSettings.LastWidth < MainWindow.MinimumSize.Width) GeneralSettings.LastWidth = MainWindow.MinimumSize.Width;
-            if (GeneralSettings.LastHeight < MainWindow.MinimumSize.Height) GeneralSettings.LastHeight = MainWindow.MinimumSize.Height;
+            if (MainWindow != null && GeneralSettings.LastWidth < MainWindow.MinimumSize.Width) GeneralSettings.LastWidth = MainWindow.MinimumSize.Width;
+            if (MainWindow != null && GeneralSettings.LastHeight < MainWindow.MinimumSize.Height) GeneralSettings.LastHeight = MainWindow.MinimumSize.Height;
             if (GeneralSettings.LastX < 0) GeneralSettings.LastX = 0;
             if (GeneralSettings.LastY < 0) GeneralSettings.LastY = 0;
         }

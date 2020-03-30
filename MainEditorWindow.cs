@@ -56,7 +56,7 @@ namespace MKEditor
         /// </summary>
         public HomeScreen HomeScreen;
 
-        public MainEditorWindow(string[] args)
+        public MainEditorWindow(string ProjectFile)
         {
             this.SetMinimumSize(600, 400);
             this.SetText("RPG Studio MK");
@@ -249,10 +249,9 @@ namespace MKEditor
             #endregion
 
             // If an argument was passed, load that project file and skip the home screen
-            if (args.Length > 0 && args[0].Contains("project.mkproj"))
+            if (!string.IsNullOrEmpty(ProjectFile))
             {
-                Console.WriteLine(args[0]);
-                Data.SetProjectPath(args[0]);
+                Data.SetProjectPath(ProjectFile);
                 CreateEditor();
                 Editor.MakeRecentProject();
             }
