@@ -22,8 +22,7 @@ namespace MKEditor.Widgets
         public int SelectedIndex { get; protected set; } = -1;
         public ListItem SelectedItem { get { return SelectedIndex == -1 ? null : Items[SelectedIndex]; } }
 
-        public ListDrawer(object Parent, string Name = "listDrawer")
-            : base(Parent, Name)
+        public ListDrawer(IContainer Parent) : base(Parent)
         {
             Sprites["selection"] = new Sprite(this.Viewport, new SolidBitmap(Size.Width, 20, new Color(28, 50, 73)));
             Sprites["selection"].Visible = false;

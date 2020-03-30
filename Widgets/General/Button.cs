@@ -12,8 +12,7 @@ namespace MKEditor.Widgets
 
         public EventHandler<EventArgs> OnClicked;
 
-        public Button(object Parent, string Name = "button")
-            : base(Parent, Name)
+        public Button(IContainer Parent) : base(Parent)
         {
             Bitmap b = new Bitmap(10, 10);
             #region Corner piece

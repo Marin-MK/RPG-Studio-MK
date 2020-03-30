@@ -11,8 +11,7 @@ namespace MKEditor.Widgets
 
         public EventHandler<EventArgs> OnItemInvoked;
 
-        public ContextMenu(object Parent, string Name = "contextMenu")
-            : base(Parent, Name)
+        public ContextMenu(IContainer Parent) : base(Parent)
         {
             this.SetZIndex(Window.ActiveWidget is UIManager ? 9 : (Window.ActiveWidget as Widget).ZIndex + 9);
             this.SetWidth(192);

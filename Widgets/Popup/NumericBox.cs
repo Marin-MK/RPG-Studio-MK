@@ -18,8 +18,7 @@ namespace MKEditor.Widgets
 
         public EventHandler<EventArgs> OnValueChanged;
 
-        public NumericBox(object Parent, string Name = "numericBox")
-            : base(Parent, Name)
+        public NumericBox(IContainer Parent) : base(Parent)
         {
             Sprites["box"] = new Sprite(this.Viewport);
             Sprites["text"] = new Sprite(this.Viewport);

@@ -25,8 +25,7 @@ namespace MKEditor.Widgets
         public Container MainContainer;
         public ListDrawer ListDrawer;
 
-        public ListBox(object Parent, string Name = "listBox")
-            : base(Parent, Name)
+        public ListBox(IContainer Parent) : base(Parent)
         {
             Sprites["bg"] = new Sprite(this.Viewport);
             MainContainer = new Container(this);

@@ -16,8 +16,7 @@ namespace MKEditor.Widgets
         int LastActiveMenuIndex = -1;
         bool IgnorePress = false;
 
-        public MenuBar(object Parent, string Name = "menuBar")
-            : base(Parent, Name)
+        public MenuBar(IContainer Parent) : base(Parent)
         {
             Sprites["header"] = new Sprite(this.Viewport);
             Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(60, 228, 254)));
@@ -154,7 +153,7 @@ namespace MKEditor.Widgets
                 ActiveMenu.Dispose();
             }
             this.MouseAlwaysActive = true;
-            ActiveMenu = new ContextMenu(Window);
+            ActiveMenu = new ContextMenu(Window.UI);
             ActiveMenu.OnDisposed += delegate (object sender, EventArgs e)
             {
                 this.MouseAlwaysActive = false;

@@ -11,8 +11,7 @@ namespace MKEditor.Widgets
         public Color TextColor { get; protected set; } = Color.WHITE;
         public DrawOptions DrawOptions { get; protected set; }
 
-        public Label(object Parent, string Name = "label")
-            : base(Parent, Name)
+        public Label(IContainer Parent) : base(Parent)
         {
             Sprites["text"] = new Sprite(this.Viewport);
             this.Font = Font.Get("Fonts/ProductSans-M", 12);
@@ -72,8 +71,7 @@ namespace MKEditor.Widgets
 
     public class MultilineLabel : Label
     {
-        public MultilineLabel(object Parent, string Name = "multilineLabel")
-            : base(Parent, Name)
+        public MultilineLabel(IContainer Parent) : base(Parent)
         {
             
         }

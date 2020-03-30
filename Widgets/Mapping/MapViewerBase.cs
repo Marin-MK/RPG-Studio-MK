@@ -33,8 +33,7 @@ namespace MKEditor.Widgets
         public Container HScrollContainer;
         public Container VScrollContainer;
 
-        public MapViewerBase(object Parent, string Name = "mapViewer")
-            : base(Parent, Name)
+        public MapViewerBase(IContainer Parent) : base(Parent)
         {
             this.SetBackgroundColor(28, 50, 73);
             this.WidgetIM.OnMouseMoving += MouseMoving;

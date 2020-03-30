@@ -21,8 +21,7 @@ namespace MKEditor.Widgets
 
         public bool Selected = false;
 
-        public ConnectionWidget(object Parent, string Name = "connectionsWidget")
-            : base(Parent, Name)
+        public ConnectionWidget(IContainer Parent) : base(Parent)
         {
             Font f = Font.Get("Fonts/Ubuntu-B", 14);
 
@@ -250,8 +249,7 @@ namespace MKEditor.Widgets
 
     public class ExitButton : Widget
     {
-        public ExitButton(object Parent, string Name = "exitButton")
-            : base(Parent, Name)
+        public ExitButton(IContainer Parent) : base(Parent)
         {
             Sprites["box"] = new Sprite(this.Viewport);
             this.WidgetIM.OnMouseDown += MouseDown;

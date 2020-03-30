@@ -25,10 +25,9 @@ namespace MKEditor.Widgets
         PlayButton PlayButton;
         SaveButton SaveButton;
 
-        public ToolBar(object Parent, string Name = "toolBar")
-            : base(Parent, Name)
+        public ToolBar(IContainer Parent) : base(Parent)
         {
-            MappingMode = new ModeButton("Maps", 23, this);
+            MappingMode = new ModeButton(this, "Maps", 23);
             MappingMode.SetPosition(4, 0);
             MappingMode.SetSelected(true);
             MappingMode.OnSelection += delegate (object sender, EventArgs e)
@@ -36,21 +35,21 @@ namespace MKEditor.Widgets
                 Editor.SetMode("MAPPING");
             };
 
-            EventingMode = new ModeButton("Events", 24, this);
+            EventingMode = new ModeButton(this, "Events", 24);
             EventingMode.SetPosition(MappingMode.Position.X + MappingMode.Size.Width + 12, 0);
             EventingMode.OnSelection += delegate (object sender, EventArgs e)
             {
                 Editor.SetMode("EVENTING");
             };
 
-            ScriptingMode = new ModeButton("Scripts", 25, this);
+            ScriptingMode = new ModeButton(this, "Scripts", 25);
             ScriptingMode.SetPosition(EventingMode.Position.X + EventingMode.Size.Width + 12, 0);
             ScriptingMode.OnSelection += delegate (object sender, EventArgs e)
             {
                 Editor.SetMode("SCRIPTING");
             };
 
-            DatabaseMode = new ModeButton("Database", 26, this);
+            DatabaseMode = new ModeButton(this, "Database", 26);
             DatabaseMode.SetPosition(ScriptingMode.Position.X + ScriptingMode.Size.Width + 12, 0);
             DatabaseMode.OnSelection += delegate (object sender, EventArgs e)
             {

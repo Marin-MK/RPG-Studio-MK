@@ -38,8 +38,7 @@ namespace MKEditor.Widgets
         Game.Tileset Tileset;
         int TilesetID;
 
-        public TilesetEditor(object Parent, string Name = "tilesetEditor")
-            : base(Parent, Name)
+        public TilesetEditor(IContainer Parent) : base(Parent)
         {
             Submodes = new SubmodeView(this);
             Submodes.SetHeaderHeight(31);

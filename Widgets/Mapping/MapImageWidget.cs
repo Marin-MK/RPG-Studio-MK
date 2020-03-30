@@ -21,8 +21,7 @@ namespace MKEditor.Widgets
 
         public double ZoomFactor = 1.0;
 
-        public MapImageWidget(object Parent, string Name = "mapImageWidget")
-            : base(Parent, Name)
+        public MapImageWidget(IContainer Parent) : base(Parent)
         {
             SetBackgroundColor(73, 89, 109);
             this.MapViewer = this.Parent.Parent.Parent.Parent as MapViewerBase;

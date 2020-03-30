@@ -7,8 +7,7 @@ namespace MKEditor.Widgets
     {
         public bool NeedUpdate { get; set; } = true;
 
-        public HStackPanel(object Parent)
-            : base(Parent, "hStackPanel")
+        public HStackPanel(IContainer Parent) : base(Parent)
         {
             this.Size = new Size(this.Parent.Size);
         }

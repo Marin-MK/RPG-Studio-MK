@@ -41,6 +41,8 @@ namespace MKEditor
             SDL2.SDL.SDL_version v;
             SDL2.SDL.SDL_GetVersion(out v);
             Console.WriteLine($"SDL Version: {v.major}.{v.minor}.{v.patch}");
+            Console.WriteLine($"SDL_image Version: {SDL2.SDL_image.SDL_IMAGE_MAJOR_VERSION}.{SDL2.SDL_image.SDL_IMAGE_MINOR_VERSION}.{SDL2.SDL_image.SDL_IMAGE_PATCHLEVEL}");
+            Console.WriteLine($"SDL_ttf Version: {SDL2.SDL_ttf.SDL_TTF_MAJOR_VERSION}.{SDL2.SDL_ttf.SDL_TTF_MINOR_VERSION}.{SDL2.SDL_ttf.SDL_TTF_PATCHLEVEL}");
             Console.WriteLine($"OS Platform: {os.Platform} ({Editor.Platform}) {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}");
             Console.WriteLine($"OS Version: {os.VersionString}");
             Console.WriteLine($"Editor Version: {Editor.GetVersionString()}");

@@ -26,8 +26,7 @@ namespace MKEditor.Widgets
         public TilesPanel TilesPanel;
         public LayerPanel LayerPanel;
 
-        public MappingWidget(object Parent, string Name = "mappingWidget")
-            : base(Parent, Name)
+        public MappingWidget(IContainer Parent) : base(Parent)
         {
             Grid layout = new Grid(this);
             layout.SetColumns(

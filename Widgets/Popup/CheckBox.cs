@@ -8,8 +8,7 @@ namespace MKEditor.Widgets
         public string Text { get; protected set; }
         public bool Checked { get; protected set; } = false;
 
-        public CheckBox(object Parent, string Name = "checkBox")
-            : base(Parent, Name)
+        public CheckBox(IContainer Parent) : base(Parent)
         {
             Sprites["box"] = new Sprite(this.Viewport, new Bitmap(16, 16));
             Sprites["box"].Bitmap.Unlock();

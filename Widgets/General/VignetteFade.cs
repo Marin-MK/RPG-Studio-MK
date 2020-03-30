@@ -5,8 +5,7 @@ namespace MKEditor.Widgets
 {
     public class VignetteFade : Widget
     {
-        public VignetteFade(object Parent, string Name = "vignetteFade")
-            : base(Parent, Name)
+        public VignetteFade(IContainer Parent) : base(Parent)
         {
             Bitmap b = new Bitmap(21, 21);
             #region Corner

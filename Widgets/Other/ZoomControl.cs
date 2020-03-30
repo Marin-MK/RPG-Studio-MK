@@ -10,8 +10,7 @@ namespace MKEditor.Widgets
 
         public double Factor { get; protected set; } = 1;
 
-        public ZoomControl(object Parent, string Name = "zoomControl")
-            : base(Parent, Name)
+        public ZoomControl(IContainer Parent) : base(Parent)
         {
             ZoomOut = new IconButton(this);
             ZoomOut.Selectable = false;

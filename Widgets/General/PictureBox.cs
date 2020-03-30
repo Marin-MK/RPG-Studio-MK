@@ -7,8 +7,7 @@ namespace MKEditor.Widgets
     {
         public Sprite Sprite { get { return Sprites["sprite"] as Sprite; } }
 
-        public PictureBox(object Parent, string Name = "pictureBox")
-            : base(Parent, Name)
+        public PictureBox(IContainer Parent) : base(Parent)
         {
             this.Sprites["sprite"] = new Sprite(this.Viewport);
             this.AutoResize = true;

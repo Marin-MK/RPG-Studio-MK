@@ -24,8 +24,7 @@ namespace MKEditor.Widgets
         private int SliderRY = 0;
         private MouseInputManager SliderIM;
 
-        public VScrollBar(object Parent, string Name = "vScrollBar")
-            : base(Parent, Name)
+        public VScrollBar(IContainer Parent) : base(Parent)
         {
             this.Size = new Size(17, 60);
             this.ConsiderInAutoScrollPositioning = this.ConsiderInAutoScrollCalculation = false;

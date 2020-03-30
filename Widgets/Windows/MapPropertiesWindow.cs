@@ -20,8 +20,7 @@ namespace MKEditor.Widgets
         ListBox Tilesets;
         ListBox Autotiles;
 
-        public MapPropertiesWindow(Map Map, object Parent, string Name = "mapPropertiesWindow")
-            : base(Parent, Name)
+        public MapPropertiesWindow(Map Map)
         {
             this.OldMap = Map;
             this.Map = Map.Clone() as Map;
@@ -137,7 +136,7 @@ namespace MKEditor.Widgets
 
         public void AddTileset(object sender, EventArgs e)
         {
-            TilesetPickerMap picker = new TilesetPickerMap(this.Map, Window);
+            TilesetPickerMap picker = new TilesetPickerMap(Map);
             picker.OnClosed += delegate (object sender2, EventArgs e2)
             {
                 bool update = false;
@@ -170,7 +169,7 @@ namespace MKEditor.Widgets
 
         public void AddAutotile(object sender, EventArgs e)
         {
-            AutotilePicker picker = new AutotilePicker(this.Map, Window);
+            AutotilePicker picker = new AutotilePicker(Map);
             picker.OnClosed += delegate (object sender2, EventArgs e2)
             {
                 bool update = false;
@@ -410,8 +409,7 @@ namespace MKEditor.Widgets
 
     public class GroupBox : Widget
     {
-        public GroupBox(object Parent, string Name = "groupBox")
-            : base(Parent, Name)
+        public GroupBox(IContainer Parent) : base(Parent)
         {
             Sprites["bg"] = new Sprite(this.Viewport);
         }

@@ -23,8 +23,6 @@ namespace MKEditor.Widgets
         int WindowLayer { get; set; }
 
         void Add(Widget w);
-        Widget Get(string Name);
         Widget Remove(Widget w);
-        string GetName(string Name);
     }
 }

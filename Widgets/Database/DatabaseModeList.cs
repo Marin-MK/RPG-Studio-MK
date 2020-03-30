@@ -12,8 +12,7 @@ namespace MKEditor.Widgets
 
         public int SelectedIndex = -1;
 
-        public DatabaseModeList(object Parent, string Name = "databaseList")
-            : base(Parent, Name)
+        public DatabaseModeList(IContainer Parent) : base(Parent)
         {
             SetBackgroundColor(10, 23, 37);
 

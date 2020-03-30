@@ -16,8 +16,7 @@ namespace MKEditor.Widgets
 
         public TilesetEditor TilesetEditor;
 
-        public DatabaseDataList(object Parent, string Name = "databaseDataList")
-            : base(Parent, Name)
+        public DatabaseDataList(IContainer Parent) : base(Parent)
         {
             Sprites["listbox"] = new Sprite(this.Viewport);
 
@@ -51,7 +50,7 @@ namespace MKEditor.Widgets
             ChangeAmountButton.SetText("Change Amount...");
             ChangeAmountButton.OnClicked += delegate (object sender, EventArgs e)
             {
-                PopupWindow win = new PopupWindow(Window);
+                PopupWindow win = new PopupWindow();
                 win.SetSize(270, 125);
                 win.SetTitle("Set tileset capacity");
                 Label label = new Label(win);

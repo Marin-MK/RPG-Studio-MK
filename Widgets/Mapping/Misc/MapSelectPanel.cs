@@ -10,8 +10,7 @@ namespace MKEditor.Widgets
         public Container allmapcontainer;
         public TreeView mapview;
 
-        public MapSelectPanel(object Parent, string Name = "mapSelectTab")
-            : base(Parent, Name)
+        public MapSelectPanel(IContainer Parent) : base(Parent)
         {
             Label Header = new Label(this);
             Header.SetText("All Maps");
@@ -35,7 +34,9 @@ namespace MKEditor.Widgets
             mapview.SetWidth(212);
             mapview.OnSelectedNodeChanged += delegate (object sender, MouseEventArgs e)
             {
+                DateTime start = DateTime.Now;
                 SetMap(Data.Maps[(int) mapview.SelectedNode.Object], true);
+                Editor.MainWindow.StatusBar.QueueMessage($"Loaded Map #{mapview.SelectedNode.Object} ({(DateTime.Now - start).Milliseconds}ms)", false, 1000);
             };
             mapview.TrailingBlank = 64;
             allmapcontainer.SetContextMenuList(new List<IMenuItem>()
@@ -158,7 +159,7 @@ namespace MKEditor.Widgets
             Map.DevName = "Untitled Map";
             Map.DisplayName = "Untitled Map";
             Map.SetSize(15, 15);
-            MapPropertiesWindow mpw = new MapPropertiesWindow(Map, this.Window);
+            MapPropertiesWindow mpw = new MapPropertiesWindow(Map);
             mpw.OnClosed += delegate (object _, EventArgs ev)
             {
                 if (mpw.UpdateMapViewer)
@@ -193,7 +194,7 @@ namespace MKEditor.Widgets
         private void EditMap(object sender, MouseEventArgs e)
         {
             Map map = Data.Maps[(int) mapview.SelectedNode.Object];
-            MapPropertiesWindow mpw = new MapPropertiesWindow(map, this.Window);
+            MapPropertiesWindow mpw = new MapPropertiesWindow(map);
             mpw.OnClosed += delegate (object _, EventArgs ev)
             {
                 if (mpw.UpdateMapViewer)

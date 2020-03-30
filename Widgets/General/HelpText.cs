@@ -9,8 +9,7 @@ namespace MKEditor.Widgets
         public Font Font { get; protected set; } = Font.Get("Fonts/ProductSans-M", 14);
         public int MaxWidth { get; protected set; } = 300;
 
-        public HelpText(object Parent, string Name = "helpText")
-            : base(Parent, Name)
+        public HelpText(IContainer Parent) : base(Parent)
         {
             Sprites["rect"] = new RectSprite(this.Viewport);
             (Sprites["rect"] as RectSprite).SetOuterColor(55, 187, 255);

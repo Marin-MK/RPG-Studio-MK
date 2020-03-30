@@ -247,7 +247,7 @@ namespace MKEditor
                     }
                     else if (Options[box.Result] == "Pick other") // Pick other tileset
                     {
-                        TilesetPicker picker = new TilesetPicker(null, MainWindow);
+                        TilesetPicker picker = new TilesetPicker(null);
                         picker.OnClosed += delegate (object sender, EventArgs e)
                         {
                             if (picker.ChosenTilesetID > 0) // Chose tileset

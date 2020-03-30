@@ -14,8 +14,7 @@ namespace MKEditor.Widgets
 
         public EventHandler<MouseEventArgs> OnSelectedNodeChanged;
 
-        public TreeView(object Parent, string Name = "treeView")
-            : base(Parent, Name)
+        public TreeView(IContainer Parent) : base(Parent)
         {
             this.Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(1, 21, new Color(28, 50, 73)));
             this.Sprites["hover"] = new Sprite(this.Viewport, new SolidBitmap(2, 21, new Color(55, 187, 255)));

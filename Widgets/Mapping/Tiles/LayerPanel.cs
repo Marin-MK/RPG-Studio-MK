@@ -16,8 +16,7 @@ namespace MKEditor.Widgets
         private Container layercontainer;
         public LayerWidget layerwidget;
 
-        public LayerPanel(object Parent, string Name = "layersTab")
-            : base(Parent, Name)
+        public LayerPanel(IContainer Parent) : base(Parent)
         {
             Label Header = new Label(this);
             Header.SetText("Layers");

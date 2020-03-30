@@ -5,8 +5,7 @@ namespace MKEditor.Widgets
 {
     public class SaveButton : Widget
     {
-        public SaveButton(object Parent, string Name = "saveButton")
-            : base(Parent, Name)
+        public SaveButton(IContainer Parent) : base(Parent)
         {
             Sprites["bg"] = new Sprite(this.Viewport, new Bitmap(70, 28));
             Sprites["bg"].Bitmap.Unlock();

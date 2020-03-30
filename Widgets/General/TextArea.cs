@@ -30,8 +30,7 @@ namespace MKEditor.Widgets
 
         public EventHandler<EventArgs> OnTextChanged;
 
-        public TextArea(object Parent, string Name = "newTextBox")
-            : base(Parent, Name)
+        public TextArea(IContainer Parent) : base(Parent)
         {
             Sprites["text"] = new Sprite(this.Viewport);
             Sprites["text"].Z = 2;

@@ -13,8 +13,7 @@ namespace MKEditor.Widgets
         Container PreviewContainer;
         PictureBox MapBox;
 
-        public MapPicker(List<int> HiddenMapIDs, object Parent, string Name = "mapPicker")
-            : base(Parent, Name)
+        public MapPicker(List<int> HiddenMapIDs)
         {
             SetTitle("Pick Map");
             SetSize(600, 469);

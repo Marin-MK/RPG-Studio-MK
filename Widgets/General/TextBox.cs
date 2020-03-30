@@ -17,8 +17,7 @@ namespace MKEditor.Widgets
 
         public EventHandler<EventArgs> OnTextChanged { get { return TextArea.OnTextChanged; } set { TextArea.OnTextChanged = value; } }
 
-        public TextBox(object Parent, string Name = "textBox")
-            : base(Parent, Name)
+        public TextBox(IContainer Parent) : base(Parent)
         {
             Sprites["box"] = new Sprite(this.Viewport);
             TextArea = new TextArea(this);

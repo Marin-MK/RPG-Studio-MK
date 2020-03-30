@@ -16,8 +16,7 @@ namespace MKEditor.Widgets
 
         public EventHandler<EventArgs> OnSelectionChanged;
 
-        public TabView(object Parent, string Name = "tabView")
-            : base(Parent, Name)
+        public TabView(IContainer Parent) : base(Parent)
         {
             Sprites["bg"] = new Sprite(this.Viewport, new SolidBitmap(HeaderWidth, HeaderHeight, new Color(28, 50, 73)));
             Sprites["header"] = new Sprite(this.Viewport, new SolidBitmap(1, 4, new Color(28, 50, 73)));
@@ -161,8 +160,7 @@ namespace MKEditor.Widgets
 
     public class TabContainer : Container
     {
-        public TabContainer(object Parent, string Name = "tabContainer")
-            : base(Parent, Name)
+        public TabContainer(IContainer Parent) : base(Parent)
         {
 
         }

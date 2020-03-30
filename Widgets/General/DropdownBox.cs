@@ -15,8 +15,7 @@ namespace MKEditor.Widgets
         public EventHandler<EventArgs> OnTextChanged { get { return TextArea.OnTextChanged; } set { TextArea.OnTextChanged = value; } }
         public EventHandler<EventArgs> OnDropDownClicked;
 
-        public DropdownBox(object Parent, string Name = "fileBrowserBox")
-            : base(Parent, Name)
+        public DropdownBox(IContainer Parent) : base(Parent)
         {
             Sprites["bg"] = new Sprite(this.Viewport);
             TextArea = new TextArea(this);

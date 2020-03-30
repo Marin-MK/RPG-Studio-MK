@@ -12,8 +12,7 @@ namespace MKEditor.Widgets
 
         private MouseInputManager ArrowIM;
 
-        public CollapsibleContainer(object Parent, string Name = "collapsibleContainer")
-            : base(Parent, Name)
+        public CollapsibleContainer(IContainer Parent) : base(Parent)
         {
             Sprites["header"] = new Sprite(this.Viewport);
             this.Collapsed = true;

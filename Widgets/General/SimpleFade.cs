@@ -5,8 +5,7 @@ namespace MKEditor.Widgets
 {
     public class SimpleFade : Widget
     {
-        public SimpleFade(object Parent, string Name = "simpleFade")
-            : base(Parent, Name)
+        public SimpleFade(IContainer Parent) : base(Parent)
         {
             Sprites["bg"] = new Sprite(this.Viewport);
 

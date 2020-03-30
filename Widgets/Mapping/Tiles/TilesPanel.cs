@@ -43,8 +43,7 @@ namespace MKEditor.Widgets
         List<CollapsibleContainer> TilesetContainers = new List<CollapsibleContainer>();
         List<PictureBox> TilesetImages = new List<PictureBox>();
 
-        public TilesPanel(object Parent, string Name = "tilesetTab")
-            : base(Parent, Name)
+        public TilesPanel(IContainer Parent) : base(Parent)
         {
             Label Header = new Label(this);
             Header.SetText("Tiles");
@@ -319,7 +318,7 @@ namespace MKEditor.Widgets
                             Autotile autotile = Data.Autotiles[MapData.AutotileIDs[idx]];
                             if (autotile.QuickIDs[TileX - 2] is null)
                             {
-                                AutotilePickerMap atp = new AutotilePickerMap(Window);
+                                AutotilePickerMap atp = new AutotilePickerMap();
                                 atp.SetAutotile(autotile);
                                 atp.OnClosed += delegate (object sender, EventArgs e)
                                 {
@@ -337,7 +336,7 @@ namespace MKEditor.Widgets
                             {
                                 if (TimerExists("double") && !TimerPassed("double") && DoubleClickIndex == idx && DoubleClickX == TileX)
                                 {
-                                    AutotilePickerMap atp = new AutotilePickerMap(Window);
+                                    AutotilePickerMap atp = new AutotilePickerMap();
                                     atp.SetAutotile(autotile);
                                     atp.OnClosed += delegate (object sender, EventArgs e)
                                     {

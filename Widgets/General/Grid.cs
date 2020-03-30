@@ -15,8 +15,7 @@ namespace MKEditor.Widgets
 
         private bool RedrawContainers = true;
 
-        public Grid(object Parent)
-            : base(Parent, "grid")
+        public Grid(IContainer Parent) : base(Parent)
         {
             this.Size = new Size(this.Parent.Size);
         }

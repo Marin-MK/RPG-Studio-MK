@@ -97,7 +97,7 @@ namespace MKEditor
             Utilities.Initialize();
 
             #region Grid
-            MainGridLayout = new Grid(this);
+            MainGridLayout = new Grid(UI);
             MainGridLayout.SetSize(Width, Height);
             /* 0 m m m m m m m m m m m m m
              * 1 t t t t t t t t t t t t t

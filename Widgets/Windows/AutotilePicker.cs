@@ -19,8 +19,7 @@ namespace MKEditor.Widgets
         ListBox Available;
         ListBox InUse;
 
-        public AutotilePicker(Map Map, object Parent, string Name = "autotilePicker")
-            : base(Parent, Name)
+        public AutotilePicker(Map Map)
         {
             SetTitle("Change Autotiles");
             SetSize(506, 498);

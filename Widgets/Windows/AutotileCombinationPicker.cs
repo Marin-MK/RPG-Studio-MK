@@ -12,8 +12,7 @@ namespace MKEditor.Widgets
 
         CursorWidget Cursor;
 
-        public AutotilePickerMap(object Parent, string Name = "autotileTilePicker")
-            : base(Parent, Name)
+        public AutotilePickerMap()
         {
             SetTitle("Individual Tile Combinations");
             SetSize(313, 285);

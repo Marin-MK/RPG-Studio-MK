@@ -7,8 +7,7 @@ namespace MKEditor.Widgets
     {
         public TabView TabControl;
 
-        public Sidebar(object Parent, string Name = "panel")
-            : base(Parent, Name)
+        public Sidebar(IContainer Parent) : base(Parent)
         {
             SetBackgroundColor(10, 23, 37);
             TabControl = new TabView(this);

@@ -44,8 +44,7 @@ namespace MKEditor.Widgets
 
         public SelectionBackground SelectionBackground;
 
-        public MapViewerTiles(object Parent, string Name = "mapViewerTiles")
-            : base(Parent, Name)
+        public MapViewerTiles(IContainer Parent) : base(Parent)
         {
             GridLayout.Columns.Add(new GridSize(288, Unit.Pixels));
             GridLayout.UpdateContainers();

@@ -5,8 +5,7 @@ namespace MKEditor.Widgets
 {
     public class PlayButton : Widget
     {
-        public PlayButton(object Parent, string Name = "playButton")
-            : base(Parent, Name)
+        public PlayButton(IContainer Parent) : base(Parent)
         {
             Sprites["bg"] = new Sprite(this.Viewport, new Bitmap(70, 28));
             Sprites["bg"].Bitmap.Unlock();

@@ -12,8 +12,7 @@ namespace MKEditor.Widgets
         public EventHandler<EventArgs> OnClosed;
         List<Button> Buttons = new List<Button>();
 
-        public PopupWindow(object Parent, string Name = "popupWindow")
-            : base(Parent, Name)
+        public PopupWindow() : base(((MainEditorWindow) Graphics.Windows[0]).UI)
         {
             Window.SetOverlayOpacity(128);
             Sprites["window"] = new RectSprite(this.Viewport, new Size(this.Size.Width - 14, this.Size.Height - 14),

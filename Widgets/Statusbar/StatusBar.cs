@@ -18,8 +18,7 @@ namespace MKEditor.Widgets
         int DrawnWidth = -1;
         int DrawnHeight = -1;
 
-        public StatusBar(object Parent, string Name = "statusBar")
-            : base(Parent, Name)
+        public StatusBar(IContainer Parent) : base(Parent)
         {
             SetBackgroundColor(10, 23, 37);
             Sprites["map"] = new Sprite(this.Viewport);

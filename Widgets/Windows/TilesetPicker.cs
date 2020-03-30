@@ -16,8 +16,7 @@ namespace MKEditor.Widgets
         PictureBox tileset;
         Container scroll;
 
-        public TilesetPicker(Map Map, object Parent, string Name = "tilesetPicker")
-            : base(Parent, Name)
+        public TilesetPicker(Map Map)
         {
             this.Map = Map;
             SetTitle("Add Tileset");

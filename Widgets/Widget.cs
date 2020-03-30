@@ -7,11 +7,6 @@ namespace MKEditor.Widgets
     public class Widget : IDisposable, IContainer
     {
         /// <summary>
-        /// The unique name of the widget by which it is stored and referenced in its parent widget.
-        /// </summary>
-        public string Name;
-
-        /// <summary>
         /// The viewport of this widget. Influenced by position, size, parent position and size, scroll values, etc.
         /// </summary>
         public Viewport Viewport { get; set; }
@@ -364,7 +359,7 @@ namespace MKEditor.Widgets
         /// <param name="Parent">The Parent widget.</param>
         /// <param name="Name">The unique name to give this widget by which to store it.</param>
         /// <param name="Index">Optional index parameter. Used internally for stackpanels.</param>
-        public Widget(object Parent, string Name = "widget", int Index = -1)
+        public Widget(IContainer Parent, int Index = -1)
         {
             // Children of ILayout widgets (Grid, StackPanel) aren't added directly, but rather get a LayoutContainer as a parent and copy their viewport.
             if (Parent is ILayout && !(this is LayoutContainer))
@@ -381,8 +376,6 @@ namespace MKEditor.Widgets
                 this.Viewport.Z = this.ZIndex;
                 if (this.Parent is Widget) this.Viewport.Visible = (this.Parent as Widget).IsVisible() ? this.Visible : false;
             }
-            // Ensures this name is unique by adding an integer at the end.
-            this.Name = this.Parent.GetName(Name);
             // The background sprite responsible for the BackgroundColor.
             this.Sprites["_bg"] = new Sprite(this.Viewport);
             this.Sprites["_bg"].Bitmap = new SolidBitmap(this.Size, this.BackgroundColor);
@@ -465,7 +458,7 @@ namespace MKEditor.Widgets
         /// </summary>
         /// <param name="Parent">The Parent widget.</param>
         /// <param name="Index">Optional index for stackpanel parents.</param>
-        public virtual void SetParent(object Parent, int Index = -1)
+        public virtual void SetParent(IContainer Parent, int Index = -1)
         {
             AssertUndisposed();
             bool New = true;
@@ -476,20 +469,15 @@ namespace MKEditor.Widgets
                 New = false;
             }
             // MainEditorWindow isn't a widget, instead use its UI (UIManager) field.
-            if (Parent is MainEditorWindow)
-            {
-                this.Window = Parent as MainEditorWindow;
-                this.Parent = this.Window.UI;
-            }
-            else if (Parent is UIManager)
+            if (Parent is UIManager)
             {
                 this.Window = (Parent as UIManager).Window;
-                this.Parent = Parent as UIManager;
+                this.Parent = Parent;
             }
             else if (Parent is Widget)
             {
                 this.Window = (Parent as Widget).Window;
-                this.Parent = Parent as IContainer;
+                this.Parent = Parent;
             }
             // Insert widget at specific index for stackpanels
             if (Index != -1 && this.Parent is VStackPanel) (this.Parent as VStackPanel).Insert(Index, this);
@@ -902,30 +890,7 @@ namespace MKEditor.Widgets
         /// </summary>
         public virtual void Add(Widget w)
         {
-            if (this.Widgets.Exists(wgt => wgt.Name == w.Name))
-            {
-                throw new Exception("Already existing widget by the name of '" + w.Name + "'");
-            }
             this.Widgets.Add(w);
-        }
-
-        /// <summary>
-        /// Fetches a child widget by name.
-        /// </summary>
-        public virtual Widget Get(string Name)
-        {
-            foreach (Widget w in this.Widgets)
-            {
-                if (w is LayoutContainer)
-                {
-                    if ((w as LayoutContainer).Widget.Name == Name) return w;
-                }
-                else
-                {
-                    if (w.Name == Name) return w;
-                }
-            }
-            return null;
         }
 
         /// <summary>
@@ -942,20 +907,6 @@ namespace MKEditor.Widgets
                 }
             }
             return null;
-        }
-
-        /// <summary>
-        /// Finds a unique name for the given string by adding an integer to the end.
-        /// </summary>
-        public virtual string GetName(string Name)
-        {
-            int i = 1;
-            while (true)
-            {
-                Widget w = this.Widgets.Find(wgt => wgt.Name == Name + i.ToString());
-                if (w == null) return Name + i.ToString();
-                i++;
-            }
         }
 
         /// <summary>
@@ -1089,7 +1040,7 @@ namespace MKEditor.Widgets
         {
             if (this.Disposed)
             {
-                throw new ObjectDisposedException(this.Name);
+                throw new ObjectDisposedException(this.ToString());
             }
         }
 
@@ -1225,7 +1176,7 @@ namespace MKEditor.Widgets
                 }
                 if (cont)
                 {
-                    ContextMenu cm = new ContextMenu(this.Window);
+                    ContextMenu cm = new ContextMenu(Window.UI);
                     cm.SetItems(ContextMenuList);
                     Size s = cm.Size;
                     int x = e.X;

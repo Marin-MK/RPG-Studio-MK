@@ -39,27 +39,7 @@ namespace MKEditor
 
         public void Add(Widget w)
         {
-            if (this.Widgets.Exists(wgt => wgt.Name == w.Name))
-            {
-                throw new Exception("Already existing widget by the name of '" + w.Name + "'");
-            }
             this.Widgets.Add(w);
-        }
-
-        public virtual Widget Get(string Name)
-        {
-            foreach (Widget w in this.Widgets)
-            {
-                if (w is LayoutContainer)
-                {
-                    if ((w as LayoutContainer).Widget.Name == Name) return w;
-                }
-                else
-                {
-                    if (w.Name == Name) return w;
-                }
-            }
-            return null;
         }
 
         public Widget Remove(Widget w)
@@ -73,17 +53,6 @@ namespace MKEditor
                 }
             }
             return null;
-        }
-
-        public string GetName(string Name)
-        {
-            int i = 1;
-            while (true)
-            {
-                Widget w = this.Widgets.Find(wgt => wgt.Name == Name + i.ToString());
-                if (w == null) return Name + i.ToString();
-                i++;
-            }
         }
 
         public void AddInput(MouseInputManager input)

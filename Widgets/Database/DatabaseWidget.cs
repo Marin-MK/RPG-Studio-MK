@@ -12,8 +12,7 @@ namespace MKEditor.Widgets
         public DatabaseModeList DBModeList;
         public DatabaseDataList DBDataList;
 
-        public DatabaseWidget(object Parent, string Name = "databaseWidget")
-            : base(Parent, Name)
+        public DatabaseWidget(IContainer Parent) : base(Parent)
         {
             Grid MainGrid = new Grid(this);
             MainGrid.SetColumns(

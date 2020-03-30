@@ -22,8 +22,7 @@ namespace MKEditor.Widgets
 
         MultilineLabel NoProjects;
 
-        public HomeScreen(object Parent, string Name = "homeScreen")
-            : base(Parent, Name)
+        public HomeScreen(IContainer Parent) : base(Parent)
         {
             SetBackgroundColor(28, 50, 73);
             Sprites["map"] = new Sprite(this.Viewport);
@@ -392,8 +391,7 @@ namespace MKEditor.Widgets
     {
         public string Text { get; protected set; } = "";
 
-        public HomeScreenButton(object Parent, string Name = "homeScreenButton")
-            : base(Parent, Name)
+        public HomeScreenButton(IContainer Parent) : base(Parent)
         {
             SetSize(237, 213);
             Sprites["bg"] = new Sprite(this.Viewport, "home_button.png");

@@ -15,8 +15,7 @@ namespace MKEditor.Widgets
         public EventHandler<EventArgs> OnSelection;
         public EventHandler<EventArgs> OnDeselection;
 
-        public IconButton(object Parent, string Name = "iconButton")
-            : base(Parent, Name)
+        public IconButton(IContainer Parent) : base(Parent)
         {
             SetSize(24, 28);
             Sprites["icon"] = new Sprite(Viewport);

@@ -12,8 +12,7 @@ namespace MKEditor.Widgets
         public EventHandler<EventArgs> OnTilesetLoaded;
         public EventHandler<PointEventArgs> OnTileClicked;
 
-        public TilesetDisplay(object Parent, string Name = "tilesetDisplay")
-            : base(Parent, Name)
+        public TilesetDisplay(IContainer Parent) : base(Parent)
         {
             SetBackgroundColor(9, 21, 34);
             MainContainer = new Container(this);

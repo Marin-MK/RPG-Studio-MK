@@ -21,8 +21,7 @@ namespace MKEditor.Widgets
         public new int GridColumnStart { get { return Widget.GridColumnStart; } }
         public new int GridColumnEnd { get { return Widget.GridColumnEnd; } }
 
-        public LayoutContainer(object Parent, string Name = "layoutContainer", int Index = -1)
-            : base(Parent, Name, Index)
+        public LayoutContainer(IContainer Parent, int Index = -1) : base(Parent, Index)
         {
 
         }

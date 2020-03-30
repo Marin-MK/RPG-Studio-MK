@@ -5,8 +5,7 @@ namespace MKEditor.Widgets
 {
     public class CursorWidget : Widget
     {
-        public CursorWidget(object Parent, string Name = "cursorWidget")
-            : base(Parent, Name)
+        public CursorWidget(IContainer Parent) : base(Parent)
         {
             Sprites["rect"] = new Sprite(this.Viewport);
 

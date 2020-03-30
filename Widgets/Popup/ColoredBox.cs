@@ -9,8 +9,7 @@ namespace MKEditor.Widgets
         public Color OuterColor { get; protected set; } = Color.ALPHA;
         public int Thickness { get; protected set; } = 1;
 
-        public ColoredBox(object Parent, string Name = "coloredBox")
-            : base(Parent, Name)
+        public ColoredBox(IContainer Parent) : base(Parent)
         {
             Sprites["box"] = new RectSprite(this.Viewport);
         }

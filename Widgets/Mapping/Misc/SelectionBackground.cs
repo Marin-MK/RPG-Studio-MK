@@ -8,8 +8,7 @@ namespace MKEditor.Widgets
         public int Interval = 100;
         public int Offset = 0;
 
-        public SelectionBackground(object Parent, string Name = "selectionBackground")
-            : base(Parent, Name)
+        public SelectionBackground(IContainer Parent) : base(Parent)
         {
             Sprites["left"] = new Sprite(this.Viewport);
             Sprites["top"] = new Sprite(this.Viewport);

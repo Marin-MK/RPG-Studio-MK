@@ -19,8 +19,7 @@ namespace MKEditor.Widgets
         PictureBox TilesetBox;
         Container TilesetContainer;
 
-        public TilesetPickerMap(Map Map, object Parent, string Name = "tilesetPickerMap")
-            : base(Parent, Name)
+        public TilesetPickerMap(Map Map)
         {
             SetTitle("Change Tilesets");
             SetSize(506, 498);

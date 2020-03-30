@@ -23,7 +23,6 @@ namespace MKEditor.Widgets
         public EventHandler<EventArgs> OnButtonPressed;
 
         public MessageBox(string Title, string Message, ButtonType type = ButtonType.OK, IconType IconType = IconType.None, List<string> _buttons = null)
-            : base(Graphics.Windows[0], "messageBox")
         {
             this.ButtonType = type;
             this.Buttons = _buttons;

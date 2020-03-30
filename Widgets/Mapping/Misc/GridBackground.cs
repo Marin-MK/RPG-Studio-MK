@@ -10,8 +10,7 @@ namespace MKEditor.Widgets
         public int OffsetY = 0;
         public string Border;
 
-        public GridBackground(object Parent, string Name = "gridBackground")
-            : base(Parent, Name)
+        public GridBackground(IContainer Parent) : base(Parent)
         {
             Sprites["vert"] = new Sprite(this.Viewport);
             Sprites["hor"] = new Sprite(this.Viewport);

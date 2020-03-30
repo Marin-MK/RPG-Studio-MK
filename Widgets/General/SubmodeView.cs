@@ -17,8 +17,7 @@ namespace MKEditor.Widgets
 
         public EventHandler<EventArgs> OnSelectionChanged;
 
-        public SubmodeView(object Parent, string Name = "tabView")
-            : base(Parent, Name)
+        public SubmodeView(IContainer Parent) : base(Parent)
         {
             Sprites["text"] = new Sprite(this.Viewport);
             Sprites["sel"] = new Sprite(this.Viewport, new SolidBitmap(HeaderWidth, 2, new Color(55, 187, 255)));

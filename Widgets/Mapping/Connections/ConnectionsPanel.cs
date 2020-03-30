@@ -12,8 +12,7 @@ namespace MKEditor.Widgets
 
         public Map MapData;
 
-        public ConnectionsPanel(object Parent, string Name = "connectionsPanel")
-            : base(Parent, Name)
+        public ConnectionsPanel(IContainer Parent) : base(Parent)
         {
             SetBackgroundColor(28, 50, 73);
             Label Header = new Label(this);
@@ -93,18 +92,16 @@ namespace MKEditor.Widgets
             {
                 HiddenMaps.Add(c.MapID);
             }
-            MapPicker picker = new MapPicker(HiddenMaps, Window);
+            MapPicker picker = new MapPicker(HiddenMaps);
             picker.OnClosed += delegate (object sender, EventArgs e)
             {
                 if (picker.ChosenMapID != -1)
                 {
                     Map Map = Data.Maps[picker.ChosenMapID];
-                    // TODO: Determine initial coordinates based on available space
-                    int RelativeX = 3;
-                    int RelativeY = MapData.Height;
+                    int RelativeX = MapData.Width;
+                    int RelativeY = 0;
                     this.MapData.Connections.Add(new MapConnection(Map.ID, RelativeX, RelativeY));
                     Map.Connections.Add(new MapConnection(this.MapData.ID, -RelativeX, -RelativeY));
-                    // TODO: Connect all other maps that are now connected visually but not "logically"
                     Editor.MainWindow.MapWidget.SetMap(MapData);
                 }
             };
@@ -128,8 +125,7 @@ namespace MKEditor.Widgets
         Button PlusButton;
         Map MapData;
 
-        public NewConnectionWidget(object Parent, Map Map, string Name = "newConnectionWidget")
-            : base(Parent, Name)
+        public NewConnectionWidget(IContainer Parent, Map Map) : base(Parent)
         {
             this.MapData = Map;
             PlusButton = new Button(this);

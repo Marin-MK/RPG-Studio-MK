@@ -14,8 +14,7 @@ namespace MKEditor.Widgets
         public Dictionary<int, ColoredBox> Overlays = new Dictionary<int, ColoredBox>();
         public List<Widget> TileOverlaps = new List<Widget>();
 
-        public MapViewerConnections(object Parent, string Name = "mapViewerConnections")
-            : base(Parent, Name)
+        public MapViewerConnections(IContainer Parent) : base(Parent)
         {
             GridLayout.Columns.Add(new GridSize(288, Unit.Pixels));
             GridLayout.UpdateContainers();
@@ -103,8 +102,7 @@ namespace MKEditor.Widgets
     {
         public ColoredBox Outline;
 
-        public MapConnectionWidget(object Parent, string Name = "mapConnectionWidget")
-            : base(Parent, Name)
+        public MapConnectionWidget(IContainer Parent) : base(Parent)
         {
             this.GridBackground.SetVisible(false);
             this.SetDarkOverlay(192);

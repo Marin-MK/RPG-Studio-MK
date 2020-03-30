@@ -24,8 +24,7 @@ namespace MKEditor.Widgets
         private int SliderRX = 0;
         private MouseInputManager SliderIM;
 
-        public HScrollBar(object Parent, string Name = "hScrollBar")
-            : base(Parent, Name)
+        public HScrollBar(IContainer Parent) : base(Parent)
         {
             this.Size = new Size(60, 17);
             this.ConsiderInAutoScrollPositioning = this.ConsiderInAutoScrollCalculation = false;

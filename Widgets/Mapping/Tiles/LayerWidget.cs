@@ -13,8 +13,7 @@ namespace MKEditor.Widgets
         public int HoveringIndex { get; private set; } = -1;
         public TextBox RenameBox;
 
-        public LayerWidget(object Parent, string Name = "layerWidget")
-            : base(Parent, Name)
+        public LayerWidget(IContainer Parent) : base(Parent)
         {
             Sprites["bg"] = new Sprite(this.Viewport);
             Sprites["text"] = new Sprite(this.Viewport);
@@ -58,7 +57,6 @@ namespace MKEditor.Widgets
         public void RenameLayer(int Index)
         {
             RenameBox = new TextBox(this);
-            RenameBox.Name = Index.ToString();
             RenameBox.SetPosition(50, (Layers.Count - Index - 1) * 24 + 1);
             RenameBox.SetSize(Size.Width - 58, 22);
             RenameBox.SetInitialText(Layers[Index].Name);
