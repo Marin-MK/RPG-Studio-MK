@@ -290,35 +290,8 @@ namespace MKEditor.Widgets
             // Resizes Map
             if (Map.Width != OldMap.Width || Map.Height != OldMap.Height)
             {
+                Map.Resize(OldMap.Width, Map.Width, OldMap.Height, Map.Height);
                 UnsavedChanges = true;
-                int diffw = Map.Width - OldMap.Width;
-                bool diffwneg = diffw < 0;
-                diffw = Math.Abs(diffw);
-                int diffh = Map.Height - OldMap.Height;
-                bool diffhneg = diffh < 0;
-                diffh = Math.Abs(diffh);
-                for (int layer = 0; layer < Map.Layers.Count; layer++)
-                {
-                    for (int y = 0; y < OldMap.Height; y++)
-                    {
-                        for (int i = 0; i < diffw; i++)
-                        {
-                            if (diffwneg) Map.Layers[layer].Tiles.RemoveAt(y * Map.Width + Map.Width);
-                            else Map.Layers[layer].Tiles.Insert(y * Map.Width + OldMap.Width, null);
-                        }
-                    }
-                }
-                for (int layer = 0; layer < Map.Layers.Count; layer++)
-                {
-                    if (diffhneg) Map.Layers[layer].Tiles.RemoveRange(Map.Width * Map.Height, diffh * Map.Width);
-                    else
-                    {
-                        for (int i = 0; i < diffh * Map.Width; i++)
-                        {
-                            Map.Layers[layer].Tiles.Add(null);
-                        }
-                    }
-                }
             }
             // Marks name change
             if (Map.DevName != OldMap.DevName || Map.DisplayName != OldMap.DisplayName) UnsavedChanges = true;

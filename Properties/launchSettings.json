@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MKEditor": {
+      "commandName": "Project",
+      "commandLineArgs": "--headless"
+    }
+  }
+}

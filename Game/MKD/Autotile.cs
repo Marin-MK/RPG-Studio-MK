@@ -171,6 +171,7 @@ namespace MKEditor.Game
 
         public void CreateBitmap(bool Redraw = false)
         {
+            if (Program.Headless) return;
             if (this.AutotileBitmap == null || Redraw)
             {
                 if (this.AutotileBitmap != null) this.AutotileBitmap.Dispose();

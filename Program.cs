@@ -15,19 +15,30 @@ namespace MKEditor
         /// If false, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
         /// </summary>
         public static bool ReleaseMode = false;
-
         public static bool Verbose = false;
-
-
+        public static bool Headless = false;
         public static string ProjectFile = null;
         public static bool ThrownError = false;
+
+        static void Output(List<string> args)
+        {
+            foreach (string s in args) Console.WriteLine($">> {s}");
+        }
 
         static void Main(params string[] args)
         {
             // Ensures the working directory becomes the editor directory
             Directory.SetCurrentDirectory(Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName);
-            CommandLineHandler.Init();
-            bool StartProgram = CommandLineHandler.Parse(args.ToList());
+            MainCommandLineHandler cli = new MainCommandLineHandler();
+            bool StartProgram = cli.Parse(args.ToList());
+            cli.Dispose();
+            cli = null;
+            if (Headless)
+            {
+                HeadlessModeManager headless = new HeadlessModeManager();
+                headless.Start();
+                return;
+            }
             if (!StartProgram) return;
             Console.WriteLine("Launching RPG Studio MK.");
             if (!ReleaseMode)

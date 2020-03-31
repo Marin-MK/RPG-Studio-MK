@@ -5,33 +5,87 @@ using System.Text;
 
 namespace MKEditor
 {
-    public static class CommandLineHandler
+    public class CommandLineHandler : IDisposable
     {
-        public static List<Command> Commands = new List<Command>();
-        public static int ArgIndex = 0;
-        public static List<string> CurrentArgs;
-        public static Command CurrentCommand;
-        public static bool? OpenEditor = true;
+        public List<Command> Commands = new List<Command>();
+        public int ArgIndex = 0;
+        public List<string> CurrentArgs;
+        public Command CurrentCommand;
+        public string BaseCommand;
+        public bool Success = false;
 
-        public static void Init()
+        public void Initialize()
         {
-            Register(new Command("--help", Help, "Shows this help menu.", "-h"));
-            Register(new Command("--debug", DebugMode, "Enables debug mode, which means unsafe errors and no unsaved changes confirmation.", "-d"));
-            Register(new Command("--version", Version, "Displays the version.", "-v"));
-            Register(new Command("--generate-project-file", GenProjectFile, "Generates a new project file in <dir>.") { HelpArg = "<dir>" });
-            Register(new Command("--test-sdl", TestSDL, "Tests the SDL libraries by initializing them."));
-            Register(new Command("--test-ruby", TestRuby, "Tests the Ruby libraries."));
-            Register(new Command("--reset-editor", ResetEditor, "Resets all the editor's internal settings and preferences.", "-r"));
-            Register(new Command("--verbose", Verbose, "Provides more debug information in the console."));
             Commands.Sort(delegate (Command c1, Command c2) { return c1.Name.CompareTo(c2.Name); });
         }
 
-        public static void Register(Command c)
+        public static List<List<string>> InputToArgs(string Input)
+        {
+            List<List<string>> Lines = new List<List<string>>();
+            List<string> Args = new List<string>();
+            bool InString = false;
+            string CurrentWord = "";
+            for (int i = 0; i < Input.Length; i++)
+            {
+                char? p = i > 0 ? Input[i - 1] : (char?) null;
+                char c = Input[i];
+                char? n = i < Input.Length - 1 ? Input[i + 1] : (char?) null;
+                if (c == '\\')
+                {
+                    if (n == '"' || n == '\\')
+                    {
+                        CurrentWord += n;
+                        i++;
+                    }
+                    else CurrentWord += c;
+                }
+                else if (c == '"') // Unescaped quote as escaped quote is handled above
+                {
+                    InString = !InString;
+                }
+                else if (c == ' ')
+                {
+                    if (InString) CurrentWord += c;
+                    else if (!string.IsNullOrEmpty(CurrentWord))
+                    {
+                        Args.Add(CurrentWord);
+                        CurrentWord = "";
+                    }
+                }
+                else if (c == '=')
+                {
+                    if (InString) CurrentWord += c;
+                    else
+                    {
+                        Args.Add(CurrentWord);
+                        CurrentWord = "";
+                    }
+                }
+                else if (!InString && (c == '&' && n == '&' || c == ';'))
+                {
+                    if (c != ';') i++;
+                    if (!string.IsNullOrEmpty(CurrentWord)) Args.Add(CurrentWord);
+                    Lines.Add(new List<string>(Args));
+                    Args.Clear();
+                    CurrentWord = "";
+                }
+                else
+                {
+                    CurrentWord += c;
+                }
+            }
+            if (!string.IsNullOrEmpty(CurrentWord)) Args.Add(CurrentWord);
+            Lines.Add(Args);
+            if (InString) throw new CommandLineException("Unterminated string.");
+            return Lines;
+        }
+
+        public void Register(Command c)
         {
             Commands.Add(c);
         }
 
-        public static bool Parse(List<string> Args)
+        public virtual bool Parse(List<string> Args)
         {
             CurrentArgs = new List<string>();
             for (int i = 0; i < Args.Count; i++)
@@ -52,61 +106,56 @@ namespace MKEditor
                 {
                     if (Commands[i].Aliases.Contains(CurrentArgs[ArgIndex]))
                     {
+                        if (Commands[i].Condition != null && !Commands[i].Condition.Invoke()) continue;
                         CurrentCommand = Commands[i];
-                        bool Success = Commands[i].Trigger(CurrentArgs[ArgIndex]);
+                        Success = Commands[i].Trigger();
                         Found = true;
-                        if (!Success) return false;
+                        if (!Success)
+                        {
+                            Finalize();
+                            return false;
+                        }
                     }
                 }
                 if (!Found)
                 {
-                    if (ArgIndex == 0)
-                    {
-                        if (File.Exists(CurrentArgs[0]))
-                        {
-                            if (!CurrentArgs[0].Contains(".mkproj"))
-                            {
-                                Error($"File is not a .mkproj file: {CurrentArgs[0]}");
-                                return false;
-                            }
-                            Program.ProjectFile = CurrentArgs[0];
-                            return true;
-                        }
-                        else
-                        {
-                            Error($"Unknown command or project file: '{CurrentArgs[0]}'");
-                            return false;
-                        }
-                    }
                     CurrentCommand = null;
                     Error($"Unknown command: '{CurrentArgs[ArgIndex]}'");
                     return false;
                 }
             }
-            return OpenEditor != false;
+            return Success = Finalize();
         }
 
-        public static string GetNextArg(bool SkipNextArg)
+        public virtual bool Finalize()
+        {
+            return true;
+        }
+
+        public string GetNextArg(bool SkipNextArg)
         {
             string Arg = ArgIndex < CurrentArgs.Count - 1 ? CurrentArgs[ArgIndex + 1] : null;
             if (SkipNextArg) ArgIndex++;
             return Arg;
         }
 
-        public static bool Error(string Message)
+        public virtual bool Error(string Message)
         {
-            Console.WriteLine($"ERROR: {(CurrentCommand == null ? "" : CurrentCommand.Name + ": ")}{Message}");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write($"ERROR: ");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine(Message);
             return false;
         }
 
-        public static bool Help(string Arg)
+        public virtual bool Help()
         {
-            OpenEditor = false;
             Console.WriteLine($"All known commands:");
             int MaxLength = 4;
             foreach (Command c in Commands)
             {
-                string Str = "    ";
+                if (c.Condition != null && !c.Condition.Invoke()) continue;
+                string Str = "    " + (string.IsNullOrEmpty(BaseCommand) ? "" : BaseCommand);
                 for (int i = 0; i < c.Aliases.Count; i++)
                 {
                     Str += c.Aliases[i];
@@ -115,11 +164,10 @@ namespace MKEditor
                 if (!string.IsNullOrEmpty(c.HelpArg)) Str += " " + c.HelpArg;
                 if (Str.Length > MaxLength) MaxLength = Str.Length;
             }
-            Commands.Insert(0, new Command("...", null, "Opens the home screen of the editor."));
-            Commands.Insert(1, new Command("<projectfile>", null, "Directly opens the project."));
             foreach (Command c in Commands)
             {
-                string Str = "    ";
+                if (c.Condition != null && !c.Condition.Invoke()) continue;
+                string Str = "    " + (string.IsNullOrEmpty(BaseCommand) ? "" : BaseCommand);
                 for (int i = 0; i < c.Aliases.Count; i++)
                 {
                     Str += c.Aliases[i];
@@ -130,117 +178,16 @@ namespace MKEditor
                 Str += " : " + c.HelpDescription;
                 Console.WriteLine(Str);
             }
-            Commands.RemoveRange(0, 2);
-            return true;
+            return false;
         }
 
-        public static bool DebugMode(string Arg)
+        public void Dispose()
         {
-            if (OpenEditor == null) OpenEditor = true;
-            Program.ReleaseMode = false;
-            Console.WriteLine($"Editor will start in debug mode.");
-            return true;
-        }
-
-        public static bool Version(string Arg)
-        {
-            OpenEditor = false;
-            Console.WriteLine($"RPG Studio MK ({Editor.GetVersionString()})");
-            return true;
-        }
-
-        public static bool GenProjectFile(string Arg)
-        {
-            OpenEditor = false;
-            string NextArg = GetNextArg(true);
-            if (string.IsNullOrEmpty(NextArg)) return Error("Expected a folder path to generate a project file.");
-            else
-            {
-                Editor.ProjectSettings = new ProjectSettings();
-                Editor.ProjectFilePath = Path.Combine(NextArg, "project.mkproj");
-                try
-                {
-                    Editor.DumpProjectSettings();
-                    Console.WriteLine($"Created project file at {Editor.ProjectFilePath}.");
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    return Error($"No permission to write in {Path.GetFullPath(NextArg)}.");
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    return Error($"Directory {Path.GetFullPath(NextArg)} not found.");
-                }
-                catch (IOException)
-                {
-                    return Error($"Could not write to {Path.GetFullPath(NextArg)}");
-                }
-            }
-            return true;
-        }
-
-        public static bool TestSDL(string Arg)
-        {
-            OpenEditor = false;
-            SDL2.SDL.SDL_Init(SDL2.SDL.SDL_INIT_EVERYTHING);
-            string Err = SDL2.SDL.SDL_GetError();
-            if (!string.IsNullOrEmpty(Err)) return Error(Err);
-            SDL2.SDL_image.IMG_Init(SDL2.SDL_image.IMG_InitFlags.IMG_INIT_PNG);
-            Err = SDL2.SDL.SDL_GetError();
-            if (!string.IsNullOrEmpty(Err)) return Error(Err);
-            SDL2.SDL_ttf.TTF_Init();
-            Err = SDL2.SDL.SDL_GetError();
-            if (!string.IsNullOrEmpty(Err)) return Error(Err);
-            SDL2.SDL_ttf.TTF_Quit();
-            SDL2.SDL_image.IMG_Quit();
-            SDL2.SDL.SDL_Quit();
-            Console.WriteLine("SDL libraries initialized successfully.");
-            Console.WriteLine($"SDL Version: {SDL2.SDL.SDL_MAJOR_VERSION}.{SDL2.SDL.SDL_MINOR_VERSION}.{SDL2.SDL.SDL_PATCHLEVEL}");
-            Console.WriteLine($"SDL_image Version: {SDL2.SDL_image.SDL_IMAGE_MAJOR_VERSION}.{SDL2.SDL_image.SDL_IMAGE_MINOR_VERSION}.{SDL2.SDL_image.SDL_IMAGE_PATCHLEVEL}");
-            Console.WriteLine($"SDL_ttf Version: {SDL2.SDL_ttf.SDL_TTF_MAJOR_VERSION}.{SDL2.SDL_ttf.SDL_TTF_MINOR_VERSION}.{SDL2.SDL_ttf.SDL_TTF_PATCHLEVEL}");
-            return true;
-        }
-
-        public static bool TestRuby(string Arg)
-        {
-            OpenEditor = false;
-            try
-            {
-                RubyDotNET.Internal.Initialize();
-                string Version = new RubyDotNET.RubyString(RubyDotNET.Internal.Eval("RUBY_VERSION", false)).ToString();
-                Console.WriteLine("Ruby libraries successfully tested.");
-                Console.WriteLine($"Ruby version: {Version}");
-            }
-            catch (Exception ex)
-            {
-                return Error(ex.Message);
-            }
-            return true;
-        }
-
-        public static bool ResetEditor(string Arg)
-        {
-            OpenEditor = false;
-            if (File.Exists("editor.mkd"))
-            {
-                Editor.LoadGeneralSettings();
-                Editor.GeneralSettings = new GeneralSettings();
-                Editor.DumpGeneralSettings();
-                Console.WriteLine($"Successfully reset the editor's settings and preferences.");
-            }
-            else
-            {
-                Console.WriteLine($"No settings and preferences file could be found. The editor is already using default settings.");
-            }
-            return true;
-        }
-
-        public static bool Verbose(string Arg)
-        {
-            if (OpenEditor == null) OpenEditor = true;
-            Program.Verbose = true;
-            Console.WriteLine($"Editor will start in verbose mode.");
-            return true;
+            this.Commands.Clear();
+            this.Commands = null;
+            this.CurrentArgs.Clear();
+            this.CurrentArgs = null;
+            this.CurrentCommand = null;
         }
     }
 
@@ -249,10 +196,12 @@ namespace MKEditor
         public string Name;
         public List<string> Aliases = new List<string>();
         public CommandCallBack Callback;
+        public ConditionCallBack Condition;
         public string HelpDescription;
         public string HelpArg;
 
-        public delegate bool CommandCallBack(string Arg);
+        public delegate bool CommandCallBack();
+        public delegate bool ConditionCallBack();
 
         public Command(string Name, CommandCallBack Callback, string HelpDescription, params string[] Aliases)
         {
@@ -263,9 +212,14 @@ namespace MKEditor
             this.Callback = Callback;
         }
 
-        public bool Trigger(string Arg)
+        public bool Trigger()
         {
-            return Callback(Arg);
+            return Callback();
         }
+    }
+
+    public class CommandLineException : Exception
+    {
+        public CommandLineException(string Message) : base(Message) { }
     }
 }

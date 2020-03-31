@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# CS0465: Introducing a 'Finalize' method can interfere with destructor invocation
+dotnet_diagnostic.CS0465.severity = silent

@@ -484,12 +484,12 @@ namespace MKEditor
         }
 
         /// <summary>
-        /// Adss a Map to the project's map order.
+        /// Adds a Map to the project's map order.
         /// </summary>
         /// <param name="collection">The collection to add the map to.</param>
         /// <param name="ParentID">The parent ID of the map.</param>
         /// <param name="ChildID">The child ID of the map.</param>
-        public static bool AddIDToMap(List<object> collection, int ParentID, int ChildID)
+        public static bool AddIDToMap(List<object> collection, int ParentID, object ChildData, bool first = true)
         {
             for (int i = 0; i < collection.Count; i++)
             {
@@ -497,18 +497,78 @@ namespace MKEditor
                 if (o is bool) continue;
                 else if (o is int)
                 {
-                    if ((int)o == ParentID)
+                    if ((int) o == ParentID)
                     {
-                        if (i == 0) // Already in this parent's node list
-                            collection.Add(ChildID);
+                        if (i == 0 && !first) // Already in this parent's node list
+                            collection.Add(ChildData);
                         else // Create new node list
-                            collection[i] = new List<object>() { ParentID, false, ChildID };
+                            collection[i] = new List<object>() { ParentID, false, ChildData };
                         return true;
                     }
                 }
                 else
                 {
-                    if (AddIDToMap((List<object>)o, ParentID, ChildID)) break;
+                    if (AddIDToMap((List<object>) o, ParentID, ChildData, false)) break;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Removes and returns the object in the map order corresponding with the map ID.
+        /// </summary>
+        /// <param name="MapID">The ID of the map to return.</param>
+        public static object RemoveIDFromOrder(List<object> parentcollection, List<object> collection, int MapID)
+        {
+            for (int i = 0; i < collection.Count; i++)
+            {
+                object o = collection[i];
+                if (o is bool) continue;
+                if (o is List<object>)
+                {
+                    object ret = RemoveIDFromOrder(collection, (List<object>) o, MapID);
+                    if (ret != null) return ret;
+                }
+                else if (i == 0 && (int) o == MapID)
+                {
+                    if (parentcollection == null)
+                    {
+                        collection.RemoveAt(i);
+                        return MapID;
+                    }
+                    parentcollection.Remove(collection);
+                    return collection;
+                }
+                else if ((int) o == MapID)
+                {
+                    if (collection.Count == 3 && i == 2 && parentcollection != null)
+                    {
+                        int Idx = parentcollection.IndexOf(collection);
+                        parentcollection.Remove(collection);
+                        parentcollection.Insert(Idx, collection[0]);
+                    }
+                    collection.RemoveAt(i);
+                    return o;
+                }
+            }
+            return null;
+        }
+
+        public static bool MapIsChildMap(List<object> collection, int ParentID, int ChildID, bool First = true, bool FoundParent = false)
+        {
+            for (int i = (First ? 0 : 2); i < collection.Count; i++)
+            {
+                object o = collection[i];
+                if (o is int)
+                {
+                    if ((int) o == ParentID) return false;
+                    if ((int) o == ChildID) return FoundParent;
+                }
+                else if (o is List<object>)
+                {
+                    List<object> newlist = (List<object>) o;
+                    if ((int) newlist[0] == ParentID) return MapIsChildMap(newlist, ParentID, ChildID, false, true);
+                    else if (MapIsChildMap(newlist, ParentID, ChildID, false, false)) return true;
                 }
             }
             return false;

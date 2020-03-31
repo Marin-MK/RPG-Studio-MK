@@ -90,6 +90,7 @@ namespace MKEditor.Game
 
         public void CreateBitmap(bool Redraw = false)
         {
+            if (Program.Headless) return;
             if (this.TilesetBitmap == null || Redraw)
             {
                 if (this.TilesetBitmap != null) this.TilesetBitmap.Dispose();

@@ -116,6 +116,38 @@ namespace MKEditor.Game
             this.TilesetIDs = new List<int>() { 1 };
         }
 
+        public void Resize(int OldWidth, int NewWidth, int OldHeight, int NewHeight)
+        {
+            int diffw = NewWidth - OldWidth;
+            bool diffwneg = diffw < 0;
+            diffw = Math.Abs(diffw);
+            int diffh = NewHeight - OldHeight;
+            bool diffhneg = diffh < 0;
+            diffh = Math.Abs(diffh);
+            for (int layer = 0; layer < this.Layers.Count; layer++)
+            {
+                for (int y = 0; y < OldHeight; y++)
+                {
+                    for (int i = 0; i < diffw; i++)
+                    {
+                        if (diffwneg) this.Layers[layer].Tiles.RemoveAt(y * NewWidth + NewWidth);
+                        else this.Layers[layer].Tiles.Insert(y * NewWidth + OldWidth, null);
+                    }
+                }
+            }
+            for (int layer = 0; layer < this.Layers.Count; layer++)
+            {
+                if (diffhneg) this.Layers[layer].Tiles.RemoveRange(NewWidth * NewHeight, diffh * NewWidth);
+                else
+                {
+                    for (int i = 0; i < diffh * NewWidth; i++)
+                    {
+                        this.Layers[layer].Tiles.Add(null);
+                    }
+                }
+            }
+        }
+
         public override string ToString()
         {
             return this.DisplayName;
