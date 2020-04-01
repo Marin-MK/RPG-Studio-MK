@@ -164,7 +164,7 @@ namespace MKEditor.Widgets
                 if (n.Nodes.Count > 0 && rx < nodex + 10 && rx > nodex - 10)
                 {
                     n.Collapsed = !n.Collapsed;
-                    int mapid = (n.Object as Game.Map).ID;
+                    int mapid = (int) n.Object;
                     (Parent.Parent as MapSelectPanel).SetCollapsed(Editor.ProjectSettings.MapOrder, mapid, n.Collapsed);
                     if (n.Collapsed && n.ContainsNode(SelectedNode)) SelectedNode = n;
                 }

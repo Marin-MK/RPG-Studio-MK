@@ -37,18 +37,35 @@ namespace MKEditor
 
     public class HeadlessCommandLineHandler : CommandLineHandler
     {
+        public bool CloseProject = false;
+
         public HeadlessCommandLineHandler()
         {
             Register(new Command("help", Help, "Shows this help menu."));
             Register(new Command("open-project", OpenProject, "Opens a project.") { HelpArg = "<project.mkproj>", Condition = delegate () { return !Editor.InProject; } });
-            Register(new Command("close-project", CloseProject, "Closes the current project.") { Condition = delegate() { return Editor.InProject; } });
-            Register(new Command("show-recents", ShowRecents, "Displays a list of all recently opened projects.") { Condition = delegate() { return !Editor.InProject; } });
+            Register(new Command("close-project", CloseProjectFunc, "Closes the current project.") { Condition = delegate () { return Editor.InProject; } });
+            Register(new Command("show-recents", ShowRecents, "Displays a list of all recently opened projects.") { Condition = delegate () { return !Editor.InProject; } });
             Register(new Command("load-recent", LoadRecent, "Loads a recently opened project.") { Condition = delegate () { return !Editor.InProject; } });
             Register(new Command("map", MapMode, "Perform mapping-related operations.") { Condition = delegate () { return Editor.InProject; } });
             Register(new Command("data", DataMode, "Perform data-related operations.") { Condition = delegate () { return Editor.InProject; } });
             Register(new Command("clear", Clear, "Clears the console window.", "cls"));
             Register(new Command("exit", Exit, "Exit headless mode.", "quit"));
+            Register(new Command("save", Save, "Saves all changes to the project.") { Condition = delegate () { return Editor.InProject; } });
             Initialize();
+        }
+
+        public override bool Finalize()
+        {
+            if (CloseProject)
+            {
+                CloseProject = false;
+                if (!CurrentArgs.Contains("-c") && !CurrentArgs.Contains("--confirm"))
+                    return Error($"You are about to close the project. Any unsaved changes will be discarded. Please repeat the command with the '--confirm' flag.");
+                Game.Data.ClearProjectData();
+                Editor.ClearProjectData();
+                Console.WriteLine("Successfully closed the project.");
+            }
+            return true;
         }
 
         public bool Clear()
@@ -115,12 +132,10 @@ namespace MKEditor
             }
         }
 
-        public bool CloseProject()
+        public bool CloseProjectFunc()
         {
-            Game.Data.ClearProjectData();
-            Editor.ClearProjectData();
-            Console.WriteLine("Successfully closed the project.");
-            return true;
+            CloseProject = true;
+            return false;
         }
 
         public bool ShowRecents()
@@ -202,6 +217,20 @@ namespace MKEditor
         {
             Program.Headless = false;
             return false;
+        }
+
+        public bool Save()
+        {
+            try
+            {
+                Editor.SaveProject();
+                Console.WriteLine("The project has been saved successfully.");
+            }
+            catch (Exception ex)
+            {
+                return Error($"Something went wrong while saving the project: {ex.Message}");
+            }
+            return true;
         }
     }
 }
