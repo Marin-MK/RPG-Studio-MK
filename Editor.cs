@@ -64,6 +64,20 @@ namespace MKEditor
         /// </summary>
         public static GeneralSettings GeneralSettings;
 
+        /// <summary>
+        /// Contains the list of recent actions that you made that you can undo.
+        /// </summary>
+        public static List<UndoAction> MapUndoList = new List<UndoAction>();
+
+        /// <summary>
+        /// Contains the list of recent actions that you undid that you can redo.
+        /// </summary>
+        public static List<UndoAction> MapRedoList = new List<UndoAction>();
+
+        /// <summary>
+        /// Whether or not undo/redo is currently usable. Disable while drawing tiles in map editor, for instance.
+        /// </summary>
+        public static bool CanUndo = true;
 
 
         /// <summary>
@@ -86,6 +100,22 @@ namespace MKEditor
         public static OperatingSystem GetOperatingSystem()
         {
             return Environment.OSVersion;
+        }
+
+        /// <summary>
+        /// Undoes the latest change you made.
+        /// </summary>
+        public static void Undo()
+        {
+            if (MapUndoList.Count > 0 && CanUndo) MapUndoList[MapUndoList.Count - 1].RevertTo(false);
+        }
+
+        /// <summary>
+        /// Redoes the latest change that you undid.
+        /// </summary>
+        public static void Redo()
+        {
+            if (MapRedoList.Count > 0 && CanUndo) MapRedoList[MapRedoList.Count - 1].RevertTo(true);
         }
 
         /// <summary>

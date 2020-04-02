@@ -40,6 +40,8 @@ namespace MKEditor.Widgets
             this.WidgetIM.OnMouseDown += MouseDown;
             this.WidgetIM.OnMouseUp += MouseUp;
             this.WidgetIM.OnMouseWheel += MouseWheel;
+            this.OnWidgetSelected += WidgetSelected;
+
             GridLayout = new Grid(this);
             GridLayout.SetColumns(
                 new GridSize(1),

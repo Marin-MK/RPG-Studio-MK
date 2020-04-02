@@ -86,11 +86,13 @@ namespace MKEditor
     {
         public Keycode MainKey;
         public List<Keycode> Modifiers;
+        public string ID;
 
         public Key(Keycode MainKey, params Keycode[] Modifiers)
         {
             this.MainKey = MainKey;
             this.Modifiers = new List<Keycode>(Modifiers);
+            ID = Utilities.Random(0, 999999).ToString();
         }
     }
 }

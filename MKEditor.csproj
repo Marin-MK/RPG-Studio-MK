@@ -7,7 +7,7 @@
     <StartupObject />
     <Authors>Marijn Herrebout</Authors>
     <Product>RPG Studio MK</Product>
-    <Version>0.3.2</Version>
+    <Version>0.3.3</Version>
     <Platforms>x64</Platforms>
     <AssemblyName>RPG Studio MK</AssemblyName>
   </PropertyGroup>

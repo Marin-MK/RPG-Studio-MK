@@ -23,6 +23,7 @@ namespace MKEditor
         public VScrollBar VScrollBar { get { return null; } set { throw new MethodNotSupportedException(this); } }
         public List<Shortcut> Shortcuts { get; protected set; } = new List<Shortcut>();
         public int WindowLayer { get { return 0; } set { throw new MethodNotSupportedException(this); } }
+        public List<Timer> Timers = new List<Timer>();
 
         private Sprite BGSprite;
         private List<MouseInputManager> IMs = new List<MouseInputManager>();
@@ -35,6 +36,8 @@ namespace MKEditor
             BGSprite = new Sprite(this.Viewport);
             BGSprite.Bitmap = new SolidBitmap(this.Size, this.BackgroundColor);
             this.Window.SetActiveWidget(this);
+            this.RegisterShortcut(new Shortcut(null, new Key(Keycode.Z, Keycode.CTRL), delegate (object sender, EventArgs e) { Editor.Undo(); }, true));
+            this.RegisterShortcut(new Shortcut(null, new Key(Keycode.Y, Keycode.CTRL), delegate (object sender, EventArgs e) { Editor.Redo(); }, true));
         }
 
         public void Add(Widget w)
@@ -166,10 +169,34 @@ namespace MKEditor
             {
                 if (!s.GlobalShortcut) continue; // Handled by the Widget it's bound to
 
-                if (s.Widget.WindowLayer < Window.ActiveWidget.WindowLayer || !s.Widget.IsVisible() || s.Widget.Disposed) continue;
+                if (s.Widget != null && (s.Widget.WindowLayer < Window.ActiveWidget.WindowLayer || !s.Widget.IsVisible() || s.Widget.Disposed)) continue;
 
                 Key k = s.Key;
-                bool Valid = Input.Trigger((SDL2.SDL.SDL_Keycode) k.MainKey);
+                bool Valid = false;
+                if (Input.Press((SDL2.SDL.SDL_Keycode) k.MainKey))
+                {
+                    if (TimerPassed($"key_{s.Key.ID}"))
+                    {
+                        ResetTimer($"key_{s.Key.ID}");
+                        Valid = true;
+                    }
+                    else if (TimerPassed($"key_{s.Key.ID}_initial"))
+                    {
+                        SetTimer($"key_{s.Key.ID}", 50);
+                        DestroyTimer($"key_{s.Key.ID}_initial");
+                        Valid = true;
+                    }
+                    else if (!TimerExists($"key_{s.Key.ID}") && !TimerExists($"key_{s.Key.ID}_initial"))
+                    {
+                        SetTimer($"key_{s.Key.ID}_initial", 300);
+                        Valid = true;
+                    }
+                }
+                else
+                {
+                    if (TimerExists($"key_{s.Key.ID}")) DestroyTimer($"key_{s.Key.ID}");
+                    if (TimerExists($"key_{s.Key.ID}_initial")) DestroyTimer($"key_{s.Key.ID}_initial");
+                }
                 if (!Valid) continue;
 
                 // Modifiers
@@ -207,6 +234,54 @@ namespace MKEditor
             {
                 this.Widgets[i].Update();
             }
+        }
+
+        /// <summary>
+        /// Sets a timer.
+        /// </summary>
+        /// <param name="identifier">Unique string identifier.</param>
+        /// <param name="milliseconds">Number of milliseconds to run the timer for.</param>
+        public void SetTimer(string identifier, long milliseconds)
+        {
+            Timers.Add(new Timer(identifier, DateTime.Now.Ticks, 10000 * milliseconds));
+        }
+
+        /// <summary>
+        /// Returns whether or not the specified timer's time has elapsed.
+        /// </summary>
+        public bool TimerPassed(string identifier)
+        {
+            Timer t = Timers.Find(timer => timer.Identifier == identifier);
+            if (t == null) return false;
+            return DateTime.Now.Ticks >= t.StartTime + t.Timespan;
+        }
+
+        /// <summary>
+        /// Returns whether or not the specified timer exists.
+        /// </summary>
+        public bool TimerExists(string identifier)
+        {
+            return Timers.Exists(t => t.Identifier == identifier);
+        }
+
+        /// <summary>
+        /// Destroys the specified timer object.
+        /// </summary>
+        public void DestroyTimer(string identifier)
+        {
+            Timer t = Timers.Find(timer => timer.Identifier == identifier);
+            if (t == null) throw new Exception("No timer by the identifier of '" + identifier + "' was found.");
+            Timers.Remove(t);
+        }
+
+        /// <summary>
+        /// Resets the specified timer with the former timespan.
+        /// </summary>
+        public void ResetTimer(string identifier)
+        {
+            Timer t = Timers.Find(timer => timer.Identifier == identifier);
+            if (t == null) throw new Exception("No timer by the identifier of '" + identifier + "' was found.");
+            t.StartTime = DateTime.Now.Ticks;
         }
 
         public void SetSelectedWidget(Widget w)
@@ -248,6 +323,8 @@ namespace MKEditor
         public void DeregisterShortcut(Shortcut s)
         {
             this.Shortcuts.Remove(s);
+            if (TimerExists($"key_{s.Key.ID}")) DestroyTimer($"key_{s.Key.ID}");
+            if (TimerExists($"key_{s.Key.ID}_initial")) DestroyTimer($"key_{s.Key.ID}_initial");
         }
 
         public void SetBackgroundColor(Color c)

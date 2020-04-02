@@ -9,6 +9,8 @@ namespace MKEditor
 {
     public static class Utilities
     {
+        private static Random RandomObject = new Random();
+
         /// <summary>
         /// Draws the collapsed or uncollapsed icon on a bitmap. Used for tileset boxes.
         /// </summary>
@@ -259,6 +261,11 @@ namespace MKEditor
             }
             bmp.Lock();
             return bmp;
+        }
+
+        public static int Random(int Min, int Max)
+        {
+            return RandomObject.Next(Min, Max);
         }
     }
 }

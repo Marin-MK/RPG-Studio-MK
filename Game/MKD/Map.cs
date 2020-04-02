@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace MKEditor.Game
 {
-    public class Map : ICloneable
+    public class Map
     {
         public int ID;
         public string DevName;
@@ -205,6 +205,14 @@ namespace MKEditor.Game
             this.Name = Name;
         }
 
+        public object Clone()
+        {
+            Layer l = new Layer(this.Name);
+            l.Tiles = new List<TileData>(Tiles);
+            l.Visible = Visible;
+            return l;
+        }
+
         public List<object> ToJSON()
         {
             List<object> Data = new List<object>();
@@ -215,6 +223,8 @@ namespace MKEditor.Game
             }
             return Data;
         }
+
+        
     }
 
     public enum TileType
@@ -268,6 +278,16 @@ namespace MKEditor.Game
         public TileType TileType;
         public int Index;
         public int ID;
+
+
+        public TileData Clone()
+        {
+            TileData o = new TileData();
+            o.TileType = this.TileType;
+            o.Index = this.Index;
+            o.ID = this.ID;
+            return o;
+        }
     }
 
     public enum Passability

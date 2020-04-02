@@ -356,6 +356,11 @@ namespace MKEditor.Widgets
         public override void MouseDown(object sender, MouseEventArgs e)
         {
             base.MouseDown(sender, e);
+            if (e.LeftButton != e.OldLeftButton && MainContainer.WidgetIM.Hovering)
+            {
+                Editor.CanUndo = false;
+                TileGroupUndoAction.Log(Map.ID, LayerPanel.SelectedLayer);
+            }
             if ((e.LeftButton != e.OldLeftButton && e.LeftButton ||
                 e.RightButton != e.OldRightButton && e.RightButton) &&
                 MainContainer.WidgetIM.Hovering)
@@ -365,6 +370,14 @@ namespace MKEditor.Widgets
         public override void MouseUp(object sender, MouseEventArgs e)
         {
             base.MouseUp(sender, e);
+            if (e.LeftButton != e.OldLeftButton)
+            {
+                if (!Editor.CanUndo)
+                {
+                    Editor.CanUndo = true;
+                    TileGroupUndoAction.GetLatest().Ready = true;
+                }
+            }
             if (!e.LeftButton && !e.RightButton) OriginPoint = null;
         }
 

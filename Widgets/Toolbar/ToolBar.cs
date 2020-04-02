@@ -68,10 +68,18 @@ namespace MKEditor.Widgets
             Undo.SetPosition(30, 0);
             Undo.SetIcon(4, 0);
             Undo.Selectable = false;
+            Undo.OnLeftClick += delegate (object sender, MouseEventArgs e)
+            {
+                Editor.Undo();
+            };
             Redo = new IconButton(ActionContainer);
             Redo.SetPosition(54, 0);
             Redo.SetIcon(5, 0);
             Redo.Selectable = false;
+            Redo.OnLeftClick += delegate (object sender, MouseEventArgs e)
+            {
+                Editor.Redo();
+            };
 
             CopyContainer = new Container(this);
             CopyContainer.SetPosition(ActionContainer.Position.X + ActionContainer.Size.Width, 3);

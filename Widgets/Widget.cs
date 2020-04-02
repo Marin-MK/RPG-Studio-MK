@@ -430,6 +430,12 @@ namespace MKEditor.Widgets
             foreach (Shortcut s in this.Shortcuts)
             {
                 if (s.GlobalShortcut) this.Window.UI.DeregisterShortcut(s);
+                else
+                {
+                    if (TimerExists($"key_{s.Key.ID}")) DestroyTimer($"key_{s.Key.ID}");
+                    if (TimerExists($"key_{s.Key.ID}_initial")) DestroyTimer($"key_{s.Key.ID}_initial");
+                }
+                Console.WriteLine($"Deregistered existing shortcut");
             }
             this.Shortcuts = Shortcuts;
             // Register global shortcuts in the UIManager object.
@@ -1113,7 +1119,31 @@ namespace MKEditor.Widgets
                     if (s.GlobalShortcut) continue; // Handled by the UIManager
 
                     Key k = s.Key;
-                    bool Valid = Input.Trigger((SDL2.SDL.SDL_Keycode)k.MainKey);
+                    bool Valid = false;
+                    if (Input.Press((SDL2.SDL.SDL_Keycode) k.MainKey))
+                    {
+                        if (TimerPassed($"key_{s.Key.ID}"))
+                        {
+                            ResetTimer($"key_{s.Key.ID}");
+                            Valid = true;
+                        }
+                        else if (TimerPassed($"key_{s.Key.ID}_initial"))
+                        {
+                            SetTimer($"key_{s.Key.ID}", 50);
+                            DestroyTimer($"key_{s.Key.ID}_initial");
+                            Valid = true;
+                        }
+                        else if (!TimerExists($"key_{s.Key.ID}") && !TimerExists($"key_{s.Key.ID}_initial"))
+                        {
+                            SetTimer($"key_{s.Key.ID}_initial", 300);
+                            Valid = true;
+                        }
+                    }
+                    else
+                    {
+                        if (TimerExists($"key_{s.Key.ID}")) DestroyTimer($"key_{s.Key.ID}");
+                        if (TimerExists($"key_{s.Key.ID}_initial")) DestroyTimer($"key_{s.Key.ID}_initial");
+                    }
                     if (!Valid) continue;
 
                     // Modifiers
