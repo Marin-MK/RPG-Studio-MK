@@ -7,9 +7,8 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Reflection;
 using ODL;
-using RubyDotNET;
+using MKEditor.Game;
 using MKEditor.Widgets;
-using static RubyDotNET.RubyArray;
 
 namespace MKEditor
 {
@@ -79,6 +78,12 @@ namespace MKEditor
         /// </summary>
         public static bool CanUndo = true;
 
+        /// <summary>
+        /// A list of maps that were deleted this sessions. Allows you to restore a map.
+        /// </summary>
+        public static List<Map> DeletedMaps = new List<Map>();
+
+
 
         /// <summary>
         /// Returns the displayed string for the current editor version.
@@ -123,36 +128,36 @@ namespace MKEditor
         /// </summary>
         public static void InitializeRuby()
         {
-            if (Internal.Initialized) return;
-            Internal.Initialize();
+            if (RubyDotNET.Internal.Initialized) return;
+            RubyDotNET.Internal.Initialize();
 
             RubyDotNET.Module mRPG = new RubyDotNET.Module("RPG");
-            Table.CreateClass();
+            RubyDotNET.Table.CreateClass();
             RubyDotNET.Tone.CreateClass();
             RubyDotNET.Color.CreateClass();
-            AudioFile.CreateClass();
-            Map.CreateClass();
-            EventCommand.CreateClass();
-            MoveCommand.CreateClass();
-            MoveRoute.CreateClass();
-            Event.CreateClass();
-            Page.CreateClass();
-            Condition.CreateClass();
-            Graphic.CreateClass();
+            RubyDotNET.AudioFile.CreateClass();
+            RubyDotNET.Map.CreateClass();
+            RubyDotNET.EventCommand.CreateClass();
+            RubyDotNET.MoveCommand.CreateClass();
+            RubyDotNET.MoveRoute.CreateClass();
+            RubyDotNET.Event.CreateClass();
+            RubyDotNET.Page.CreateClass();
+            RubyDotNET.Condition.CreateClass();
+            RubyDotNET.Graphic.CreateClass();
 
-            Animation.CreateClass();
-            Frame.CreateClass();
-            Timing.CreateClass();
+            RubyDotNET.Animation.CreateClass();
+            RubyDotNET.Frame.CreateClass();
+            RubyDotNET.Timing.CreateClass();
 
-            RPGSystem.CreateClass();
-            Words.CreateClass();
-            TestBattler.CreateClass();
+            RubyDotNET.RPGSystem.CreateClass();
+            RubyDotNET.Words.CreateClass();
+            RubyDotNET.TestBattler.CreateClass();
 
-            Tileset.CreateClass();
+            RubyDotNET.Tileset.CreateClass();
 
-            CommonEvent.CreateClass();
+            RubyDotNET.CommonEvent.CreateClass();
 
-            MapInfo.CreateClass();
+            RubyDotNET.MapInfo.CreateClass();
         }
 
         /// <summary>
@@ -172,7 +177,7 @@ namespace MKEditor
             MainWindow.MainGridLayout.Rows[5] = new GridSize(0, Unit.Pixels);
             MainWindow.MainGridLayout.UpdateContainers();
             MainWindow.MainGridLayout.UpdateLayout();
-            Game.Data.ClearProjectData();
+            Data.ClearProjectData();
             ClearProjectData();
         }
 
@@ -214,14 +219,14 @@ namespace MKEditor
                 Names.Add(n);
             }
             // Load MapInfos.rxdata
-            RubyFile infofile = RubyFile.Open(parent + "\\MapInfos.rxdata", "rb");
-            RubyHash infos = RubyMarshal.Load<RubyHash>(infofile);
-            RubyArray keys = infos.Keys;
+            RubyDotNET.RubyFile infofile = RubyDotNET.RubyFile.Open(parent + "\\MapInfos.rxdata", "rb");
+            RubyDotNET.RubyHash infos = RubyDotNET.RubyMarshal.Load<RubyDotNET.RubyHash>(infofile);
+            RubyDotNET.RubyArray keys = infos.Keys;
             infofile.Close();
             infofile.Free();
             // Load Tilesets.rxdata
-            RubyFile tilesetfile = RubyFile.Open(parent + "\\Tilesets.rxdata", "rb");
-            RubyArray tilesets = RubyMarshal.Load<RubyArray>(tilesetfile);
+            RubyDotNET.RubyFile tilesetfile = RubyDotNET.RubyFile.Open(parent + "\\Tilesets.rxdata", "rb");
+            RubyDotNET.RubyArray tilesets = RubyDotNET.RubyMarshal.Load<RubyDotNET.RubyArray>(tilesetfile);
             tilesetfile.Close();
             tilesetfile.Free();
             Action<int> ImportMap = null;
@@ -232,21 +237,21 @@ namespace MKEditor
                 string file = Files[MapIndex];
                 while (file.Contains('\\')) file = file.Replace('\\', '/');
                 // Load Map.rxdata
-                RubyFile f = RubyFile.Open(file, "rb");
-                RubyDotNET.Map map = RubyMarshal.Load<RubyDotNET.Map>(f);
+                RubyDotNET.RubyFile f = RubyDotNET.RubyFile.Open(file, "rb");
+                RubyDotNET.Map map = RubyDotNET.RubyMarshal.Load<RubyDotNET.Map>(f);
                 f.Close();
                 f.Free();
                 int id = Convert.ToInt32(file.Substring(file.Length - 10, 3));
                 // Link Map with its MapInfo
-                MapInfo info = null;
+                RubyDotNET.MapInfo info = null;
                 keys.EachWithIndex((obj, idx) =>
                 {
-                    if (obj.Pointer != Internal.QNil && obj.Convert<RubyInt>().ToInt32() == id)
-                        info = infos[keys[idx]].Convert<MapInfo>();
+                    if (obj.Pointer != RubyDotNET.Internal.QNil && obj.Convert<RubyDotNET.RubyInt>().ToInt32() == id)
+                        info = infos[keys[idx]].Convert<RubyDotNET.MapInfo>();
                 });
                 if (info == null)
                     throw new Exception($"No MapInfo could be found for map ({MapName}).");
-                Game.Map data = new Game.Map();
+                Map data = new Map();
                 data.ID = GetFreeMapID();
                 data.DisplayName = info.Name.ToString();
                 data.DevName = data.DisplayName;
@@ -255,7 +260,7 @@ namespace MKEditor
                 RubyDotNET.Tileset tileset = tilesets[map.TilesetID.ToInt32()].Convert<RubyDotNET.Tileset>();
                 string tilesetname = tileset.Name.ToString();
                 Action cont = null;
-                Game.Tileset existing = Game.Data.Tilesets.Find(t => t != null && (t.Name == tilesetname || t.GraphicName == tilesetname));
+                Tileset existing = Data.Tilesets.Find(t => t != null && (t.Name == tilesetname || t.GraphicName == tilesetname));
                 bool exist = existing != null;
                 string message = $"Importing Map ({MapName})...\n\n";
                 if (exist) message += "The tileset of the imported map has the same name as an already-defined tileset in " +
@@ -328,7 +333,7 @@ namespace MKEditor
                             }
                             else
                             {
-                                string destination = Game.Data.ProjectPath + "/gfx/tilesets/";
+                                string destination = Data.ProjectPath + "/gfx/tilesets/";
                                 string name = tileset.TilesetName.ToString();
                                 if (File.Exists(destination + tileset.TilesetName.ToString() + ".png"))
                                 {
@@ -342,21 +347,21 @@ namespace MKEditor
                                 }
                                 else destination += tileset.TilesetName.ToString() + ".png";
                                 File.Copy(filename, destination);
-                                Game.Tileset set = new Game.Tileset();
+                                Tileset set = new Tileset();
                                 set.Name = tileset.Name.ToString();
                                 set.GraphicName = name;
                                 set.ID = GetFreeTilesetID();
                                 int tilecount = 8 * bmp.Height / 32;
-                                set.Passabilities = new List<Game.Passability>();
+                                set.Passabilities = new List<Passability>();
                                 set.Priorities = new List<int?>();
                                 set.Tags = new List<int?>();
                                 for (int i = 0; i < tilecount; i++)
                                 {
-                                    set.Passabilities.Add(Game.Passability.All);
+                                    set.Passabilities.Add(Passability.All);
                                     set.Priorities.Add(0);
                                     set.Tags.Add(null);
                                 }
-                                Game.Data.Tilesets[set.ID] = set;
+                                Data.Tilesets[set.ID] = set;
                                 set.CreateBitmap();
                                 if (MainWindow.DatabaseWidget != null)
                                 {
@@ -374,27 +379,27 @@ namespace MKEditor
                     if (data.TilesetIDs == null || data.TilesetIDs.Count == 0) // Should not be reachable
                         throw new Exception("Cannot continue without a tileset.");
 
-                    data.Layers = new List<Game.Layer>();
+                    data.Layers = new List<Layer>();
 
                     bool RemovedAutotiles = false;
                     bool RemovedEvents = map.Events.Length > 0;
 
-                    Table Tiles = map.Data.Convert<Table>();
+                    RubyDotNET.Table Tiles = map.Data.Convert<RubyDotNET.Table>();
                     int XSize = Tiles.XSize.ToInt32();
                     int YSize = Tiles.YSize.ToInt32();
                     int ZSize = Tiles.ZSize.ToInt32();
                     for (int z = 0; z < ZSize; z++)
                     {
-                        Game.Layer layer = new Game.Layer($"Layer {z + 1}");
+                        Layer layer = new Layer($"Layer {z + 1}");
                         for (int y = 0; y < YSize; y++)
                         {
                             for (int x = 0; x < XSize; x++)
                             {
                                 int idx = x + y * XSize + z * XSize * YSize;
-                                int tileid = Tiles.Data[idx].Convert<RubyInt>().ToInt32();
+                                int tileid = Tiles.Data[idx].Convert<RubyDotNET.RubyInt>().ToInt32();
                                 if (tileid < 384) RemovedAutotiles = true;
                                 if (tileid == 0) layer.Tiles.Add(null);
-                                else layer.Tiles.Add(new Game.TileData() { TileType = Game.TileType.Tileset, Index = 0, ID = tileid - 384 });
+                                else layer.Tiles.Add(new TileData() { TileType = TileType.Tileset, Index = 0, ID = tileid - 384 });
                             }
                         }
                         data.Layers.Add(layer);
@@ -444,12 +449,70 @@ namespace MKEditor
         }
 
         /// <summary>
+        /// Allows the user to restore a map that was deleted during this session.
+        /// </summary>
+        public static void RestoreMap()
+        {
+            if (DeletedMaps.Count == 0)
+            {
+                new MessageBox("Info", "You have not deleted any maps during this session. If you delete a map, it will be available for restoration here for the rest of the session, or until you clear the deleted map cache.", IconType.Info);
+            }
+            else
+            {
+                MapPicker picker = new MapPicker(DeletedMaps, "Restore a Map", false);
+                picker.OnClosed += delegate (object sender, EventArgs e)
+                {
+                    if (picker.ChosenMap != null)
+                    {
+                        bool NewID = false;
+                        Map Map = picker.ChosenMap;
+                        if (Data.Maps.ContainsKey(picker.ChosenMap.ID)) // ID in use, generate new ID
+                        {
+                            Map.ID = GetFreeMapID();
+                            NewID = true;
+                        }
+                        DeletedMaps.Remove(Map);
+                        AddMap(Map);
+                        if (NewID)
+                        {
+                            new MessageBox("Warning", "The ID of the restored map was already in use. It has been assigned a new ID. This may affect map connections or transfer commands.", IconType.Warning);
+                        }
+                    }
+                };
+            }
+        }
+
+        public static void ClearMapCache()
+        {
+            MessageBox box = new MessageBox("Warning", "You are about to clear the internal deleted map cache. " +
+                "This means that all maps that you have deleted during this session will be permanently lost. " +
+                "Would you like to continue and clear the cache?", ButtonType.YesNoCancel, IconType.Warning);
+            box.OnClosed += delegate (object sender, EventArgs e)
+            {
+                if (box.Result == 0) // Yes
+                {
+                    DeletedMaps.Clear();
+                    new MessageBox("Info", "The deleted map cache has been cleared.", ButtonType.OK, IconType.Info);
+                }
+            };
+        }
+
+        /// <summary>
         /// Starts or stops all map animations.
         /// </summary>
         public static void ToggleMapAnimations()
         {
             GeneralSettings.ShowMapAnimations = !GeneralSettings.ShowMapAnimations;
             MainWindow.MapWidget.SetMapAnimations(GeneralSettings.ShowMapAnimations);
+        }
+
+        /// <summary>
+        /// Shows or hides the map grid overlay.
+        /// </summary>
+        public static void ToggleGrid()
+        {
+            GeneralSettings.ShowGrid = !GeneralSettings.ShowGrid;
+            MainWindow.MapWidget.SetGridVisibility(GeneralSettings.ShowGrid);
         }
 
         /// <summary>
@@ -461,7 +524,7 @@ namespace MKEditor
             int i = 1;
             while (true)
             {
-                if (!Game.Data.Maps.ContainsKey(i))
+                if (!Data.Maps.ContainsKey(i))
                 {
                     return i;
                 }
@@ -478,7 +541,7 @@ namespace MKEditor
             int i = 1;
             while (true)
             {
-                if (Game.Data.Tilesets[i] == null)
+                if (Data.Tilesets[i] == null)
                 {
                     return i;
                 }
@@ -491,9 +554,9 @@ namespace MKEditor
         /// </summary>
         /// <param name="Map">The new Map object.</param>
         /// <param name="ParentID">The ID of the parent map.</param>
-        public static void AddMap(Game.Map Map, int ParentID = 0)
+        public static void AddMap(Map Map, int ParentID = 0)
         {
-            Game.Data.Maps.Add(Map.ID, Map);
+            Data.Maps.Add(Map.ID, Map);
             if (ParentID != 0) AddIDToMap(ProjectSettings.MapOrder, ParentID, Map.ID);
             else ProjectSettings.MapOrder.Add(Map.ID);
             TreeNode node = new TreeNode() { Name = Map.DevName, Object = Map.ID };
@@ -641,7 +704,7 @@ namespace MKEditor
                 else
                 {
                     CloseProject();
-                    Game.Data.SetProjectPath(result);
+                    Data.SetProjectPath(result);
                     MainWindow.CreateEditor();
                     MakeRecentProject();
                 }
@@ -661,10 +724,10 @@ namespace MKEditor
             }
             DateTime t1 = DateTime.Now;
             DumpProjectSettings();
-            Game.Data.SaveTilesets();
-            Game.Data.SaveAutotiles();
-            Game.Data.SaveMaps();
-            Game.Data.SaveSpecies();
+            Data.SaveTilesets();
+            Data.SaveAutotiles();
+            Data.SaveMaps();
+            Data.SaveSpecies();
             UnsavedChanges = false;
             if (MainWindow != null)
             {
@@ -679,7 +742,7 @@ namespace MKEditor
         public static void StartGame()
         {
             MainWindow.StatusBar.QueueMessage("Game starting...", true);
-            Process.Start(Game.Data.ProjectPath + "/mkxp.exe");
+            Process.Start(Data.ProjectPath + "/mkxp.exe");
         }
 
         /// <summary>
@@ -687,7 +750,7 @@ namespace MKEditor
         /// </summary>
         public static void OpenGameFolder()
         {
-            Utilities.OpenFolder(Game.Data.ProjectPath);
+            Utilities.OpenFolder(Data.ProjectPath);
         }
 
         /// <summary>
@@ -727,13 +790,13 @@ namespace MKEditor
                 GenerateMapOrder(Nodes);
 
                 int mapid = ProjectSettings.LastMapID;
-                if (!Game.Data.Maps.ContainsKey(mapid))
+                if (!Data.Maps.ContainsKey(mapid))
                 {
                     if (ProjectSettings.MapOrder[0] is List<object>) mapid = (int)((List<object>) ProjectSettings.MapOrder[0])[0];
                     else mapid = (int) ProjectSettings.MapOrder[0];
                 }
                 int lastlayer = ProjectSettings.LastLayer;
-                MainWindow.MapWidget.MapSelectPanel.SetMap(Game.Data.Maps[mapid]);
+                MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps[mapid]);
 
                 MainWindow.MapWidget.SetSelectedLayer(lastlayer);
                 MainWindow.MapWidget.SetZoomFactor(ProjectSettings.LastZoomFactor);
@@ -890,6 +953,7 @@ namespace MKEditor
             ProjectSettings = null;
             MapUndoList.Clear();
             MapRedoList.Clear();
+            DeletedMaps.Clear();
             UnsavedChanges = false;
         }
     }
@@ -966,6 +1030,10 @@ namespace MKEditor
         /// Whether to play map animations.
         /// </summary>
         public bool ShowMapAnimations = true;
+        /// <summary>
+        /// Whether to show the map grid overlay.
+        /// </summary>
+        public bool ShowGrid = true;
     }
 
     public enum Platform

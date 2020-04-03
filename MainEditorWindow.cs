@@ -155,12 +155,6 @@ namespace MKEditor
                             OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.SaveProject(); },
                             IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; }
                         },
-                        new MenuItem("Import Maps")
-                        {
-                            HelpText = "Import Maps made with RPG Maker XP.",
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.ImportMaps(); },
-                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; }
-                        },
                         new MenuSeparator(),
                         new MenuItem("Close Project")
                         {
@@ -175,6 +169,30 @@ namespace MKEditor
                         }
                     }
                 },
+                new MenuItem("Edit")
+                {
+                    Items = new List<IMenuItem>()
+                    {
+                        new MenuItem("Import Maps")
+                        {
+                            HelpText = "Import Maps made with RPG Maker XP.",
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.ImportMaps(); },
+                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; }
+                        },
+                        new MenuItem("Restore Map")
+                        {
+                            HelpText = "Restore a map that was deleted during this session.",
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.RestoreMap(); },
+                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; }
+                        },
+                        new MenuItem("Clear deleted map cache")
+                        {
+                            HelpText = "Clears the internal cache of restore-able deleted maps.",
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.ClearMapCache(); },
+                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject && Editor.DeletedMaps.Count > 0; }
+                        }
+                    }
+                },
                 new MenuItem("View")
                 {
                     Items = new List<IMenuItem>()
@@ -184,6 +202,12 @@ namespace MKEditor
                             HelpText = "Toggles the animation of autotiles, fogs and panoramas.",
                             IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; },
                             OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.ToggleMapAnimations(); },
+                        },
+                        new MenuItem("Toggle Grid")
+                        {
+                            HelpText = "Toggles the visibility of the grid overlay while mapping.",
+                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; },
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.ToggleGrid(); }
                         }
                     }
                 },

@@ -225,10 +225,12 @@ namespace MKEditor.Widgets
                         {
                             mapview.Nodes.RemoveAt(i);
                             mapview.SetSelectedNode(i >= mapview.Nodes.Count ? mapview.Nodes[i - 1] : mapview.Nodes[i]);
+                            break;
                         }
                         else if (mapview.Nodes[i].ContainsNode(mapview.HoveringNode))
                         {
                             mapview.SetSelectedNode(mapview.Nodes[i].RemoveNode(mapview.HoveringNode));
+                            break;
                         }
                     }
                     RemoveID(Editor.ProjectSettings.MapOrder, (int) mapview.HoveringNode.Object, true);
@@ -243,7 +245,10 @@ namespace MKEditor.Widgets
             {
                 DeleteMapRecursively(node.Nodes[i]);
             }
-            Data.Maps.Remove((int) node.Object);
+            int MapID = (int) node.Object;
+            Map Map = Data.Maps[MapID];
+            Data.Maps.Remove(MapID);
+            Editor.DeletedMaps.Add(Map);
         }
 
         private void RemoveID(List<object> collection, int ID, bool first = false)

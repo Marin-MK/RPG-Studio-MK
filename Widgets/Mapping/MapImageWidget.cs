@@ -26,6 +26,7 @@ namespace MKEditor.Widgets
             SetBackgroundColor(73, 89, 109);
             this.MapViewer = this.Parent.Parent.Parent.Parent as MapViewerBase;
             this.GridBackground = new GridBackground(this);
+            this.GridBackground.SetVisible(Editor.GeneralSettings.ShowGrid);
             Sprites["dark"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(0, 0, 0, 0)));
             Sprites["dark"].Z = 999999;
             SetTimer("frame", (long) Math.Round(1000 / 60d)); // 60 FPS
@@ -159,7 +160,6 @@ namespace MKEditor.Widgets
 
         public Bitmap GetLayerBitmap(int Layer)
         {
-            AnimatedAutotiles.Clear();
             LargeBitmap bmp = new LargeBitmap(MapData.Width * 32, MapData.Height * 32, 16 * 32, 16 * 32); // 16x16 tile chunks
             bmp.Unlock();
             // Iterate through all vertical tiles
@@ -242,6 +242,11 @@ namespace MKEditor.Widgets
             }
         }
 
+        public void SetGridVisibility(bool Visible)
+        {
+            GridBackground.SetVisible(Visible);
+        }
+
         public virtual void UpdateSize()
         {
             int Width = (int) Math.Round(MapData.Width * 32 * ZoomFactor);
@@ -277,6 +282,7 @@ namespace MKEditor.Widgets
                 this.Sprites[i.ToString()].Visible = MapData.Layers[i].Visible;
             }
             List<Bitmap> bmps = new List<Bitmap>();
+            AnimatedAutotiles.Clear();
             for (int i = 0; i < MapData.Layers.Count; i++)
             {
                 bmps.Add(GetLayerBitmap(i));

@@ -105,7 +105,7 @@ namespace MKEditor.Widgets
             }
             else // Deselect Selections submode
             {
-                MapImageWidget.GridBackground.SetVisible(true);
+                MapImageWidget.GridBackground.SetVisible(Editor.GeneralSettings.ShowGrid);
             }
             MapImageWidget.MapViewer = ActiveMapViewer;
             OldSelectedIndex = Submodes.SelectedIndex;
@@ -160,6 +160,11 @@ namespace MKEditor.Widgets
         public void SetMapAnimations(bool Animations)
         {
             MapImageWidget.SetMapAnimations(Animations);
+        }
+
+        public void SetGridVisibility(bool Visible)
+        {
+            MapImageWidget.SetGridVisibility(Visible);
         }
 
         public void SetHorizontalScroll(double Value)

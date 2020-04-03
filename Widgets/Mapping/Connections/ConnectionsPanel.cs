@@ -95,13 +95,12 @@ namespace MKEditor.Widgets
             MapPicker picker = new MapPicker(HiddenMaps);
             picker.OnClosed += delegate (object sender, EventArgs e)
             {
-                if (picker.ChosenMapID != -1)
+                if (picker.ChosenMap != null)
                 {
-                    Map Map = Data.Maps[picker.ChosenMapID];
                     int RelativeX = MapData.Width;
                     int RelativeY = 0;
-                    this.MapData.Connections.Add(new MapConnection(Map.ID, RelativeX, RelativeY));
-                    Map.Connections.Add(new MapConnection(this.MapData.ID, -RelativeX, -RelativeY));
+                    this.MapData.Connections.Add(new MapConnection(picker.ChosenMap.ID, RelativeX, RelativeY));
+                    picker.ChosenMap.Connections.Add(new MapConnection(this.MapData.ID, -RelativeX, -RelativeY));
                     Editor.MainWindow.MapWidget.SetMap(MapData);
                 }
             };

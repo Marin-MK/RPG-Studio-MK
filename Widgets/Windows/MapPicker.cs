@@ -7,15 +7,33 @@ namespace MKEditor.Widgets
 {
     public class MapPicker : PopupWindow
     {
-        public int ChosenMapID;
+        public Map ChosenMap;
 
         ListBox Maps;
         Container PreviewContainer;
         PictureBox MapBox;
 
-        public MapPicker(List<int> HiddenMapIDs)
+        public List<Map> MapList;
+
+        public MapPicker(List<int> HiddenMapIDs, string Title = "Pick a Map", bool ShowIDs = true)
         {
-            SetTitle("Pick Map");
+            this.MapList = new List<Map>();
+            foreach (KeyValuePair<int, Map> kvp in Data.Maps)
+            {
+                if (!HiddenMapIDs.Contains(kvp.Key)) this.MapList.Add(kvp.Value);
+            }
+            Initialize(Title, ShowIDs);
+        }
+
+        public MapPicker(List<Map> Maps, string Title = "Pick a Map", bool ShowIDs = true)
+        {
+            this.MapList = Maps;
+            Initialize(Title, ShowIDs);
+        }
+
+        protected void Initialize(string Title, bool ShowIDs)
+        {
+            SetTitle(Title);
             SetSize(600, 469);
             Center();
 
@@ -27,11 +45,10 @@ namespace MKEditor.Widgets
             Maps.SetPosition(25, 44);
             Maps.SetSize(151, 380);
             List<ListItem> items = new List<ListItem>();
-            foreach (int ID in Data.Maps.Keys)
+            foreach (Map Map in this.MapList)
             {
-                if (HiddenMapIDs.Contains(ID)) continue;
-                Map map = Data.Maps[ID];
-                items.Add(new ListItem($"{Utilities.Digits(ID, 3)}: {map.DevName}", map));
+                string Name = ShowIDs ? $"{Utilities.Digits(Map.ID, 3)}: {Map.DevName}" : Map.DevName;
+                items.Add(new ListItem(Name, Map));
             }
             Maps.SetItems(items);
             Maps.OnSelectionChanged += delegate (object sender, EventArgs e)
@@ -67,7 +84,6 @@ namespace MKEditor.Widgets
         {
             Map data = null;
             if (Maps.SelectedIndex >= 0) data = Maps.Items[Maps.SelectedIndex].Object as Map;
-            MapBox.Sprite.Bitmap = null;
             MapBox.SetSize(1, 1);
             if (data == null) return;
             if (MapBox.Sprite.Bitmap != null) MapBox.Sprite.Bitmap.Dispose();
@@ -89,18 +105,18 @@ namespace MKEditor.Widgets
             if (Maps.SelectedIndex >= 0)
             {
                 Map map = (Maps.Items[Maps.SelectedIndex].Object as Map);
-                this.ChosenMapID = map.ID;
+                this.ChosenMap = map;
             }
             else
             {
-                this.ChosenMapID = -1;
+                this.ChosenMap = null;
             }
             Close();
         }
 
         public void Cancel(object sender, EventArgs e)
         {
-            this.ChosenMapID = -1;
+            this.ChosenMap = null;
             Close();
         }
     }
