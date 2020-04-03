@@ -44,7 +44,7 @@ namespace MKEditor.Widgets
             {
                 new MenuItem("New Layer")
                 {
-                    OnLeftClick = NewLayer
+                    OnLeftClick = NewLayerEvent
                 },
                 new MenuItem("Rename Layer")
                 {
@@ -59,26 +59,26 @@ namespace MKEditor.Widgets
                 },
                 new MenuItem("Move Layer Up")
                 {
-                    OnLeftClick = MoveLayerUp,
+                    OnLeftClick = MoveLayerUpEvent,
                     IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = SelectedLayer < Map.Layers.Count - 1 && layerwidget.HoveringIndex >= 0; }
                 },
                 new MenuItem("Move Layer Down")
                 {
-                    OnLeftClick = MoveLayerDown,
+                    OnLeftClick = MoveLayerDownEvent,
                     IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = SelectedLayer > 0 && layerwidget.HoveringIndex >= 0; }
                 },
                 new MenuSeparator(),
                 new MenuItem("Delete Layer")
                 {
                     Shortcut = "Del",
-                    OnLeftClick = DeleteLayer,
+                    OnLeftClick = DeleteLayerEvent,
                     IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Map.Layers.Count > 1 && layerwidget.HoveringIndex >= 0; }
                 }
             });
 
             RegisterShortcuts(new List<Shortcut>()
             {
-                new Shortcut(this, new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayer)),
+                new Shortcut(this, new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayerEvent)),
                 new Shortcut(this, new Key(Keycode.F2), new EventHandler<EventArgs>(RenameLayer))
             });
 
@@ -90,17 +90,21 @@ namespace MKEditor.Widgets
             layerwidget.SetSelectedLayer(LayerIndex);
         }
 
-        public void NewLayer(object sender, EventArgs e)
+        private void NewLayerEvent(object sender, EventArgs e)
         {
-            int selected = SelectedLayer;
-            Editor.UnsavedChanges = true;
-            if (layerwidget.HoveringIndex == -1) // Add to top (highest layer) if not hovering over a layer
-                selected = -1;
             Layer layer = new Layer($"New Layer");
             layer.Tiles = new List<TileData>(Map.Width * Map.Height);
             for (int i = 0; i < Map.Width * Map.Height; i++) layer.Tiles.Add(null);
-            MapViewer.CreateNewLayer(selected + 1, layer);
-            int oldselected = selected;
+            NewLayer(layerwidget.HoveringIndex, layer);
+        }
+
+        public void NewLayer(int Index, Layer LayerData, bool IsUndoAction = false)
+        {
+            Editor.UnsavedChanges = true;
+            if (Index == -1) // Add to top (highest layer) if not hovering over a layer
+                Index = -1;
+            MapViewer.CreateNewLayer(Index + 1, LayerData, IsUndoAction);
+            int oldselected = Index;
             CreateLayers(); // Updates list to reflect new layer
             layerwidget.SetSelectedLayer(oldselected + 1); // Update selected layer
         }
@@ -115,33 +119,48 @@ namespace MKEditor.Widgets
             layerwidget.SetLayerVisible(SelectedLayer, !Map.Layers[SelectedLayer].Visible);
         }
 
-        public void MoveLayerUp(object sender, EventArgs e)
+        private void MoveLayerUpEvent(object sender, EventArgs e)
         {
-            if (SelectedLayer >= Map.Layers.Count - 1) return;
-            Editor.UnsavedChanges = true;
-            MapViewer.SwapLayers(SelectedLayer + 1, SelectedLayer);
-            int oldselected = SelectedLayer;
-            CreateLayers();
-            layerwidget.SetSelectedLayer(oldselected + 1);
+            MoveLayerUp(SelectedLayer);
         }
 
-        public void MoveLayerDown(object sender, EventArgs e)
+        public void MoveLayerUp(int LayerIndex, bool IsUndoAction = false)
         {
-            if (SelectedLayer <= 0) return;
+            if (LayerIndex >= Map.Layers.Count - 1) return;
             Editor.UnsavedChanges = true;
-            MapViewer.SwapLayers(SelectedLayer - 1, SelectedLayer);
-            int oldselected = SelectedLayer;
+            MapViewer.SwapLayers(LayerIndex + 1, LayerIndex);
             CreateLayers();
-            layerwidget.SetSelectedLayer(oldselected - 1);
+            layerwidget.SetSelectedLayer(LayerIndex + 1);
+            if (!IsUndoAction) LayerSwapUndoAction.Create(Editor.MainWindow.MapWidget.Map.ID, LayerIndex, true);
         }
 
-        public void DeleteLayer(object sender, EventArgs e)
+        private void MoveLayerDownEvent(object sender, EventArgs e)
+        {
+            MoveLayerDown(SelectedLayer);
+        }
+
+        public void MoveLayerDown(int LayerIndex, bool IsUndoAction = false)
+        {
+            if (LayerIndex <= 0) return;
+            Editor.UnsavedChanges = true;
+            MapViewer.SwapLayers(LayerIndex - 1, LayerIndex);
+            CreateLayers();
+            layerwidget.SetSelectedLayer(LayerIndex - 1);
+            if (!IsUndoAction) LayerSwapUndoAction.Create(Editor.MainWindow.MapWidget.Map.ID, LayerIndex, false);
+        }
+
+        private void DeleteLayerEvent(object sender, EventArgs e)
+        {
+            DeleteLayer(SelectedLayer);
+        }
+
+        public void DeleteLayer(int Index, bool IsUndoAction = false)
         {
             if (Map.Layers.Count > 1)
             {
                 Editor.UnsavedChanges = true;
-                MapViewer.DeleteLayer(SelectedLayer);
-                int oldselected = SelectedLayer - 1;
+                MapViewer.DeleteLayer(Index, IsUndoAction);
+                int oldselected = Index - 1;
                 CreateLayers();
                 if (oldselected < 0) oldselected = 0;
                 layerwidget.UpdateLayers();

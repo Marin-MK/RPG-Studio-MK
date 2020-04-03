@@ -4,9 +4,9 @@ using MKEditor.Game;
 
 namespace MKEditor
 {
-    public class UndoAction
+    public class BaseUndoAction
     {
-        public UndoAction()
+        public BaseUndoAction()
         {
             Editor.MapUndoList.Add(this);
             Editor.MapRedoList.Clear();
@@ -21,7 +21,7 @@ namespace MKEditor
                 int Index = Editor.MapUndoList.IndexOf(this);
                 for (int i = Editor.MapUndoList.Count - 1; i >= Index; i--)
                 {
-                    UndoAction action = Editor.MapUndoList[i];
+                    BaseUndoAction action = Editor.MapUndoList[i];
                     action.Trigger(IsRedo);
                     Editor.MapRedoList.Add(action);
                     Editor.MapUndoList.RemoveAt(i);
@@ -32,7 +32,7 @@ namespace MKEditor
                 int Index = Editor.MapRedoList.IndexOf(this);
                 for (int i = Editor.MapRedoList.Count - 1; i >= Index; i--)
                 {
-                    UndoAction action = Editor.MapRedoList[i];
+                    BaseUndoAction action = Editor.MapRedoList[i];
                     action.Trigger(IsRedo);
                     Editor.MapUndoList.Add(action);
                     Editor.MapRedoList.RemoveAt(i);

@@ -60,7 +60,7 @@ namespace MKEditor.Widgets
             Sprites[layerindex.ToString()].Visible = Visible;
         }
 
-        public void CreateNewLayer(int Index, Layer LayerData)
+        public void CreateNewLayer(int Index, Layer LayerData, bool IsUndoAction = false)
         {
             for (int i = MapData.Layers.Count - 1; i >= Index; i--)
             {
@@ -72,12 +72,13 @@ namespace MKEditor.Widgets
             MapData.Layers.Insert(Index, LayerData);
             string key = Index.ToString();
             Sprites[key] = new Sprite(this.Viewport);
-            Sprites[key].Bitmap = new LargeBitmap(MapData.Width * 32, MapData.Height * 32, 16 * 32, 16 * 32);
+            Sprites[key].Bitmap = GetLayerBitmap(Index);
             Sprites[key].Z = Index;
             Sprites[key].ZoomX = Sprites[key].ZoomY = this.ZoomFactor;
+            if (!IsUndoAction) LayerChangeUndoAction.Create(MapID, Index, MapData.Layers[Index], false);
         }
 
-        public void DeleteLayer(int Index)
+        public void DeleteLayer(int Index, bool IsUndoAction = false)
         {
             this.Sprites[Index.ToString()].Dispose();
             this.Sprites.Remove(Index.ToString());
@@ -98,6 +99,7 @@ namespace MKEditor.Widgets
                 this.Sprites.Remove(i.ToString());
                 this.Sprites.Add((i - 1).ToString(), s);
             }
+            if (!IsUndoAction) LayerChangeUndoAction.Create(MapID, Index, MapData.Layers[Index], true);
             MapData.Layers.RemoveAt(Index);
         }
 
@@ -155,73 +157,64 @@ namespace MKEditor.Widgets
             MapData.Layers[Index2] = l1;
         }
 
-        public List<Bitmap> GetBitmaps(int MapID, int SX, int SY, int Width, int Height)
+        public Bitmap GetLayerBitmap(int Layer)
         {
             AnimatedAutotiles.Clear();
-            List<Bitmap> bmps = new List<Bitmap>();
-            Map m = Data.Maps[MapID];
-            if (SX < 0) SX = 0;
-            if (SY < 0) SY = 0;
-            if (SX + Width > m.Width) Width = m.Width - SX;
-            if (SY + Height > m.Height) Height = m.Height - SY;
-            for (int layer = 0; layer < m.Layers.Count; layer++)
+            LargeBitmap bmp = new LargeBitmap(MapData.Width * 32, MapData.Height * 32, 16 * 32, 16 * 32); // 16x16 tile chunks
+            bmp.Unlock();
+            // Iterate through all vertical tiles
+            for (int y = 0; y < MapData.Height; y++)
             {
-                bmps.Add(new LargeBitmap(Width * 32, Height * 32, 16 * 32, 16 * 32)); // 16x16 tile chunks
-                bmps[layer].Unlock();
-                // Iterate through all vertical tiles
-                for (int y = SY; y < SY + Height; y++)
+                // Iterate through all horizontal tiles
+                for (int x = 0; x < MapData.Width; x++)
                 {
-                    // Iterate through all horizontal tiles
-                    for (int x = SX; x < SX + Width; x++)
+                    // Draw each individual tile
+                    if (MapData.Layers[Layer] == null || MapData.Layers[Layer].Tiles == null ||
+                        y * MapData.Width + x >= MapData.Layers[Layer].Tiles.Count ||
+                        MapData.Layers[Layer].Tiles[y * MapData.Width + x] == null) continue;
+                    int mapx = x * 32;
+                    int mapy = y * 32;
+                    int tile_id = MapData.Layers[Layer].Tiles[y * MapData.Width + x].ID;
+                    if (MapData.Layers[Layer].Tiles[y * MapData.Width + x].TileType == TileType.Tileset)
                     {
-                        // Draw each individual tile
-                        int mapx = (x - SX) * 32;
-                        int mapy = (y - SY) * 32;
-                        if (m.Layers[layer] == null || m.Layers[layer].Tiles == null ||
-                            y * m.Width + x >= m.Layers[layer].Tiles.Count ||
-                            m.Layers[layer].Tiles[y * m.Width + x] == null) continue;
-                        int tile_id = m.Layers[layer].Tiles[y * m.Width + x].ID;
-                        if (m.Layers[layer].Tiles[y * m.Width + x].TileType == TileType.Tileset)
+                        int tileset_index = MapData.Layers[Layer].Tiles[y * MapData.Width + x].Index;
+                        int tileset_id = MapData.TilesetIDs[tileset_index];
+                        Bitmap tilesetimage = Data.Tilesets[tileset_id].TilesetBitmap;
+                        int tilesetx = tile_id % 8;
+                        int tilesety = (int) Math.Floor(tile_id / 8d);
+                        bmp.Build(new Rect(mapx, mapy, 32, 32), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
+                    }
+                    else if (MapData.Layers[Layer].Tiles[y * MapData.Width + x].TileType == TileType.Autotile)
+                    {
+                        int autotile_index = MapData.Layers[Layer].Tiles[y * MapData.Width + x].Index;
+                        int autotile_id = MapData.AutotileIDs[autotile_index];
+                        Autotile autotile = Data.Autotiles[autotile_id];
+                        if (autotile.AnimateSpeed > 0) AnimatedAutotiles.Add(new List<int>() { Layer, x, y, autotile_id, tile_id });
+                        Bitmap autotileimage = autotile.AutotileBitmap;
+                        if (autotile.Format == AutotileFormat.Single)
                         {
-                            int tileset_index = m.Layers[layer].Tiles[y * m.Width + x].Index;
-                            int tileset_id = m.TilesetIDs[tileset_index];
-                            Bitmap tilesetimage = Data.Tilesets[tileset_id].TilesetBitmap;
-                            int tilesetx = tile_id % 8;
-                            int tilesety = (int) Math.Floor(tile_id / 8d);
-                            bmps[layer].Build(new Rect(mapx, mapy, 32, 32), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
-                        }
-                        else if (m.Layers[layer].Tiles[y * m.Width + x].TileType == TileType.Autotile)
-                        {
-                            int autotile_index = m.Layers[layer].Tiles[y * m.Width + x].Index;
-                            int autotile_id = m.AutotileIDs[autotile_index];
-                            Autotile autotile = Data.Autotiles[autotile_id];
-                            if (autotile.AnimateSpeed > 0) AnimatedAutotiles.Add(new List<int>() { layer, x - SX, y - SY, autotile_id, tile_id });
-                            Bitmap autotileimage = autotile.AutotileBitmap;
-                            if (autotile.Format == AutotileFormat.Single)
-                            {
-                                int AnimX = 0;
-                                bmps[layer].Build(new Rect(mapx, mapy, 32, 32), autotileimage, new Rect(AnimX, 0, 32, 32));
-                            }
-                            else
-                            {
-                                int AnimX = 0;
-                                List<int> Tiles = Autotile.AutotileCombinations[autotile.Format][tile_id];
-                                for (int i = 0; i < 4; i++)
-                                {
-                                    bmps[layer].Build(new Rect(mapx + 16 * (i % 2), mapy + 16 * (int) Math.Floor(i / 2d), 16, 16), autotileimage,
-                                        new Rect(16 * (Tiles[i] % 6) + AnimX, 16 * (int) Math.Floor(Tiles[i] / 6d), 16, 16));
-                                }
-                            }
+                            int AnimX = 0;
+                            bmp.Build(new Rect(mapx, mapy, 32, 32), autotileimage, new Rect(AnimX, 0, 32, 32));
                         }
                         else
                         {
-                            throw new Exception("Invalid tile type.");
+                            int AnimX = 0;
+                            List<int> Tiles = Autotile.AutotileCombinations[autotile.Format][tile_id];
+                            for (int i = 0; i < 4; i++)
+                            {
+                                bmp.Build(new Rect(mapx + 16 * (i % 2), mapy + 16 * (int) Math.Floor(i / 2d), 16, 16), autotileimage,
+                                    new Rect(16 * (Tiles[i] % 6) + AnimX, 16 * (int) Math.Floor(Tiles[i] / 6d), 16, 16));
+                            }
                         }
                     }
+                    else
+                    {
+                        throw new Exception("Invalid tile type.");
+                    }
                 }
-                bmps[layer].Lock();
             }
-            return bmps;
+            bmp.Lock();
+            return bmp;
         }
 
         public void SetMapAnimations(bool Animations)
@@ -283,8 +276,12 @@ namespace MKEditor.Widgets
                 this.Sprites[i.ToString()].Z = i * 2;
                 this.Sprites[i.ToString()].Visible = MapData.Layers[i].Visible;
             }
-            List<Bitmap> bmps = GetBitmaps(MapData.ID, 0, 0, MapData.Width, MapData.Height);
-            for (int i = 0; i < bmps.Count; i++) Sprites[i.ToString()].Bitmap = bmps[i];
+            List<Bitmap> bmps = new List<Bitmap>();
+            for (int i = 0; i < MapData.Layers.Count; i++)
+            {
+                bmps.Add(GetLayerBitmap(i));
+                Sprites[i.ToString()].Bitmap = bmps[i];
+            }
             // Zoom layers
             SetZoomFactor(ZoomFactor);
         }
@@ -431,14 +428,11 @@ namespace MKEditor.Widgets
                     }
                     else Blank = true;
 
-                    TileData olddata = MapData.Layers[layer].Tiles[MapPosition];
-                    if (Blank)
+                    TileData OldTile = MapData.Layers[layer].Tiles[MapPosition];
+                    TileData NewTile = null;
+                    if (!Blank)
                     {
-                        MapData.Layers[layer].Tiles[MapPosition] = null;
-                    }
-                    else
-                    {
-                        MapData.Layers[layer].Tiles[MapPosition] = new TileData
+                        NewTile = new TileData
                         {
                             TileType = tiletype,
                             Index = index,
@@ -446,22 +440,30 @@ namespace MKEditor.Widgets
                         };
                     }
 
-                    if (olddata is null && MapData.Layers[layer].Tiles[MapPosition] != null ||
-                        !(olddata is null) && MapData.Layers[layer].Tiles[MapPosition] == null ||
-                        !(olddata is null) && 
-                        (olddata.TileType != MapData.Layers[layer].Tiles[MapPosition].TileType ||
-                        olddata.Index != MapData.Layers[layer].Tiles[MapPosition].Index ||
-                        olddata.ID != MapData.Layers[layer].Tiles[MapPosition].ID))
+                    bool SameTile = true;
+                    if (OldTile == null && NewTile != null ||
+                        OldTile != null && NewTile == null) SameTile = false;
+                    else if (OldTile != null && OldTile.TileType != NewTile.TileType) SameTile = false;
+                    else if (OldTile != null && OldTile.Index != NewTile.Index) SameTile = false;
+                    else if (OldTile != null && OldTile.TileType != TileType.Autotile && OldTile.ID != NewTile.ID) SameTile = false;
+
+                    if (!SameTile)
                     {
-                        TileGroupUndoAction.AddToLatest(MapPosition, olddata, MapData.Layers[layer].Tiles[MapPosition]);
-                        DrawTile(actualx, actualy, layer, MapData.Layers[layer].Tiles[MapPosition], olddata);
+                        MapData.Layers[layer].Tiles[MapPosition] = NewTile;
+                        if (TileGroupUndoAction.GetLatest() == null || TileGroupUndoAction.GetLatest().Ready)
+                        {
+                            Editor.CanUndo = false;
+                            TileGroupUndoAction.Log(MapID, layer);
+                        }
+                        TileGroupUndoAction.AddToLatest(MapPosition, NewTile, OldTile);
+                        DrawTile(actualx, actualy, layer, NewTile, OldTile);
                     }
                 }
             }
             SetLayerLocked(layer, true);
         }
 
-        public void DrawTile(int X, int Y, int Layer, TileData Tile, TileData OldTile)
+        public void DrawTile(int X, int Y, int Layer, TileData Tile, TileData OldTile, bool ForceUpdateNearbyAutotiles = false)
         {
             bool Blank = Tile == null;
             for (int k = 0; k < AnimatedAutotiles.Count; k++)
@@ -474,19 +476,18 @@ namespace MKEditor.Widgets
                 }
             }
 
+            if (OldTile != null && OldTile.TileType == TileType.Autotile)
+            {
+                UpdateAutotiles(Layer, X, Y, OldTile.Index, true, true);
+            }
+
             if (Blank)
             {
-                if (OldTile != null && OldTile.TileType == TileType.Autotile)
-                {
-                    UpdateAutotiles(Layer, X, Y, OldTile.Index, true, true);
-                }
-                else
-                {
-                    this.Sprites[Layer.ToString()].Bitmap.FillRect(X * 32, Y * 32, 32, 32, Color.ALPHA);
-                }
+                this.Sprites[Layer.ToString()].Bitmap.FillRect(X * 32, Y * 32, 32, 32, Color.ALPHA);
             }
             else
             {
+                this.Sprites[Layer.ToString()].Bitmap.FillRect(X * 32, Y * 32, 32, 32, Color.ALPHA);
                 if (Tile.TileType == TileType.Tileset)
                 {
                     Editor.UnsavedChanges = true;
@@ -498,7 +499,7 @@ namespace MKEditor.Widgets
                 }
                 else if (Tile.TileType == TileType.Autotile)
                 {
-                    if (Tile.ID != -1) // Only draws
+                    if (Tile.ID != -1 && !ForceUpdateNearbyAutotiles) // Only draws
                     {
                         AnimatedAutotiles.Add(new List<int>() { Layer, X, Y, MapData.AutotileIDs[Tile.Index], Tile.ID });
                         int frame = Editor.GeneralSettings.ShowMapAnimations ? (int) Math.Floor((double) AnimateCount / Data.Autotiles[MapData.AutotileIDs[Tile.Index]].AnimateSpeed) : 0;
@@ -549,6 +550,7 @@ namespace MKEditor.Widgets
 
         public void UpdateAutotiles(int Layer, int X, int Y, int AutotileIndex, bool CheckNeighbouring = false, bool DeleteTile = false)
         {
+            TileData TileData = MapData.Layers[Layer].Tiles[X + Y * MapData.Width];
             List<Point> Connected = new List<Point>()
             {
                 new Point(X - 1, Y - 1), new Point(X, Y - 1), new Point(X + 1, Y - 1),
@@ -595,9 +597,7 @@ namespace MKEditor.Widgets
                           MapData.Layers[Layer].Tiles[Connected[7].X + Connected[7].Y * MapData.Width] != null &&
                           MapData.Layers[Layer].Tiles[Connected[7].X + Connected[7].Y * MapData.Width].TileType == TileType.Autotile;
             bool SE = SEauto && MapData.Layers[Layer].Tiles[Connected[7].X + Connected[7].Y * MapData.Width].Index == AutotileIndex;
-            if (CheckNeighbouring || !(MapData.Layers[Layer].Tiles[X + Y * MapData.Width] == null ||
-                  MapData.Layers[Layer].Tiles[X + Y * MapData.Width].TileType != TileType.Autotile ||
-                  MapData.Layers[Layer].Tiles[X + Y * MapData.Width].Index != AutotileIndex))
+            if (CheckNeighbouring || TileData != null && TileData.TileType == TileType.Autotile && TileData.Index == AutotileIndex)
                   // Only try to update the current tile if it's assignment (not deletion)
                   // and if the current tile is also an autotile
             {
@@ -681,15 +681,10 @@ namespace MKEditor.Widgets
                         List<int> Tiles = Autotile.AutotileCombinations[autotile.Format][ID];
                         for (int i = 0; i < 4; i++)
                         {
-                            this.Sprites[Layer.ToString()].Bitmap.Build(new Rect(32 * X + 16 * (i % 2), 32 * Y + 16 * (int)Math.Floor(i / 2d), 16, 16), autotile.AutotileBitmap,
+                            this.Sprites[Layer.ToString()].Bitmap.Build(new Rect(32 * X + 16 * (i % 2), 32 * Y + 16 * (int) Math.Floor(i / 2d), 16, 16), autotile.AutotileBitmap,
                                 new Rect(16 * (Tiles[i] % 6) + AnimX, 16 * (int)Math.Floor(Tiles[i] / 6d), 16, 16));
                         }
                     }
-                }
-                else
-                {
-                    MapData.Layers[Layer].Tiles[X + Y * MapData.Width] = null;
-                    this.Sprites[Layer.ToString()].Bitmap.FillRect(X * 32, Y * 32, 32, 32, Color.ALPHA);
                 }
             }
             // Whether or not to update neighbouring tiles

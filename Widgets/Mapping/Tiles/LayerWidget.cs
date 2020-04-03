@@ -26,12 +26,9 @@ namespace MKEditor.Widgets
 
         public void SetLayers(List<Layer> Layers)
         {
-            if (this.Layers != Layers)
-            {
-                this.Layers = Layers;
-                SelectedLayer = Layers.Count - 1;
-                Redraw();
-            }
+            this.Layers = Layers;
+            SelectedLayer = Layers.Count - 1;
+            Redraw();
             SetSize(278, Layers.Count * 24);
         }
 
@@ -65,6 +62,7 @@ namespace MKEditor.Widgets
             {
                 if (Layers[Index].Name != RenameBox.Text && !string.IsNullOrEmpty(RenameBox.Text))
                 {
+                    LayerRenameUndoAction.Create(Editor.MainWindow.MapWidget.Map.ID, Index, Layers[Index].Name, RenameBox.Text);
                     Layers[Index].Name = RenameBox.Text;
                     Redraw();
                 }

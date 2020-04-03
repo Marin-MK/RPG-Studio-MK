@@ -205,7 +205,7 @@ namespace MKEditor.Game
             this.Name = Name;
         }
 
-        public object Clone()
+        public Layer Clone()
         {
             Layer l = new Layer(this.Name);
             l.Tiles = new List<TileData>(Tiles);

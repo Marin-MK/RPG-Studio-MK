@@ -67,12 +67,12 @@ namespace MKEditor
         /// <summary>
         /// Contains the list of recent actions that you made that you can undo.
         /// </summary>
-        public static List<UndoAction> MapUndoList = new List<UndoAction>();
+        public static List<BaseUndoAction> MapUndoList = new List<BaseUndoAction>();
 
         /// <summary>
         /// Contains the list of recent actions that you undid that you can redo.
         /// </summary>
-        public static List<UndoAction> MapRedoList = new List<UndoAction>();
+        public static List<BaseUndoAction> MapRedoList = new List<BaseUndoAction>();
 
         /// <summary>
         /// Whether or not undo/redo is currently usable. Disable while drawing tiles in map editor, for instance.
@@ -888,6 +888,8 @@ namespace MKEditor
         {
             ProjectFilePath = null;
             ProjectSettings = null;
+            MapUndoList.Clear();
+            MapRedoList.Clear();
             UnsavedChanges = false;
         }
     }

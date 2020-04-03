@@ -122,25 +122,6 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void RedrawLayers()
-        {
-            foreach (string s in this.Sprites.Keys)
-            {
-                if (s != "_bg" && s != "dark") this.Sprites[s].Dispose();
-            }
-            // Create layers
-            for (int i = 0; i < MapData.Layers.Count; i++)
-            {
-                this.Sprites[i.ToString()] = new Sprite(this.Viewport);
-                this.Sprites[i.ToString()].Z = i * 2;
-                this.Sprites[i.ToString()].Visible = MapData.Layers[i].Visible;
-            }
-            List<Bitmap> bmps = GetBitmaps(MapData.ID, 0, 0, MapData.Width, MapData.Height);
-            for (int i = 0; i < bmps.Count; i++) Sprites[i.ToString()].Bitmap = bmps[i];
-            // Zoom layers
-            SetZoomFactor(ZoomFactor);
-        }
-
         public override void SizeChanged(object sender, SizeEventArgs e)
         {
             base.SizeChanged(sender, e);

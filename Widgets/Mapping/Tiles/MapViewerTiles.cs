@@ -101,14 +101,14 @@ namespace MKEditor.Widgets
             UpdateSelection();
         }
 
-        public void CreateNewLayer(int Index, Game.Layer LayerData)
+        public void CreateNewLayer(int Index, Layer LayerData, bool IsUndoAction = false)
         {
-            MapWidget.CreateNewLayer(Index, LayerData);
+            MapWidget.CreateNewLayer(Index, LayerData, IsUndoAction);
         }
 
-        public void DeleteLayer(int Index)
+        public void DeleteLayer(int Index, bool IsUndoAction = false)
         {
-            MapWidget.DeleteLayer(Index);
+            MapWidget.DeleteLayer(Index, IsUndoAction);
         }
 
         public void SwapLayers(int Index1, int Index2)
@@ -356,11 +356,6 @@ namespace MKEditor.Widgets
         public override void MouseDown(object sender, MouseEventArgs e)
         {
             base.MouseDown(sender, e);
-            if (e.LeftButton != e.OldLeftButton && MainContainer.WidgetIM.Hovering)
-            {
-                Editor.CanUndo = false;
-                TileGroupUndoAction.Log(Map.ID, LayerPanel.SelectedLayer);
-            }
             if ((e.LeftButton != e.OldLeftButton && e.LeftButton ||
                 e.RightButton != e.OldRightButton && e.RightButton) &&
                 MainContainer.WidgetIM.Hovering)
