@@ -533,9 +533,9 @@ namespace MKEditor.Widgets
             SetZIndex(1);
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             Sprites["topright"].X = Size.Width - 21;
             Sprites["bottomleft"].Y = Size.Height - 21;
             Sprites["bottomright"].X = Sprites["topright"].X;

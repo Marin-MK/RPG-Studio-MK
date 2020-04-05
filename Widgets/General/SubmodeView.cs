@@ -15,7 +15,7 @@ namespace MKEditor.Widgets
         public int HeaderSelHeight { get; protected set; } = 4;
         public int TextY { get; protected set; } = 3;
 
-        public EventHandler<EventArgs> OnSelectionChanged;
+        public BaseEvent OnSelectionChanged;
 
         public SubmodeView(IContainer Parent) : base(Parent)
         {
@@ -40,7 +40,7 @@ namespace MKEditor.Widgets
                 {
                     Tabs[Index].SetVisible(true);
                     this.SelectedIndex = Index;
-                    if (this.OnSelectionChanged != null) this.OnSelectionChanged.Invoke(this, new EventArgs());
+                    this.OnSelectionChanged?.Invoke(new BaseEventArgs());
                 }
             }
             Redraw();
@@ -129,9 +129,9 @@ namespace MKEditor.Widgets
             return tc;
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             (Sprites["line"].Bitmap as SolidBitmap).SetSize(Size.Width, HeaderSelHeight);
             foreach (TabContainer tc in this.Tabs)
             {
@@ -140,9 +140,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void MouseMoving(object sender, MouseEventArgs e)
+        public override void MouseMoving(MouseEventArgs e)
         {
-            base.MouseMoving(sender, e);
+            base.MouseMoving(e);
             if (!WidgetIM.Hovering)
             {
                 HoveringIndex = -1;
@@ -164,9 +164,9 @@ namespace MKEditor.Widgets
             Sprites["sel"].X = HoveringIndex * HeaderWidth;
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (HoveringIndex != -1)
             {
                 SelectTab(HoveringIndex);

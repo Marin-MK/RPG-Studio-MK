@@ -17,8 +17,8 @@ namespace MKEditor.Widgets
         public int MinSliderHeight = 8;
         double OriginalSize = 0.1;
 
-        public EventHandler<EventArgs> OnValueChanged;
-        public EventHandler<DirectionEventArgs> OnControlScrolling;
+        public BaseEvent OnValueChanged;
+        public DirectionEvent OnControlScrolling;
 
         private Rect SliderRect;
         private int SliderRY = 0;
@@ -54,7 +54,7 @@ namespace MKEditor.Widgets
                         LinkedWidget.UpdateBounds();
                     }
                 }
-                if (CallEvent && this.OnValueChanged != null) this.OnValueChanged.Invoke(this, new EventArgs());
+                if (CallEvent) this.OnValueChanged?.Invoke(new BaseEventArgs());
                 Redraw();
             }
         }
@@ -112,7 +112,7 @@ namespace MKEditor.Widgets
             base.Update();
         }
         
-        private void SliderMouseMoving(object sender, MouseEventArgs e)
+        private void SliderMouseMoving(MouseEventArgs e)
         {
             if (this.SliderIM.ClickedLeftInArea == true)
             {
@@ -120,7 +120,7 @@ namespace MKEditor.Widgets
             }
         }
 
-        private void SliderMouseDown(object sender, MouseEventArgs e)
+        private void SliderMouseDown(MouseEventArgs e)
         {
             if (!IsVisible()) return;
             if (e.LeftButton && !e.OldLeftButton && this.SliderIM.Hovering)
@@ -130,12 +130,12 @@ namespace MKEditor.Widgets
             }
         }
 
-        private void SliderMouseUp(object sender, MouseEventArgs e)
+        private void SliderMouseUp(MouseEventArgs e)
         {
             Redraw();
         }
 
-        private void SliderHoverChanged(object sender, MouseEventArgs e)
+        private void SliderHoverChanged(MouseEventArgs e)
         {
             Redraw();
         }
@@ -168,7 +168,7 @@ namespace MKEditor.Widgets
             this.SetValue((LinkedWidget.ScrolledY + 11d) / (LinkedWidget.MaxChildHeight - LinkedWidget.Viewport.Height));
         }
 
-        public override void MouseWheel(object sender, MouseEventArgs e)
+        public override void MouseWheel(MouseEventArgs e)
         {
             if (!IsVisible()) return;
             // If a HScrollBar exists
@@ -184,7 +184,7 @@ namespace MKEditor.Widgets
             {
                 if (Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LCTRL) || Input.Press(SDL2.SDL.SDL_Keycode.SDLK_RCTRL))
                 {
-                    if (OnControlScrolling != null) OnControlScrolling.Invoke(sender, new DirectionEventArgs(e.WheelY > 0, e.WheelY < 0));
+                    this.OnControlScrolling?.Invoke(new DirectionEventArgs(e.WheelY > 0, e.WheelY < 0));
                 }
                 else
                 {

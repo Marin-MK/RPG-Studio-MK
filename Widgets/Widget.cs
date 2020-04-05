@@ -14,7 +14,7 @@ namespace MKEditor.Widgets
         /// <summary>
         /// Full size of this widget. Can be smaller if viewport exceeds parent container, but never bigger.
         /// </summary>
-        public Size Size { get; protected set; } = new Size(50, 50);
+        public Size Size { get; set; } = new Size(50, 50);
 
         /// <summary>
         /// Relative position to parent container.
@@ -250,107 +250,107 @@ namespace MKEditor.Widgets
         /// <summary>
         /// Called whenever this widget is left clicked.
         /// </summary>
-        public EventHandler<MouseEventArgs> OnLeftClick;
+        public MouseEvent OnLeftClick;
 
         /// <summary>
         /// Called once whenever a new mouse button is pressed.
         /// </summary>
-        public EventHandler<MouseEventArgs> OnMouseDown;
+        public MouseEvent OnMouseDown;
 
         /// <summary>
         /// Called while a mouse button is being held down.
         /// </summary>
-        public EventHandler<MouseEventArgs> OnMousePress;
+        public MouseEvent OnMousePress;
 
         /// <summary>
         /// Called once whenever a mouse button is released.
         /// </summary>
-        public EventHandler<MouseEventArgs> OnMouseUp;
+        public MouseEvent OnMouseUp;
 
         /// <summary>
         /// Called once per mouse wheel scroll.
         /// </summary>
-        public EventHandler<MouseEventArgs> OnMouseWheel;
+        public MouseEvent OnMouseWheel;
 
         /// <summary>
         /// Called while the mouse is moving.
         /// </summary>
-        public EventHandler<MouseEventArgs> OnMouseMoving;
+        public MouseEvent OnMouseMoving;
 
         /// <summary>
         /// Called when this widget becomes the active widget.
         /// </summary>
-        public EventHandler<MouseEventArgs> OnWidgetSelected;
+        public BaseEvent OnWidgetSelected;
 
         /// <summary>
         /// Called when this widget is no longer the active widget.
         /// </summary>
-        public EventHandler<EventArgs> OnWidgetDeselected;
+        public BaseEvent OnWidgetDeselected;
 
         /// <summary>
         /// Called when a button is being is pressed.
         /// </summary>
-        public EventHandler<TextInputEventArgs> OnTextInput;
+        public TextEvent OnTextInput;
 
         /// <summary>
         /// Called when this widget's relative position changes.
         /// </summary>
-        public EventHandler<EventArgs> OnPositionChanged;
+        public BaseEvent OnPositionChanged;
 
         /// <summary>
         /// Called when this widget's relative size changes.
         /// </summary>
-        public EventHandler<SizeEventArgs> OnSizeChanged;
+        public BaseEvent OnSizeChanged;
 
         /// <summary>
         /// Called when this widget's parent relative size changes.
         /// </summary>
-        public EventHandler<SizeEventArgs> OnParentSizeChanged;
+        public BaseEvent OnParentSizeChanged;
 
         /// <summary>
         /// Called when a child's relative size changes.
         /// </summary>
-        public EventHandler<SizeEventArgs> OnChildBoundsChanged;
+        public ObjectEvent OnChildBoundsChanged;
 
         /// <summary>
         /// Called before this widget is disposed.
         /// </summary>
-        public EventHandler<EventArgs> OnDisposing;
+        public BaseEvent OnDisposing;
 
         /// <summary>
         /// Called after this widget is disposed.
         /// </summary>
-        public EventHandler<EventArgs> OnDisposed;
+        public BaseEvent OnDisposed;
 
         /// <summary>
         /// Called when the autoscroll scrollbars are being scrolled.
         /// </summary>
-        public EventHandler<EventArgs> OnScrolling;
+        public BaseEvent OnScrolling;
 
         /// <summary>
         /// Called before the right-click menu would open. Is cancellable.
         /// </summary>
-        public EventHandler<CancelEventArgs> OnContextMenuOpening;
+        public BoolEvent OnContextMenuOpening;
 
         /// <summary>
         /// Called upon creation of the help text widget.
         /// </summary>
-        public EventHandler<EventArgs> OnHelpTextWidgetCreated;
+        public BaseEvent OnHelpTextWidgetCreated;
 
         /// <summary>
         /// Called whenever the help text is to be retrieved.
         /// </summary>
-        public EventHandler<FetchEventArgs> OnFetchHelpText;
+        public StringEvent OnFetchHelpText;
 
         /// <summary>
         /// Called whenever SetVisibility() is called.
         /// </summary>
-        public EventHandler<EventArgs> OnVisibilityChanged;
+        public BaseEvent OnVisibilityChanged;
 
         /// <summary>
         /// Called whenever SetZIndex is called.
         /// </summary>
-        public EventHandler<EventArgs> OnZIndexChanged;
+        public BaseEvent OnZIndexChanged;
 
 
         /// <summary>
@@ -382,20 +382,20 @@ namespace MKEditor.Widgets
             // In the same viewport as all other sprites, but at a very large negative Z index.
             this.Sprites["_bg"].Z = -999999999;
             // Set some default events.
-            this.OnLeftClick = new EventHandler<MouseEventArgs>(this.LeftClick);
-            this.OnMouseMoving = new EventHandler<MouseEventArgs>(this.MouseMoving);
-            this.OnWidgetDeselected = new EventHandler<EventArgs>(this.WidgetDeselected);
-            this.OnTextInput = new EventHandler<TextInputEventArgs>(this.TextInput);
-            this.OnPositionChanged = new EventHandler<EventArgs>(this.PositionChanged);
-            this.OnSizeChanged = new EventHandler<SizeEventArgs>(this.SizeChanged);
-            this.OnParentSizeChanged = new EventHandler<SizeEventArgs>(this.ParentSizeChanged);
-            this.OnChildBoundsChanged = new EventHandler<SizeEventArgs>(this.ChildBoundsChanged);
+            this.OnLeftClick = this.LeftClick;
+            this.OnMouseMoving = this.MouseMoving;
+            this.OnWidgetDeselected = this.WidgetDeselected;
+            this.OnTextInput = this.TextInput;
+            this.OnPositionChanged = this.PositionChanged;
+            this.OnSizeChanged = this.SizeChanged;
+            this.OnParentSizeChanged = this.ParentSizeChanged;
+            this.OnChildBoundsChanged = this.ChildBoundsChanged;
             // Creates the input manager object responsible for fetching mouse input.
             this.WidgetIM = new MouseInputManager(this);
             this.WidgetIM.OnRightClick += RightClick_ContextMenu;
             this.WidgetIM.OnHoverChanged += HoverChanged;
             this.WidgetIM.OnMouseMoving += MouseMoving;
-            this.OnFetchHelpText += FetchHelpText;
+            this.OnFetchHelpText = FetchHelpText;
             this.SetVisible(true);
         }
 
@@ -456,7 +456,7 @@ namespace MKEditor.Widgets
             // this.ZIndex takes parent Z Index into account.
             this.Viewport.Z = this.ZIndex;
             this.Widgets.ForEach(w => w.SetZIndex(w.ZIndex));
-            if (this.OnZIndexChanged != null) this.OnZIndexChanged.Invoke(null, new EventArgs());
+            this.OnZIndexChanged?.Invoke(new BaseEventArgs());
         }
 
         /// <summary>
@@ -530,7 +530,7 @@ namespace MKEditor.Widgets
                 Viewport.Visible = false;
             }
             SetViewportVisible(Visible);
-            if (this.OnVisibilityChanged != null) this.OnVisibilityChanged.Invoke(null, new EventArgs());
+            this.OnVisibilityChanged?.Invoke(new BaseEventArgs());
         }
 
         /// <summary>
@@ -762,7 +762,7 @@ namespace MKEditor.Widgets
             this.Position = p;
             // Update the viewport boundaries
             UpdateBounds();
-            this.OnPositionChanged.Invoke(this, new EventArgs());
+            this.OnPositionChanged(new BaseEventArgs());
         }
 
         /// <summary>
@@ -812,15 +812,15 @@ namespace MKEditor.Widgets
                 {
                     Widget wdgt = w;
                     if (wdgt is LayoutContainer) wdgt = (w as LayoutContainer).Widget;
-                    wdgt.OnParentSizeChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));
-                    wdgt.OnSizeChanged.Invoke(this, new SizeEventArgs(this.Size));
+                    wdgt.OnParentSizeChanged(new BaseEventArgs());
+                    wdgt.OnSizeChanged(new BaseEventArgs());
                 });
-                this.OnSizeChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));
+                this.OnSizeChanged(new BaseEventArgs());
                 Redraw();
                 if (this.Parent is Widget && !(this is HScrollBar) && !(this is VScrollBar))
                 {
                     Widget prnt = this.Parent as Widget;
-                    prnt.OnChildBoundsChanged.Invoke(this, new SizeEventArgs(this.Size, oldsize));
+                    prnt.OnChildBoundsChanged(new ObjectEventArgs(this.Size));
                 }
             }
             return this;
@@ -1019,7 +1019,7 @@ namespace MKEditor.Widgets
         public virtual void Dispose()
         {
             AssertUndisposed();
-            if (this.OnDisposing != null) this.OnDisposing.Invoke(this, new EventArgs());
+            this.OnDisposing?.Invoke(new BaseEventArgs());
             // Mark this widget as disposed.
             this.Disposed = true;
             // Dispose the viewport and all its sprites.
@@ -1036,7 +1036,7 @@ namespace MKEditor.Widgets
             this.Sprites = null;
             if (Parent is LayoutContainer && !(Parent as Widget).Disposed)
                 (Parent as Widget).Dispose();
-            if (this.OnDisposed != null) this.OnDisposed.Invoke(this, new EventArgs());
+            this.OnDisposed?.Invoke(new BaseEventArgs());
         }
 
         /// <summary>
@@ -1081,9 +1081,9 @@ namespace MKEditor.Widgets
                 string text = "";
                 if (OnFetchHelpText != null)
                 {
-                    FetchEventArgs args = new FetchEventArgs();
-                    OnFetchHelpText.Invoke(null, args);
-                    text = args.Value as string;
+                    StringEventArgs e = new StringEventArgs();
+                    OnFetchHelpText(e);
+                    text = e.String;
                 }
                 if (!string.IsNullOrEmpty(text))
                 {
@@ -1097,8 +1097,7 @@ namespace MKEditor.Widgets
                     if (HelpTextWidget.Position.Y + HelpTextWidget.Size.Height + 14 >= Window.Height)
                         HelpTextWidget.SetPosition(HelpTextWidget.Position.X, Graphics.LastMouseEvent.Y - HelpTextWidget.Size.Height - 14);
 
-                    if (OnHelpTextWidgetCreated != null)
-                        OnHelpTextWidgetCreated.Invoke(null, new EventArgs());
+                    OnHelpTextWidgetCreated?.Invoke(new BaseEventArgs());
                 }
             }
 
@@ -1175,7 +1174,7 @@ namespace MKEditor.Widgets
                     if (!Valid) continue;
 
                     // Execute this shortcut's event.
-                    s.Event.Invoke(this, new EventArgs());
+                    s.Event(new BaseEventArgs());
                 }
             }
 
@@ -1193,16 +1192,16 @@ namespace MKEditor.Widgets
         /// <summary>
         /// Responsible for opening the right-click menu when this widget is right-clicked.
         /// </summary>
-        private void RightClick_ContextMenu(object sender, MouseEventArgs e)
+        private void RightClick_ContextMenu(MouseEventArgs e)
         {
             if (ShowContextMenu && ContextMenuList != null && ContextMenuList.Count > 0)
             {
                 bool cont = true;
                 if (OnContextMenuOpening != null)
                 {
-                    CancelEventArgs args = new CancelEventArgs();
-                    OnContextMenuOpening.Invoke(sender, args);
-                    if (args.Cancel) cont = false;
+                    BoolEventArgs args = new BoolEventArgs();
+                    OnContextMenuOpening(args);
+                    if (args.Value) cont = false;
                 }
                 if (cont)
                 {
@@ -1219,24 +1218,24 @@ namespace MKEditor.Widgets
                 }
             }
         }
-        public virtual void MouseDown(object sender, MouseEventArgs e)
+        public virtual void MouseDown(MouseEventArgs e)
         {
             if (e.LeftButton != e.OldLeftButton && this.WidgetIM.Hovering)
             {
                 Redraw();
             }
         }
-        public virtual void MousePress(object sender, MouseEventArgs e) { }
-        public virtual void MouseUp(object sender, MouseEventArgs e)
+        public virtual void MousePress(MouseEventArgs e) { }
+        public virtual void MouseUp(MouseEventArgs e)
         {
             if (e.LeftButton != e.OldLeftButton && this.WidgetIM.ClickedLeftInArea == true) Redraw();
         }
-        public virtual void MouseWheel(object sender, MouseEventArgs e) { }
-        public virtual void MouseMoving(object sender, MouseEventArgs e)
+        public virtual void MouseWheel(MouseEventArgs e) { }
+        public virtual void MouseMoving(MouseEventArgs e)
         {
             if (TimerExists("helptext")) ResetTimer("helptext");
         }
-        public virtual void HoverChanged(object sender, MouseEventArgs e)
+        public virtual void HoverChanged(MouseEventArgs e)
         {
             Redraw();
             if (WidgetIM.Hovering)
@@ -1248,30 +1247,30 @@ namespace MKEditor.Widgets
                 DestroyTimer("helptext");
             }
         }
-        public virtual void LeftClick(object sender, MouseEventArgs e) { }
-        public virtual void WidgetSelected(object sender, MouseEventArgs e)
+        public virtual void LeftClick(MouseEventArgs e) { }
+        public virtual void WidgetSelected(BaseEventArgs e)
         {
             this.Window.UI.SetSelectedWidget(this);
         }
-        public virtual void WidgetDeselected(object sender, EventArgs e) { }
-        public virtual void TextInput(object sender, TextInputEventArgs e) { }
-        public virtual void PositionChanged(object sender, EventArgs e)
+        public virtual void WidgetDeselected(BaseEventArgs e) { }
+        public virtual void TextInput(TextEventArgs e) { }
+        public virtual void PositionChanged(BaseEventArgs e)
         {
             UpdateAutoScroll();
         }
-        public virtual void SizeChanged(object sender, SizeEventArgs e)
+        public virtual void SizeChanged(BaseEventArgs e)
         {
             UpdateAutoScroll();
             UpdateLayout();
         }
-        public virtual void ParentSizeChanged(object sender, SizeEventArgs e) { }
-        public virtual void ChildBoundsChanged(object sender, SizeEventArgs e)
+        public virtual void ParentSizeChanged(BaseEventArgs e) { }
+        public virtual void ChildBoundsChanged(BaseEventArgs e)
         {
             UpdateAutoScroll();
         }
-        public virtual void FetchHelpText(object sender, FetchEventArgs e)
+        public virtual void FetchHelpText(StringEventArgs e)
         {
-            e.Value = this.HelpText;
+            e.String = this.HelpText;
         }
     }
 
@@ -1279,7 +1278,7 @@ namespace MKEditor.Widgets
     {
         public Widget Widget;
         public Key Key;
-        public EventHandler<EventArgs> Event;
+        public BaseEvent Event;
         public bool GlobalShortcut = false;
 
         /// <summary>
@@ -1289,7 +1288,7 @@ namespace MKEditor.Widgets
         /// <param name="Key">The actual key combination required to activate this shortcut.</param>
         /// <param name="Event">The event to trigger when the key is pressed.</param>
         /// <param name="GlobalShortcut">Whether the given widget needs to be active, or if this is a global shortcut.</param>
-        public Shortcut(Widget Widget, Key Key, EventHandler<EventArgs> Event, bool GlobalShortcut = false)
+        public Shortcut(Widget Widget, Key Key, BaseEvent Event, bool GlobalShortcut = false)
         {
             this.Widget = Widget;
             this.Key = Key;

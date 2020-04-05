@@ -9,7 +9,7 @@ namespace MKEditor.Widgets
         public List<IMenuItem> Items = new List<IMenuItem>();
         public IMenuItem SelectedItem;
 
-        public EventHandler<EventArgs> OnItemInvoked;
+        public BaseEvent OnItemInvoked;
 
         public ContextMenu(IContainer Parent) : base(Parent)
         {
@@ -74,10 +74,10 @@ namespace MKEditor.Widgets
                     Color c = Color.WHITE;
                     if (menuitem.IsClickable != null)
                     {
-                        ConditionEventArgs e = new ConditionEventArgs();
-                        menuitem.IsClickable.Invoke(this, e);
-                        if (!e.ConditionValue) c = new Color(155, 164, 178);
-                        menuitem.LastClickable = e.ConditionValue;
+                        BoolEventArgs e = new BoolEventArgs();
+                        menuitem.IsClickable(e);
+                        if (!e.Value) c = new Color(155, 164, 178);
+                        menuitem.LastClickable = e.Value;
                     }
                     this.Sprites["items"].Bitmap.DrawText(menuitem.Text, 10, y + 4, c);
                     if (!string.IsNullOrEmpty(menuitem.Shortcut))
@@ -119,15 +119,15 @@ namespace MKEditor.Widgets
             return h;
         }
 
-        public override void HoverChanged(object sender, MouseEventArgs e)
+        public override void HoverChanged(MouseEventArgs e)
         {
-            base.HoverChanged(sender, e);
-            this.MouseMoving(sender, e);
+            base.HoverChanged(e);
+            this.MouseMoving(e);
         }
 
-        public override void MouseMoving(object sender, MouseEventArgs e)
+        public override void MouseMoving(MouseEventArgs e)
         {
-            base.MouseMoving(sender, e);
+            base.MouseMoving(e);
             int rx = e.X - this.Viewport.X;
             int ry = e.Y - this.Viewport.Y;
             if (!WidgetIM.Hovering || rx < 0 || rx > this.Size.Width)
@@ -175,41 +175,38 @@ namespace MKEditor.Widgets
             }
         }
 
-        public void TryClick(object sender, MouseEventArgs e)
+        public void TryClick(MouseEventArgs e)
         {
             if ((this.SelectedItem as MenuItem).LastClickable)
             {
-                if ((SelectedItem as MenuItem).OnLeftClick != null)
-                {
-                    (SelectedItem as MenuItem).OnLeftClick.Invoke(sender, e);
-                }
-                if (OnItemInvoked != null) OnItemInvoked.Invoke(sender, new EventArgs());
+                (SelectedItem as MenuItem).OnLeftClick?.Invoke(e);
+                OnItemInvoked?.Invoke(new BaseEventArgs());
                 this.Dispose();
             }
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (WidgetIM.Hovering && this.SelectedItem != null && this.SelectedItem is MenuItem)
             {
-                TryClick(sender, e);
+                TryClick(e);
             }
         }
 
-        public void HelpTextWidgetCreated(object sender, EventArgs e)
+        public void HelpTextWidgetCreated(BaseEventArgs e)
         {
             HelpTextWidget.SetZIndex(this.ZIndex);
         }
 
-        public override void FetchHelpText(object sender, FetchEventArgs e)
+        public override void FetchHelpText(StringEventArgs e)
         {
-            base.FetchHelpText(sender, e);
-            e.Value = null;
+            base.FetchHelpText(e);
+            e.String = null;
             if (SelectedItem != null && SelectedItem is MenuItem)
             {
-                e.Value = (SelectedItem as MenuItem).HelpText;
-                if (!(SelectedItem as MenuItem).LastClickable) e.Value = e.Value + "\nUnavailable.";
+                e.String = (SelectedItem as MenuItem).HelpText;
+                if (!(SelectedItem as MenuItem).LastClickable) e.String += "\nUnavailable.";
             }
         }
     }

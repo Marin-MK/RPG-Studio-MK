@@ -58,7 +58,7 @@ namespace MKEditor.Widgets
             RenameBox.SetSize(Size.Width - 58, 22);
             RenameBox.SetInitialText(Layers[Index].Name);
             RenameBox.TextArea.SelectAll();
-            RenameBox.TextArea.OnWidgetDeselected += delegate (object sender, EventArgs e)
+            RenameBox.TextArea.OnWidgetDeselected += delegate (BaseEventArgs e)
             {
                 if (Layers[Index].Name != RenameBox.Text && !string.IsNullOrEmpty(RenameBox.Text))
                 {
@@ -71,7 +71,7 @@ namespace MKEditor.Widgets
                 Input.SetCursor(SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
                 Window.UI.SetSelectedWidget((Parent.Parent as LayerPanel));
             };
-            RenameBox.TextArea.OnWidgetSelected.Invoke(null, null);
+            RenameBox.TextArea.OnWidgetSelected(new BaseEventArgs());
         }
 
         protected override void Draw()
@@ -103,9 +103,9 @@ namespace MKEditor.Widgets
             base.Draw();
         }
 
-        public override void HoverChanged(object sender, MouseEventArgs e)
+        public override void HoverChanged(MouseEventArgs e)
         {
-            base.HoverChanged(sender, e);
+            base.HoverChanged(e);
             if (!WidgetIM.Hovering)
             {
                 Sprites["selector"].Visible = false;
@@ -113,9 +113,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void MouseMoving(object sender, MouseEventArgs e)
+        public override void MouseMoving(MouseEventArgs e)
         {
-            base.MouseMoving(sender, e);
+            base.MouseMoving(e);
             if (!WidgetIM.Hovering)
             {
                 Sprites["selector"].Visible = false;
@@ -128,10 +128,10 @@ namespace MKEditor.Widgets
             HoveringIndex = (int) Math.Floor(ry / 24d);
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
-            MouseMoving(sender, e);
+            base.MouseDown(e);
+            MouseMoving(e);
             int rx = e.X - Viewport.X;
             int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
             if (!WidgetIM.Hovering) return;

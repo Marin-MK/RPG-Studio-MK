@@ -8,8 +8,8 @@ namespace MKEditor.Widgets
         public string Text { get; private set; } = "";
         public bool Selected { get; private set; }
 
-        public EventHandler<EventArgs> OnSelection;
-        public EventHandler<EventArgs> OnDeselection;
+        public BaseEvent OnSelection;
+        public BaseEvent OnDeselection;
 
         public ModeButton(IContainer Parent, string Text, int Icon) : base(Parent)
         {
@@ -57,8 +57,8 @@ namespace MKEditor.Widgets
                 this.Selected = Selected;
                 if (!Starting)
                 {
-                    if (Selected && this.OnSelection != null) this.OnSelection.Invoke(this, new EventArgs());
-                    if (!Selected && this.OnDeselection != null) this.OnDeselection.Invoke(this, new EventArgs());
+                    if (Selected) this.OnSelection?.Invoke(new BaseEventArgs());
+                    if (!Selected) this.OnDeselection?.Invoke(new BaseEventArgs());
                 }
                 Redraw();
             }
@@ -71,15 +71,15 @@ namespace MKEditor.Widgets
             base.Draw();
         }
 
-        public void UpdateSelector(object sender, MouseEventArgs e)
+        public void UpdateSelector(MouseEventArgs e)
         {
             int ry = e.Y - Viewport.Y;
             Sprites["selector"].Visible = WidgetIM.Hovering && ry < 42;
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (Sprites["selector"].Visible)
             {
                 SetSelected(true);

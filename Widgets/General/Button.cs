@@ -10,7 +10,7 @@ namespace MKEditor.Widgets
         public bool Clickable { get; protected set; } = true;
         public Color TextColor { get; protected set; } = Color.WHITE;
 
-        public EventHandler<EventArgs> OnClicked;
+        public BaseEvent OnClicked;
 
         public Button(IContainer Parent) : base(Parent)
         {
@@ -174,9 +174,9 @@ namespace MKEditor.Widgets
             Sprites["text"].Y = Size.Height / 2 - 9;
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             if (Sprites["filler"].Bitmap != null) Sprites["filler"].Bitmap.Dispose();
             Sprites["filler"].Bitmap = new Bitmap(Size.Width - 12, Size.Height - 12);
             Sprites["filler"].Bitmap.Unlock();
@@ -201,17 +201,17 @@ namespace MKEditor.Widgets
             Sprites["bottom"].ZoomX = Sprites["top"].ZoomX;
         }
 
-        public override void HoverChanged(object sender, MouseEventArgs e)
+        public override void HoverChanged(MouseEventArgs e)
         {
-            base.HoverChanged(sender, e);
+            base.HoverChanged(e);
             if (Clickable) Sprites["filler"].Color = WidgetIM.Hovering ? new Color(59, 227, 255) : new Color(64, 104, 146);
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (!WidgetIM.Hovering || !Clickable) return;
-            if (OnClicked != null) OnClicked.Invoke(null, new EventArgs());
+            this.OnClicked?.Invoke(new BaseEventArgs());
         }
     }
 }

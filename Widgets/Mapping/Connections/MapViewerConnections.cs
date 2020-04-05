@@ -27,7 +27,7 @@ namespace MKEditor.Widgets
         public override void PositionMap()
         {
             base.PositionMap();
-            MouseMoving(null, Graphics.LastMouseEvent);
+            MouseMoving(Graphics.LastMouseEvent);
             TestForOverlap();
         }
 
@@ -56,9 +56,9 @@ namespace MKEditor.Widgets
             TestForOverlap();
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             if (this.Size.Width != 50 && this.Size.Height != 50) TestForOverlap();
         }
 
@@ -112,9 +112,9 @@ namespace MKEditor.Widgets
             OnWidgetSelected += WidgetSelected;
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (WidgetIM.Hovering && !e.Handled && e.LeftButton != e.OldLeftButton) // Ensure only one map connection is ever selected (saves an extra call when clicking an overlapping section)
             {
                 e.Handled = true;
@@ -122,15 +122,15 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             if (Outline != null) Outline.SetSize(this.Size);
         }
 
-        public override void PositionChanged(object sender, EventArgs e)
+        public override void PositionChanged(BaseEventArgs e)
         {
-            base.PositionChanged(sender, e);
+            base.PositionChanged(e);
             if (Outline != null) Outline.SetPosition(this.Position);
         }
 

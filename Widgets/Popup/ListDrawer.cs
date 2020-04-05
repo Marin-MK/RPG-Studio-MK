@@ -6,8 +6,8 @@ namespace MKEditor.Widgets
 {
     public class ListDrawer : Widget
     {
-        public EventHandler<EventArgs> OnButtonClicked;
-        public EventHandler<EventArgs> OnSelectionChanged;
+        public BaseEvent OnButtonClicked;
+        public BaseEvent OnSelectionChanged;
 
         public bool Button { get; protected set; } = false;
         public string ButtonText { get; protected set; }
@@ -77,9 +77,9 @@ namespace MKEditor.Widgets
             RedrawButton();
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             (Sprites["selection"].Bitmap as SolidBitmap).SetSize(Size.Width, LineHeight);
         }
 
@@ -97,14 +97,14 @@ namespace MKEditor.Widgets
                     Sprites["selection"].Visible = true;
                     Sprites["selection"].Y = LineHeight * Index;
                 }
-                if (this.OnSelectionChanged != null) this.OnSelectionChanged.Invoke(null, new EventArgs());
+                this.OnSelectionChanged?.Invoke(new BaseEventArgs());
             }
         }
 
         public void ForceRedraw()
         {
             this.Draw();
-            MouseMoving(null, Graphics.LastMouseEvent);
+            MouseMoving(Graphics.LastMouseEvent);
         }
 
         public void RedrawButton()
@@ -142,9 +142,9 @@ namespace MKEditor.Widgets
             base.Draw();
         }
 
-        public override void MouseMoving(object sender, MouseEventArgs e)
+        public override void MouseMoving(MouseEventArgs e)
         {
-            base.MouseMoving(sender, e);
+            base.MouseMoving(e);
             int rx = e.X - Viewport.X;
             int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
             int index = (int) Math.Floor(ry / (double) LineHeight);
@@ -165,29 +165,29 @@ namespace MKEditor.Widgets
             if (OldHover != HoveringButton) RedrawButton();
         }
 
-        public override void HoverChanged(object sender, MouseEventArgs e)
+        public override void HoverChanged(MouseEventArgs e)
         {
-            base.HoverChanged(sender, e);
+            base.HoverChanged(e);
             if (!WidgetIM.Hovering) Sprites["hover"].Visible = false;
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (!WidgetIM.Hovering) return;
             if (HoveringButton)
             {
                 Sprites["selection"].Visible = false;
                 this.SelectedIndex = -1;
-                if (this.OnButtonClicked != null) this.OnButtonClicked.Invoke(sender, e);
-                if (this.OnSelectionChanged != null) this.OnSelectionChanged.Invoke(null, new EventArgs());
+                this.OnButtonClicked?.Invoke(e);
+                this.OnSelectionChanged?.Invoke(new BaseEventArgs());
             }
             else if (Sprites["hover"].Visible)
             {
                 Sprites["selection"].Y = Sprites["hover"].Y;
                 Sprites["selection"].Visible = true;
                 this.SelectedIndex = Sprites["hover"].Y / this.LineHeight;
-                if (this.OnSelectionChanged != null) this.OnSelectionChanged.Invoke(null, new EventArgs());
+                this.OnSelectionChanged?.Invoke(new BaseEventArgs());
             }
         }
     }

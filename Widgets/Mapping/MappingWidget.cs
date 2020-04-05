@@ -44,7 +44,7 @@ namespace MKEditor.Widgets
             LeftSidebarDivider.SetGridColumn(1);
 
             Submodes = new SubmodeView(layout);
-            Submodes.OnSelectionChanged += delegate (object sender, EventArgs e)
+            Submodes.OnSelectionChanged += delegate (BaseEventArgs e)
             {
                 ChangeSubmode();
             };
@@ -179,9 +179,9 @@ namespace MKEditor.Widgets
             MapViewerConnections.MainContainer.VScrollBar.SetValue(Value, false);
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             if (Submodes.SelectedIndex != -1) ActiveMapViewer.PositionMap();
         }
     }

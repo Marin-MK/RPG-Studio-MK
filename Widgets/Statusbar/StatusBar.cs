@@ -70,9 +70,9 @@ namespace MKEditor.Widgets
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             Sprites["line2"].X = Size.Width - 384;
             Sprites["line3"].X = Size.Width - 284;
             Sprites["text"].X = Size.Width - 276;

@@ -51,7 +51,7 @@ namespace MKEditor.Widgets
                 items.Add(new ListItem(Name, Map));
             }
             Maps.SetItems(items);
-            Maps.OnSelectionChanged += delegate (object sender, EventArgs e)
+            Maps.OnSelectionChanged += delegate (BaseEventArgs e)
             {
                 UpdatePreview();
             };
@@ -100,7 +100,7 @@ namespace MKEditor.Widgets
             MapBox.SetSize(fullw, fullh);
         }
 
-        public void OK(object sender, EventArgs e)
+        public void OK(BaseEventArgs e)
         {
             if (Maps.SelectedIndex >= 0)
             {
@@ -114,7 +114,7 @@ namespace MKEditor.Widgets
             Close();
         }
 
-        public void Cancel(object sender, EventArgs e)
+        public void Cancel(BaseEventArgs e)
         {
             this.ChosenMap = null;
             Close();

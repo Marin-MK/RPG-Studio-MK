@@ -13,9 +13,9 @@ namespace MKEditor.Widgets
             SetZIndex(1);
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             if (Sprites["rect"].Bitmap != null) Sprites["rect"].Bitmap.Dispose();
             Sprites["rect"].Bitmap = new Bitmap(Size);
             Sprites["rect"].Bitmap.Unlock();

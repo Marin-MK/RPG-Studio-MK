@@ -11,8 +11,8 @@ namespace MKEditor.Widgets
         public List<IMenuItem> Items;
         public string HelpText;
         public string Shortcut;
-        public EventHandler<ODL.MouseEventArgs> OnLeftClick;
-        public EventHandler<ODL.ConditionEventArgs> IsClickable;
+        public ODL.MouseEvent OnLeftClick;
+        public ODL.BoolEvent IsClickable;
         public bool LastClickable = true;
 
         public MenuItem(string Text)

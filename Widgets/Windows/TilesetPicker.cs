@@ -37,7 +37,7 @@ namespace MKEditor.Widgets
                 items.Add(new ListItem($"{Utilities.Digits(i, 3)}: {tileset?.Name}", tileset));
             }
             Tilesets.SetItems(items);
-            Tilesets.OnSelectionChanged += delegate (object sender, EventArgs e)
+            Tilesets.OnSelectionChanged += delegate (BaseEventArgs e)
             {
                 UpdatePreview();
             };
@@ -80,7 +80,7 @@ namespace MKEditor.Widgets
             scroll.VScrollBar.SetValue(0);
         }
 
-        public void OK(object sender, EventArgs e)
+        public void OK(BaseEventArgs e)
         {
             Tileset t = (Tilesets.Items[Tilesets.SelectedIndex].Object as Tileset);
             if (t == null)
@@ -101,7 +101,7 @@ namespace MKEditor.Widgets
             }
         }
 
-        public void Cancel(object sender, EventArgs e)
+        public void Cancel(BaseEventArgs e)
         {
             this.ChosenTilesetID = -1;
             Close();

@@ -29,7 +29,7 @@ namespace MKEditor.Widgets
 
             RegisterShortcuts(new List<Shortcut>()
             {
-                new Shortcut(this, new Key(Keycode.S, Keycode.CTRL), delegate (object sender, EventArgs e) { Editor.SaveProject(); }, true)
+                new Shortcut(this, new Key(Keycode.S, Keycode.CTRL), delegate (BaseEventArgs e) { Editor.SaveProject(); }, true)
             });
         }
 
@@ -62,9 +62,9 @@ namespace MKEditor.Widgets
             base.Draw();
         }
 
-        public override void MouseMoving(object sender, MouseEventArgs e)
+        public override void MouseMoving(MouseEventArgs e)
         {
-            base.MouseMoving(sender, e);
+            base.MouseMoving(e);
             UpdateSelection(e);
         }
 
@@ -108,9 +108,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void MousePress(object sender, MouseEventArgs e)
+        public override void MousePress(MouseEventArgs e)
         {
-            base.MousePress(sender, e);
+            base.MousePress(e);
             if (!e.LeftButton) return;
             if (ActiveMenu == null && SelectedIndex != -1)
             {
@@ -129,9 +129,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void MouseUp(object sender, MouseEventArgs e)
+        public override void MouseUp(MouseEventArgs e)
         {
-            base.MouseUp(sender, e);
+            base.MouseUp(e);
             if (e.LeftButton != e.OldLeftButton && !e.LeftButton)
             {
                 if (this.ActiveMenuHovered)
@@ -154,24 +154,24 @@ namespace MKEditor.Widgets
             }
             this.MouseAlwaysActive = true;
             ActiveMenu = new ContextMenu(Window.UI);
-            ActiveMenu.OnDisposed += delegate (object sender, EventArgs e)
+            ActiveMenu.OnDisposed += delegate (BaseEventArgs e)
             {
                 this.MouseAlwaysActive = false;
                 this.ActiveMenuHovered = false;
                 this.ActiveMenuIndex = -1;
                 this.ActiveMenu = null;
             };
-            ActiveMenu.WidgetIM.OnHoverChanged += delegate (object sender, MouseEventArgs e)
+            ActiveMenu.WidgetIM.OnHoverChanged += delegate (MouseEventArgs e)
             {
                 if (ActiveMenu.WidgetIM.Hovering)
                     this.ActiveMenuHovered = true;
             };
-            ActiveMenu.WidgetIM.OnMouseUp += delegate (object sender, MouseEventArgs e)
+            ActiveMenu.WidgetIM.OnMouseUp += delegate (MouseEventArgs e)
             {
                 if (e.LeftButton != e.OldLeftButton && !e.LeftButton)
                 {
                     if (!ActiveMenu.WidgetIM.Hovering) IgnorePress = true;
-                    if (this.ActiveMenuHovered && ActiveMenu.SelectedItem != null) ActiveMenu.TryClick(sender, e);
+                    if (this.ActiveMenuHovered && ActiveMenu.SelectedItem != null) ActiveMenu.TryClick(e);
                 }
             };
             ActiveMenu.SetInnerColor(10, 23, 37);

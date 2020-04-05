@@ -62,7 +62,7 @@ namespace MKEditor
             this.SetText("RPG Studio MK");
             this.Initialize();
 
-            this.OnClosing += delegate (object sender, CancelEventArgs e)
+            this.OnClosing += delegate (BoolEventArgs e)
             {
                 int x, y;
                 SDL2.SDL.SDL_GetWindowPosition(this.SDL_Window, out x, out y);
@@ -81,7 +81,7 @@ namespace MKEditor
                     // Save window when closing with the top-right X button
                     if (Program.ReleaseMode && !Program.ThrownError)
                     {
-                        e.Cancel = true;
+                        e.Value = true;
                         EnsureSaved(Dispose);
                     }
                 }
@@ -140,38 +140,38 @@ namespace MKEditor
                         new MenuItem("New")
                         {
                             HelpText = "Create a new project.",
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(Editor.NewProject); }
+                            OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.NewProject); }
                         },
                         new MenuItem("Open")
                         {
                             HelpText = "Open an existing project.",
                             Shortcut = "Ctrl+O",
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(Editor.OpenProject); }
+                            OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.OpenProject); }
                         },
                         new MenuItem("Save")
                         {
                             HelpText = "Save all changes in the current project.",
                             Shortcut = "Ctrl+S",
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.SaveProject(); },
-                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; }
+                            OnLeftClick = delegate (MouseEventArgs e) { Editor.SaveProject(); },
+                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
                         },
                         new MenuSeparator(),
                         new MenuItem("Close Project")
                         {
                             HelpText = "Close this project and return to the welcome screen.",
-                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; },
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(Editor.CloseProject); }
+                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
+                            OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.CloseProject); }
                         },
                         new MenuItem("Reload Project")
                         {
                             HelpText = "Closes and immediately reopens the project. Used for quickly determining if changes are saved properly, or to restore an old version.",
-                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; },
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(Editor.ReloadProject); }
+                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
+                            OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.ReloadProject); }
                         },
                         new MenuItem("Exit Editor")
                         {
                             HelpText = "Close this project and quit the program.",
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(Editor.ExitEditor); }
+                            OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.ExitEditor); }
                         }
                     }
                 },
@@ -182,20 +182,20 @@ namespace MKEditor
                         new MenuItem("Import Maps")
                         {
                             HelpText = "Import Maps made with RPG Maker XP.",
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.ImportMaps(); },
-                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; }
+                            OnLeftClick = delegate (MouseEventArgs e) { Editor.ImportMaps(); },
+                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
                         },
                         new MenuItem("Restore Map")
                         {
                             HelpText = "Restore a map that was deleted during this session.",
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.RestoreMap(); },
-                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; }
+                            OnLeftClick = delegate (MouseEventArgs e) { Editor.RestoreMap(); },
+                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
                         },
                         new MenuItem("Clear deleted map cache")
                         {
                             HelpText = "Clears the internal cache of restore-able deleted maps.",
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.ClearMapCache(); },
-                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject && Editor.DeletedMaps.Count > 0; }
+                            OnLeftClick = delegate (MouseEventArgs e) { Editor.ClearMapCache(); },
+                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
                         }
                     }
                 },
@@ -206,14 +206,14 @@ namespace MKEditor
                         new MenuItem("Toggle Animations")
                         {
                             HelpText = "Toggles the animation of autotiles, fogs and panoramas.",
-                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; },
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.ToggleMapAnimations(); },
+                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
+                            OnLeftClick = delegate (MouseEventArgs e) { Editor.ToggleMapAnimations(); }
                         },
                         new MenuItem("Toggle Grid")
                         {
                             HelpText = "Toggles the visibility of the grid overlay while mapping.",
-                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; },
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.ToggleGrid(); }
+                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
+                            OnLeftClick = delegate (MouseEventArgs e) { Editor.ToggleGrid(); }
                         }
                     }
                 },
@@ -225,14 +225,14 @@ namespace MKEditor
                         {
                             Shortcut = "F12",
                             HelpText = "Play the game.",
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.StartGame(); },
-                            IsClickable = delegate (object sender, ConditionEventArgs e ) { e.ConditionValue = Editor.InProject; }
+                            OnLeftClick = delegate (MouseEventArgs e) { Editor.StartGame(); },
+                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
                         },
                         new MenuItem("Open Game Folder")
                         {
                             HelpText = "Opens the file explorer and navigates to the project folder.",
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { Editor.OpenGameFolder(); },
-                            IsClickable = delegate (object sender, ConditionEventArgs e ) { e.ConditionValue = Editor.InProject; }
+                            OnLeftClick = delegate (MouseEventArgs e) { Editor.OpenGameFolder(); },
+                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
                         }
                     }
                 },
@@ -244,12 +244,12 @@ namespace MKEditor
                         {
                             Shortcut = "F1",
                             HelpText = "Opens the help window.",
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { OpenHelpWindow(); }
+                            OnLeftClick = delegate (MouseEventArgs e) { OpenHelpWindow(); }
                         },
                         new MenuItem("About RPG Studio MK")
                         {
                             HelpText = "Shows information about this program.",
-                            OnLeftClick = delegate (object sender, MouseEventArgs e) { OpenAboutWindow(); }
+                            OnLeftClick = delegate (MouseEventArgs e) { OpenAboutWindow(); }
                         }
                     }
                 }
@@ -315,7 +315,7 @@ namespace MKEditor
             {
                 SetPosition(Editor.GeneralSettings.LastX, Editor.GeneralSettings.LastY);
                 SetSize(Editor.GeneralSettings.LastWidth, Editor.GeneralSettings.LastHeight);
-                this.UI.WindowResized(null, new WindowEventArgs(Width, Height));
+                this.UI.WindowResized(new BaseEventArgs());
             }
         }
 
@@ -376,7 +376,7 @@ namespace MKEditor
             }
             MessageBox box = new MessageBox("Warning", "The game contains unsaved changed. Are you sure you would like to proceed? All unsaved changes will be lost.",
                 new List<string>() { "Save", "Continue", "Cancel" }, IconType.Warning);
-            box.OnButtonPressed += delegate (object sender, EventArgs e)
+            box.OnButtonPressed += delegate (BaseEventArgs e)
             {
                 if (box.Result == 0) // Save
                 {
@@ -420,7 +420,7 @@ namespace MKEditor
         /// <summary>
         /// Updates the UIManager, and subsequently all widgets.
         /// </summary>
-        private void Tick(object sender, EventArgs e)
+        private void Tick(BaseEventArgs e)
         {
             this.UI.Update();
         }

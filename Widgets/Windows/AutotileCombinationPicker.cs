@@ -32,13 +32,13 @@ namespace MKEditor.Widgets
             bg2.SetInnerColor(24, 38, 53);
             Sprites["bg2"] = bg2;
 
-            CreateButton("Cancel", delegate (object sender, EventArgs e)
+            CreateButton("Cancel", delegate (BaseEventArgs e)
             {
                 SelectedTileID = -1;
                 Close();
             });
 
-            CreateButton("OK", delegate (object sender, EventArgs e)
+            CreateButton("OK", delegate (BaseEventArgs e)
             {
                 Close();
             });
@@ -92,9 +92,9 @@ namespace MKEditor.Widgets
             base.Draw();
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (WidgetIM.Hovering)
             {
                 int rx = e.X - Viewport.X;

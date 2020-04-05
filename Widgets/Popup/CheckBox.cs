@@ -120,16 +120,16 @@ namespace MKEditor.Widgets
             base.Draw();
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (WidgetIM.Hovering) Redraw();
         }
 
-        public override void LeftClick(object sender, MouseEventArgs e)
+        public override void LeftClick(MouseEventArgs e)
         {
+            base.LeftClick(e);
             this.SetChecked(!this.Checked);
-            base.LeftClick(sender, e);
         }
     }
 }

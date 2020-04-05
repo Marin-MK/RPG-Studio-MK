@@ -105,13 +105,13 @@ namespace MKEditor.Widgets
             SelectButton = new IconButton(DrawToolsContainer);
             SelectButton.SetIcon(19, 0);
             SelectButton.SetPosition(128, 0);
-            SelectButton.OnSelection += delegate (object sender, EventArgs e)
+            SelectButton.OnSelection += delegate (BaseEventArgs e)
             {
                 MapViewer.Cursor.SetVisible(false);
                 Cursor.SetPosition(0, 0);
                 Cursor.SetVisible(false);
             };
-            SelectButton.OnDeselection += delegate (object sender, EventArgs e)
+            SelectButton.OnDeselection += delegate (BaseEventArgs e)
             {
                 UpdateCursor();
             };
@@ -120,12 +120,12 @@ namespace MKEditor.Widgets
             EraserButton.SetIcon(20, 0);
             EraserButton.SetPosition(160, 0);
             EraserButton.Toggleable = true;
-            EraserButton.OnSelection += delegate (object sender, EventArgs e)
+            EraserButton.OnSelection += delegate (BaseEventArgs e)
             {
                 if (AutotileIndex != -1 || TilesetIndex != -1 || TileStartX != -1 || TileEndX != -1 || TileStartY != -1 || TileEndY != -1)
                     SelectTile(null);
             };
-            EraserButton.OnDeselection += delegate (object sender, EventArgs e)
+            EraserButton.OnDeselection += delegate (BaseEventArgs e)
             {
                 if (AutotileIndex == -1 && TilesetIndex == -1 && TileStartX == -1 && TileEndX == -1 && TileStartY == -1 && TileEndY == -1 &&
                     !MapViewer.SelectionOnMap)
@@ -162,7 +162,7 @@ namespace MKEditor.Widgets
                 SingleAutotileContainer = new CollapsibleContainer(MainStackPanel);
                 SingleAutotileContainer.SetText("Single Autotiles");
                 SingleAutotileContainer.SetMargin(0, 0, 0, 8);
-                SingleAutotileContainer.OnCollapsedChanged += delegate (object sender, EventArgs e) { UpdateCursor(); };
+                SingleAutotileContainer.OnCollapsedChanged += delegate (BaseEventArgs e) { UpdateCursor(); };
                 singles = new Bitmap(263, 33 + 33 * (int) Math.Floor(SingleAutotileCount / 8d));
                 singles.Unlock();
                 SingleAutotileContainer.SetSize(MainContainer.Size.Width - 13, singles.Height + 23);
@@ -188,7 +188,7 @@ namespace MKEditor.Widgets
                 CollapsibleContainer c = new CollapsibleContainer(MainStackPanel);
                 c.SetText(autotile.Name);
                 c.SetMargin(0, 0, 0, 8);
-                c.OnCollapsedChanged += delegate (object sender, EventArgs e) { UpdateCursor(); };
+                c.OnCollapsedChanged += delegate (BaseEventArgs e) { UpdateCursor(); };
                 c.SetSize(MainContainer.Size.Width - 13, 87);
                 c.ObjectData = i;
                 AutotileContainers.Add(c);
@@ -226,7 +226,7 @@ namespace MKEditor.Widgets
                 CollapsibleContainer c = new CollapsibleContainer(MainStackPanel);
                 c.SetText(tileset.Name);
                 c.SetMargin(0, 0, 0, 8);
-                c.OnCollapsedChanged += delegate (object sender, EventArgs e) { UpdateCursor(); };
+                c.OnCollapsedChanged += delegate (BaseEventArgs e) { UpdateCursor(); };
                 c.SetSize(MainContainer.Size.Width - 13, tileset.TilesetListBitmap.Height + 23);
                 TilesetContainers.Add(c);
                 PictureBox image = new PictureBox(c);
@@ -320,7 +320,7 @@ namespace MKEditor.Widgets
                             {
                                 AutotilePickerMap atp = new AutotilePickerMap();
                                 atp.SetAutotile(autotile);
-                                atp.OnClosed += delegate (object sender, EventArgs e)
+                                atp.OnClosed += delegate (BaseEventArgs e)
                                 {
                                     if (atp.SelectedTileID != -1)
                                     {
@@ -338,7 +338,7 @@ namespace MKEditor.Widgets
                                 {
                                     AutotilePickerMap atp = new AutotilePickerMap();
                                     atp.SetAutotile(autotile);
-                                    atp.OnClosed += delegate (object sender, EventArgs e)
+                                    atp.OnClosed += delegate (BaseEventArgs e)
                                     {
                                         if (atp.SelectedTileID != -1)
                                         {
@@ -432,9 +432,9 @@ namespace MKEditor.Widgets
             UpdateCursor();
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             MainContainer.SetSize(Size.Width - 11, Size.Height - MainContainer.Position.Y - 1);
             MainContainer.VScrollBar.SetPosition(Size.Width - 10, 54);
             MainContainer.VScrollBar.SetSize(8, Size.Height - 56);
@@ -578,9 +578,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void MouseMoving(object sender, MouseEventArgs e)
+        public override void MouseMoving(MouseEventArgs e)
         {
-            base.MouseMoving(sender, e);
+            base.MouseMoving(e);
             if (!DraggingTileset) return;
             int idx = -1,
                 x = -1,
@@ -603,9 +603,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (e.MiddleButton != e.OldMiddleButton) return; // A button other than the middle mouse button was pressed (left or right)
             int idx = -1,
                 x = -1,
@@ -618,9 +618,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void MouseUp(object sender, MouseEventArgs e)
+        public override void MouseUp(MouseEventArgs e)
         {
-            base.MouseUp(sender, e);
+            base.MouseUp(e);
             DraggingTileset = e.LeftButton || e.RightButton;
         }
 

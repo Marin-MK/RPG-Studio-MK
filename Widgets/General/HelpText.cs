@@ -67,9 +67,9 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap.Lock();
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             (Sprites["rect"] as RectSprite).SetSize(Size);
         }
     }

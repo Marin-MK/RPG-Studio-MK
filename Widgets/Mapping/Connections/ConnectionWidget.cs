@@ -49,7 +49,7 @@ namespace MKEditor.Widgets
             XBox = new NumericBox(this);
             XBox.SetPosition(24, 79);
             XBox.SetSize(66, 27);
-            XBox.OnValueChanged += delegate (object sender, EventArgs e)
+            XBox.OnValueChanged += delegate (BaseEventArgs e)
             {
                 if (Initialized) SetOffset(XBox.Value, YBox.Value);
             };
@@ -57,7 +57,7 @@ namespace MKEditor.Widgets
             YBox = new NumericBox(this);
             YBox.SetPosition(101, 79);
             YBox.SetSize(66, 27);
-            YBox.OnValueChanged += delegate (object sender, EventArgs e)
+            YBox.OnValueChanged += delegate (BaseEventArgs e)
             {
                 if (Initialized) SetOffset(XBox.Value, YBox.Value);
             };
@@ -76,15 +76,15 @@ namespace MKEditor.Widgets
             SetSize(272, 120);
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (this.WidgetIM.Hovering) this.SetSelected(true);
         }
 
-        public override void HoverChanged(object sender, MouseEventArgs e)
+        public override void HoverChanged(MouseEventArgs e)
         {
-            base.HoverChanged(sender, e);
+            base.HoverChanged(e);
             Sprites["hover"].Visible = this.WidgetIM.Hovering;
         }
 
@@ -256,15 +256,15 @@ namespace MKEditor.Widgets
             this.WidgetIM.OnHoverChanged += HoverChanged;
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (WidgetIM.Hovering) ((ConnectionWidget) Parent).Disconnect();
         }
 
-        public override void HoverChanged(object sender, MouseEventArgs e)
+        public override void HoverChanged(MouseEventArgs e)
         {
-            base.HoverChanged(sender, e);
+            base.HoverChanged(e);
             Redraw();
         }
 

@@ -12,8 +12,8 @@ namespace MKEditor.Widgets
 
         public bool Selected { get; protected set; } = false;
 
-        public EventHandler<EventArgs> OnSelection;
-        public EventHandler<EventArgs> OnDeselection;
+        public BaseEvent OnSelection;
+        public BaseEvent OnDeselection;
 
         public IconButton(IContainer Parent) : base(Parent)
         {
@@ -46,8 +46,8 @@ namespace MKEditor.Widgets
                     }
                 }
                 this.Selected = Selected;
-                if (Selected && this.OnSelection != null) this.OnSelection.Invoke(this, new EventArgs());
-                if (!Selected && this.OnDeselection != null) this.OnDeselection.Invoke(this, new EventArgs());
+                if (Selected) this.OnSelection?.Invoke(new BaseEventArgs());
+                if (!Selected) this.OnDeselection?.Invoke(new BaseEventArgs());
                 SetIcon(IconX, IconY, Selected);
             }
         }
@@ -68,15 +68,15 @@ namespace MKEditor.Widgets
             Sprites["selector"].Y = 26 + pixels;
         }
 
-        public override void HoverChanged(object sender, MouseEventArgs e)
+        public override void HoverChanged(MouseEventArgs e)
         {
-            base.HoverChanged(sender, e);
+            base.HoverChanged(e);
             Sprites["selector"].Visible = WidgetIM.Hovering;
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             int ry = e.Y - Viewport.Y;
             if (WidgetIM.Hovering && ry < 29 && !TimerExists("reset"))
             {
@@ -86,7 +86,7 @@ namespace MKEditor.Widgets
                 {
                     SetIcon(IconX, IconY, true);
                     SetTimer("reset", 100);
-                    if (OnLeftClick != null) OnLeftClick.Invoke(sender, e);
+                    this.OnLeftClick?.Invoke( e);
                 }
             }
         }

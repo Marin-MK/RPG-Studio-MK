@@ -40,7 +40,7 @@ namespace MKEditor.Widgets
                 Tilesets.Add(new ListItem($"{Utilities.Digits(i, 3)}: {t?.Name}", t));
             }
             DataList.SetItems(Tilesets);
-            DataList.OnSelectionChanged += delegate (object sender, EventArgs e)
+            DataList.OnSelectionChanged += delegate (BaseEventArgs e)
             {
                 TilesetEditor.SetTileset(DataList.SelectedItem.Object as Game.Tileset, DataList.SelectedIndex + 1);
             };
@@ -48,7 +48,7 @@ namespace MKEditor.Widgets
             ChangeAmountButton = new Button(this);
             ChangeAmountButton.SetSize(154, 37);
             ChangeAmountButton.SetText("Change Amount...");
-            ChangeAmountButton.OnClicked += delegate (object sender, EventArgs e)
+            ChangeAmountButton.OnClicked += delegate (BaseEventArgs e)
             {
                 PopupWindow win = new PopupWindow();
                 win.SetSize(270, 125);
@@ -67,11 +67,11 @@ namespace MKEditor.Widgets
                 Button CancelButton = new Button(win);
                 CancelButton.SetText("Cancel");
                 CancelButton.SetPosition(win.Size.Width - CancelButton.Size.Width - 5, win.Size.Height - CancelButton.Size.Height - 5);
-                CancelButton.OnClicked += delegate (object sender, EventArgs e) { win.Close(); };
+                CancelButton.OnClicked += delegate (BaseEventArgs e) { win.Close(); };
                 Button OKButton = new Button(win);
                 OKButton.SetText("OK");
                 OKButton.SetPosition(CancelButton.Position.X - OKButton.Size.Width, CancelButton.Position.Y);
-                OKButton.OnClicked += delegate (object sender, EventArgs e)
+                OKButton.OnClicked += delegate (BaseEventArgs e)
                 {
                     int NewValue = num.Value;
                     if (NewValue == Editor.ProjectSettings.TilesetCapacity)
@@ -102,7 +102,7 @@ namespace MKEditor.Widgets
                                 $"By resizing the tileset capacity from {Editor.ProjectSettings.TilesetCapacity} to {NewValue}, {Lost} entries will be removed, " +
                                 $"of which {DefinedCount} {(DefinedCount == 1 ? "is a" : "are")} defined tileset{(DefinedCount == 1 ? "" : "s")}.\n" +
                                 "Would you like to proceed and delete these tilesets?", ButtonType.YesNoCancel, IconType.Warning);
-                            box.OnButtonPressed += delegate (object sender, EventArgs e)
+                            box.OnButtonPressed += delegate (BaseEventArgs e)
                             {
                                 if (box.Result == 0) // Yes -> resize tileset capacity and delete tilesets
                                 {
@@ -179,9 +179,9 @@ namespace MKEditor.Widgets
             if (DataList.SelectedIndex >= Tilesets.Count) DataList.SetSelectedIndex(Tilesets.Count - 1);
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             ListContainer.SetSize(178, Size.Height - 81);
             ListContainer.VScrollBar.SetSize(ListContainer.VScrollBar.Size.Width, Size.Height - 42);
             ChangeAmountButton.SetPosition(17, Size.Height - 37);

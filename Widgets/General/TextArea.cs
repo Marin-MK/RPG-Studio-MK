@@ -28,7 +28,7 @@ namespace MKEditor.Widgets
 
         public int SelectionStartX = -1;
 
-        public EventHandler<EventArgs> OnTextChanged;
+        public BaseEvent OnTextChanged;
 
         public TextArea(IContainer Parent) : base(Parent)
         {
@@ -54,7 +54,7 @@ namespace MKEditor.Widgets
             RX = 0;
             CaretIndex = 0;
             DrawText();
-            if (OnTextChanged != null) OnTextChanged.Invoke(null, new EventArgs());
+            this.OnTextChanged?.Invoke(new BaseEventArgs());
         }
 
         public void SetFont(Font f)
@@ -116,31 +116,31 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             this.Width = Size.Width;
         }
 
-        public override void WidgetSelected(object sender, MouseEventArgs e)
+        public override void WidgetSelected(BaseEventArgs e)
         {
-            base.WidgetSelected(sender, e);
+            base.WidgetSelected(e);
             EnteringText = true;
             Input.StartTextInput();
             SetTimer("idle", 400);
         }
 
-        public override void WidgetDeselected(object sender, EventArgs e)
+        public override void WidgetDeselected(BaseEventArgs e)
         {
-            base.WidgetDeselected(sender, e);
+            base.WidgetDeselected(e);
             EnteringText = false;
             Input.StopTextInput();
             if (SelectionStartIndex != -1) CancelSelectionHidden();
         }
 
-        public override void TextInput(object sender, TextInputEventArgs e)
+        public override void TextInput(TextEventArgs e)
         {
-            base.TextInput(sender, e);
+            base.TextInput(e);
             string text = this.Text;
             if (e.Text == "\n")
             {
@@ -183,9 +183,9 @@ namespace MKEditor.Widgets
             }
             if (this.Text != text)
             {
-                if (this.OnTextChanged != null) this.OnTextChanged.Invoke(null, new EventArgs());
+                this.OnTextChanged?.Invoke(new BaseEventArgs());
             }
-            if (OnTextChanged != null) OnTextChanged.Invoke(null, new EventArgs());
+            this.OnTextChanged?.Invoke(new BaseEventArgs());
             DrawText();
         }
 
@@ -276,7 +276,7 @@ namespace MKEditor.Widgets
                 if (TimerExists("right")) DestroyTimer("right");
                 if (TimerExists("right_initial")) DestroyTimer("right_initial");
                 if (TimerExists("paste")) DestroyTimer("paste");
-                if (EnteringText) WidgetDeselected(null, new EventArgs());
+                if (EnteringText) WidgetDeselected(new BaseEventArgs());
                 if (Sprites["caret"].Visible) Sprites["caret"].Visible = false;
                 return;
             }
@@ -797,9 +797,9 @@ namespace MKEditor.Widgets
             DrawText();
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (!WidgetIM.Hovering || this.Text.Length == 0 || this.ReadOnly) return;
             if (SelectionStartIndex != -1 && SelectionStartIndex != SelectionEndIndex) CancelSelectionHidden();
             int OldRX = RX;
@@ -844,9 +844,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void MouseMoving(object sender, MouseEventArgs e)
+        public override void MouseMoving(MouseEventArgs e)
         {
-            base.MouseMoving(sender, e);
+            base.MouseMoving(e);
             if (!e.LeftButton || WidgetIM.ClickedLeftInArea != true || this.ReadOnly) return;
             int OldRX = RX;
             int OldCaretIndex = CaretIndex;
@@ -891,9 +891,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void HoverChanged(object sender, MouseEventArgs e)
+        public override void HoverChanged(MouseEventArgs e)
         {
-            base.HoverChanged(sender, e);
+            base.HoverChanged(e);
             if (WidgetIM.Hovering)
             {
                 Input.SetCursor(SDL_SystemCursor.SDL_SYSTEM_CURSOR_IBEAM);

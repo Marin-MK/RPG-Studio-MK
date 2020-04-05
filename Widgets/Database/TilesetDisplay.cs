@@ -9,8 +9,8 @@ namespace MKEditor.Widgets
         public PictureBox TilesetBox;
         VScrollBar ScrollBar;
 
-        public EventHandler<EventArgs> OnTilesetLoaded;
-        public EventHandler<PointEventArgs> OnTileClicked;
+        public BaseEvent OnTilesetLoaded;
+        public MouseEvent OnTileClicked;
 
         public TilesetDisplay(IContainer Parent) : base(Parent)
         {
@@ -49,19 +49,19 @@ namespace MKEditor.Widgets
             {
                 this.SetSize(267, TilesetBox.Size.Height + 4);
             }
-            if (this.OnTilesetLoaded != null) this.OnTilesetLoaded.Invoke(null, new EventArgs());
+            this.OnTilesetLoaded?.Invoke(new BaseEventArgs());
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             MainContainer.SetSize(this.Size.Width, Size.Height - 4);
             ScrollBar.SetHeight(Size.Height - 4);
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (!this.WidgetIM.Hovering) return;
             int rx = e.X - Viewport.X;
             int ry = e.Y - Viewport.Y;
@@ -72,7 +72,7 @@ namespace MKEditor.Widgets
             bool left = e.LeftButton != e.OldRightButton && e.LeftButton;
             bool right = e.RightButton != e.OldRightButton && e.RightButton;
             bool middle = e.MiddleButton != e.OldMiddleButton && e.MiddleButton;
-            if (this.OnTileClicked != null) this.OnTileClicked.Invoke(null, new PointEventArgs(rx, ry, left, right, middle));
+            this.OnTileClicked?.Invoke(new MouseEventArgs(rx, ry, left, right, middle));
         }
     }
 }

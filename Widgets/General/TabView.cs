@@ -14,7 +14,7 @@ namespace MKEditor.Widgets
         public  int                HeaderHeight  { get; protected set; } = 25;
         public  int                TextY         { get; protected set; } = 3;
 
-        public EventHandler<EventArgs> OnSelectionChanged;
+        public BaseEvent OnSelectionChanged;
 
         public TabView(IContainer Parent) : base(Parent)
         {
@@ -40,7 +40,7 @@ namespace MKEditor.Widgets
                     this.SelectedIndex = Index;
                     Sprites["bg"].X = Index * HeaderWidth;
                     Sprites["bg"].Visible = true;
-                    if (this.OnSelectionChanged != null) this.OnSelectionChanged.Invoke(this, new EventArgs());
+                    this.OnSelectionChanged?.Invoke(new BaseEventArgs());
                 }
             }
             else
@@ -107,9 +107,9 @@ namespace MKEditor.Widgets
             return tc;
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             (Sprites["header"].Bitmap as SolidBitmap).SetSize(Size.Width, 4);
             foreach (TabContainer tc in this.Tabs)
             {
@@ -118,9 +118,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void MouseMoving(object sender, MouseEventArgs e)
+        public override void MouseMoving(MouseEventArgs e)
         {
-            base.MouseMoving(sender, e);
+            base.MouseMoving(e);
             if (!WidgetIM.Hovering)
             {
                 HoveringIndex = -1;
@@ -138,9 +138,9 @@ namespace MKEditor.Widgets
             if (HoveringIndex >= Tabs.Count) HoveringIndex = -1;
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (HoveringIndex != -1)
             {
                 SelectTab(HoveringIndex);

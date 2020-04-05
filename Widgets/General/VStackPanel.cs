@@ -79,10 +79,10 @@ namespace MKEditor.Widgets
                 LayoutContainer c = new LayoutContainer(this, Index);
                 c.Widget = w;
                 w.SetParent(c);
-                c.OnChildBoundsChanged += delegate (object sender, SizeEventArgs e)
+                c.OnChildBoundsChanged += delegate (ObjectEventArgs e)
                 {
-                    c.SetHeight(e.Height);
-                    w.SetHeight(e.Height);
+                    c.SetHeight(((Size) e.Object).Height);
+                    w.SetHeight(((Size) e.Object).Height);
                     this.UpdateHeight();
                 };
                 w.Viewport = new Viewport(w.Window.Renderer, 0, 0, w.Size);

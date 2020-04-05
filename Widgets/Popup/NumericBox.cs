@@ -16,7 +16,7 @@ namespace MKEditor.Widgets
         public int Increment = 1;
         public Color TextColor { get; protected set; } = Color.WHITE;
 
-        public EventHandler<EventArgs> OnValueChanged;
+        public BaseEvent OnValueChanged;
 
         public NumericBox(IContainer Parent) : base(Parent)
         {
@@ -38,7 +38,7 @@ namespace MKEditor.Widgets
             if (this.Value != Value)
             {
                 this.Value = Value;
-                if (OnValueChanged != null) OnValueChanged.Invoke(null, new EventArgs());
+                this.OnValueChanged?.Invoke(new BaseEventArgs());
                 Redraw();
             }
         }
@@ -117,9 +117,9 @@ namespace MKEditor.Widgets
             base.Draw();
         }
 
-        public override void MouseMoving(object sender, MouseEventArgs e)
+        public override void MouseMoving(MouseEventArgs e)
         {
-            base.MouseMoving(sender, e);
+            base.MouseMoving(e);
             bool oldup = HoveringUp;
             bool olddown = HoveringDown;
             if (!WidgetIM.Hovering)
@@ -145,9 +145,9 @@ namespace MKEditor.Widgets
             if (oldup != HoveringUp || olddown != HoveringDown) Redraw();
         }
 
-        public override void HoverChanged(object sender, MouseEventArgs e)
+        public override void HoverChanged(MouseEventArgs e)
         {
-            base.HoverChanged(sender, e);
+            base.HoverChanged(e);
             if (!WidgetIM.Hovering)
             {
                 if (HoveringUp || HoveringDown) Redraw();
@@ -156,23 +156,23 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (HoveringUp) SetValue(Value + Increment);
             if (HoveringDown) SetValue(Value - Increment);
         }
 
-        public override void MouseUp(object sender, MouseEventArgs e)
+        public override void MouseUp(MouseEventArgs e)
         {
-            base.MouseUp(sender, e);
+            base.MouseUp(e);
             if (TimerExists("cooldown")) DestroyTimer("cooldown");
             if (TimerExists("press")) DestroyTimer("press");
         }
 
-        public override void MousePress(object sender, MouseEventArgs e)
+        public override void MousePress(MouseEventArgs e)
         {
-            base.MousePress(sender, e);
+            base.MousePress(e);
             if (e.LeftButton && (HoveringUp || HoveringDown))
             {
                 if (!TimerExists("press") && !TimerExists("cooldown"))

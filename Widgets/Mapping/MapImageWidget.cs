@@ -48,9 +48,9 @@ namespace MKEditor.Widgets
             (Sprites["dark"].Bitmap as SolidBitmap).SetColor(0, 0, 0, Opacity);
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             GridBackground.SetSize(this.Size);
             (Sprites["dark"].Bitmap as SolidBitmap).SetSize(this.Size);
         }

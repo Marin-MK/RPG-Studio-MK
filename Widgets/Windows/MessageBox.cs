@@ -20,7 +20,7 @@ namespace MKEditor.Widgets
         public List<string> Buttons;
         public IconType IconType;
 
-        public EventHandler<EventArgs> OnButtonPressed;
+        public BaseEvent OnButtonPressed;
 
         public MessageBox(string Title, string Message, ButtonType type = ButtonType.OK, IconType IconType = IconType.None, List<string> _buttons = null)
         {
@@ -65,10 +65,10 @@ namespace MKEditor.Widgets
             {
                 Button3 = new Button(this);
                 Button3.SetText(Buttons[0]);
-                Button3.OnClicked += delegate (object sender, EventArgs e)
+                Button3.OnClicked += delegate (BaseEventArgs e)
                 {
                     Result = 0;
-                    if (OnButtonPressed != null) OnButtonPressed.Invoke(null, new EventArgs());
+                    this.OnButtonPressed?.Invoke(new BaseEventArgs());
                     Close();
                 };
             }
@@ -76,18 +76,18 @@ namespace MKEditor.Widgets
             {
                 Button2 = new Button(this);
                 Button2.SetText(Buttons[0]);
-                Button2.OnClicked += delegate (object sender, EventArgs e)
+                Button2.OnClicked += delegate (BaseEventArgs e)
                 {
                     Result = 0;
-                    if (OnButtonPressed != null) OnButtonPressed.Invoke(null, new EventArgs());
+                    this.OnButtonPressed?.Invoke(new BaseEventArgs());
                     Close();
                 };
                 Button3 = new Button(this);
                 Button3.SetText(Buttons[1]);
-                Button3.OnClicked += delegate (object sender, EventArgs e)
+                Button3.OnClicked += delegate (BaseEventArgs e)
                 {
                     Result = 1;
-                    if (OnButtonPressed != null) OnButtonPressed.Invoke(null, new EventArgs());
+                    this.OnButtonPressed?.Invoke(new BaseEventArgs());
                     Close();
                 };
             }
@@ -95,26 +95,26 @@ namespace MKEditor.Widgets
             {
                 Button1 = new Button(this);
                 Button1.SetText(Buttons[0]);
-                Button1.OnClicked += delegate (object sender, EventArgs e)
+                Button1.OnClicked += delegate (BaseEventArgs e)
                 {
                     Result = 0;
-                    if (OnButtonPressed != null) OnButtonPressed.Invoke(null, new EventArgs());
+                    this.OnButtonPressed?.Invoke(new BaseEventArgs());
                     Close();
                 };
                 Button2 = new Button(this);
                 Button2.SetText(Buttons[1]);
-                Button2.OnClicked += delegate (object sender, EventArgs e)
+                Button2.OnClicked += delegate (BaseEventArgs e)
                 {
                     Result = 1;
-                    if (OnButtonPressed != null) OnButtonPressed.Invoke(null, new EventArgs());
+                    this.OnButtonPressed?.Invoke(new BaseEventArgs());
                     Close();
                 };
                 Button3 = new Button(this);
                 Button3.SetText(Buttons[2]);
-                Button3.OnClicked += delegate (object sender, EventArgs e)
+                Button3.OnClicked += delegate (BaseEventArgs e)
                 {
                     Result = 2;
-                    if (OnButtonPressed != null) OnButtonPressed.Invoke(null, new EventArgs());
+                    this.OnButtonPressed?.Invoke(new BaseEventArgs());
                     Close();
                 };
             }
@@ -134,9 +134,9 @@ namespace MKEditor.Widgets
 
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             Button3.SetPosition(Size.Width - Button3.Size.Width - 1, Size.Height - Button3.Size.Height - 1);
             if (Button2 != null) Button2.SetPosition(Button3.Position.X - Button2.Size.Width, Button3.Position.Y);
             if (Button1 != null) Button1.SetPosition(Button2.Position.X - Button1.Size.Width, Button3.Position.Y);

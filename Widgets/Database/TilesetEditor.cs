@@ -48,15 +48,15 @@ namespace MKEditor.Widgets
 
             PassageContainer = Submodes.CreateTab("Passage");
             VignetteFade PassageFade = new VignetteFade(PassageContainer);
-            PassageContainer.OnSizeChanged += delegate (object sender, SizeEventArgs e) { PassageFade.SetSize(PassageContainer.Size); };
+            PassageContainer.OnSizeChanged += delegate (BaseEventArgs e) { PassageFade.SetSize(PassageContainer.Size); };
 
             FourDirContainer = Submodes.CreateTab("4-Dir");
             VignetteFade FourDirFade = new VignetteFade(FourDirContainer);
-            FourDirContainer.OnSizeChanged += delegate (object sender, SizeEventArgs e) { FourDirFade.SetSize(FourDirContainer.Size); };
+            FourDirContainer.OnSizeChanged += delegate (BaseEventArgs e) { FourDirFade.SetSize(FourDirContainer.Size); };
 
             PriorityContainer = Submodes.CreateTab("Priority");
             VignetteFade PriorityFade = new VignetteFade(PriorityContainer);
-            PriorityContainer.OnSizeChanged += delegate (object sender, SizeEventArgs e) { PriorityFade.SetSize(PriorityContainer.Size); };
+            PriorityContainer.OnSizeChanged += delegate (BaseEventArgs e) { PriorityFade.SetSize(PriorityContainer.Size); };
 
             //Submodes.CreateTab("Terrain Tag");
             //Submodes.CreateTab("Bush Flag");
@@ -64,25 +64,13 @@ namespace MKEditor.Widgets
 
             Container PassageSubContainer = new Container(PassageContainer);
             PassageList = new TilesetDisplay(PassageSubContainer);
-            PassageList.OnTilesetLoaded += delegate (object sender, EventArgs e)
-            {
-                PassageDrawAll();
-            };
-            PassageList.OnTileClicked += delegate (object sender, PointEventArgs e)
-            {
-                PassageInput(e);
-            };
+            PassageList.OnTilesetLoaded += delegate (BaseEventArgs e) { PassageDrawAll(); };
+            PassageList.OnTileClicked += delegate (MouseEventArgs e) { PassageInput(e); };
 
             Container FourDirSubContainer = new Container(FourDirContainer);
             FourDirList = new TilesetDisplay(FourDirSubContainer);
-            FourDirList.OnTilesetLoaded += delegate (object sender, EventArgs e)
-            {
-                FourDirDrawAll();
-            };
-            FourDirList.OnTileClicked += delegate (object sender, PointEventArgs e)
-            {
-                FourDirInput(e);
-            };
+            FourDirList.OnTilesetLoaded += delegate (BaseEventArgs e) { FourDirDrawAll(); };
+            FourDirList.OnTileClicked += delegate (MouseEventArgs e) { FourDirInput(e); };
 
             PassageContainer.SetBackgroundColor(28, 50, 73);
             FourDirContainer.SetBackgroundColor(28, 50, 73);
@@ -102,7 +90,7 @@ namespace MKEditor.Widgets
             NameBox.SetSize(156, 21);
             NameBox.SetSkin(1);
             // Updates tileset list
-            NameBox.OnTextChanged += delegate (object sender, EventArgs e)
+            NameBox.OnTextChanged += delegate (BaseEventArgs e)
             {
                 if (this.Tileset == null) return;
                 this.Tileset.Name = NameBox.Text;
@@ -119,7 +107,7 @@ namespace MKEditor.Widgets
             GraphicBox = new DropdownBox(SharedContainer);
             GraphicBox.SetPosition(19, 103);
             GraphicBox.SetSize(156, 21);
-            GraphicBox.OnDropDownClicked += delegate (object sender, EventArgs e)
+            GraphicBox.OnDropDownClicked += delegate (BaseEventArgs e)
             {
                 OpenFileDialog of = new OpenFileDialog();
                 of.SetFilter(new FileFilter("PNG Image", "png"));
@@ -148,7 +136,7 @@ namespace MKEditor.Widgets
                     {
                         MessageBox box = new MessageBox("Error",
                             "The selected file doesn't exist in the gfx/tilesets folder. Would you like to import it?", ButtonType.YesNo);
-                        box.OnButtonPressed += delegate (object sender, EventArgs e)
+                        box.OnButtonPressed += delegate (BaseEventArgs e)
                         {
                             if (box.Result == 0) // Yes
                             {
@@ -183,7 +171,7 @@ namespace MKEditor.Widgets
                 }
             };
             // Updates graphic if typed
-            GraphicBox.TextArea.OnWidgetDeselected += delegate (object sender, EventArgs e)
+            GraphicBox.TextArea.OnWidgetDeselected += delegate (BaseEventArgs e)
             {
                 string file = GraphicBox.Text;
                 if (!System.IO.File.Exists(Game.Data.ProjectPath + "\\gfx\\tilesets\\" + file + ".png"))
@@ -201,7 +189,7 @@ namespace MKEditor.Widgets
             ClearTilesetButton.SetSize(140, 44);
             ClearTilesetButton.SetFont(Font.Get("Fonts/Ubuntu-B", 16));
             ClearTilesetButton.SetText("Clear Tileset");
-            ClearTilesetButton.OnClicked += delegate (object sender, EventArgs e)
+            ClearTilesetButton.OnClicked += delegate (BaseEventArgs e)
             {
                 ConfirmClearTileset();
             };
@@ -261,7 +249,7 @@ namespace MKEditor.Widgets
                     $"The tiles from this tileset that are being used on {(plural ? "those maps" : "that map")} will be deleted.\n" +
                     "Are you sure you'd like to delete those tiles?",
                     new List<string>() { "Delete", "Cancel" }, IconType.Warning);
-                box.OnButtonPressed += delegate (object sender, EventArgs e)
+                box.OnButtonPressed += delegate (BaseEventArgs e)
                 {
                     if (box.Result == 0) // Delete
                     {
@@ -291,9 +279,9 @@ namespace MKEditor.Widgets
             this.SetTileset(null, TilesetID);
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             Submodes.SetSize(this.Size);
             if (SharedContainer.Sprites["bg"].Bitmap != null) SharedContainer.Sprites["bg"].Bitmap.Dispose();
 
@@ -348,16 +336,16 @@ namespace MKEditor.Widgets
             bmp.Lock();
         }
 
-        public void FourDirInput(PointEventArgs p)
+        public void FourDirInput(MouseEventArgs e)
         {
-            bool LeftButton = p.LeftButton;
-            bool RightButton = p.RightButton;
-            bool MiddleButton = p.MiddleButton;
+            bool LeftButton = e.LeftButton;
+            bool RightButton = e.RightButton;
+            bool MiddleButton = e.MiddleButton;
 
-            int TileX = (int) Math.Floor(p.X / 33d);
-            int TileY = (int) Math.Floor(p.Y / 33d);
-            int rx = p.X - TileX * 33;
-            int ry = p.Y - TileY * 33;
+            int TileX = (int) Math.Floor(e.X / 33d);
+            int TileY = (int) Math.Floor(e.Y / 33d);
+            int rx = e.X - TileX * 33;
+            int ry = e.Y - TileY * 33;
             bool up = false;
             bool left = false;
             bool right = false;
@@ -467,14 +455,14 @@ namespace MKEditor.Widgets
             bmp.Lock();
         }
 
-        public void PassageInput(PointEventArgs p)
+        public void PassageInput(MouseEventArgs e)
         {
-            bool LeftButton = p.LeftButton;
-            bool RightButton = p.RightButton;
-            bool MiddleButton = p.MiddleButton;
+            bool LeftButton = e.LeftButton;
+            bool RightButton = e.RightButton;
+            bool MiddleButton = e.MiddleButton;
 
-            int TileX = (int) Math.Floor(p.X / 33d);
-            int TileY = (int) Math.Floor(p.Y / 33d);
+            int TileX = (int) Math.Floor(e.X / 33d);
+            int TileY = (int) Math.Floor(e.Y / 33d);
 
             Game.Passability pass = this.Tileset.Passabilities[TileY * 8 + TileX];
             if (pass == Game.Passability.None) pass = Game.Passability.All;

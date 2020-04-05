@@ -93,7 +93,7 @@ namespace MKEditor.Widgets
                 HiddenMaps.Add(c.MapID);
             }
             MapPicker picker = new MapPicker(HiddenMaps);
-            picker.OnClosed += delegate (object sender, EventArgs e)
+            picker.OnClosed += delegate (BaseEventArgs e)
             {
                 if (picker.ChosenMap != null)
                 {
@@ -106,9 +106,9 @@ namespace MKEditor.Widgets
             };
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             ConnectionContainer.SetSize(Size.Width - 13, Size.Height - ConnectionContainer.Position.Y);
             ConnectionContainer.VScrollBar.SetPosition(Size.Width - 10, 34);
             ConnectionContainer.VScrollBar.SetSize(8, Size.Height - 36);
@@ -148,17 +148,17 @@ namespace MKEditor.Widgets
             SetHeight(25);
         }
 
-        public override void HoverChanged(object sender, MouseEventArgs e)
+        public override void HoverChanged(MouseEventArgs e)
         {
-            base.HoverChanged(sender, e);
+            base.HoverChanged(e);
             PlusButton.SetTextColor(WidgetIM.Hovering ? new Color(47, 160, 193) : Color.WHITE);
             Label.SetTextColor(WidgetIM.Hovering ? new Color(47, 160, 193) : Color.WHITE);
             Sprites["hover"].Visible = WidgetIM.Hovering;
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (WidgetIM.Hovering)
             {
                 Editor.MainWindow.MapWidget.MapViewerConnections.ConnectionsPanel.NewConnection();

@@ -245,9 +245,9 @@ namespace MKEditor.Widgets
             };
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             if (Size.Height < 41 * Tabs.Count) SetSize(355, 41 * Tabs.Count);
         }
 

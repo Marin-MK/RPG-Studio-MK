@@ -12,8 +12,8 @@ namespace MKEditor.Widgets
 
         public TextArea TextArea;
 
-        public EventHandler<EventArgs> OnTextChanged { get { return TextArea.OnTextChanged; } set { TextArea.OnTextChanged = value; } }
-        public EventHandler<EventArgs> OnDropDownClicked;
+        public BaseEvent OnTextChanged { get { return TextArea.OnTextChanged; } set { TextArea.OnTextChanged = value; } }
+        public BaseEvent OnDropDownClicked;
 
         public DropdownBox(IContainer Parent) : base(Parent)
         {
@@ -27,9 +27,9 @@ namespace MKEditor.Widgets
             WidgetIM.OnMouseDown += MouseDown;
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             TextArea.SetSize(this.Size.Width - 21, this.Size.Height - 3);
         }
 
@@ -74,9 +74,9 @@ namespace MKEditor.Widgets
             base.Draw();
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (!TextArea.WidgetIM.Hovering && TextArea.SelectedWidget)
             {
                 Window.UI.SetSelectedWidget(null);
@@ -86,7 +86,7 @@ namespace MKEditor.Widgets
             if (rx >= Size.Width - 18 && rx < Size.Width - 1 &&
                 ry >= 1 && ry < Size.Height - 1)
             {
-                if (OnDropDownClicked != null) OnDropDownClicked.Invoke(null, new EventArgs());
+                this.OnDropDownClicked?.Invoke(new BaseEventArgs());
             };
         }
     }

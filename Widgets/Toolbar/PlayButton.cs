@@ -52,15 +52,15 @@ namespace MKEditor.Widgets
             base.Draw();
         }
 
-        public void UpdateSelector(object sender, MouseEventArgs e)
+        public void UpdateSelector(MouseEventArgs e)
         {
             int ry = e.Y - Viewport.Y;
             //Sprites["selector"].Visible = WidgetIM.Hovering && ry < 42;
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (WidgetIM.Hovering)
             {
                 Editor.StartGame();

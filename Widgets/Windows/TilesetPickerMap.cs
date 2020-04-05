@@ -74,21 +74,21 @@ namespace MKEditor.Widgets
             Available = new ListBox(this);
             Available.SetPosition(25, 44);
             Available.SetSize(151, 179);
-            Available.OnSelectionChanged += delegate (object sender, EventArgs e)
+            Available.OnSelectionChanged += delegate (BaseEventArgs e)
             {
                 if (Available.SelectedIndex != -1)
                 {
                     InUse.SetSelectedIndex(-1);
-                    SelectionChanged(sender, e);
+                    SelectionChanged(e);
                 }
             };
             Available.ListDrawer.SetContextMenuList(new List<IMenuItem>()
             {
                 new MenuItem("Add Tileset")
                 {
-                    IsClickable = delegate (object sender, ConditionEventArgs e)
+                    IsClickable = delegate (BoolEventArgs e)
                     {
-                        e.ConditionValue = !(SelectedTileset is null);
+                        e.Value = !(SelectedTileset is null);
                     },
                     OnLeftClick = ActionButtonClicked
                 }
@@ -97,29 +97,29 @@ namespace MKEditor.Widgets
             InUse = new ListBox(this);
             InUse.SetPosition(25, 274);
             InUse.SetSize(151, 179);
-            InUse.OnSelectionChanged += delegate (object sender, EventArgs e)
+            InUse.OnSelectionChanged += delegate (BaseEventArgs e)
             {
                 if (InUse.SelectedIndex != -1)
                 {
                     Available.SetSelectedIndex(-1);
-                    SelectionChanged(sender, e);
+                    SelectionChanged(e);
                 }
             };
             InUse.ListDrawer.SetContextMenuList(new List<IMenuItem>()
             {
                 new MenuItem("Move Tileset Up")
                 {
-                    IsClickable = delegate (object sender, ConditionEventArgs e)
+                    IsClickable = delegate (BoolEventArgs e)
                     {
-                        e.ConditionValue = InUse.SelectedIndex > 0;
+                        e.Value = InUse.SelectedIndex > 0;
                     },
                     OnLeftClick = MoveTilesetUp
                 },
                 new MenuItem("Move Tileset Down")
                 {
-                    IsClickable = delegate (object sender, ConditionEventArgs e)
+                    IsClickable = delegate (BoolEventArgs e)
                     {
-                        e.ConditionValue = InUse.SelectedIndex < InUse.Items.Count - 1;
+                        e.Value = InUse.SelectedIndex < InUse.Items.Count - 1;
                     },
                     OnLeftClick = MoveTilesetDown
                 },
@@ -149,13 +149,13 @@ namespace MKEditor.Widgets
             Available.SetItems(AvailableList);
             InUse.SetItems(InUseList);
 
-            CreateButton("Cancel", delegate (object sender, EventArgs e)
+            CreateButton("Cancel", delegate (BaseEventArgs e)
             {
                 ResultIDs = OldIDs;
                 Close();
             });
 
-            CreateButton("OK", delegate (object sender, EventArgs e)
+            CreateButton("OK", delegate (BaseEventArgs e)
             {
                 ResultIDs = new List<int>();
                 for (int i = 0; i < InUse.Items.Count; i++)
@@ -179,7 +179,7 @@ namespace MKEditor.Widgets
             SetTimer("frame", (long) Math.Round(1000 / 60d));
         }
 
-        public void SelectionChanged(object sender, EventArgs e)
+        public void SelectionChanged(BaseEventArgs e)
         {
             ActionButton.SetClickable(true);
             if (InUse.SelectedIndex == -1)
@@ -201,7 +201,7 @@ namespace MKEditor.Widgets
             TilesetBox.Sprite.DestroyBitmap = false;
         }
 
-        private void ActionButtonClicked(object sender, EventArgs e)
+        private void ActionButtonClicked(BaseEventArgs e)
         {
             if (InUse.SelectedIndex == -1) // Add
             {
@@ -232,10 +232,10 @@ namespace MKEditor.Widgets
                 if (Available.SelectedIndex == -1 && InUse.SelectedIndex == -1)
                     Available.SetSelectedIndex(0);
             }
-            SelectionChanged(sender, e);
+            SelectionChanged(e);
         }
 
-        public void MoveTilesetUp(object sender, EventArgs e)
+        public void MoveTilesetUp(BaseEventArgs e)
         {
             if (InUse.SelectedIndex > 0)
             {
@@ -245,7 +245,7 @@ namespace MKEditor.Widgets
             }
         }
 
-        public void MoveTilesetDown(object sender, EventArgs e)
+        public void MoveTilesetDown(BaseEventArgs e)
         {
             if (InUse.SelectedIndex < InUse.Items.Count - 1)
             {

@@ -55,31 +55,31 @@ namespace MKEditor.Widgets
                 new MenuItem("Toggle Visibility")
                 {
                     OnLeftClick = ToggleVisibilityLayer,
-                    IsClickable = delegate (object sender, ConditionEventArgs e ) { e.ConditionValue = layerwidget.HoveringIndex >= 0; }
+                    IsClickable = delegate (BoolEventArgs e ) { e.Value = layerwidget.HoveringIndex >= 0; }
                 },
                 new MenuItem("Move Layer Up")
                 {
                     OnLeftClick = MoveLayerUpEvent,
-                    IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = SelectedLayer < Map.Layers.Count - 1 && layerwidget.HoveringIndex >= 0; }
+                    IsClickable = delegate (BoolEventArgs e ) { e.Value = SelectedLayer < Map.Layers.Count - 1 && layerwidget.HoveringIndex >= 0; }
                 },
                 new MenuItem("Move Layer Down")
                 {
                     OnLeftClick = MoveLayerDownEvent,
-                    IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = SelectedLayer > 0 && layerwidget.HoveringIndex >= 0; }
+                    IsClickable = delegate (BoolEventArgs e ) { e.Value = SelectedLayer > 0 && layerwidget.HoveringIndex >= 0; }
                 },
                 new MenuSeparator(),
                 new MenuItem("Delete Layer")
                 {
                     Shortcut = "Del",
                     OnLeftClick = DeleteLayerEvent,
-                    IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Map.Layers.Count > 1 && layerwidget.HoveringIndex >= 0; }
+                    IsClickable = delegate (BoolEventArgs e ) { e.Value = Map.Layers.Count > 1 && layerwidget.HoveringIndex >= 0; }
                 }
             });
 
             RegisterShortcuts(new List<Shortcut>()
             {
-                new Shortcut(this, new Key(Keycode.DELETE), new EventHandler<EventArgs>(DeleteLayerEvent)),
-                new Shortcut(this, new Key(Keycode.F2), new EventHandler<EventArgs>(RenameLayer))
+                new Shortcut(this, new Key(Keycode.DELETE), DeleteLayerEvent),
+                new Shortcut(this, new Key(Keycode.F2), RenameLayer)
             });
 
             SetSize(283, 200); // Dummy size so the sprites can be drawn properly
@@ -90,7 +90,7 @@ namespace MKEditor.Widgets
             layerwidget.SetSelectedLayer(LayerIndex);
         }
 
-        private void NewLayerEvent(object sender, EventArgs e)
+        private void NewLayerEvent(BaseEventArgs e)
         {
             Layer layer = new Layer($"New Layer");
             layer.Tiles = new List<TileData>(Map.Width * Map.Height);
@@ -109,17 +109,17 @@ namespace MKEditor.Widgets
             layerwidget.SetSelectedLayer(oldselected + 1); // Update selected layer
         }
 
-        public void RenameLayer(object sender, EventArgs e)
+        public void RenameLayer(BaseEventArgs e)
         {
             layerwidget.RenameLayer(SelectedLayer);
         }
 
-        public void ToggleVisibilityLayer(object sender, EventArgs e)
+        public void ToggleVisibilityLayer(BaseEventArgs e)
         {
             layerwidget.SetLayerVisible(SelectedLayer, !Map.Layers[SelectedLayer].Visible);
         }
 
-        private void MoveLayerUpEvent(object sender, EventArgs e)
+        private void MoveLayerUpEvent(BaseEventArgs e)
         {
             MoveLayerUp(SelectedLayer);
         }
@@ -134,7 +134,7 @@ namespace MKEditor.Widgets
             if (!IsUndoAction) LayerSwapUndoAction.Create(Editor.MainWindow.MapWidget.Map.ID, LayerIndex, true);
         }
 
-        private void MoveLayerDownEvent(object sender, EventArgs e)
+        private void MoveLayerDownEvent(BaseEventArgs e)
         {
             MoveLayerDown(SelectedLayer);
         }
@@ -149,7 +149,7 @@ namespace MKEditor.Widgets
             if (!IsUndoAction) LayerSwapUndoAction.Create(Editor.MainWindow.MapWidget.Map.ID, LayerIndex, false);
         }
 
-        private void DeleteLayerEvent(object sender, EventArgs e)
+        private void DeleteLayerEvent(BaseEventArgs e)
         {
             DeleteLayer(SelectedLayer);
         }
@@ -168,7 +168,7 @@ namespace MKEditor.Widgets
             }
         }
 
-        public void FocusLayer(object sender, EventArgs e)
+        public void FocusLayer(BaseEventArgs e)
         {
             bool OnlySelectedIsVisible = !Map.Layers.Exists(layer => layer != Map.Layers[SelectedLayer] && layer.Visible);
             if (!Map.Layers[SelectedLayer].Visible)
@@ -185,9 +185,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             layercontainer.SetSize(Size.Width - 13, Size.Height - layercontainer.Position.Y);
             layercontainer.VScrollBar.SetPosition(Size.Width - 10, 34);
             layercontainer.VScrollBar.SetSize(8, Size.Height - 36);
@@ -216,7 +216,7 @@ namespace MKEditor.Widgets
             base.Update();
         }
 
-        public override void WidgetSelected(object sender, MouseEventArgs e)
+        public override void WidgetSelected(BaseEventArgs e)
         {
             if (layerwidget.RenameBox == null || !layerwidget.RenameBox.WidgetIM.Hovering)
                 Window.UI.SetSelectedWidget(this);

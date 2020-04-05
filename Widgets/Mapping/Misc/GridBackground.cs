@@ -17,9 +17,9 @@ namespace MKEditor.Widgets
             RedrawGrid();
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             RedrawGrid();
         }
 

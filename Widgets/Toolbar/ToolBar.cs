@@ -30,28 +30,28 @@ namespace MKEditor.Widgets
             MappingMode = new ModeButton(this, "Maps", 23);
             MappingMode.SetPosition(4, 0);
             MappingMode.SetSelected(true);
-            MappingMode.OnSelection += delegate (object sender, EventArgs e)
+            MappingMode.OnSelection += delegate (BaseEventArgs e)
             {
                 Editor.SetMode("MAPPING");
             };
 
             EventingMode = new ModeButton(this, "Events", 24);
             EventingMode.SetPosition(MappingMode.Position.X + MappingMode.Size.Width + 12, 0);
-            EventingMode.OnSelection += delegate (object sender, EventArgs e)
+            EventingMode.OnSelection += delegate (BaseEventArgs e)
             {
                 Editor.SetMode("EVENTING");
             };
 
             ScriptingMode = new ModeButton(this, "Scripts", 25);
             ScriptingMode.SetPosition(EventingMode.Position.X + EventingMode.Size.Width + 12, 0);
-            ScriptingMode.OnSelection += delegate (object sender, EventArgs e)
+            ScriptingMode.OnSelection += delegate (BaseEventArgs e)
             {
                 Editor.SetMode("SCRIPTING");
             };
 
             DatabaseMode = new ModeButton(this, "Database", 26);
             DatabaseMode.SetPosition(ScriptingMode.Position.X + ScriptingMode.Size.Width + 12, 0);
-            DatabaseMode.OnSelection += delegate (object sender, EventArgs e)
+            DatabaseMode.OnSelection += delegate (BaseEventArgs e)
             {
                 Editor.SetMode("DATABASE");
             };
@@ -68,7 +68,7 @@ namespace MKEditor.Widgets
             Undo.SetPosition(30, 0);
             Undo.SetIcon(4, 0);
             Undo.Selectable = false;
-            Undo.OnLeftClick += delegate (object sender, MouseEventArgs e)
+            Undo.OnLeftClick += delegate (MouseEventArgs e)
             {
                 Editor.Undo();
             };
@@ -76,7 +76,7 @@ namespace MKEditor.Widgets
             Redo.SetPosition(54, 0);
             Redo.SetIcon(5, 0);
             Redo.Selectable = false;
-            Redo.OnLeftClick += delegate (object sender, MouseEventArgs e)
+            Redo.OnLeftClick += delegate (MouseEventArgs e)
             {
                 Editor.Redo();
             };
@@ -107,9 +107,9 @@ namespace MKEditor.Widgets
 
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             PlayButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width, 2);
             SaveButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width - 7 - SaveButton.Size.Width, 2);
             if (Size.Width < 800)

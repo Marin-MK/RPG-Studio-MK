@@ -13,9 +13,9 @@ namespace MKEditor.Widgets
             TabControl = new TabView(this);
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             TabControl.SetSize(this.Size);
         }
     }

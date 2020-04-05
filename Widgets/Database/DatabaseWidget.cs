@@ -25,7 +25,7 @@ namespace MKEditor.Widgets
             vslist.SetPosition(1, 1);
 
             DBContainer = new Container(MainGrid);
-            DBContainer.OnSizeChanged += delegate (object sender, SizeEventArgs e)
+            DBContainer.OnSizeChanged += delegate (BaseEventArgs e)
             {
                 DBModeList.SetSize(DBContainer.Size);
                 DBDataList.SetSize(197, DBContainer.Size.Height);
@@ -59,7 +59,7 @@ namespace MKEditor.Widgets
 
             MainContainer = new Container(MainGrid);
             MainContainer.SetGridColumn(1);
-            MainContainer.OnSizeChanged += delegate (object sender, SizeEventArgs e) { MainWidget.SetSize(MainContainer.Size); };
+            MainContainer.OnSizeChanged += delegate (BaseEventArgs e) { MainWidget.SetSize(MainContainer.Size); };
             
             TilesetEditor te = new TilesetEditor(MainContainer);
             MainWidget = te;
@@ -70,9 +70,9 @@ namespace MKEditor.Widgets
             DBModeList.SetSelectedIndex(5);
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             DBContainer.VScrollBar.SetHeight(Size.Height - 2);
         }
     }

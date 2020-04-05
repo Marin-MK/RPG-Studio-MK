@@ -36,8 +36,8 @@ namespace MKEditor
             BGSprite = new Sprite(this.Viewport);
             BGSprite.Bitmap = new SolidBitmap(this.Size, this.BackgroundColor);
             this.Window.SetActiveWidget(this);
-            this.RegisterShortcut(new Shortcut(null, new Key(Keycode.Z, Keycode.CTRL), delegate (object sender, EventArgs e) { Editor.Undo(); }, true));
-            this.RegisterShortcut(new Shortcut(null, new Key(Keycode.Y, Keycode.CTRL), delegate (object sender, EventArgs e) { Editor.Redo(); }, true));
+            this.RegisterShortcut(new Shortcut(null, new Key(Keycode.Z, Keycode.CTRL), delegate (BaseEventArgs e) { Editor.Undo(); }, true));
+            this.RegisterShortcut(new Shortcut(null, new Key(Keycode.Y, Keycode.CTRL), delegate (BaseEventArgs e) { Editor.Redo(); }, true));
         }
 
         public void Add(Widget w)
@@ -68,7 +68,7 @@ namespace MKEditor
             IMs.Remove(input);
         }
 
-        public void MouseDown(object sender, MouseEventArgs e)
+        public void MouseDown(MouseEventArgs e)
         {
             bool DoMoveEvent = false;
             for (int i = 0; i < IMs.Count; i++)
@@ -89,11 +89,11 @@ namespace MKEditor
             if (DoMoveEvent)
             {
                 e.Handled = false;
-                MouseMoving(sender, e);
+                MouseMoving(e);
             }
         }
 
-        public void MousePress(object sender, MouseEventArgs e)
+        public void MousePress(MouseEventArgs e)
         {
             for (int i = 0; i < IMs.Count; i++)
             {
@@ -108,7 +108,7 @@ namespace MKEditor
             }
         }
 
-        public void MouseUp(object sender, MouseEventArgs e)
+        public void MouseUp(MouseEventArgs e)
         {
             for (int i = 0; i < IMs.Count; i++)
             {
@@ -123,7 +123,7 @@ namespace MKEditor
             }
         }
 
-        public void MouseMoving(object sender, MouseEventArgs e)
+        public void MouseMoving(MouseEventArgs e)
         {
             for (int i = 0; i < IMs.Count; i++)
             {
@@ -138,7 +138,7 @@ namespace MKEditor
             }
         }
 
-        public void MouseWheel(object sender, MouseEventArgs e)
+        public void MouseWheel(MouseEventArgs e)
         {
             for (int i = 0; i < IMs.Count; i++)
             {
@@ -153,12 +153,12 @@ namespace MKEditor
             }
         }
 
-        public void WindowResized(object sender, WindowEventArgs e)
+        public void WindowResized(BaseEventArgs e)
         {
             (BGSprite.Bitmap as SolidBitmap).SetSize(this.Size);
             this.Widgets.ForEach(w =>
             {
-                w.OnParentSizeChanged.Invoke(sender, new SizeEventArgs(e.Width, e.Height));
+                w.OnParentSizeChanged(new BaseEventArgs());
                 w.Redraw();
             });
         }
@@ -227,7 +227,7 @@ namespace MKEditor
 
                 if (!Valid) continue;
 
-                s.Event.Invoke(this, new EventArgs());
+                s.Event(new BaseEventArgs());
             }
 
             for (int i = 0; i < this.Widgets.Count; i++)
@@ -291,7 +291,7 @@ namespace MKEditor
             {
                 this.SelectedWidget.SelectedWidget = false;
                 Widget selbefore = this.SelectedWidget;
-                this.SelectedWidget.OnWidgetDeselected.Invoke(this, new EventArgs());
+                this.SelectedWidget.OnWidgetDeselected(new BaseEventArgs());
                 if (!selbefore.Disposed) selbefore.Redraw();
                 // Possible if OnWidgetDeselected itself called SetSelectedWidget on a different widget.
                 // In that case we should skip the setting-bit below, as it would
@@ -307,12 +307,9 @@ namespace MKEditor
             }
         }
 
-        public void TextInput(object sender, TextInputEventArgs e)
+        public void TextInput(TextEventArgs e)
         {
-            if (this.SelectedWidget != null)
-            {
-                this.SelectedWidget.OnTextInput.Invoke(sender, e);
-            }
+            this.SelectedWidget?.OnTextInput(e);
         }
 
         public void RegisterShortcut(Shortcut s)

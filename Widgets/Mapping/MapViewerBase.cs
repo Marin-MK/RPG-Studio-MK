@@ -62,20 +62,20 @@ namespace MKEditor.Widgets
             HScrollBar HScrollBar = new HScrollBar(HScrollContainer);
             HScrollBar.SetPosition(1, 2);
             HScrollBar.SetZIndex(1);
-            HScrollBar.OnValueChanged += delegate (object sender, EventArgs e)
+            HScrollBar.OnValueChanged += delegate (BaseEventArgs e)
             {
                 Editor.MainWindow.MapWidget.SetHorizontalScroll(HScrollBar.Value);
-                if (Graphics.LastMouseEvent != null) MouseMoving(sender, Graphics.LastMouseEvent);
+                MouseMoving(Graphics.LastMouseEvent);
             };
             VScrollContainer = new Container(GridLayout);
             VScrollContainer.SetGridColumn(1);
             VScrollBar VScrollBar = new VScrollBar(VScrollContainer);
             VScrollBar.SetPosition(2, 1);
             VScrollBar.SetZIndex(1);
-            VScrollBar.OnValueChanged += delegate (object sender, EventArgs e)
+            VScrollBar.OnValueChanged += delegate (BaseEventArgs e)
             {
                 Editor.MainWindow.MapWidget.SetVerticalScroll(VScrollBar.Value);
-                if (Graphics.LastMouseEvent != null) MouseMoving(sender, Graphics.LastMouseEvent);
+                MouseMoving(Graphics.LastMouseEvent);
             };
 
             MainContainer.SetHScrollBar(HScrollBar);
@@ -94,12 +94,12 @@ namespace MKEditor.Widgets
             if (!FromStatusBar) Editor.MainWindow.StatusBar.ZoomControl.SetZoomFactor(factor, true);
             ConnectionWidgets.ForEach(w => w.SetZoomFactor(factor));
             PositionMap();
-            MouseMoving(null, Graphics.LastMouseEvent);
+            MouseMoving(Graphics.LastMouseEvent);
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             GridLayout.SetSize(this.Size);
             PositionMap();
 
@@ -204,9 +204,9 @@ namespace MKEditor.Widgets
             ZoomByScroll = false;
         }
 
-        public override void MouseMoving(object sender, MouseEventArgs e)
+        public override void MouseMoving(MouseEventArgs e)
         {
-            base.MouseMoving(sender, e);
+            base.MouseMoving(e);
             if (MiddleMouseScrolling && e.MiddleButton)
             {
                 int dx = LastMouseX - e.X;
@@ -225,12 +225,12 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             // Update position - to make sure you're drawing where the mouse is, not where the cursor is
             // (the cursor obviously follows the mouse with this call if they're not aligned (which they should be))
-            MouseMoving(sender, e);
+            MouseMoving(e);
             if (e.MiddleButton != e.OldMiddleButton && e.MiddleButton)
             {
                 if (WidgetIM.Hovering)
@@ -244,10 +244,10 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void MouseUp(object sender, MouseEventArgs e)
+        public override void MouseUp(MouseEventArgs e)
         {
-            if (WidgetIM.Ready() && IsVisible() && WidgetIM.WidgetAccessible()) MouseMoving(sender, e);
-            base.MouseUp(sender, e);
+            if (WidgetIM.Ready() && IsVisible() && WidgetIM.WidgetAccessible()) MouseMoving(e);
+            base.MouseUp(e);
             if (e.MiddleButton != e.OldMiddleButton && !e.MiddleButton)
             {
                 Input.SetCursor(SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
@@ -256,9 +256,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void MouseWheel(object sender, MouseEventArgs e)
+        public override void MouseWheel(MouseEventArgs e)
         {
-            base.MouseWheel(sender, e);
+            base.MouseWheel(e);
             if (!Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LCTRL) && !Input.Press(SDL2.SDL.SDL_Keycode.SDLK_RCTRL)) return;
             ZoomByScroll = true;
             if (e.WheelY > 0) Editor.MainWindow.StatusBar.ZoomControl.IncreaseZoom();

@@ -9,7 +9,7 @@ namespace MKEditor.Widgets
         public bool Blocked = false;
         public string Title { get; protected set; }
 
-        public EventHandler<EventArgs> OnClosed;
+        public BaseEvent OnClosed;
         List<Button> Buttons = new List<Button>();
 
         public PopupWindow() : base(((MainEditorWindow) Graphics.Windows[0]).UI)
@@ -26,7 +26,7 @@ namespace MKEditor.Widgets
             this.SetZIndex(WindowLayer * 10);
         }
 
-        public void CreateButton(string Text, EventHandler<EventArgs> OnClicked)
+        public void CreateButton(string Text, BaseEvent OnClicked)
         {
             Button b = new Button(this);
             int x = Buttons.Count > 0 ? Buttons[Buttons.Count - 1].Position.X - b.Size.Width : Size.Width - b.Size.Width - 6;
@@ -46,15 +46,15 @@ namespace MKEditor.Widgets
             this.SetZIndex(WindowLayer * 10);
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             (Sprites["window"] as RectSprite).SetSize(this.Size.Width, this.Size.Height);
         }
 
-        public override void ParentSizeChanged(object sender, SizeEventArgs e)
+        public override void ParentSizeChanged(BaseEventArgs e)
         {
-            base.ParentSizeChanged(sender, e);
+            base.ParentSizeChanged(e);
             Center();
         }
 
@@ -81,7 +81,7 @@ namespace MKEditor.Widgets
         public void Close()
         {
             Dispose();
-            if (OnClosed != null) OnClosed.Invoke(null, new EventArgs());
+            this.OnClosed?.Invoke(new BaseEventArgs());
         }
 
         public override void Dispose()

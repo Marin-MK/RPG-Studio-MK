@@ -12,7 +12,7 @@ namespace MKEditor.Widgets
 
         public int TrailingBlank = 0;
 
-        public EventHandler<MouseEventArgs> OnSelectedNodeChanged;
+        public MouseEvent OnSelectedNodeChanged;
 
         public TreeView(IContainer Parent) : base(Parent)
         {
@@ -33,9 +33,9 @@ namespace MKEditor.Widgets
             this.Redraw();
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             (this.Sprites["selector"].Bitmap as SolidBitmap).SetSize(this.Size.Width, 21);
         }
 
@@ -102,21 +102,21 @@ namespace MKEditor.Widgets
         public void SetSelectedNode(TreeNode node, bool CallEvent = true)
         {
             SelectedNode = node;
-            if (CallEvent && OnSelectedNodeChanged != null) OnSelectedNodeChanged.Invoke(this, Graphics.LastMouseEvent);
+            if (CallEvent) this.OnSelectedNodeChanged?.Invoke(Graphics.LastMouseEvent);
             Redraw();
         }
 
-        public override void HoverChanged(object sender, MouseEventArgs e)
+        public override void HoverChanged(MouseEventArgs e)
         {
-            base.HoverChanged(sender, e);
+            base.HoverChanged(e);
             Sprites["hover"].Visible = WidgetIM.Hovering;
             if (!WidgetIM.Hovering) HoveringNode = null;
-            MouseMoving(sender, e);
+            MouseMoving(e);
         }
 
-        public override void MouseMoving(object sender, MouseEventArgs e)
+        public override void MouseMoving(MouseEventArgs e)
         {
-            base.MouseMoving(sender, e);
+            base.MouseMoving(e);
             if (!WidgetIM.Hovering) return;
             int rx = e.X - this.Viewport.X + Position.X - ScrolledPosition.X;
             int ry = e.Y - this.Viewport.Y + Position.Y - ScrolledPosition.Y;
@@ -140,9 +140,9 @@ namespace MKEditor.Widgets
             HoveringNode = n;
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (!WidgetIM.Hovering) return;
             TreeNode oldselected = this.SelectedNode;
             if (e.LeftButton && !e.OldLeftButton || e.RightButton && !e.OldRightButton)
@@ -175,7 +175,7 @@ namespace MKEditor.Widgets
             }
             if (SelectedNode != oldselected)
             {
-                if (OnSelectedNodeChanged != null) OnSelectedNodeChanged.Invoke(this, e);
+                this.OnSelectedNodeChanged?.Invoke(e);
                 Redraw();
             }
         }

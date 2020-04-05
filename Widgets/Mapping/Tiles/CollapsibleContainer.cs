@@ -8,7 +8,7 @@ namespace MKEditor.Widgets
         public string Text { get; protected set; }
         public bool Collapsed { get; protected set; }
 
-        public EventHandler<EventArgs> OnCollapsedChanged;
+        public BaseEvent OnCollapsedChanged;
 
         private MouseInputManager ArrowIM;
 
@@ -17,7 +17,7 @@ namespace MKEditor.Widgets
             Sprites["header"] = new Sprite(this.Viewport);
             this.Collapsed = true;
             ArrowIM = new MouseInputManager(this);
-            ArrowIM.OnLeftClick += delegate (object sender, MouseEventArgs e) { SetCollapsed(!this.Collapsed); };
+            ArrowIM.OnLeftClick += delegate (MouseEventArgs e) { SetCollapsed(!this.Collapsed); };
             this.SetCollapsed(false);
             this.WidgetIM.OnMouseDown += MouseDown;
         }
@@ -69,13 +69,13 @@ namespace MKEditor.Widgets
                     this.SetSize(this.Size.Width, maxheight);
                 }
                 this.Redraw();
-                if (this.OnCollapsedChanged != null) this.OnCollapsedChanged.Invoke(this, new EventArgs());
+                this.OnCollapsedChanged?.Invoke(new BaseEventArgs());
             }
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             int rx = e.X - Viewport.X;
             int ry = e.Y - Viewport.Y;
             if (rx < 0 || rx >= 19 || ry < 1 || ry >= 21) return;

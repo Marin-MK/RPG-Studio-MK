@@ -82,7 +82,7 @@ namespace MKEditor.Widgets
 
             RegisterShortcuts(new List<Shortcut>()
             {
-                new Shortcut(this, new Key(Keycode.ESCAPE), new EventHandler<EventArgs>(CancelSelection))
+                new Shortcut(this, new Key(Keycode.ESCAPE), CancelSelection)
             });
         }
 
@@ -116,7 +116,7 @@ namespace MKEditor.Widgets
             MapWidget.SwapLayers(Index1, Index2);
         }
 
-        public void CancelSelection(object sender, EventArgs e)
+        public void CancelSelection(BaseEventArgs e)
         {
             if (SelectionX != -1 || SelectionY != -1 || SelectionWidth != 0 || SelectionHeight != 0 || SelectionBackground.Visible)
             {
@@ -279,9 +279,9 @@ namespace MKEditor.Widgets
             MapWidget.SetLayerVisible(layerindex, Visible);
         }
 
-        public override void MouseMoving(object sender, MouseEventArgs e)
+        public override void MouseMoving(MouseEventArgs e)
         {
-            base.MouseMoving(sender, e);
+            base.MouseMoving(e);
             if (!MiddleMouseScrolling)
             {
                 LastMouseX = e.X;
@@ -353,18 +353,18 @@ namespace MKEditor.Widgets
             );
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if ((e.LeftButton != e.OldLeftButton && e.LeftButton ||
                 e.RightButton != e.OldRightButton && e.RightButton) &&
                 MainContainer.WidgetIM.Hovering)
                 UpdateTilePlacement(RelativeMouseX, RelativeMouseY, RelativeMouseX, RelativeMouseY);
         }
 
-        public override void MouseUp(object sender, MouseEventArgs e)
+        public override void MouseUp(MouseEventArgs e)
         {
-            base.MouseUp(sender, e);
+            base.MouseUp(e);
             if (e.LeftButton != e.OldLeftButton)
             {
                 if (!Editor.CanUndo)
@@ -374,12 +374,6 @@ namespace MKEditor.Widgets
                 }
             }
             if (!e.LeftButton && !e.RightButton) OriginPoint = null;
-        }
-
-        public override void SizeChanged(object sender, SizeEventArgs e)
-        {
-            base.SizeChanged(sender, e);
-            
         }
     }
 }

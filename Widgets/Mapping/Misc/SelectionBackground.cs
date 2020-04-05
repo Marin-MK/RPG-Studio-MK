@@ -48,8 +48,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
+            base.SizeChanged(e);
             Sprites["right"].X = this.Size.Width - 1;
             Sprites["bottom"].Y = this.Size.Height - 1;
             Redraw();

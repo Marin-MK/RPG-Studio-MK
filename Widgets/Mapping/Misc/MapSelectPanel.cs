@@ -32,7 +32,7 @@ namespace MKEditor.Widgets
 
             mapview = new TreeView(allmapcontainer);
             mapview.SetWidth(212);
-            mapview.OnSelectedNodeChanged += delegate (object sender, MouseEventArgs e)
+            mapview.OnSelectedNodeChanged += delegate (MouseEventArgs e)
             {
                 DateTime start = DateTime.Now;
                 SetMap(Data.Maps[(int) mapview.SelectedNode.Object], true);
@@ -48,9 +48,9 @@ namespace MKEditor.Widgets
                 new MenuItem("Edit Map")
                 {
                     OnLeftClick = EditMap,
-                    IsClickable = delegate (object sender, ConditionEventArgs e)
+                    IsClickable = delegate (BoolEventArgs e)
                     {
-                        e.ConditionValue = mapview.HoveringNode != null;
+                        e.Value = mapview.HoveringNode != null;
                     }
                 },
                 new MenuSeparator(),
@@ -58,9 +58,9 @@ namespace MKEditor.Widgets
                 {
                     OnLeftClick = DeleteMap,
                     Shortcut = "Del",
-                    IsClickable = delegate (object sender, ConditionEventArgs e)
+                    IsClickable = delegate (BoolEventArgs e)
                     {
-                        e.ConditionValue = mapview.HoveringNode != null && mapview.Nodes.Count > 1;
+                        e.Value = mapview.HoveringNode != null && mapview.Nodes.Count > 1;
                     }
                 }
             });
@@ -142,9 +142,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             allmapcontainer.SetSize(this.Size.Width - 11, this.Size.Height - allmapcontainer.Position.Y);
             Sprites["bar"].X = Size.Width - 11;
             (Sprites["bar"].Bitmap as SolidBitmap).SetSize(1, Size.Height - 30);
@@ -152,7 +152,7 @@ namespace MKEditor.Widgets
             allmapcontainer.VScrollBar.SetSize(8, Size.Height - 35);
         }
 
-        private void NewMap(object sender, MouseEventArgs e)
+        private void NewMap(MouseEventArgs e)
         {
             Map Map = new Map();
             Map.ID = Editor.GetFreeMapID();
@@ -160,7 +160,7 @@ namespace MKEditor.Widgets
             Map.DisplayName = "Untitled Map";
             Map.SetSize(15, 15);
             MapPropertiesWindow mpw = new MapPropertiesWindow(Map);
-            mpw.OnClosed += delegate (object _, EventArgs ev)
+            mpw.OnClosed += delegate (BaseEventArgs ev)
             {
                 if (mpw.UpdateMapViewer)
                 {
@@ -191,11 +191,11 @@ namespace MKEditor.Widgets
             return false;
         }
 
-        private void EditMap(object sender, MouseEventArgs e)
+        private void EditMap(MouseEventArgs e)
         {
             Map map = Data.Maps[(int) mapview.SelectedNode.Object];
             MapPropertiesWindow mpw = new MapPropertiesWindow(map);
-            mpw.OnClosed += delegate (object _, EventArgs ev)
+            mpw.OnClosed += delegate (BaseEventArgs ev)
             {
                 if (mpw.UpdateMapViewer)
                 {
@@ -207,13 +207,13 @@ namespace MKEditor.Widgets
             };
         }
 
-        private void DeleteMap(object sender, MouseEventArgs e)
+        private void DeleteMap(MouseEventArgs e)
         {
             if (mapview.Nodes.Count <= 1) return;
             string message = "Are you sure you want to delete this map?";
             if (mapview.HoveringNode.Nodes.Count > 0) message += " All of its children will also be deleted.";
             DeleteMapPopup confirm = new DeleteMapPopup("Warning", message, ButtonType.YesNoCancel, IconType.Warning);
-            confirm.OnClosed += delegate (object s, EventArgs ev)
+            confirm.OnClosed += delegate (BaseEventArgs ev)
             {
                 if (confirm.Result == 0) // Yes
                 {

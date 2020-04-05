@@ -285,7 +285,7 @@ namespace MKEditor
                 Options.Add("Pick other");
                 Options.Add("Import it");
                 MessageBox box = new MessageBox("Importing Map", message, Options);
-                box.OnButtonPressed += delegate (object sender, EventArgs e)
+                box.OnButtonPressed += delegate (BaseEventArgs e)
                 {
                     if (Options[box.Result] == "Use this") // Use the matched tileset
                     {
@@ -295,7 +295,7 @@ namespace MKEditor
                     else if (Options[box.Result] == "Pick other") // Pick other tileset
                     {
                         TilesetPicker picker = new TilesetPicker(null);
-                        picker.OnClosed += delegate (object sender, EventArgs e)
+                        picker.OnClosed += delegate (BaseEventArgs e)
                         {
                             if (picker.ChosenTilesetID > 0) // Chose tileset
                             {
@@ -308,7 +308,7 @@ namespace MKEditor
                                 tileset.Free();
                                 map.Free();
                                 MessageBox b = new MessageBox("Warning", $"Importing Map ({MapName})...\n\nAs no tileset was chosen, this map will not be imported.", IconType.Warning);
-                                b.OnButtonPressed += delegate (object sender, EventArgs e)
+                                b.OnButtonPressed += delegate (BaseEventArgs e)
                                 {
                                     if (MapIndex < Files.Count - 1) ImportMap(MapIndex + 1);
                                 };
@@ -321,7 +321,7 @@ namespace MKEditor
                         if (!File.Exists(filename)) // Graphic doesn't exist
                         {
                             MessageBox b = new MessageBox("Error", $"Importing Map ({MapName})...\n\nThe tileset graphic could not be found. The tileset cannot be imported, and thus this map will not be imported.", IconType.Error);
-                            b.OnButtonPressed += delegate (object sender, EventArgs e)
+                            b.OnButtonPressed += delegate (BaseEventArgs e)
                             {
                                 if (MapIndex < Files.Count - 1) ImportMap(MapIndex + 1);
                             };
@@ -338,7 +338,7 @@ namespace MKEditor
                                     $"The formatted tileset will exceed the maximum texture size ({Graphics.MaxTextureSize.Width},{Graphics.MaxTextureSize.Height}).\n" +
                                     "This map will not be imported."
                                 );
-                                b.OnButtonPressed += delegate (object sender, EventArgs e)
+                                b.OnButtonPressed += delegate (BaseEventArgs e)
                                 {
                                     if (MapIndex < Files.Count - 1) ImportMap(MapIndex + 1);
                                 };
@@ -444,7 +444,7 @@ namespace MKEditor
                         if (ProjectSettings.LastMode != "MAPPING") options.Add("Go to Map");
                         options.Add("OK");
                         MessageBox box = new MessageBox(Title, Msg, options, IconType.Info);
-                        box.OnButtonPressed += delegate (object sender, EventArgs e)
+                        box.OnButtonPressed += delegate (BaseEventArgs e)
                         {
                             if (options[box.Result] == "Go to Map") // Go to map
                             {
@@ -472,7 +472,7 @@ namespace MKEditor
             else
             {
                 MapPicker picker = new MapPicker(DeletedMaps, "Restore a Map", false);
-                picker.OnClosed += delegate (object sender, EventArgs e)
+                picker.OnClosed += delegate (BaseEventArgs e)
                 {
                     if (picker.ChosenMap != null)
                     {
@@ -502,7 +502,7 @@ namespace MKEditor
             MessageBox box = new MessageBox("Warning", "You are about to clear the internal deleted map cache. " +
                 "This means that all maps that you have deleted during this session will be permanently lost. " +
                 "Would you like to continue and clear the cache?", ButtonType.YesNoCancel, IconType.Warning);
-            box.OnClosed += delegate (object sender, EventArgs e)
+            box.OnClosed += delegate (BaseEventArgs e)
             {
                 if (box.Result == 0) // Yes
                 {

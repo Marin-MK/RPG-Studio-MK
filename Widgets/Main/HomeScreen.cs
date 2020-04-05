@@ -50,7 +50,7 @@ namespace MKEditor.Widgets
             NewProjectButton.SetText("New Project");
             NewProjectButton.SetIcon("home_icon_new");
             NewProjectButton.SetHelpText("Create a new project.");
-            NewProjectButton.WidgetIM.OnLeftClick += delegate (object sender, MouseEventArgs e)
+            NewProjectButton.WidgetIM.OnLeftClick += delegate (MouseEventArgs e)
             {
                 NewProject();
             };
@@ -60,7 +60,7 @@ namespace MKEditor.Widgets
             OpenProjectButton.SetText("Open Project");
             OpenProjectButton.SetIcon("home_icon_openfile");
             OpenProjectButton.SetHelpText("Open an existing project by selecting its project file.");
-            OpenProjectButton.WidgetIM.OnLeftClick += delegate (object sender, MouseEventArgs e)
+            OpenProjectButton.WidgetIM.OnLeftClick += delegate (MouseEventArgs e)
             {
                 OpenProject();
             };
@@ -70,7 +70,7 @@ namespace MKEditor.Widgets
             TutorialsButton.SetText("Tutorials");
             TutorialsButton.SetHelpText("Click this button to be directed to various tutorials and documentation for RPG Studio MK.");
             TutorialsButton.SetIcon("home_icon_tutorials");
-            TutorialsButton.WidgetIM.OnLeftClick += delegate (object sender, MouseEventArgs e)
+            TutorialsButton.WidgetIM.OnLeftClick += delegate (MouseEventArgs e)
             {
                 ShowTutorials();
             };
@@ -78,7 +78,7 @@ namespace MKEditor.Widgets
             YoutubeButton = new PictureBox(this);
             YoutubeButton.Sprite.Bitmap = new Bitmap("home_icon_youtube.png");
             YoutubeButton.SetHelpText("Visit MK's YouTube account.");
-            YoutubeButton.WidgetIM.OnLeftClick += delegate (object sender, MouseEventArgs e)
+            YoutubeButton.WidgetIM.OnLeftClick += delegate (MouseEventArgs e)
             {
                 new MessageBox("Oops!", "MK does not have a YouTube channel yet!", IconType.Error);
             };
@@ -86,7 +86,7 @@ namespace MKEditor.Widgets
             TwitterButton = new PictureBox(this);
             TwitterButton.Sprite.Bitmap = new Bitmap("home_icon_twitter.png");
             TwitterButton.SetHelpText("Visit MK's Twitter account.");
-            TwitterButton.WidgetIM.OnLeftClick += delegate (object sender, MouseEventArgs e)
+            TwitterButton.WidgetIM.OnLeftClick += delegate (MouseEventArgs e)
             {
                 Utilities.OpenLink("http://twitter.com/MKStarterKit");
             };
@@ -104,9 +104,9 @@ namespace MKEditor.Widgets
             VignetteFade = new VignetteFade(this);
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
 
             VignetteFade.SetSize(this.Size);
 
@@ -311,9 +311,9 @@ namespace MKEditor.Widgets
             #endregion
         }
 
-        public override void HoverChanged(object sender, MouseEventArgs e)
+        public override void HoverChanged(MouseEventArgs e)
         {
-            base.HoverChanged(sender, e);
+            base.HoverChanged(e);
             if (!WidgetIM.Hovering)
             {
                 Sprites["filesel"].Visible = false;
@@ -321,9 +321,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void MouseMoving(object sender, MouseEventArgs e)
+        public override void MouseMoving(MouseEventArgs e)
         {
-            base.MouseMoving(sender, e);
+            base.MouseMoving(e);
             if (!WidgetIM.Hovering)
             {
                 Sprites["filesel"].Visible = false;
@@ -344,9 +344,9 @@ namespace MKEditor.Widgets
             SelectedIndex = index;
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (Sprites["filesel"].Visible && SelectedIndex > -1)
             {
                 LoadRecentProject(SelectedIndex);
@@ -368,11 +368,11 @@ namespace MKEditor.Widgets
             if (!System.IO.File.Exists(Editor.GeneralSettings.RecentFiles[index][1]))
             {
                 MessageBox box = new MessageBox("Error", "No project file could be found in this folder.", IconType.Error);
-                box.OnDisposing += delegate (object sender, EventArgs e)
+                box.OnDisposing += delegate (BaseEventArgs e)
                 {
                     Editor.GeneralSettings.RecentFiles.RemoveAt(index);
-                    SizeChanged(null, new SizeEventArgs(Size));
-                    MouseMoving(null, Graphics.LastMouseEvent);
+                    SizeChanged(new BaseEventArgs());
+                    MouseMoving(Graphics.LastMouseEvent);
                 };
                 return;
             }
@@ -431,9 +431,9 @@ namespace MKEditor.Widgets
             }
         }
 
-        public override void HoverChanged(object sender, MouseEventArgs e)
+        public override void HoverChanged(MouseEventArgs e)
         {
-            base.HoverChanged(sender, e);
+            base.HoverChanged(e);
             Sprites["sel"].Visible = WidgetIM.Hovering;
         }
     }

@@ -20,9 +20,9 @@ namespace MKEditor.Widgets
             this.Size = new Size(this.Parent.Size);
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             UpdateContainers();
             UpdateLayout();
         }
@@ -179,9 +179,9 @@ namespace MKEditor.Widgets
             this.RedrawContainers = true;
         }
 
-        public override void ParentSizeChanged(object sender, SizeEventArgs e)
+        public override void ParentSizeChanged(BaseEventArgs e)
         {
-            this.Size = new Size(e.Width, e.Height);
+            this.SetSize(Parent.Size);
             this.RedrawContainers = true;
         }
     }

@@ -13,15 +13,15 @@ namespace MKEditor
         public readonly Widget Widget;
         public MainEditorWindow Window { get { return this.Widget.Window; } }
 
-        public EventHandler<MouseEventArgs> OnMouseMoving;
-        public EventHandler<MouseEventArgs> OnMouseDown;
-        public EventHandler<MouseEventArgs> OnMousePress;
-        public EventHandler<MouseEventArgs> OnMouseUp;
-        public EventHandler<MouseEventArgs> OnLeftClick;
-        public EventHandler<MouseEventArgs> OnRightClick;
-        public EventHandler<MouseEventArgs> OnMiddleClick;
-        public EventHandler<MouseEventArgs> OnMouseWheel;
-        public EventHandler<MouseEventArgs> OnHoverChanged;
+        public MouseEvent OnMouseMoving;
+        public MouseEvent OnMouseDown;
+        public MouseEvent OnMousePress;
+        public MouseEvent OnMouseUp;
+        public MouseEvent OnLeftClick;
+        public MouseEvent OnRightClick;
+        public MouseEvent OnMiddleClick;
+        public MouseEvent OnMouseWheel;
+        public MouseEvent OnHoverChanged;
 
         public int Priority = 0;
         public int OldPriority = 0;
@@ -106,7 +106,7 @@ namespace MKEditor
                 this.ClickedLeftInArea = e.InArea(this.Area);
                 if (this.ClickedLeftInArea == true && this.SelectWithLeftClick)
                 {
-                    if (this.Widget.OnWidgetSelected != null) this.Widget.OnWidgetSelected.Invoke(this, e);
+                    this.Widget.OnWidgetSelected?.Invoke(e);
                 }
             }
 
@@ -116,7 +116,7 @@ namespace MKEditor
                 this.ClickedRightInArea = e.InArea(this.Area);
                 if (this.ClickedRightInArea == true && this.SelectWithRightClick)
                 {
-                    if (this.Widget.OnWidgetSelected != null) this.Widget.OnWidgetSelected.Invoke(this, e);
+                    this.Widget.OnWidgetSelected?.Invoke(e);
                 }
             }
 
@@ -126,11 +126,11 @@ namespace MKEditor
                 this.ClickedMiddleInArea = e.InArea(this.Area);
                 if (this.ClickedMiddleInArea == true && this.SelectWithMiddleClick)
                 {
-                    if (this.Widget.OnWidgetSelected != null) this.Widget.OnWidgetSelected.Invoke(this, e);
+                    this.Widget.OnWidgetSelected?.Invoke(e);
                 }
             }
 
-            if (this.OnMouseDown != null) this.OnMouseDown.Invoke(this, e);
+            this.OnMouseDown?.Invoke(e);
         }
 
         public void MousePress(MouseEventArgs e)
@@ -139,7 +139,7 @@ namespace MKEditor
             if (!Widget.IsVisible()) return;
             if (!WidgetAccessible()) return;
 
-            if (this.OnMousePress != null) this.OnMousePress.Invoke(this, e);
+            this.OnMousePress?.Invoke(e);
         }
 
         public void MouseUp(MouseEventArgs e)
@@ -152,7 +152,7 @@ namespace MKEditor
             {
                 if (ClickedLeftInArea == true && Hovering)
                 {
-                    if (this.OnLeftClick != null) this.OnLeftClick.Invoke(this, e);
+                    this.OnLeftClick?.Invoke(e);
                 }
                 this.ClickedLeft = false;
                 this.ClickedLeftInArea = null;
@@ -162,7 +162,7 @@ namespace MKEditor
             {
                 if (ClickedRightInArea == true && Hovering)
                 {
-                    if (this.OnRightClick != null) this.OnRightClick.Invoke(this, e);
+                    this.OnRightClick?.Invoke(e);
                 }
                 this.ClickedRight = false;
                 this.ClickedRightInArea = null;
@@ -172,13 +172,13 @@ namespace MKEditor
             {
                 if (ClickedMiddleInArea == true && Hovering)
                 {
-                    if (this.OnMiddleClick != null) this.OnMiddleClick.Invoke(this, e);
+                    this.OnMiddleClick?.Invoke(e);
                 }
                 this.ClickedMiddle = false;
                 this.ClickedMiddleInArea = false;
             }
 
-            if (this.OnMouseUp != null) this.OnMouseUp.Invoke(this, e);
+            this.OnMouseUp?.Invoke(e);
         }
 
         public void MouseWheel(MouseEventArgs e)
@@ -187,7 +187,7 @@ namespace MKEditor
             if (!Widget.IsVisible()) return;
             if (!WidgetAccessible()) return;
 
-            if (e.WheelY != 0 && this.OnMouseWheel != null) this.OnMouseWheel.Invoke(this, e);
+            if (e.WheelY != 0 && this.OnMouseWheel != null) this.OnMouseWheel(e);
         }
 
         public void MouseMoving(MouseEventArgs e)
@@ -198,10 +198,10 @@ namespace MKEditor
 
             bool oldhover = this.Hovering;
             this.Hovering = e.InArea(this.Area);
-            if (this.OnMouseMoving != null) this.OnMouseMoving.Invoke(this, e);
+            this.OnMouseMoving?.Invoke(e);
             if (oldhover != this.Hovering && this.OnHoverChanged != null)
             {
-                this.OnHoverChanged.Invoke(this, e);
+                this.OnHoverChanged(e);
             }
         }
 

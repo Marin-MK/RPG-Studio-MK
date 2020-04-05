@@ -64,7 +64,7 @@ namespace MKEditor
             MainEditorWindow win = new MainEditorWindow(ProjectFile);
             win.Show();
             Widgets.MessageBox ErrorBox = null;
-            win.OnWindowSizeChanged += delegate (object sender, WindowEventArgs e)
+            win.OnWindowSizeChanged += delegate (BaseEventArgs e)
             {
                 if (ErrorBox != null && !ErrorBox.Disposed) ErrorBox.SetSize(win.Width, win.Height);
             };
@@ -87,7 +87,7 @@ namespace MKEditor
                             string msg = ex.GetType() + " : " + ex.Message + "\n\n" + ex.StackTrace;
                             ErrorBox = new Widgets.MessageBox("Error!", msg, new List<string>() { "Quit" }, Widgets.IconType.Error);
                             ErrorBox.SetSize(win.Width, win.Height);
-                            ErrorBox.OnDisposed += delegate (object sender, EventArgs e)
+                            ErrorBox.OnDisposed += delegate (BaseEventArgs e)
                             {
                                 Editor.ExitEditor();
                             };

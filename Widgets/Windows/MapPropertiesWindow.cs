@@ -46,7 +46,7 @@ namespace MKEditor.Widgets
             MapName.SetPosition(6, 22);
             MapName.SetSize(136, 27);
             MapName.SetInitialText(Map.DevName);
-            MapName.OnTextChanged += delegate (object sender, EventArgs e)
+            MapName.OnTextChanged += delegate (BaseEventArgs e)
             {
                 this.Map.DevName = MapName.Text;
             };
@@ -59,7 +59,7 @@ namespace MKEditor.Widgets
             DisplayName.SetPosition(6, 68);
             DisplayName.SetSize(136, 27);
             DisplayName.SetInitialText(Map.DisplayName);
-            DisplayName.OnTextChanged += delegate (object sender, EventArgs e)
+            DisplayName.OnTextChanged += delegate (BaseEventArgs e)
             {
                 this.Map.DisplayName = DisplayName.Text;
             };
@@ -74,7 +74,7 @@ namespace MKEditor.Widgets
             Width.MaxValue = 255;
             Width.SetSize(66, 27);
             Width.SetValue(this.Map.Width);
-            Width.OnValueChanged += delegate (object sender, EventArgs e)
+            Width.OnValueChanged += delegate (BaseEventArgs e)
             {
                 this.Map.Width = Width.Value;
             };
@@ -89,7 +89,7 @@ namespace MKEditor.Widgets
             Height.MaxValue = 255;
             Height.SetSize(66, 27);
             Height.SetValue(this.Map.Height);
-            Height.OnValueChanged += delegate (object sender, EventArgs e)
+            Height.OnValueChanged += delegate (BaseEventArgs e)
             {
                 this.Map.Height = Height.Value;
             };
@@ -134,10 +134,10 @@ namespace MKEditor.Widgets
             CreateButton("OK", OK);
         }
 
-        public void AddTileset(object sender, EventArgs e)
+        public void AddTileset(BaseEventArgs e)
         {
             TilesetPickerMap picker = new TilesetPickerMap(Map);
-            picker.OnClosed += delegate (object sender2, EventArgs e2)
+            picker.OnClosed += delegate (BaseEventArgs e2)
             {
                 bool update = false;
                 if (Map.TilesetIDs.Count != picker.ResultIDs.Count) update = true;
@@ -167,10 +167,10 @@ namespace MKEditor.Widgets
             };
         }
 
-        public void AddAutotile(object sender, EventArgs e)
+        public void AddAutotile(BaseEventArgs e)
         {
             AutotilePicker picker = new AutotilePicker(Map);
-            picker.OnClosed += delegate (object sender2, EventArgs e2)
+            picker.OnClosed += delegate (BaseEventArgs e2)
             {
                 bool update = false;
                 if (Map.AutotileIDs.Count != picker.ResultIDs.Count) update = true;
@@ -200,7 +200,7 @@ namespace MKEditor.Widgets
             };
         }
 
-        public void OK(object sender, EventArgs e)
+        public void OK(BaseEventArgs e)
         {
             this.UpdateMapViewer = true;
             Action Finalize = delegate
@@ -241,7 +241,7 @@ namespace MKEditor.Widgets
                     if (warn)
                     {
                         MessageBox msg = new MessageBox("Warning", "One of the deleted autotiles was still in use. By choosing to continue, tiles of that autotile will be deleted.", new List<string>() { "Continue", "Cancel" }, IconType.Warning);
-                        msg.OnButtonPressed += delegate (object sender2, EventArgs e2)
+                        msg.OnButtonPressed += delegate (BaseEventArgs e2)
                         {
                             if (msg.Result == 0) // Continue
                             {
@@ -327,7 +327,7 @@ namespace MKEditor.Widgets
                 if (warn)
                 {
                     MessageBox msg = new MessageBox("Warning", "One of the deleted tilesets was still in use. By choosing to continue, tiles of that tileset will be deleted.", new List<string>() { "Continue", "Cancel" }, IconType.Warning);
-                    msg.OnButtonPressed += delegate (object sender2, EventArgs e2)
+                    msg.OnButtonPressed += delegate (BaseEventArgs e2)
                     {
                         if (msg.Result == 0) // Continue
                         {
@@ -374,7 +374,7 @@ namespace MKEditor.Widgets
             if (!tilesetschanged) Continue();
         }
 
-        public void Cancel(object sender, EventArgs e)
+        public void Cancel(BaseEventArgs e)
         {
             Close();
         }
@@ -387,9 +387,9 @@ namespace MKEditor.Widgets
             Sprites["bg"] = new Sprite(this.Viewport);
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             if (Sprites["bg"].Bitmap != null) Sprites["bg"].Bitmap.Dispose();
             Sprites["bg"].Bitmap = new Bitmap(Size);
             Sprites["bg"].Bitmap.Unlock();

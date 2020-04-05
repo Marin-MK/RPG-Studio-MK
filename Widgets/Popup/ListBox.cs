@@ -10,7 +10,7 @@ namespace MKEditor.Widgets
         public ListItem SelectedItem { get { return ListDrawer.SelectedItem; } }
         public List<ListItem> Items { get { return ListDrawer.Items; } }
 
-        public EventHandler<EventArgs> OnSelectionChanged
+        public BaseEvent OnSelectionChanged
         {
             get 
             {
@@ -47,9 +47,9 @@ namespace MKEditor.Widgets
             ListDrawer.SetItems(Items);
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.SizeChanged(sender, e);
+            base.SizeChanged(e);
             if (Sprites["bg"].Bitmap != null) Sprites["bg"].Bitmap.Dispose();
             Sprites["bg"].Bitmap = new Bitmap(Size);
             Sprites["bg"].Bitmap.Unlock();

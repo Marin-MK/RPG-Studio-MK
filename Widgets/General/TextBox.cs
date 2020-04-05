@@ -15,7 +15,7 @@ namespace MKEditor.Widgets
 
         public TextArea TextArea;
 
-        public EventHandler<EventArgs> OnTextChanged { get { return TextArea.OnTextChanged; } set { TextArea.OnTextChanged = value; } }
+        public BaseEvent OnTextChanged { get { return TextArea.OnTextChanged; } set { TextArea.OnTextChanged = value; } }
 
         public TextBox(IContainer Parent) : base(Parent)
         {
@@ -38,10 +38,10 @@ namespace MKEditor.Widgets
             TextArea.RepositionSprites();
         }
 
-        public override void SizeChanged(object sender, SizeEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
+            base.SizeChanged(e);
             TextArea.SetSize(Size.Width - 6, Size.Height - 6);
-            base.SizeChanged(sender, e);
         }
 
         public void SetSkin(int Skin)
@@ -89,9 +89,9 @@ namespace MKEditor.Widgets
             base.Draw();
         }
 
-        public override void MouseDown(object sender, MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
-            base.MouseDown(sender, e);
+            base.MouseDown(e);
             if (!WidgetIM.Hovering && TextArea.SelectedWidget)
             {
                 Window.UI.SetSelectedWidget(null);
