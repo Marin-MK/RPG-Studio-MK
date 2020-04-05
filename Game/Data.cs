@@ -49,9 +49,9 @@ namespace MKEditor.Game
                 path += splits[i];
                 if (i != splits.Count - 1) path += "/";
             }
-            ProjectPath = path;
-            DataPath = path + "/data";
-            ProjectFilePath = path + "/project.mkproj";
+            Data.ProjectPath = path;
+            Data.DataPath = path + "/data";
+            Data.ProjectFilePath = path + "/project.mkproj";
             Editor.ProjectFilePath = ProjectFilePath;
         }
 

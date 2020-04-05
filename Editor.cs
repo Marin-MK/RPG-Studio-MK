@@ -182,6 +182,18 @@ namespace MKEditor
         }
 
         /// <summary>
+        /// Closes and reopens the project.
+        /// </summary>
+        public static void ReloadProject()
+        {
+            string projectfile = Data.ProjectFilePath;
+            CloseProject();
+            Data.SetProjectPath(projectfile);
+            MainWindow.CreateEditor();
+            MakeRecentProject();
+        }
+
+        /// <summary>
         /// Sets in motion the process of importing maps.
         /// </summary>
         public static void ImportMaps()
@@ -650,6 +662,9 @@ namespace MKEditor
             return null;
         }
 
+        /// <summary>
+        /// Returns true if the parent map has the child map as a child.
+        /// </summary>
         public static bool MapIsChildMap(List<object> collection, int ParentID, int ChildID, bool First = true, bool FoundParent = false)
         {
             for (int i = (First ? 0 : 2); i < collection.Count; i++)

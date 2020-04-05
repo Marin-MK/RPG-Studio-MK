@@ -162,6 +162,12 @@ namespace MKEditor
                             IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; },
                             OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(Editor.CloseProject); }
                         },
+                        new MenuItem("Reload Project")
+                        {
+                            HelpText = "Closes and immediately reopens the project. Used for quickly determining if changes are saved properly, or to restore an old version.",
+                            IsClickable = delegate (object sender, ConditionEventArgs e) { e.ConditionValue = Editor.InProject; },
+                            OnLeftClick = delegate (object sender, MouseEventArgs e) { EnsureSaved(Editor.ReloadProject); }
+                        },
                         new MenuItem("Exit Editor")
                         {
                             HelpText = "Close this project and quit the program.",
