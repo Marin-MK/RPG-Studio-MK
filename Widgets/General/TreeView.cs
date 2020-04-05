@@ -265,5 +265,20 @@ namespace MKEditor.Widgets
             }
             return null;
         }
+
+        public TreeNode FindParentNode(Predicate<TreeNode> match)
+        {
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                bool it = match.Invoke(Nodes[i]);
+                if (it) return this;
+                else
+                {
+                    TreeNode n = Nodes[i].FindParentNode(match);
+                    if (n != null) return n;
+                }
+            }
+            return null;
+        }
     }
 }

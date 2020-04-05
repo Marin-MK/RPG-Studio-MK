@@ -482,6 +482,9 @@ namespace MKEditor
             }
         }
 
+        /// <summary>
+        /// Clears the map cache for deleted but restore-able maps.
+        /// </summary>
         public static void ClearMapCache()
         {
             MessageBox box = new MessageBox("Warning", "You are about to clear the internal deleted map cache. " +
@@ -837,6 +840,9 @@ namespace MKEditor
             MainWindow.ToolBar.Refresh();
         }
 
+        /// <summary>
+        /// Generates a new MapOrder list based on the existing nodes in the map list.
+        /// </summary>
         public static List<object> GenerateMapOrder(List<TreeNode> Nodes, bool Recursive = false)
         {
             List<object> List = new List<object>();
@@ -845,7 +851,7 @@ namespace MKEditor
                 TreeNode n = Nodes[i];
                 if (n.Nodes.Count > 0)
                 {
-                    List<object> sublist = new List<object>() { (int) n.Object };
+                    List<object> sublist = new List<object>() { (int) n.Object, n.Collapsed };
                     sublist.AddRange(GenerateMapOrder(n.Nodes, true));
                     List.Add(sublist);
                 }

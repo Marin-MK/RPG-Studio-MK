@@ -10,11 +10,11 @@ namespace MKEditor.Widgets
 
         public string Message { get; protected set; }
 
-        MultilineLabel label;
-        Button Button1;
-        Button Button2;
-        Button Button3;
-        PictureBox Icon;
+        protected MultilineLabel label;
+        protected Button Button1;
+        protected Button Button2;
+        protected Button Button3;
+        protected PictureBox Icon;
 
         public ButtonType ButtonType;
         public List<string> Buttons;
