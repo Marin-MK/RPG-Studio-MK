@@ -36,10 +36,6 @@ namespace MKEditor.Widgets
         public MapViewerBase(IContainer Parent) : base(Parent)
         {
             this.SetBackgroundColor(28, 50, 73);
-            this.WidgetIM.OnMouseMoving += MouseMoving;
-            this.WidgetIM.OnMouseDown += MouseDown;
-            this.WidgetIM.OnMouseUp += MouseUp;
-            this.WidgetIM.OnMouseWheel += MouseWheel;
             this.OnWidgetSelected += WidgetSelected;
 
             GridLayout = new Grid(this);
@@ -229,18 +225,15 @@ namespace MKEditor.Widgets
         {
             base.MouseDown(e);
             // Update position - to make sure you're drawing where the mouse is, not where the cursor is
-            // (the cursor obviously follows the mouse with this call if they're not aligned (which they should be))
+            // (the cursor will also follow the mouse with this call if they're not aligned (which they should be))
             MouseMoving(e);
-            if (e.MiddleButton != e.OldMiddleButton && e.MiddleButton)
+            if (e.MiddleButton != e.OldMiddleButton && e.MiddleButton && WidgetIM.Hovering)
             {
-                if (WidgetIM.Hovering)
-                {
-                    Input.SetCursor(SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_SIZEALL);
-                    this.MiddleMouseScrolling = true;
-                    LastMouseX = e.X;
-                    LastMouseY = e.Y;
-                    Input.CaptureMouse();
-                }
+                Input.SetCursor(SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_SIZEALL);
+                this.MiddleMouseScrolling = true;
+                LastMouseX = e.X;
+                LastMouseY = e.Y;
+                Input.CaptureMouse();
             }
         }
 

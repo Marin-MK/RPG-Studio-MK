@@ -50,7 +50,7 @@ namespace MKEditor.Widgets
             NewProjectButton.SetText("New Project");
             NewProjectButton.SetIcon("home_icon_new");
             NewProjectButton.SetHelpText("Create a new project.");
-            NewProjectButton.WidgetIM.OnLeftClick += delegate (MouseEventArgs e)
+            NewProjectButton.OnLeftClick += delegate (MouseEventArgs e)
             {
                 NewProject();
             };
@@ -60,7 +60,7 @@ namespace MKEditor.Widgets
             OpenProjectButton.SetText("Open Project");
             OpenProjectButton.SetIcon("home_icon_openfile");
             OpenProjectButton.SetHelpText("Open an existing project by selecting its project file.");
-            OpenProjectButton.WidgetIM.OnLeftClick += delegate (MouseEventArgs e)
+            OpenProjectButton.OnLeftClick += delegate (MouseEventArgs e)
             {
                 OpenProject();
             };
@@ -70,7 +70,7 @@ namespace MKEditor.Widgets
             TutorialsButton.SetText("Tutorials");
             TutorialsButton.SetHelpText("Click this button to be directed to various tutorials and documentation for RPG Studio MK.");
             TutorialsButton.SetIcon("home_icon_tutorials");
-            TutorialsButton.WidgetIM.OnLeftClick += delegate (MouseEventArgs e)
+            TutorialsButton.OnLeftClick += delegate (MouseEventArgs e)
             {
                 ShowTutorials();
             };
@@ -78,7 +78,7 @@ namespace MKEditor.Widgets
             YoutubeButton = new PictureBox(this);
             YoutubeButton.Sprite.Bitmap = new Bitmap("home_icon_youtube.png");
             YoutubeButton.SetHelpText("Visit MK's YouTube account.");
-            YoutubeButton.WidgetIM.OnLeftClick += delegate (MouseEventArgs e)
+            YoutubeButton.OnLeftClick += delegate (MouseEventArgs e)
             {
                 new MessageBox("Oops!", "MK does not have a YouTube channel yet!", IconType.Error);
             };
@@ -86,14 +86,10 @@ namespace MKEditor.Widgets
             TwitterButton = new PictureBox(this);
             TwitterButton.Sprite.Bitmap = new Bitmap("home_icon_twitter.png");
             TwitterButton.SetHelpText("Visit MK's Twitter account.");
-            TwitterButton.WidgetIM.OnLeftClick += delegate (MouseEventArgs e)
+            TwitterButton.OnLeftClick += delegate (MouseEventArgs e)
             {
                 Utilities.OpenLink("http://twitter.com/MKStarterKit");
             };
-
-            WidgetIM.OnMouseMoving += MouseMoving;
-            WidgetIM.OnHoverChanged += HoverChanged;
-            WidgetIM.OnMouseDown += MouseDown;
 
             NoProjects = new MultilineLabel(this);
             NoProjects.SetSize(320, 100);
@@ -368,7 +364,7 @@ namespace MKEditor.Widgets
             if (!System.IO.File.Exists(Editor.GeneralSettings.RecentFiles[index][1]))
             {
                 MessageBox box = new MessageBox("Error", "No project file could be found in this folder.", IconType.Error);
-                box.OnDisposing += delegate (BaseEventArgs e)
+                box.OnClosed += delegate (BaseEventArgs e)
                 {
                     Editor.GeneralSettings.RecentFiles.RemoveAt(index);
                     SizeChanged(new BaseEventArgs());
@@ -405,7 +401,6 @@ namespace MKEditor.Widgets
             Sprites["sel"].Bitmap.DrawRect(1, 1, 222, 198, Color.WHITE);
             Sprites["sel"].Bitmap.Lock();
             Sprites["sel"].Visible = false;
-            WidgetIM.OnHoverChanged += HoverChanged;
         }
 
         public void SetIcon(string path)

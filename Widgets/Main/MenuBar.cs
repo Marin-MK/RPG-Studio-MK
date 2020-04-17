@@ -22,10 +22,6 @@ namespace MKEditor.Widgets
             Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(60, 228, 254)));
             Sprites["selector"].Visible = false;
             Sprites["selector"].Y = 30;
-            WidgetIM.OnMouseMoving += MouseMoving;
-            WidgetIM.OnMouseDown += MouseDown;
-            WidgetIM.OnMousePress += MousePress;
-            WidgetIM.OnMouseUp += MouseUp;
 
             RegisterShortcuts(new List<Shortcut>()
             {
@@ -161,12 +157,12 @@ namespace MKEditor.Widgets
                 this.ActiveMenuIndex = -1;
                 this.ActiveMenu = null;
             };
-            ActiveMenu.WidgetIM.OnHoverChanged += delegate (MouseEventArgs e)
+            ActiveMenu.OnHoverChanged += delegate (MouseEventArgs e)
             {
                 if (ActiveMenu.WidgetIM.Hovering)
                     this.ActiveMenuHovered = true;
             };
-            ActiveMenu.WidgetIM.OnMouseUp += delegate (MouseEventArgs e)
+            ActiveMenu.OnMouseUp += delegate (MouseEventArgs e)
             {
                 if (e.LeftButton != e.OldLeftButton && !e.LeftButton)
                 {

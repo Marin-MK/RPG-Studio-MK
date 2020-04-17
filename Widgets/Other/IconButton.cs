@@ -26,9 +26,6 @@ namespace MKEditor.Widgets
             Sprites["selector"] = new Sprite(Viewport, new SolidBitmap(24, 2, 59, 227, 255));
             Sprites["selector"].Y = 26;
             Sprites["selector"].Visible = false;
-            WidgetIM.OnHoverChanged += HoverChanged;
-            WidgetIM.OnMouseDown += MouseDown;
-            WidgetIM.OnLeftClick += LeftClick;
             OnWidgetSelected += WidgetSelected;
         }
 

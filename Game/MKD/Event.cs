@@ -58,7 +58,8 @@ namespace MKEditor.Game
         public List<IEventCommand> Commands { get { throw new NotImplementedException(); } }
         public List<IEventCondition> Conditions { get { throw new NotImplementedException(); } }
         public EventGraphic Graphic;
-        public List<EventTrigger> Triggers = new List<EventTrigger>();
+        public TriggerMode TriggerMode;
+        public object TriggerParam;
         public AutoMoveRoute AutoMoveRoute;
 
         public EventPage(Dictionary<string, object> Data)
@@ -80,10 +81,13 @@ namespace MKEditor.Game
                 // o is [0, :cmd, data] as JArray
             }
             this.Graphic = new EventGraphic(((JObject) Data["@graphic"]).ToObject<Dictionary<string, object>>());
-            foreach (object o in ((JArray) Data["@triggers"]).ToObject<List<object>>())
-            {
-                this.Triggers.Add(new EventTrigger(((JArray) o).ToObject<List<object>>()));
-            }
+            string mode = (string) Data["@trigger_mode"];
+            if (mode == ":action") TriggerMode = TriggerMode.Action;
+            else if (mode == ":player_touch") TriggerMode = TriggerMode.PlayerTouch;
+            else if (mode == ":event_touch") TriggerMode = TriggerMode.EventTouch;
+            else if (mode == ":autorun") TriggerMode = TriggerMode.Autorun;
+            else if (mode == ":parallel_process") TriggerMode = TriggerMode.ParallelProcess;
+            this.TriggerParam = Data["@trigger_param"];
             this.AutoMoveRoute = new AutoMoveRoute(((JObject) Data["@automoveroute"]).ToObject<Dictionary<string, object>>());
         }
 
@@ -93,9 +97,14 @@ namespace MKEditor.Game
             Data["^c"] = "MKD::Event::Page";
             Data["@graphic"] = Graphic.ToJSON();
             Data["@automoveroute"] = AutoMoveRoute.ToJSON();
-            List<List<object>> triggers = new List<List<object>>();
-            foreach (EventTrigger trigger in Triggers) triggers.Add(trigger.ToJSON());
-            Data["@triggers"] = triggers;
+            string TriggerString = null;
+            if (TriggerMode == TriggerMode.Action) TriggerString = ":action";
+            else if (TriggerMode == TriggerMode.PlayerTouch) TriggerString = ":player_touch";
+            else if (TriggerMode == TriggerMode.EventTouch) TriggerString = ":event_touch";
+            else if (TriggerMode == TriggerMode.Autorun) TriggerString = ":autorun";
+            else if (TriggerMode == TriggerMode.ParallelProcess) TriggerString = ":parallel_process";
+            Data["@trigger_mode"] = TriggerString;
+            Data["@trigger_param"] = TriggerParam;
             Data["@commands"] = new List<string>();
             Data["@conditions"] = new List<string>();
             // Add commands
@@ -104,27 +113,47 @@ namespace MKEditor.Game
         }
     }
 
+    public enum TriggerMode
+    {
+        Action,
+        PlayerTouch,
+        EventTouch,
+        Autorun,
+        ParallelProcess
+    }
+
     public class EventGraphic
     {
         public string Type;
         public object Param;
         public int Direction;
+        public int FrameUpdateInterval;
 
         public EventGraphic(Dictionary<string, object> Data)
         {
-            this.Type = ((string) Data[":type"]).Replace(":", "");
-            this.Direction = Convert.ToInt32(Data[":direction"]);
-            if (Data[":param"] is int) this.Param = Convert.ToInt32(Data[":param"]);
-            else if (Data[":param"] is string) this.Param = (string) Data[":param"];
-            else this.Param = Data[":param"];
+            if (Data.ContainsKey("^c"))
+            {
+                if ((string) Data["^c"] != "MKD::Event::Graphic") throw new Exception("Invalid class - Expected class of type MKD::Event::Graphic but got " + (string) Data["^c"] + ".");
+            }
+            else
+            {
+                throw new Exception("Could not find a ^c key to identify this class.");
+            }
+            this.Type = ((string) Data["@type"]).Replace(":", "");
+            this.Direction = Convert.ToInt32(Data["@direction"]);
+            if (Data["@param"] is int) this.Param = Convert.ToInt32(Data["@param"]);
+            else if (Data["@param"] is string) this.Param = (string) Data["@param"];
+            else this.Param = Data["@param"];
+            this.FrameUpdateInterval = Convert.ToInt32(Data["@frame_update_interval"]);
         }
 
         public Dictionary<string, object> ToJSON()
         {
             Dictionary<string, object> Data = new Dictionary<string, object>();
-            Data[":type"] = ":" + Type;
-            Data[":direction"] = Direction;
-            Data[":param"] = Param;
+            Data["@type"] = ":" + Type;
+            Data["@direction"] = Direction;
+            Data["@param"] = Param;
+            Data["@frame_update_interval"] = FrameUpdateInterval;
             return Data;
         }
     }
@@ -153,13 +182,21 @@ namespace MKEditor.Game
 
     public class AutoMoveRoute
     {
-        public int Frequency;
+        public double Frequency;
         public List<string> Commands = new List<string>();
 
         public AutoMoveRoute(Dictionary<string, object> Data)
         {
-            this.Frequency = Convert.ToInt32(Data[":frequency"]);
-            foreach (object o in ((JArray) Data[":commands"]).ToObject<List<object>>())
+            if (Data.ContainsKey("^c"))
+            {
+                if ((string) Data["^c"] != "MKD::Event::AutoMoveRoute") throw new Exception("Invalid class - Expected class of type MKD::Event::AutoMoveRoute but got " + (string) Data["^c"] + ".");
+            }
+            else
+            {
+                throw new Exception("Could not find a ^c key to identify this class.");
+            }
+            this.Frequency = Convert.ToDouble(Data["@frequency"]);
+            foreach (object o in ((JArray) Data["@commands"]).ToObject<List<object>>())
             {
                 this.Commands.Add(((string) o).Replace(":", ""));
             }
@@ -168,20 +205,19 @@ namespace MKEditor.Game
         public Dictionary<string, object> ToJSON()
         {
             Dictionary<string, object> Data = new Dictionary<string, object>();
-            Data[":frequency"] = Frequency;
+            Data["^c"] = "MKD::Event::AutoMoveRoute";
+            Data["@frequency"] = Frequency;
             List<string> commands = new List<string>();
             foreach (string command in Commands) commands.Add(":" + command);
-            Data[":commands"] = commands;
+            Data["@commands"] = commands;
             return Data;
         }
     }
 
     public class EventSettings
     {
-        public int Priority;
         public bool Passable;
-        public bool CanStartSurfingHere;
-        public bool ResetPositionOnTransfer;
+        public bool SavePosition;
         public float Speed;
 
         public EventSettings(Dictionary<string, object> Data)
@@ -194,10 +230,8 @@ namespace MKEditor.Game
             {
                 throw new Exception("Could not find a ^c key to identify this class.");
             }
-            this.Priority = Convert.ToInt32(Data["@priority"]);
             this.Passable = (bool) Data["@passable"];
-            this.CanStartSurfingHere = (bool) Data["@can_start_surfing_here"];
-            this.ResetPositionOnTransfer = (bool) Data["@reset_position_on_transfer"];
+            this.SavePosition = (bool) Data["@save_position"];
             this.Speed = (float) Convert.ToDouble(Data["@speed"]);
         }
 
@@ -205,10 +239,8 @@ namespace MKEditor.Game
         {
             Dictionary<string, object> Data = new Dictionary<string, object>();
             Data["^c"] = "MKD::Event::Settings";
-            Data["@priority"] = Priority;
             Data["@passable"] = Passable;
-            Data["@can_start_surfing_here"] = CanStartSurfingHere;
-            Data["@reset_position_on_transfer"] = ResetPositionOnTransfer;
+            Data["@save_position"] = SavePosition;
             Data["@speed"] = Speed;
             return Data;
         }

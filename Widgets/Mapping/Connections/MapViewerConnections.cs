@@ -106,7 +106,6 @@ namespace MKEditor.Widgets
         {
             this.GridBackground.SetVisible(false);
             this.SetDarkOverlay(192);
-            this.WidgetIM.OnMouseDown += MouseDown;
             this.WidgetIM.SelectWithRightClick = false;
             this.WidgetIM.SelectWithMiddleClick = false;
             OnWidgetSelected += WidgetSelected;

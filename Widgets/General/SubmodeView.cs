@@ -24,8 +24,6 @@ namespace MKEditor.Widgets
             Sprites["sel"].Y = HeaderHeight - HeaderSelHeight - 2;
             Sprites["line"] = new Sprite(this.Viewport, new SolidBitmap(Size.Width, HeaderSelHeight, new Color(28, 50, 73)));
             Sprites["line"].Y = HeaderHeight - HeaderSelHeight;
-            this.WidgetIM.OnMouseMoving += MouseMoving;
-            this.WidgetIM.OnMouseDown += MouseDown;
         }
 
         public void SelectTab(int Index)

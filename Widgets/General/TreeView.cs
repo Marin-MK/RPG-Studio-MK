@@ -20,9 +20,6 @@ namespace MKEditor.Widgets
             this.Sprites["hover"] = new Sprite(this.Viewport, new SolidBitmap(2, 21, new Color(55, 187, 255)));
             this.Sprites["hover"].Visible = false;
             this.Sprites["list"] = new Sprite(this.Viewport);
-            this.WidgetIM.OnHoverChanged += HoverChanged;
-            this.WidgetIM.OnMouseMoving += MouseMoving;
-            this.WidgetIM.OnMouseDown += MouseDown;
             this.OnWidgetSelected += WidgetSelected;
         }
 

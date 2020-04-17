@@ -117,9 +117,6 @@ namespace MKEditor.Widgets
 
             Sprites["text"] = new Sprite(this.Viewport);
 
-            WidgetIM.OnHoverChanged += HoverChanged;
-            WidgetIM.OnMouseDown += MouseDown;
-
             SetSize(85, 33);
         }
 

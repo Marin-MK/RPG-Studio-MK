@@ -33,10 +33,6 @@ namespace MKEditor.Widgets
             Sprites["selector"].Visible = false;
             Sprites["selector"].Y = 29;
 
-            WidgetIM.OnHoverChanged += UpdateSelector;
-            WidgetIM.OnMouseMoving += UpdateSelector;
-            WidgetIM.OnMouseDown += MouseDown;
-
             OnWidgetSelected += WidgetSelected;
             SetSize(27 + s.Width, 31);
         }
@@ -71,8 +67,9 @@ namespace MKEditor.Widgets
             base.Draw();
         }
 
-        public void UpdateSelector(MouseEventArgs e)
+        public override void HoverChanged(MouseEventArgs e)
         {
+            base.HoverChanged(e);
             int ry = e.Y - Viewport.Y;
             Sprites["selector"].Visible = WidgetIM.Hovering && ry < 42;
         }

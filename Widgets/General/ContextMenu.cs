@@ -21,9 +21,6 @@ namespace MKEditor.Widgets
             this.Sprites["selector"].X = 4;
             this.Sprites["selector"].Visible = false;
             this.Sprites["items"] = new Sprite(this.Viewport);
-            this.WidgetIM.OnHoverChanged += HoverChanged;
-            this.WidgetIM.OnMouseMoving += MouseMoving;
-            this.WidgetIM.OnMouseDown += MouseDown;
             this.OnHelpTextWidgetCreated += HelpTextWidgetCreated;
             this.OnFetchHelpText += FetchHelpText;
             

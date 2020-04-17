@@ -10,16 +10,11 @@ namespace MKEditor.Widgets
 
         public BaseEvent OnCollapsedChanged;
 
-        private MouseInputManager ArrowIM;
-
         public CollapsibleContainer(IContainer Parent) : base(Parent)
         {
             Sprites["header"] = new Sprite(this.Viewport);
             this.Collapsed = true;
-            ArrowIM = new MouseInputManager(this);
-            ArrowIM.OnLeftClick += delegate (MouseEventArgs e) { SetCollapsed(!this.Collapsed); };
             this.SetCollapsed(false);
-            this.WidgetIM.OnMouseDown += MouseDown;
         }
 
         public Widget SetText(string Text)

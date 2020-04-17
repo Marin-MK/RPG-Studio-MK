@@ -41,10 +41,6 @@ namespace MKEditor.Widgets
             Sprites["caret"].Y = 2;
             Sprites["caret"].Z = 1;
             OnWidgetSelected += WidgetSelected;
-            WidgetIM.OnMouseDown += MouseDown;
-            WidgetIM.OnMouseMoving += MouseMoving;
-            WidgetIM.OnMouseUp += MouseUp;
-            WidgetIM.OnHoverChanged += HoverChanged;
         }
 
         public void SetInitialText(string Text)
@@ -679,7 +675,7 @@ namespace MKEditor.Widgets
         public void DrawText()
         {
             RepositionSprites();
-            if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
+            Sprites["text"].Bitmap?.Dispose();
             if (string.IsNullOrEmpty(this.Text)) return;
             Size s = Font.TextSize(this.Text);
             if (s.Width < 1 || s.Height < 1) return;

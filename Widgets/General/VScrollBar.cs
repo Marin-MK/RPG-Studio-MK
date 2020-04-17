@@ -22,17 +22,16 @@ namespace MKEditor.Widgets
 
         private Rect SliderRect;
         private int SliderRY = 0;
-        private MouseInputManager SliderIM;
+        private OverridableInputManager SliderIM;
 
         public VScrollBar(IContainer Parent) : base(Parent)
         {
             this.Size = new Size(17, 60);
             this.ConsiderInAutoScrollPositioning = this.ConsiderInAutoScrollCalculation = false;
-            this.WidgetIM.OnMouseWheel += MouseWheel;
             this.Sprites["slider"] = new Sprite(this.Viewport);
             this.SliderSize = 0.25;
             this.Value = 0;
-            this.SliderIM = new MouseInputManager(this);
+            this.SliderIM = new OverridableInputManager(this);
             this.SliderIM.OnMouseMoving += SliderMouseMoving;
             this.SliderIM.OnMouseDown += SliderMouseDown;
             this.SliderIM.OnMouseUp += SliderMouseUp;

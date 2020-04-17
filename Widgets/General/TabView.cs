@@ -22,8 +22,6 @@ namespace MKEditor.Widgets
             Sprites["header"] = new Sprite(this.Viewport, new SolidBitmap(1, 4, new Color(28, 50, 73)));
             Sprites["header"].Y = HeaderHeight;
             Sprites["text"] = new Sprite(this.Viewport);
-            this.WidgetIM.OnMouseMoving += MouseMoving;
-            this.WidgetIM.OnMouseDown += MouseDown;
         }
 
         public void SelectTab(int Index)

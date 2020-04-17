@@ -248,11 +248,6 @@ namespace MKEditor.Widgets
         public object ObjectData;
         
         /// <summary>
-        /// Called whenever this widget is left clicked.
-        /// </summary>
-        public MouseEvent OnLeftClick;
-
-        /// <summary>
         /// Called once whenever a new mouse button is pressed.
         /// </summary>
         public MouseEvent OnMouseDown;
@@ -268,6 +263,11 @@ namespace MKEditor.Widgets
         public MouseEvent OnMouseUp;
 
         /// <summary>
+        /// Called whenever the mouse enters or leaves a widget.
+        /// </summary>
+        public MouseEvent OnHoverChanged;
+
+        /// <summary>
         /// Called once per mouse wheel scroll.
         /// </summary>
         public MouseEvent OnMouseWheel;
@@ -276,6 +276,21 @@ namespace MKEditor.Widgets
         /// Called while the mouse is moving.
         /// </summary>
         public MouseEvent OnMouseMoving;
+
+        /// <summary>
+        /// Called whenever this widget is left clicked.
+        /// </summary>
+        public MouseEvent OnLeftClick;
+
+        /// <summary>
+        /// Called whenever this widget is middle clicked.
+        /// </summary>
+        public MouseEvent OnMiddleClick;
+
+        /// <summary>
+        /// Called whenever this widget is right clicked.
+        /// </summary>
+        public MouseEvent OnRightClick;
 
         /// <summary>
         /// Called when this widget becomes the active widget.
@@ -382,19 +397,23 @@ namespace MKEditor.Widgets
             // In the same viewport as all other sprites, but at a very large negative Z index.
             this.Sprites["_bg"].Z = -999999999;
             // Set some default events.
-            this.OnLeftClick = this.LeftClick;
-            this.OnMouseMoving = this.MouseMoving;
-            this.OnWidgetDeselected = this.WidgetDeselected;
-            this.OnTextInput = this.TextInput;
-            this.OnPositionChanged = this.PositionChanged;
-            this.OnSizeChanged = this.SizeChanged;
-            this.OnParentSizeChanged = this.ParentSizeChanged;
-            this.OnChildBoundsChanged = this.ChildBoundsChanged;
+            this.OnMouseDown = MouseDown;
+            this.OnMouseUp = MouseUp;
+            this.OnMousePress = MousePress;
+            this.OnMouseMoving = MouseMoving;
+            this.OnHoverChanged = HoverChanged;
+            this.OnMouseWheel = MouseWheel;
+            this.OnLeftClick = LeftClick;
+            this.OnMiddleClick = MiddleClick;
+            this.OnRightClick = RightClick;
+            this.OnWidgetDeselected = WidgetDeselected;
+            this.OnTextInput = TextInput;
+            this.OnPositionChanged = PositionChanged;
+            this.OnSizeChanged = SizeChanged;
+            this.OnParentSizeChanged = ParentSizeChanged;
+            this.OnChildBoundsChanged = ChildBoundsChanged;
             // Creates the input manager object responsible for fetching mouse input.
             this.WidgetIM = new MouseInputManager(this);
-            this.WidgetIM.OnRightClick += RightClick_ContextMenu;
-            this.WidgetIM.OnHoverChanged += HoverChanged;
-            this.WidgetIM.OnMouseMoving += MouseMoving;
             this.OnFetchHelpText = FetchHelpText;
             this.SetVisible(true);
         }
@@ -1030,6 +1049,7 @@ namespace MKEditor.Widgets
             // Dispose all child widgets
             while (Widgets.Count > 0) Widgets[0].Dispose();
             // Remove this widget from the parent's widget list.
+            this.Window.UI.RemoveInput(WidgetIM);
             this.Parent.Widgets.Remove(this);
             // Set viewport and sprites to null to ensure no methods can use them anymore.
             this.Viewport = null;
@@ -1188,48 +1208,38 @@ namespace MKEditor.Widgets
                 this.Widgets[i].Update();
             }
         }
-
-        /// <summary>
-        /// Responsible for opening the right-click menu when this widget is right-clicked.
-        /// </summary>
-        private void RightClick_ContextMenu(MouseEventArgs e)
-        {
-            if (ShowContextMenu && ContextMenuList != null && ContextMenuList.Count > 0)
-            {
-                bool cont = true;
-                if (OnContextMenuOpening != null)
-                {
-                    BoolEventArgs args = new BoolEventArgs();
-                    OnContextMenuOpening(args);
-                    if (args.Value) cont = false;
-                }
-                if (cont)
-                {
-                    ContextMenu cm = new ContextMenu(Window.UI);
-                    cm.SetItems(ContextMenuList);
-                    Size s = cm.Size;
-                    int x = e.X;
-                    int y = e.Y;
-                    if (e.X + s.Width >= Window.Width) x -= s.Width;
-                    if (e.Y + s.Height >= Window.Height) y -= s.Height;
-                    x = Math.Max(0, x);
-                    y = Math.Max(0, y);
-                    cm.SetPosition(x, y);
-                }
-            }
-        }
         public virtual void MouseDown(MouseEventArgs e)
         {
-            if (e.LeftButton != e.OldLeftButton && this.WidgetIM.Hovering)
+            if (this.Disposed) throw new Exception("Got an extra WidgetIM.OnMouseDown += MouseDown call somewhere.");
+            if (this.WidgetIM.Hovering)
             {
-                Redraw();
+                if (e.RightButton != e.OldRightButton && ShowContextMenu && ContextMenuList != null && ContextMenuList.Count > 0)
+                {
+                    bool cont = true;
+                    if (OnContextMenuOpening != null)
+                    {
+                        BoolEventArgs args = new BoolEventArgs();
+                        this.OnContextMenuOpening(args);
+                        if (args.Value) cont = false;
+                    }
+                    if (cont)
+                    {
+                        ContextMenu cm = new ContextMenu(Window.UI);
+                        cm.SetItems(ContextMenuList);
+                        Size s = cm.Size;
+                        int x = e.X;
+                        int y = e.Y;
+                        if (e.X + s.Width >= Window.Width) x -= s.Width;
+                        if (e.Y + s.Height >= Window.Height) y -= s.Height;
+                        x = Math.Max(0, x);
+                        y = Math.Max(0, y);
+                        cm.SetPosition(x, y);
+                    }
+                }
             }
         }
         public virtual void MousePress(MouseEventArgs e) { }
-        public virtual void MouseUp(MouseEventArgs e)
-        {
-            if (e.LeftButton != e.OldLeftButton && this.WidgetIM.ClickedLeftInArea == true) Redraw();
-        }
+        public virtual void MouseUp(MouseEventArgs e) { }
         public virtual void MouseWheel(MouseEventArgs e) { }
         public virtual void MouseMoving(MouseEventArgs e)
         {
@@ -1237,7 +1247,6 @@ namespace MKEditor.Widgets
         }
         public virtual void HoverChanged(MouseEventArgs e)
         {
-            Redraw();
             if (WidgetIM.Hovering)
                 SetTimer("helptext", 1000);
             else if (TimerExists("helptext"))
@@ -1248,6 +1257,8 @@ namespace MKEditor.Widgets
             }
         }
         public virtual void LeftClick(MouseEventArgs e) { }
+        public virtual void MiddleClick(MouseEventArgs e) { }
+        public virtual void RightClick(MouseEventArgs e) { }
         public virtual void WidgetSelected(BaseEventArgs e)
         {
             this.Window.UI.SetSelectedWidget(this);

@@ -23,7 +23,7 @@ namespace MKEditor.Widgets
             {
                 this.Text = Text;
                 this.DrawOptions = DrawOptions;
-                Redraw();
+                RedrawText();
             }
         }
 
@@ -32,7 +32,7 @@ namespace MKEditor.Widgets
             if (this.DrawOptions != DrawOptions)
             {
                 this.DrawOptions = DrawOptions;
-                Redraw();
+                RedrawText();
             }
         }
 
@@ -41,7 +41,7 @@ namespace MKEditor.Widgets
             if (this.Font != f)
             {
                 this.Font = f;
-                Redraw();
+                RedrawText();
             }
         }
 
@@ -50,11 +50,11 @@ namespace MKEditor.Widgets
             if (this.TextColor != c)
             {
                 this.TextColor = c;
-                Redraw();
+                RedrawText();
             }
         }
 
-        protected override void Draw()
+        public virtual void RedrawText()
         {
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
             if (string.IsNullOrEmpty(this.Text)) return;
@@ -76,8 +76,9 @@ namespace MKEditor.Widgets
             
         }
 
-        public void RedrawText()
+        public override void RedrawText()
         {
+            if (string.IsNullOrEmpty(Text)) return;
             List<string> Words = new List<string>();
             foreach (string word in this.Text.Split(' '))
             {

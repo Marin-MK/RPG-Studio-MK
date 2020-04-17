@@ -29,9 +29,6 @@ namespace MKEditor.Widgets
             Sprites["icon"].X = 3;
             Sprites["icon"].Y = 2;
 
-            WidgetIM.OnMouseDown += MouseDown;
-            WidgetIM.OnHoverChanged += UpdateSelector;
-            WidgetIM.OnMouseMoving += UpdateSelector;
             OnWidgetSelected += WidgetSelected;
 
             SetSize(70, 28);

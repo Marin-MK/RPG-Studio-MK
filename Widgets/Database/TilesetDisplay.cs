@@ -29,8 +29,6 @@ namespace MKEditor.Widgets
             TilesetBox.Sprites["controls"] = new Sprite(TilesetBox.Viewport);
 
             SetSize(277, 200);
-
-            WidgetIM.OnMouseDown += MouseDown;
         }
 
         public void SetTileset(Game.Tileset Tileset)

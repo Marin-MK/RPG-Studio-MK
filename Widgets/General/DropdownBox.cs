@@ -23,8 +23,6 @@ namespace MKEditor.Widgets
             TextArea.SetCaretHeight(13);
             TextArea.SetZIndex(1);
             SetSize(100, 21);
-
-            WidgetIM.OnMouseDown += MouseDown;
         }
 
         public override void SizeChanged(BaseEventArgs e)

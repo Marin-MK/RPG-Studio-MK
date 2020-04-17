@@ -19,9 +19,6 @@ namespace MKEditor.Widgets
             Sprites["text"] = new Sprite(this.Viewport);
             Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(2, 24, new Color(59, 227, 255)));
             Sprites["selector"].Visible = false;
-            WidgetIM.OnHoverChanged += HoverChanged;
-            WidgetIM.OnMouseMoving += MouseMoving;
-            WidgetIM.OnMouseDown += MouseDown;
         }
 
         public void SetLayers(List<Layer> Layers)

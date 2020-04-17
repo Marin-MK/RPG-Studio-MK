@@ -22,11 +22,6 @@ namespace MKEditor.Widgets
         {
             Sprites["box"] = new Sprite(this.Viewport);
             Sprites["text"] = new Sprite(this.Viewport);
-            WidgetIM.OnMouseMoving += MouseMoving;
-            WidgetIM.OnHoverChanged += HoverChanged;
-            WidgetIM.OnMouseDown += MouseDown;
-            WidgetIM.OnMouseUp += MouseUp;
-            WidgetIM.OnMousePress += MousePress;
 
             SetSize(66, 27);
         }

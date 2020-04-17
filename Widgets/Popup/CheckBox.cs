@@ -18,9 +18,6 @@ namespace MKEditor.Widgets
             Sprites["text"].X = 20;
             Sprites["text"].Y = -1;
             SetText("");
-            WidgetIM.OnHoverChanged += HoverChanged;
-            WidgetIM.OnMouseDown += MouseDown;
-            WidgetIM.OnLeftClick += LeftClick;
             OnWidgetSelected += WidgetSelected;
             SetHeight(16);
         }

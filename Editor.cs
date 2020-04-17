@@ -936,7 +936,7 @@ namespace MKEditor
         public static void DumpProjectSettings()
         {
             // Saves the assembly version into the project file.
-            ProjectSettings.SavedVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+            ProjectSettings.SavedVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
             IFormatter formatter = new BinaryFormatter();
             Stream stream = new FileStream(ProjectFilePath, FileMode.Create, FileAccess.Write);
             formatter.Serialize(stream, ProjectSettings);
@@ -987,7 +987,7 @@ namespace MKEditor
         /// <summary>
         /// The last-used version of the editor to save the project. Can be used to programmatically port old data formats to new formats upon an update.
         /// </summary>
-        public FileVersionInfo SavedVersion;
+        public string SavedVersion;
         /// <summary>
         /// The hierarchy of maps as seen in the map list.
         /// </summary>

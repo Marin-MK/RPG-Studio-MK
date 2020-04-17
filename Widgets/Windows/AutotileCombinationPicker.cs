@@ -50,8 +50,6 @@ namespace MKEditor.Widgets
             Cursor = new CursorWidget(this);
             Cursor.SetPosition(Sprites["tiles"].X - 7, Sprites["tiles"].Y - 7);
             Cursor.SetSize(32 + 14, 32 + 14);
-
-            this.WidgetIM.OnMouseDown += MouseDown;
         }
 
         public void SetAutotile(Autotile Autotile)

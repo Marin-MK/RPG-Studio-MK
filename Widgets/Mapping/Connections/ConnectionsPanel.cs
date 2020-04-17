@@ -139,9 +139,6 @@ namespace MKEditor.Widgets
             Label.SetFont(Font.Get("Fonts/Ubuntu-B", 14));
             Label.SetTextColor(Color.WHITE);
 
-            this.WidgetIM.OnMouseDown += MouseDown;
-            this.WidgetIM.OnHoverChanged += HoverChanged;
-
             Sprites["hover"] = new Sprite(this.Viewport, new SolidBitmap(2, 25, new Color(47, 160, 193)));
             Sprites["hover"].Visible = false;
 

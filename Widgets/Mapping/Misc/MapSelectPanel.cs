@@ -249,6 +249,7 @@ namespace MKEditor.Widgets
                             {
                                 if (mapview.HoveringNode.Nodes.Count > 0) mapview.Nodes.AddRange(mapview.HoveringNode.Nodes);
                                 mapview.Nodes.Remove(mapview.HoveringNode);
+                                mapview.SetSelectedNode(mapview.Nodes[i - 1]);
                                 break;
                             }
                             else
@@ -257,6 +258,8 @@ namespace MKEditor.Widgets
                                 if (Node == null) continue;
                                 if (mapview.HoveringNode.Nodes.Count > 0) Node.Nodes.AddRange(mapview.HoveringNode.Nodes);
                                 Node.Nodes.Remove(mapview.HoveringNode);
+                                mapview.SetSelectedNode(Node);
+                                break;
                             }
                         }
                     }
@@ -310,4 +313,5 @@ namespace MKEditor.Widgets
             }
         }
     }
+
 }

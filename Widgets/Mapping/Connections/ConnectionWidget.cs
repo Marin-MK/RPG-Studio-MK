@@ -70,8 +70,6 @@ namespace MKEditor.Widgets
             Sprites["hover"].Visible = false;
 
             this.OnWidgetSelected += WidgetSelected;
-            this.WidgetIM.OnMouseDown += MouseDown;
-            this.WidgetIM.OnHoverChanged += HoverChanged;
 
             SetSize(272, 120);
         }
@@ -252,8 +250,6 @@ namespace MKEditor.Widgets
         public ExitButton(IContainer Parent) : base(Parent)
         {
             Sprites["box"] = new Sprite(this.Viewport);
-            this.WidgetIM.OnMouseDown += MouseDown;
-            this.WidgetIM.OnHoverChanged += HoverChanged;
         }
 
         public override void MouseDown(MouseEventArgs e)

@@ -59,9 +59,6 @@ namespace MKEditor.Widgets
             this.OnWidgetSelected += WidgetSelected;
 
             CursorIM = new MouseInputManager(this);
-            CursorIM.OnMouseDown += MouseDown;
-            CursorIM.OnMouseUp += MouseUp;
-            CursorIM.OnMouseMoving += MouseMoving;
 
             MainContainer = new Container(this);
             MainContainer.SetPosition(0, 53);
@@ -199,6 +196,7 @@ namespace MKEditor.Widgets
                 bmp.Unlock();
                 for (int j = 0; j < 4; j++)
                 {
+                    // Constructs a bitmap with the four corner autotile pieces.
                     int x = 0,
                         y = 0;
                     if (j == 0) { y = 32; }

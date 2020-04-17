@@ -298,14 +298,6 @@ namespace MKEditor
             }
 
             #region Events
-            this.OnMouseDown += UI.MouseDown;
-            this.OnMousePress += UI.MousePress;
-            this.OnMouseUp += UI.MouseUp;
-            this.OnMouseMoving += UI.MouseMoving;
-            this.OnMouseWheel += UI.MouseWheel;
-            this.OnTextInput += UI.TextInput;
-            this.OnWindowResized += UI.WindowResized;
-            this.OnTick += Tick;
             this.UI.Update();
             this.Start();
             #endregion
@@ -315,7 +307,7 @@ namespace MKEditor
             {
                 SetPosition(Editor.GeneralSettings.LastX, Editor.GeneralSettings.LastY);
                 SetSize(Editor.GeneralSettings.LastWidth, Editor.GeneralSettings.LastHeight);
-                this.UI.WindowResized(new BaseEventArgs());
+                this.UI.Resized(new BaseEventArgs());
             }
         }
 
@@ -417,11 +409,54 @@ namespace MKEditor
             TopViewport.Z = Z;
         }
 
+        public override void MouseDown(MouseEventArgs e)
+        {
+            base.MouseDown(e);
+            UI.MouseDown(e);
+        }
+
+        public override void MousePress(MouseEventArgs e)
+        {
+            base.MousePress(e);
+            UI.MousePress(e);
+        }
+
+        public override void MouseUp(MouseEventArgs e)
+        {
+            base.MouseUp(e);
+            UI.MouseUp(e);
+        }
+
+        public override void MouseMoving(MouseEventArgs e)
+        {
+            base.MouseMoving(e);
+            UI.MouseMoving(e);
+        }
+
+        public override void MouseWheel(MouseEventArgs e)
+        {
+            base.MouseWheel(e);
+            UI.MouseWheel(e);
+        }
+
+        public override void TextInput(TextEventArgs e)
+        {
+            base.TextInput(e);
+            UI.TextInput(e);
+        }
+
+        public override void Resized(BaseEventArgs e)
+        {
+            base.Resized(e);
+            UI.Resized(e);
+        }
+
         /// <summary>
         /// Updates the UIManager, and subsequently all widgets.
         /// </summary>
-        private void Tick(BaseEventArgs e)
+        public override void Tick(BaseEventArgs e)
         {
+            base.Tick(e);
             this.UI.Update();
         }
     }

@@ -14,16 +14,11 @@ namespace MKEditor
         /// Whether or not exceptions should be caught and displayed, and whether unsaved changes messages should be given.
         /// If false, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
         /// </summary>
-        public static bool ReleaseMode = true;
+        public static bool ReleaseMode = false;
         public static bool Verbose = false;
         public static bool Headless = false;
         public static string ProjectFile = null;
         public static bool ThrownError = false;
-
-        static void Output(List<string> args)
-        {
-            foreach (string s in args) Console.WriteLine($">> {s}");
-        }
 
         static void Main(params string[] args)
         {
@@ -64,7 +59,7 @@ namespace MKEditor
             MainEditorWindow win = new MainEditorWindow(ProjectFile);
             win.Show();
             Widgets.MessageBox ErrorBox = null;
-            win.OnWindowSizeChanged += delegate (BaseEventArgs e)
+            win.OnSizeChanged += delegate (BaseEventArgs e)
             {
                 if (ErrorBox != null && !ErrorBox.Disposed) ErrorBox.SetSize(win.Width, win.Height);
             };
