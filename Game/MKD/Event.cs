@@ -150,6 +150,7 @@ namespace MKEditor.Game
         public Dictionary<string, object> ToJSON()
         {
             Dictionary<string, object> Data = new Dictionary<string, object>();
+            Data["^c"] = "MKD::Event::Graphic";
             Data["@type"] = ":" + Type;
             Data["@direction"] = Direction;
             Data["@param"] = Param;

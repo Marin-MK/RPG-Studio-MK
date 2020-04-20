@@ -7,11 +7,10 @@
     <StartupObject />
     <Authors>MK Project</Authors>
     <Product>RPG Studio MK</Product>
-    <Version>0.3.5</Version>
+    <Version>0.3.6</Version>
     <Platforms>x64</Platforms>
     <AssemblyName>RPG Studio MK</AssemblyName>
     <Configurations>Debug</Configurations>
-    <Company>MK Project</Company>
   </PropertyGroup>
 
   <ItemGroup>

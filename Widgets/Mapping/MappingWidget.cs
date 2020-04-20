@@ -87,7 +87,6 @@ namespace MKEditor.Widgets
             Editor.ProjectSettings.LastMappingSubmode = Submode;
             MapImageWidget.SetParent(ActiveMapViewer.MainContainer);
             MapImageWidget.SetVisible(true);
-            ActiveMapViewer.ZoomByScroll = true; // Ensures it retains the scroll bar scroll value
             if (ActiveMapViewer.Map != null) ActiveMapViewer.PositionMap();
 
             if (Submode == "TILES") // Select Tiles submode
@@ -183,6 +182,8 @@ namespace MKEditor.Widgets
         {
             base.SizeChanged(e);
             if (Submodes.SelectedIndex != -1) ActiveMapViewer.PositionMap();
+            SetHorizontalScroll(0.5);
+            SetVerticalScroll(0.5);
         }
     }
 }

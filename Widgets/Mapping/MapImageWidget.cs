@@ -36,7 +36,8 @@ namespace MKEditor.Widgets
         {
             for (int i = 0; i < MapData.Layers.Count; i++)
             {
-                Sprites[i.ToString()].ZoomX = Sprites[i.ToString()].ZoomY = factor;
+                Sprites[i.ToString()].ZoomX = factor;
+                Sprites[i.ToString()].ZoomY = factor;
             }
             this.ZoomFactor = factor;
             GridBackground.SetTileSize((int) Math.Round(32 * this.ZoomFactor));
@@ -471,6 +472,7 @@ namespace MKEditor.Widgets
 
         public void DrawTile(int X, int Y, int Layer, TileData Tile, TileData OldTile, bool ForceUpdateNearbyAutotiles = false)
         {
+            SetZoomFactor(this.ZoomFactor);
             bool Blank = Tile == null;
             for (int k = 0; k < AnimatedAutotiles.Count; k++)
             {

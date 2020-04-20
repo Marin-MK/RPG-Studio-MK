@@ -760,7 +760,19 @@ namespace MKEditor
         public static void StartGame()
         {
             MainWindow.StatusBar.QueueMessage("Game starting...", true);
-            Process.Start(Data.ProjectPath + "/mkxp.exe");
+            Process p = new Process();
+            p.StartInfo.FileName = Data.ProjectPath + "/mkxp.exe";
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.RedirectStandardError = true;
+            p.OutputDataReceived += delegate (object sender, DataReceivedEventArgs e) { Console.WriteLine(e.Data); };
+            p.ErrorDataReceived += delegate (object sender, DataReceivedEventArgs e) { Console.WriteLine(e.Data); };
+            p.Exited += delegate (object sender, EventArgs e) { Console.WriteLine($"Process exited with code {p.ExitCode}"); };
+            p.EnableRaisingEvents = true;
+            p.Start();
+            p.BeginErrorReadLine();
+            p.BeginOutputReadLine();
+            p.WaitForExit();
         }
 
         /// <summary>

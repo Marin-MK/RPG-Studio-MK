@@ -636,7 +636,7 @@ namespace MKEditor.Widgets
                         {
                             this.ScrolledX = MaxChildWidth - this.Viewport.Width;
                         }
-                        HScrollBar.SetValue((double) this.ScrolledX / (MaxChildWidth - this.Viewport.Width));
+                        HScrollBar.SetValue((double) this.ScrolledX / (MaxChildWidth - this.Viewport.Width), false);
                         HScrollBar.SetSliderSize((double) this.Viewport.Width / MaxChildWidth);
                         HScrollBar.MouseInputRect = this.Viewport.Rect;
                         HScrollBar.SetVisible(true);
@@ -664,7 +664,7 @@ namespace MKEditor.Widgets
                         {
                             this.ScrolledY = MaxChildHeight - this.Viewport.Height;
                         }
-                        VScrollBar.SetValue((double) this.ScrolledY / (MaxChildHeight - this.Viewport.Height));
+                        VScrollBar.SetValue((double) this.ScrolledY / (MaxChildHeight - this.Viewport.Height), false);
                         VScrollBar.SetSliderSize((double) this.Viewport.Height / MaxChildHeight);
                         VScrollBar.MouseInputRect = this.Viewport.Rect;
                         VScrollBar.SetVisible(true);

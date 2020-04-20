@@ -116,6 +116,7 @@ namespace MKEditor.Game
                 if (o is null) Tags.Add(null);
                 else Tags.Add(Convert.ToInt32(o));
             }
+            this.AnimateSpeed = Convert.ToInt32(Data["@animate_speed"]);
             QuickIDs = new List<int?>() { null, null, null, null, null, null };
             if (Data.ContainsKey("@quick_ids"))
             {
@@ -125,7 +126,6 @@ namespace MKEditor.Game
                     if (ids[i] != null) QuickIDs[i] = Convert.ToInt32(ids[i]);
                 }
             }
-            this.AnimateSpeed = Convert.ToInt32(Data["@animate_speed"]);
             // Make sure the three arrays are just as big; trailing nulls may be left out if the data is edited externally
             int maxcount = Math.Max(Math.Max(Passabilities.Count, Priorities.Count), Tags.Count);
             this.Passabilities.AddRange(new Passability[maxcount - Passabilities.Count]);
@@ -150,8 +150,8 @@ namespace MKEditor.Game
             Data["@priorities"] = Priorities;
             Data["@passabilities"] = Passabilities;
             Data["@tags"] = Tags;
-            Data["@quick_ids"] = QuickIDs;
             Data["@animate_speed"] = AnimateSpeed;
+            Data["@quick_ids"] = QuickIDs;
             return Data;
         }
 

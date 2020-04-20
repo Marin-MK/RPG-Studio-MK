@@ -16,18 +16,18 @@ namespace MKEditor.Widgets
             ZoomOut.Selectable = false;
             ZoomOut.SetIcon(7, 0);
             ZoomOut.SetSelectorOffset(-2);
-            ZoomOut.OnLeftClick += delegate (MouseEventArgs e)
+            ZoomOut.OnMouseDown += delegate (MouseEventArgs e)
             {
-                DecreaseZoom();
+                if (ZoomOut.WidgetIM.Hovering && e.LeftButton != e.OldLeftButton) DecreaseZoom();
             };
             ZoomIn = new IconButton(this);
             ZoomIn.Selectable = false;
             ZoomIn.SetIcon(8, 0);
             ZoomIn.SetPosition(65, 0);
             ZoomIn.SetSelectorOffset(-2);
-            ZoomIn.OnLeftClick += delegate (MouseEventArgs e)
+            ZoomIn.OnMouseDown += delegate (MouseEventArgs e)
             {
-                IncreaseZoom();
+                if (ZoomIn.WidgetIM.Hovering && e.LeftButton != e.OldLeftButton) IncreaseZoom();
             };
 
             Sprites["text"] = new Sprite(this.Viewport);

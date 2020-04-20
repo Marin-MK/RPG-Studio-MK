@@ -105,12 +105,19 @@ namespace MKEditor.Game
             Dictionary<string, object> Data = new Dictionary<string, object>();
             if (Prefix == "@") Data["^c"] = "Species";
             if (ID != null) Data[$"{Prefix}id"] = ID;
+            if (Stats != null) Data[$"{Prefix}stats"] = Stats.ToJSON();
+            if (EVYield != null) Data[$"{Prefix}ev_yield"] = EVYield.ToJSON();
+            if (Moveset != null) Data[$"{Prefix}moveset"] = Moveset.ToJSON();
+            if (Forms != null && Forms.Count > 1 && Prefix == "@")
+            {
+                Dictionary<int, Dictionary<string, object>> forms = new Dictionary<int, Dictionary<string, object>>();
+                for (int i = 1; i < Forms.Count; i++) forms[i] = Forms[i].ToJSON(":");
+                Data["@forms"] = forms;
+            }
             if (!string.IsNullOrEmpty(IntName)) Data[$"{Prefix}intname"] = ":" + IntName;
             if (!string.IsNullOrEmpty(Name)) Data[$"{Prefix}name"] = Name;
             if (!string.IsNullOrEmpty(Type1)) Data[$"{Prefix}type1"] = ":" + Type1;
             if (!string.IsNullOrEmpty(Type2)) Data[$"{Prefix}type2"] = ":" + Type2;
-            if (Stats != null) Data[$"{Prefix}stats"] = Stats.ToJSON();
-            if (EVYield != null) Data[$"{Prefix}ev_yield"] = EVYield.ToJSON();
             if (Abilities != null)
             {
                 List<string> abils = new List<string>(Abilities);
@@ -134,14 +141,7 @@ namespace MKEditor.Game
             if (!string.IsNullOrEmpty(PokedexColor)) Data[$"{Prefix}pokedex_color"] = ":" + PokedexColor;
             if (!string.IsNullOrEmpty(PokedexEntry)) Data[$"{Prefix}pokedex_entry"] = PokedexEntry;
             if (Happiness != null) Data[$"{Prefix}happiness"] = Happiness;
-            if (Moveset != null) Data[$"{Prefix}moveset"] = Moveset.ToJSON();
             if (Evolutions != null) Data[$"{Prefix}evolutions"] = new List<Dictionary<string, object>>(Array.ConvertAll(Evolutions.ToArray(), e => e.ToJSON()));
-            if (Forms != null && Forms.Count > 1 && Prefix == "@")
-            {
-                Dictionary<int, Dictionary<string, object>> forms = new Dictionary<int, Dictionary<string, object>>();
-                for (int i = 1; i < Forms.Count; i++) forms[i] = Forms[i].ToJSON(":");
-                Data["@forms"] = forms;
-            }
             return Data;
         }
     }
