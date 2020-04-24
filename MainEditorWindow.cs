@@ -31,6 +31,10 @@ namespace MKEditor
         /// </summary>
         public MappingWidget MapWidget { get { return MainEditorWidget as MappingWidget; } }
         /// <summary>
+        /// The EventingWidget object of the eventing mode. Null if not active.
+        /// </summary>
+        public EventingWidget EventingWidget { get { return MainEditorWidget as EventingWidget; } }
+        /// <summary>
         /// The DatabaseWidget object of the database mode. Null if not active.
         /// </summary>
         public DatabaseWidget DatabaseWidget { get { return MainEditorWidget as DatabaseWidget; } }
@@ -366,7 +370,7 @@ namespace MKEditor
                 Function();
                 return;
             }
-            MessageBox box = new MessageBox("Warning", "The game contains unsaved changed. Are you sure you would like to proceed? All unsaved changes will be lost.",
+            MessageBox box = new MessageBox("Warning", "The game contains unsaved changes. Are you sure you would like to proceed? All unsaved changes will be lost.",
                 new List<string>() { "Save", "Continue", "Cancel" }, IconType.Warning);
             box.OnButtonPressed += delegate (BaseEventArgs e)
             {

@@ -122,11 +122,12 @@ namespace MKEditor
         public static string Digits(int Number, int Digits)
         {
             string num = Number.ToString();
+            bool neg = num.StartsWith('-');
+            if (neg) num = num.Substring(1);
             if (num.Length >= Digits) return num;
             int missing = Digits - num.Length;
-
             for (int i = 0; i < missing; i++) num = "0" + num;
-            return num;
+            return neg ? "-" + num : num;
         }
 
         /// <summary>

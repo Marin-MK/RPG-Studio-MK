@@ -13,8 +13,6 @@ namespace MKEditor.Widgets
         public Point OriginPoint;
         public Location CursorOrigin;
         public List<TileData> TileDataList = new List<TileData>();
-        public int CursorWidth = 0;
-        public int CursorHeight = 0;
         public bool SelectionOnMap = false;
         public int SelectionX = -1;
         public int SelectionY = -1;
@@ -23,20 +21,20 @@ namespace MKEditor.Widgets
 
         public CursorWidget Cursor;
 
-        public int TopLeftX
+        public override int TopLeftX
         {
             get
             {
-                int x = MapTileX;
+                int x = base.TopLeftX;
                 if (CursorOrigin == Location.TopRight || CursorOrigin == Location.BottomRight) x -= CursorWidth;
                 return x;
             }
         }
-        public int TopLeftY
+        public override int TopLeftY
         {
             get
             {
-                int y = MapTileY;
+                int y = base.TopLeftY;
                 if (CursorOrigin == Location.BottomLeft || CursorOrigin == Location.BottomRight) y -= CursorHeight;
                 return y;
             }
@@ -318,7 +316,7 @@ namespace MKEditor.Widgets
                 }
                 int tilex = (int) Math.Floor(rx / (32d * ZoomFactor));
                 int tiley = (int) Math.Floor(ry / (32d * ZoomFactor));
-                if (!Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.SelectButton.Selected) Cursor.SetVisible(true);
+                if (Editor.MainWindow.MapWidget != null && !Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.SelectButton.Selected) Cursor.SetVisible(true);
                 int cx = tilex * 32;
                 int cy = tiley * 32;
                 RelativeMouseX = cx;

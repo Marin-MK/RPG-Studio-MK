@@ -38,7 +38,7 @@ namespace MKEditor.Widgets
                 SetMap(Data.Maps[(int) mapview.SelectedNode.Object], true);
                 Editor.MainWindow.StatusBar.QueueMessage($"Loaded Map #{mapview.SelectedNode.Object} ({(DateTime.Now - start).Milliseconds}ms)", false, 1000);
             };
-            mapview.TrailingBlank = 64;
+            mapview.TrailingBlank = 32;
             allmapcontainer.SetContextMenuList(new List<IMenuItem>()
             {
                 new MenuItem("New Map")
@@ -115,7 +115,8 @@ namespace MKEditor.Widgets
 
         public void SetMap(Map Map, bool CalledFromTreeView = false)
         {
-            Editor.MainWindow.MapWidget.SetMap(Map);
+            if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetMap(Map);
+            if (Editor.MainWindow.EventingWidget != null) Editor.MainWindow.EventingWidget.SetMap(Map);
             Editor.ProjectSettings.LastMapID = Map.ID;
             Editor.ProjectSettings.LastLayer = 0;
             if (!CalledFromTreeView) // Has yet to update the selection

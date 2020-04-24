@@ -10,6 +10,8 @@ namespace MKEditor.Game
         public string Name;
         public int X;
         public int Y;
+        public int Width;
+        public int Height;
         public List<EventPage> Pages = new List<EventPage>();
         public EventSettings Settings;
 
@@ -27,6 +29,8 @@ namespace MKEditor.Game
             this.Name = (string) Data["@name"];
             this.X = Convert.ToInt32(Data["@x"]);
             this.Y = Convert.ToInt32(Data["@y"]);
+            this.Width = Convert.ToInt32(Data["@width"]);
+            this.Height = Convert.ToInt32(Data["@height"]);
             foreach (object o in ((JArray) Data["@pages"]).ToObject<List<object>>())
             {
                 this.Pages.Add(new EventPage(((JObject) o).ToObject<Dictionary<string, object>>()));
@@ -42,6 +46,8 @@ namespace MKEditor.Game
             Data["@name"] = Name;
             Data["@x"] = X;
             Data["@y"] = Y;
+            Data["@width"] = Width;
+            Data["@height"] = Height;
             List<Dictionary<string, object>> pages = new List<Dictionary<string, object>>();
             foreach (EventPage page in Pages)
             {

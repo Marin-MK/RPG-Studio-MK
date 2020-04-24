@@ -330,7 +330,7 @@ namespace MKEditor.Widgets
         /// <summary>
         /// Called before this widget is disposed.
         /// </summary>
-        public BaseEvent OnDisposing;
+        public BoolEvent OnDisposing;
 
         /// <summary>
         /// Called after this widget is disposed.
@@ -1038,7 +1038,12 @@ namespace MKEditor.Widgets
         public virtual void Dispose()
         {
             AssertUndisposed();
-            this.OnDisposing?.Invoke(new BaseEventArgs());
+            if (this.OnDisposing != null)
+            {
+                BoolEventArgs arg = new BoolEventArgs(true);
+                this.OnDisposing.Invoke(arg);
+                if (!arg.Value) return;
+            }
             // Mark this widget as disposed.
             this.Disposed = true;
             // Dispose the viewport and all its sprites.
@@ -1047,7 +1052,7 @@ namespace MKEditor.Widgets
             if (this.Viewport != null && !this.Viewport.Disposed)
                 this.Viewport.Dispose();
             // Dispose all child widgets
-            while (Widgets.Count > 0) Widgets[0].Dispose();
+            for (int i = Widgets.Count - 1; i >= 0; i--) Widgets[i].Dispose();
             // Remove this widget from the parent's widget list.
             this.Window.UI.RemoveInput(WidgetIM);
             this.Parent.Widgets.Remove(this);

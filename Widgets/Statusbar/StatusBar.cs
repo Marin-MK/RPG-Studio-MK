@@ -7,8 +7,6 @@ namespace MKEditor.Widgets
 {
     public class StatusBar : Widget
     {
-        public MapViewerBase MapViewer;
-
         public ZoomControl ZoomControl;
 
         List<Message> Queue = new List<Message>();
@@ -135,19 +133,19 @@ namespace MKEditor.Widgets
                     RemoveText();
                 }
             }
-            if (MapViewer != null && MapViewer is MapViewerTiles)
+            if (Editor.MainWindow.MapWidget != null || Editor.MainWindow.EventingWidget != null)
             {
-                MapViewerTiles mvt = MapViewer as MapViewerTiles;
-                if (mvt.TopLeftX < 0 || mvt.TopLeftY < 0 || mvt.TopLeftX >= mvt.Map.Width || mvt.TopLeftY >= MapViewer.Map.Height)
+                MapViewerBase MapViewer = Editor.MainWindow.MapWidget != null ? Editor.MainWindow.MapWidget.ActiveMapViewer : Editor.MainWindow.EventingWidget.MapViewer;
+                if (!MapViewer.WidgetIM.Hovering || MapViewer is MapViewerConnections)
                 {
                     RemoveCursorText();
                 }
-                else if (mvt.TopLeftX != DrawnX || mvt.TopLeftY != DrawnY ||
-                         mvt.CursorWidth != DrawnWidth || mvt.CursorHeight != DrawnHeight ||
+                else if (MapViewer.TopLeftX != DrawnX || MapViewer.TopLeftY != DrawnY ||
+                         MapViewer.CursorWidth != DrawnWidth || MapViewer.CursorHeight != DrawnHeight ||
                          Sprites["cursor"].Bitmap == null)
                 {
                     
-                    DrawCursor(mvt.TopLeftX, mvt.TopLeftY, mvt.CursorWidth, mvt.CursorHeight);
+                    DrawCursor(MapViewer.TopLeftX, MapViewer.TopLeftY, MapViewer.CursorWidth, MapViewer.CursorHeight);
                 }
             }
             else
@@ -158,9 +156,9 @@ namespace MKEditor.Widgets
 
         public void Refresh()
         {
-            if (Editor.MainWindow.MainEditorWidget is MappingWidget)
+            if (Editor.MainWindow.MapWidget != null || Editor.MainWindow.EventingWidget != null)
             {
-                SetMap(Editor.MainWindow.MapWidget.Map);
+                SetMap(Editor.MainWindow.MapWidget != null ? Editor.MainWindow.MapWidget.Map : Editor.MainWindow.EventingWidget.Map);
                 ZoomControl.SetVisible(true);
                 Sprites["line2"].Visible = true;
             }

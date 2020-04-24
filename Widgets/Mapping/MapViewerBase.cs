@@ -20,6 +20,23 @@ namespace MKEditor.Widgets
         public int LastMouseX = 0;
         public int LastMouseY = 0;
 
+        public virtual int TopLeftX
+        {
+            get
+            {
+                return MapTileX;
+            }
+        }
+        public virtual int TopLeftY
+        {
+            get
+            {
+                return MapTileY;
+            }
+        }
+        public int CursorWidth = 0;
+        public int CursorHeight = 0;
+
         public double ZoomFactor = 1.0;
 
         public List<MapConnectionWidget> ConnectionWidgets = new List<MapConnectionWidget>();
@@ -61,7 +78,7 @@ namespace MKEditor.Widgets
             HScrollBar.SetValue(0.5);
             HScrollBar.OnValueChanged += delegate (BaseEventArgs e)
             {
-                Editor.MainWindow.MapWidget.SetHorizontalScroll(HScrollBar.Value);
+                if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetHorizontalScroll(HScrollBar.Value);
                 MouseMoving(Graphics.LastMouseEvent);
             };
             VScrollContainer = new Container(GridLayout);
@@ -72,7 +89,7 @@ namespace MKEditor.Widgets
             VScrollBar.SetValue(0.5);
             VScrollBar.OnValueChanged += delegate (BaseEventArgs e)
             {
-                Editor.MainWindow.MapWidget.SetVerticalScroll(VScrollBar.Value);
+                if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetVerticalScroll(VScrollBar.Value);
                 MouseMoving(Graphics.LastMouseEvent);
             };
 
@@ -130,7 +147,8 @@ namespace MKEditor.Widgets
 
         public virtual void PositionMap()
         {
-            if (Editor.MainWindow.MapWidget.Submodes.SelectedIndex != -1 && this != Editor.MainWindow.MapWidget.ActiveMapViewer) return;
+            if (Editor.MainWindow.MapWidget != null &&
+                Editor.MainWindow.MapWidget.Submodes.SelectedIndex != -1 && this != Editor.MainWindow.MapWidget.ActiveMapViewer) return;
             int w = (int) Math.Round(Map.Width * 32d * ZoomFactor);
             int h = (int) Math.Round(Map.Height * 32d * ZoomFactor);
             int minx = MainContainer.Size.Width / 2 - w / 2;
@@ -175,8 +193,11 @@ namespace MKEditor.Widgets
                 MainContainer.ScrolledY = Math.Max(0, Math.Min(MainContainer.ScrolledY, MainContainer.MaxChildHeight - MainContainer.Viewport.Height));
 
                 MainContainer.UpdateAutoScroll();
-                Editor.MainWindow.MapWidget.SetHorizontalScroll(MainContainer.HScrollBar.Value);
-                Editor.MainWindow.MapWidget.SetVerticalScroll(MainContainer.VScrollBar.Value);
+                if (Editor.MainWindow.MapWidget != null)
+                {
+                    Editor.MainWindow.MapWidget.SetHorizontalScroll(MainContainer.HScrollBar.Value);
+                    Editor.MainWindow.MapWidget.SetVerticalScroll(MainContainer.VScrollBar.Value);
+                }
             }
         }
 

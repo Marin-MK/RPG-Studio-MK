@@ -799,8 +799,6 @@ namespace MKEditor
         public static void SetMode(string Mode, bool Force = false)
         {
             if (Mode == ProjectSettings.LastMode && !Force) return;
-            if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
-            MainWindow.MainEditorWidget = null;
 
             string OldMode = ProjectSettings.LastMode;
             ProjectSettings.LastMode = Mode;
@@ -812,6 +810,9 @@ namespace MKEditor
             {
                 MainWindow.ToolBar.MappingMode.SetSelected(true, Force);
 
+                Map SelectedMap = null;
+                if (MainWindow.EventingWidget != null) SelectedMap = MainWindow.EventingWidget.EventMapImageWidget.MapData;
+                if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
                 MainWindow.MainEditorWidget = new MappingWidget(MainWindow.MainGridLayout);
                 MainWindow.MainEditorWidget.SetGridRow(3);
 
@@ -826,19 +827,36 @@ namespace MKEditor
                     else mapid = (int) ProjectSettings.MapOrder[0];
                 }
                 int lastlayer = ProjectSettings.LastLayer;
-                MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps[mapid]);
-
+                MainWindow.MapWidget.MapSelectPanel.SetMap(SelectedMap?? Data.Maps[mapid]);
                 MainWindow.MapWidget.SetSelectedLayer(lastlayer);
                 MainWindow.MapWidget.SetZoomFactor(ProjectSettings.LastZoomFactor);
                 MainWindow.MapWidget.SetSubmode(ProjectSettings.LastMappingSubmode);
             }
-            else if (OldMode == "MAPPING") // Deselct Mapping mode
+            else if (OldMode == "MAPPING") // Deselect Mapping mode
             {
                 
             }
             if (Mode == "EVENTING") // Select Eventing mode
             {
                 MainWindow.ToolBar.EventingMode.SetSelected(true, Force);
+
+                Map SelectedMap = null;
+                if (MainWindow.MapWidget != null) SelectedMap = MainWindow.MapWidget.Map;
+                if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
+                MainWindow.MainEditorWidget = new EventingWidget(MainWindow.MainGridLayout);
+                MainWindow.MainEditorWidget.SetGridRow(3);
+
+                // Set list of maps & initial map
+                List<TreeNode> Nodes = MainWindow.EventingWidget.MapSelectPanel.PopulateList(Editor.ProjectSettings.MapOrder, true);
+                GenerateMapOrder(Nodes);
+
+                int mapid = ProjectSettings.LastMapID;
+                if (!Data.Maps.ContainsKey(mapid))
+                {
+                    if (ProjectSettings.MapOrder[0] is List<object>) mapid = (int)((List<object>)ProjectSettings.MapOrder[0])[0];
+                    else mapid = (int) ProjectSettings.MapOrder[0];
+                }
+                MainWindow.EventingWidget.MapSelectPanel.SetMap(SelectedMap?? Data.Maps[mapid]);
             }
             else if (OldMode == "EVENTING") // Deselect Eventing mode
             {
@@ -847,6 +865,9 @@ namespace MKEditor
             if (Mode == "SCRIPTING") // Select Scripting mode
             {
                 MainWindow.ToolBar.ScriptingMode.SetSelected(true, Force);
+
+                if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
+                MainWindow.MainEditorWidget = null;
             }
             else if (OldMode == "SCRIPTING") // Deselect Script mode
             {
@@ -855,6 +876,8 @@ namespace MKEditor
             if (Mode == "DATABASE") // Select Database mode
             {
                 MainWindow.ToolBar.DatabaseMode.SetSelected(true, Force);
+
+                if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
                 MainWindow.MainEditorWidget = new DatabaseWidget(MainWindow.MainGridLayout);
                 MainWindow.MainEditorWidget.SetGridRow(3);
             }

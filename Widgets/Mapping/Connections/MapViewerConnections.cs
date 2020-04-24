@@ -136,7 +136,7 @@ namespace MKEditor.Widgets
         public override void Dispose()
         {
             base.Dispose();
-            if (Outline != null) Outline.Dispose();
+            if (Outline != null && !Outline.Disposed) Outline.Dispose();
         }
     }
 }
