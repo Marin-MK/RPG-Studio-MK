@@ -548,6 +548,23 @@ namespace MKEditor
         }
 
         /// <summary>
+        /// Returns the first unused event ID for the current map.
+        /// </summary>
+        /// <returns></returns>
+        public static int GetFreeEventID(Map Map)
+        {
+            int i = 1;
+            while (true)
+            {
+                if (!Map.Events.ContainsKey(i))
+                {
+                    return i;
+                }
+                i++;
+            }
+        }
+
+        /// <summary>
         /// Returns the first unused tileset ID for the current project.
         /// </summary>
         /// <returns></returns>

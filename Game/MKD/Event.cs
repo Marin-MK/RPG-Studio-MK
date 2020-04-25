@@ -15,6 +15,17 @@ namespace MKEditor.Game
         public List<EventPage> Pages = new List<EventPage>();
         public EventSettings Settings;
 
+        public Event(int ID)
+        {
+            this.ID = ID;
+            this.Name = "Untitled Event";
+            this.Width = 1;
+            this.Height = 1;
+            this.Pages = new List<EventPage>();
+            this.Pages.Add(new EventPage());
+            this.Settings = new EventSettings();
+        }
+
         public Event(Dictionary<string, object> Data)
         {
             if (Data.ContainsKey("^c"))
@@ -61,12 +72,21 @@ namespace MKEditor.Game
 
     public class EventPage
     {
-        public List<IEventCommand> Commands { get { throw new NotImplementedException(); } }
-        public List<IEventCondition> Conditions { get { throw new NotImplementedException(); } }
+        public List<IEventCommand> Commands;
+        public List<IEventCondition> Conditions;
         public EventGraphic Graphic;
         public TriggerMode TriggerMode;
         public object TriggerParam;
         public AutoMoveRoute AutoMoveRoute;
+
+        public EventPage()
+        {
+            this.Commands = new List<IEventCommand>();
+            this.Conditions = new List<IEventCondition>();
+            this.Graphic = new EventGraphic();
+            this.TriggerMode = TriggerMode.Action;
+            this.AutoMoveRoute = new AutoMoveRoute();
+        }
 
         public EventPage(Dictionary<string, object> Data)
         {
@@ -135,6 +155,13 @@ namespace MKEditor.Game
         public int Direction;
         public int FrameUpdateInterval;
 
+        public EventGraphic()
+        {
+            this.Type = "blank";
+            this.Direction = 2;
+            this.FrameUpdateInterval = 16;
+        }
+
         public EventGraphic(Dictionary<string, object> Data)
         {
             if (Data.ContainsKey("^c"))
@@ -190,7 +217,13 @@ namespace MKEditor.Game
     public class AutoMoveRoute
     {
         public double Frequency;
-        public List<string> Commands = new List<string>();
+        public List<string> Commands;
+
+        public AutoMoveRoute()
+        {
+            this.Frequency = 0;
+            this.Commands = new List<string>();
+        }
 
         public AutoMoveRoute(Dictionary<string, object> Data)
         {
@@ -226,6 +259,13 @@ namespace MKEditor.Game
         public bool Passable;
         public bool SavePosition;
         public float Speed;
+
+        public EventSettings()
+        {
+            this.Passable = false;
+            this.SavePosition = true;
+            this.Speed = 0.25f;
+        }
 
         public EventSettings(Dictionary<string, object> Data)
         {

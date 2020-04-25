@@ -65,7 +65,21 @@ namespace MKEditor.Widgets
                 label.SetText("This map does not have any events.");
                 label.SetMargin(8, 8);
             }
-            if (Map.Events.Count > 0) ((EventListEntryWidget) StackPanel.Widgets[0].Widgets[0]).SetSelected(true);
+        }
+
+        public void SelectEvent(Event e)
+        {
+            foreach (LayoutContainer lc in StackPanel.Widgets)
+            {
+                if (e == null)
+                {
+                    ((EventListEntryWidget) lc.Widget).SetSelected(false);
+                }
+                else if (((EventListEntryWidget) lc.Widget).EventData == e)
+                {
+                    ((EventListEntryWidget) lc.Widget).SetSelected(true);
+                }
+            }
         }
     }
 }

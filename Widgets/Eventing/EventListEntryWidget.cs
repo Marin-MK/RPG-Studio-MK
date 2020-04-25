@@ -7,6 +7,7 @@ namespace MKEditor.Widgets
     public class EventListEntryWidget : Widget
     {
         public bool Selected { get; protected set; } = false;
+        public Event EventData;
 
         public EventListEntryWidget(IContainer Parent) : base(Parent)
         {
@@ -19,6 +20,7 @@ namespace MKEditor.Widgets
 
         public void SetEvent(Event Event)
         {
+            this.EventData = Event;
             string text = $"{Utilities.Digits(Event.ID, 3)}: {Event.Name}";
             Font f = Font.Get("Fonts/Ubuntu-B", 14);
             Size s = f.TextSize(text);
@@ -69,6 +71,16 @@ namespace MKEditor.Widgets
                 }
                 Sprites["text"].Color = Selected ? new Color(61, 184, 232) : Color.WHITE;
                 SetBackgroundColor(Selected ? new Color(19, 36, 55) : Color.ALPHA);
+            }
+        }
+
+        public override void MouseDown(MouseEventArgs e)
+        {
+            base.MouseDown(e);
+            if (WidgetIM.Hovering && e.LeftButton != e.OldLeftButton && !Selected)
+            {
+                SetSelected(true);
+                Editor.MainWindow.EventingWidget.MapViewer.SelectEvent(EventData);
             }
         }
     }
