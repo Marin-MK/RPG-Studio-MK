@@ -10,16 +10,18 @@ namespace MKEditor.Widgets
         private List<string>       Names         = new List<string>();
         public  int                SelectedIndex { get; protected set; } = -1;
         private int                HoveringIndex = -1;
+        public  Color              HeaderColor   { get; protected set; } = new Color(28, 50, 73);
         public  int                HeaderWidth   { get; protected set; } = 78;
         public  int                HeaderHeight  { get; protected set; } = 25;
         public  int                TextY         { get; protected set; } = 3;
+        public  int                XOffset       { get; protected set; } = 0;
 
         public BaseEvent OnSelectionChanged;
 
         public TabView(IContainer Parent) : base(Parent)
         {
-            Sprites["bg"] = new Sprite(this.Viewport, new SolidBitmap(HeaderWidth, HeaderHeight, new Color(28, 50, 73)));
-            Sprites["header"] = new Sprite(this.Viewport, new SolidBitmap(1, 4, new Color(28, 50, 73)));
+            Sprites["bg"] = new Sprite(this.Viewport, new SolidBitmap(HeaderWidth, HeaderHeight, HeaderColor));
+            Sprites["header"] = new Sprite(this.Viewport, new SolidBitmap(1, 4, HeaderColor));
             Sprites["header"].Y = HeaderHeight;
             Sprites["text"] = new Sprite(this.Viewport);
         }
@@ -36,7 +38,7 @@ namespace MKEditor.Widgets
                 {
                     Tabs[Index].SetVisible(true);
                     this.SelectedIndex = Index;
-                    Sprites["bg"].X = Index * HeaderWidth;
+                    Sprites["bg"].X = XOffset + Index * HeaderWidth;
                     Sprites["bg"].Visible = true;
                     this.OnSelectionChanged?.Invoke(new BaseEventArgs());
                 }
@@ -52,6 +54,25 @@ namespace MKEditor.Widgets
             return this.Tabs[Index];
         }
 
+        public void SetHeaderColor(byte R, byte G, byte B, byte A = 255)
+        {
+            SetHeaderColor(new Color(R, G, B, A));
+        }
+        public void SetHeaderColor(Color c)
+        {
+            ((SolidBitmap) Sprites["bg"].Bitmap).SetColor(c);
+            ((SolidBitmap) Sprites["header"].Bitmap).SetColor(c);
+        }
+
+        public void SetXOffset(int Offset)
+        {
+            if (this.XOffset != Offset)
+            {
+                this.XOffset = Offset;
+                this.Redraw();
+            }
+        }
+
         protected override void Draw()
         {
             if (SelectedIndex == -1)
@@ -64,7 +85,7 @@ namespace MKEditor.Widgets
                 }
             }
             Sprites["bg"].Visible = true;
-            Sprites["bg"].X = SelectedIndex * HeaderWidth;
+            Sprites["bg"].X = XOffset + SelectedIndex * HeaderWidth;
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
             Sprites["text"].Bitmap = new Bitmap(Size);
             Font f = Font.Get("Fonts/Ubuntu-B", 15);
@@ -72,7 +93,7 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap.Font = f;
             for (int i = 0; i < this.Tabs.Count; i++)
             {
-                Sprites["text"].Bitmap.DrawText(Names[i], i * HeaderWidth + HeaderWidth / 2, TextY, Color.WHITE, DrawOptions.CenterAlign);
+                Sprites["text"].Bitmap.DrawText(Names[i], XOffset + i * HeaderWidth + HeaderWidth / 2, TextY, Color.WHITE, DrawOptions.CenterAlign);
             }
             Sprites["text"].Bitmap.Lock();
             base.Draw();
@@ -125,9 +146,9 @@ namespace MKEditor.Widgets
                 return;
             }
             int oldindex = HoveringIndex;
-            int rx = e.X - this.Viewport.X;
+            int rx = e.X - this.Viewport.X - XOffset;
             int ry = e.Y - this.Viewport.Y;
-            if (ry >= HeaderHeight)
+            if (rx < 0 || ry >= HeaderHeight)
             {
                 HoveringIndex = -1;
                 return;

@@ -53,48 +53,25 @@ namespace MKEditor.Widgets
             Sprites["box"].Bitmap = new Bitmap(this.Size);
             Sprites["box"].Bitmap.Unlock();
             Color light = new Color(86, 108, 134);
-            Color dark = new Color(36, 34, 36);
+            Color dark = new Color(10, 23, 37);
+
+            Sprites["box"].Bitmap.FillRect(Size, light);
+            Sprites["box"].Bitmap.SetPixel(0, 0, Color.ALPHA);
+            Sprites["box"].Bitmap.SetPixel(Size.Width - 1, 0, Color.ALPHA);
+            Sprites["box"].Bitmap.SetPixel(0, Size.Height - 1, Color.ALPHA);
+            Sprites["box"].Bitmap.SetPixel(Size.Width - 1, Size.Height - 1, Color.ALPHA);
+            Sprites["box"].Bitmap.DrawRect(1, 1, Size.Width - 15, Size.Height - 2, dark);
             Sprites["box"].Bitmap.SetPixel(1, 1, light);
-            Sprites["box"].Bitmap.DrawLine(2, 0, Size.Width - 19, 0, light);
-            Sprites["box"].Bitmap.DrawLine(2, 1, Size.Width - 19, 1, dark);
-            Sprites["box"].Bitmap.SetPixel(Size.Width - 18, 1, light);
-            Sprites["box"].Bitmap.DrawLine(Size.Width - 17, 2, Size.Width - 17, Size.Height - 3, light);
-            Sprites["box"].Bitmap.DrawLine(Size.Width - 18, 2, Size.Width - 18, Size.Height - 3, dark);
-            Sprites["box"].Bitmap.SetPixel(Size.Width - 18, Size.Height - 2, light);
-            Sprites["box"].Bitmap.DrawLine(2, Size.Height - 1, Size.Width - 19, Size.Height - 1, light);
-            Sprites["box"].Bitmap.DrawLine(2, Size.Height - 2, Size.Width - 19, Size.Height - 2, dark);
             Sprites["box"].Bitmap.SetPixel(1, Size.Height - 2, light);
-            Sprites["box"].Bitmap.DrawLine(0, 2, 0, Size.Height - 3, light);
-            Sprites["box"].Bitmap.DrawLine(1, 2, 1, Size.Height - 3, dark);
-            Sprites["box"].Bitmap.FillRect(2, 2, Size.Width - 20, Size.Height - 4, light);
-            for (int i = 0; i < 2; i++)
-            {
-                int x = Size.Width - 15;
-                int y = i == 0 ? 0 : 14;
-                Color outer = new Color(16, 25, 36);
-                Color mid = new Color(55, 73, 93);
-                bool sel = HoveringUp && i == 0 || HoveringDown && i == 1;
-                Color fill = sel ? new Color(59, 227, 255) : new Color(86, 108, 134);
-                Sprites["box"].Bitmap.FillRect(x + 1, y + 1, 13, 11, fill);
-                Sprites["box"].Bitmap.SetPixel(x + 1, y + 1, outer);
-                Sprites["box"].Bitmap.DrawLine(x + 2, y, x + 12, y, outer);
-                Sprites["box"].Bitmap.SetPixel(x + 13, y + 1, outer);
-                Sprites["box"].Bitmap.DrawLine(x + 14, y + 2, x + 14, y + 10, outer);
-                Sprites["box"].Bitmap.SetPixel(x + 13, y + 11, outer);
-                Sprites["box"].Bitmap.DrawLine(x, y + 2, x, y + 10, outer);
-                Sprites["box"].Bitmap.SetPixel(x + 1, y + 11, outer);
-                Sprites["box"].Bitmap.DrawLine(x + 2, y + 12, x + 12, y + 12, outer);
-                Sprites["box"].Bitmap.SetPixel(x + 1, y + 2, mid);
-                Sprites["box"].Bitmap.SetPixel(x + 2, y + 1, mid);
-                Sprites["box"].Bitmap.SetPixel(x + 12, y + 1, mid);
-                Sprites["box"].Bitmap.SetPixel(x + 13, y + 2, mid);
-                Sprites["box"].Bitmap.SetPixel(x + 1, y + 10, mid);
-                Sprites["box"].Bitmap.SetPixel(x + 2, y + 11, mid);
-                Sprites["box"].Bitmap.SetPixel(x + 12, y + 11, mid);
-                Sprites["box"].Bitmap.SetPixel(x + 13, y + 10, mid);
-                Sprites["box"].Bitmap.DrawLine(x + 5, y + 6, x + 9, y + 6, sel ? Color.BLACK : Color.WHITE);
-                if (i == 0) Sprites["box"].Bitmap.DrawLine(x + 7, y + 4, x + 7, y + 8, sel ? Color.BLACK : Color.WHITE);
-            }
+            Color UpColor = SelectedUp ? new Color(55, 187, 255) : HoveringUp ? new Color(28, 50, 73) : dark;
+            Sprites["box"].Bitmap.FillRect(Size.Width - 13, 1, 12, 12, UpColor);
+            Sprites["box"].Bitmap.SetPixel(Size.Width - 2, 1, light);
+            Sprites["box"].Bitmap.FillRect(Size.Width - 11, 6, 8, 2, light);
+            Sprites["box"].Bitmap.FillRect(Size.Width - 8, 3, 2, 8, light);
+            Color DownColor = SelectedDown ? new Color(55, 187, 255) : HoveringDown ? new Color(28, 50, 73) : dark;
+            Sprites["box"].Bitmap.FillRect(Size.Width - 13, 14, 12, 12, DownColor);
+            Sprites["box"].Bitmap.SetPixel(Size.Width - 2, Size.Height - 2, light);
+            Sprites["box"].Bitmap.FillRect(Size.Width - 11, 19, 8, 2, light);
             Sprites["box"].Bitmap.Lock();
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
             string text = "";
@@ -146,6 +123,8 @@ namespace MKEditor.Widgets
             if (!WidgetIM.Hovering)
             {
                 if (HoveringUp || HoveringDown) Redraw();
+                SelectedDown = false;
+                SelectedUp = false;
                 HoveringUp = false;
                 HoveringDown = false;
             }
@@ -154,15 +133,35 @@ namespace MKEditor.Widgets
         public override void MouseDown(MouseEventArgs e)
         {
             base.MouseDown(e);
-            if (HoveringUp) SetValue(Value + Increment);
-            if (HoveringDown) SetValue(Value - Increment);
+            if (e.LeftButton == e.OldLeftButton) return;
+            if (HoveringUp)
+            {
+                SetValue(Value + Increment);
+                SelectedDown = false;
+                SelectedUp = true;
+                Redraw();
+            }
+            if (HoveringDown)
+            {
+                SetValue(Value - Increment);
+                SelectedUp = false;
+                SelectedDown = true;
+                Redraw();
+            }
         }
 
         public override void MouseUp(MouseEventArgs e)
         {
             base.MouseUp(e);
+            if (e.LeftButton == e.OldLeftButton) return;
             if (TimerExists("cooldown")) DestroyTimer("cooldown");
             if (TimerExists("press")) DestroyTimer("press");
+            if (SelectedUp || SelectedDown)
+            {
+                SelectedUp = false;
+                SelectedDown = false;
+                Redraw();
+            }
         }
 
         public override void MousePress(MouseEventArgs e)
@@ -181,8 +180,20 @@ namespace MKEditor.Widgets
                 }
                 else if (TimerPassed("press"))
                 {
-                    if (HoveringUp) SetValue(Value + Increment);
-                    else if (HoveringDown) SetValue(Value - Increment);
+                    if (HoveringUp)
+                    {
+                        SetValue(Value + Increment);
+                        SelectedDown = false;
+                        SelectedUp = true;
+                        Redraw();
+                    }
+                    else if (HoveringDown)
+                    {
+                        SetValue(Value - Increment);
+                        SelectedUp = false;
+                        SelectedDown = true;
+                        Redraw();
+                    }
                     ResetTimer("press");
                 }
             }

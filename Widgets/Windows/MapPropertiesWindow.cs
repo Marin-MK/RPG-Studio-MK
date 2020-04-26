@@ -23,7 +23,7 @@ namespace MKEditor.Widgets
         public MapPropertiesWindow(Map Map)
         {
             this.OldMap = Map;
-            this.Map = Map.Clone() as Map;
+            this.Map = Map.Clone();
             this.SetTitle($"Map Properties - {Utilities.Digits(Map.ID, 3)}: {Map.DevName}");
             this.SetSize(540, 460);
             this.Center();

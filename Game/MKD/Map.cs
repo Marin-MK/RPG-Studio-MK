@@ -177,7 +177,7 @@ namespace MKEditor.Game
             }
         }
 
-        public object Clone()
+        public Map Clone()
         {
             Map o = new Map();
             o.ID = this.ID;

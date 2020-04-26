@@ -1051,6 +1051,7 @@ namespace MKEditor.Widgets
             // because they share the same viewport.
             if (this.Viewport != null && !this.Viewport.Disposed)
                 this.Viewport.Dispose();
+            if (HelpTextWidget != null) HelpTextWidget.Dispose();
             // Dispose all child widgets
             for (int i = Widgets.Count - 1; i >= 0; i--) Widgets[i].Dispose();
             // Remove this widget from the parent's widget list.

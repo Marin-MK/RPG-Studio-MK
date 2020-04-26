@@ -9,11 +9,14 @@ namespace MKEditor.Widgets
         public string Text { get { return TextArea.Text; } }
         public Color TextColor { get { return TextArea.TextColor; } }
         public bool ReadOnly { get { return TextArea.ReadOnly; } }
+        public int SelectedIndex { get; protected set; } = 0;
+        public List<ListItem> Items { get; protected set; }
 
         public TextArea TextArea;
 
         public BaseEvent OnTextChanged { get { return TextArea.OnTextChanged; } set { TextArea.OnTextChanged = value; } }
         public BaseEvent OnDropDownClicked;
+        public BaseEvent OnSelectionChanged;
 
         public DropdownBox(IContainer Parent) : base(Parent)
         {
@@ -22,6 +25,7 @@ namespace MKEditor.Widgets
             TextArea.SetPosition(3, 3);
             TextArea.SetCaretHeight(13);
             TextArea.SetZIndex(1);
+            TextArea.SetReadOnly(true);
             SetSize(100, 21);
         }
 
@@ -49,6 +53,18 @@ namespace MKEditor.Widgets
         public void SetReadOnly(bool ReadOnly)
         {
             this.TextArea.SetReadOnly(ReadOnly);
+        }
+
+        public void SetSelectedIndex(int Index)
+        {
+            this.TextArea.SetInitialText(Items[Index].Name);
+            this.SelectedIndex = Index;
+        }
+
+        public void SetItems(List<ListItem> Items)
+        {
+            this.Items = Items;
+            this.TextArea.SetInitialText(Items[SelectedIndex].Name);
         }
 
         protected override void Draw()
@@ -85,7 +101,106 @@ namespace MKEditor.Widgets
                 ry >= 1 && ry < Size.Height - 1)
             {
                 this.OnDropDownClicked?.Invoke(new BaseEventArgs());
+                DropdownWidget dropdown = new DropdownWidget(Window.UI, this.Size.Width, this.Items);
+                dropdown.SetPosition(this.Viewport.X, this.Viewport.Y + this.Viewport.Height);
+                dropdown.SetSelected(SelectedIndex);
+                dropdown.OnDisposed += delegate (BaseEventArgs e)
+                {
+                    if (dropdown.SelectedIndex != -1)
+                    {
+                        this.SetSelectedIndex(dropdown.SelectedIndex);
+                        this.OnSelectionChanged?.Invoke(new BaseEventArgs());
+                    }
+                };
             };
+        }
+    }
+
+    public class DropdownWidget : Widget
+    {
+        public int SelectedIndex { get; protected set; }
+        public int HoveringIndex { get; protected set; }
+
+        public DropdownWidget(IContainer Parent, int Width, List<ListItem> Items) : base(Parent)
+        {
+            SetZIndex(Window.ActiveWidget is UIManager ? 9 : (Window.ActiveWidget as Widget).ZIndex + 9);
+            SetSize(Width, Items.Count * 18 + 4);
+            Sprites["box"] = new Sprite(this.Viewport);
+            Sprites["box"].Bitmap = new Bitmap(this.Size);
+            Sprites["box"].Bitmap.Unlock();
+            Sprites["box"].Bitmap.DrawLine(1, 0, Size.Width - 2, 0, Color.BLACK);
+            Sprites["box"].Bitmap.DrawLine(Size.Width - 1, 1, Size.Width - 1, Size.Height - 2, Color.BLACK);
+            Sprites["box"].Bitmap.DrawLine(0, 1, 0, Size.Height - 2, Color.BLACK);
+            Sprites["box"].Bitmap.DrawLine(1, Size.Height - 1, Size.Width - 2, Size.Height - 1, Color.BLACK);
+            Sprites["box"].Bitmap.FillRect(1, 1, Size.Width - 2, Size.Height - 2, new Color(45, 69, 107));
+            Sprites["box"].Bitmap.Lock();
+            Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(110, 18, new Color(86, 108, 134)));
+            Sprites["selector"].X = 1;
+            Sprites["text"] = new Sprite(this.Viewport);
+            Sprites["text"].Bitmap = new Bitmap(this.Size);
+            Sprites["text"].Bitmap.Unlock();
+            Sprites["text"].Bitmap.Font = Font.Get("Fonts/ProductSans-M", 12);
+            for (int i = 0; i < Items.Count; i++)
+            {
+                Sprites["text"].Bitmap.DrawText(Items[i].Name, 6, i * 18 + 2, Color.WHITE);
+            }
+            Sprites["text"].Bitmap.Lock();
+            Sprites["hover"] = new Sprite(this.Viewport, new SolidBitmap(2, 18, new Color(55, 187, 255)));
+            Sprites["hover"].X = 1;
+            Sprites["hover"].Visible = false;
+            WindowLayer = Window.ActiveWidget.WindowLayer + 1;
+            Window.SetActiveWidget(this);
+        }
+
+        public override void Dispose()
+        {
+            if (this.Window.ActiveWidget == this)
+            {
+                this.Window.Widgets.RemoveAt(Window.Widgets.Count - 1);
+                this.Window.SetActiveWidget(Window.Widgets[Window.Widgets.Count - 1]);
+            }
+            base.Dispose();
+        }
+
+        public void SetSelected(int Index)
+        {
+            Sprites["selector"].Y = 2 + 18 * Index;
+            Sprites["selector"].Visible = true;
+            SelectedIndex = Index;
+        }
+
+        public void SetHovering(int Index)
+        {
+            if (Index == -1)
+            {
+                Sprites["hover"].Visible = false;
+            }
+            else
+            {
+                Sprites["hover"].Y = 2 + 18 * Index;
+                Sprites["hover"].Visible = true;
+            }
+            HoveringIndex = Index;
+        }
+
+        public override void MouseDown(MouseEventArgs e)
+        {
+            base.MouseDown(e);
+            if (!WidgetIM.Hovering) SelectedIndex = -1;
+            else SelectedIndex = HoveringIndex;
+            Dispose();
+        }
+
+        public override void MouseMoving(MouseEventArgs e)
+        {
+            base.MouseMoving(e);
+            if (WidgetIM.Hovering)
+            {
+                int ry = e.Y - Viewport.Y;
+                if (ry < 2 || ry >= this.Size.Height - 2) SetHovering(-1);
+                SetHovering((int) Math.Floor(ry / 18d));
+            }
+            else SetHovering(-1);
         }
     }
 }

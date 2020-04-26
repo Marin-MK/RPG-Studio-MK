@@ -98,7 +98,6 @@ namespace MKEditor.Widgets
                 this.Window.Widgets.RemoveAt(Window.Widgets.Count - 1);
                 this.Window.SetActiveWidget(Window.Widgets[Window.Widgets.Count - 1]);
             }
-            if (HelpTextWidget != null) HelpTextWidget.Dispose();
             base.Dispose();
         }
 

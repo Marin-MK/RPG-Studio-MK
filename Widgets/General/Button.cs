@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using ODL;
 
 namespace MKEditor.Widgets
@@ -161,14 +163,19 @@ namespace MKEditor.Widgets
         {
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
             if (string.IsNullOrEmpty(this.Text)) return;
-            Size s = this.Font.TextSize(Text);
-            Sprites["text"].Bitmap = new Bitmap(s);
+            List<string> Lines = this.Text.Split('\n').ToList();
+            int maxw = 0;
+            Lines.ForEach(l => maxw = Math.Max(maxw, this.Font.TextSize(l).Width));
+            Sprites["text"].Bitmap = new Bitmap(maxw, Size.Height);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = this.Font;
-            Sprites["text"].Bitmap.DrawText(Text, this.TextColor);
+            for (int i = 0; i < Lines.Count; i++)
+            {
+                Sprites["text"].Bitmap.DrawText(Lines[i], maxw / 2, i * 18, this.TextColor, DrawOptions.CenterAlign);
+            }
             Sprites["text"].Bitmap.Lock();
-            Sprites["text"].X = Size.Width / 2 - s.Width / 2;
-            Sprites["text"].Y = Size.Height / 2 - 9;
+            Sprites["text"].X = Size.Width / 2 - maxw / 2;
+            Sprites["text"].Y = Size.Height / 2 - 9 * Lines.Count;
         }
 
         public override void SizeChanged(BaseEventArgs e)

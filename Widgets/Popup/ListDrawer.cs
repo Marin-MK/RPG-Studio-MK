@@ -200,6 +200,12 @@ namespace MKEditor.Widgets
             this.Object = Object;
         }
 
+        public ListItem(string Name)
+        {
+            this.Name = Name;
+            this.Object = Name;
+        }
+
         public ListItem(object Object)
         {
             this.Object = Object;

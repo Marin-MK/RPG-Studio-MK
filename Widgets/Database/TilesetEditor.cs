@@ -21,7 +21,7 @@ namespace MKEditor.Widgets
         Label NameLabel;
         TextBox NameBox;
         Label GraphicLabel;
-        DropdownBox GraphicBox;
+        BrowserBox GraphicBox;
         Button ClearTilesetButton;
 
         Bitmap small_up = new Bitmap("database_tileset_small_up.png");
@@ -104,7 +104,7 @@ namespace MKEditor.Widgets
             GraphicLabel.SetPosition(19, 79);
             GraphicLabel.SetText("Tileset Graphic");
 
-            GraphicBox = new DropdownBox(SharedContainer);
+            GraphicBox = new BrowserBox(SharedContainer);
             GraphicBox.SetPosition(19, 103);
             GraphicBox.SetSize(156, 21);
             GraphicBox.OnDropDownClicked += delegate (BaseEventArgs e)

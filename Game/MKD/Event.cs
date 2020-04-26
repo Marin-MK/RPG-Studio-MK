@@ -68,10 +68,24 @@ namespace MKEditor.Game
             Data["@settings"] = Settings.ToJSON();
             return Data;
         }
+
+        public Event Clone()
+        {
+            Event e = new Event(this.ID);
+            e.Name = this.Name;
+            e.X = this.X;
+            e.Y = this.Y;
+            e.Width = this.Width;
+            e.Height = this.Height;
+            e.Pages = new List<EventPage>(this.Pages);
+            e.Settings = this.Settings.Clone();
+            return e;
+        }
     }
 
     public class EventPage
     {
+        public string Name;
         public List<IEventCommand> Commands;
         public List<IEventCondition> Conditions;
         public EventGraphic Graphic;
@@ -81,6 +95,7 @@ namespace MKEditor.Game
 
         public EventPage()
         {
+            this.Name = "Untitled Page";
             this.Commands = new List<IEventCommand>();
             this.Conditions = new List<IEventCondition>();
             this.Graphic = new EventGraphic();
@@ -106,6 +121,7 @@ namespace MKEditor.Game
             {
                 // o is [0, :cmd, data] as JArray
             }
+            this.Name = (string) Data["@name"];
             this.Graphic = new EventGraphic(((JObject) Data["@graphic"]).ToObject<Dictionary<string, object>>());
             string mode = (string) Data["@trigger_mode"];
             if (mode == ":action") TriggerMode = TriggerMode.Action;
@@ -121,6 +137,7 @@ namespace MKEditor.Game
         {
             Dictionary<string, object> Data = new Dictionary<string, object>();
             Data["^c"] = "MKD::Event::Page";
+            Data["@name"] = Name;
             Data["@graphic"] = Graphic.ToJSON();
             Data["@automoveroute"] = AutoMoveRoute.ToJSON();
             string TriggerString = null;
@@ -290,6 +307,15 @@ namespace MKEditor.Game
             Data["@save_position"] = SavePosition;
             Data["@speed"] = Speed;
             return Data;
+        }
+
+        public EventSettings Clone()
+        {
+            EventSettings es = new EventSettings();
+            es.Passable = this.Passable;
+            es.SavePosition = this.SavePosition;
+            es.Speed = this.Speed;
+            return es;
         }
     }
 }

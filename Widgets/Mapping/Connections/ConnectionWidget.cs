@@ -12,7 +12,7 @@ namespace MKEditor.Widgets
         Label XLabel;
         Label YLabel;
 
-        public DropdownBox MapBox;
+        public BrowserBox MapBox;
         public NumericBox XBox;
         public NumericBox YBox;
         public ExitButton ExitButton;
@@ -40,7 +40,7 @@ namespace MKEditor.Widgets
             YLabel.SetText("Y");
             YLabel.SetFont(f);
 
-            MapBox = new DropdownBox(this);
+            MapBox = new BrowserBox(this);
             MapBox.SetPosition(23, 27);
             MapBox.SetSize(145, 25);
             MapBox.SetFont(f);
