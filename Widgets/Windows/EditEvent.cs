@@ -7,16 +7,20 @@ namespace MKEditor.Widgets
 {
     public class EditEvent : PopupWindow
     {
+        public Map MapData;
         public Event OldEvent;
         public Event EventData;
+
+        public Button ApplyButton { get { return Buttons[0]; } }
 
         TabView TabController;
         public List<EventPageContainer> EventPageContainers = new List<EventPageContainer>();
 
-        public EditEvent(Event EventData, bool NewEvent = false)
+        public EditEvent(Map map, Event ev, bool NewEvent = false)
         {
-            this.OldEvent = EventData;
-            this.EventData = EventData.Clone();
+            this.MapData = map;
+            this.OldEvent = ev;
+            this.EventData = ev.Clone();
             SetTitle($"{(NewEvent ? "New" : "Edit")} event (ID: {Utilities.Digits(EventData.ID, 3)})");
             SetSize(752, 619);
             Center();
@@ -36,6 +40,11 @@ namespace MKEditor.Widgets
             NameBox.TextArea.SetCaretY(4);
             NameBox.SetSize(180, 27);
             NameBox.SetInitialText(EventData.Name);
+            NameBox.OnTextChanged += delegate (BaseEventArgs e)
+            {
+                EventData.Name = NameBox.Text;
+                MarkChanges();
+            };
 
             Label WidthLabel = new Label(MainPropertyBox);
             WidthLabel.SetFont(f);
@@ -45,6 +54,12 @@ namespace MKEditor.Widgets
             WidthBox.SetPosition(46, 38);
             WidthBox.SetSize(63, 27);
             WidthBox.SetValue(EventData.Width);
+            WidthBox.OnValueChanged += delegate (BaseEventArgs e)
+            {
+                EventData.Width = WidthBox.Value;
+                TabController.Tabs.ForEach(tc => ((EventPageContainer) tc.Widgets[0]).GraphicWidget.ConfigureGrid());
+                MarkChanges();
+            };
 
             Label HeightLabel = new Label(MainPropertyBox);
             HeightLabel.SetFont(f);
@@ -54,24 +69,29 @@ namespace MKEditor.Widgets
             HeightBox.SetPosition(163, 38);
             HeightBox.SetSize(63, 27);
             HeightBox.SetValue(EventData.Height);
+            HeightBox.OnValueChanged += delegate (BaseEventArgs e)
+            {
+                EventData.Height = HeightBox.Value;
+                MarkChanges();
+            };
 
             Button NewPage = new Button(this);
-            NewPage.SetPosition(434, 43);
+            NewPage.SetPosition(414, 43);
             NewPage.SetSize(67, 59);
             NewPage.SetText("New\nPage");
 
             Button CopyPage = new Button(this);
-            CopyPage.SetPosition(496, 43);
+            CopyPage.SetPosition(481, 43);
             CopyPage.SetSize(67, 59);
             CopyPage.SetText("Copy\nPage");
 
             Button PastePage = new Button(this);
-            PastePage.SetPosition(558, 43);
+            PastePage.SetPosition(548, 43);
             PastePage.SetSize(67, 59);
             PastePage.SetText("Paste\nPage");
 
             Button ClearPage = new Button(this);
-            ClearPage.SetPosition(620, 43);
+            ClearPage.SetPosition(615, 43);
             ClearPage.SetSize(67, 59);
             ClearPage.SetText("Clear\nPage");
 
@@ -87,8 +107,8 @@ namespace MKEditor.Widgets
             TabController.SetHeaderColor(59, 91, 124);
             for (int i = 0; i < EventData.Pages.Count; i++)
             {
-                TabContainer tc = TabController.CreateTab(EventData.Pages[i].Name?? "Untitled Page");
-                EventPageContainer epc = new EventPageContainer(EventData.Pages[i], tc);
+                TabContainer tc = TabController.CreateTab(string.IsNullOrWhiteSpace(EventData.Pages[i].Name) ? "Untitled" : EventData.Pages[i].Name);
+                EventPageContainer epc = new EventPageContainer(this, EventData, EventData.Pages[i], tc);
                 epc.SetSize(750, 444);
                 EventPageContainers.Add(epc);
             }
@@ -98,9 +118,17 @@ namespace MKEditor.Widgets
             CreateButton("OK", OK);
         }
 
+        public void MarkChanges()
+        {
+            if (Buttons.Count > 0) ApplyButton.SetClickable(true);
+        }
+
         public void Apply(BaseEventArgs e)
         {
-
+            MapData.Events[EventData.ID] = EventData;
+            OldEvent = EventData;
+            EventData = EventData.Clone();
+            ApplyButton.SetClickable(false);
         }
 
         public void Cancel(BaseEventArgs e)
@@ -141,10 +169,16 @@ namespace MKEditor.Widgets
 
     public class EventPageContainer : Container
     {
+        public EditEvent EditEventWindow;
+        public Event EventData;
         public EventPage PageData;
 
-        public EventPageContainer(EventPage PageData, IContainer Parent) : base(Parent)
+        public GraphicWidget GraphicWidget;
+
+        public EventPageContainer(EditEvent eew, Event EventData, EventPage PageData, IContainer Parent) : base(Parent)
         {
+            this.EditEventWindow = eew;
+            this.EventData = EventData;
             this.PageData = PageData;
             Font BoldFont = Font.Get("Fonts/Ubuntu-B", 14);
             Font f = Font.Get("Fonts/ProductSans-M", 12);
@@ -171,7 +205,12 @@ namespace MKEditor.Widgets
             TextBox NameBox = new TextBox(NameGroupBox);
             NameBox.SetPosition(77, 7);
             NameBox.SetSize(208, 27);
-            NameBox.SetInitialText(PageData.Name);
+            NameBox.SetInitialText(string.IsNullOrWhiteSpace(PageData.Name) ? "Untitled" : PageData.Name);
+            NameBox.OnTextChanged += delegate (BaseEventArgs e)
+            {
+                PageData.Name = NameBox.Text;
+                MarkChanges();
+            };
 
             Label ConditionsLabel = new Label(this);
             ConditionsLabel.SetPosition(8, 67);
@@ -188,6 +227,22 @@ namespace MKEditor.Widgets
             EventGroupBox TriggerGroupBox = new EventGroupBox(this);
             TriggerGroupBox.SetPosition(176, 85);
             TriggerGroupBox.SetSize(122, 70);
+            Label TriggerParamLabel = new Label(TriggerGroupBox);
+            TriggerParamLabel.SetPosition(5, 41);
+            TriggerParamLabel.SetFont(f);
+            TriggerParamLabel.SetText("Sight:");
+            NumericBox ParamBox = new NumericBox(TriggerGroupBox);
+            ParamBox.SetPosition(62, 36);
+            ParamBox.SetSize(55, 27);
+            ParamBox.SetValue(PageData.TriggerParam is int ? (int) PageData.TriggerParam : 0);
+            ParamBox.OnValueChanged += delegate (BaseEventArgs e)
+            {
+                if (PageData.TriggerMode == TriggerMode.PlayerTouch || PageData.TriggerMode == TriggerMode.EventTouch)
+                {
+                    PageData.TriggerParam = ParamBox.Value;
+                    MarkChanges();
+                }
+            };
             DropdownBox TriggerTypeBox = new DropdownBox(TriggerGroupBox);
             TriggerTypeBox.SetItems(new List<ListItem>()
             {
@@ -197,25 +252,38 @@ namespace MKEditor.Widgets
                 new ListItem("Autorun"),
                 new ListItem("Parallel Process")
             });
-            TriggerTypeBox.SetSelectedIndex((int) PageData.TriggerMode);
+            TriggerTypeBox.SetSelectedIndex((int)PageData.TriggerMode);
+            TriggerTypeBox.OnSelectionChanged += delegate (BaseEventArgs e)
+            {
+                PageData.TriggerMode = (TriggerMode) TriggerTypeBox.SelectedIndex;
+                if (TriggerTypeBox.SelectedIndex != 1 && TriggerTypeBox.SelectedIndex != 2)
+                {
+                    TriggerParamLabel.SetVisible(false);
+                    ParamBox.SetVisible(false);
+                    PageData.TriggerParam = null;
+                }
+                else
+                {
+                    TriggerParamLabel.SetVisible(true);
+                    ParamBox.SetVisible(true);
+                    if (PageData.TriggerParam == null)
+                    {
+                        PageData.TriggerParam = 0;
+                        ParamBox.SetValue(0);
+                    }
+                }
+            };
+            TriggerTypeBox.OnSelectionChanged.Invoke(new BaseEventArgs());
             TriggerTypeBox.SetPosition(5, 7);
             TriggerTypeBox.SetSize(112, 25);
-            Label TriggerParamLabel = new Label(TriggerGroupBox);
-            TriggerParamLabel.SetPosition(5, 41);
-            TriggerParamLabel.SetFont(f);
-            TriggerParamLabel.SetText("Sight:");
-            NumericBox ParamBox = new NumericBox(TriggerGroupBox);
-            ParamBox.SetPosition(62, 36);
-            ParamBox.SetSize(55, 27);
-            ParamBox.SetValue(0);
 
             Label GraphicLabel = new Label(this);
             GraphicLabel.SetFont(BoldFont);
             GraphicLabel.SetPosition(8, 159);
             GraphicLabel.SetText("Graphic");
-            EventGroupBox GraphicGroupBox = new EventGroupBox(this);
-            GraphicGroupBox.SetPosition(7, 177);
-            GraphicGroupBox.SetSize(121, 126);
+            GraphicWidget = new GraphicWidget(this);
+            GraphicWidget.SetPosition(7, 177);
+            GraphicWidget.SetEvent(EventData, PageData);
 
             Label AutoMoveLabel = new Label(this);
             AutoMoveLabel.SetFont(BoldFont);
@@ -262,18 +330,22 @@ namespace MKEditor.Widgets
             MoveAnimBox.SetPosition(5, 7);
             MoveAnimBox.SetText("Move Animation");
             MoveAnimBox.SetFont(f);
+            MoveAnimBox.SetChecked(true);
             CheckBox IdleAnimBox = new CheckBox(SettingsGroupBox);
             IdleAnimBox.SetPosition(5, 27);
             IdleAnimBox.SetText("Idle Animation");
             IdleAnimBox.SetFont(f);
+            IdleAnimBox.SetChecked(PageData.Settings.IdleAnimation);
             CheckBox PassableBox = new CheckBox(SettingsGroupBox);
             PassableBox.SetPosition(5, 47);
             PassableBox.SetText("Passable");
             PassableBox.SetFont(f);
+            PassableBox.SetChecked(PageData.Settings.Passable);
             CheckBox DirectionLockBox = new CheckBox(SettingsGroupBox);
             DirectionLockBox.SetPosition(5, 67);
             DirectionLockBox.SetText("Direction Lock");
             DirectionLockBox.SetFont(f);
+            DirectionLockBox.SetChecked(PageData.Settings.DirectionLock);
             Label PriorityLabel = new Label(SettingsGroupBox);
             PriorityLabel.SetFont(f);
             PriorityLabel.SetPosition(4, 91);
@@ -281,6 +353,129 @@ namespace MKEditor.Widgets
             DropdownBox PriorityBox = new DropdownBox(SettingsGroupBox);
             PriorityBox.SetPosition(54, 87);
             PriorityBox.SetSize(133, 25);
+
+            CheckBox SavePositionBox = new CheckBox(SettingsGroupBox);
+            SavePositionBox.SetPosition(136, 7);
+            SavePositionBox.SetText("Save Position");
+            SavePositionBox.SetFont(f);
+            SavePositionBox.SetChecked(PageData.Settings.SavePosition);
+        }
+
+        public void MarkChanges()
+        {
+            EditEventWindow.MarkChanges();
+        }
+    }
+
+    public class GraphicWidget : Widget
+    {
+        public Event EventData;
+        public EventPage PageData;
+
+        GraphicGrid GraphicGrid;
+        PictureBox Graphic;
+
+        public GraphicWidget(IContainer Parent) : base(Parent)
+        {
+            SetSize(121, 126);
+            EventGroupBox egb = new EventGroupBox(this);
+            egb.SetSize(Size);
+            GraphicGrid = new GraphicGrid(egb);
+            GraphicGrid.SetPosition(2, 2);
+            GraphicGrid.SetSize(Size.Width - 4, Size.Height - 4);
+
+            Graphic = new PictureBox(egb);
+            Graphic.SetPosition(2, 2);
+            Graphic.AutoResize = false;
+            Graphic.SetSize(Size.Width - 4, Size.Height - 4);
+        }
+
+        public void SetEvent(Event EventData, EventPage PageData)
+        {
+            this.EventData = EventData;
+            this.PageData = PageData;
+            Graphic.Sprite.Bitmap?.Dispose();
+            if (PageData.Graphic.Type == ":file")
+            {
+                Graphic.Sprite.Bitmap = new Bitmap(Data.ProjectPath + "/" + PageData.Graphic.Param.ToString());
+                Graphic.Sprite.SrcRect.Width = Graphic.Sprite.Bitmap.Width / PageData.Graphic.NumFrames;
+                Graphic.Sprite.SrcRect.Height = Graphic.Sprite.Bitmap.Height / PageData.Graphic.NumDirections;
+                int dir = 0;
+                if (PageData.Graphic.NumDirections == 4) dir = ((PageData.Graphic.Direction / 2) - 1);
+                else if (PageData.Graphic.NumDirections == 8) dir = PageData.Graphic.Direction - 1;
+                Graphic.Sprite.SrcRect.Y = Graphic.Sprite.SrcRect.Height * dir;
+                Graphic.Sprite.X = Size.Width / 2 - Graphic.Sprite.SrcRect.Width / 2 - 2;
+                Graphic.Sprite.Y = Size.Height / 2 - Graphic.Sprite.SrcRect.Height / 2 - 2;
+                ConfigureGrid();
+            }
+        }
+
+        public void ConfigureGrid()
+        {
+            GraphicGrid.SetOffset(EventData.Width % 2 == 0 ? 6 : 22, 15);
+        }
+
+        public override void MouseDown(MouseEventArgs e)
+        {
+            base.MouseDown(e);
+            if (WidgetIM.Hovering)
+            {
+                ChooseGraphic cg = new ChooseGraphic(PageData.Graphic);
+                cg.OnClosed += delegate (BaseEventArgs e)
+                {
+                    if (PageData.Graphic != cg.GraphicData)
+                    {
+                        PageData.Graphic = cg.GraphicData;
+                        SetEvent(this.EventData, this.PageData);
+                    }
+                };
+            }
+        }
+    }
+
+    public class GraphicGrid : Widget
+    {
+        public int TileSize = 32;
+        public int OffsetX = 0;
+        public int OffsetY = 0;
+        public string Border;
+
+        public GraphicGrid(IContainer Parent) : base(Parent)
+        {
+            Sprites["one"] = new Sprite(this.Viewport, new SolidBitmap(32, 32, new Color(226, 226, 226)));
+            Sprites["two"] = new Sprite(this.Viewport, new SolidBitmap(32, 32, new Color(246, 246, 246)));
+            RedrawGrid();
+        }
+
+        public override void SizeChanged(BaseEventArgs e)
+        {
+            base.SizeChanged(e);
+            RedrawGrid();
+        }
+
+        public void SetOffset(int x, int y)
+        {
+            if (this.OffsetX != x || this.OffsetY != y)
+            {
+                this.OffsetX = x % 32;
+                this.OffsetY = y % 32;
+                RedrawGrid();
+            }
+        }
+
+        public void RedrawGrid()
+        {
+            Sprites["one"].MultiplePositions.Clear();
+            Sprites["two"].MultiplePositions.Clear();
+
+            for (int y = 0; y < (int) Math.Ceiling(Size.Height / 32d) + 1; y++)
+            {
+                for (int x = 0; x < (int) Math.Ceiling(Size.Width / 32d) + 1; x++)
+                {
+                    if (x % 2 == y % 2) Sprites["one"].MultiplePositions.Add(new Point(x * 32 - OffsetX, y * 32 - OffsetY));
+                    else Sprites["two"].MultiplePositions.Add(new Point(x * 32 - OffsetX, y * 32 - OffsetY));
+                }
+            }
         }
     }
 }

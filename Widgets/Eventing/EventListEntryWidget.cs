@@ -34,7 +34,7 @@ namespace MKEditor.Widgets
             if (Event.Pages.Count > 0)
             {
                 EventGraphic gfx = Event.Pages[0].Graphic;
-                if (gfx.Type == "file")
+                if (gfx.Type == ":file")
                 {
                     if (System.IO.File.Exists(Data.ProjectPath + "/" + gfx.Param.ToString() + ".png"))
                     {
@@ -63,10 +63,9 @@ namespace MKEditor.Widgets
                 this.Selected = Selected;
                 if (this.Selected)
                 {
-                    foreach (Widget w in Parent.Parent.Widgets)
+                    foreach (EventListEntryWidget w in Parent.Widgets)
                     {
-                        if (((LayoutContainer) w).Widget is EventListEntryWidget && ((LayoutContainer) w).Widget != this)
-                            ((EventListEntryWidget) ((LayoutContainer) w).Widget).SetSelected(false);
+                        if (w != this) w.SetSelected(false);
                     }
                 }
                 Sprites["text"].Color = Selected ? new Color(61, 184, 232) : Color.WHITE;

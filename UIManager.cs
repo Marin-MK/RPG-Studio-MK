@@ -153,11 +153,14 @@ namespace MKEditor
             }
         }
 
-        public void Resized(BaseEventArgs e)
+        public void SizeChanged(BaseEventArgs e)
         {
             (BGSprite.Bitmap as SolidBitmap).SetSize(this.Size);
+            this.Viewport.Width = Size.Width;
+            this.Viewport.Height = Size.Height;
             this.Widgets.ForEach(w =>
             {
+                w.SetSize(this.Size);
                 w.OnParentSizeChanged(new BaseEventArgs());
                 w.Redraw();
             });

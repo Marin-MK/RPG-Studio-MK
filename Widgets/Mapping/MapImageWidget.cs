@@ -24,7 +24,7 @@ namespace MKEditor.Widgets
         public MapImageWidget(IContainer Parent) : base(Parent)
         {
             SetBackgroundColor(73, 89, 109);
-            this.MapViewer = this.Parent.Parent.Parent.Parent as MapViewerBase;
+            this.MapViewer = this.Parent.Parent.Parent as MapViewerBase;
             this.GridBackground = new GridBackground(this);
             this.GridBackground.SetVisible(Editor.GeneralSettings.ShowGrid);
             Sprites["dark"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(0, 0, 0, 0)));

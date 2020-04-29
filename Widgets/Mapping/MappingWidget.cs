@@ -28,6 +28,7 @@ namespace MKEditor.Widgets
 
         public MappingWidget(IContainer Parent) : base(Parent)
         {
+            Editor.MainWindow.MainEditorWidget = this;
             Grid layout = new Grid(this);
             layout.SetColumns(
                 new GridSize(222, Unit.Pixels),

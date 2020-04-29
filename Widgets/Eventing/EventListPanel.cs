@@ -69,15 +69,15 @@ namespace MKEditor.Widgets
 
         public void SelectEvent(Event e)
         {
-            foreach (LayoutContainer lc in StackPanel.Widgets)
+            foreach (EventListEntryWidget w in StackPanel.Widgets)
             {
                 if (e == null)
                 {
-                    ((EventListEntryWidget) lc.Widget).SetSelected(false);
+                    w.SetSelected(false);
                 }
-                else if (((EventListEntryWidget) lc.Widget).EventData == e)
+                else if (w.EventData == e)
                 {
-                    ((EventListEntryWidget) lc.Widget).SetSelected(true);
+                    w.SetSelected(true);
                 }
             }
         }

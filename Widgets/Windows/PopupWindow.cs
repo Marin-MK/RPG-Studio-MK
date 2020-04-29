@@ -10,7 +10,7 @@ namespace MKEditor.Widgets
         public string Title { get; protected set; }
 
         public BaseEvent OnClosed;
-        List<Button> Buttons = new List<Button>();
+        public List<Button> Buttons = new List<Button>();
 
         public PopupWindow() : base(((MainEditorWindow) Graphics.Windows[0]).UI)
         {

@@ -471,7 +471,6 @@ namespace MKEditor.Widgets
                 if (image is int) // Single autotile
                 {
                     CollapsibleContainer cc = SingleAutotileContainer;
-                    LayoutContainer lc = cc.Parent as LayoutContainer;
                     if (cc.Collapsed || EraserButton.Selected || MapViewer.SelectionOnMap)
                     {
                         Cursor.SetVisible(false);
@@ -481,14 +480,13 @@ namespace MKEditor.Widgets
                     else
                     {
                         Cursor.SetVisible(true);
-                        Cursor.SetPosition(1 + 33 * (((int) image) % 8), lc.Position.Y + 19 + 33 * (int) Math.Floor(((int) image) / 8d));
+                        Cursor.SetPosition(1 + 33 * (((int) image) % 8), cc.Position.Y + 19 + 33 * (int) Math.Floor(((int) image) / 8d));
                         Cursor.SetSize(32 + 14, 32 + 14);
                     }
                 }
                 else if (image is CollapsibleContainer) // Other autotile format
                 {
                     CollapsibleContainer cc = image as CollapsibleContainer;
-                    LayoutContainer lc = cc.Parent as LayoutContainer;
                     if (cc.Collapsed || EraserButton.Selected || MapViewer.SelectionOnMap)
                     {
                         Cursor.SetVisible(false);
@@ -500,12 +498,12 @@ namespace MKEditor.Widgets
                         Cursor.SetVisible(true);
                         if (AutotileCombination != -1)
                         {
-                            Cursor.SetPosition(67 + 33 * AutotileCombination, lc.Position.Y + 19 + 16);
+                            Cursor.SetPosition(67 + 33 * AutotileCombination, cc.Position.Y + 19 + 16);
                             Cursor.SetSize(32 + 14, 32 + 14);
                         }
                         else
                         {
-                            Cursor.SetPosition(1, lc.Position.Y + 19);
+                            Cursor.SetPosition(1, cc.Position.Y + 19);
                             Cursor.SetSize(64 + 14, 64 + 14);
                         }
                     }
@@ -560,7 +558,6 @@ namespace MKEditor.Widgets
                     }
                 }
                 CollapsibleContainer cc = TilesetContainers[TilesetIndex];
-                LayoutContainer lc = cc.Parent as LayoutContainer;
                 if (cc.Collapsed || EraserButton.Selected || MapViewer.SelectionOnMap)
                 {
                     Cursor.SetPosition(0, 0);
@@ -570,7 +567,7 @@ namespace MKEditor.Widgets
                 else
                 {
                     Cursor.SetVisible(true);
-                    Cursor.SetPosition(1 + TileStartX * 33 - PosDiffX, 19 + lc.Position.Y + TileStartY * 33 - PosDiffY);
+                    Cursor.SetPosition(1 + TileStartX * 33 - PosDiffX, 19 + cc.Position.Y + TileStartY * 33 - PosDiffY);
                     Cursor.SetSize(32 * (DiffX + 1) + DiffX + 14, 32 * (DiffY + 1) + DiffY + 14);
                 }
             }
@@ -639,15 +636,14 @@ namespace MKEditor.Widgets
             int crx = rx - 8; // container (c) relative (r) x (x)
             for (int i = 0; i < MainStackPanel.Widgets.Count; i++)
             {
-                LayoutContainer lc = MainStackPanel.Widgets[i] as LayoutContainer;
-                CollapsibleContainer cc = lc.Widget as CollapsibleContainer;
-                int height = lc.Position.Y;
+                CollapsibleContainer cc = MainStackPanel.Widgets[i] as CollapsibleContainer;
+                int height = cc.Position.Y;
                 if (ry < height) break; // Somehow already gone past the container it's in
                 if (ry > height + cc.Size.Height) continue;
                 // By now we know ry is inside this CollapsibleContainer.
                 // So we now need to determine the y coordinate relative to this container
                 // To determine which tile we're over.
-                int cry = ry - lc.Position.Y; // container (c) relative (r) y (y)
+                int cry = ry - cc.Position.Y; // container (c) relative (r) y (y)
                 if (cry < 26) continue; // In the name part of the container
                 cry -= 26;
                 int tilex = (int) Math.Floor(crx / 33d);

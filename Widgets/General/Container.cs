@@ -8,7 +8,7 @@ namespace MKEditor.Widgets
 {
     public class Container : Widget
     {
-        public Container(IContainer Parent, int Index = -1) : base(Parent, Index)
+        public Container(IContainer Parent) : base(Parent)
         {
 
         }

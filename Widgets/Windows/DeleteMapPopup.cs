@@ -17,7 +17,6 @@ namespace MKEditor.Widgets
             DeleteChildMaps.SetPosition(label.Position.X - 2, label.Position.Y + label.Size.Height + 16);
             DeleteChildMaps.SetText("Delete all child maps");
             DeleteChildMaps.SetFont(label.Font);
-            DeleteChildMaps.SetBlueColorScheme(true);
         }
     }
 }

@@ -54,26 +54,23 @@ namespace MKEditor.Widgets
             }
             new Widget(StackPanel).SetHeight(1).SetMargin(0, 4).SetBackgroundColor(17, 27, 38);
             new NewConnectionWidget(StackPanel, MapData);
-            if (Map.Connections.Count > 0) ((ConnectionWidget) StackPanel.Widgets[0].Widgets[0]).SetSelected(true);
+            if (Map.Connections.Count > 0) ((ConnectionWidget) StackPanel.Widgets[0]).SetSelected(true);
+            StackPanel.UpdateLayout();
         }
 
         public void SelectMap(Map Map)
         {
-            foreach (LayoutContainer lc in StackPanel.Widgets)
+            foreach (ConnectionWidget w in StackPanel.Widgets)
             {
-                Widget w = lc.Widget;
-                if (w is ConnectionWidget && ((ConnectionWidget) w).MapConnection.MapID == Map.ID)
-                    ((ConnectionWidget) w).SetSelected(true);
+                if (w.MapConnection.MapID == Map.ID) w.SetSelected(true);
             }
         }
 
         public ConnectionWidget GetSelectedConnectionWidget()
         {
-            foreach (LayoutContainer lc in StackPanel.Widgets)
+            foreach (Widget w in StackPanel.Widgets)
             {
-                Widget w = lc.Widget;
-                if (w is ConnectionWidget && ((ConnectionWidget) w).Selected)
-                    return (ConnectionWidget) w;
+                if (w is ConnectionWidget && ((ConnectionWidget) w).Selected) return (ConnectionWidget) w;
             }
             return null;
         }

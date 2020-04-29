@@ -57,7 +57,7 @@ namespace MKEditor.Widgets
             TilesPanel = new TilesPanel(sidebargrid);
             TilesPanel.SetBackgroundColor(28, 50, 73);
             TilesPanel.MapViewer = this;
-            (this.Parent.Parent.Parent.Parent.Parent as MappingWidget).TilesPanel = TilesPanel;
+            Editor.MainWindow.MapWidget.TilesPanel = TilesPanel;
 
             // Inner right sidebar divider
             Widget InnerRightSidebarDivider = new Widget(sidebargrid);
@@ -69,7 +69,7 @@ namespace MKEditor.Widgets
             LayerPanel.SetBackgroundColor(28, 50, 73);
             LayerPanel.SetGridRow(2);
             LayerPanel.MapViewer = this;
-            (this.Parent.Parent.Parent.Parent.Parent as MappingWidget).LayerPanel = LayerPanel;
+            Editor.MainWindow.MapWidget.LayerPanel = LayerPanel;
 
             SelectionBackground = new SelectionBackground(MainContainer);
             SelectionBackground.SetZIndex(2);

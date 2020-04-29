@@ -61,6 +61,7 @@ namespace MKEditor
             {
                 if (ErrorBox != null && !ErrorBox.Disposed) ErrorBox.SetSize(win.Width, win.Height);
             };
+            win.UI.Widgets.ForEach(e => e.UpdateBounds());
             while (Graphics.CanUpdate())
             {
                 if (ReleaseMode)

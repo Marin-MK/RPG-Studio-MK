@@ -13,7 +13,6 @@ namespace MKEditor.Game
         public int Width;
         public int Height;
         public List<EventPage> Pages = new List<EventPage>();
-        public EventSettings Settings;
 
         public Event(int ID)
         {
@@ -23,7 +22,6 @@ namespace MKEditor.Game
             this.Height = 1;
             this.Pages = new List<EventPage>();
             this.Pages.Add(new EventPage());
-            this.Settings = new EventSettings();
         }
 
         public Event(Dictionary<string, object> Data)
@@ -46,7 +44,6 @@ namespace MKEditor.Game
             {
                 this.Pages.Add(new EventPage(((JObject) o).ToObject<Dictionary<string, object>>()));
             }
-            this.Settings = new EventSettings(((JObject) Data["@settings"]).ToObject<Dictionary<string, object>>());
         }
 
         public Dictionary<string, object> ToJSON()
@@ -65,7 +62,6 @@ namespace MKEditor.Game
                 pages.Add(page.ToJSON());
             }
             Data["@pages"] = pages;
-            Data["@settings"] = Settings.ToJSON();
             return Data;
         }
 
@@ -78,7 +74,6 @@ namespace MKEditor.Game
             e.Width = this.Width;
             e.Height = this.Height;
             e.Pages = new List<EventPage>(this.Pages);
-            e.Settings = this.Settings.Clone();
             return e;
         }
     }
@@ -92,6 +87,7 @@ namespace MKEditor.Game
         public TriggerMode TriggerMode;
         public object TriggerParam;
         public AutoMoveRoute AutoMoveRoute;
+        public EventSettings Settings;
 
         public EventPage()
         {
@@ -101,6 +97,7 @@ namespace MKEditor.Game
             this.Graphic = new EventGraphic();
             this.TriggerMode = TriggerMode.Action;
             this.AutoMoveRoute = new AutoMoveRoute();
+            this.Settings = new EventSettings();
         }
 
         public EventPage(Dictionary<string, object> Data)
@@ -131,6 +128,7 @@ namespace MKEditor.Game
             else if (mode == ":parallel_process") TriggerMode = TriggerMode.ParallelProcess;
             this.TriggerParam = Data["@trigger_param"];
             this.AutoMoveRoute = new AutoMoveRoute(((JObject) Data["@automoveroute"]).ToObject<Dictionary<string, object>>());
+            this.Settings = new EventSettings(((JObject)Data["@settings"]).ToObject<Dictionary<string, object>>());
         }
 
         public Dictionary<string, object> ToJSON()
@@ -150,6 +148,7 @@ namespace MKEditor.Game
             Data["@trigger_param"] = TriggerParam;
             Data["@commands"] = new List<string>();
             Data["@conditions"] = new List<string>();
+            Data["@settings"] = Settings.ToJSON();
             // Add commands
             // Add conditions
             return Data;
@@ -158,11 +157,11 @@ namespace MKEditor.Game
 
     public enum TriggerMode
     {
-        Action,
-        PlayerTouch,
-        EventTouch,
-        Autorun,
-        ParallelProcess
+        Action = 0,
+        PlayerTouch = 1,
+        EventTouch = 2,
+        Autorun = 3,
+        ParallelProcess = 4
     }
 
     public class EventGraphic
@@ -170,13 +169,15 @@ namespace MKEditor.Game
         public string Type;
         public object Param;
         public int Direction;
-        public int FrameUpdateInterval;
+        public int NumDirections;
+        public int NumFrames;
 
         public EventGraphic()
         {
-            this.Type = "blank";
+            this.Type = ":blank";
             this.Direction = 2;
-            this.FrameUpdateInterval = 16;
+            this.NumDirections = 4;
+            this.NumFrames = 4;
         }
 
         public EventGraphic(Dictionary<string, object> Data)
@@ -189,45 +190,36 @@ namespace MKEditor.Game
             {
                 throw new Exception("Could not find a ^c key to identify this class.");
             }
-            this.Type = ((string) Data["@type"]).Replace(":", "");
+            this.Type = (string) Data["@type"];
             this.Direction = Convert.ToInt32(Data["@direction"]);
             if (Data["@param"] is int) this.Param = Convert.ToInt32(Data["@param"]);
             else if (Data["@param"] is string) this.Param = (string) Data["@param"];
             else this.Param = Data["@param"];
-            this.FrameUpdateInterval = Convert.ToInt32(Data["@frame_update_interval"]);
+            this.NumDirections = Convert.ToInt32(Data["@num_directions"]);
+            this.NumFrames = Convert.ToInt32(Data["@num_frames"]);
         }
 
         public Dictionary<string, object> ToJSON()
         {
             Dictionary<string, object> Data = new Dictionary<string, object>();
             Data["^c"] = "MKD::Event::Graphic";
-            Data["@type"] = ":" + Type;
+            Data["@type"] = Type;
             Data["@direction"] = Direction;
             Data["@param"] = Param;
-            Data["@frame_update_interval"] = FrameUpdateInterval;
+            Data["@num_directions"] = NumDirections;
+            Data["@num_frames"] = NumFrames;
             return Data;
         }
-    }
 
-    public class EventTrigger
-    {
-        public string Type;
-        public object Param;
-
-        public EventTrigger(List<object> Data)
+        public EventGraphic Clone()
         {
-            this.Type = ((string) Data[0]).Replace(":", "");
-            if (Data.Count > 1)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public List<object> ToJSON()
-        {
-            List<object> Data = new List<object>();
-            Data.Add(":" + Type);
-            return Data;
+            EventGraphic o = new EventGraphic();
+            o.Type = this.Type;
+            o.Param = this.Param;
+            o.Direction = this.Direction;
+            o.NumDirections = this.NumDirections;
+            o.NumFrames = this.NumFrames;
+            return o;
         }
     }
 
@@ -253,6 +245,7 @@ namespace MKEditor.Game
                 throw new Exception("Could not find a ^c key to identify this class.");
             }
             this.Frequency = Convert.ToDouble(Data["@frequency"]);
+            this.Commands = new List<string>();
             foreach (object o in ((JArray) Data["@commands"]).ToObject<List<object>>())
             {
                 this.Commands.Add(((string) o).Replace(":", ""));
@@ -273,12 +266,20 @@ namespace MKEditor.Game
 
     public class EventSettings
     {
+        public bool MoveAnimation;
+        public bool IdleAnimation;
+        public bool DirectionLock;
+        public int FrameUpdateInterval;
         public bool Passable;
         public bool SavePosition;
         public float Speed;
 
         public EventSettings()
         {
+            this.MoveAnimation = true;
+            this.IdleAnimation = false;
+            this.DirectionLock = false;
+            this.FrameUpdateInterval = 16;
             this.Passable = false;
             this.SavePosition = true;
             this.Speed = 0.25f;
@@ -294,6 +295,10 @@ namespace MKEditor.Game
             {
                 throw new Exception("Could not find a ^c key to identify this class.");
             }
+            this.MoveAnimation = (bool) Data["@move_animation"];
+            this.IdleAnimation = (bool) Data["@idle_animation"];
+            this.DirectionLock = (bool) Data["@direction_lock"];
+            this.FrameUpdateInterval = Convert.ToInt32(Data["@frame_update_interval"]);
             this.Passable = (bool) Data["@passable"];
             this.SavePosition = (bool) Data["@save_position"];
             this.Speed = (float) Convert.ToDouble(Data["@speed"]);
@@ -303,6 +308,10 @@ namespace MKEditor.Game
         {
             Dictionary<string, object> Data = new Dictionary<string, object>();
             Data["^c"] = "MKD::Event::Settings";
+            Data["@move_animation"] = MoveAnimation;
+            Data["@idle_animation"] = IdleAnimation;
+            Data["@direction_lock"] = DirectionLock;
+            Data["@frame_update_interval"] = FrameUpdateInterval;
             Data["@passable"] = Passable;
             Data["@save_position"] = SavePosition;
             Data["@speed"] = Speed;
@@ -312,6 +321,10 @@ namespace MKEditor.Game
         public EventSettings Clone()
         {
             EventSettings es = new EventSettings();
+            es.MoveAnimation = this.MoveAnimation;
+            es.IdleAnimation = this.IdleAnimation;
+            es.DirectionLock = this.DirectionLock;
+            es.FrameUpdateInterval = this.FrameUpdateInterval;
             es.Passable = this.Passable;
             es.SavePosition = this.SavePosition;
             es.Speed = this.Speed;

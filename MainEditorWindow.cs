@@ -65,6 +65,10 @@ namespace MKEditor
             this.SetMinimumSize(600, 400);
             this.SetText("RPG Studio MK");
             this.Initialize();
+            Editor.LoadGeneralSettings();
+            SetPosition(Editor.GeneralSettings.LastX, Editor.GeneralSettings.LastY);
+            SetSize(Editor.GeneralSettings.LastWidth, Editor.GeneralSettings.LastHeight);
+            if (Editor.GeneralSettings.WasMaximized) SDL2.SDL.SDL_MaximizeWindow(SDL_Window);
 
             this.OnClosing += delegate (BoolEventArgs e)
             {
@@ -97,7 +101,6 @@ namespace MKEditor
             // Widgets may now be created
 
             Editor.MainWindow = this;
-            Editor.LoadGeneralSettings();
             Utilities.Initialize();
 
             #region Grid
@@ -306,13 +309,7 @@ namespace MKEditor
             this.Start();
             #endregion
 
-            if (Editor.GeneralSettings.WasMaximized) SDL2.SDL.SDL_MaximizeWindow(SDL_Window);
-            else
-            {
-                SetPosition(Editor.GeneralSettings.LastX, Editor.GeneralSettings.LastY);
-                SetSize(Editor.GeneralSettings.LastWidth, Editor.GeneralSettings.LastHeight);
-                this.UI.Resized(new BaseEventArgs());
-            }
+            UI.SizeChanged(new BaseEventArgs());
         }
 
         /// <summary>
@@ -449,10 +446,10 @@ namespace MKEditor
             UI.TextInput(e);
         }
 
-        public override void Resized(BaseEventArgs e)
+        public override void SizeChanged(BaseEventArgs e)
         {
-            base.Resized(e);
-            UI.Resized(e);
+            base.SizeChanged(e);
+            UI.SizeChanged(e);
         }
 
         /// <summary>

@@ -17,7 +17,7 @@ namespace MKEditor.Widgets
         protected PictureBox Icon;
 
         public ButtonType ButtonType;
-        public List<string> Buttons;
+        public new List<string> Buttons;
         public IconType IconType;
 
         public BaseEvent OnButtonPressed;

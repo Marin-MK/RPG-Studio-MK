@@ -10,7 +10,7 @@ namespace MKEditor.Widgets
         public Color TextColor { get { return TextArea.TextColor; } }
         public bool ReadOnly { get { return TextArea.ReadOnly; } }
         public int SelectedIndex { get; protected set; } = 0;
-        public List<ListItem> Items { get; protected set; }
+        public List<ListItem> Items { get; protected set; } = new List<ListItem>();
 
         public TextArea TextArea;
 
@@ -101,17 +101,20 @@ namespace MKEditor.Widgets
                 ry >= 1 && ry < Size.Height - 1)
             {
                 this.OnDropDownClicked?.Invoke(new BaseEventArgs());
-                DropdownWidget dropdown = new DropdownWidget(Window.UI, this.Size.Width, this.Items);
-                dropdown.SetPosition(this.Viewport.X, this.Viewport.Y + this.Viewport.Height);
-                dropdown.SetSelected(SelectedIndex);
-                dropdown.OnDisposed += delegate (BaseEventArgs e)
+                if (this.Items.Count > 0)
                 {
-                    if (dropdown.SelectedIndex != -1)
+                    DropdownWidget dropdown = new DropdownWidget(Window.UI, this.Size.Width, this.Items);
+                    dropdown.SetPosition(this.Viewport.X, this.Viewport.Y + this.Viewport.Height);
+                    dropdown.SetSelected(SelectedIndex);
+                    dropdown.OnDisposed += delegate (BaseEventArgs e)
                     {
-                        this.SetSelectedIndex(dropdown.SelectedIndex);
-                        this.OnSelectionChanged?.Invoke(new BaseEventArgs());
-                    }
-                };
+                        if (dropdown.SelectedIndex != -1)
+                        {
+                            this.SetSelectedIndex(dropdown.SelectedIndex);
+                            this.OnSelectionChanged?.Invoke(new BaseEventArgs());
+                        }
+                    };
+                }
             };
         }
     }
@@ -134,7 +137,7 @@ namespace MKEditor.Widgets
             Sprites["box"].Bitmap.DrawLine(1, Size.Height - 1, Size.Width - 2, Size.Height - 1, Color.BLACK);
             Sprites["box"].Bitmap.FillRect(1, 1, Size.Width - 2, Size.Height - 2, new Color(45, 69, 107));
             Sprites["box"].Bitmap.Lock();
-            Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(110, 18, new Color(86, 108, 134)));
+            Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(Width - 2, 18, new Color(86, 108, 134)));
             Sprites["selector"].X = 1;
             Sprites["text"] = new Sprite(this.Viewport);
             Sprites["text"].Bitmap = new Bitmap(this.Size);

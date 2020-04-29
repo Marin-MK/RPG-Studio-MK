@@ -47,54 +47,34 @@ namespace MKEditor.Widgets
             if (this.Sizes == null || this.Sizes.Length == 0) UpdateContainers();
             for (int i = 0; i < this.Widgets.Count; i++)
             {
-                LayoutContainer lc = this.Widgets[i] as LayoutContainer;
+                Widget w = this.Widgets[i];
                 int width = 0;
                 int height = 0;
-                if (lc.Widget.GridRowStart >= this.Rows.Count || lc.Widget.GridRowEnd >= this.Rows.Count)
+                if (w.GridRowStart >= this.Rows.Count || w.GridRowEnd >= this.Rows.Count)
                 {
                     throw new Exception("Widget GridRow value exceeds amount of defined rows");
                 }
-                if (lc.Widget.GridColumnStart >= this.Columns.Count || lc.Widget.GridColumnEnd >= this.Columns.Count)
+                if (w.GridColumnStart >= this.Columns.Count || w.GridColumnEnd >= this.Columns.Count)
                 {
                     throw new Exception("Widget GridColumn value exceeds amount of defined columns");
                 }
-                for (int j = lc.Widget.GridRowStart; j <= lc.Widget.GridRowEnd; j++)
+                for (int j = w.GridRowStart; j <= w.GridRowEnd; j++)
                 {
-                    height += this.Sizes[j * this.Columns.Count + lc.Widget.GridColumnStart].Height;
+                    height += this.Sizes[j * this.Columns.Count + w.GridColumnStart].Height;
                 }
-                for (int j = lc.Widget.GridColumnStart; j <= lc.Widget.GridColumnEnd; j++)
+                for (int j = w.GridColumnStart; j <= w.GridColumnEnd; j++)
                 {
-                    width += this.Sizes[lc.Widget.GridRowStart * this.Columns.Count + j].Width;
+                    width += this.Sizes[w.GridRowStart * this.Columns.Count + j].Width;
                 }
-                Point p = this.Positions[lc.Widget.GridRowStart * this.Columns.Count + lc.Widget.GridColumnStart];
+                Point p = this.Positions[w.GridRowStart * this.Columns.Count + w.GridColumnStart];
                 int x = p.X;
                 int y = p.Y;
-                x += lc.Widget.Margin.Left;
-                width -= lc.Widget.Margin.Left + lc.Widget.Margin.Right;
-                y += lc.Widget.Margin.Up;
-                height -= lc.Widget.Margin.Up + lc.Widget.Margin.Down;
-                lc.SetPosition(x, y);
-                lc.SetSize(width, height);
-
-                lc.Widget.SetSize(width, height);
-
-                //if (w is Grid) (w as Grid).UpdateContainers();
-                //else if (w is ILayout) (w as ILayout).UpdateLayout();
-            }
-        }
-
-        public override void Add(Widget w)
-        {
-            if (w is LayoutContainer)
-            {
-                this.Widgets.Add(w);
-            }
-            else
-            {
-                LayoutContainer c = new LayoutContainer(this);
-                c.Widget = w;
-                w.SetParent(c);
-                w.Viewport = c.Viewport;
+                x += w.Margin.Left;
+                width -= w.Margin.Left + w.Margin.Right;
+                y += w.Margin.Up;
+                height -= w.Margin.Up + w.Margin.Down;
+                w.SetPosition(x, y);
+                w.SetSize(width, height);
             }
         }
 
@@ -163,6 +143,7 @@ namespace MKEditor.Widgets
                 x = 0;
                 y += height;
             }
+            this.SetSize(Positions.Last().X + Sizes.Last().Width, Positions.Last().Y + Sizes.Last().Height);
 
             this.NeedUpdate = true;
         }
@@ -183,6 +164,12 @@ namespace MKEditor.Widgets
         {
             this.SetSize(Parent.Size);
             this.RedrawContainers = true;
+        }
+
+        public override void Add(Widget w)
+        {
+            base.Add(w);
+            this.NeedUpdate = true;
         }
     }
 }

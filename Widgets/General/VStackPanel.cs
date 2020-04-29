@@ -22,21 +22,19 @@ namespace MKEditor.Widgets
             base.Update();
         }
 
-        public new void UpdateLayout()
+        public override void UpdateLayout()
         {
             int y = 0;
             for (int i = 0; i < this.Widgets.Count; i++)
             {
-                LayoutContainer w = this.Widgets[i] as LayoutContainer;
-                y += w.Widget.Margin.Up;
-                int x = w.Widget.Margin.Left;
-                int width = this.Size.Width - x - w.Widget.Margin.Right;
+                Widget w = this.Widgets[i];
+                y += w.Margin.Up;
+                int x = w.Margin.Left;
+                int width = this.Size.Width - x - w.Margin.Right;
                 w.SetWidth(width);
                 w.SetPosition(x, y);
                 y += w.Size.Height;
-                y += w.Widget.Margin.Down;
-                w.Widget.SetPosition(0, 0);
-                w.Widget.SetWidth(width);
+                y += w.Margin.Down;
             }
         }
 
@@ -51,13 +49,18 @@ namespace MKEditor.Widgets
             return this;
         }
 
+        public override void ChildBoundsChanged(BaseEventArgs e)
+        {
+            base.ChildBoundsChanged(e);
+            UpdateHeight();
+        }
+
         public void UpdateHeight()
         {
-            this.UpdateLayout();
             int maxheight = 0;
-            foreach (LayoutContainer lc in this.Widgets)
+            foreach (Widget w in this.Widgets)
             {
-                int h = lc.Position.Y + lc.Size.Height;
+                int h = w.Position.Y + w.Size.Height;
                 if (h > maxheight) maxheight = h;
             }
             this.SetHeight(maxheight);
@@ -65,29 +68,8 @@ namespace MKEditor.Widgets
 
         public override void Add(Widget w)
         {
-            this.Insert(this.Widgets.Count, w);
-        }
-
-        public Widget Insert(int Index, Widget w)
-        {
-            if (w is LayoutContainer)
-            {
-                this.Widgets.Insert(Index, w);
-            }
-            else
-            {
-                LayoutContainer c = new LayoutContainer(this, Index);
-                c.Widget = w;
-                w.SetParent(c);
-                c.OnChildBoundsChanged += delegate (ObjectEventArgs e)
-                {
-                    c.SetHeight(((Size) e.Object).Height);
-                    w.SetHeight(((Size) e.Object).Height);
-                    this.UpdateHeight();
-                };
-                w.Viewport = new Viewport(w.Window.Renderer, 0, 0, w.Size);
-            }
-            return w;
+            base.Add(w);
+            this.NeedUpdate = true;
         }
     }
 }

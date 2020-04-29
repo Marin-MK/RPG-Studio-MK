@@ -25,7 +25,7 @@ namespace MKEditor.Widgets
             if (Event.Pages.Count > 0)
             {
                 EventGraphic gfx = Event.Pages[0].Graphic;
-                if (gfx.Type == "file")
+                if (gfx.Type == ":file")
                 {
                     if (System.IO.File.Exists(Data.ProjectPath + "/" + gfx.Param.ToString() + ".png"))
                     {

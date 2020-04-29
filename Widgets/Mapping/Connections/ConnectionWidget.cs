@@ -98,10 +98,9 @@ namespace MKEditor.Widgets
                 this.Selected = Selected;
                 if (this.Selected)
                 {
-                    foreach (Widget w in Parent.Parent.Widgets)
+                    foreach (Widget w in Parent.Widgets)
                     {
-                        if (((LayoutContainer) w).Widget is ConnectionWidget && ((LayoutContainer) w).Widget != this)
-                            ((ConnectionWidget) ((LayoutContainer) w).Widget).SetSelected(false);
+                        if (w is ConnectionWidget  && (ConnectionWidget) w != this) ((ConnectionWidget) w).SetSelected(false);
                     }
                 }
                 Color Color = Selected ? new Color(47, 160, 193) : Color.WHITE;

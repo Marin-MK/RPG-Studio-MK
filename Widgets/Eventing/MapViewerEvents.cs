@@ -86,23 +86,13 @@ namespace MKEditor.Widgets
                         MapTileWidth = 1;
                         MapTileHeight = 1;
                         DoubleClickEventID = -1;
-                        foreach (Event ev in Map.Events.Values)
-                        {
-                            if (MapTileX >= ev.X && MapTileY >= ev.Y && MapTileX < ev.X + ev.Width && MapTileY < ev.Y + ev.Height)
-                            {
-                                MapTileX = ev.X;
-                                MapTileY = ev.Y;
-                                MapTileWidth = ev.Width;
-                                MapTileHeight = ev.Height;
-                                DraggingEventID = ev.ID;
-                                DoubleClickEventID = ev.ID;
-                                DraggingAnchorX = X;
-                                DraggingAnchorY = Y;
-                                Editor.MainWindow.EventingWidget.EventListPanel.SelectEvent(ev);
-                                break;
-                            }
-                        }
+                        SelectHoveredEvent();
                         if (DoubleClickEventID == -1) Editor.MainWindow.EventingWidget.EventListPanel.SelectEvent(null);
+                        else
+                        {
+                            DraggingAnchorX = X;
+                            DraggingAnchorY = Y;
+                        }
                         Dragging = true;
                         UpdateCursorPosition();
                         if (TimerExists("double")) DestroyTimer("double");
@@ -110,6 +100,24 @@ namespace MKEditor.Widgets
                         DoubleClickX = MapTileX;
                         DoubleClickY = MapTileY;
                     }
+                }
+            }
+        }
+
+        public void SelectHoveredEvent()
+        {
+            foreach (Event ev in Map.Events.Values)
+            {
+                if (MapTileX >= ev.X && MapTileY >= ev.Y && MapTileX < ev.X + ev.Width && MapTileY < ev.Y + ev.Height)
+                {
+                    MapTileX = ev.X;
+                    MapTileY = ev.Y;
+                    MapTileWidth = ev.Width;
+                    MapTileHeight = ev.Height;
+                    DraggingEventID = ev.ID;
+                    DoubleClickEventID = ev.ID;
+                    Editor.MainWindow.EventingWidget.EventListPanel.SelectEvent(ev);
+                    break;
                 }
             }
         }
@@ -191,7 +199,7 @@ namespace MKEditor.Widgets
 
         public void OpenEvent(int EventID, bool NewEvent = false)
         {
-            EditEvent ee = new EditEvent(Map.Events[EventID], NewEvent);
+            EditEvent ee = new EditEvent(Map, Map.Events[EventID], NewEvent);
             ee.OnClosed += delegate (BaseEventArgs args)
             {
 

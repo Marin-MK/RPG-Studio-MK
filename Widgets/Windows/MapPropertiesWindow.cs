@@ -277,7 +277,7 @@ namespace MKEditor.Widgets
                                 int autotileID = OldMap.AutotileIDs[Map.Layers[layer].Tiles[i].Index];
                                 if (!Map.AutotileIDs.Contains(autotileID))
                                 {
-                                    throw new Exception("Impossible-to-reach code has been reached.");
+                                    throw new Exception("Impossible-to-reach code has been reached. This indicates a flaw in autotile conversion. Please contact the maintainer.");
                                 }
                                 else Map.Layers[layer].Tiles[i].Index = Map.AutotileIDs.IndexOf(autotileID);
                             }

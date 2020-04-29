@@ -374,23 +374,14 @@ namespace MKEditor.Widgets
         /// <param name="Parent">The Parent widget.</param>
         /// <param name="Name">The unique name to give this widget by which to store it.</param>
         /// <param name="Index">Optional index parameter. Used internally for stackpanels.</param>
-        public Widget(IContainer Parent, int Index = -1)
+        public Widget(IContainer Parent)
         {
-            // Children of ILayout widgets (Grid, StackPanel) aren't added directly, but rather get a LayoutContainer as a parent and copy their viewport.
-            if (Parent is ILayout && !(this is LayoutContainer))
-            {
-                if (Parent is VStackPanel && Index != -1) (Parent as VStackPanel).Insert(Index, this);
-                else (Parent as Widget).Add(this);
-            }
-            else
-            {
-                this.SetParent(Parent, Index);
-                // Create new viewport directly on the window's renderer.
-                this.Viewport = new Viewport(this.Window.Renderer, 0, 0, this.Size);
-                // Z index by default copies parent viewport's z. If changed later, SetZIndex will modify the value.
-                this.Viewport.Z = this.ZIndex;
-                if (this.Parent is Widget) this.Viewport.Visible = (this.Parent as Widget).IsVisible() ? this.Visible : false;
-            }
+            this.SetParent(Parent);
+            // Create new viewport directly on the window's renderer.
+            this.Viewport = new Viewport(this.Window.Renderer, 0, 0, this.Size);
+            // Z index by default copies parent viewport's z. If changed later, SetZIndex will modify the value.
+            this.Viewport.Z = this.ZIndex;
+            if (this.Parent is Widget) this.Viewport.Visible = (this.Parent as Widget).IsVisible() ? this.Visible : false;
             // The background sprite responsible for the BackgroundColor.
             this.Sprites["_bg"] = new Sprite(this.Viewport);
             this.Sprites["_bg"].Bitmap = new SolidBitmap(this.Size, this.BackgroundColor);
@@ -483,7 +474,7 @@ namespace MKEditor.Widgets
         /// </summary>
         /// <param name="Parent">The Parent widget.</param>
         /// <param name="Index">Optional index for stackpanel parents.</param>
-        public virtual void SetParent(IContainer Parent, int Index = -1)
+        public virtual void SetParent(IContainer Parent)
         {
             AssertUndisposed();
             bool New = true;
@@ -504,10 +495,7 @@ namespace MKEditor.Widgets
                 this.Window = (Parent as Widget).Window;
                 this.Parent = Parent;
             }
-            // Insert widget at specific index for stackpanels
-            if (Index != -1 && this.Parent is VStackPanel) (this.Parent as VStackPanel).Insert(Index, this);
-            // Or add to the end of the list otherwise
-            else this.Parent.Add(this);
+            this.Parent.Add(this);
             if (this.Viewport != null)
             {
                 this.Viewport.Z = this.ZIndex;
@@ -536,10 +524,6 @@ namespace MKEditor.Widgets
             AssertUndisposed();
             this.Visible = Visible;
             Widget parent = Parent as Widget;
-            // Since LayoutContainer copies the viewport of this Widget, it will always
-            // match the visibility of this widget and therefore give undesireable results.
-            // Use its parent instead, which is the stackpanel or grid.
-            if (parent is LayoutContainer) parent = parent.Parent as Widget;
             if (parent == null || (parent as Widget).IsVisible())
             {
                 Viewport.Visible = Visible;
@@ -559,10 +543,6 @@ namespace MKEditor.Widgets
         protected void SetViewportVisible(bool Visible, bool Initial = false)
         {
             Widget parent = Parent as Widget;
-            // Since LayoutContainer copies the viewport of this Widget, it will always
-            // match the visibility of this widget and therefore give undesireable results.
-            // Use its parent instead, which is the stackpanel or grid.
-            if (parent is LayoutContainer) parent = parent.Parent as Widget;
             if (parent == null || (parent as Widget).IsVisible())
             {
                 if (this.Visible && Viewport.Visible != Visible)
@@ -594,8 +574,7 @@ namespace MKEditor.Widgets
             {
                 if (!wdgt.Visible || !wdgt.ConsiderInAutoScrollCalculation) return;
                 int w = wdgt.Size.Width;
-                if (wdgt.Parent is LayoutContainer) w += (wdgt.Parent as LayoutContainer).Position.X;
-                else w += wdgt.Position.X;
+                w += wdgt.Position.X;
                 if (w > MaxChildWidth) MaxChildWidth = w;
             });
             // Calculate total child height
@@ -605,8 +584,7 @@ namespace MKEditor.Widgets
             {
                 if (!w.Visible || !w.ConsiderInAutoScrollCalculation) return;
                 int h = w.Size.Height;
-                if (w.Parent is LayoutContainer) h += (w.Parent as LayoutContainer).Position.Y;
-                else h += w.Position.Y;
+                h += w.Position.Y;
                 if (h > MaxChildHeight) MaxChildHeight = h;
             });
             if (AutoResize)
@@ -716,8 +694,8 @@ namespace MKEditor.Widgets
             int ScrolledY = this.Position.Y - this.ScrolledPosition.Y;
             if (!ConsiderInAutoScrollPositioning) ScrolledX = ScrolledY = 0;
 
-            this.Viewport.X = this.Position.X + this.Parent.Viewport.X - Parent.AdjustedPosition.X - ScrolledX;
-            this.Viewport.Y = this.Position.Y + this.Parent.Viewport.Y - Parent.AdjustedPosition.Y - ScrolledY;
+            this.Viewport.X = this.Position.X + Parent.Viewport.X - Parent.AdjustedPosition.X - ScrolledX;
+            this.Viewport.Y = this.Position.Y + Parent.Viewport.Y - Parent.AdjustedPosition.Y - ScrolledY;
             this.Viewport.Width = this.Size.Width;
             this.Viewport.Height = this.Size.Height;
             int DiffX = 0;
@@ -725,37 +703,37 @@ namespace MKEditor.Widgets
             int DiffWidth = 0;
             int DiffHeight = 0;
             /* Handles X positioning */
-            if (this.Viewport.X < this.Parent.Viewport.X)
+            if (this.Viewport.X < Parent.Viewport.X)
             {
-                DiffX = this.Parent.Viewport.X - this.Viewport.X;
+                DiffX = Parent.Viewport.X - this.Viewport.X;
                 foreach (ISprite s in this.Sprites.Values)
                 {
                     if (s is MultiSprite) foreach (Sprite ms in (s as MultiSprite).SpriteList.Values) ms.OX += DiffX;
                     else s.OX += DiffX;
                 }
-                this.Viewport.X = this.Position.X + this.Parent.Viewport.X + DiffX - ScrolledX - Parent.AdjustedPosition.X;
+                this.Viewport.X = this.Position.X + Parent.Viewport.X + DiffX - ScrolledX - Parent.AdjustedPosition.X;
             }
             /* Handles width manipulation */
-            if (this.Viewport.X + this.Size.Width > this.Parent.Viewport.X + this.Parent.Viewport.Width)
+            if (this.Viewport.X + this.Size.Width > Parent.Viewport.X + Parent.Viewport.Width)
             {
-                DiffWidth = this.Viewport.X + this.Size.Width - (this.Parent.Viewport.X + this.Parent.Viewport.Width);
+                DiffWidth = this.Viewport.X + this.Size.Width - (Parent.Viewport.X + Parent.Viewport.Width);
                 this.Viewport.Width -= DiffWidth;
             }
             /* Handles Y positioning */
-            if (this.Viewport.Y < this.Parent.Viewport.Y)
+            if (this.Viewport.Y < Parent.Viewport.Y)
             {
-                DiffY = this.Parent.Viewport.Y - this.Viewport.Y;
+                DiffY = Parent.Viewport.Y - this.Viewport.Y;
                 foreach (ISprite s in this.Sprites.Values)
                 {
                     if (s is MultiSprite) foreach (Sprite ms in (s as MultiSprite).SpriteList.Values) ms.OY += DiffY;
                     else s.OY += DiffY;
                 }
-                this.Viewport.Y = this.Position.Y + this.Parent.Viewport.Y + DiffY - ScrolledY - Parent.AdjustedPosition.Y;
+                this.Viewport.Y = this.Position.Y + Parent.Viewport.Y + DiffY - ScrolledY - Parent.AdjustedPosition.Y;
             }
             /* Handles height manipulation */
-            if (this.Viewport.Y + this.Size.Height > this.Parent.Viewport.Y + this.Parent.Viewport.Height)
+            if (this.Viewport.Y + this.Size.Height > Parent.Viewport.Y + Parent.Viewport.Height)
             {
-                DiffHeight = this.Viewport.Y + this.Size.Height - (this.Parent.Viewport.Y + this.Parent.Viewport.Height);
+                DiffHeight = this.Viewport.Y + this.Size.Height - (Parent.Viewport.Y + Parent.Viewport.Height);
                 this.Viewport.Height -= DiffHeight;
             }
             this.AdjustedPosition = new Point(DiffX, DiffY);
@@ -829,10 +807,8 @@ namespace MKEditor.Widgets
                 // Executes all events associated with resizing a widget.
                 this.Widgets.ForEach(w =>
                 {
-                    Widget wdgt = w;
-                    if (wdgt is LayoutContainer) wdgt = (w as LayoutContainer).Widget;
-                    wdgt.OnParentSizeChanged(new BaseEventArgs());
-                    wdgt.OnSizeChanged(new BaseEventArgs());
+                    w.OnParentSizeChanged(new BaseEventArgs());
+                    w.OnSizeChanged(new BaseEventArgs());
                 });
                 this.OnSizeChanged(new BaseEventArgs());
                 Redraw();
@@ -1049,7 +1025,7 @@ namespace MKEditor.Widgets
             // Dispose the viewport and all its sprites.
             // Viewport may already be null if a child of a layoutcontainer has been disposed
             // because they share the same viewport.
-            if (this.Viewport != null && !this.Viewport.Disposed)
+            //if (this.Viewport != null && !this.Viewport.Disposed)
                 this.Viewport.Dispose();
             if (HelpTextWidget != null) HelpTextWidget.Dispose();
             // Dispose all child widgets
@@ -1060,8 +1036,6 @@ namespace MKEditor.Widgets
             // Set viewport and sprites to null to ensure no methods can use them anymore.
             this.Viewport = null;
             this.Sprites = null;
-            if (Parent is LayoutContainer && !(Parent as Widget).Disposed)
-                (Parent as Widget).Dispose();
             this.OnDisposed?.Invoke(new BaseEventArgs());
         }
 

@@ -79,45 +79,7 @@ namespace MKEditor.Widgets
         public override void RedrawText()
         {
             if (string.IsNullOrEmpty(Text)) return;
-            List<string> Words = new List<string>();
-            foreach (string word in this.Text.Split(' '))
-            {
-                if (word.Contains("\n"))
-                {
-                    List<string> splits = new List<string>(word.Split('\n'));
-                    for (int i = 0; i < splits.Count; i++)
-                    {
-                        Words.Add(splits[i]);
-                        if (i != splits.Count - 1) Words.Add("\n");
-                    }
-                }
-                else
-                {
-                    Words.Add(word);
-                }
-            }
-            List<string> Lines = new List<string>() { "" };
-            int width = Size.Width;
-            for (int i = 0; i < Words.Count; i++)
-            {
-                if (Words[i] == "\n")
-                {
-                    if (Lines[Lines.Count - 1].Length > 0) Lines[Lines.Count - 1] = Lines[Lines.Count - 1].Remove(Lines[Lines.Count - 1].Length - 1);
-                    Lines.Add("");
-                    continue;
-                }
-                string text = Lines[Lines.Count - 1] + Words[i];
-                Size s = Font.TextSize(text);
-                if (s.Width >= width)
-                {
-                    if (Lines[Lines.Count - 1].Length > 0) Lines[Lines.Count - 1] = Lines[Lines.Count - 1].Remove(Lines[Lines.Count - 1].Length - 1);
-                    Lines.Add(Words[i] + " ");
-                }
-                else
-                {
-                    Lines[Lines.Count - 1] += Words[i] + " ";
-                }
-            }
+            List<string> Lines = Utilities.FormatString(this.Font, Text, Size.Width);
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
             SetSize(Size.Width, (Font.Size + 4) * Lines.Count);
             Sprites["text"].Bitmap = new Bitmap(Size);

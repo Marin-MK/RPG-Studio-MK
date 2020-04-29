@@ -264,6 +264,77 @@ namespace MKEditor
             return bmp;
         }
 
+        public static List<string> FormatString(Font f, string Text, int Width)
+        {
+            List<string> Words = new List<string>();
+            foreach (string word in Text.Split(' '))
+            {
+                if (word.Contains("\n"))
+                {
+                    List<string> splits = new List<string>(word.Split('\n'));
+                    for (int j = 0; j < splits.Count; j++)
+                    {
+                        Words.Add(splits[j]);
+                        if (j != splits.Count - 1) Words.Add("\n");
+                    }
+                }
+                else
+                {
+                    Words.Add(word);
+                }
+            }
+            List<string> Lines = new List<string>() { "" };
+            for (int i = 0; i < Words.Count; i++)
+            {
+                if (Words[i] == "\n")
+                {
+                    if (Lines[Lines.Count - 1].Length > 0) Lines[Lines.Count - 1] = Lines[Lines.Count - 1].Remove(Lines[Lines.Count - 1].Length - 1);
+                    Lines.Add("");
+                    continue;
+                }
+                Size wordsize = f.TextSize(Words[i]);
+                if (wordsize.Width >= Width)
+                {
+                    List<string> newwords = new List<string>();
+                    int startidx = 0;
+                    for (int j = 0; j < Words[i].Length; j++)
+                    {
+                        Size cursize = f.TextSize(Words[i].Substring(startidx, j - startidx));
+                        if (cursize.Width >= Width)
+                        {
+                            newwords.Add(Words[i].Substring(startidx, j - startidx - 1));
+                            startidx = j - 1;
+                            j--;
+                        }
+                    }
+                    if (newwords.Count == 0)
+                    {
+                        newwords.Add(Words[i].Substring(0, Words[i].Length - 1));
+                        startidx = Words[i].Length - 1;
+                    }
+                    newwords.Add(Words[i].Substring(startidx, Words[i].Length - startidx));
+                    Words.RemoveAt(i);
+                    Words.InsertRange(i, newwords);
+                    i--;
+                }
+                else
+                {
+                    string text = Lines[Lines.Count - 1] + Words[i];
+                    Size s = f.TextSize(text);
+                    if (s.Width >= Width)
+                    {
+                        if (Lines[Lines.Count - 1].Length > 0) Lines[Lines.Count - 1] = Lines[Lines.Count - 1].Remove(Lines[Lines.Count - 1].Length - 1);
+                        Lines.Add(Words[i] + " ");
+                    }
+                    else
+                    {
+                        Lines[Lines.Count - 1] += Words[i] + " ";
+                    }
+                }
+            }
+            return Lines;
+        }
+
         public static int Random(int Min, int Max)
         {
             return RandomObject.Next(Min, Max);
