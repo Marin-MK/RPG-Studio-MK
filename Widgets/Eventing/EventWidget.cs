@@ -30,9 +30,12 @@ namespace MKEditor.Widgets
                     if (System.IO.File.Exists(Data.ProjectPath + "/" + gfx.Param.ToString() + ".png"))
                     {
                         Sprites["gfx"].Bitmap = new Bitmap(Data.ProjectPath + "/" + gfx.Param.ToString());
-                        Sprites["gfx"].SrcRect.Y = Sprites["gfx"].Bitmap.Height / 4 * ((gfx.Direction / 2) - 1);
-                        Sprites["gfx"].SrcRect.Width = Sprites["gfx"].Bitmap.Width / 4;
-                        Sprites["gfx"].SrcRect.Height = Sprites["gfx"].Bitmap.Height / 4;
+                        Sprites["gfx"].SrcRect.Width = Sprites["gfx"].Bitmap.Width / gfx.NumFrames;
+                        Sprites["gfx"].SrcRect.Height = Sprites["gfx"].Bitmap.Height / gfx.NumDirections;
+                        int dir = 0;
+                        if (gfx.NumDirections == 4) dir = gfx.Direction / 2 - 1;
+                        if (gfx.NumDirections == 8) dir = gfx.Direction - 1;
+                        Sprites["gfx"].SrcRect.Y = Sprites["gfx"].SrcRect.Height * dir;
                     }
                 }
             }
@@ -69,8 +72,8 @@ namespace MKEditor.Widgets
             Sprites["box"].Y = BoxPosition.Y;
             if (Sprites["gfx"].Bitmap != null)
             {
-                Sprites["gfx"].X = BoxPosition.X + (int)Math.Round(BoxSize.Width / 2 * ZoomFactor - Sprites["gfx"].SrcRect.Width / 2 * ZoomFactor);
-                Sprites["gfx"].Y = BoxPosition.Y + (int)Math.Round(BoxSize.Height * ZoomFactor - Sprites["gfx"].SrcRect.Height * ZoomFactor);
+                Sprites["gfx"].X = BoxPosition.X + (int) Math.Round(BoxSize.Width / 2 * ZoomFactor - Sprites["gfx"].SrcRect.Width / 2 * ZoomFactor);
+                Sprites["gfx"].Y = BoxPosition.Y + (int) Math.Round(BoxSize.Height * ZoomFactor - Sprites["gfx"].SrcRect.Height * ZoomFactor);
             }
         }
     }

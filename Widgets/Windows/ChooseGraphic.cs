@@ -133,6 +133,8 @@ namespace MKEditor.Widgets
             NumFramesBox = new NumericBox(this);
             NumFramesBox.SetPosition(669, 343);
             NumFramesBox.SetSize(50, 27);
+            NumFramesBox.MinValue = 1;
+            NumFramesBox.MaxValue = 999;
             NumFramesBox.SetValue(GraphicData.NumFrames);
             NumFramesBox.OnValueChanged += delegate (BaseEventArgs e)
             {
@@ -143,15 +145,19 @@ namespace MKEditor.Widgets
             FileExplorer = new FileExplorer(this);
             FileExplorer.SetPosition(1, 24);
             FileExplorer.SetSize(529, 396);
-            FileExplorer.SetBaseDirectory(Data.ProjectPath?? "D:/Desktop/MK/mk");
+            FileExplorer.SetBaseDirectory(Data.ProjectPath);
             FileExplorer.SetFileExtensions("png");
             string dir = "";
-            List<string> dirs = ((string) GraphicData.Param).Split('/').ToList();
-            for (int i = 0; i < dirs.Count - 1; i++)
+            if (GraphicData.Param != null)
             {
-                dir += dirs[i];
-                if (i != dirs.Count - 2) dir += "/";
+                List<string> dirs = ((string) GraphicData.Param).Split('/').ToList();
+                for (int i = 0; i < dirs.Count - 1; i++)
+                {
+                    dir += dirs[i];
+                    if (i != dirs.Count - 2) dir += "/";
+                }
             }
+            else dir = "gfx/characters";
             FileExplorer.SetDirectory(dir);
             FileExplorer.OnFileSelected += delegate (BaseEventArgs e)
             {
@@ -190,6 +196,7 @@ namespace MKEditor.Widgets
 
         public void RedrawGraphic()
         {
+            if (FileExplorer.SelectedIsFolder) return;
             Graphic.Sprite.Bitmap?.Dispose();
             Graphic.Sprite.Bitmap = new Bitmap(FileExplorer.SelectedFilename);
             int x = 0;

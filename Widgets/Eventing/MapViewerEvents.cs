@@ -7,10 +7,19 @@ namespace MKEditor.Widgets
 {
     public class MapViewerEvents : MapViewerBase
     {
-        public CursorWidget Cursor;
         public int MapTileWidth = 1;
         public int MapTileHeight = 1;
         public bool Dragging = false;
+
+        public CursorWidget Cursor;
+        
+        int DoubleClickEventID = -1;
+        int DoubleClickX = -1;
+        int DoubleClickY = -1;
+
+        int DraggingEventID = -1;
+        int DraggingAnchorX = -1;
+        int DraggingAnchorY = -1;
 
         public MapViewerEvents(IContainer Parent) : base(Parent)
         {
@@ -31,14 +40,6 @@ namespace MKEditor.Widgets
             Cursor.SetSize((int) Math.Round(14 + MapTileWidth * 32 * ZoomFactor), (int) Math.Round(14 + MapTileHeight * 32 * ZoomFactor));
         }
 
-        int DoubleClickEventID = -1;
-        int DoubleClickX = -1;
-        int DoubleClickY = -1;
-
-        int DraggingEventID = -1;
-        int DraggingAnchorX = -1;
-        int DraggingAnchorY = -1;
-
         public override void MouseDown(MouseEventArgs e)
         {
             base.MouseDown(e);
@@ -51,6 +52,10 @@ namespace MKEditor.Widgets
                 {
                     if (X >= MapTileX && X < MapTileX + MapTileWidth && Y >= MapTileY && Y < MapTileY + MapTileHeight)
                     {
+                        DraggingEventID = DoubleClickEventID;
+                        DraggingAnchorX = X;
+                        DraggingAnchorY = Y;
+                        // Clicked within the event
                         if (DoubleClickX == MapTileX && DoubleClickY == MapTileY)
                         {
                             if (TimerExists("double") && !TimerPassed("double"))
@@ -202,7 +207,14 @@ namespace MKEditor.Widgets
             EditEvent ee = new EditEvent(Map, Map.Events[EventID], NewEvent);
             ee.OnClosed += delegate (BaseEventArgs args)
             {
-
+                if (Map.Events[EventID] != ee.EventData) // Applied some sort of changes
+                {
+                    Map.Events[EventID] = ee.EventData;
+                    ((EventMapImageWidget) MapWidget).UpdateEvent(ee.EventData);
+                    MapTileWidth = ee.EventData.Width;
+                    MapTileHeight = ee.EventData.Height;
+                    UpdateCursorPosition();
+                }
             };
         }
 
@@ -248,6 +260,22 @@ namespace MKEditor.Widgets
             DrawEvents();
         }
 
+        public void UpdateEvent(Event e)
+        {
+            foreach (EventWidget ew in EventWidgets)
+            {
+                if (ew.EventData.ID == e.ID)
+                {
+                    ew.SetEvent(e);
+                    ew.SetBoxPosition((int) Math.Round(e.X * 32 * ZoomFactor), (int) Math.Round(e.Y * 32 * ZoomFactor));
+                    ew.SetBoxSize((int) Math.Round(e.Width * 32d), (int) Math.Round(e.Height * 32d));
+                    ew.Reposition();
+                    break;
+                }
+            }
+            Editor.MainWindow.EventingWidget.EventListPanel.UpdateEvent(e);
+        }
+
         public void DrawEvent(Event e)
         {
             EventWidget ew = new EventWidget(this);
@@ -270,7 +298,7 @@ namespace MKEditor.Widgets
         {
             foreach (EventWidget e in EventWidgets)
             {
-                if (ev != null && e.EventData != ev) continue;
+                if (ev != null && e.EventData.ID != ev.ID) continue;
                 e.SetSize(this.Size);
                 e.SetZoomFactor(this.ZoomFactor);
                 e.SetBoxPosition((int) Math.Round(e.EventData.X * 32 * ZoomFactor), (int) Math.Round(e.EventData.Y * 32 * ZoomFactor));

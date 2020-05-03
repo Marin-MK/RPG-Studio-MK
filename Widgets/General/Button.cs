@@ -13,6 +13,7 @@ namespace MKEditor.Widgets
         public Color TextColor { get; protected set; } = Color.WHITE;
 
         public BaseEvent OnClicked;
+        int MaxWidth;
 
         public Button(IContainer Parent) : base(Parent)
         {
@@ -155,7 +156,7 @@ namespace MKEditor.Widgets
             {
                 this.Clickable = Clickable;
                 if (this.Clickable) Sprites["filler"].Color = new Color(64, 104, 146);
-                else Sprites["filler"].Color = new Color(86, 108, 134);
+                else Sprites["filler"].Color = new Color(72, 72, 72);
             }
         }
 
@@ -164,17 +165,17 @@ namespace MKEditor.Widgets
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
             if (string.IsNullOrEmpty(this.Text)) return;
             List<string> Lines = this.Text.Split('\n').ToList();
-            int maxw = 0;
-            Lines.ForEach(l => maxw = Math.Max(maxw, this.Font.TextSize(l).Width));
-            Sprites["text"].Bitmap = new Bitmap(maxw, Size.Height);
+            MaxWidth = 0;
+            Lines.ForEach(l => MaxWidth = Math.Max(MaxWidth, this.Font.TextSize(l).Width));
+            Sprites["text"].Bitmap = new Bitmap(MaxWidth, Size.Height);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = this.Font;
             for (int i = 0; i < Lines.Count; i++)
             {
-                Sprites["text"].Bitmap.DrawText(Lines[i], maxw / 2, i * 18, this.TextColor, DrawOptions.CenterAlign);
+                Sprites["text"].Bitmap.DrawText(Lines[i], MaxWidth / 2, i * 18, this.TextColor, DrawOptions.CenterAlign);
             }
             Sprites["text"].Bitmap.Lock();
-            Sprites["text"].X = Size.Width / 2 - maxw / 2;
+            Sprites["text"].X = Size.Width / 2 - MaxWidth / 2;
             Sprites["text"].Y = Size.Height / 2 - 9 * Lines.Count;
         }
 
@@ -203,6 +204,12 @@ namespace MKEditor.Widgets
             Sprites["top"].ZoomX = Size.Width - 20;
             Sprites["bottom"].Y = Sprites["bottomleft"].Y + 4;
             Sprites["bottom"].ZoomX = Sprites["top"].ZoomX;
+
+            if (!string.IsNullOrEmpty(this.Text))
+            {
+                Sprites["text"].X = Size.Width / 2 - MaxWidth / 2;
+                Sprites["text"].Y = Size.Height / 2 - 9 * this.Text.Split('\n').Length;
+            }
         }
 
         public override void HoverChanged(MouseEventArgs e)

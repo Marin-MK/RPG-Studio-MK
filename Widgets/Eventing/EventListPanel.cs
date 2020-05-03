@@ -67,6 +67,18 @@ namespace MKEditor.Widgets
             }
         }
 
+        public void UpdateEvent(Event e)
+        {
+            foreach (EventListEntryWidget w in StackPanel.Widgets)
+            {
+                if (w.EventData.ID == e.ID)
+                {
+                    w.SetEvent(e);
+                    break;
+                }
+            }
+        }
+
         public void SelectEvent(Event e)
         {
             foreach (EventListEntryWidget w in StackPanel.Widgets)
@@ -75,7 +87,7 @@ namespace MKEditor.Widgets
                 {
                     w.SetSelected(false);
                 }
-                else if (w.EventData == e)
+                else if (w.EventData.ID == e.ID)
                 {
                     w.SetSelected(true);
                 }

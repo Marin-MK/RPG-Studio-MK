@@ -126,6 +126,22 @@ namespace MKEditor.Widgets
             return tc;
         }
 
+        public void DestroyTab(int Index)
+        {
+            this.Tabs[Index].Dispose();
+            this.Tabs.RemoveAt(Index);
+            this.Names.RemoveAt(Index);
+        }
+
+        public void SetName(int PageIndex, string Name)
+        {
+            Font f = Font.Get("Fonts/Ubuntu-B", 15);
+            int w = f.TextSize(Name).Width + 8;
+            if (w > HeaderWidth) SetHeader(w, HeaderHeight, TextY);
+            this.Names[PageIndex] = Name;
+            this.Redraw();
+        }
+
         public override void SizeChanged(BaseEventArgs e)
         {
             base.SizeChanged(e);

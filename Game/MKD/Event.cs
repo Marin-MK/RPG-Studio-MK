@@ -73,7 +73,8 @@ namespace MKEditor.Game
             e.Y = this.Y;
             e.Width = this.Width;
             e.Height = this.Height;
-            e.Pages = new List<EventPage>(this.Pages);
+            e.Pages = new List<EventPage>();
+            this.Pages.ForEach(p => e.Pages.Add(p.Clone()));
             return e;
         }
     }
@@ -81,8 +82,8 @@ namespace MKEditor.Game
     public class EventPage
     {
         public string Name;
-        public List<IEventCommand> Commands;
-        public List<IEventCondition> Conditions;
+        public List<IEventCommand> Commands = new List<IEventCommand>();
+        public List<IEventCondition> Conditions = new List<IEventCondition>();
         public EventGraphic Graphic;
         public TriggerMode TriggerMode;
         public object TriggerParam;
@@ -92,8 +93,6 @@ namespace MKEditor.Game
         public EventPage()
         {
             this.Name = "Untitled Page";
-            this.Commands = new List<IEventCommand>();
-            this.Conditions = new List<IEventCondition>();
             this.Graphic = new EventGraphic();
             this.TriggerMode = TriggerMode.Action;
             this.AutoMoveRoute = new AutoMoveRoute();
@@ -128,7 +127,7 @@ namespace MKEditor.Game
             else if (mode == ":parallel_process") TriggerMode = TriggerMode.ParallelProcess;
             this.TriggerParam = Data["@trigger_param"];
             this.AutoMoveRoute = new AutoMoveRoute(((JObject) Data["@automoveroute"]).ToObject<Dictionary<string, object>>());
-            this.Settings = new EventSettings(((JObject)Data["@settings"]).ToObject<Dictionary<string, object>>());
+            this.Settings = new EventSettings(((JObject) Data["@settings"]).ToObject<Dictionary<string, object>>());
         }
 
         public Dictionary<string, object> ToJSON()
@@ -152,6 +151,20 @@ namespace MKEditor.Game
             // Add commands
             // Add conditions
             return Data;
+        }
+
+        public EventPage Clone()
+        {
+            EventPage p = new EventPage();
+            p.Name = this.Name;
+            p.Commands = new List<IEventCommand>(this.Commands);
+            p.Conditions = new List<IEventCondition>(this.Conditions);
+            p.Graphic = this.Graphic.Clone();
+            p.TriggerMode = this.TriggerMode;
+            p.TriggerParam = this.TriggerParam;
+            p.AutoMoveRoute = this.AutoMoveRoute.Clone();
+            p.Settings = this.Settings.Clone();
+            return p;
         }
     }
 
@@ -262,27 +275,35 @@ namespace MKEditor.Game
             Data["@commands"] = commands;
             return Data;
         }
+
+        public AutoMoveRoute Clone()
+        {
+            AutoMoveRoute amr = new AutoMoveRoute();
+            amr.Frequency = this.Frequency;
+            amr.Commands = new List<string>(this.Commands);
+            return amr;
+        }
     }
 
     public class EventSettings
     {
+        public float MoveSpeed;
+        public float IdleSpeed;
         public bool MoveAnimation;
         public bool IdleAnimation;
         public bool DirectionLock;
-        public int FrameUpdateInterval;
         public bool Passable;
         public bool SavePosition;
-        public float Speed;
 
         public EventSettings()
         {
+            this.MoveSpeed = 0.25f;
+            this.IdleSpeed = 0.25f;
             this.MoveAnimation = true;
             this.IdleAnimation = false;
             this.DirectionLock = false;
-            this.FrameUpdateInterval = 16;
             this.Passable = false;
-            this.SavePosition = true;
-            this.Speed = 0.25f;
+            this.SavePosition = false;
         }
 
         public EventSettings(Dictionary<string, object> Data)
@@ -295,39 +316,39 @@ namespace MKEditor.Game
             {
                 throw new Exception("Could not find a ^c key to identify this class.");
             }
+            this.MoveSpeed = (float) Convert.ToDouble(Data["@move_speed"]);
+            this.IdleSpeed = (float) Convert.ToDouble(Data["@idle_speed"]);
             this.MoveAnimation = (bool) Data["@move_animation"];
             this.IdleAnimation = (bool) Data["@idle_animation"];
             this.DirectionLock = (bool) Data["@direction_lock"];
-            this.FrameUpdateInterval = Convert.ToInt32(Data["@frame_update_interval"]);
             this.Passable = (bool) Data["@passable"];
             this.SavePosition = (bool) Data["@save_position"];
-            this.Speed = (float) Convert.ToDouble(Data["@speed"]);
         }
 
         public Dictionary<string, object> ToJSON()
         {
             Dictionary<string, object> Data = new Dictionary<string, object>();
             Data["^c"] = "MKD::Event::Settings";
+            Data["@move_speed"] = MoveSpeed;
+            Data["@idle_speed"] = IdleSpeed;
             Data["@move_animation"] = MoveAnimation;
             Data["@idle_animation"] = IdleAnimation;
             Data["@direction_lock"] = DirectionLock;
-            Data["@frame_update_interval"] = FrameUpdateInterval;
             Data["@passable"] = Passable;
             Data["@save_position"] = SavePosition;
-            Data["@speed"] = Speed;
             return Data;
         }
 
         public EventSettings Clone()
         {
             EventSettings es = new EventSettings();
+            es.MoveSpeed = this.MoveSpeed;
+            es.IdleSpeed = this.IdleSpeed;
             es.MoveAnimation = this.MoveAnimation;
             es.IdleAnimation = this.IdleAnimation;
             es.DirectionLock = this.DirectionLock;
-            es.FrameUpdateInterval = this.FrameUpdateInterval;
             es.Passable = this.Passable;
             es.SavePosition = this.SavePosition;
-            es.Speed = this.Speed;
             return es;
         }
     }

@@ -11,6 +11,8 @@ namespace MKEditor.Widgets
 
         bool Selecting = false;
 
+        public BaseEvent OnCheckChanged;
+
         public CheckBox(IContainer Parent) : base(Parent)
         {
             Sprites["box"] = new Sprite(this.Viewport, new Bitmap(16, 16));
@@ -114,6 +116,7 @@ namespace MKEditor.Widgets
             {
                 Selecting = true;
                 SetChecked(!this.Checked);
+                OnCheckChanged?.Invoke(new BaseEventArgs());
             }
         }
 

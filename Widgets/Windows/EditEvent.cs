@@ -14,7 +14,9 @@ namespace MKEditor.Widgets
         public Button ApplyButton { get { return Buttons[0]; } }
 
         TabView TabController;
-        public List<EventPageContainer> EventPageContainers = new List<EventPageContainer>();
+        Button DeletePageButton;
+
+        List<EventPageContainer> EventPageContainers = new List<EventPageContainer>();
 
         public EditEvent(Map map, Event ev, bool NewEvent = false)
         {
@@ -22,7 +24,7 @@ namespace MKEditor.Widgets
             this.OldEvent = ev;
             this.EventData = ev.Clone();
             SetTitle($"{(NewEvent ? "New" : "Edit")} event (ID: {Utilities.Digits(EventData.ID, 3)})");
-            SetSize(752, 619);
+            SetSize(752, 690);
             Center();
 
             EventGroupBox MainPropertyBox = new EventGroupBox(this);
@@ -53,6 +55,8 @@ namespace MKEditor.Widgets
             NumericBox WidthBox = new NumericBox(MainPropertyBox);
             WidthBox.SetPosition(46, 38);
             WidthBox.SetSize(63, 27);
+            WidthBox.MinValue = 1;
+            WidthBox.MaxValue = 999;
             WidthBox.SetValue(EventData.Width);
             WidthBox.OnValueChanged += delegate (BaseEventArgs e)
             {
@@ -68,6 +72,8 @@ namespace MKEditor.Widgets
             NumericBox HeightBox = new NumericBox(MainPropertyBox);
             HeightBox.SetPosition(163, 38);
             HeightBox.SetSize(63, 27);
+            HeightBox.MinValue = 1;
+            HeightBox.MaxValue = 999;
             HeightBox.SetValue(EventData.Height);
             HeightBox.OnValueChanged += delegate (BaseEventArgs e)
             {
@@ -75,52 +81,117 @@ namespace MKEditor.Widgets
                 MarkChanges();
             };
 
-            Button NewPage = new Button(this);
-            NewPage.SetPosition(414, 43);
-            NewPage.SetSize(67, 59);
-            NewPage.SetText("New\nPage");
+            Button NewPageButton = new Button(this);
+            NewPageButton.SetPosition(414, 43);
+            NewPageButton.SetSize(67, 59);
+            NewPageButton.SetText("New\nPage");
+            NewPageButton.OnClicked += delegate (BaseEventArgs e) { NewPage(); };
 
-            Button CopyPage = new Button(this);
-            CopyPage.SetPosition(481, 43);
-            CopyPage.SetSize(67, 59);
-            CopyPage.SetText("Copy\nPage");
+            Button CopyPageButton = new Button(this);
+            CopyPageButton.SetPosition(481, 43);
+            CopyPageButton.SetSize(67, 59);
+            CopyPageButton.SetText("Copy\nPage");
+            CopyPageButton.OnClicked += delegate (BaseEventArgs e) { CopyPage(); };
 
-            Button PastePage = new Button(this);
-            PastePage.SetPosition(548, 43);
-            PastePage.SetSize(67, 59);
-            PastePage.SetText("Paste\nPage");
+            Button PastePageButton = new Button(this);
+            PastePageButton.SetPosition(548, 43);
+            PastePageButton.SetSize(67, 59);
+            PastePageButton.SetText("Paste\nPage");
+            PastePageButton.OnClicked += delegate (BaseEventArgs e) { PastePage(); };
 
-            Button ClearPage = new Button(this);
-            ClearPage.SetPosition(615, 43);
-            ClearPage.SetSize(67, 59);
-            ClearPage.SetText("Clear\nPage");
+            Button ClearPageButton = new Button(this);
+            ClearPageButton.SetPosition(615, 43);
+            ClearPageButton.SetSize(67, 59);
+            ClearPageButton.SetText("Clear\nPage");
+            ClearPageButton.OnClicked += delegate (BaseEventArgs e) { ClearPage(); };
 
-            Button DeletePage = new Button(this);
-            DeletePage.SetPosition(682, 43);
-            DeletePage.SetSize(67, 59);
-            DeletePage.SetText("Delete\nPage");
+            DeletePageButton = new Button(this);
+            DeletePageButton.SetPosition(682, 43);
+            DeletePageButton.SetSize(67, 59);
+            DeletePageButton.SetText("Delete\nPage");
+            if (EventData.Pages.Count == 1) DeletePageButton.SetClickable(false);
+            DeletePageButton.OnClicked += delegate (BaseEventArgs e) { DeletePage(); };
 
             TabController = new TabView(this);
             TabController.SetXOffset(8);
             TabController.SetPosition(1, 106);
-            TabController.SetSize(750, 473);
+            TabController.SetSize(750, 544);
             TabController.SetHeaderColor(59, 91, 124);
             for (int i = 0; i < EventData.Pages.Count; i++)
             {
                 TabContainer tc = TabController.CreateTab(string.IsNullOrWhiteSpace(EventData.Pages[i].Name) ? "Untitled" : EventData.Pages[i].Name);
                 EventPageContainer epc = new EventPageContainer(this, EventData, EventData.Pages[i], tc);
-                epc.SetSize(750, 444);
+                epc.SetSize(750, 515);
                 EventPageContainers.Add(epc);
             }
 
             CreateButton("Apply", Apply);
             CreateButton("Cancel", Cancel);
             CreateButton("OK", OK);
+            ApplyButton.SetClickable(false);
         }
 
         public void MarkChanges()
         {
             if (Buttons.Count > 0) ApplyButton.SetClickable(true);
+        }
+
+        public void UpdateNames()
+        {
+            TabController.SetHeader(78, TabController.HeaderHeight, TabController.TextY);
+            for (int i = 0; i < EventData.Pages.Count; i++)
+            {
+                TabController.SetName(i, EventData.Pages[i].Name);
+            }
+        }
+
+        public void NewPage()
+        {
+            TabContainer tc = TabController.CreateTab("Untitled");
+            EventPage PageData = new EventPage();
+            EventData.Pages.Add(PageData);
+            EventPageContainer epc = new EventPageContainer(this, EventData, PageData, tc);
+            epc.SetSize(750, 515);
+            EventPageContainers.Add(epc);
+            TabController.SelectTab(TabController.Tabs.Count - 1);
+            TabController.Redraw();
+            DeletePageButton.SetClickable(true);
+        }
+
+        public void CopyPage()
+        {
+
+        }
+
+        public void PastePage()
+        {
+
+        }
+
+        public void ClearPage()
+        {
+            EventPageContainer ct = EventPageContainers.Find(epc => epc.PageData == EventData.Pages[TabController.SelectedIndex]);
+            ct.Dispose();
+            EventPageContainers.Remove(ct);
+            EventData.Pages[TabController.SelectedIndex] = new EventPage();
+            EventPageContainer newct = new EventPageContainer(this, EventData, EventData.Pages[TabController.SelectedIndex], TabController.Tabs[TabController.SelectedIndex]);
+            newct.SetSize(750, 515);
+            EventPageContainers.Insert(TabController.SelectedIndex, newct);
+            UpdateNames();
+        }
+
+        public void DeletePage()
+        {
+            if (EventData.Pages.Count == 1) return;
+            EventPageContainer ct = EventPageContainers.Find(epc => epc.PageData == EventData.Pages[TabController.SelectedIndex]);
+            ct.Dispose();
+            EventPageContainers.Remove(ct);
+            EventData.Pages.RemoveAt(TabController.SelectedIndex);
+            TabController.DestroyTab(TabController.SelectedIndex);
+            if (TabController.SelectedIndex >= EventPageContainers.Count) TabController.SelectTab(TabController.SelectedIndex - 1);
+            else TabController.SelectTab(TabController.SelectedIndex);
+            UpdateNames();
+            if (EventData.Pages.Count == 1) DeletePageButton.SetClickable(false);
         }
 
         public void Apply(BaseEventArgs e)
@@ -133,6 +204,7 @@ namespace MKEditor.Widgets
 
         public void Cancel(BaseEventArgs e)
         {
+            EventData = OldEvent;
             Close();
         }
 
@@ -174,6 +246,7 @@ namespace MKEditor.Widgets
         public EventPage PageData;
 
         public GraphicWidget GraphicWidget;
+        public CheckBox PassableBox;
 
         public EventPageContainer(EditEvent eew, Event EventData, EventPage PageData, IContainer Parent) : base(Parent)
         {
@@ -189,52 +262,59 @@ namespace MKEditor.Widgets
             CommandsLabel.SetText("Commands");
             ListBox CommandBox = new ListBox(this);
             CommandBox.SetPosition(305, 22);
-            CommandBox.SetSize(438, 422);
+            CommandBox.SetSize(438, 493);
 
             Label PropsLabel = new Label(this);
             PropsLabel.SetPosition(8, 4);
             PropsLabel.SetFont(BoldFont);
             PropsLabel.SetText("Page Properties");
-            EventGroupBox NameGroupBox = new EventGroupBox(this);
-            NameGroupBox.SetPosition(7, 22);
-            NameGroupBox.SetSize(291, 41);
-            Label NameLabel = new Label(NameGroupBox);
+            EventGroupBox PropBox = new EventGroupBox(this);
+            PropBox.SetPosition(7, 22);
+            PropBox.SetSize(291, 157);
+            Label NameLabel = new Label(PropBox);
             NameLabel.SetFont(f);
             NameLabel.SetText("Page Name:");
             NameLabel.SetPosition(7, 12);
-            TextBox NameBox = new TextBox(NameGroupBox);
+            TextBox NameBox = new TextBox(PropBox);
             NameBox.SetPosition(77, 7);
             NameBox.SetSize(208, 27);
             NameBox.SetInitialText(string.IsNullOrWhiteSpace(PageData.Name) ? "Untitled" : PageData.Name);
             NameBox.OnTextChanged += delegate (BaseEventArgs e)
             {
                 PageData.Name = NameBox.Text;
+                EditEventWindow.UpdateNames();
                 MarkChanges();
             };
-
-            Label ConditionsLabel = new Label(this);
-            ConditionsLabel.SetPosition(8, 67);
-            ConditionsLabel.SetFont(BoldFont);
-            ConditionsLabel.SetText("Conditions");
-            ListBox ConditionsBox = new ListBox(this);
-            ConditionsBox.SetPosition(7, 85);
-            ConditionsBox.SetSize(163, 70);
+            Label ConditionsLabel = new Label(PropBox);
+            ConditionsLabel.SetPosition(8, 40);
+            ConditionsLabel.SetFont(f);
+            ConditionsLabel.SetText("Conditions:");
+            ListBox ConditionsBox = new ListBox(PropBox);
+            ConditionsBox.SetPosition(6, 61);
+            ConditionsBox.SetSize(279, 65);
+            Button EditConditionsButton = new Button(PropBox);
+            EditConditionsButton.SetText("Edit");
+            EditConditionsButton.SetPosition(230, 126);
+            EditConditionsButton.SetSize(59, 29);
+            EditConditionsButton.OnClicked += delegate (BaseEventArgs e) { new MessageBox("Error", "WIP", IconType.Error); };
 
             Label TriggerLabel = new Label(this);
-            TriggerLabel.SetPosition(177, 67);
+            TriggerLabel.SetPosition(11, 366);
             TriggerLabel.SetFont(BoldFont);
             TriggerLabel.SetText("Trigger");
             EventGroupBox TriggerGroupBox = new EventGroupBox(this);
-            TriggerGroupBox.SetPosition(176, 85);
-            TriggerGroupBox.SetSize(122, 70);
+            TriggerGroupBox.SetPosition(7, 384);
+            TriggerGroupBox.SetSize(121, 71);
             Label TriggerParamLabel = new Label(TriggerGroupBox);
-            TriggerParamLabel.SetPosition(5, 41);
+            TriggerParamLabel.SetPosition(11, 41);
             TriggerParamLabel.SetFont(f);
             TriggerParamLabel.SetText("Sight:");
             NumericBox ParamBox = new NumericBox(TriggerGroupBox);
             ParamBox.SetPosition(62, 36);
             ParamBox.SetSize(55, 27);
-            ParamBox.SetValue(PageData.TriggerParam is int ? (int) PageData.TriggerParam : 0);
+            ParamBox.MinValue = 0;
+            ParamBox.MaxValue = 999;
+            if (PageData.TriggerParam is int || PageData.TriggerParam is long) ParamBox.SetValue(Convert.ToInt32(PageData.TriggerParam));
             ParamBox.OnValueChanged += delegate (BaseEventArgs e)
             {
                 if (PageData.TriggerMode == TriggerMode.PlayerTouch || PageData.TriggerMode == TriggerMode.EventTouch)
@@ -252,7 +332,7 @@ namespace MKEditor.Widgets
                 new ListItem("Autorun"),
                 new ListItem("Parallel Process")
             });
-            TriggerTypeBox.SetSelectedIndex((int)PageData.TriggerMode);
+            TriggerTypeBox.SetSelectedIndex((int) PageData.TriggerMode);
             TriggerTypeBox.OnSelectionChanged += delegate (BaseEventArgs e)
             {
                 PageData.TriggerMode = (TriggerMode) TriggerTypeBox.SelectedIndex;
@@ -272,6 +352,7 @@ namespace MKEditor.Widgets
                         ParamBox.SetValue(0);
                     }
                 }
+                MarkChanges();
             };
             TriggerTypeBox.OnSelectionChanged.Invoke(new BaseEventArgs());
             TriggerTypeBox.SetPosition(5, 7);
@@ -279,19 +360,19 @@ namespace MKEditor.Widgets
 
             Label GraphicLabel = new Label(this);
             GraphicLabel.SetFont(BoldFont);
-            GraphicLabel.SetPosition(8, 159);
+            GraphicLabel.SetPosition(10, 183);
             GraphicLabel.SetText("Graphic");
             GraphicWidget = new GraphicWidget(this);
-            GraphicWidget.SetPosition(7, 177);
+            GraphicWidget.SetPosition(7, 201);
             GraphicWidget.SetEvent(EventData, PageData);
 
             Label AutoMoveLabel = new Label(this);
             AutoMoveLabel.SetFont(BoldFont);
-            AutoMoveLabel.SetPosition(138, 159);
+            AutoMoveLabel.SetPosition(140, 183);
             AutoMoveLabel.SetText("Auto-Moveroute");
             EventGroupBox AutoMoveGroupBox = new EventGroupBox(this);
-            AutoMoveGroupBox.SetPosition(134, 177);
-            AutoMoveGroupBox.SetSize(164, 126);
+            AutoMoveGroupBox.SetPosition(136, 201);
+            AutoMoveGroupBox.SetSize(162, 93);
             Label AutoMoveTypeLabel = new Label(AutoMoveGroupBox);
             AutoMoveTypeLabel.SetFont(f);
             AutoMoveTypeLabel.SetPosition(15, 10);
@@ -299,66 +380,137 @@ namespace MKEditor.Widgets
             DropdownBox AutoMoveTypeBox = new DropdownBox(AutoMoveGroupBox);
             AutoMoveTypeBox.SetPosition(49, 7);
             AutoMoveTypeBox.SetSize(110, 25);
+            AutoMoveTypeBox.SetItems(new List<ListItem>()
+            {
+                new ListItem("WIP")
+            });
+            AutoMoveTypeBox.SetSelectedIndex(0);
             Button EditAutoMoveButton = new Button(AutoMoveGroupBox);
             EditAutoMoveButton.SetPosition(73, 32);
             EditAutoMoveButton.SetSize(90, 31);
             EditAutoMoveButton.SetText("Edit Route");
             EditAutoMoveButton.SetFont(BoldFont);
-            Label AutoMoveSpeedLabel = new Label(AutoMoveGroupBox);
-            AutoMoveSpeedLabel.SetPosition(6, 66);
-            AutoMoveSpeedLabel.SetFont(f);
-            AutoMoveSpeedLabel.SetText("Speed:");
-            DropdownBox AutoMoveSpeedBox = new DropdownBox(AutoMoveGroupBox);
-            AutoMoveSpeedBox.SetPosition(49, 63);
-            AutoMoveSpeedBox.SetSize(110, 25);
-            Label AutoMoveStepDelayLabel = new Label(AutoMoveGroupBox);
-            AutoMoveStepDelayLabel.SetPosition(24, 98);
-            AutoMoveStepDelayLabel.SetFont(f);
-            AutoMoveStepDelayLabel.SetText("Step Delay:");
+            EditAutoMoveButton.OnClicked += delegate (BaseEventArgs e)
+            {
+                new MessageBox("Error", "WIP", IconType.Error);
+            };
+            Label AutoMoveMoveDelayLabel = new Label(AutoMoveGroupBox);
+            AutoMoveMoveDelayLabel.SetPosition(24, 68);
+            AutoMoveMoveDelayLabel.SetFont(f);
+            AutoMoveMoveDelayLabel.SetText("Move Delay:");
             NumericBox AutoMoveStepDelayBox = new NumericBox(AutoMoveGroupBox);
-            AutoMoveStepDelayBox.SetPosition(93, 92);
+            AutoMoveStepDelayBox.SetPosition(93, 62);
             AutoMoveStepDelayBox.SetSize(66, 27);
+            AutoMoveStepDelayBox.MinValue = 0;
+            AutoMoveStepDelayBox.MaxValue = 999;
 
             Label SettingsLabel = new Label(this);
             SettingsLabel.SetFont(BoldFont);
-            SettingsLabel.SetPosition(8, 307);
+            SettingsLabel.SetPosition(140, 298);
             SettingsLabel.SetText("Event Settings");
             EventGroupBox SettingsGroupBox = new EventGroupBox(this);
-            SettingsGroupBox.SetPosition(7, 325);
-            SettingsGroupBox.SetSize(291, 119);
+            SettingsGroupBox.SetPosition(136, 316);
+            SettingsGroupBox.SetSize(162, 199);
+            Label MoveSpeedLabel = new Label(SettingsGroupBox);
+            MoveSpeedLabel.SetFont(f);
+            MoveSpeedLabel.SetText("Move Speed:");
+            MoveSpeedLabel.SetPosition(6, 7);
+            DropdownBox MoveSpeedBox = new DropdownBox(SettingsGroupBox);
+            MoveSpeedBox.SetPosition(83, 3);
+            MoveSpeedBox.SetSize(76, 25);
+            MoveSpeedBox.SetItems(new List<ListItem>()
+            {
+                new ListItem("Walking"),
+                new ListItem("Running"),
+                new ListItem("Cycling")
+            });
+            MoveSpeedBox.SetSelectedIndex(PageData.Settings.MoveSpeed == 0.25f ? 0 : PageData.Settings.MoveSpeed == 0.125f ? 1 : 2);
+            MoveSpeedBox.OnSelectionChanged += delegate (BaseEventArgs e)
+            {
+                PageData.Settings.MoveSpeed = new float[] { 0.25f, 0.125f, 0.1f }[MoveSpeedBox.SelectedIndex];
+                MarkChanges();
+            };
+            Label IdleSpeedLabel = new Label(SettingsGroupBox);
+            IdleSpeedLabel.SetFont(f);
+            IdleSpeedLabel.SetText("Idle Speed:");
+            IdleSpeedLabel.SetPosition(6, 37);
+            DropdownBox IdleSpeedBox = new DropdownBox(SettingsGroupBox);
+            IdleSpeedBox.SetPosition(83, 33);
+            IdleSpeedBox.SetSize(76, 25);
+            IdleSpeedBox.SetItems(new List<ListItem>()
+            {
+                new ListItem("Walking"),
+                new ListItem("Running"),
+                new ListItem("Cycling")
+            });
+            IdleSpeedBox.SetSelectedIndex(PageData.Settings.IdleSpeed == 0.25f ? 0 : PageData.Settings.IdleSpeed == 0.125f ? 1 : 2);
+            IdleSpeedBox.OnSelectionChanged += delegate (BaseEventArgs e)
+            {
+                PageData.Settings.IdleSpeed = new float[] { 0.25f, 0.125f, 0.1f }[IdleSpeedBox.SelectedIndex];
+                MarkChanges();
+            };
             CheckBox MoveAnimBox = new CheckBox(SettingsGroupBox);
-            MoveAnimBox.SetPosition(5, 7);
+            MoveAnimBox.SetPosition(5, 63);
             MoveAnimBox.SetText("Move Animation");
             MoveAnimBox.SetFont(f);
-            MoveAnimBox.SetChecked(true);
+            MoveAnimBox.SetChecked(PageData.Settings.MoveAnimation);
+            MoveAnimBox.OnCheckChanged += delegate (BaseEventArgs e)
+            {
+                PageData.Settings.MoveAnimation = MoveAnimBox.Checked;
+                MarkChanges();
+            };
             CheckBox IdleAnimBox = new CheckBox(SettingsGroupBox);
-            IdleAnimBox.SetPosition(5, 27);
+            IdleAnimBox.SetPosition(5, 83);
             IdleAnimBox.SetText("Idle Animation");
             IdleAnimBox.SetFont(f);
             IdleAnimBox.SetChecked(PageData.Settings.IdleAnimation);
-            CheckBox PassableBox = new CheckBox(SettingsGroupBox);
-            PassableBox.SetPosition(5, 47);
+            IdleAnimBox.OnCheckChanged += delegate (BaseEventArgs e)
+            {
+                PageData.Settings.IdleAnimation = IdleAnimBox.Checked;
+                MarkChanges();
+            };
+            PassableBox = new CheckBox(SettingsGroupBox);
+            PassableBox.SetPosition(5, 103);
             PassableBox.SetText("Passable");
             PassableBox.SetFont(f);
             PassableBox.SetChecked(PageData.Settings.Passable);
-            CheckBox DirectionLockBox = new CheckBox(SettingsGroupBox);
-            DirectionLockBox.SetPosition(5, 67);
-            DirectionLockBox.SetText("Direction Lock");
-            DirectionLockBox.SetFont(f);
-            DirectionLockBox.SetChecked(PageData.Settings.DirectionLock);
-            Label PriorityLabel = new Label(SettingsGroupBox);
-            PriorityLabel.SetFont(f);
-            PriorityLabel.SetPosition(4, 91);
-            PriorityLabel.SetText("Priority:");
-            DropdownBox PriorityBox = new DropdownBox(SettingsGroupBox);
-            PriorityBox.SetPosition(54, 87);
-            PriorityBox.SetSize(133, 25);
-
+            PassableBox.OnCheckChanged += delegate (BaseEventArgs e)
+            {
+                PageData.Settings.Passable = PassableBox.Checked;
+                MarkChanges();
+            };
             CheckBox SavePositionBox = new CheckBox(SettingsGroupBox);
-            SavePositionBox.SetPosition(136, 7);
+            SavePositionBox.SetPosition(5, 123);
             SavePositionBox.SetText("Save Position");
             SavePositionBox.SetFont(f);
             SavePositionBox.SetChecked(PageData.Settings.SavePosition);
+            SavePositionBox.OnCheckChanged += delegate (BaseEventArgs e)
+            {
+                PageData.Settings.SavePosition = SavePositionBox.Checked;
+                MarkChanges();
+            };
+            CheckBox DirectionLockBox = new CheckBox(SettingsGroupBox);
+            DirectionLockBox.SetPosition(5, 143);
+            DirectionLockBox.SetText("Direction Lock");
+            DirectionLockBox.SetFont(f);
+            DirectionLockBox.SetChecked(PageData.Settings.DirectionLock);
+            DirectionLockBox.OnCheckChanged += delegate (BaseEventArgs e)
+            {
+                PageData.Settings.DirectionLock = DirectionLockBox.Checked;
+                MarkChanges();
+            };
+            Label PriorityLabel = new Label(SettingsGroupBox);
+            PriorityLabel.SetFont(f);
+            PriorityLabel.SetPosition(6, 168);
+            PriorityLabel.SetText("Priority:");
+            DropdownBox PriorityBox = new DropdownBox(SettingsGroupBox);
+            PriorityBox.SetPosition(54, 164);
+            PriorityBox.SetSize(105, 25);
+            PriorityBox.SetItems(new List<ListItem>()
+            {
+                new ListItem("WIP")
+            });
+            PriorityBox.SetSelectedIndex(0);
         }
 
         public void MarkChanges()
@@ -377,12 +529,13 @@ namespace MKEditor.Widgets
 
         public GraphicWidget(IContainer Parent) : base(Parent)
         {
-            SetSize(121, 126);
+            SetSize(121, 161);
             EventGroupBox egb = new EventGroupBox(this);
             egb.SetSize(Size);
             GraphicGrid = new GraphicGrid(egb);
             GraphicGrid.SetPosition(2, 2);
             GraphicGrid.SetSize(Size.Width - 4, Size.Height - 4);
+            GraphicGrid.SetOffset(22, 30);
 
             Graphic = new PictureBox(egb);
             Graphic.SetPosition(2, 2);
@@ -412,24 +565,41 @@ namespace MKEditor.Widgets
 
         public void ConfigureGrid()
         {
-            GraphicGrid.SetOffset(EventData.Width % 2 == 0 ? 6 : 22, 15);
+            GraphicGrid.SetOffset(EventData.Width % 2 == 0 ? 6 : 22, 30);
         }
 
         public override void MouseDown(MouseEventArgs e)
         {
             base.MouseDown(e);
-            if (WidgetIM.Hovering)
+            if (WidgetIM.Hovering && e.LeftButton != e.OldLeftButton)
             {
                 ChooseGraphic cg = new ChooseGraphic(PageData.Graphic);
                 cg.OnClosed += delegate (BaseEventArgs e)
                 {
+                    if (PageData.Graphic.Type != cg.GraphicData.Type ||
+                        PageData.Graphic.Param != cg.GraphicData.Param ||
+                        PageData.Graphic.NumDirections != cg.GraphicData.NumDirections ||
+                        PageData.Graphic.NumFrames != cg.GraphicData.NumFrames ||
+                        PageData.Graphic.Direction != cg.GraphicData.Direction)
+                        MarkChanges();
                     if (PageData.Graphic != cg.GraphicData)
                     {
+                        if (PageData.Graphic.Type != cg.GraphicData.Type ||
+                            PageData.Graphic.Param != cg.GraphicData.Param)
+                        {
+                            PageData.Settings.Passable = false;
+                            ((EventPageContainer) Parent).PassableBox.SetChecked(false);
+                        }
                         PageData.Graphic = cg.GraphicData;
                         SetEvent(this.EventData, this.PageData);
                     }
                 };
             }
+        }
+
+        public void MarkChanges()
+        {
+            ((EventPageContainer) Parent).MarkChanges();
         }
     }
 
