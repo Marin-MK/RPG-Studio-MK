@@ -290,8 +290,7 @@ namespace MKEditor.Widgets
                     if (i != 0) Sprites["bg"].Bitmap.SetPixel(153, y, Color.ALPHA);
                     Sprites["bg"].Bitmap.SetPixel(153, y + 38, Color.ALPHA);
                 }
-                Bitmap icon = new Bitmap(Tabs[i][1]);
-                Sprites["bg"].Bitmap.Build(33 - icon.Width / 2, y + 20 - icon.Height / 2, icon);
+                using (Bitmap icon = new Bitmap(Tabs[i][1])) Sprites["bg"].Bitmap.Build(33 - icon.Width / 2, y + 20 - icon.Height / 2, icon);
                 Sprites["text"].Bitmap.DrawText(Tabs[i][0], 66, y + 10, Color.WHITE);
                 y += 41;
             }

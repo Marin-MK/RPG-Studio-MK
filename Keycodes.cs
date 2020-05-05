@@ -80,6 +80,11 @@ namespace MKEditor
         CTRL = SDL_Keycode.SDLK_LCTRL | SDL_Keycode.SDLK_RCTRL,
         SHIFT = SDL_Keycode.SDLK_LSHIFT | SDL_Keycode.SDLK_RSHIFT,
         ALT = SDL_Keycode.SDLK_LALT | SDL_Keycode.SDLK_RALT,
+
+        DOWN = SDL_Keycode.SDLK_DOWN,
+        LEFT = SDL_Keycode.SDLK_LEFT,
+        RIGHT = SDL_Keycode.SDLK_RIGHT,
+        UP = SDL_Keycode.SDLK_UP
     }
 
     public class Key

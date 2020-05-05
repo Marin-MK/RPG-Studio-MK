@@ -65,6 +65,7 @@ namespace MKEditor.Widgets
                 label.SetText("This map does not have any events.");
                 label.SetMargin(8, 8);
             }
+            StackPanel.UpdateLayout();
         }
 
         public void UpdateEvent(Event e)
@@ -81,15 +82,16 @@ namespace MKEditor.Widgets
 
         public void SelectEvent(Event e)
         {
-            foreach (EventListEntryWidget w in StackPanel.Widgets)
+            foreach (Widget w in StackPanel.Widgets)
             {
+                if (!(w is EventListEntryWidget)) continue;
                 if (e == null)
                 {
-                    w.SetSelected(false);
+                    ((EventListEntryWidget) w).SetSelected(false);
                 }
-                else if (w.EventData.ID == e.ID)
+                else if (((EventListEntryWidget) w).EventData.ID == e.ID)
                 {
-                    w.SetSelected(true);
+                    ((EventListEntryWidget) w).SetSelected(true);
                 }
             }
         }

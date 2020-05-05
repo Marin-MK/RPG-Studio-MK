@@ -39,9 +39,12 @@ namespace MKEditor.Widgets
                     if (System.IO.File.Exists(Data.ProjectPath + "/" + gfx.Param.ToString() + ".png"))
                     {
                         Sprites["graphic"].Bitmap = new Bitmap(Data.ProjectPath + "/" + gfx.Param.ToString());
-                        Sprites["graphic"].SrcRect.Y = Sprites["graphic"].Bitmap.Height / 4 * ((gfx.Direction / 2) - 1);
-                        Sprites["graphic"].SrcRect.Width = Sprites["graphic"].Bitmap.Width / 4;
-                        Sprites["graphic"].SrcRect.Height = Sprites["graphic"].Bitmap.Height / 4;
+                        int dir = 0;
+                        if (gfx.NumDirections == 4) dir = gfx.Direction / 2 - 1;
+                        if (gfx.NumDirections == 8) dir = gfx.Direction - 1;
+                        Sprites["graphic"].SrcRect.Width = Sprites["graphic"].Bitmap.Width / gfx.NumFrames;
+                        Sprites["graphic"].SrcRect.Height = Sprites["graphic"].Bitmap.Height / gfx.NumDirections;
+                        Sprites["graphic"].SrcRect.Y = Sprites["graphic"].SrcRect.Height * dir;
                     }
                 }
                 Sprites["graphic"].X = 4;

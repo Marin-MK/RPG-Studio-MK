@@ -592,9 +592,9 @@ namespace MKEditor
             if (ParentID != 0) AddIDToMap(ProjectSettings.MapOrder, ParentID, Map.ID);
             else ProjectSettings.MapOrder.Add(Map.ID);
             TreeNode node = new TreeNode() { Name = Map.DevName, Object = Map.ID };
-            if (MainWindow.MapWidget != null)
+            if (MainWindow.MapWidget != null || MainWindow.EventingWidget != null)
             {
-                TreeView mapview = MainWindow.MapWidget.MapSelectPanel.mapview;
+                TreeView mapview = MainWindow.MapWidget != null ? MainWindow.MapWidget.MapSelectPanel.mapview : MainWindow.EventingWidget.MapSelectPanel.mapview;
                 if (mapview.HoveringNode != null)
                 {
                     mapview.HoveringNode.Nodes.Add(node);
@@ -707,6 +707,11 @@ namespace MKEditor
         /// </summary>
         public static void NewProject()
         {
+            //WidgetCreator wc = new WidgetCreator();
+            //StreamReader sr = new StreamReader(File.OpenRead("D:/Desktop/window.json"));
+            //string str = sr.ReadToEnd();
+            //sr.Close();
+            //wc.LoadWindow(str);
             new MessageBox("Oops!", "This feature has not been implemented yet.\nTo get started, please use the \"Open Project\" feature and choose the MK Starter Kit.", IconType.Error);
         }
 

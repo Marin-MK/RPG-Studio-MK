@@ -12,7 +12,9 @@ namespace MKEditor.Widgets
         public bool Dragging = false;
 
         public CursorWidget Cursor;
-        
+
+        int SelectedEventID = -1;
+
         int DoubleClickEventID = -1;
         int DoubleClickX = -1;
         int DoubleClickY = -1;
@@ -26,12 +28,34 @@ namespace MKEditor.Widgets
             Cursor = new CursorWidget(MainContainer);
             Cursor.ConsiderInAutoScrollCalculation = false;
             Cursor.SetZIndex(6);
+
+            RegisterShortcuts(new List<Shortcut>()
+            {
+                new Shortcut(this, new Key(Keycode.RETURN), delegate (BaseEventArgs e) { CreateOrOpenEvent(SelectedEventID); }, false),
+                new Shortcut(this, new Key(Keycode.DELETE), delegate (BaseEventArgs e) { DeleteSelectedEvent(); }, false),
+                new Shortcut(this, new Key(Keycode.DOWN), delegate (BaseEventArgs e) { MoveCursor(0, 1); }, false),
+                new Shortcut(this, new Key(Keycode.LEFT), delegate (BaseEventArgs e) { MoveCursor(-1, 0); }, false),
+                new Shortcut(this, new Key(Keycode.RIGHT), delegate (BaseEventArgs e) { MoveCursor(1, 0); }, false),
+                new Shortcut(this, new Key(Keycode.UP), delegate (BaseEventArgs e) { MoveCursor(0, -1); }, false)
+            });
+        }
+
+        public override void SetMap(Map Map)
+        {
+            base.SetMap(Map);
+            MapTileX = 0;
+            MapTileY = 0;
+            MapTileWidth = 1;
+            MapTileHeight = 1;
+            SelectHoveredEvent();
+            UpdateCursorPosition();
         }
 
         public override void PositionMap()
         {
             base.PositionMap();
             ((EventMapImageWidget) MapWidget).PositionEvents();
+            UpdateCursorPosition();
         }
 
         public void UpdateCursorPosition()
@@ -121,6 +145,7 @@ namespace MKEditor.Widgets
                     MapTileHeight = ev.Height;
                     DraggingEventID = ev.ID;
                     DoubleClickEventID = ev.ID;
+                    SelectedEventID = ev.ID;
                     Editor.MainWindow.EventingWidget.EventListPanel.SelectEvent(ev);
                     break;
                 }
@@ -210,10 +235,29 @@ namespace MKEditor.Widgets
                 if (Map.Events[EventID] != ee.EventData) // Applied some sort of changes
                 {
                     Map.Events[EventID] = ee.EventData;
-                    ((EventMapImageWidget) MapWidget).UpdateEvent(ee.EventData);
                     MapTileWidth = ee.EventData.Width;
                     MapTileHeight = ee.EventData.Height;
                     UpdateCursorPosition();
+                    Editor.MainWindow.EventingWidget.EventListPanel.SetMap(Map);
+                    Editor.MainWindow.EventingWidget.EventListPanel.SelectEvent(Map.Events[EventID]);
+                }
+                else // Did not save
+                {
+                    if (NewEvent)
+                    {
+                        Event e = Map.Events[EventID];
+                        ((EventMapImageWidget) MapWidget).DeleteEvent(e);
+                        Map.Events.Remove(EventID);
+                        SelectedEventID = -1;
+                        DraggingEventID = -1;
+                        DraggingAnchorX = -1;
+                        DraggingAnchorY = -1;
+                        DoubleClickEventID = -1;
+                        DoubleClickX = -1;
+                        DoubleClickY = -1;
+                        UpdateCursorPosition();
+                        Editor.MainWindow.EventingWidget.EventListPanel.SetMap(Map);
+                    }
                 }
             };
         }
@@ -227,8 +271,6 @@ namespace MKEditor.Widgets
             Map.Events[e.ID] = e;
             ((EventMapImageWidget) MapWidget).DrawEvent(e);
             ((EventMapImageWidget) MapWidget).PositionEvents(e);
-            Editor.MainWindow.EventingWidget.EventListPanel.SetMap(Map);
-            Editor.MainWindow.EventingWidget.EventListPanel.SelectEvent(e);
             DoubleClickX = X;
             DoubleClickY = Y;
             DoubleClickEventID = e.ID;
@@ -242,6 +284,46 @@ namespace MKEditor.Widgets
             MapTileWidth = e.Width;
             MapTileHeight = e.Height;
             UpdateCursorPosition();
+        }
+
+        public void DeleteSelectedEvent()
+        {
+            if (SelectedEventID == -1) return;
+            Event e = Map.Events[SelectedEventID];
+            Map.Events.Remove(SelectedEventID);
+            SelectedEventID = -1;
+            DoubleClickEventID = -1;
+            DoubleClickX = -1;
+            DoubleClickY = -1;
+            MapTileWidth = 1;
+            MapTileHeight = 1;
+            ((EventMapImageWidget) MapWidget).DeleteEvent(e);
+            Editor.MainWindow.EventingWidget.EventListPanel.SetMap(Map);
+        }
+
+        public void MoveCursor(int X, int Y)
+        {
+            if (MapTileX + X < 0 || MapTileX + MapTileWidth + X > Map.Width || MapTileY + Y < 0 || MapTileY + MapTileHeight + Y > Map.Height) return;
+            MapTileX += X;
+            MapTileY += Y;
+            SelectedEventID = -1;
+            SelectHoveredEvent();
+            DoubleClickEventID = -1;
+            DraggingEventID = -1;
+            UpdateCursorPosition();
+            Editor.MainWindow.EventingWidget.EventListPanel.SelectEvent(SelectedEventID == -1 ? null : Map.Events[SelectedEventID]);
+        }
+
+        public void CreateOrOpenEvent(int EventID)
+        {
+            if (EventID == -1)
+            {
+                NewEvent(MapTileX, MapTileY);
+            }
+            else
+            {
+                OpenEvent(SelectedEventID);
+            }
         }
     }
 
@@ -273,7 +355,6 @@ namespace MKEditor.Widgets
                     break;
                 }
             }
-            Editor.MainWindow.EventingWidget.EventListPanel.UpdateEvent(e);
         }
 
         public void DrawEvent(Event e)
@@ -294,16 +375,29 @@ namespace MKEditor.Widgets
             PositionEvents();
         }
 
-        public void PositionEvents(Event ev = null)
+        public void PositionEvents(Event e = null)
         {
-            foreach (EventWidget e in EventWidgets)
+            foreach (EventWidget ew in EventWidgets)
             {
-                if (ev != null && e.EventData.ID != ev.ID) continue;
-                e.SetSize(this.Size);
-                e.SetZoomFactor(this.ZoomFactor);
-                e.SetBoxPosition((int) Math.Round(e.EventData.X * 32 * ZoomFactor), (int) Math.Round(e.EventData.Y * 32 * ZoomFactor));
-                e.SetBoxSize((int) Math.Round(e.EventData.Width * 32d), (int) Math.Round(e.EventData.Height * 32d));
-                e.Reposition();
+                if (e != null && ew.EventData.ID != e.ID) continue;
+                ew.SetSize(this.Size);
+                ew.SetZoomFactor(this.ZoomFactor);
+                ew.SetBoxPosition((int) Math.Round(ew.EventData.X * 32 * ZoomFactor), (int) Math.Round(ew.EventData.Y * 32 * ZoomFactor));
+                ew.SetBoxSize((int) Math.Round(ew.EventData.Width * 32d), (int) Math.Round(ew.EventData.Height * 32d));
+                ew.Reposition();
+            }
+        }
+
+        public void DeleteEvent(Event e)
+        {
+            foreach (EventWidget ew in EventWidgets)
+            {
+                if (ew.EventData.ID == e.ID)
+                {
+                    ew.Dispose();
+                    EventWidgets.Remove(ew);
+                    break;
+                }
             }
         }
     }

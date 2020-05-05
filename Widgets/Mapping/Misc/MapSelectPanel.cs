@@ -203,7 +203,8 @@ namespace MKEditor.Widgets
                     Data.Maps[map.ID] = mpw.Map;
                     mapview.SelectedNode.Name = mpw.Map.DevName;
                     Editor.UnsavedChanges = mpw.UnsavedChanges;
-                    Editor.MainWindow.MapWidget.SetMap(mpw.Map);
+                    if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetMap(mpw.Map);
+                    if (Editor.MainWindow.EventingWidget != null) Editor.MainWindow.EventingWidget.SetMap(mpw.Map);
                 }
             };
         }

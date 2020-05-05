@@ -93,10 +93,10 @@ namespace MKEditor.Game
             if (Program.Headless) return;
             if (this.TilesetBitmap == null || Redraw)
             {
-                if (this.TilesetBitmap != null) this.TilesetBitmap.Dispose();
-                if (this.TilesetListBitmap != null) this.TilesetListBitmap.Dispose();
+                this.TilesetBitmap?.Dispose();
+                this.TilesetListBitmap?.Dispose();
                 
-                Bitmap bmp = new Bitmap($"{Game.Data.ProjectPath}\\gfx\\tilesets\\{this.GraphicName}.png");
+                Bitmap bmp = new Bitmap($"{Data.ProjectPath}/gfx/tilesets/{this.GraphicName}.png");
                 this.TilesetBitmap = bmp;
                 int tileycount = (int) Math.Floor(bmp.Height / 32d);
 

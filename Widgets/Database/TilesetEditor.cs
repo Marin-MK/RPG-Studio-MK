@@ -11,7 +11,6 @@ namespace MKEditor.Widgets
         SubmodeView Submodes;
         TabContainer PassageContainer;
         TabContainer FourDirContainer;
-        TabContainer PriorityContainer;
 
         Container SharedContainer;
 
@@ -54,9 +53,9 @@ namespace MKEditor.Widgets
             VignetteFade FourDirFade = new VignetteFade(FourDirContainer);
             FourDirContainer.OnSizeChanged += delegate (BaseEventArgs e) { FourDirFade.SetSize(FourDirContainer.Size); };
 
-            PriorityContainer = Submodes.CreateTab("Priority");
-            VignetteFade PriorityFade = new VignetteFade(PriorityContainer);
-            PriorityContainer.OnSizeChanged += delegate (BaseEventArgs e) { PriorityFade.SetSize(PriorityContainer.Size); };
+            //PriorityContainer = Submodes.CreateTab("Priority");
+            //VignetteFade PriorityFade = new VignetteFade(PriorityContainer);
+            //PriorityContainer.OnSizeChanged += delegate (BaseEventArgs e) { PriorityFade.SetSize(PriorityContainer.Size); };
 
             //Submodes.CreateTab("Terrain Tag");
             //Submodes.CreateTab("Bush Flag");
@@ -74,7 +73,7 @@ namespace MKEditor.Widgets
 
             PassageContainer.SetBackgroundColor(28, 50, 73);
             FourDirContainer.SetBackgroundColor(28, 50, 73);
-            PriorityContainer.SetBackgroundColor(28, 50, 73);
+            //PriorityContainer.SetBackgroundColor(28, 50, 73);
 
             SharedContainer = new Container(this);
             SharedContainer.SetPosition(22, 41);
@@ -111,15 +110,15 @@ namespace MKEditor.Widgets
             {
                 OpenFileDialog of = new OpenFileDialog();
                 of.SetFilter(new FileFilter("PNG Image", "png"));
-                of.SetInitialDirectory(Game.Data.ProjectPath + "\\gfx\\tilesets");
+                of.SetInitialDirectory(Game.Data.ProjectPath + "/gfx/tilesets");
                 of.SetTitle("Pick a tileset...");
                 object result = of.Show();
                 if (result != null)
                 {
-                    // Converts path (C:\...\...\tileset_image.png) to filename (tileset_image)
+                    // Converts path (C:/.../.../tileset_image.png) to filename (tileset_image)
                     string path = result as string;
-                    while (path.Contains('/')) path = path.Replace('/', '\\');
-                    string[] folders = path.Split('\\');
+                    while (path.Contains('\\')) path = path.Replace('\\', '/');
+                    string[] folders = path.Split('/');
                     string file_ext = folders[folders.Length - 1];
                     string[] dots = file_ext.Split('.');
                     string file = "";
@@ -128,27 +127,28 @@ namespace MKEditor.Widgets
                         file += dots[i];
                         if (i != dots.Length - 2) file += '.';
                     }
-                    string tilesetsfolder = Game.Data.ProjectPath + "\\gfx\\tilesets";
-                    while (tilesetsfolder.Contains('/')) tilesetsfolder = tilesetsfolder.Replace('/', '\\');
+                    string tilesetsfolder = Game.Data.ProjectPath + "/gfx/tilesets";
                     // Selected file not in the tilesets folder
                     // Copies source to tilesets folder
-                    if (System.IO.Directory.GetParent(path).FullName != tilesetsfolder)
+                    string chosenparent = System.IO.Directory.GetParent(path).FullName;
+                    while (chosenparent.Contains('\\')) chosenparent = chosenparent.Replace('\\', '/');
+                    if (chosenparent != tilesetsfolder)
                     {
                         MessageBox box = new MessageBox("Error",
-                            "The selected file doesn't exist in the gfx/tilesets folder. Would you like to import it?", ButtonType.YesNo);
+                            "The selected file doesn't exist in the gfx/tilesets folder. Would you like to copy it in?", ButtonType.YesNo);
                         box.OnButtonPressed += delegate (BaseEventArgs e)
                         {
                             if (box.Result == 0) // Yes
                             {
                                 string newfilename = null;
-                                if (System.IO.File.Exists(tilesetsfolder + "\\" + file_ext))
+                                if (System.IO.File.Exists(tilesetsfolder + "/" + file_ext))
                                 {
                                     int iterator = 1;
                                     while (string.IsNullOrEmpty(newfilename))
                                     {
-                                        if (!System.IO.File.Exists(tilesetsfolder + "\\" + file + " (" + iterator.ToString() + ")." + dots[dots.Length - 1]))
+                                        if (!System.IO.File.Exists(tilesetsfolder + "/" + file + " (" + iterator.ToString() + ")." + dots[dots.Length - 1]))
                                         {
-                                            newfilename = tilesetsfolder + "\\" + file + " (" + iterator.ToString() + ")." + dots[dots.Length - 1];
+                                            newfilename = tilesetsfolder + "/" + file + " (" + iterator.ToString() + ")." + dots[dots.Length - 1];
                                             file = file + " (" + iterator.ToString() + ")";
                                         }
                                         iterator++;
@@ -156,7 +156,7 @@ namespace MKEditor.Widgets
                                 }
                                 else
                                 {
-                                    newfilename = tilesetsfolder + "\\" + file_ext;
+                                    newfilename = tilesetsfolder + "/" + file_ext;
                                 }
                                 System.IO.File.Copy(path, newfilename);
                                 SetTilesetGraphic(file);
@@ -174,7 +174,7 @@ namespace MKEditor.Widgets
             GraphicBox.TextArea.OnWidgetDeselected += delegate (BaseEventArgs e)
             {
                 string file = GraphicBox.Text;
-                if (!System.IO.File.Exists(Game.Data.ProjectPath + "\\gfx\\tilesets\\" + file + ".png"))
+                if (!System.IO.File.Exists(Game.Data.ProjectPath + "/gfx/tilesets/" + file + ".png"))
                 {
                     new MessageBox("Error", "No tileset with the name '" + file + "' exists in gfx/tilesets.", IconType.Error);
                 }
@@ -229,6 +229,9 @@ namespace MKEditor.Widgets
             }
             else if (this.Tileset.GraphicName != GraphicName)
             {
+                this.Tileset.Passabilities.Clear();
+                this.Tileset.Priorities.Clear();
+                this.Tileset.Tags.Clear();
                 this.Tileset.SetGraphic(GraphicName);
                 this.SetTileset(this.Tileset, TilesetID);
             }

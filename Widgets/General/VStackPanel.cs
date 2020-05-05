@@ -36,6 +36,7 @@ namespace MKEditor.Widgets
                 y += w.Size.Height;
                 y += w.Margin.Down;
             }
+            SetHeight(y);
         }
 
         public override Widget SetSize(Size size)

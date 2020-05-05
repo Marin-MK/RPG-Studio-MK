@@ -14,7 +14,7 @@ namespace MKEditor
         /// Whether or not exceptions should be caught and displayed, and whether unsaved changes messages should be given.
         /// If false, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
         /// </summary>
-        public static bool ReleaseMode = true;
+        public static bool ReleaseMode = false;
         public static bool Verbose = false;
         public static bool Headless = false;
         public static string ProjectFile = null;

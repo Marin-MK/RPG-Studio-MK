@@ -1252,7 +1252,6 @@ namespace MKEditor.Widgets
         public virtual void SizeChanged(BaseEventArgs e)
         {
             UpdateAutoScroll();
-            UpdateLayout();
         }
         public virtual void ParentSizeChanged(BaseEventArgs e) { }
         public virtual void ChildBoundsChanged(BaseEventArgs e)

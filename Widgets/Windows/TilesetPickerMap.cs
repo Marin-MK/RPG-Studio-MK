@@ -193,7 +193,7 @@ namespace MKEditor.Widgets
             Tileset tileset = SelectedTileset;
             if (tileset is null)
             {
-                if (TilesetBox.Sprite.Bitmap != null) TilesetBox.Sprite.Bitmap.Dispose();
+                TilesetBox.Sprite.Bitmap = null;
                 ActionButton.SetClickable(false);
                 return;
             }
