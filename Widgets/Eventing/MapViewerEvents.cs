@@ -240,6 +240,7 @@ namespace MKEditor.Widgets
                     UpdateCursorPosition();
                     Editor.MainWindow.EventingWidget.EventListPanel.SetMap(Map);
                     Editor.MainWindow.EventingWidget.EventListPanel.SelectEvent(Map.Events[EventID]);
+                    ((EventMapImageWidget) MapWidget).UpdateEvent(Map.Events[EventID]);
                 }
                 else // Did not save
                 {
