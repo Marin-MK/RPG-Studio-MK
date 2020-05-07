@@ -82,8 +82,8 @@ namespace MKEditor.Game
     public class EventPage
     {
         public string Name;
-        public List<IEventCommand> Commands = new List<IEventCommand>();
-        public List<IEventCondition> Conditions = new List<IEventCondition>();
+        public List<BasicCommand> Commands = new List<BasicCommand>();
+        public List<BasicCondition> Conditions = new List<BasicCondition>();
         public EventGraphic Graphic;
         public TriggerMode TriggerMode;
         public object TriggerParam;
@@ -111,11 +111,32 @@ namespace MKEditor.Game
             }
             foreach (object o in ((JArray) Data["@commands"]).ToObject<List<object>>())
             {
-                // o is [0, :cmd, data] as JArray
+                if (!(o is JArray)) throw new Exception($"A command must have the format [indentation, identifier, parameters]!");
+                List<object> command = ((JArray) o).ToObject<List<object>>();
+                if (command.Count != 2 && command.Count != 3) throw new Exception($"A command must have the format [indentation, identifier, parameters]!");
+                int indent = Convert.ToInt32(command[0]);
+                string id = (string) command[1];
+                Dictionary<string, object> parameters = new Dictionary<string, object>();
+                if (command.Count == 3)
+                {
+                    if (!(command[2] is JObject)) throw new Exception($"A command's third argument (command parameter) must be a hash!");
+                    parameters = (Dictionary<string, object>) Utilities.JsonToNative(command[2]);
+                }
+                this.Commands.Add(BasicCommand.IDToCommand(indent, id, parameters));
             }
             foreach (object o in ((JArray) Data["@conditions"]).ToObject<List<object>>())
             {
-                // o is [0, :cmd, data] as JArray
+                if (!(o is JArray)) throw new Exception($"A condition must have the format [identifier, parameters]!");
+                List<object> command = ((JArray) o).ToObject<List<object>>();
+                if (command.Count != 1 && command.Count != 2) throw new Exception($"A condition must have the format [identifier, parameters]!");
+                string id = (string) command[0];
+                Dictionary<string, object> parameters = new Dictionary<string, object>();
+                if (command.Count == 2)
+                {
+                    if (!(command[1] is JObject)) throw new Exception($"A condition's second argument (condition parameter) must be a hash!");
+                    parameters = (Dictionary<string, object>) Utilities.JsonToNative(command[1]);
+                }
+                this.Conditions.Add(BasicCondition.IDToCondition(id, parameters));
             }
             this.Name = (string) Data["@name"];
             this.Graphic = new EventGraphic(((JObject) Data["@graphic"]).ToObject<Dictionary<string, object>>());
@@ -148,8 +169,12 @@ namespace MKEditor.Game
             Data["@commands"] = new List<string>();
             Data["@conditions"] = new List<string>();
             Data["@settings"] = Settings.ToJSON();
-            // Add commands
-            // Add conditions
+            List<List<object>> condits = new List<List<object>>();
+            foreach (BasicCondition cdtn in this.Conditions) condits.Add(cdtn.ToJSON());
+            Data["@conditions"] = condits;
+            List<List<object>> cmds = new List<List<object>>();
+            foreach (BasicCommand cmd in this.Commands) cmds.Add(cmd.ToJSON());
+            Data["@commands"] = cmds;
             return Data;
         }
 
@@ -157,8 +182,8 @@ namespace MKEditor.Game
         {
             EventPage p = new EventPage();
             p.Name = this.Name;
-            p.Commands = new List<IEventCommand>(this.Commands);
-            p.Conditions = new List<IEventCondition>(this.Conditions);
+            p.Commands = new List<BasicCommand>(this.Commands);
+            p.Conditions = new List<BasicCondition>(this.Conditions);
             p.Graphic = this.Graphic.Clone();
             p.TriggerMode = this.TriggerMode;
             p.TriggerParam = this.TriggerParam;
