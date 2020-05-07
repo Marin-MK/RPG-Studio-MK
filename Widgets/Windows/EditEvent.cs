@@ -24,7 +24,8 @@ namespace MKEditor.Widgets
             this.OldEvent = ev;
             this.EventData = ev.Clone();
             SetTitle($"{(NewEvent ? "New" : "Edit")} event (ID: {Utilities.Digits(EventData.ID, 3)})");
-            SetSize(752, 690);
+            MinimumSize = MaximumSize = new Size(752, 690);
+            SetSize(MaximumSize);
             Center();
 
             EventGroupBox MainPropertyBox = new EventGroupBox(this);

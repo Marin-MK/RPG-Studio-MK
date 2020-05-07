@@ -20,7 +20,8 @@ namespace MKEditor.Widgets
         {
             this.Map = Map;
             SetTitle("Add Tileset");
-            SetSize(506, 498);
+            MinimumSize = MaximumSize = new Size(506, 498);
+            SetSize(MaximumSize);
             Center();
 
             Label pickerlabel = new Label(this);

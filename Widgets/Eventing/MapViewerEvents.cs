@@ -264,7 +264,6 @@ namespace MKEditor.Widgets
 
         public void NewEvent(int X, int Y)
         {
-            Console.WriteLine($"New Event ({X}, {Y})");
             Event e = new Event(Editor.GetFreeEventID(Map));
             e.X = X;
             e.Y = Y;

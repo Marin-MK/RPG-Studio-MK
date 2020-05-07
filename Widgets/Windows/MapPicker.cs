@@ -34,7 +34,8 @@ namespace MKEditor.Widgets
         protected void Initialize(string Title, bool ShowIDs)
         {
             SetTitle(Title);
-            SetSize(600, 469);
+            MinimumSize = MaximumSize = new Size(600, 469);
+            SetSize(MaximumSize);
             Center();
 
             Label pickerlabel = new Label(this);

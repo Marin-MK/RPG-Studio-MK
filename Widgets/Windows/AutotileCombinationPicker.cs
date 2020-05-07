@@ -15,7 +15,8 @@ namespace MKEditor.Widgets
         public AutotilePickerMap()
         {
             SetTitle("Individual Tile Combinations");
-            SetSize(313, 285);
+            MinimumSize = MaximumSize = new Size(313, 285);
+            SetSize(MaximumSize);
             Center();
 
             RectSprite bg1 = new RectSprite(this.Viewport);

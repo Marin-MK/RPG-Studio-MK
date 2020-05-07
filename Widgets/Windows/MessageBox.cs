@@ -119,7 +119,8 @@ namespace MKEditor.Widgets
                 };
             }
 
-            SetSize(300, 150);
+            MinimumSize = MaximumSize = new Size(300, 150);
+            SetSize(MaximumSize);
         }
 
         public MessageBox(string Title, string Message, List<string> Buttons, IconType IconType = IconType.None)
@@ -152,7 +153,11 @@ namespace MKEditor.Widgets
             {
                 Icon.SetPosition(14, Size.Height / 2 - 24);
             }
-            if (Size.Height - label.Size.Height < 100) SetSize(Size.Width + 100, Size.Height + 50);
+            if (Size.Height - label.Size.Height < 100)
+            {
+                MinimumSize = MaximumSize = new Size(Size.Width + 100, Size.Height + 50);
+                SetSize(MaximumSize);
+            }
             Center();
         }
     }

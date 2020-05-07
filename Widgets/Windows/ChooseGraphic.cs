@@ -25,7 +25,8 @@ namespace MKEditor.Widgets
             this.OldGraphic = graphic;
             this.GraphicData = graphic.Clone();
             SetTitle("Choose Graphic");
-            SetSize(735, 421);
+            MinimumSize = MaximumSize = new Size(735, 421);
+            SetSize(MaximumSize);
             Center();
 
             Label GraphicLabel = new Label(this);

@@ -22,7 +22,8 @@ namespace MKEditor.Widgets
         public AutotilePicker(Map Map)
         {
             SetTitle("Change Autotiles");
-            SetSize(506, 498);
+            MinimumSize = MaximumSize = new Size(506, 498);
+            SetSize(MaximumSize);
             Center();
 
             OldIDs = new List<int>(Map.AutotileIDs);
