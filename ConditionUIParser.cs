@@ -110,6 +110,7 @@ namespace MKEditor
             if (!string.IsNullOrEmpty(this.Title)) Window.SetTitle(this.Title);
             if (this.Width != -1) Window.SetWidth(this.Width);
             if (this.Height != -1) Window.SetHeight(this.Height);
+            if (Buttons.Count == 0) Buttons = new List<Dictionary<string, string>>() { new Dictionary<string, string>() { { "type", "cancel" }, { "name", "Cancel" } }, new Dictionary<string, string>() { { "type", "ok" }, { "name", "OK" } } };
             foreach (Dictionary<string, string> button in Buttons)
             {
                 BaseEvent method = button["type"] == "ok" ? OK : (button["type"] == "apply" ? Apply : (BaseEvent) Cancel);
@@ -358,37 +359,38 @@ namespace MKEditor
                         default:
                             throw new Exception($"Unknown key '{key}' inside widget definition");
                     }
-                    w.SetPosition(X, Y);
-                    if (Width != -1) w.SetWidth(Width);
-                    if (Height != -1) w.SetHeight(Height);
-                    if (type == "label")
-                    {
-                        if (!string.IsNullOrEmpty(text)) ((Label) w).SetText(text);
-                        if (font != null) ((Label) w).SetFont(font);
-                    }
-                    if (type == "textbox")
-                    {
-                        if (!string.IsNullOrEmpty(text)) ((TextBox) w).SetInitialText(text);
-                        if (font != null) ((TextBox) w).TextArea.SetFont(font);
-                    }
-                    if (type == "numeric")
-                    {
-                        ((NumericBox) w).SetValue(wvalue);
-                        if (min_value != null) ((NumericBox) w).MinValue = (int) min_value;
-                        if (max_value != null) ((NumericBox) w).MaxValue = (int) max_value;
-                    }
-                    if (type == "button")
-                    {
-                        if (!string.IsNullOrEmpty(text)) ((Button) w).SetText(text);
-                        if (font != null) ((Button) w).SetFont(font);
-                    }
-                    if (type == "dropdown")
-                    {
-                        if (items == null && idx != -1 || items != null && idx >= items.Count) throw new Exception($"Index cannot be greater than or equal to the total item size.");
-                        if (items != null) ((DropdownBox) w).SetItems(items);
-                        if (idx != -1) ((DropdownBox) w).SetSelectedIndex(idx);
-                        if (font != null) ((DropdownBox) w).SetFont(font);
-                    }
+                }
+                w.SetPosition(X, Y);
+                if (Width != -1 && Height != -1) w.SetSize(Width, Height);
+                else if (Width != -1) w.SetWidth(Width);
+                else if (Height != -1) w.SetHeight(Height);
+                if (type == "label")
+                {
+                    if (!string.IsNullOrEmpty(text)) ((Label) w).SetText(text);
+                    if (font != null) ((Label) w).SetFont(font);
+                }
+                if (type == "textbox")
+                {
+                    if (!string.IsNullOrEmpty(text)) ((TextBox) w).SetInitialText(text);
+                    if (font != null) ((TextBox) w).TextArea.SetFont(font);
+                }
+                if (type == "numeric")
+                {
+                    ((NumericBox) w).SetValue(wvalue);
+                    if (min_value != null) ((NumericBox) w).MinValue = (int) min_value;
+                    if (max_value != null) ((NumericBox) w).MaxValue = (int) max_value;
+                }
+                if (type == "button")
+                {
+                    if (!string.IsNullOrEmpty(text)) ((Button) w).SetText(text);
+                    if (font != null) ((Button) w).SetFont(font);
+                }
+                if (type == "dropdown")
+                {
+                    if (items == null && idx != -1 || items != null && idx >= items.Count) throw new Exception($"Index cannot be greater than or equal to the total item size.");
+                    if (items != null) ((DropdownBox) w).SetItems(items);
+                    if (idx != -1) ((DropdownBox) w).SetSelectedIndex(idx);
+                    if (font != null) ((DropdownBox) w).SetFont(font);
                 }
                 Widgets.Add(name, w);
             }

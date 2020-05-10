@@ -7,27 +7,30 @@ namespace MKEditor.Widgets
 {
     public class GameSwitchPicker : Widget
     {
+        Label CategoryLabel;
+        Label SwitchLabel;
         ListBox GroupBox;
         ListBox SwitchBox;
+        Label GroupNameLabel;
+        Label SwitchNameLabel;
         TextBox GroupNameBox;
         TextBox SwitchNameBox;
+        Button ChangeMaxGroups;
+        Button ChangeMaxSwitches;
+        Label ValueLabel;
         DropdownBox ValueBox;
 
         public GameSwitchPicker(IContainer Parent) : base(Parent)
         {
-            Label CategoryLabel = new Label(this);
+            CategoryLabel = new Label(this);
             CategoryLabel.SetText("Categories");
-            CategoryLabel.SetPosition(9, -4);
             CategoryLabel.SetFont(Font.Get("Fonts/Ubuntu-B", 14));
 
-            Label SwitchLabel = new Label(this);
+            SwitchLabel = new Label(this);
             SwitchLabel.SetText("Switches");
-            SwitchLabel.SetPosition(193, -4);
             SwitchLabel.SetFont(Font.Get("Fonts/Ubuntu-B", 14));
 
             GroupBox = new ListBox(this);
-            GroupBox.SetPosition(5, 16);
-            GroupBox.SetSize(167, 254);
             RedrawGroupBox();
             GroupBox.OnSelectionChanged += delegate (BaseEventArgs e)
             {
@@ -38,42 +41,32 @@ namespace MKEditor.Widgets
             };
             
             SwitchBox = new ListBox(this);
-            SwitchBox.SetPosition(184, 16);
-            SwitchBox.SetSize(167, 254);
             SwitchBox.OnSelectionChanged += delegate (BaseEventArgs e)
             {
                 SwitchNameBox.SetInitialText(Editor.ProjectSettings.Switches[GroupBox.SelectedIndex].Switches[SwitchBox.SelectedIndex].Name ?? "");
             };
 
-            Label GroupNameLabel = new Label(this);
+            GroupNameLabel = new Label(this);
             GroupNameLabel.SetText("Name:");
             GroupNameLabel.SetFont(Font.Get("Fonts/ProductSans-M", 12));
-            GroupNameLabel.SetPosition(6, 280);
             GroupNameBox = new TextBox(this);
-            GroupNameBox.SetPosition(50, 275);
-            GroupNameBox.SetSize(122, 27);
             GroupNameBox.OnTextChanged += delegate (BaseEventArgs e)
             {
                 Editor.ProjectSettings.Switches[GroupBox.SelectedIndex].Name = GroupNameBox.Text;
                 GroupBox.Redraw();
             };
 
-            Label SwitchNameLabel = new Label(this);
+            SwitchNameLabel = new Label(this);
             SwitchNameLabel.SetText("Name:");
             SwitchNameLabel.SetFont(Font.Get("Fonts/ProductSans-M", 12));
-            SwitchNameLabel.SetPosition(185, 280);
             SwitchNameBox = new TextBox(this);
-            SwitchNameBox.SetPosition(229, 275);
-            SwitchNameBox.SetSize(122, 27);
             SwitchNameBox.OnTextChanged += delegate (BaseEventArgs e)
             {
                 Editor.ProjectSettings.Switches[GroupBox.SelectedIndex].Switches[SwitchBox.SelectedIndex].Name = SwitchNameBox.Text;
                 SwitchBox.Redraw();
             };
 
-            Button ChangeMaxGroups = new Button(this);
-            ChangeMaxGroups.SetPosition(1, 307);
-            ChangeMaxGroups.SetSize(175, 31);
+            ChangeMaxGroups = new Button(this);
             ChangeMaxGroups.SetText("Change Maximum");
             ChangeMaxGroups.OnClicked += delegate (BaseEventArgs e)
             {
@@ -139,9 +132,7 @@ namespace MKEditor.Widgets
                 win.Center();
             };
 
-            Button ChangeMaxSwitches = new Button(this);
-            ChangeMaxSwitches.SetPosition(181, 307);
-            ChangeMaxSwitches.SetSize(175, 31);
+            ChangeMaxSwitches = new Button(this);
             ChangeMaxSwitches.SetText("Change Maximum");
             ChangeMaxSwitches.OnClicked += delegate (BaseEventArgs e)
             {
@@ -207,13 +198,10 @@ namespace MKEditor.Widgets
                 win.Center();
             };
 
-            Label ValueLabel = new Label(this);
+            ValueLabel = new Label(this);
             ValueLabel.SetText("Switch must be:");
-            ValueLabel.SetPosition(9, 347);
             ValueLabel.SetFont(Font.Get("Fonts/ProductSans-M", 12));
             ValueBox = new DropdownBox(this);
-            ValueBox.SetPosition(104, 342);
-            ValueBox.SetSize(110, 25);
             ValueBox.SetItems(new List<ListItem>()
             {
                 new ListItem("ON/Enabled"),
@@ -243,6 +231,39 @@ namespace MKEditor.Widgets
             }
             SwitchBox.SetItems(Items);
             if (SwitchBox.SelectedIndex >= Items.Count) SwitchBox.SetSelectedIndex(Items.Count - 1);
+        }
+
+        public override void SizeChanged(BaseEventArgs e)
+        {
+            base.SizeChanged(e);
+            if (Size.Width == 50 && Size.Height == 50) return;
+
+            int w = Size.Width / 2 - 12;
+
+            CategoryLabel.SetPosition(9, -4);
+            SwitchLabel.SetPosition(w + 26, -4);
+
+            GroupBox.SetPosition(5, 16);
+            GroupBox.SetSize(w, Size.Height - 113);
+            SwitchBox.SetPosition(w + 17, 16);
+            SwitchBox.SetSize(w, Size.Height - 113);
+
+            GroupNameLabel.SetPosition(8, Size.Height - 87);
+            GroupNameBox.SetPosition(55, Size.Height - 92);
+            GroupNameBox.SetSize(w - 50, 27);
+
+            SwitchNameLabel.SetPosition(w + 25, Size.Height - 87);
+            SwitchNameBox.SetPosition(w + 67, Size.Height - 92);
+            SwitchNameBox.SetSize(w - 50, 27);
+
+            ChangeMaxGroups.SetPosition(7, Size.Height - 60);
+            ChangeMaxGroups.SetSize(w - 2, 31);
+            ChangeMaxSwitches.SetPosition(w + 19, Size.Height - 60);
+            ChangeMaxSwitches.SetSize(w - 2, 31);
+
+            ValueLabel.SetPosition(9, Size.Height - 20);
+            ValueBox.SetPosition(104, Size.Height - 25);
+            ValueBox.SetSize(110, 25);
         }
 
         public override object GetValue(string Identifier)
