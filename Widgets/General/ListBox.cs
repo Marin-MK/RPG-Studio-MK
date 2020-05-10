@@ -50,7 +50,7 @@ namespace MKEditor.Widgets
         public override void SizeChanged(BaseEventArgs e)
         {
             base.SizeChanged(e);
-            if (Sprites["bg"].Bitmap != null) Sprites["bg"].Bitmap.Dispose();
+            Sprites["bg"].Bitmap?.Dispose();
             Sprites["bg"].Bitmap = new Bitmap(Size);
             Sprites["bg"].Bitmap.Unlock();
             Sprites["bg"].Bitmap.DrawRect(Size, 86, 108, 134);

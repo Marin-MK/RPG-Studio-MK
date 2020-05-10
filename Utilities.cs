@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using MKEditor.Game;
 using Newtonsoft.Json.Linq;
@@ -362,10 +363,29 @@ namespace MKEditor
                 }
                 return obj;
             }
+            else if (data is long)
+            {
+                return Convert.ToInt32((long) data);
+            }
             else
             {
                 return data;
             }
+        }
+
+        public static bool IsNumeric(char c)
+        {
+            return c == '0' || c == '1' || c == '2' || c == '3' || c == '4' ||
+                   c == '5' || c == '6' || c == '7' || c == '8' || c == '9';
+        }
+
+        public static bool IsNumeric(string s)
+        {
+            foreach (char c in s)
+            {
+                if (!Utilities.IsNumeric(c)) return false;
+            }
+            return true;
         }
     }
 }

@@ -326,10 +326,13 @@ namespace MKEditor
             MainGridLayout.Rows[5] = new GridSize(26, Unit.Pixels);
             MainGridLayout.UpdateContainers();
 
+            Editor.InitializeEditor();
+
             Editor.LoadProjectSettings();
             Data.LoadGameData();
 
             Editor.SetMode(Editor.ProjectSettings.LastMode, true);
+
             TimeSpan time = DateTime.Now - start;
             StatusBar.QueueMessage($"Project loaded ({time.Milliseconds}ms)", true, 5000);
         }

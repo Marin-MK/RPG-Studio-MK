@@ -6,6 +6,8 @@
 *.user
 *.sln.docstates
 
+line_count.rb
+
 # Visual Studio folder
 .vs
 

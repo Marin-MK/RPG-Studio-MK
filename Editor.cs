@@ -107,6 +107,11 @@ namespace MKEditor
             return Environment.OSVersion;
         }
 
+        public static void InitializeEditor()
+        {
+            ConditionParser.Initialize();
+        }
+
         /// <summary>
         /// Undoes the latest change you made.
         /// </summary>
@@ -527,7 +532,7 @@ namespace MKEditor
         public static void ToggleGrid()
         {
             GeneralSettings.ShowGrid = !GeneralSettings.ShowGrid;
-            MainWindow.MapWidget.SetGridVisibility(GeneralSettings.ShowGrid);
+            if (MainWindow.MapWidget != null) MainWindow.MapWidget.SetGridVisibility(GeneralSettings.ShowGrid);
         }
 
         /// <summary>
@@ -707,11 +712,6 @@ namespace MKEditor
         /// </summary>
         public static void NewProject()
         {
-            //WidgetCreator wc = new WidgetCreator();
-            //StreamReader sr = new StreamReader(File.OpenRead("D:/Desktop/window.json"));
-            //string str = sr.ReadToEnd();
-            //sr.Close();
-            //wc.LoadWindow(str);
             new MessageBox("Oops!", "This feature has not been implemented yet.\nTo get started, please use the \"Open Project\" feature and choose the MK Starter Kit.", IconType.Error);
         }
 
@@ -1022,6 +1022,9 @@ namespace MKEditor
             if (string.IsNullOrEmpty(ProjectSettings.LastMappingSubmode)) ProjectSettings.LastMappingSubmode = "TILES";
             if (ProjectSettings.TilesetCapacity == 0) ProjectSettings.TilesetCapacity = 25;
             if (ProjectSettings.AutotileCapacity == 0) ProjectSettings.AutotileCapacity = 25;
+            if (ProjectSettings.SwitchGroupCapacity == 0) ProjectSettings.SwitchGroupCapacity = 25;
+            if (ProjectSettings.Switches == null) ProjectSettings.Switches = new List<GameSwitchGroup>();
+            if (ProjectSettings.Switches.Count == 0) for (int i = 0; i < ProjectSettings.SwitchGroupCapacity; i++) ProjectSettings.Switches.Add(new GameSwitchGroup() { ID = i + 1 });
         }
 
         /// <summary>
@@ -1081,6 +1084,14 @@ namespace MKEditor
         /// The maximum autotile capacity.
         /// </summary>
         public int AutotileCapacity = 25;
+        /// <summary>
+        /// The maximum game switch group capacity.
+        /// </summary>
+        public int SwitchGroupCapacity = 25;
+        /// <summary>
+        /// The data related to game switches.
+        /// </summary>
+        public List<GameSwitchGroup> Switches = new List<GameSwitchGroup>();
     }
 
     [Serializable]

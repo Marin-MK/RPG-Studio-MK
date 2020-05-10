@@ -23,6 +23,7 @@ namespace MKEditor.Widgets
             TextArea = new TextArea(this);
             TextArea.SetPosition(3, 3);
             TextArea.SetCaretHeight(13);
+            TextArea.SetZIndex(1);
         }
 
         public void SetInitialText(string Text)

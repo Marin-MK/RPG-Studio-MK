@@ -10,6 +10,7 @@ namespace MKEditor.Widgets
         public double Value          { get; protected set; }
         public bool   Hovering       { get { return SliderIM.Hovering; } }
         public bool   Dragging       { get { return SliderIM.ClickedLeftInArea == true; } }
+        public int    ScrollStep     = 11;
         public Rect   MouseInputRect { get; set; }
 
         public Widget LinkedWidget;
@@ -158,13 +159,13 @@ namespace MKEditor.Widgets
         public void ScrollUp()
         {
             if (!IsVisible()) return;
-            this.SetValue((LinkedWidget.ScrolledY - 11d) / (LinkedWidget.MaxChildHeight - LinkedWidget.Viewport.Height));
+            this.SetValue(((double) LinkedWidget.ScrolledY - ScrollStep) / (LinkedWidget.MaxChildHeight - LinkedWidget.Viewport.Height));
         }
 
         public void ScrollDown()
         {
             if (!IsVisible()) return;
-            this.SetValue((LinkedWidget.ScrolledY + 11d) / (LinkedWidget.MaxChildHeight - LinkedWidget.Viewport.Height));
+            this.SetValue(((double) LinkedWidget.ScrolledY + ScrollStep) / (LinkedWidget.MaxChildHeight - LinkedWidget.Viewport.Height));
         }
 
         public override void MouseWheel(MouseEventArgs e)

@@ -910,6 +910,16 @@ namespace MKEditor.Widgets
             return null;
         }
 
+        public virtual object GetValue(string Identifier)
+        {
+            throw new Exception($"Attempted to load a value from an unsupported widget");
+        }
+
+        public virtual void SetValue(string Identifier, object Value)
+        {
+            throw new Exception($"Attempted to set a value to an unsupported widget");
+        }
+
         /// <summary>
         /// Sets the margin for this widget. Used for grids and stackpanels.
         /// </summary>
