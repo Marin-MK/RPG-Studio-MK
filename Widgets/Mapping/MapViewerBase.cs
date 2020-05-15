@@ -115,6 +115,7 @@ namespace MKEditor.Widgets
         public override void SizeChanged(BaseEventArgs e)
         {
             base.SizeChanged(e);
+            if (Size.Width == 50 && Size.Height == 50) return;
             GridLayout.SetSize(this.Size);
             PositionMap();
 
@@ -172,6 +173,7 @@ namespace MKEditor.Widgets
             MapWidget.SetSize(w, h);
             UpdateConnectionPositions();
             DummyWidget.SetSize(2 * x + w, 2 * y + h);
+            MainContainer.UpdateBounds();
             MainContainer.UpdateAutoScroll();
             MainContainer.HScrollBar.SetValue(0.5);
             MainContainer.VScrollBar.SetValue(0.5);

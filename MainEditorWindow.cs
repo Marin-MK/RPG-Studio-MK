@@ -96,6 +96,7 @@ namespace MKEditor
             };
 
             this.UI = new UIManager(this);
+            this.UI.SizeChanged(new BaseEventArgs());
             this.UI.SetBackgroundColor(10, 23, 37);
 
             // Widgets may now be created
@@ -304,10 +305,8 @@ namespace MKEditor
                 HomeScreen.SetGridRow(3);
             }
 
-            #region Events
             this.UI.Update();
             this.Start();
-            #endregion
 
             UI.SizeChanged(new BaseEventArgs());
         }

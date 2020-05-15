@@ -17,7 +17,7 @@ namespace MKEditor.Widgets
 
         public Grid(IContainer Parent) : base(Parent)
         {
-            this.Size = new Size(this.Parent.Size);
+            
         }
 
         public override void SizeChanged(BaseEventArgs e)

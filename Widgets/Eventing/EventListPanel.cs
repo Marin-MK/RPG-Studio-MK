@@ -39,6 +39,7 @@ namespace MKEditor.Widgets
         public override void SizeChanged(BaseEventArgs e)
         {
             base.SizeChanged(e);
+            if (Size.Width == 50 && Size.Height == 50) return;
             EventContainer.SetSize(Size.Width - 13, Size.Height - EventContainer.Position.Y);
             EventContainer.VScrollBar.SetPosition(Size.Width - 10, 34);
             EventContainer.VScrollBar.SetSize(8, Size.Height - 36);

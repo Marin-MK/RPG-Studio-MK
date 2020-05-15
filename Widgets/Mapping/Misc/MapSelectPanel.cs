@@ -146,6 +146,7 @@ namespace MKEditor.Widgets
         public override void SizeChanged(BaseEventArgs e)
         {
             base.SizeChanged(e);
+            if (Size.Width == 50 && Size.Height == 50) return;
             allmapcontainer.SetSize(this.Size.Width - 11, this.Size.Height - allmapcontainer.Position.Y);
             Sprites["bar"].X = Size.Width - 11;
             (Sprites["bar"].Bitmap as SolidBitmap).SetSize(1, Size.Height - 30);
