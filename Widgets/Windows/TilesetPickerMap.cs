@@ -182,7 +182,7 @@ namespace MKEditor.Widgets
 
         public void SelectionChanged(BaseEventArgs e)
         {
-            ActionButton.SetClickable(true);
+            ActionButton.SetEnabled(true);
             if (InUse.SelectedIndex == -1)
             {
                 ActionButton.SetText("Add");
@@ -195,7 +195,7 @@ namespace MKEditor.Widgets
             if (tileset is null)
             {
                 TilesetBox.Sprite.Bitmap = null;
-                ActionButton.SetClickable(false);
+                ActionButton.SetEnabled(false);
                 return;
             }
             TilesetBox.Sprite.Bitmap = tileset.TilesetListBitmap;

@@ -176,7 +176,7 @@ namespace MKEditor.Widgets
 
         public void SelectionChanged(BaseEventArgs e)
         {
-            ActionButton.SetClickable(true);
+            ActionButton.SetEnabled(true);
             if (InUse.SelectedIndex == -1)
             {
                 ActionButton.SetText("Add");
@@ -189,7 +189,7 @@ namespace MKEditor.Widgets
             if (autotile is null)
             {
                 if (Sprites["preview"].Bitmap != null) Sprites["preview"].Bitmap.Dispose();
-                ActionButton.SetClickable(false);
+                ActionButton.SetEnabled(false);
                 return;
             }
             Sprites["preview"].Bitmap = autotile.AutotileBitmap.Clone();

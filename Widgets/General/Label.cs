@@ -10,11 +10,21 @@ namespace MKEditor.Widgets
         public Font Font { get; protected set; }
         public Color TextColor { get; protected set; } = Color.WHITE;
         public DrawOptions DrawOptions { get; protected set; }
+        public bool Enabled { get; protected set; } = true;
 
         public Label(IContainer Parent) : base(Parent)
         {
             Sprites["text"] = new Sprite(this.Viewport);
             this.Font = Font.Get("Fonts/ProductSans-M", 12);
+        }
+
+        public void SetEnabled(bool Enabled)
+        {
+            if (this.Enabled != Enabled)
+            {
+                this.Enabled = Enabled;
+                RedrawText();
+            }
         }
 
         public void SetText(string Text, DrawOptions DrawOptions = ODL.DrawOptions.LeftAlign)
@@ -63,9 +73,21 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = this.Font;
-            Sprites["text"].Bitmap.DrawText(this.Text, this.TextColor, this.DrawOptions);
+            Sprites["text"].Bitmap.DrawText(this.Text, this.Enabled ? this.TextColor : new Color(72, 72, 72), this.DrawOptions);
             Sprites["text"].Bitmap.Lock();
             base.Draw();
+        }
+
+        public override object GetValue(string Identifier)
+        {
+            if (Identifier == "enabled") return this.Enabled;
+            return base.GetValue(Identifier);
+        }
+
+        public override void SetValue(string Identifier, object Value)
+        {
+            if (Identifier == "enabled") this.SetEnabled((string) Value == "true");
+            else base.SetValue(Identifier, Value);
         }
     }
 
@@ -87,7 +109,7 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap.Font = this.Font;
             for (int i = 0; i < Lines.Count; i++)
             {
-                Sprites["text"].Bitmap.DrawText(Lines[i], 0, (Font.Size + 2) * i, Color.WHITE);
+                Sprites["text"].Bitmap.DrawText(Lines[i], 0, (Font.Size + 2) * i, this.Enabled ? this.TextColor : new Color(72, 72, 72));
             }
             Sprites["text"].Bitmap.Lock();
         }

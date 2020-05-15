@@ -910,11 +910,25 @@ namespace MKEditor.Widgets
             return null;
         }
 
+        /// <summary>
+        /// Retrieves a value from this widget.
+        /// </summary>
         public virtual object GetValue(string Identifier)
         {
             throw new Exception($"Attempted to load a value from an unsupported widget");
         }
 
+        /// <summary>
+        /// Sets the child widgets of this widget in bulk.
+        /// </summary>
+        public void SetWidgets(List<Widget> Widgets)
+        {
+            this.Widgets = Widgets;
+        }
+
+        /// <summary>
+        /// Sets a value to this widget.
+        /// </summary>
         public virtual void SetValue(string Identifier, object Value)
         {
             throw new Exception($"Attempted to set a value to an unsupported widget");

@@ -15,6 +15,7 @@ namespace MKEditor.Widgets
         public int MinValue = -999999;
         public int Increment = 1;
         public Color TextColor { get; protected set; } = Color.WHITE;
+        public bool Enabled { get; protected set; } = true;
 
         public BaseEvent OnValueChanged;
 
@@ -24,6 +25,15 @@ namespace MKEditor.Widgets
             Sprites["text"] = new Sprite(this.Viewport);
 
             SetSize(66, 27);
+        }
+
+        public void SetEnabled(bool Enabled)
+        {
+            if (this.Enabled != Enabled)
+            {
+                this.Enabled = Enabled;
+                this.Redraw();
+            }
         }
 
         public void SetValue(int Value)
@@ -52,7 +62,7 @@ namespace MKEditor.Widgets
             if (Sprites["box"].Bitmap != null) Sprites["box"].Bitmap.Dispose();
             Sprites["box"].Bitmap = new Bitmap(this.Size);
             Sprites["box"].Bitmap.Unlock();
-            Color light = new Color(86, 108, 134);
+            Color light = this.Enabled ? new Color(86, 108, 134) : new Color(72, 72, 72);
             Color dark = new Color(10, 23, 37);
 
             Sprites["box"].Bitmap.FillRect(Size, light);
@@ -63,12 +73,12 @@ namespace MKEditor.Widgets
             Sprites["box"].Bitmap.DrawRect(1, 1, Size.Width - 15, Size.Height - 2, dark);
             Sprites["box"].Bitmap.SetPixel(1, 1, light);
             Sprites["box"].Bitmap.SetPixel(1, Size.Height - 2, light);
-            Color UpColor = SelectedUp ? new Color(55, 187, 255) : HoveringUp ? new Color(28, 50, 73) : dark;
+            Color UpColor = this.Enabled && SelectedUp ? new Color(55, 187, 255) : this.Enabled && HoveringUp ? new Color(28, 50, 73) : dark;
             Sprites["box"].Bitmap.FillRect(Size.Width - 13, 1, 12, 12, UpColor);
             Sprites["box"].Bitmap.SetPixel(Size.Width - 2, 1, light);
             Sprites["box"].Bitmap.FillRect(Size.Width - 11, 6, 8, 2, light);
             Sprites["box"].Bitmap.FillRect(Size.Width - 8, 3, 2, 8, light);
-            Color DownColor = SelectedDown ? new Color(55, 187, 255) : HoveringDown ? new Color(28, 50, 73) : dark;
+            Color DownColor = this.Enabled && SelectedDown ? new Color(55, 187, 255) : this.Enabled && HoveringDown ? new Color(28, 50, 73) : dark;
             Sprites["box"].Bitmap.FillRect(Size.Width - 13, 14, 12, 12, DownColor);
             Sprites["box"].Bitmap.SetPixel(Size.Width - 2, Size.Height - 2, light);
             Sprites["box"].Bitmap.FillRect(Size.Width - 11, 19, 8, 2, light);
@@ -82,7 +92,7 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = f;
-            Sprites["text"].Bitmap.DrawText(text, this.TextColor);
+            if (this.Enabled) Sprites["text"].Bitmap.DrawText(text, this.Enabled ? this.TextColor : new Color(72, 72, 72));
             Sprites["text"].X = Size.Width - 21 - s.Width;
             Sprites["text"].Y = 5;
             Sprites["text"].Bitmap.Lock();
@@ -134,14 +144,14 @@ namespace MKEditor.Widgets
         {
             base.MouseDown(e);
             if (e.LeftButton == e.OldLeftButton) return;
-            if (HoveringUp)
+            if (HoveringUp && this.Enabled)
             {
                 SetValue(Value + Increment);
                 SelectedDown = false;
                 SelectedUp = true;
                 Redraw();
             }
-            if (HoveringDown)
+            if (HoveringDown && this.Enabled)
             {
                 SetValue(Value - Increment);
                 SelectedUp = false;
@@ -180,14 +190,14 @@ namespace MKEditor.Widgets
                 }
                 else if (TimerPassed("press"))
                 {
-                    if (HoveringUp)
+                    if (HoveringUp && this.Enabled)
                     {
                         SetValue(Value + Increment);
                         SelectedDown = false;
                         SelectedUp = true;
                         Redraw();
                     }
-                    else if (HoveringDown)
+                    else if (HoveringDown && this.Enabled)
                     {
                         SetValue(Value - Increment);
                         SelectedUp = false;
@@ -204,6 +214,16 @@ namespace MKEditor.Widgets
             base.Update();
             if (Value < MinValue) SetValue(MinValue);
             else if (Value > MaxValue) SetValue(MaxValue);
+        }
+
+        public override object GetValue(string Identifier)
+        {
+            return this.Value;
+        }
+
+        public override void SetValue(string Identifier, object Value)
+        {
+            if (!string.IsNullOrEmpty(Value.ToString())) this.SetValue(Convert.ToInt32(Value));
         }
     }
 }

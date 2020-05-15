@@ -9,7 +9,7 @@ namespace MKEditor.Widgets
     {
         public string Text { get; protected set; }
         public Font Font { get; protected set; } = Font.Get("Fonts/ProductSans-B", 14);
-        public bool Clickable { get; protected set; } = true;
+        public bool Enabled { get; protected set; } = true;
         public Color TextColor { get; protected set; } = Color.WHITE;
 
         public BaseEvent OnClicked;
@@ -150,12 +150,12 @@ namespace MKEditor.Widgets
             }
         }
 
-        public void SetClickable(bool Clickable)
+        public void SetEnabled(bool Enabled)
         {
-            if (this.Clickable != Clickable)
+            if (this.Enabled != Enabled)
             {
-                this.Clickable = Clickable;
-                if (this.Clickable) Sprites["filler"].Color = new Color(64, 104, 146);
+                this.Enabled = Enabled;
+                if (this.Enabled) Sprites["filler"].Color = new Color(64, 104, 146);
                 else Sprites["filler"].Color = new Color(72, 72, 72);
             }
         }
@@ -215,13 +215,13 @@ namespace MKEditor.Widgets
         public override void HoverChanged(MouseEventArgs e)
         {
             base.HoverChanged(e);
-            if (Clickable) Sprites["filler"].Color = WidgetIM.Hovering ? new Color(59, 227, 255) : new Color(64, 104, 146);
+            if (this.Enabled) Sprites["filler"].Color = WidgetIM.Hovering ? new Color(59, 227, 255) : new Color(64, 104, 146);
         }
 
         public override void MouseDown(MouseEventArgs e)
         {
             base.MouseDown(e);
-            if (!WidgetIM.Hovering || !Clickable) return;
+            if (!WidgetIM.Hovering || !this.Enabled) return;
             this.OnClicked?.Invoke(new BaseEventArgs());
         }
     }

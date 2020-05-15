@@ -110,7 +110,7 @@ namespace MKEditor.Widgets
             DeletePageButton.SetPosition(682, 43);
             DeletePageButton.SetSize(67, 59);
             DeletePageButton.SetText("Delete\nPage");
-            if (EventData.Pages.Count == 1) DeletePageButton.SetClickable(false);
+            if (EventData.Pages.Count == 1) DeletePageButton.SetEnabled(false);
             DeletePageButton.OnClicked += delegate (BaseEventArgs e) { DeletePage(); };
 
             TabController = new TabView(this);
@@ -129,12 +129,12 @@ namespace MKEditor.Widgets
             CreateButton("Apply", Apply);
             CreateButton("Cancel", Cancel);
             CreateButton("OK", OK);
-            ApplyButton.SetClickable(false);
+            ApplyButton.SetEnabled(false);
         }
 
         public void MarkChanges()
         {
-            if (Buttons.Count > 0) ApplyButton.SetClickable(true);
+            if (Buttons.Count > 0) ApplyButton.SetEnabled(true);
         }
 
         public void UpdateNames()
@@ -156,17 +156,17 @@ namespace MKEditor.Widgets
             EventPageContainers.Add(epc);
             TabController.SelectTab(TabController.Tabs.Count - 1);
             TabController.Redraw();
-            DeletePageButton.SetClickable(true);
+            DeletePageButton.SetEnabled(true);
         }
 
         public void CopyPage()
         {
-
+            Editor.WIP();
         }
 
         public void PastePage()
         {
-
+            Editor.WIP();
         }
 
         public void ClearPage()
@@ -192,7 +192,7 @@ namespace MKEditor.Widgets
             if (TabController.SelectedIndex >= EventPageContainers.Count) TabController.SelectTab(TabController.SelectedIndex - 1);
             else TabController.SelectTab(TabController.SelectedIndex);
             UpdateNames();
-            if (EventData.Pages.Count == 1) DeletePageButton.SetClickable(false);
+            if (EventData.Pages.Count == 1) DeletePageButton.SetEnabled(false);
         }
 
         public void Apply(BaseEventArgs e)
@@ -200,7 +200,7 @@ namespace MKEditor.Widgets
             MapData.Events[EventData.ID] = EventData;
             OldEvent = EventData;
             EventData = EventData.Clone();
-            ApplyButton.SetClickable(false);
+            ApplyButton.SetEnabled(false);
         }
 
         public void Cancel(BaseEventArgs e)

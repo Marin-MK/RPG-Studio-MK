@@ -381,8 +381,10 @@ namespace MKEditor
 
         public static bool IsNumeric(string s)
         {
-            foreach (char c in s)
+            for (int i = 0; i < s.Length; i++)
             {
+                char c = s[i];
+                if (c == '-' && i == 0) continue;
                 if (!Utilities.IsNumeric(c)) return false;
             }
             return true;

@@ -3,7 +3,7 @@ using ODL;
 
 namespace MKEditor.Widgets
 {
-    public class CheckBox : Widget
+    public class RadioBox : Widget
     {
         public string Text { get; protected set; }
         public bool Checked { get; protected set; } = false;
@@ -14,7 +14,7 @@ namespace MKEditor.Widgets
 
         public BaseEvent OnCheckChanged;
 
-        public CheckBox(IContainer Parent) : base(Parent)
+        public RadioBox(IContainer Parent) : base(Parent)
         {
             Sprites["box"] = new Sprite(this.Viewport, new Bitmap(16, 16));
             RedrawBox(true);
@@ -31,6 +31,7 @@ namespace MKEditor.Widgets
             if (this.Enabled != Enabled)
             {
                 this.Enabled = Enabled;
+                if (!this.Enabled) this.SetChecked(false);
                 this.Redraw();
                 this.RedrawText();
             }
@@ -58,6 +59,13 @@ namespace MKEditor.Widgets
         {
             if (this.Checked != Checked)
             {
+                if (Checked)
+                {
+                    foreach (Widget w in Parent.Widgets)
+                    {
+                        if (w is RadioBox && w != this && ((RadioBox) w).Checked) ((RadioBox) w).SetChecked(false);
+                    }
+                }
                 this.Checked = Checked;
                 Redraw();
                 if (Checked) OnCheckChanged?.Invoke(new BaseEventArgs());
@@ -90,19 +98,46 @@ namespace MKEditor.Widgets
                 filler = new Color(72, 72, 72);
             }
 
-            Sprites["box"].Bitmap.SetPixel(1, 1, lightoutline);
-            Sprites["box"].Bitmap.DrawLine(2, 0, 13, 0, lightoutline);
-            Sprites["box"].Bitmap.DrawLine(2, 1, 13, 1, outline);
-            Sprites["box"].Bitmap.SetPixel(14, 1, lightoutline);
-            Sprites["box"].Bitmap.DrawLine(15, 2, 15, 13, lightoutline);
-            Sprites["box"].Bitmap.DrawLine(14, 2, 14, 13, outline);
-            Sprites["box"].Bitmap.SetPixel(14, 14, lightoutline);
-            Sprites["box"].Bitmap.DrawLine(2, 15, 13, 15, lightoutline);
-            Sprites["box"].Bitmap.DrawLine(2, 14, 13, 14, outline);
-            Sprites["box"].Bitmap.SetPixel(1, 14, lightoutline);
-            Sprites["box"].Bitmap.DrawLine(0, 2, 0, 13, lightoutline);
-            Sprites["box"].Bitmap.DrawLine(1, 2, 1, 13, outline);
-            Sprites["box"].Bitmap.FillRect(2, 2, 12, 12, filler);
+            // Outer outline
+            Sprites["box"].Bitmap.DrawLine(1, 4, 4, 1, lightoutline);
+            Sprites["box"].Bitmap.SetPixel(5, 1, lightoutline);
+            Sprites["box"].Bitmap.DrawLine(6, 0, 9, 0, lightoutline);
+            Sprites["box"].Bitmap.SetPixel(10, 1, lightoutline);
+            Sprites["box"].Bitmap.DrawLine(11, 1, 14, 4, lightoutline);
+            Sprites["box"].Bitmap.SetPixel(14, 5, lightoutline);
+            Sprites["box"].Bitmap.DrawLine(15, 6, 15, 9, lightoutline);
+            Sprites["box"].Bitmap.SetPixel(14, 10, lightoutline);
+            Sprites["box"].Bitmap.DrawLine(14, 11, 11, 14, lightoutline);
+            Sprites["box"].Bitmap.SetPixel(10, 14, lightoutline);
+            Sprites["box"].Bitmap.DrawLine(9, 15, 6, 15, lightoutline);
+            Sprites["box"].Bitmap.SetPixel(5, 14, lightoutline);
+            Sprites["box"].Bitmap.DrawLine(4, 14, 1, 11, lightoutline);
+            Sprites["box"].Bitmap.SetPixel(1, 10, lightoutline);
+            Sprites["box"].Bitmap.DrawLine(0, 9, 0, 6, lightoutline);
+            Sprites["box"].Bitmap.SetPixel(1, 5, lightoutline);
+            // Filler
+            Sprites["box"].Bitmap.FillRect(3, 3, 10, 10, filler);
+            Sprites["box"].Bitmap.DrawLine(6, 2, 9, 2, filler);
+            Sprites["box"].Bitmap.DrawLine(13, 6, 13, 9, filler);
+            Sprites["box"].Bitmap.DrawLine(9, 13, 6, 13, filler);
+            Sprites["box"].Bitmap.DrawLine(2, 9, 2, 6, filler);
+            // Inner outline
+            Sprites["box"].Bitmap.DrawLine(2, 4, 4, 2, outline);
+            Sprites["box"].Bitmap.SetPixel(5, 2, outline);
+            Sprites["box"].Bitmap.DrawLine(6, 1, 9, 1, outline);
+            Sprites["box"].Bitmap.SetPixel(10, 2, outline);
+            Sprites["box"].Bitmap.DrawLine(11, 2, 13, 4, outline);
+            Sprites["box"].Bitmap.SetPixel(13, 5, outline);
+            Sprites["box"].Bitmap.DrawLine(14, 6, 14, 9, outline);
+            Sprites["box"].Bitmap.SetPixel(13, 10, outline);
+            Sprites["box"].Bitmap.DrawLine(13, 11, 11, 13, outline);
+            Sprites["box"].Bitmap.SetPixel(10, 13, outline);
+            Sprites["box"].Bitmap.DrawLine(9, 14, 6, 14, outline);
+            Sprites["box"].Bitmap.SetPixel(5, 13, outline);
+            Sprites["box"].Bitmap.DrawLine(4, 13, 2, 11, outline);
+            Sprites["box"].Bitmap.SetPixel(2, 10, outline);
+            Sprites["box"].Bitmap.DrawLine(1, 9, 1, 6, outline);
+            Sprites["box"].Bitmap.SetPixel(2, 5, outline);
             if (Lock) Sprites["box"].Bitmap.Lock();
         }
 
@@ -112,17 +147,12 @@ namespace MKEditor.Widgets
             RedrawBox(false);
             if (this.Checked && this.Enabled)
             {
-                int x = 4;
-                int y = 4;
-                Color w = this.Enabled ? Color.WHITE : new Color(120, 120, 120);
-                Sprites["box"].Bitmap.DrawLine(x, y + 5, x + 1, y + 5, w);
-                Sprites["box"].Bitmap.DrawLine(x + 1, y + 6, x + 4, y + 6, w);
-                Sprites["box"].Bitmap.DrawLine(x + 2, y + 7, x + 4, y + 7, w);
-                Sprites["box"].Bitmap.SetPixel(x + 3, y + 8, w);
-                Sprites["box"].Bitmap.FillRect(x + 4, y + 4, 2, 2, w);
-                Sprites["box"].Bitmap.FillRect(x + 5, y + 2, 2, 2, w);
-                Sprites["box"].Bitmap.DrawLine(x + 6, y + 1, x + 7, y + 1, w);
-                Sprites["box"].Bitmap.SetPixel(x + 7, y, w);
+                Color checkcolor = this.Enabled ? Color.WHITE : new Color(120, 120, 120);
+                Sprites["box"].Bitmap.FillRect(6, 6, 4, 4, checkcolor);
+                Sprites["box"].Bitmap.DrawLine(6, 5, 9, 5, checkcolor);
+                Sprites["box"].Bitmap.DrawLine(5, 6, 5, 9, checkcolor);
+                Sprites["box"].Bitmap.DrawLine(6, 10, 9, 10, checkcolor);
+                Sprites["box"].Bitmap.DrawLine(10, 6, 10, 9, checkcolor);
             }
             Sprites["box"].Bitmap.Lock();
             base.Draw();
@@ -134,7 +164,7 @@ namespace MKEditor.Widgets
             if (WidgetIM.Hovering && this.Enabled)
             {
                 Selecting = true;
-                SetChecked(!this.Checked);
+                if (!this.Checked) SetChecked(true);
             }
         }
 
@@ -162,7 +192,10 @@ namespace MKEditor.Widgets
 
         public override void SetValue(string Identifier, object Value)
         {
-            SetChecked((string) Value == "true");
+            if (Identifier == "enabled")
+                this.SetEnabled((string) Value == "true");
+            else if (string.IsNullOrEmpty(Identifier)) SetChecked((string) Value == "true");
+            else base.SetValue(Identifier, Value);
         }
     }
 }

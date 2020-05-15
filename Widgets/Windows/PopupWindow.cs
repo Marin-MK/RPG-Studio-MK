@@ -78,7 +78,7 @@ namespace MKEditor.Widgets
             Sprites["title"].Bitmap.Lock();
         }
 
-        public void Close()
+        public virtual void Close()
         {
             Dispose();
             this.OnClosed?.Invoke(new BaseEventArgs());

@@ -14,6 +14,7 @@ namespace MKEditor.Widgets
         public Font Font { get; protected set; } = Font.Get("Fonts/ProductSans-M", 14);
         public Color TextColor { get; protected set; } = Color.WHITE;
         public bool ReadOnly { get; protected set; } = false;
+        public bool Enabled { get; protected set; } = true;
 
         public bool EnteringText = false;
 
@@ -43,14 +44,27 @@ namespace MKEditor.Widgets
             OnWidgetSelected += WidgetSelected;
         }
 
+        public void SetEnabled(bool Enabled)
+        {
+            if (this.Enabled != Enabled)
+            {
+                this.Enabled = Enabled;
+                this.DrawText();
+                if (this.SelectedWidget) Window.UI.SetSelectedWidget(null);
+            }
+        }
+
         public void SetInitialText(string Text)
         {
-            this.Text = Text;
-            X = 0;
-            RX = 0;
-            CaretIndex = 0;
-            DrawText();
-            this.OnTextChanged?.Invoke(new BaseEventArgs());
+            if (this.Text != Text)
+            {
+                this.Text = Text;
+                X = 0;
+                RX = 0;
+                CaretIndex = 0;
+                DrawText();
+                this.OnTextChanged?.Invoke(new BaseEventArgs());
+            }
         }
 
         public void SetFont(Font f)
@@ -263,6 +277,11 @@ namespace MKEditor.Widgets
         public override void Update()
         {
             base.Update();
+
+            if (SelectedWidget && !this.Enabled)
+            {
+                Window.UI.SetSelectedWidget(null);
+            }
 
             if (!SelectedWidget)
             {
@@ -478,7 +497,7 @@ namespace MKEditor.Widgets
         /// </summary>
         public void ResetIdle()
         {
-            Sprites["caret"].Visible = true;
+            Sprites["caret"].Visible = this.Enabled;
             if (TimerExists("idle")) ResetTimer("idle");
         }
 
@@ -682,7 +701,7 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = this.Font;
-            Sprites["text"].Bitmap.DrawText(this.Text, this.TextColor);
+            if (this.Enabled) Sprites["text"].Bitmap.DrawText(this.Text, this.Enabled ? this.TextColor : new Color(120, 120, 120));
             Sprites["text"].Bitmap.Lock();
         }
 
@@ -796,7 +815,7 @@ namespace MKEditor.Widgets
         public override void MouseDown(MouseEventArgs e)
         {
             base.MouseDown(e);
-            if (!WidgetIM.Hovering || this.Text.Length == 0 || this.ReadOnly) return;
+            if (!WidgetIM.Hovering || this.Text.Length == 0 || this.ReadOnly || !this.Enabled) return;
             if (SelectionStartIndex != -1 && SelectionStartIndex != SelectionEndIndex) CancelSelectionHidden();
             int OldRX = RX;
             int OldCaretIndex = CaretIndex;
@@ -843,7 +862,7 @@ namespace MKEditor.Widgets
         public override void MouseMoving(MouseEventArgs e)
         {
             base.MouseMoving(e);
-            if (!e.LeftButton || WidgetIM.ClickedLeftInArea != true || this.ReadOnly) return;
+            if (!e.LeftButton || WidgetIM.ClickedLeftInArea != true || this.ReadOnly || !this.Enabled) return;
             int OldRX = RX;
             int OldCaretIndex = CaretIndex;
             int rmx = e.X - Viewport.X;
@@ -890,7 +909,7 @@ namespace MKEditor.Widgets
         public override void HoverChanged(MouseEventArgs e)
         {
             base.HoverChanged(e);
-            if (WidgetIM.Hovering)
+            if (WidgetIM.Hovering && this.Enabled)
             {
                 Input.SetCursor(SDL_SystemCursor.SDL_SYSTEM_CURSOR_IBEAM);
             }

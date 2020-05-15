@@ -8,6 +8,7 @@ namespace MKEditor.Widgets
     {
         public BaseEvent OnButtonClicked;
         public BaseEvent OnSelectionChanged;
+        public BaseEvent OnDoubleClicked;
 
         public bool Button { get; protected set; } = false;
         public string ButtonText { get; protected set; }
@@ -80,9 +81,9 @@ namespace MKEditor.Widgets
             (Sprites["selection"].Bitmap as SolidBitmap).SetSize(Size.Width, LineHeight);
         }
 
-        public void SetSelectedIndex(int Index)
+        public void SetSelectedIndex(int Index, bool ForceRefresh = false)
         {
-            if (this.SelectedIndex != Index)
+            if (this.SelectedIndex != Index || ForceRefresh)
             {
                 this.SelectedIndex = Index;
                 if (Index == -1)
@@ -178,14 +179,38 @@ namespace MKEditor.Widgets
                 this.SelectedIndex = -1;
                 this.OnButtonClicked?.Invoke(e);
                 this.OnSelectionChanged?.Invoke(new BaseEventArgs());
+                if (TimerExists("double")) DestroyTimer("double");
             }
             else if (Sprites["hover"].Visible)
             {
                 Sprites["selection"].Y = Sprites["hover"].Y;
                 Sprites["selection"].Visible = true;
+                int oldidx = this.SelectedIndex;
                 this.SelectedIndex = Sprites["hover"].Y / this.LineHeight;
                 this.OnSelectionChanged?.Invoke(new BaseEventArgs());
+                if (oldidx != this.SelectedIndex)
+                {
+                    if (TimerExists("double")) DestroyTimer("double");
+                    SetTimer("double", 300);
+                }
+                else
+                {
+                    if (TimerExists("double") && !TimerPassed("double"))
+                    {
+                        this.OnDoubleClicked?.Invoke(new BaseEventArgs());
+                        DestroyTimer("double");
+                    }
+                    else if (TimerExists("double") && TimerPassed("double"))
+                    {
+                        ResetTimer("double");
+                    }
+                    else if (!TimerExists("double"))
+                    {
+                        SetTimer("double", 300);
+                    }
+                }
             }
+            else if (TimerExists("double")) DestroyTimer("double");
         }
     }
 

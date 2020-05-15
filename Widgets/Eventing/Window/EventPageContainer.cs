@@ -66,10 +66,10 @@ namespace MKEditor.Widgets
             EditConditionsButton.SetSize(59, 29);
             EditConditionsButton.OnClicked += delegate (BaseEventArgs e) 
             {
-                EditCondionsWindow edw = new EditCondionsWindow(EventData, PageData);
+                EditConditionsWindow edw = new EditConditionsWindow(EventData, PageData);
                 edw.OnClosed += delegate (BaseEventArgs e)
                 {
-
+                    if (edw.NeedUpdate) ConditionBox.SetEventPage(EventData, PageData);
                 };
             };
 
@@ -113,14 +113,14 @@ namespace MKEditor.Widgets
                 PageData.TriggerMode = (TriggerMode)TriggerTypeBox.SelectedIndex;
                 if (TriggerTypeBox.SelectedIndex != 1 && TriggerTypeBox.SelectedIndex != 2)
                 {
-                    TriggerParamLabel.SetVisible(false);
-                    ParamBox.SetVisible(false);
+                    TriggerParamLabel.SetEnabled(false);
+                    ParamBox.SetEnabled(false);
                     PageData.TriggerParam = null;
                 }
                 else
                 {
-                    TriggerParamLabel.SetVisible(true);
-                    ParamBox.SetVisible(true);
+                    TriggerParamLabel.SetEnabled(true);
+                    ParamBox.SetEnabled(true);
                     if (PageData.TriggerParam == null)
                     {
                         PageData.TriggerParam = 0;
@@ -178,6 +178,12 @@ namespace MKEditor.Widgets
             AutoMoveStepDelayBox.SetSize(66, 27);
             AutoMoveStepDelayBox.MinValue = 0;
             AutoMoveStepDelayBox.MaxValue = 999;
+            AutoMoveLabel.SetEnabled(false);
+            AutoMoveTypeLabel.SetEnabled(false);
+            AutoMoveTypeBox.SetEnabled(false);
+            EditAutoMoveButton.SetEnabled(false);
+            AutoMoveMoveDelayLabel.SetEnabled(false);
+            AutoMoveStepDelayBox.SetEnabled(false);
 
             Label SettingsLabel = new Label(this);
             SettingsLabel.SetFont(BoldFont);

@@ -10,6 +10,7 @@ namespace MKEditor.Widgets
         public int CaretIndex { get { return TextArea.CaretIndex; } }
         public int SelectionStartIndex { get { return TextArea.SelectionStartIndex; } }
         public int SelectionEndIndex { get { return TextArea.SelectionEndIndex; } }
+        public bool Enabled { get; protected set; } = true;
 
         public int Skin { get; protected set; } = 0;
 
@@ -26,9 +27,20 @@ namespace MKEditor.Widgets
             TextArea.SetZIndex(1);
         }
 
+        public void SetEnabled(bool Enabled)
+        {
+            if (this.Enabled != Enabled)
+            {
+                this.Enabled = Enabled;
+                this.Redraw();
+                this.TextArea.SetEnabled(Enabled);
+            }
+        }
+
         public void SetInitialText(string Text)
         {
-            TextArea.SetInitialText(Text);
+            if (this.Text != Text)
+                TextArea.SetInitialText(Text);
         }
 
         public void SetCaretIndex(int Index)
@@ -59,7 +71,7 @@ namespace MKEditor.Widgets
             Sprites["box"].Bitmap.Unlock();
             if (Skin == 0)
             {
-                Color gray = new Color(86, 108, 134);
+                Color gray = this.Enabled ? new Color(86, 108, 134) : new Color(72, 72, 72);
                 Color dark = new Color(36, 34, 36);
                 Sprites["box"].Bitmap.SetPixel(1, 1, gray);
                 Sprites["box"].Bitmap.DrawLine(2, 0, Size.Width - 3, 0, gray);
@@ -95,6 +107,16 @@ namespace MKEditor.Widgets
             {
                 Window.UI.SetSelectedWidget(null);
             }
+        }
+
+        public override object GetValue(string Identifier)
+        {
+            return this.Text;
+        }
+
+        public override void SetValue(string Identifier, object Value)
+        {
+            this.SetInitialText((string) Value);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace MKEditor.Game
@@ -26,7 +27,7 @@ namespace MKEditor.Game
         {
             string nativeid = Identifier.Substring(1);
             ConditionType type = ConditionParser.Types.Find(t => t.Identifier == nativeid);
-            if (type == null) throw new Exception($"Invalid condition identifier: '{Identifier}'");
+            if (type == null) throw new Exception($"Invalid condition identifier: '{nativeid}'");
             return new BasicCondition(type, Identifier, Parameters);
         }
 
@@ -38,28 +39,87 @@ namespace MKEditor.Game
             return Data;
         }
 
-        public bool EvaluateBooleanExpression(string Expression)
+        public bool EvaluateBooleanExpression(string Expression, ConditionUIParser Parser)
         {
+            if (Expression.Contains("&"))
+            {
+                List<string> ands = Expression.Split('&').ToList();
+                for (int i = 0; i < ands.Count; i++)
+                {
+                    bool result = EvaluateBooleanExpression(ands[i], Parser);
+                    if (!result) return false;
+                }
+                return true;
+            }
+            bool normal = !Expression.StartsWith('!');
+            if (!normal) Expression = Expression.Substring(1);
             if (Parameters.ContainsKey(":" + Expression))
             {
                 object value = Parameters[":" + Expression];
-                if (value is false || value == null) return false;
-                return true;
+                if (value is false || value == null) return normal ? false : true;
+                return normal ? true : false;
             }
-            return true;
+            else if (Regex.IsMatch(Expression, @"([a-zA-Z0-9_]*=[a-zA-Z0-9_:])|([a-zA-Z0-9_]*![a-zA-Z0-9_:])"))
+            {
+                char c = Expression.Contains('=') ? '=' : '!';
+                string varname = Expression.Substring(0, Expression.IndexOf(c));
+                string value = Expression.Substring(Expression.IndexOf(c) + 1, Expression.Length - Expression.IndexOf(c) - 1);
+                string variable = null;
+                if (!Parameters.ContainsKey(":" + varname))
+                {
+                    Widgets.Widget w = Parser.GetWidgetFromName(varname);
+                    string Identifier = Parser.GetIdentifierFromName(varname);
+                    if (w == null) return false;
+                    variable = w.GetValue(Identifier).ToString();
+                }
+                else variable = Parameters[":" + varname].ToString();
+                bool result = variable == value;
+                if (c == '!') result = !result;
+                return normal ? result : !result;
+            }
+            else if (Regex.IsMatch(Expression, @"[a-zA-Z0-9_]*\?[a-zA-Z0-9_:]"))
+            {
+                string varname = Expression.Substring(0, Expression.IndexOf('?'));
+                string value = Expression.Substring(Expression.IndexOf('?') + 1, Expression.Length - Expression.IndexOf('?') - 1);
+                object variable = null;
+                if (!Parameters.ContainsKey(":" + varname))
+                {
+                    Widgets.Widget w = Parser.GetWidgetFromName(varname);
+                    string Identifier = Parser.GetIdentifierFromName(varname);
+                    if (w == null) return false;
+                    variable = w.GetValue(Identifier);
+                }
+                else variable = Parameters[":" + varname];
+                bool result = false;
+                if (value == "string") result = variable is string;
+                else if (value == "int") result = variable is int || variable is long;
+                else if (value == "hash")
+                    result = variable is Dictionary<string, object>;
+                else if (value == "array") result = variable is List<object>;
+                else throw new Exception($"Invalid type: '{value}'");
+                return normal ? result : !result;
+            }
+            else
+            {
+                Widgets.Widget w = Parser.GetWidgetFromName(Expression);
+                if (w == null) return true;
+                object v = w.GetValue(Parser.GetIdentifierFromName(Expression));
+                if (v == null || v is bool && (bool) v == false) return normal ? false : true;
+                return normal ? true : false;
+            }
         }
 
-        public string EvaluateExpression(string Expression)
+        public object EvaluateExpression(string Expression, ConditionUIParser Parser = null)
         {
-            if (Regex.IsMatch(Expression, @"[a-zA-Z0-9_]*->[a-zA-Z0-9_@]*:[a-zA-Z0-9_@]*"))
+            if (Regex.IsMatch(Expression, @"[a-zA-Z0-9_\?]*->[\-a-zA-Z0-9_@:\.]*\|[\-a-zA-Z0-9_@:\.]*"))
             {
                 int leftidx = Expression.IndexOf('-');
-                int mididx = Expression.IndexOf(':');
+                int mididx = Expression.IndexOf('|');
                 string left = Expression.Substring(0, leftidx);
                 string mid = Expression.Substring(leftidx + 2, mididx - leftidx - 2);
                 string right = Expression.Substring(mididx + 1, Expression.Length - mididx - 1);
-                if (EvaluateBooleanExpression(left)) return EvaluateExpression(mid);
-                else return EvaluateExpression(right);
+                if (EvaluateBooleanExpression(left, Parser)) return EvaluateExpression(mid, Parser);
+                else return EvaluateExpression(right, Parser);
             }
             else if (Regex.IsMatch(Expression, @"switch\([a-zA-Z0-9_]*, [a-zA-Z0-9_]*\)"))
             {
@@ -73,7 +133,7 @@ namespace MKEditor.Game
                 if (Parameters.ContainsKey(":" + arg2)) switch_id = (int) Parameters[":" + arg2];
                 if (group_id != -1 && switch_id != -1)
                 {
-                    return "Untitled Switch";
+                    return Editor.ProjectSettings.Switches[group_id - 1].Switches[switch_id - 1].Name;
                 }
             }
             else if (Regex.IsMatch(Expression, @"variable\([a-zA-Z0-9_]*, [a-zA-Z0-9_]*\)"))
@@ -88,20 +148,37 @@ namespace MKEditor.Game
                 if (Parameters.ContainsKey(":" + arg2)) variable_id = (int) Parameters[":" + arg2];
                 if (group_id != -1 && variable_id != -1)
                 {
-                    return "Untitled Variable";
+                    return Editor.ProjectSettings.Variables[group_id - 1].Variables[variable_id - 1].Name;
                 }
             }
             else
             {
+                string type = null;
                 string settings = null;
+                string identifier = null;
                 if (Expression.Contains('@'))
                 {
                     settings = Expression.Substring(Expression.IndexOf('@') + 1);
                     Expression = Expression.Substring(0, Expression.IndexOf('@'));
                 }
+                if (Expression.Contains('?'))
+                {
+                    type = Expression.Substring(Expression.IndexOf('?') + 1);
+                    Expression = Expression.Substring(0, Expression.IndexOf('?'));
+                }
+                if (Expression.Contains('.'))
+                {
+                    identifier = Expression.Substring(Expression.IndexOf('.') + 1);
+                    Expression = Expression.Substring(0, Expression.IndexOf('.'));
+                }
                 if (Parameters.ContainsKey(":" + Expression))
                 {
                     object param = Parameters[":" + Expression];
+                    if (!string.IsNullOrEmpty(identifier))
+                    {
+                        if (!(param is Dictionary<string, object>)) throw new Exception($"Failed to apply identifier '{identifier}' to parameter of type '{param.GetType().Name}'.");
+                        param = ((Dictionary<string, object>) param)[":" + identifier];
+                    }
                     if (!string.IsNullOrEmpty(settings))
                     {
                         if (param is int)
@@ -113,18 +190,49 @@ namespace MKEditor.Game
                             if (settings == "ON") return (bool) param ? "ON" : "OFF";
                         }
                     }
-                    if (param == null) return "nil";
-                    return param.ToString();
+                    if (!string.IsNullOrEmpty(type))
+                    {
+                        bool result = false;
+                        if (type == "int") result = param is int || param is long;
+                        else if (type == "string") result = param is string;
+                        else if (type == "hash") result = param is Dictionary<string, object> || param is Dictionary<object, object>;
+                        else if (type == "array") result = param is List<object>;
+                        else throw new Exception($"Invalid type: '{type}'");
+                        return result ? "true" : "false";
+                    }
+                    if (param == null) return "";
+                    return param;
+                }
+                else if (Parser != null)
+                {
+                    Widgets.Widget w = Parser.GetWidgetFromName(Expression);
+                    if (w == null) return Expression;
+                    return w.GetValue(Parser.GetIdentifierFromName(Expression));
                 }
             }
             return Expression;
         }
 
-        public override string ToString()
+        public string ToString(ConditionUIParser Parser)
         {
             string Str = "";
-            // Script: [c=1]{code}
-            string format = this.Type.Text;
+            string format = null;
+            if (this.Type.Text is Dictionary<string, string>)
+            {
+                foreach (string condition in ((Dictionary<string, string>) this.Type.Text).Keys)
+                {
+                    if (EvaluateBooleanExpression(condition, Parser))
+                    {
+                        format = ((Dictionary<string, string>) this.Type.Text)[condition];
+                        break;
+                    }
+                }
+            }
+            else if (this.Type.Text is string)
+            {
+                format = (string) this.Type.Text;
+            }
+            if (format == null) return "";
             for (int i = 0; i < format.Length; i++)
             {
                 if (format[i] == '[' && (i == 0 || format[i - 1] != '\\') && format[i + 1] == 'c' && format[i + 2] == '=')
@@ -143,7 +251,7 @@ namespace MKEditor.Game
                     string color = format.Substring(i, length);
                     if (!Utilities.IsNumeric(color))
                     {
-                        color = EvaluateExpression(color);
+                        color = (string) EvaluateExpression(color);
                     }
                     Str += $"[c={color}]";
                     i += length;

@@ -168,7 +168,7 @@ namespace MKEditor
         public static ConditionType ParseType(Dictionary<string, object> typeobject)
         {
             string Name = null;
-            string Text = null;
+            object Text = null;
             List<ConditionParameter> Parameters = new List<ConditionParameter>();
             Dictionary<string, object> UI = new Dictionary<string, object>();
             if (!typeobject.ContainsKey("name")) throw new Exception($"Condition type definition must contain a 'name' key.");
@@ -183,8 +183,19 @@ namespace MKEditor
                         Name = (string) typevalue;
                         break;
                     case "text":
-                        EnsureType(typeof(string), typevalue, "text");
-                        Text = (string) typevalue;
+                        if (!(typevalue is string) && !(typevalue is JObject)) throw new Exception($"Expected a string or object, but got {typevalue.GetType().Name} in key 'text'.");
+                        if (typevalue is string) Text = typevalue;
+                        else
+                        {
+                            Text = new Dictionary<string, string>();
+                            Dictionary<string, object> text = ((JObject) typevalue).ToObject<Dictionary<string, object>>();
+                            foreach (string textkey in text.Keys)
+                            {
+                                object textvalue = text[textkey];
+                                EnsureType(typeof(string), textvalue, textkey);
+                                ((Dictionary<string, string>) Text).Add(textkey, (string) textvalue);
+                            }
+                        }
                         break;
                     case "parameters":
                         if (!(typevalue is JObject)) throw new Exception($"Expected an object, but got a {typevalue.GetType().Name} in key 'parameters'.");
@@ -238,11 +249,11 @@ namespace MKEditor
     {
         public string Identifier;
         public string Name;
-        public string Text;
+        public object Text;
         public List<ConditionParameter> Parameters;
         public Dictionary<string, object> UI;
 
-        public ConditionType(string Identifier, string Name, string Text, List<ConditionParameter> Parameters, Dictionary<string, object> UI)
+        public ConditionType(string Identifier, string Name, object Text, List<ConditionParameter> Parameters, Dictionary<string, object> UI)
         {
             this.Identifier = Identifier;
             this.Name = Name;
@@ -286,6 +297,16 @@ namespace MKEditor
                     else if (DefaultValue.ToLower() == "false" || DefaultValue.ToLower() == "f" || DefaultValue.ToLower() == "no" || DefaultValue.ToLower() == "n")
                         this.DefaultValue = false;
                     else throw new Exception($"Condition parameter '{Name}' expects a default value of type '{DataType}'");
+                }
+                else if (DataType == "string")
+                {
+                    this.DefaultValue = DefaultValue;
+                }
+                else if (DataType == "object")
+                {
+                    if (DefaultValue == "null") this.DefaultValue = null;
+                    else if (Utilities.IsNumeric(DefaultValue)) this.DefaultValue = Convert.ToInt32(DefaultValue);
+                    else this.DefaultValue = DefaultValue;
                 }
                 else
                 {

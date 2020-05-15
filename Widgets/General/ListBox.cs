@@ -20,7 +20,18 @@ namespace MKEditor.Widgets
             {
                 ListDrawer.OnSelectionChanged = value;
             }
-        } 
+        }
+        public BaseEvent OnDoubleClicked
+        {
+            get
+            {
+                return ListDrawer.OnDoubleClicked;
+            }
+            set
+            {
+                ListDrawer.OnDoubleClicked = value;
+            }
+        }
 
         public Container MainContainer;
         public ListDrawer ListDrawer;
@@ -71,9 +82,9 @@ namespace MKEditor.Widgets
             MainContainer.VScrollBar.SetSize(8, Size.Height - 4);
         }
 
-        public void SetSelectedIndex(int idx)
+        public void SetSelectedIndex(int idx, bool ForceRefresh = false)
         {
-            ListDrawer.SetSelectedIndex(idx);
+            ListDrawer.SetSelectedIndex(idx, ForceRefresh);
         }
 
         public override void Redraw()

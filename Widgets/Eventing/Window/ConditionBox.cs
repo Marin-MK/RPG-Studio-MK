@@ -24,6 +24,9 @@ namespace MKEditor.Widgets
         Container MainContainer;
         VStackPanel StackPanel;
 
+        public BaseEvent OnDoubleClicked;
+        public BaseEvent OnSelectionChanged;
+
         public ConditionBox(IContainer Parent) : base(Parent)
         {
             Sprites["bg"] = new Sprite(this.Viewport);
@@ -42,7 +45,7 @@ namespace MKEditor.Widgets
             {
                 this.Selectable = Selectable;
                 StackPanel.Widgets.ForEach(w => ((ConditionEntryWidget) w).SetSelectable(this.Selectable));
-                this.SetSelectedIndex(0);
+                if (Selectable && PageData.Conditions.Count > 0) this.SetSelectedIndex(0);
             }
         }
 
@@ -84,7 +87,7 @@ namespace MKEditor.Widgets
             {
                 ConditionEntryWidget cew = new ConditionEntryWidget(StackPanel);
                 cew.SetSize(StackPanel.Size.Width, 20);
-                cew.SetCondition(condition);
+                cew.SetCondition(condition, null);
                 cew.SetSelectable(this.Selectable);
             }
             if (this.Selectable && Page.Conditions.Count > 0) this.SetSelectedIndex(0);
@@ -133,10 +136,11 @@ namespace MKEditor.Widgets
                 this.Selected = Selected;
                 SetBackgroundColor(this.Selected ? new Color(28, 50, 73) : Color.ALPHA);
                 Sprites["hover"].Visible = this.Selectable && this.WidgetIM.Hovering;
+                if (Selected) ((ConditionBox) Parent.Parent.Parent).OnSelectionChanged?.Invoke(new BaseEventArgs());
             }
         }
 
-        public void SetCondition(BasicCondition Condition)
+        public void SetCondition(BasicCondition Condition, ConditionUIParser Parser)
         {
             this.Condition = Condition;
             Sprites["text"].Bitmap?.Dispose();
@@ -144,7 +148,7 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = Font.Get("Fonts/ProductSans-M", 12);
             int x = 0;
-            string text = Condition.ToString();
+            string text = Condition.ToString(Parser);
             Color color = ConditionParser.Colors[0];
             for (int i = 0; i < text.Length; i++)
             {
@@ -187,7 +191,31 @@ namespace MKEditor.Widgets
             base.MouseDown(e);
             if (WidgetIM.Hovering && e.LeftButton != e.OldLeftButton && this.Selectable)
             {
-                SetSelected(true);
+                if (!this.Selected)
+                {
+                    SetSelected(true);
+                    if (TimerExists("double")) DestroyTimer("double");
+                    SetTimer("double", 300);
+                }
+                else
+                {
+                    if (TimerExists("double") && !TimerPassed("double"))
+                    {
+                        ((ConditionBox) Parent.Parent.Parent).OnDoubleClicked?.Invoke(new BaseEventArgs());
+                    }
+                    else if (TimerExists("double") && TimerPassed("double"))
+                    {
+                        ResetTimer("double");
+                    }
+                    else if (!TimerExists("double"))
+                    {
+                        SetTimer("double", 300);
+                    }
+                }
+            }
+            else if (TimerExists("double"))
+            {
+                DestroyTimer("double");
             }
         }
     }

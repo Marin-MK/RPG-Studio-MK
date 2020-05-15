@@ -5,8 +5,11 @@ using ODL;
 
 namespace MKEditor.Widgets
 {
-    public class GameSwitchPicker : Widget
+    public class GameSwitchPicker : PopupWindow
     {
+        public int GroupID;
+        public int SwitchID;
+
         Label CategoryLabel;
         Label SwitchLabel;
         ListBox GroupBox;
@@ -17,39 +20,58 @@ namespace MKEditor.Widgets
         TextBox SwitchNameBox;
         Button ChangeMaxGroups;
         Button ChangeMaxSwitches;
-        Label ValueLabel;
-        DropdownBox ValueBox;
 
-        public GameSwitchPicker(IContainer Parent) : base(Parent)
+        public GameSwitchPicker(int GroupID, int SwitchID) : base()
         {
+            this.GroupID = GroupID;
+            this.SwitchID = SwitchID;
+            MinimumSize = MaximumSize = new Size(361, 409);
+            SetTitle("Choose Game Switch");
+            SetSize(MaximumSize);
+            Center();
+
             CategoryLabel = new Label(this);
+            CategoryLabel.SetPosition(10, 28);
             CategoryLabel.SetText("Categories");
             CategoryLabel.SetFont(Font.Get("Fonts/Ubuntu-B", 14));
 
             SwitchLabel = new Label(this);
+            SwitchLabel.SetPosition(194, 28);
             SwitchLabel.SetText("Switches");
             SwitchLabel.SetFont(Font.Get("Fonts/Ubuntu-B", 14));
 
             GroupBox = new ListBox(this);
+            GroupBox.SetPosition(6, 48);
+            GroupBox.SetSize(167, 254);
             RedrawGroupBox();
             GroupBox.OnSelectionChanged += delegate (BaseEventArgs e)
             {
                 GroupNameBox.SetInitialText(Editor.ProjectSettings.Switches[GroupBox.SelectedIndex].Name?? "");
                 RedrawSwitchBox();
-                SwitchBox.SetSelectedIndex(0);
+                SwitchBox.SetSelectedIndex(0, true);
                 SwitchBox.MainContainer.VScrollBar.SetValue(0);
             };
-            
+
             SwitchBox = new ListBox(this);
+            SwitchBox.SetPosition(185, 48);
+            SwitchBox.SetSize(167, 254);
             SwitchBox.OnSelectionChanged += delegate (BaseEventArgs e)
             {
                 SwitchNameBox.SetInitialText(Editor.ProjectSettings.Switches[GroupBox.SelectedIndex].Switches[SwitchBox.SelectedIndex].Name ?? "");
             };
+            SwitchBox.OnDoubleClicked += delegate (BaseEventArgs e)
+            {
+                this.SwitchID = SwitchBox.SelectedIndex + 1;
+                OK(new BaseEventArgs());
+            };
 
             GroupNameLabel = new Label(this);
+            GroupNameLabel.SetPosition(9, 311);
             GroupNameLabel.SetText("Name:");
             GroupNameLabel.SetFont(Font.Get("Fonts/ProductSans-M", 12));
             GroupNameBox = new TextBox(this);
+            GroupNameBox.SetPosition(56, 307);
+            GroupNameBox.SetSize(117, 27);
             GroupNameBox.OnTextChanged += delegate (BaseEventArgs e)
             {
                 Editor.ProjectSettings.Switches[GroupBox.SelectedIndex].Name = GroupNameBox.Text;
@@ -57,9 +79,12 @@ namespace MKEditor.Widgets
             };
 
             SwitchNameLabel = new Label(this);
+            SwitchNameLabel.SetPosition(193, 311);
             SwitchNameLabel.SetText("Name:");
             SwitchNameLabel.SetFont(Font.Get("Fonts/ProductSans-M", 12));
             SwitchNameBox = new TextBox(this);
+            SwitchNameBox.SetPosition(235, 307);
+            SwitchNameBox.SetSize(117, 27);
             SwitchNameBox.OnTextChanged += delegate (BaseEventArgs e)
             {
                 Editor.ProjectSettings.Switches[GroupBox.SelectedIndex].Switches[SwitchBox.SelectedIndex].Name = SwitchNameBox.Text;
@@ -67,6 +92,8 @@ namespace MKEditor.Widgets
             };
 
             ChangeMaxGroups = new Button(this);
+            ChangeMaxGroups.SetPosition(9, 340);
+            ChangeMaxGroups.SetSize(163, 29);
             ChangeMaxGroups.SetText("Change Maximum");
             ChangeMaxGroups.OnClicked += delegate (BaseEventArgs e)
             {
@@ -133,6 +160,8 @@ namespace MKEditor.Widgets
             };
 
             ChangeMaxSwitches = new Button(this);
+            ChangeMaxSwitches.SetPosition(188, 340);
+            ChangeMaxSwitches.SetSize(163, 29);
             ChangeMaxSwitches.SetText("Change Maximum");
             ChangeMaxSwitches.OnClicked += delegate (BaseEventArgs e)
             {
@@ -198,17 +227,11 @@ namespace MKEditor.Widgets
                 win.Center();
             };
 
-            ValueLabel = new Label(this);
-            ValueLabel.SetText("Switch must be:");
-            ValueLabel.SetFont(Font.Get("Fonts/ProductSans-M", 12));
-            ValueBox = new DropdownBox(this);
-            ValueBox.SetItems(new List<ListItem>()
-            {
-                new ListItem("ON/Enabled"),
-                new ListItem("OFF/Disabled")
-            });
+            GroupBox.SetSelectedIndex(this.GroupID - 1);
+            SwitchBox.SetSelectedIndex(this.SwitchID - 1);
 
-            GroupBox.SetSelectedIndex(0);
+            CreateButton("Cancel", Cancel);
+            CreateButton("OK", OK);
         }
 
         public void RedrawGroupBox()
@@ -233,53 +256,16 @@ namespace MKEditor.Widgets
             if (SwitchBox.SelectedIndex >= Items.Count) SwitchBox.SetSelectedIndex(Items.Count - 1);
         }
 
-        public override void SizeChanged(BaseEventArgs e)
+        public void OK(BaseEventArgs e)
         {
-            base.SizeChanged(e);
-            if (Size.Width == 50 && Size.Height == 50) return;
-
-            int w = Size.Width / 2 - 12;
-
-            CategoryLabel.SetPosition(9, -4);
-            SwitchLabel.SetPosition(w + 26, -4);
-
-            GroupBox.SetPosition(5, 16);
-            GroupBox.SetSize(w, Size.Height - 113);
-            SwitchBox.SetPosition(w + 17, 16);
-            SwitchBox.SetSize(w, Size.Height - 113);
-
-            GroupNameLabel.SetPosition(8, Size.Height - 87);
-            GroupNameBox.SetPosition(55, Size.Height - 92);
-            GroupNameBox.SetSize(w - 50, 27);
-
-            SwitchNameLabel.SetPosition(w + 25, Size.Height - 87);
-            SwitchNameBox.SetPosition(w + 67, Size.Height - 92);
-            SwitchNameBox.SetSize(w - 50, 27);
-
-            ChangeMaxGroups.SetPosition(7, Size.Height - 60);
-            ChangeMaxGroups.SetSize(w - 2, 31);
-            ChangeMaxSwitches.SetPosition(w + 19, Size.Height - 60);
-            ChangeMaxSwitches.SetSize(w - 2, 31);
-
-            ValueLabel.SetPosition(9, Size.Height - 20);
-            ValueBox.SetPosition(104, Size.Height - 25);
-            ValueBox.SetSize(110, 25);
+            this.GroupID = GroupBox.SelectedIndex + 1;
+            this.SwitchID = SwitchBox.SelectedIndex + 1;
+            this.Close();
         }
 
-        public override object GetValue(string Identifier)
+        public void Cancel(BaseEventArgs e)
         {
-            if (Identifier == "group_id") return GroupBox.SelectedIndex + 1;
-            else if (Identifier == "switch_id") return SwitchBox.SelectedIndex + 1;
-            else if (Identifier == "value") return ValueBox.SelectedIndex == 0;
-            throw new Exception($"Invalid identifier '{Identifier}'");
-        }
-
-        public override void SetValue(string Identifier, object Value)
-        {
-            if (Identifier == "group_id") GroupBox.SetSelectedIndex((int) Value - 1);
-            else if (Identifier == "switch_id") SwitchBox.SetSelectedIndex((int) Value - 1);
-            else if (Identifier == "value") ValueBox.SetSelectedIndex((bool) Value ? 0 : 1);
-            else throw new Exception($"Invalid identifier '{Identifier}'");
+            this.Close();
         }
     }
 }

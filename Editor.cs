@@ -112,6 +112,11 @@ namespace MKEditor
             ConditionParser.Initialize();
         }
 
+        public static void WIP()
+        {
+            new MessageBox("WIP", "WIP", ButtonType.OK, IconType.Error);
+        }
+
         /// <summary>
         /// Undoes the latest change you made.
         /// </summary>
@@ -944,14 +949,16 @@ namespace MKEditor
         /// </summary>
         public static void MakeRecentProject()
         {
+            string path = ProjectFilePath;
+            while (path.Contains('\\')) path = path.Replace('\\', '/');
             for (int i = 0; i < GeneralSettings.RecentFiles.Count; i++)
             {
-                if (GeneralSettings.RecentFiles[i][1] == ProjectFilePath) // Project file paths match - same project
+                if (GeneralSettings.RecentFiles[i][1] == path) // Project file paths match - same project
                 {
                     GeneralSettings.RecentFiles.RemoveAt(i);
                 }
             }
-            GeneralSettings.RecentFiles.Add(new List<string>() { ProjectSettings.ProjectName, ProjectFilePath });
+            GeneralSettings.RecentFiles.Add(new List<string>() { ProjectSettings.ProjectName, path });
         }
 
         /// <summary>
@@ -1025,6 +1032,9 @@ namespace MKEditor
             if (ProjectSettings.SwitchGroupCapacity == 0) ProjectSettings.SwitchGroupCapacity = 25;
             if (ProjectSettings.Switches == null) ProjectSettings.Switches = new List<GameSwitchGroup>();
             if (ProjectSettings.Switches.Count == 0) for (int i = 0; i < ProjectSettings.SwitchGroupCapacity; i++) ProjectSettings.Switches.Add(new GameSwitchGroup() { ID = i + 1 });
+            if (ProjectSettings.VariableGroupCapacity == 0) ProjectSettings.VariableGroupCapacity = 25;
+            if (ProjectSettings.Variables == null) ProjectSettings.Variables = new List<GameVariableGroup>();
+            if (ProjectSettings.Variables.Count == 0) for (int i = 0; i < ProjectSettings.VariableGroupCapacity; i++) ProjectSettings.Variables.Add(new GameVariableGroup() { ID = i + 1 });
         }
 
         /// <summary>
@@ -1092,6 +1102,14 @@ namespace MKEditor
         /// The data related to game switches.
         /// </summary>
         public List<GameSwitchGroup> Switches = new List<GameSwitchGroup>();
+        /// <summary>
+        /// The maximum game variable group capacity.
+        /// </summary>
+        public int VariableGroupCapacity = 25;
+        /// <summary>
+        /// The data related to game variables.
+        /// </summary>
+        public List<GameVariableGroup> Variables = new List<GameVariableGroup>();
     }
 
     [Serializable]

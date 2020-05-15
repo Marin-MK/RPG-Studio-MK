@@ -7,7 +7,7 @@ namespace MKEditor.Widgets
     public class TabView : Widget
     {
         public  List<TabContainer> Tabs          = new List<TabContainer>();
-        private List<string>       Names         = new List<string>();
+        public  List<string>       Names         = new List<string>();
         public  int                SelectedIndex { get; protected set; } = -1;
         private int                HoveringIndex = -1;
         public  Color              HeaderColor   { get; protected set; } = new Color(28, 50, 73);
