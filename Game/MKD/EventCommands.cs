@@ -22,10 +22,8 @@ namespace MKEditor.Game
             {
                 case ":script":
                     return new ScriptCommand(Indent, Identifier, Parameters);
-                //case ":switch":
-                //    return new SwitchCommand(Indent, Identifier, Parameters);
-                //case ":variable":
-                //    return new VariableCommand(Indent, Identifier, Parameters);
+                case ":message":
+                    return new MessageCommand(Indent, Identifier, Parameters);
                 default:
                     throw new Exception($"Unknown condition Identifier: '{Identifier}'");
             }
@@ -46,6 +44,14 @@ namespace MKEditor.Game
         public string Code { get { return (string) Parameters[":code"] ?? ""; } }
 
         public ScriptCommand(int Indent, string Identifier, Dictionary<string, object> Parameters)
+            : base(Indent, Identifier, Parameters) { }
+    }
+
+    public class MessageCommand : BasicCommand
+    {
+        public string Message { get { return (string) Parameters[":text"] ?? ""; } }
+
+        public MessageCommand(int Indent, string Identifier, Dictionary<string, object> Parameters)
             : base(Indent, Identifier, Parameters) { }
     }
 }

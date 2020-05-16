@@ -229,6 +229,9 @@ namespace MKEditor.Widgets
 
         public void OpenEvent(int EventID, bool NewEvent = false)
         {
+            DraggingEventID = -1;
+            DraggingAnchorX = -1;
+            DraggingAnchorY = -1;
             EditEvent ee = new EditEvent(Map, Map.Events[EventID], NewEvent);
             ee.OnClosed += delegate (BaseEventArgs args)
             {

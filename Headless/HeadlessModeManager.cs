@@ -46,6 +46,7 @@ namespace MKEditor
             Register(new Command("close-project", CloseProjectFunc, "Closes the current project.") { Condition = delegate () { return Editor.InProject; } });
             Register(new Command("show-recents", ShowRecents, "Displays a list of all recently opened projects.") { Condition = delegate () { return !Editor.InProject; } });
             Register(new Command("load-recent", LoadRecent, "Loads a recently opened project.") { Condition = delegate () { return !Editor.InProject; } });
+            Register(new Command("rename", RenameProject, "Renames the current project.") { Condition = delegate () { return Editor.InProject; } });
             Register(new Command("map", MapMode, "Perform mapping-related operations.") { Condition = delegate () { return Editor.InProject; } });
             Register(new Command("data", DataMode, "Perform data-related operations.") { Condition = delegate () { return Editor.InProject; } });
             Register(new Command("clear", Clear, "Clears the console window.", "cls"));
@@ -129,6 +130,27 @@ namespace MKEditor
                     Error($"Invalid file path: '{NextArg}'");
                     return false;
                 }
+            }
+        }
+
+        public bool RenameProject()
+        {
+            string NextArg = GetNextArg(true);
+            if (string.IsNullOrEmpty(NextArg)) return Error("Expected the new project name.");
+            else
+            {
+                string path = Editor.ProjectFilePath;
+                while (path.Contains('\\')) path = path.Replace('\\', '/');
+                for (int i = 0; i < Editor.GeneralSettings.RecentFiles.Count; i++)
+                {
+                    if (Editor.GeneralSettings.RecentFiles[i][1] == path) // Project file paths match - same project
+                    {
+                        Editor.GeneralSettings.RecentFiles[i][0] = NextArg;
+                    }
+                }
+                Editor.ProjectSettings.ProjectName = NextArg;
+                Console.WriteLine($"The project name has been set to '{NextArg}'.");
+                return true;
             }
         }
 
