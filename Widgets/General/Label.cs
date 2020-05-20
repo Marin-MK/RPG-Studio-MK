@@ -27,7 +27,7 @@ namespace MKEditor.Widgets
             }
         }
 
-        public void SetText(string Text, DrawOptions DrawOptions = ODL.DrawOptions.LeftAlign)
+        public virtual void SetText(string Text, DrawOptions DrawOptions = ODL.DrawOptions.LeftAlign)
         {
             if (this.Text != Text)
             {
@@ -81,12 +81,14 @@ namespace MKEditor.Widgets
         public override object GetValue(string Identifier)
         {
             if (Identifier == "enabled") return this.Enabled;
+            else if (string.IsNullOrEmpty(Identifier)) return this.Text;
             return base.GetValue(Identifier);
         }
 
         public override void SetValue(string Identifier, object Value)
         {
             if (Identifier == "enabled") this.SetEnabled((string) Value == "true");
+            else if (string.IsNullOrEmpty(Identifier)) this.SetText((string) Value);
             else base.SetValue(Identifier, Value);
         }
     }
