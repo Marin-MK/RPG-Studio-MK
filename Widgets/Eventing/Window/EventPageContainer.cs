@@ -27,9 +27,10 @@ namespace MKEditor.Widgets
             CommandsLabel.SetFont(BoldFont);
             CommandsLabel.SetPosition(306, 4);
             CommandsLabel.SetText("Commands");
-            ListBox CommandBox = new ListBox(this);
+            CommandBox CommandBox = new CommandBox(this);
             CommandBox.SetPosition(305, 22);
             CommandBox.SetSize(438, 493);
+            CommandBox.SetEventPage(EventData, PageData);
 
             Label PropsLabel = new Label(this);
             PropsLabel.SetPosition(8, 4);

@@ -566,7 +566,7 @@ namespace MKEditor.Widgets
         /// </summary>
         public void UpdateAutoScroll()
         {
-            if (!HAutoScroll && !VAutoScroll) return;
+            if (!HAutoScroll && !VAutoScroll && !AutoResize) return;
             // Calculate total child width
             int OldMaxChildWidth = MaxChildWidth;
             MaxChildWidth = 0;
@@ -589,11 +589,7 @@ namespace MKEditor.Widgets
             });
             if (AutoResize)
             {
-                int w = this.Size.Width;
-                if (MaxChildWidth > w) w = MaxChildWidth;
-                int h = this.Size.Height;
-                if (MaxChildHeight > h) h = MaxChildHeight;
-                SetSize(w, h);
+                SetSize(MaxChildWidth, MaxChildHeight);
             }
             else
             {

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using MKEditor.Game;
 using Newtonsoft.Json.Linq;
 using ODL;
@@ -268,71 +270,40 @@ namespace MKEditor
 
         public static List<string> FormatString(Font f, string Text, int Width)
         {
-            List<string> Words = new List<string>();
-            foreach (string word in Text.Split(' '))
+
+            List<string> Lines = new List<string>();
+            int startidx = 0;
+            int lastsplittableindex = -1;
+            for (int i = 0; i < Text.Length; i++)
             {
-                if (word.Contains("\n"))
+                char c = Text[i];
+                string txt = Text.Substring(startidx, i - startidx + 1);
+                Size s = f.TextSize(txt);
+                if (c == '\n')
                 {
-                    List<string> splits = new List<string>(word.Split('\n'));
-                    for (int j = 0; j < splits.Count; j++)
-                    {
-                        Words.Add(splits[j]);
-                        if (j != splits.Count - 1) Words.Add("\n");
-                    }
+                    Lines.Add(Text.Substring(startidx, i - startidx + 1));
+                    startidx = i + 1;
+                    if (i == Text.Length - 1) Lines.Add("");
                 }
-                else
+                else if (s.Width >= Width)
                 {
-                    Words.Add(word);
+                    int endidx = lastsplittableindex == -1 ? i : lastsplittableindex + 1;
+                    Lines.Add(Text.Substring(startidx, endidx - startidx - 1));
+                    startidx = endidx - 1;
+                    lastsplittableindex = -1;
+                }
+                else if (c == ' ' || c == '-')
+                {
+                    lastsplittableindex = i + 1;
                 }
             }
-            List<string> Lines = new List<string>() { "" };
-            for (int i = 0; i < Words.Count; i++)
+            if (startidx != Text.Length)
             {
-                if (Words[i] == "\n")
-                {
-                    if (Lines[Lines.Count - 1].Length > 0) Lines[Lines.Count - 1] = Lines[Lines.Count - 1].Remove(Lines[Lines.Count - 1].Length - 1);
-                    Lines.Add("");
-                    continue;
-                }
-                Size wordsize = f.TextSize(Words[i]);
-                if (wordsize.Width >= Width)
-                {
-                    List<string> newwords = new List<string>();
-                    int startidx = 0;
-                    for (int j = 0; j < Words[i].Length; j++)
-                    {
-                        Size cursize = f.TextSize(Words[i].Substring(startidx, j - startidx));
-                        if (cursize.Width >= Width)
-                        {
-                            newwords.Add(Words[i].Substring(startidx, j - startidx - 1));
-                            startidx = j - 1;
-                            j--;
-                        }
-                    }
-                    if (newwords.Count == 0)
-                    {
-                        newwords.Add(Words[i].Substring(0, Words[i].Length - 1));
-                        startidx = Words[i].Length - 1;
-                    }
-                    newwords.Add(Words[i].Substring(startidx, Words[i].Length - startidx));
-                    Words.RemoveAt(i);
-                    Words.InsertRange(i, newwords);
-                    i--;
-                }
-                else
-                {
-                    string text = Lines[Lines.Count - 1] + Words[i];
-                    Size s = f.TextSize(text);
-                    if (s.Width >= Width)
-                    {
-                        if (Lines[Lines.Count - 1].Length > 0) Lines[Lines.Count - 1] = Lines[Lines.Count - 1].Remove(Lines[Lines.Count - 1].Length - 1);
-                        Lines.Add(Words[i] + " ");
-                    }
-                    else
-                    {
-                        Lines[Lines.Count - 1] += Words[i] + " ";
-                    }
-                }
+                Lines.Add(Text.Substring(startidx));
+            }
+            else if (Lines.Count == 0)
+            {
+                Lines.Add("");
             }
             return Lines;
         }
@@ -388,6 +359,273 @@ namespace MKEditor
                 if (!Utilities.IsNumeric(c)) return false;
             }
             return true;
+        }
+
+        public static bool EvaluateBooleanExpression(string Expression, Dictionary<string, object> Parameters, IUIParser Parser)
+        {
+            if (Expression.Contains("&"))
+            {
+                List<string> ands = Expression.Split('&').ToList();
+                for (int i = 0; i < ands.Count; i++)
+                {
+                    bool result = EvaluateBooleanExpression(ands[i], Parameters, Parser);
+                    if (!result) return false;
+                }
+                return true;
+            }
+            bool normal = !Expression.StartsWith('!');
+            if (!normal) Expression = Expression.Substring(1);
+            if (Parameters.ContainsKey(":" + Expression))
+            {
+                object value = Parameters[":" + Expression];
+                if (value is false || value == null) return normal ? false : true;
+                return normal ? true : false;
+            }
+            else if (Regex.IsMatch(Expression, @"([a-zA-Z0-9_]*=[a-zA-Z0-9_:])|([a-zA-Z0-9_]*![a-zA-Z0-9_:])"))
+            {
+                char c = Expression.Contains('=') ? '=' : '!';
+                string varname = Expression.Substring(0, Expression.IndexOf(c));
+                string value = Expression.Substring(Expression.IndexOf(c) + 1, Expression.Length - Expression.IndexOf(c) - 1);
+                string variable = null;
+                if (!Parameters.ContainsKey(":" + varname))
+                {
+                    Widgets.Widget w = Parser.GetWidgetFromName(varname);
+                    string Identifier = Parser.GetIdentifierFromName(varname);
+                    if (w == null) return false;
+                    variable = w.GetValue(Identifier).ToString();
+                }
+                else variable = Parameters[":" + varname].ToString();
+                bool result = variable == value;
+                if (c == '!') result = !result;
+                return normal ? result : !result;
+            }
+            else if (Regex.IsMatch(Expression, @"[a-zA-Z0-9_]*\?[a-zA-Z0-9_:]"))
+            {
+                string varname = Expression.Substring(0, Expression.IndexOf('?'));
+                string value = Expression.Substring(Expression.IndexOf('?') + 1, Expression.Length - Expression.IndexOf('?') - 1);
+                object variable = null;
+                if (!Parameters.ContainsKey(":" + varname))
+                {
+                    Widgets.Widget w = Parser.GetWidgetFromName(varname);
+                    string Identifier = Parser.GetIdentifierFromName(varname);
+                    if (w == null) return false;
+                    variable = w.GetValue(Identifier);
+                }
+                else variable = Parameters[":" + varname];
+                bool result = false;
+                if (value == "string") result = variable is string;
+                else if (value == "int") result = variable is int || variable is long;
+                else if (value == "hash") result = variable is Dictionary<string, object>;
+                else if (value == "array") result = variable is List<object>;
+                else if (value == "bool") result = variable is bool;
+                else throw new Exception($"Invalid type: '{value}'");
+                return normal ? result : !result;
+            }
+            else
+            {
+                Widgets.Widget w = Parser.GetWidgetFromName(Expression);
+                if (w == null) return true;
+                object v = w.GetValue(Parser.GetIdentifierFromName(Expression));
+                if (v == null || v is bool && (bool)v == false) return normal ? false : true;
+                return normal ? true : false;
+            }
+        }
+
+        public static object EvaluateExpression(string Expression, Dictionary<string, object> Parameters, IUIParser Parser)
+        {
+            if (Regex.IsMatch(Expression, @"[a-zA-Z0-9_\?]*->[\-a-zA-Z0-9_@:\.]*\|[\-a-zA-Z0-9_@:\.]*"))
+            {
+                int leftidx = Expression.IndexOf('-');
+                int mididx = Expression.IndexOf('|');
+                string left = Expression.Substring(0, leftidx);
+                string mid = Expression.Substring(leftidx + 2, mididx - leftidx - 2);
+                string right = Expression.Substring(mididx + 1, Expression.Length - mididx - 1);
+                if (EvaluateBooleanExpression(left, Parameters, Parser)) return EvaluateExpression(mid, Parameters, Parser);
+                else return EvaluateExpression(right, Parameters, Parser);
+            }
+            else if (Regex.IsMatch(Expression, @"switch\([a-zA-Z0-9_]*, [a-zA-Z0-9_]*\)"))
+            {
+                int pid = Expression.IndexOf('(');
+                int cid = Expression.IndexOf(',');
+                string arg1 = Expression.Substring(pid + 1, cid - pid - 1);
+                string arg2 = Expression.Substring(cid + 2, Expression.Length - cid - 3);
+                int group_id = -1;
+                int switch_id = -1;
+                if (Parameters.ContainsKey(":" + arg1)) group_id = (int) Parameters[":" + arg1];
+                if (Parameters.ContainsKey(":" + arg2)) switch_id = (int) Parameters[":" + arg2];
+                if (group_id != -1 && switch_id != -1)
+                {
+                    return Editor.ProjectSettings.Switches[group_id - 1].Switches[switch_id - 1].Name;
+                }
+            }
+            else if (Regex.IsMatch(Expression, @"variable\([a-zA-Z0-9_]*, [a-zA-Z0-9_]*\)"))
+            {
+                int pid = Expression.IndexOf('(');
+                int cid = Expression.IndexOf(',');
+                string arg1 = Expression.Substring(pid + 1, cid - pid - 1);
+                string arg2 = Expression.Substring(cid + 2, Expression.Length - cid - 3);
+                int group_id = -1;
+                int variable_id = -1;
+                if (Parameters.ContainsKey(":" + arg1)) group_id = (int) Parameters[":" + arg1];
+                if (Parameters.ContainsKey(":" + arg2)) variable_id = (int) Parameters[":" + arg2];
+                if (group_id != -1 && variable_id != -1)
+                {
+                    return Editor.ProjectSettings.Variables[group_id - 1].Variables[variable_id - 1].Name;
+                }
+            }
+            else
+            {
+                string type = null;
+                string settings = null;
+                string identifier = null;
+                if (Expression.Contains('@'))
+                {
+                    settings = Expression.Substring(Expression.IndexOf('@') + 1);
+                    Expression = Expression.Substring(0, Expression.IndexOf('@'));
+                }
+                if (Expression.Contains('?'))
+                {
+                    type = Expression.Substring(Expression.IndexOf('?') + 1);
+                    Expression = Expression.Substring(0, Expression.IndexOf('?'));
+                }
+                if (Expression.Contains('.'))
+                {
+                    identifier = Expression.Substring(Expression.IndexOf('.') + 1);
+                    Expression = Expression.Substring(0, Expression.IndexOf('.'));
+                }
+                if (Parameters.ContainsKey(":" + Expression))
+                {
+                    object param = Parameters[":" + Expression];
+                    if (!string.IsNullOrEmpty(identifier))
+                    {
+                        if (!(param is Dictionary<string, object>)) throw new Exception($"Failed to apply identifier '{identifier}' to parameter of type '{param.GetType().Name}'.");
+                        param = ((Dictionary<string, object>) param)[":" + identifier];
+                    }
+                    if (!string.IsNullOrEmpty(settings))
+                    {
+                        if (param is int)
+                        {
+                            if (IsNumeric(settings)) return Digits((int) param, Convert.ToInt32(settings));
+                        }
+                        else if (param is bool)
+                        {
+                            if (settings == "ON") return (bool)param ? "ON" : "OFF";
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(type))
+                    {
+                        bool result = false;
+                        if (type == "int") result = param is int || param is long;
+                        else if (type == "string") result = param is string;
+                        else if (type == "hash") result = param is Dictionary<string, object> || param is Dictionary<object, object>;
+                        else if (type == "array") result = param is List<object>;
+                        else throw new Exception($"Invalid type: '{type}'");
+                        return result ? "true" : "false";
+                    }
+                    if (param == null) return "";
+                    return param;
+                }
+                else if (Parser != null)
+                {
+                    Widgets.Widget w = Parser.GetWidgetFromName(Expression);
+                    if (w == null) return Expression;
+                    return w.GetValue(Parser.GetIdentifierFromName(Expression));
+                }
+            }
+            return Expression;
+        }
+
+        public static string ProcessText(object Object, Dictionary<string, object> Parameters, IUIParser Parser, bool Parsing)
+        {
+            string Str = "";
+            string format = null;
+            if (Object is Dictionary<string, string>)
+            {
+                foreach (string condition in ((Dictionary<string, string>) Object).Keys)
+                {
+                    if (EvaluateBooleanExpression(condition, Parameters, Parser))
+                    {
+                        format = ((Dictionary<string, string>) Object)[condition];
+                        break;
+                    }
+                }
+            }
+            else if (Object is string)
+            {
+                format = (string) Object;
+            }
+            else
+            {
+                throw new Exception($"Invalid text format: '{Object.GetType().Name}'");
+            }
+            if (format == null) return "";
+            if (!Parsing) return format;
+            for (int i = 0; i < format.Length; i++)
+            {
+                if (format[i] == '[' && (i == 0 || format[i - 1] != '\\') && format[i + 1] == 'c' && format[i + 2] == '=')
+                {
+                    i += 3;
+                    int endidx = -1;
+                    for (int j = i; j < format.Length; j++)
+                    {
+                        if ((j == 0 || format[j - 1] != '\\') && format[j] == ']')
+                        {
+                            endidx = j;
+                            break;
+                        }
+                    }
+                    int length = endidx - i;
+                    string color = format.Substring(i, length);
+                    if (!IsNumeric(color))
+                    {
+                        color = (string) EvaluateExpression(color, Parameters, Parser);
+                    }
+                    Str += $"[c={color}]";
+                    i += length;
+                }
+                else if (format[i] == '{' && (i == 0 || format[i - 1] != '\\'))
+                {
+                    i += 1;
+                    int endidx = -1;
+                    for (int j = i; j < format.Length; j++)
+                    {
+                        if (format[j] == '}' && (j == 0 || format[j - 1] != '\\'))
+                        {
+                            endidx = j;
+                            break;
+                        }
+                    }
+                    int length = endidx - i;
+                    string var = format.Substring(i, length);
+                    Str += EvaluateExpression(var, Parameters, Parser);
+                    i += length;
+                }
+                else if (format[i] == '\\' && (i == 0 || format[i - 1] != '\\'))
+                {
+
+                }
+                else
+                {
+                    Str += format[i];
+                }
+            }
+            return Str;
+        }
+
+        public static List<System.Type> GetParentTypes(System.Type type)
+        {
+            List<System.Type> Types = new List<System.Type>();
+            foreach (System.Type intf in type.GetInterfaces())
+            {
+                Types.Add(intf);
+            }
+            System.Type BaseType = type.BaseType;
+            while (BaseType != null)
+            {
+                Types.Add(BaseType);
+                BaseType = BaseType.BaseType;
+            }
+            return Types;
         }
     }
 }

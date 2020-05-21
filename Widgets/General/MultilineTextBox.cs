@@ -8,6 +8,7 @@ namespace MKEditor.Widgets
     public class MultilineTextBox : Widget
     {
         public MultilineTextArea TextArea;
+        public string Text { get { return TextArea.Text; } }
 
         Container MainContainer;
 
@@ -62,6 +63,22 @@ namespace MKEditor.Widgets
             MainContainer.VScrollBar.SetSize(10, Size.Height - 6);
             TextArea.SetWidth(MainContainer.Size.Width);
             if (TextArea.Size.Height < MainContainer.Size.Height) TextArea.SetHeight(MainContainer.Size.Height);
+        }
+
+        public override object GetValue(string Identifier)
+        {
+            if (string.IsNullOrEmpty(Identifier)) return this.Text;
+            return base.GetValue(Identifier);
+        }
+
+        public override void SetValue(string Identifier, object Value)
+        {
+            if (string.IsNullOrEmpty(Identifier)) this.SetText((string) Value);
+            else if (Identifier == "index")
+            {
+                TextArea.Caret.CharacterIndex = ((string) Value).Length;
+            }
+            else base.SetValue(Identifier, Value);
         }
     }
 }

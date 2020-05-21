@@ -10,40 +10,49 @@ using MKEditor.Game;
 
 namespace MKEditor
 {
-    public class ConditionUIParser
+    public class CommandUIParser : IUIParser
     {
-        public ConditionHandlerWidget HandlerWidget;
+        public Dictionary<string, object> ReadonlyUI;
+        public Dictionary<string, object> WindowUI;
+
+        public CommandHandlerWidget HandlerWidget;
+        public PopupWindow Window;
         public int Width = -1;
         public int Height = -1;
+        public bool Bullet = true;
+        public string HeaderText;
+        public Color HeaderColor;
+        public bool HeaderVisible = true;
+        public string Title;
         public Dictionary<string, Font> Fonts = new Dictionary<string, Font>();
-        public Dictionary<string, Widget> MainWidgets = new Dictionary<string, Widget>();
-        public Dictionary<string, Widget> WidgetLookup = new Dictionary<string, Widget>();
+        public Dictionary<string, Widget> ReadOnlyWidgetLookup = new Dictionary<string, Widget>();
+        public Dictionary<string, Widget> WindowWidgetLookup = new Dictionary<string, Widget>();
         public List<Dictionary<string, string>> Buttons = new List<Dictionary<string, string>>();
-        public Dictionary<string, object> LoadFormat = new Dictionary<string, object>();
-        public Dictionary<string, object> SaveFormat = new Dictionary<string, object>();
+        public Dictionary<string, object> ReadOnlyLoadFormat = new Dictionary<string, object>();
+        public Dictionary<string, object> WindowLoadFormat = new Dictionary<string, object>();
+        public Dictionary<string, object> WindowSaveFormat = new Dictionary<string, object>();
         public Dictionary<string, bool> EnabledLookup = new Dictionary<string, bool>();
-        public BasicCondition Condition;
+        public BasicCommand Command;
+        public BasicCommand OldCommand;
         public bool NeedUpdate = false;
         public bool LoadingData = false;
-        public bool WasNull = false;
+        public bool ReadOnlyMode;
 
-        public ConditionUIParser(Dictionary<string, object> UIData, ConditionHandlerWidget HandlerWidget)
+        public CommandUIParser(Dictionary<string, object> UIData, CommandHandlerWidget HandlerWidget)
         {
-            if (UIData.Count == 0)
-            {
-                new MessageBox("Undefined UI", "No UI has been defined for this condition type, so it can't be edited or created.", ButtonType.OK, IconType.Error);
-                return;
-            }
             this.HandlerWidget = HandlerWidget;
-            foreach (string Key in UIData.Keys)
+            this.ReadonlyUI = ((JObject) UIData["readonly"]).ToObject<Dictionary<string, object>>();
+            this.WindowUI = ((JObject) UIData["window"]).ToObject<Dictionary<string, object>>();
+        }
+
+        public void CreateReadonlyWidget()
+        {
+            this.ReadOnlyMode = true;
+            foreach (string Key in ReadonlyUI.Keys)
             {
-                object value = UIData[Key];
+                object value = ReadonlyUI[Key];
                 switch (Key)
                 {
-                    //case "title":
-                    //    EnsureType(typeof(string), value, "title");
-                    //    this.Title = (string) value;
-                    //    break;
                     case "width":
                         EnsureType(typeof(long), value, "width");
                         this.Width = Convert.ToInt32(value);
@@ -63,96 +72,183 @@ namespace MKEditor
                             this.Fonts.Add(font, ParseFont(((JObject) fonts[font]).ToObject<Dictionary<string, object>>()));
                         }
                         break;
-                    //case "buttons":
-                    //    if (!(value is JArray)) throw new Exception($"Expected an Array, but got a {value.GetType().Name} in key 'buttons'");
-                    //    List<object> buttons = ((JArray) value).ToObject<List<object>>();
-                    //    foreach (object buttonobject in buttons)
-                    //    {
-                    //        if (!(buttonobject is JObject)) throw new Exception($"Expected an Object, but got a {buttonobject.GetType().Name} in key 'buttons'");
-                    //        Dictionary<string, object> button = ((JObject) buttonobject).ToObject<Dictionary<string, object>>();
-                    //        string type = null;
-                    //        string name = null;
-                    //        if (!button.ContainsKey("type")) throw new Exception($"Button definition must contain a 'type' key");
-                    //        if (!button.ContainsKey("name")) throw new Exception($"Button definition must contain a 'name' key");
-                    //        foreach (string buttonkey in button.Keys)
-                    //        {
-                    //            object buttonvalue = button[buttonkey];
-                    //            switch (buttonkey)
-                    //            {
-                    //                case "type":
-                    //                    EnsureType(typeof(string), buttonvalue, "type");
-                    //                    type = (string) buttonvalue;
-                    //                    if (type != "ok" && type != "cancel" && type != "apply") throw new Exception($"Unknown button type '{type}' in button definition");
-                    //                    break;
-                    //                case "name":
-                    //                    EnsureType(typeof(string), buttonvalue, "name");
-                    //                    name = (string) buttonvalue;
-                    //                    break;
-                    //                default:
-                    //                    throw new Exception($"Unknown key '{buttonkey}' in button definition in key 'buttons'");
-                    //            }
-                    //        }
-                    //        Buttons.Add(new Dictionary<string, string>() { { "type", type }, { "name", name } });
-                    //    }
-                    //    break;
                     case "widgets":
                         if (!(value is JObject)) throw new Exception($"Expected an Object, but got a {value.GetType().Name} in key 'widgets'");
-                        ParseWidgets(HandlerWidget, ((JObject)value).ToObject<Dictionary<string, object>>());
+                        ParseWidgets(HandlerWidget.WidgetContainer, ((JObject)value).ToObject<Dictionary<string, object>>());
                         break;
                     case "load":
                         if (!(value is JObject)) throw new Exception($"Expected an Object, but got a {value.GetType().Name} in key 'load'");
-                        LoadFormat = (Dictionary<string, object>) Utilities.JsonToNative(value);
+                        this.ReadOnlyLoadFormat = (Dictionary<string, object>) Utilities.JsonToNative(value);
                         break;
-                    case "save":
-                        if (!(value is JObject)) throw new Exception($"Expected an Object, but got a {value.GetType().Name} in key 'save'");
-                        SaveFormat = (Dictionary<string, object>) Utilities.JsonToNative(value);
+                    case "bullet":
+                        EnsureType(typeof(bool), value, "bullet");
+                        this.Bullet = Convert.ToBoolean(value);
+                        break;
+                    case "header":
+                        if (!(value is JObject)) throw new Exception($"Expected an Object, but got a {value.GetType().Name} in key 'header'");
+                        Dictionary<string, object> header = ((JObject) value).ToObject<Dictionary<string, object>>();
+                        foreach (string headerkey in header.Keys)
+                        {
+                            object headervalue = header[headerkey];
+                            switch (headerkey)
+                            {
+                                case "text":
+                                    EnsureType(typeof(string), headervalue, "text");
+                                    this.HeaderText = (string) headervalue;
+                                    break;
+                                case "color":
+                                    if (!(headervalue is long) && !(headervalue is JObject)) throw new Exception($"Expected an int or an Object, but got a {headervalue.GetType().Name} in key 'color'");
+                                    if (headervalue is long)
+                                    {
+                                        int idx = Convert.ToInt32(headervalue);
+                                        if (idx >= CommandParser.Colors.Count) throw new Exception($"There are only {CommandParser.Colors.Count} defined colors; index {idx} out of range!");
+                                        this.HeaderColor = CommandParser.Colors[idx];
+                                    }
+                                    else
+                                    {
+                                        this.HeaderColor = CommandParser.ParseColor(((JObject) headervalue).ToObject<Dictionary<string, object>>());
+                                    }
+                                    break;
+                                case "visible":
+                                    EnsureType(typeof(bool), headervalue, "visible");
+                                    this.HeaderVisible = Convert.ToBoolean(headervalue);
+                                    break;
+                                default:
+                                    throw new Exception($"Unknown key '{headerkey}' inside header definition.");
+                            }
+                        }
                         break;
                     default:
                         throw new Exception($"Unknown key '{Key}' inside window definition.");
                 }
             }
-            //if (!string.IsNullOrEmpty(this.Title)) Window.SetTitle(this.Title);
             if (this.Width != -1) HandlerWidget.SetWidth(this.Width);
             if (this.Height != -1) HandlerWidget.SetHeight(this.Height);
-            //if (Buttons.Count == 0) Buttons = new List<Dictionary<string, string>>() { new Dictionary<string, string>() { { "type", "cancel" }, { "name", "Cancel" } }, new Dictionary<string, string>() { { "type", "ok" }, { "name", "OK" } } };
-            //foreach (Dictionary<string, string> button in Buttons)
-            //{
-            //    BaseEvent method = button["type"] == "ok" ? OK : (button["type"] == "apply" ? Apply : (BaseEvent) Cancel);
-            //    Window.CreateButton(button["name"], method);
-            //}
-            //Window.Center();
         }
 
-        //public void OK(BaseEventArgs e)
-        //{
-        //    Apply(e);
-        //    this.Window.Close();
-        //}
+        public void OpenEditWindow()
+        {
+            this.ReadOnlyMode = false;
+            this.Window = new PopupWindow();
+            foreach (string Key in WindowUI.Keys)
+            {
+                object value = WindowUI[Key];
+                switch (Key)
+                {
+                    case "title":
+                        EnsureType(typeof(string), value, "title");
+                        this.Title = (string) value;
+                        break;
+                    case "width":
+                        EnsureType(typeof(long), value, "width");
+                        this.Width = Convert.ToInt32(value);
+                        if (this.Width < 1) throw new Exception($"Window width ({this.Width}) must be greater than 0.");
+                        break;
+                    case "height":
+                        EnsureType(typeof(long), value, "height");
+                        this.Height = Convert.ToInt32(value);
+                        if (this.Height < 1) throw new Exception($"Window height ({this.Height}) must be greater than 0.");
+                        break;
+                    case "fonts":
+                        if (!(value is JObject)) throw new Exception($"Expected an Object, but got a {value.GetType().Name} in key 'fonts'");
+                        Dictionary<string, object> fonts = ((JObject) value).ToObject<Dictionary<string, object>>();
+                        foreach (string font in fonts.Keys)
+                        {
+                            if (!(fonts[font] is JObject)) throw new Exception($"Expected an Object, but got a {fonts[font].GetType().Name} in key '{font}' inside 'fonts'");
+                            this.Fonts.Add(font, ParseFont(((JObject) fonts[font]).ToObject<Dictionary<string, object>>()));
+                        }
+                        break;
+                    case "buttons":
+                        if (!(value is JArray)) throw new Exception($"Expected an Array, but got a {value.GetType().Name} in key 'buttons'");
+                        List<object> buttons = ((JArray) value).ToObject<List<object>>();
+                        foreach (object buttonobject in buttons)
+                        {
+                            if (!(buttonobject is JObject)) throw new Exception($"Expected an Object, but got a {buttonobject.GetType().Name} in key 'buttons'");
+                            Dictionary<string, object> button = ((JObject) buttonobject).ToObject<Dictionary<string, object>>();
+                            string type = null;
+                            string name = null;
+                            if (!button.ContainsKey("type")) throw new Exception($"Button definition must contain a 'type' key");
+                            if (!button.ContainsKey("name")) throw new Exception($"Button definition must contain a 'name' key");
+                            foreach (string buttonkey in button.Keys)
+                            {
+                                object buttonvalue = button[buttonkey];
+                                switch (buttonkey)
+                                {
+                                    case "type":
+                                        EnsureType(typeof(string), buttonvalue, "type");
+                                        type = (string) buttonvalue;
+                                        if (type != "ok" && type != "cancel" && type != "apply") throw new Exception($"Unknown button type '{type}' in button definition");
+                                        break;
+                                    case "name":
+                                        EnsureType(typeof(string), buttonvalue, "name");
+                                        name = (string) buttonvalue;
+                                        break;
+                                    default:
+                                        throw new Exception($"Unknown key '{buttonkey}' in button definition in key 'buttons'");
+                                }
+                            }
+                            Buttons.Add(new Dictionary<string, string>() { { "type", type }, { "name", name } });
+                        }
+                        break;
+                    case "widgets":
+                        if (!(value is JObject)) throw new Exception($"Expected an Object, but got a {value.GetType().Name} in key 'widgets'");
+                        ParseWidgets(Window, ((JObject)value).ToObject<Dictionary<string, object>>());
+                        break;
+                    case "load":
+                        if (!(value is JObject)) throw new Exception($"Expected an Object, but got a {value.GetType().Name} in key 'load'");
+                        WindowLoadFormat = (Dictionary<string, object>) Utilities.JsonToNative(value);
+                        break;
+                    case "save":
+                        if (!(value is JObject)) throw new Exception($"Expected an Object, but got a {value.GetType().Name} in key 'save'");
+                        WindowSaveFormat = (Dictionary<string, object>) Utilities.JsonToNative(value);
+                        break;
+                    default:
+                        throw new Exception($"Unknown key '{Key}' inside window definition.");
+                }
+            }
+            if (!string.IsNullOrEmpty(this.Title)) Window.SetTitle(this.Title);
+            if (this.Width != -1) Window.SetWidth(this.Width);
+            if (this.Height != -1) Window.SetHeight(this.Height);
+            if (Buttons.Count == 0) Buttons = new List<Dictionary<string, string>>() { new Dictionary<string, string>() { { "type", "cancel" }, { "name", "Cancel" } }, new Dictionary<string, string>() { { "type", "ok" }, { "name", "OK" } } };
+            foreach (Dictionary<string, string> button in Buttons)
+            {
+                BaseEvent method = button["type"] == "ok" ? OK : (button["type"] == "apply" ? Apply : (BaseEvent) Cancel);
+                Window.CreateButton(button["name"], method);
+            }
+            Window.Center();
+            Window.OnDisposing += Close;
+            Window.OnClosed += delegate (BaseEventArgs e)
+            {
+                this.ReadOnlyMode = true;
+                this.Load(this.Command);
+            };
+        }
 
-        //public void Apply(BaseEventArgs e)
-        //{
-        //    foreach (string key in SaveFormat.Keys)
-        //    {
-        //        string variable = key;
-        //        string widget = (string) SaveFormat[key];
-        //        string identifier = null;
-        //        if (widget.Contains('.'))
-        //        {
-        //            identifier = widget.Substring(widget.IndexOf('.') + 1, widget.Length - widget.IndexOf('.') - 1);
-        //            widget = widget.Substring(0, widget.IndexOf('.'));
-        //        }
-        //        if (!WidgetLookup.ContainsKey(widget)) throw new Exception($"Could not find widget with identifier '{widget}'");
-        //        Widget w = WidgetLookup[widget];
-        //        Condition.Parameters[":" + variable] = w.GetValue(identifier);
-        //    }
-        //    NeedUpdate = true;
-        //}
+        public void Close(BaseEventArgs e)
+        {
+            foreach (KeyValuePair<string, Widget> kvp in WindowWidgetLookup)
+            {
+                WindowWidgetLookup.Remove(kvp.Key);
+            }
+        }
 
-        //public void Cancel(BaseEventArgs e)
-        //{
-        //    this.Condition = this.OldCondition;
-        //    this.Window.Close();
-        //}
+        public void OK(BaseEventArgs e)
+        {
+            Apply(e);
+            this.Window.Close();
+        }
+
+        public void Apply(BaseEventArgs e)
+        {
+            Save(e);
+            NeedUpdate = true;
+        }
+
+        public void Cancel(BaseEventArgs e)
+        {
+            this.Command = this.OldCommand;
+            this.Window.Close();
+        }
 
         public Font ParseFont(Dictionary<string, object> Data)
         {
@@ -194,7 +290,7 @@ namespace MKEditor
                         w = new Container(ParentWidget);
                         break;
                     case "label":
-                        w = new Label(ParentWidget);
+                        w = new DynamicLabel(ParentWidget);
                         break;
                     case "numeric":
                         w = new NumericBox(ParentWidget);
@@ -220,11 +316,18 @@ namespace MKEditor
                     case "variable_picker":
                         w = new GameVariableBox(ParentWidget);
                         break;
+                    case "multitextbox":
+                        w = new MultilineTextBox(ParentWidget);
+                        break;
+                    case "multilabel":
+                        w = new MultilineDynamicLabel(ParentWidget);
+                        break;
                     default:
                         throw new Exception($"Unknown widget type '{type}' in widget '{name}'");
                 }
-                if (WidgetLookup.ContainsKey(name)) throw new Exception($"Two or more widgets with the same were found: '{name}'");
-                WidgetLookup.Add(name, w);
+                Dictionary<string, Widget> Lookup = this.ReadOnlyMode ? ReadOnlyWidgetLookup : WindowWidgetLookup;
+                if (Lookup.ContainsKey(name)) throw new Exception($"Two or more widgets with the same were found: '{name}'");
+                Lookup.Add(name, w);
                 int X = 0;
                 int Y = 0;
                 int Width = -1;
@@ -237,6 +340,8 @@ namespace MKEditor
                 List<ListItem> items = null;
                 int idx = -1;
                 bool enabled = true;
+                bool focus = false;
+                bool parse = true;
                 List<ClickAction> clickactions = new List<ClickAction>();
                 foreach (string key in config.Keys)
                 {
@@ -264,7 +369,7 @@ namespace MKEditor
                             break;
                         case "font":
                             if (type != "label" && type != "textbox" && type != "button" && type != "dropdown" &&
-                                type != "checkbox" && type != "radiobox") throw new Exception($"Widget type ({type}) can not contain a 'font' field.");
+                                type != "checkbox" && type != "radiobox" && type != "multitextbox" && type != "multilabel") throw new Exception($"Widget type ({type}) can not contain a 'font' field.");
                             if (value is string)
                             {
                                 if (!Fonts.ContainsKey((string) value)) throw new Exception($"Undefined font name '{(string) value}");
@@ -295,7 +400,8 @@ namespace MKEditor
                             max_value = Convert.ToInt32(value);
                             break;
                         case "text":
-                            if (type != "label" && type != "textbox" && type != "button" && type != "checkbox" && type != "radiobox") throw new Exception($"Widget type ({type}) can not contain a 'text' field.");
+                            if (type != "label" && type != "textbox" && type != "button" && type != "checkbox" &&
+                                type != "radiobox" && type != "multitextbox" && type != "multilabel") throw new Exception($"Widget type ({type}) can not contain a 'text' field.");
                             EnsureType(typeof(string), value, "text");
                             text = (string) value;
                             break;
@@ -319,7 +425,7 @@ namespace MKEditor
                         case "enabled":
                             if (type != "label" && type != "dropdown" && type != "switch_picker" && type != "variable_picker" &&
                                 type != "checkbox" && type != "radiobox" && type != "textbox" && type != "numeric" &&
-                                type != "button") throw new Exception($"Widget type ({type}) can not contain an 'enabled' field.");
+                                type != "button" && type != "multilabel") throw new Exception($"Widget type ({type}) can not contain an 'enabled' field.");
                             EnsureType(typeof(bool), value, "enabled");
                             enabled = Convert.ToBoolean(value);
                             break;
@@ -374,20 +480,41 @@ namespace MKEditor
                                 clickactions.Add(new ClickAction(actiontype, actionparams, actioncondition));
                             }
                             break;
+                        case "focus":
+                            if (type != "multitextbox") throw new Exception($"Widget type ({type}) can not contain a 'focus' key.");
+                            EnsureType(typeof(bool), value, "focus");
+                            focus = Convert.ToBoolean(value);
+                            break;
+                        case "parse":
+                            if (type != "label" && type != "multilabel") throw new Exception($"Widget type ({type}) can not contain a 'parse' key.");
+                            EnsureType(typeof(bool), value, "parse");
+                            parse = Convert.ToBoolean(value);
+                            break;
                         default:
                             throw new Exception($"Unknown key '{key}' inside widget definition");
                     }
                 }
-                EnabledLookup.Add(name, enabled);
                 w.SetPosition(X, Y);
                 if (Width != -1 && Height != -1) w.SetSize(Width, Height);
                 else if (Width != -1) w.SetWidth(Width);
                 else if (Height != -1) w.SetHeight(Height);
                 if (type == "label")
                 {
-                    if (!string.IsNullOrEmpty(text)) ((Label) w).SetText(text);
-                    if (font != null) ((Label) w).SetFont(font);
-                    ((Label) w).SetEnabled(enabled);
+                    if (!string.IsNullOrEmpty(text)) ((DynamicLabel) w).SetText(text);
+                    if (font != null) ((DynamicLabel) w).SetFont(font);
+                    ((DynamicLabel) w).SetParser(this);
+                    ((DynamicLabel) w).SetColors(CommandParser.Colors);
+                    ((DynamicLabel) w).SetEnabled(enabled);
+                    ((DynamicLabel) w).Parsing = parse;
+                }
+                if (type == "multilabel")
+                {
+                    if (!string.IsNullOrEmpty(text)) ((MultilineDynamicLabel) w).SetText(text);
+                    if (font != null) ((MultilineDynamicLabel) w).SetFont(font);
+                    ((MultilineDynamicLabel) w).SetParser(this);
+                    ((MultilineDynamicLabel) w).SetColors(CommandParser.Colors);
+                    ((MultilineDynamicLabel) w).SetEnabled(enabled);
+                    ((MultilineDynamicLabel) w).Parsing = parse;
                 }
                 if (type == "textbox")
                 {
@@ -441,6 +568,16 @@ namespace MKEditor
                 {
                     ((GameVariableBox) w).OnVariableChanged += Save;
                 }
+                if (type == "multitextbox")
+                {
+                    if (font != null) ((MultilineTextBox) w).SetFont(font);
+                    if (!string.IsNullOrEmpty(text)) ((MultilineTextBox) w).SetText(text);
+                    if (focus)
+                    {
+                        HandlerWidget.Window.UI.SetSelectedWidget(((MultilineTextBox) w).TextArea);
+                        ((MultilineTextBox) w).TextArea.OnWidgetSelected(new BaseEventArgs());
+                    }
+                }
                 SetWidgetEnabled(w, enabled);
             }
         }
@@ -449,7 +586,7 @@ namespace MKEditor
         {
             Actions.ForEach(action =>
             {
-                if (action.EvaluteCondition(HandlerWidget.ActiveCondition, this))
+                if (action.EvaluteCondition(HandlerWidget.Command.Parameters, this))
                 {
                     if (action.Type == "enable" || action.Type == "disable")
                     {
@@ -476,7 +613,7 @@ namespace MKEditor
                         {
                             string param = (string) action.Parameters[i];
                             object value = action.Parameters[i + 1];
-                            if (Condition.Parameters.ContainsKey(":" + param)) Condition.Parameters[":" + param] = value;
+                            if (Command.Parameters.ContainsKey(":" + param)) Command.Parameters[":" + param] = value;
                             else
                             {
                                 Widget w = GetWidgetFromNameStrict(param);
@@ -495,7 +632,8 @@ namespace MKEditor
             {
                 Name = Name.Substring(0, Name.IndexOf('.'));
             }
-            if (WidgetLookup.ContainsKey(Name)) return WidgetLookup[Name];
+            Dictionary<string, Widget> Lookup = this.ReadOnlyMode ? ReadOnlyWidgetLookup : WindowWidgetLookup;
+            if (Lookup.ContainsKey(Name)) return Lookup[Name];
             return null;
         }
 
@@ -512,20 +650,20 @@ namespace MKEditor
             return null;
         }
 
-        public void Load(BasicCondition Condition)
+        public void Load(BasicCommand Command)
         {
-            this.Condition = Condition;
+            this.Command = Command;
             this.LoadingData = true;
-            if (this.Condition != null)
+            Dictionary<string, object> LoadFormat = this.ReadOnlyMode ? ReadOnlyLoadFormat : WindowLoadFormat;
+            if (this.Command != null)
             {
-                if (this.WasNull)
+                foreach (Widget w in (this.ReadOnlyMode ? ReadOnlyWidgetLookup : WindowWidgetLookup).Values)
                 {
-                    foreach (string name in WidgetLookup.Keys)
+                    if (w is DynamicLabel)
                     {
-                        SetWidgetEnabled(WidgetLookup[name], EnabledLookup[name]);
+                        ((DynamicLabel) w).SetParameters(Command.Parameters);
                     }
                 }
-                this.WasNull = false;
                 foreach (string key in LoadFormat.Keys)
                 {
                     Widget w = GetWidgetFromName(key);
@@ -533,70 +671,88 @@ namespace MKEditor
                     object value = null;
                     if (LoadFormat[key] is Dictionary<string, object>)
                     {
-                        foreach (string conditional in ((Dictionary<string, object>)LoadFormat[key]).Keys)
+                        foreach (string conditional in ((Dictionary<string, object>) LoadFormat[key]).Keys)
                         {
-                            object conditionvalue = ((Dictionary<string, object>)LoadFormat[key])[conditional];
-                            if (Condition.EvaluateBooleanExpression(conditional, this))
+                            object conditionvalue = ((Dictionary<string, object>) LoadFormat[key])[conditional];
+                            if (Utilities.EvaluateBooleanExpression(conditional, Command.Parameters, this))
                             {
-                                value = Condition.EvaluateExpression(conditionvalue.ToString());
-                                if (value is string && (string) value == conditionvalue.ToString() && !Utilities.IsNumeric((string) value))
-                                    value = Condition.EvaluateBooleanExpression((string) value, this).ToString().ToLower();
+                                string cvaluestring = conditionvalue.ToString();
+                                bool text = cvaluestring.StartsWith("$");
+                                if (text)
+                                {
+                                    value = Utilities.ProcessText(cvaluestring.Substring(1), Command.Parameters, this, true);
+                                }
+                                else
+                                {
+                                    value = Utilities.EvaluateExpression(conditionvalue.ToString(), Command.Parameters, this);
+                                    if (value is string && (string) value == conditionvalue.ToString() && !Utilities.IsNumeric((string) value))
+                                        value = Utilities.EvaluateBooleanExpression((string) value, Command.Parameters, this).ToString().ToLower();
+                                }
                                 break;
                             }
                         }
                     }
                     else if (LoadFormat[key] is string)
                     {
-                        value = Condition.EvaluateExpression((string) LoadFormat[key]);
-                        if (value is string && (string) value == (string) LoadFormat[key] && !Utilities.IsNumeric((string) value))
-                            value = Condition.EvaluateBooleanExpression((string) value, this).ToString().ToLower();
+                        string fmt = (string) LoadFormat[key];
+                        bool text = fmt.StartsWith("$");
+                        if (text)
+                        {
+                            value = Utilities.ProcessText(fmt.Substring(1), Command.Parameters, this, true);
+                        }
+                        else
+                        {
+                            value = Utilities.EvaluateExpression(fmt, Command.Parameters, this);
+                            if (value is string && (string) value == fmt && !Utilities.IsNumeric((string) value))
+                                value = Utilities.EvaluateBooleanExpression((string) value, Command.Parameters, this).ToString().ToLower();
+                        }
                     }
                     string identifier = GetIdentifierFromName(key);
                     w.SetValue(identifier, value);
                 }
-            }
-            else
-            {
-                foreach (Widget w in WidgetLookup.Values)
+                foreach (Widget w in (this.ReadOnlyMode ? ReadOnlyWidgetLookup : WindowWidgetLookup).Values)
                 {
-                    SetWidgetEnabled(w, false);
+                    if (w is DynamicLabel)
+                    {
+                        ((DynamicLabel) w).RedrawText();
+                    }
                 }
-                this.WasNull = true;
             }
             this.LoadingData = false;
+            HandlerWidget.UpdateSize();
         }
 
         public void Save(BaseEventArgs e)
         {
             if (this.LoadingData) return;
-            foreach (string key in SaveFormat.Keys)
+            foreach (string key in WindowSaveFormat.Keys)
             {
                 object value = null;
-                if (SaveFormat[key] is string)
+                if (WindowSaveFormat[key] is string)
                 {
-                    Widget w = GetWidgetFromName((string) SaveFormat[key]);
-                    if (w == null)  value = Condition.EvaluateExpression((string) SaveFormat[key], this);
-                    else value = w.GetValue(GetIdentifierFromName((string) SaveFormat[key]));
+                    Widget w = GetWidgetFromName((string) WindowSaveFormat[key]);
+                    if (w == null)  value = Utilities.EvaluateExpression((string) WindowSaveFormat[key], Command.Parameters, this);
+                    else value = w.GetValue(GetIdentifierFromName((string) WindowSaveFormat[key]));
                 }
-                else if (SaveFormat[key] is Dictionary<string, object>)
+                else if (WindowSaveFormat[key] is Dictionary<string, object>)
                 {
-                    foreach (string savekey in ((Dictionary<string, object>) SaveFormat[key]).Keys)
+                    foreach (string savekey in ((Dictionary<string, object>) WindowSaveFormat[key]).Keys)
                     {
-                        if (Condition.EvaluateBooleanExpression(savekey, this))
+                        if (Utilities.EvaluateBooleanExpression(savekey, Command.Parameters, this))
                         {
-                            value = Condition.EvaluateExpression(((Dictionary<string, object>) SaveFormat[key])[savekey].ToString(), this);
+                            value = Utilities.EvaluateExpression(((Dictionary<string, object>) WindowSaveFormat[key])[savekey].ToString(), Command.Parameters, this);
                             break;
                         }
                     }
                 }
-                Condition.Parameters[":" + key] = value;
+                Command.Parameters[":" + key] = value;
             }
             this.HandlerWidget.UpdateParentList();
         }
 
         public void SetWidgetEnabled(Widget w, bool Enabled)
         {
-            if (w is Label) ((Label) w).SetEnabled(Enabled);
+            if (w is DynamicLabel) ((DynamicLabel) w).SetEnabled(Enabled);
             else if (w is DropdownBox) ((DropdownBox) w).SetEnabled(Enabled);
             else if (w is CheckBox) ((CheckBox) w).SetEnabled(Enabled);
             else if (w is RadioBox) ((RadioBox) w).SetEnabled(Enabled);
@@ -652,8 +808,9 @@ namespace MKEditor
 
         public object WidgetNameToValue(string Name)
         {
-            if (!WidgetLookup.ContainsKey(Name)) return Name;
-            Widget w = WidgetLookup[Name];
+            Dictionary<string, Widget> Lookup = this.ReadOnlyMode ? ReadOnlyWidgetLookup : WindowWidgetLookup;
+            if (!Lookup.ContainsKey(Name)) return Name;
+            Widget w = Lookup[Name];
             if (w is TextBox) return ((TextBox) w).Text;
             if (w is NumericBox) return ((NumericBox) w).Value;
             if (w is DropdownBox) return ((DropdownBox) w).SelectedIndex;
@@ -663,25 +820,6 @@ namespace MKEditor
         public void EnsureType(System.Type type, object obj, string key)
         {
             if (obj.GetType() != type) throw new Exception($"Expected a {type.Name}, but got a {obj.GetType().Name} in key '{key}'.");
-        }
-    }
-
-    public class ClickAction
-    {
-        public string Type;
-        public List<object> Parameters;
-        public string Condition;
-
-        public ClickAction(string Type, List<object> Parameters, string Condition = null)
-        {
-            this.Type = Type;
-            this.Parameters = Parameters;
-            this.Condition = Condition;
-        }
-
-        public bool EvaluteCondition(BasicCondition Condition, ConditionUIParser Parser)
-        {
-            return string.IsNullOrEmpty(this.Condition) ? true : Condition.EvaluateBooleanExpression(this.Condition, Parser);
         }
     }
 }

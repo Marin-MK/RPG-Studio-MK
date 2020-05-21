@@ -100,6 +100,8 @@ namespace MKEditor.Widgets
         public bool Selectable { get; protected set; } = false;
         public bool Selected { get; protected set; } = false;
 
+        DynamicLabel DynamicLabel;
+
         public ConditionEntryWidget(IContainer Parent) : base(Parent)
         {
             Sprites["box"] = new Sprite(this.Viewport);
@@ -114,9 +116,8 @@ namespace MKEditor.Widgets
             Sprites["hover"] = new Sprite(this.Viewport, new SolidBitmap(2, 20, new Color(55, 187, 255)));
             Sprites["hover"].Visible = false;
 
-            Sprites["text"] = new Sprite(this.Viewport);
-            Sprites["text"].X = 16;
-            Sprites["text"].Y = 2;
+            DynamicLabel = new DynamicLabel(this);
+            DynamicLabel.SetPosition(16, 2);
         }
 
         public void SetSelectable(bool Selectable)
@@ -143,41 +144,11 @@ namespace MKEditor.Widgets
         public void SetCondition(BasicCondition Condition, ConditionUIParser Parser)
         {
             this.Condition = Condition;
-            Sprites["text"].Bitmap?.Dispose();
-            Sprites["text"].Bitmap = new Bitmap(Size.Width - Sprites["text"].X, Size.Height - Sprites["text"].Y);
-            Sprites["text"].Bitmap.Unlock();
-            Sprites["text"].Bitmap.Font = Font.Get("Fonts/ProductSans-M", 12);
-            int x = 0;
-            string text = Condition.ToString(Parser);
-            Color color = ConditionParser.Colors[0];
-            for (int i = 0; i < text.Length; i++)
-            {
-                if (text[i] == '[' && text[i + 1] == 'c' && text[i + 2] == '=')
-                {
-                    int startnum = i + 3;
-                    int endnum = -1;
-                    for (int j = startnum; j < text.Length; j++)
-                    {
-                        if (!Utilities.IsNumeric(text[j]))
-                        {
-                            endnum = j;
-                            break;
-                        }
-                    }
-                    if (endnum != -1)
-                    {
-                        int idx = 0;
-                        if (endnum != startnum) idx = Convert.ToInt32(text.Substring(startnum, endnum - startnum));
-                        if (idx < ConditionParser.Colors.Count) color = ConditionParser.Colors[idx];
-                        else throw new Exception($"Only {ConditionParser.Colors.Count} defined colors; Index {idx} out of range.");
-                    }
-                    i = endnum;
-                    continue;
-                }
-                Sprites["text"].Bitmap.DrawText(text[i].ToString(), x, 0, color);
-                x += Sprites["text"].Bitmap.TextSize(text[i]).Width;
-            }
-            Sprites["text"].Bitmap.Lock();
+            this.DynamicLabel.SetParameters(Condition.Parameters);
+            this.DynamicLabel.SetTextFormat(Condition.Type.Text);
+            this.DynamicLabel.SetParser(Parser);
+            this.DynamicLabel.SetColors(ConditionParser.Colors);
+            this.DynamicLabel.RedrawText();
         }
 
         public override void MouseMoving(MouseEventArgs e)

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Versioning;
 using ODL;
+using System.Runtime.Loader;
 
 namespace MKEditor
 {
@@ -14,7 +15,7 @@ namespace MKEditor
         /// Whether or not exceptions should be caught and displayed, and whether unsaved changes messages should be given.
         /// If false, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
         /// </summary>
-        public static bool ReleaseMode = true;
+        public static bool ReleaseMode = false;
         public static bool Verbose = false;
         public static bool Headless = false;
         public static string ProjectFile = null;
@@ -24,6 +25,7 @@ namespace MKEditor
         {
             // Ensures the working directory becomes the editor directory
             Directory.SetCurrentDirectory(Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName);
+            CommandPlugins.Initialize();
             MainCommandLineHandler cli = new MainCommandLineHandler();
             bool StartProgram = cli.Parse(args.ToList());
             cli.Dispose();

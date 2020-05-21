@@ -1,16 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace MKEditor.Game
 {
     public class BasicCommand
     {
+        public CommandType Type;
         public int Indent;
         public string Identifier;
         public Dictionary<string, object> Parameters;
 
-        public BasicCommand(int Indent, string Identifier, Dictionary<string, object> Parameters)
+        public BasicCommand()
         {
+
+        }
+
+        public BasicCommand(CommandType Type, int Indent, string Identifier, Dictionary<string, object> Parameters)
+        {
+            this.Type = Type;
             this.Indent = Indent;
             this.Identifier = Identifier;
             this.Parameters = Parameters;
@@ -18,15 +27,10 @@ namespace MKEditor.Game
 
         public static BasicCommand IDToCommand(int Indent, string Identifier, Dictionary<string, object> Parameters)
         {
-            switch (Identifier)
-            {
-                case ":script":
-                    return new ScriptCommand(Indent, Identifier, Parameters);
-                case ":message":
-                    return new MessageCommand(Indent, Identifier, Parameters);
-                default:
-                    throw new Exception($"Unknown condition Identifier: '{Identifier}'");
-            }
+            string nativeid = Identifier.Substring(1);
+            CommandType type = CommandParser.Types.Find(t => t.Identifier == nativeid);
+            if (type == null) throw new Exception($"Invalid command identifier: '{nativeid}'");
+            return new BasicCommand(type, Indent, Identifier, Parameters);
         }
 
         public List<object> ToJSON()
@@ -37,21 +41,15 @@ namespace MKEditor.Game
             Data.Add(Parameters);
             return Data;
         }
-    }
 
-    public class ScriptCommand : BasicCommand
-    {
-        public string Code { get { return (string) Parameters[":code"] ?? ""; } }
-
-        public ScriptCommand(int Indent, string Identifier, Dictionary<string, object> Parameters)
-            : base(Indent, Identifier, Parameters) { }
-    }
-
-    public class MessageCommand : BasicCommand
-    {
-        public string Message { get { return (string) Parameters[":text"] ?? ""; } }
-
-        public MessageCommand(int Indent, string Identifier, Dictionary<string, object> Parameters)
-            : base(Indent, Identifier, Parameters) { }
+        public BasicCommand Clone()
+        {
+            BasicCommand bc = new BasicCommand();
+            bc.Type = this.Type;
+            bc.Indent = this.Indent;
+            bc.Identifier = this.Identifier;
+            bc.Parameters = new Dictionary<string, object>(this.Parameters);
+            return bc;
+        }
     }
 }

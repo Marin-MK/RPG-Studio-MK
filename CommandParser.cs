@@ -7,20 +7,20 @@ using System.Text;
 
 namespace MKEditor
 {
-    public static class ConditionParser
+    public static class CommandParser
     {
         public static List<ODL.Color> Colors;
-        public static List<ConditionHeader> Headers;
-        public static List<ConditionType> Types;
+        public static List<CommandHeader> Headers;
+        public static List<CommandType> Types;
 
-        public static void Initialize(string Filename = "conditions.json")
+        public static void Initialize(string Filename = "commands.json")
         {
             StreamReader sr = new StreamReader(File.OpenRead(Filename));
             string content = sr.ReadToEnd();
             sr.Close();
             Dictionary<string, object> Data = ((JObject) JsonConvert.DeserializeObject(content)).ToObject<Dictionary<string, object>>();
-            if (!Data.ContainsKey("headers")) throw new Exception("Condition definition JSON must contain a 'headers' key.");
-            if (!Data.ContainsKey("types")) throw new Exception("Condition definition JSON must contain a 'types' key.");
+            if (!Data.ContainsKey("headers")) throw new Exception("Command definition JSON must contain a 'headers' key.");
+            if (!Data.ContainsKey("types")) throw new Exception("Command definition JSON must contain a 'types' key.");
             foreach (string key in Data.Keys)
             {
                 object value = Data[key];
@@ -39,15 +39,15 @@ namespace MKEditor
                         Types = ParseTypes(((JObject) value).ToObject<Dictionary<string, object>>());
                         break;
                     default:
-                        throw new Exception($"Unknown key in condition definition JSON: '{key}'");
+                        throw new Exception($"Unknown key in command definition JSON: '{key}'");
                 }
             }
-            foreach (ConditionHeader h in Headers)
+            foreach (CommandHeader h in Headers)
             {
                 foreach (string typeid in h.Types)
                 {
                     if (Types.Find(t => t.Identifier == typeid) == null)
-                        throw new Exception($"Unknown condition type '{typeid}' in header '{h.Name}'");
+                        throw new Exception($"Unknown command type '{typeid}' in header '{h.Name}'");
                 }
             }
         }
@@ -109,9 +109,9 @@ namespace MKEditor
             return new ODL.Color(R, G, B, A);
         }
 
-        public static List<ConditionHeader> ParseHeaders(List<object> headers)
+        public static List<CommandHeader> ParseHeaders(List<object> headers)
         {
-            List<ConditionHeader> Headers = new List<ConditionHeader>();
+            List<CommandHeader> Headers = new List<CommandHeader>();
             for (int i = 0; i < headers.Count; i++)
             {
                 object h = headers[i];
@@ -121,7 +121,7 @@ namespace MKEditor
             return Headers;
         }
 
-        public static ConditionHeader ParseHeader(Dictionary<string, object> headerobject)
+        public static CommandHeader ParseHeader(Dictionary<string, object> headerobject)
         {
             string Name = null;
             List<string> Types = new List<string>();
@@ -148,31 +148,30 @@ namespace MKEditor
                         throw new Exception($"Unknown key in header definition: '{headerkey}'");
                 }
             }
-            return new ConditionHeader(Name, Types);
+            return new CommandHeader(Name, Types);
         }
 
-        public static List<ConditionType> ParseTypes(Dictionary<string, object> types)
+        public static List<CommandType> ParseTypes(Dictionary<string, object> types)
         {
-            List<ConditionType> Types = new List<ConditionType>();
+            List<CommandType> Types = new List<CommandType>();
             foreach (string identifier in types.Keys)
             {
                 object t = types[identifier];
                 if (!(t is JObject)) throw new Exception($"Expected an object, but got a {t.GetType().Name} in key '{identifier}'.");
-                ConditionType Type = ParseType(((JObject) t).ToObject<Dictionary<string, object>>());
+                CommandType Type = ParseType(((JObject) t).ToObject<Dictionary<string, object>>());
                 Type.Identifier = identifier;
                 Types.Add(Type);
             }
             return Types;
         }
 
-        public static ConditionType ParseType(Dictionary<string, object> typeobject)
+        public static CommandType ParseType(Dictionary<string, object> typeobject)
         {
             string Name = null;
             object Text = null;
-            List<ConditionParameter> Parameters = new List<ConditionParameter>();
+            List<CommandParameter> Parameters = new List<CommandParameter>();
             Dictionary<string, object> UI = new Dictionary<string, object>();
-            if (!typeobject.ContainsKey("name")) throw new Exception($"Condition type definition must contain a 'name' key.");
-            if (!typeobject.ContainsKey("text")) throw new Exception($"Condition type definition must contain a 'text' key.");
+            if (!typeobject.ContainsKey("name")) throw new Exception($"Command type definition must contain a 'name' key.");
             foreach (string typekey in typeobject.Keys)
             {
                 object typevalue = typeobject[typekey];
@@ -181,21 +180,6 @@ namespace MKEditor
                     case "name":
                         EnsureType(typeof(string), typevalue, "name");
                         Name = (string) typevalue;
-                        break;
-                    case "text":
-                        if (!(typevalue is string) && !(typevalue is JObject)) throw new Exception($"Expected a string or object, but got {typevalue.GetType().Name} in key 'text'.");
-                        if (typevalue is string) Text = typevalue;
-                        else
-                        {
-                            Text = new Dictionary<string, string>();
-                            Dictionary<string, object> text = ((JObject) typevalue).ToObject<Dictionary<string, object>>();
-                            foreach (string textkey in text.Keys)
-                            {
-                                object textvalue = text[textkey];
-                                EnsureType(typeof(string), textvalue, textkey);
-                                ((Dictionary<string, string>) Text).Add(textkey, (string) textvalue);
-                            }
-                        }
                         break;
                     case "parameters":
                         if (!(typevalue is JObject)) throw new Exception($"Expected an object, but got a {typevalue.GetType().Name} in key 'parameters'.");
@@ -213,18 +197,19 @@ namespace MKEditor
                             }
                             if (type != "string" && type != "int" &&
                                 type != "bool" && type != "object") throw new Exception($"Unknown data type '{type}' in key '{paramkey}'.");
-                            Parameters.Add(new ConditionParameter(paramkey, type, defaultvalue));
+                            Parameters.Add(new CommandParameter(paramkey, type, defaultvalue));
                         }
                         break;
                     case "ui":
                         if (!(typevalue is JObject)) throw new Exception($"Expected an object, but got a {typevalue.GetType().Name} in key 'ui'.");
                         UI = ((JObject) typevalue).ToObject<Dictionary<string, object>>();
+                        if (!UI.ContainsKey("readonly")) throw new Exception($"Command UI definition must contain a 'readonly' key.");
                         break;
                     default:
-                        throw new Exception($"Unknown key in condition type definition: '{typekey}'");
+                        throw new Exception($"Unknown key in command type definition: '{typekey}'");
                 }
             }
-            return new ConditionType(null, Name, Text, Parameters, UI);
+            return new CommandType(null, Name, Text, Parameters, UI);
         }
 
         public static void EnsureType(Type type, object obj, string key)
@@ -233,27 +218,27 @@ namespace MKEditor
         }
     }
 
-    public class ConditionHeader
+    public class CommandHeader
     {
         public string Name;
         public List<string> Types;
 
-        public ConditionHeader(string Name, List<string> Types)
+        public CommandHeader(string Name, List<string> Types)
         {
             this.Name = Name;
             this.Types = Types;
         }
     }
 
-    public class ConditionType
+    public class CommandType
     {
         public string Identifier;
         public string Name;
         public object Text;
-        public List<ConditionParameter> Parameters;
+        public List<CommandParameter> Parameters;
         public Dictionary<string, object> UI;
 
-        public ConditionType(string Identifier, string Name, object Text, List<ConditionParameter> Parameters, Dictionary<string, object> UI)
+        public CommandType(string Identifier, string Name, object Text, List<CommandParameter> Parameters, Dictionary<string, object> UI)
         {
             this.Identifier = Identifier;
             this.Name = Name;
@@ -273,13 +258,13 @@ namespace MKEditor
         }
     }
 
-    public class ConditionParameter
+    public class CommandParameter
     {
         public string Name;
         public string DataType;
         public object DefaultValue;
 
-        public ConditionParameter(string Name, string DataType, string DefaultValue)
+        public CommandParameter(string Name, string DataType, string DefaultValue)
         {
             this.Name = Name;
             this.DataType = DataType;
@@ -288,7 +273,7 @@ namespace MKEditor
                 if (DataType == "int")
                 {
                     if (Utilities.IsNumeric(DefaultValue)) this.DefaultValue = Convert.ToInt32(DefaultValue);
-                    else throw new Exception($"Condition parameter '{Name}' expects a default value of type '{DataType}'");
+                    else throw new Exception($"Command parameter '{Name}' expects a default value of type '{DataType}'");
                 }
                 else if (DataType == "bool")
                 {
@@ -296,7 +281,7 @@ namespace MKEditor
                         this.DefaultValue = true;
                     else if (DefaultValue.ToLower() == "false" || DefaultValue.ToLower() == "f" || DefaultValue.ToLower() == "no" || DefaultValue.ToLower() == "n")
                         this.DefaultValue = false;
-                    else throw new Exception($"Condition parameter '{Name}' expects a default value of type '{DataType}'");
+                    else throw new Exception($"Command parameter '{Name}' expects a default value of type '{DataType}'");
                 }
                 else if (DataType == "string")
                 {
