@@ -394,7 +394,7 @@ namespace MKEditor
                 {
                     if (!string.IsNullOrEmpty(text)) ((DynamicLabel) w).SetText(text);
                     if (font != null) ((DynamicLabel) w).SetFont(font);
-                    ((DynamicLabel) w).SetParser(this);
+                    //((DynamicLabel) w).SetParser(this);
                     ((DynamicLabel) w).SetColors(ConditionParser.Colors);
                     ((DynamicLabel) w).SetEnabled(enabled);
                 }
@@ -402,8 +402,8 @@ namespace MKEditor
                 {
                     if (!string.IsNullOrEmpty(text)) ((MultilineDynamicLabel) w).SetText(text);
                     if (font != null) ((MultilineDynamicLabel) w).SetFont(font);
-                    ((MultilineDynamicLabel) w).SetParser(this);
-                    ((MultilineDynamicLabel) w).SetColors(CommandParser.Colors);
+                    //((MultilineDynamicLabel) w).SetParser(this);
+                    ((MultilineDynamicLabel) w).SetColors(ConditionParser.Colors);
                     ((MultilineDynamicLabel) w).SetEnabled(enabled);
                 }
                 if (type == "textbox")
@@ -551,7 +551,7 @@ namespace MKEditor
                 {
                     if (w is DynamicLabel)
                     {
-                        ((DynamicLabel) w).SetParameters(Condition.Parameters);
+                        //((DynamicLabel) w).SetParameters(Condition.Parameters);
                     }
                 }
                 this.WasNull = false;

@@ -38,6 +38,11 @@ namespace MKEditor.Widgets
             TextArea.SetFont(Font);
         }
 
+        public void SetCaretIndex(int Index)
+        {
+            TextArea.SetCaretIndex(Index);
+        }
+
         public override void SizeChanged(BaseEventArgs e)
         {
             base.SizeChanged(e);

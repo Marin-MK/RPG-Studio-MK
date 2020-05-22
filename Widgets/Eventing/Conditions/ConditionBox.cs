@@ -144,9 +144,9 @@ namespace MKEditor.Widgets
         public void SetCondition(BasicCondition Condition, ConditionUIParser Parser)
         {
             this.Condition = Condition;
-            this.DynamicLabel.SetParameters(Condition.Parameters);
-            this.DynamicLabel.SetTextFormat(Condition.Type.Text);
-            this.DynamicLabel.SetParser(Parser);
+            //this.DynamicLabel.SetParameters(Condition.Parameters);
+            //this.DynamicLabel.SetTextFormat(Condition.Type.Text);
+            //this.DynamicLabel.SetParser(Parser);
             this.DynamicLabel.SetColors(ConditionParser.Colors);
             this.DynamicLabel.RedrawText();
         }

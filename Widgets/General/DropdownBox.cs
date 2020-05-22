@@ -227,7 +227,7 @@ namespace MKEditor.Widgets
             {
                 int ry = e.Y - Viewport.Y;
                 if (ry < 2 || ry >= this.Size.Height - 2) SetHovering(-1);
-                SetHovering((int) Math.Floor(ry / 18d));
+                else SetHovering((int) Math.Floor((ry - 2) / 18d));
             }
             else SetHovering(-1);
         }

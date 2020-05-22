@@ -67,6 +67,14 @@ namespace MKEditor.Widgets
             }
         }
 
+        public void SetCaretIndex(int Index)
+        {
+            Caret.CharacterIndex = Index;
+            SelectionStartIndex.CharacterIndex = -1;
+            SelectionEndIndex.CharacterIndex = -1;
+            RedrawText();
+        }
+
         public override void SizeChanged(BaseEventArgs e)
         {
             base.SizeChanged(e);

@@ -34,12 +34,12 @@ namespace MKEditor.Widgets
         /// <summary>
         /// Minimum possible size for this widget.
         /// </summary>
-        public Size MinimumSize { get; protected set; } = new Size(1, 1);
+        public Size MinimumSize { get; set; } = new Size(1, 1);
 
         /// <summary>
         /// Maximum possible size for this widget.
         /// </summary>
-        public Size MaximumSize { get; protected set; } = new Size(-1, -1);
+        public Size MaximumSize { get; set; } = new Size(-1, -1);
 
         /// <summary>
         /// Background color of this widget.

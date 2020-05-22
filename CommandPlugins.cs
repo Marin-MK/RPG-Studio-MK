@@ -23,7 +23,6 @@ namespace MKEditor
                 {
                     dynamic cmd = Activator.CreateInstance(type);
                     CommandTypes.Add(new DynamicCommandType(cmd));
-                    Console.WriteLine(CommandTypes.Last().Name);
                 }
             }
         }
@@ -32,19 +31,55 @@ namespace MKEditor
     public class DynamicCommandType
     {
         protected dynamic DynamicType;
-        public string Name { get; }
-        public string Identifier { get; }
+        public string Name { get => DynamicType.Name; }
+        public string Identifier { get => DynamicType.Identifier; }
+        public bool ShowHeader { get => DynamicType.ShowHeader; }
+        public ODL.Color HeaderColor { get => DynamicToColor(DynamicType.HeaderColor); }
+        public List<ODL.Color> TextColors
+        {
+            get
+            {
+                List<ODL.Color> Colors = new List<ODL.Color>();
+                for (int i = 0; i < DynamicType.TextColors.Count; i++) Colors.Add(DynamicToColor(DynamicType.TextColors[i]));
+                return Colors;
+            }
+        }
+        public int WindowWidth { get => DynamicType.WindowWidth; }
+        public int WindowHeight { get => DynamicType.WindowHeight; }
 
         public DynamicCommandType(dynamic Type)
         {
             this.DynamicType = Type;
-            this.Name = DynamicType.Name;
-            this.Identifier = DynamicType.Identifier;
         }
 
-        public void CreateReadOnly(Dictionary<string, object> Params)
+        protected ODL.Color DynamicToColor(dynamic Color)
         {
-            DynamicType.CreateReadOnly(Params);
+            return new ODL.Color(Color.Red, Color.Green, Color.Blue, Color.Alpha);
+        }
+
+        public DynamicCommandType EmptyClone()
+        {
+            return new DynamicCommandType(DynamicType.CreateEmptyClone());
+        }
+
+        public dynamic CallCreateReadOnly()
+        {
+            return DynamicType.CallCreateReadOnly();
+        }
+
+        public dynamic CallLoadReadOnly(CommandUtility Utility)
+        {
+            return DynamicType.CallLoadReadOnly(Utility);
+        }
+
+        public dynamic CallCreateWindow(CommandUtility Utility)
+        {
+            return DynamicType.CallCreateWindow(Utility);
+        }
+
+        public void CallSaveWindow(CommandUtility Utility)
+        {
+            DynamicType.CallSaveWindow(Utility);
         }
     }
 }

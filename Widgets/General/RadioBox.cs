@@ -68,7 +68,7 @@ namespace MKEditor.Widgets
                 }
                 this.Checked = Checked;
                 Redraw();
-                if (Checked) OnCheckChanged?.Invoke(new BaseEventArgs());
+                OnCheckChanged?.Invoke(new BaseEventArgs());
             }
         }
 

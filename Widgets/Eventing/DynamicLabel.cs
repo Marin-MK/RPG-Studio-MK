@@ -7,30 +7,12 @@ namespace MKEditor.Widgets
 {
     public class DynamicLabel : Label
     {
-        public object TextFormat { get; protected set; }
-        public Dictionary<string, object> Parameters { get; protected set; }
-        public IUIParser Parser { get; protected set; }
         public List<Color> Colors { get; protected set; }
         public bool Parsing = true;
 
         public DynamicLabel(IContainer Parent) : base(Parent)
         {
-            // Special label to process [c=0]{value}[c=1] stuff for dynamic commands/conditions
-        }
-
-        public void SetParameters(Dictionary<string, object> Parameters)
-        {
-            this.Parameters = Parameters;
-        }
-
-        public void SetTextFormat(object TextFormat)
-        {
-            this.TextFormat = TextFormat;
-        }
-
-        public void SetParser(IUIParser Parser)
-        {
-            this.Parser = Parser;
+            // Special label to process color embedded in the text.
         }
 
         public void SetColors(List<Color> Colors)
@@ -38,39 +20,26 @@ namespace MKEditor.Widgets
             this.Colors = Colors;
         }
 
-        public override void SetText(string Text, DrawOptions DrawOptions = DrawOptions.LeftAlign)
-        {
-            if (this.Text != Text || this.TextFormat is string && (string) this.TextFormat != Text)
-            {
-                this.Text = Text;
-                this.TextFormat = this.Text;
-                this.DrawOptions = DrawOptions;
-                this.RedrawText();
-            }
-        }
-
         public override void RedrawText()
         {
-            if (Parameters == null || TextFormat == null || this.Colors == null) return;
             Sprites["text"].Bitmap?.Dispose();
-            string text = Utilities.ProcessText(this.TextFormat, this.Parameters, this.Parser, this.Parsing);
-            if (string.IsNullOrEmpty(text)) return;
-            Size s = this.Font.TextSize(text);
-            this.SetSize(s);
-            Sprites["text"].Bitmap = new Bitmap(s);
+            if (string.IsNullOrEmpty(this.Text)) return;
+            Size s = this.Font.TextSize(Text);
+            this.SetSize(s.Width + 4, s.Height);
+            Sprites["text"].Bitmap = new Bitmap(this.Size);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = this.Font;
             int x = 0;
             Color color = this.Colors[0];
-            for (int i = 0; i < text.Length; i++)
+            for (int i = 0; i < Text.Length; i++)
             {
-                if (text[i] == '[' && text[i + 1] == 'c' && text[i + 2] == '=')
+                if (this.Parsing && Text[i] == '[' && Text[i + 1] == 'c' && Text[i + 2] == '=')
                 {
                     int startnum = i + 3;
                     int endnum = -1;
-                    for (int j = startnum; j < text.Length; j++)
+                    for (int j = startnum; j < Text.Length; j++)
                     {
-                        if (!Utilities.IsNumeric(text[j]))
+                        if (!Utilities.IsNumeric(Text[j]))
                         {
                             endnum = j;
                             break;
@@ -79,26 +48,17 @@ namespace MKEditor.Widgets
                     if (endnum != -1)
                     {
                         int idx = 0;
-                        if (endnum != startnum) idx = Convert.ToInt32(text.Substring(startnum, endnum - startnum));
+                        if (endnum != startnum) idx = Convert.ToInt32(Text.Substring(startnum, endnum - startnum));
                         if (idx < this.Colors.Count) color = this.Colors[idx];
                         else throw new Exception($"Only {this.Colors.Count} defined colors; Index {idx} out of range.");
                     }
                     i = endnum;
                     continue;
                 }
-                Sprites["text"].Bitmap.DrawText(text[i].ToString(), x, 0, this.Enabled ? color : new Color(72, 72, 72), this.DrawOptions);
-                x += Sprites["text"].Bitmap.TextSize(text[i]).Width;
+                Sprites["text"].Bitmap.DrawText(Text[i].ToString(), x, 0, this.Enabled ? color : new Color(72, 72, 72), this.DrawOptions);
+                x += Sprites["text"].Bitmap.TextSize(Text[i]).Width;
             }
             Sprites["text"].Bitmap.Lock();
-        }
-
-        public override void SetValue(string Identifier, object Value)
-        {
-            if (string.IsNullOrEmpty(Identifier))
-            {
-                this.SetTextFormat((string) Value);
-                this.RedrawText();
-            }
         }
     }
 
@@ -118,35 +78,29 @@ namespace MKEditor.Widgets
         public override void RedrawText()
         {
             Sprites["text"].Bitmap?.Dispose();
-            if (this.TextFormat == null)
+            if (string.IsNullOrEmpty(this.Text))
             {
                 this.SetHeight(Font.Size + 4);
                 return;
             }
-            string text = Utilities.ProcessText(this.TextFormat, this.Parameters, this.Parser, this.Parsing);
-            if (string.IsNullOrEmpty(text))
-            {
-                this.SetHeight(Font.Size + 4);
-                return;
-            }
-            List<string> Lines = Utilities.FormatString(this.Font, text, Size.Width);
+            List<string> Lines = Utilities.FormatString(this.Font, Text, Size.Width);
             this.SetHeight((Font.Size + 4) * Lines.Count);
             Sprites["text"].Bitmap = new Bitmap(this.Size);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = this.Font;
             int x = 0;
-            Color color = this.Colors[0];
+            Color color = this.Colors == null ? Color.WHITE : this.Colors[0];
             int oldline = -1;
-            for (int i = 0; i < text.Length; i++)
+            for (int i = 0; i < Text.Length; i++)
             {
-                if (text[i] == '\n') continue;
-                if (this.Parsing && text[i] == '[' && text[i + 1] == 'c' && text[i + 2] == '=')
+                if (Text[i] == '\n') continue;
+                if (this.Parsing && Text[i] == '[' && Text[i + 1] == 'c' && Text[i + 2] == '=')
                 {
                     int startnum = i + 3;
                     int endnum = -1;
-                    for (int j = startnum; j < text.Length; j++)
+                    for (int j = startnum; j < Text.Length; j++)
                     {
-                        if (!Utilities.IsNumeric(text[j]))
+                        if (!Utilities.IsNumeric(Text[j]))
                         {
                             endnum = j;
                             break;
@@ -155,8 +109,8 @@ namespace MKEditor.Widgets
                     if (endnum != -1)
                     {
                         int idx = 0;
-                        if (endnum != startnum) idx = Convert.ToInt32(text.Substring(startnum, endnum - startnum));
-                        if (idx < this.Colors.Count) color = this.Colors[idx];
+                        if (endnum != startnum) idx = Convert.ToInt32(Text.Substring(startnum, endnum - startnum));
+                        if (idx < this.Colors.Count) color = this.Colors == null ? Color.WHITE : this.Colors[idx];
                         else throw new Exception($"Only {this.Colors.Count} defined colors; Index {idx} out of range.");
                     }
                     i = endnum;
@@ -174,8 +128,8 @@ namespace MKEditor.Widgets
                     remidx -= Lines[j].Length;
                 }
                 if (line != oldline) x = 0;
-                Sprites["text"].Bitmap.DrawText(text[i].ToString(), x, line * (Font.Size + 4), this.Enabled ? color : new Color(72, 72, 72), this.DrawOptions);
-                x += Sprites["text"].Bitmap.TextSize(text[i]).Width;
+                Sprites["text"].Bitmap.DrawText(Text[i].ToString(), x, line * (Font.Size + 4), this.Enabled ? color : new Color(72, 72, 72), this.DrawOptions);
+                x += Sprites["text"].Bitmap.TextSize(Text[i]).Width;
                 oldline = line;
             }
             Sprites["text"].Bitmap.Lock();

@@ -110,7 +110,6 @@ namespace MKEditor
         public static void InitializeEditor()
         {
             ConditionParser.Initialize();
-            CommandParser.Initialize();
         }
 
         public static void WIP()

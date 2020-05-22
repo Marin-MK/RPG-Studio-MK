@@ -14,7 +14,7 @@ namespace MKEditor.Widgets
         {
             get
             {
-                Widget w = StackPanel.Widgets.Find(w => ((CommandHandlerWidget) w).Selected);
+                Widget w = StackPanel.Widgets.Find(w => ((CommandAPIHandlerWidget) w).Selected);
                 return StackPanel.Widgets.IndexOf(w);
             }
         }
@@ -73,7 +73,7 @@ namespace MKEditor.Widgets
             for (int i = 0; i < PageData.Commands.Count; i++)
             {
                 BasicCommand cmd = PageData.Commands[i];
-                CommandHandlerWidget cew = new CommandHandlerWidget(StackPanel);
+                CommandAPIHandlerWidget cew = new CommandAPIHandlerWidget(StackPanel);
                 cew.SetWidth(Size.Width - 13);
                 cew.SetCommand(cmd);
             }
@@ -81,7 +81,7 @@ namespace MKEditor.Widgets
 
         public void EditCommand()
         {
-            CommandHandlerWidget chw = (CommandHandlerWidget) StackPanel.Widgets[SelectedIndex];
+            CommandAPIHandlerWidget chw = (CommandAPIHandlerWidget) StackPanel.Widgets[SelectedIndex];
             chw.EditWindow();
         }
     }
