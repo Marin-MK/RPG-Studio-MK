@@ -157,6 +157,7 @@ namespace MKEditor.Widgets
                 this.Enabled = Enabled;
                 if (this.Enabled) Sprites["filler"].Color = new Color(64, 104, 146);
                 else Sprites["filler"].Color = new Color(72, 72, 72);
+                RedrawText();
             }
         }
 
@@ -172,7 +173,7 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap.Font = this.Font;
             for (int i = 0; i < Lines.Count; i++)
             {
-                Sprites["text"].Bitmap.DrawText(Lines[i], MaxWidth / 2, i * 18, this.TextColor, DrawOptions.CenterAlign);
+                Sprites["text"].Bitmap.DrawText(Lines[i], MaxWidth / 2, i * 18, this.Enabled ? this.TextColor : new Color(72, 72, 72), DrawOptions.CenterAlign);
             }
             Sprites["text"].Bitmap.Lock();
             Sprites["text"].X = Size.Width / 2 - MaxWidth / 2;

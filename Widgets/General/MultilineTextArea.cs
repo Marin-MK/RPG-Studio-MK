@@ -929,7 +929,18 @@ namespace MKEditor.Widgets
             {
                 int idx = Caret.LineToCharIndex(Line, Caret.Lines[Line].Length);
                 if (Caret.Lines[Line].EndsWith('\n')) idx -= 1;
+                if (Line == Caret.Lines.Count - 1)
+                {
+                    Caret.EndOfLine = true;
+                    SelectionEndIndex.EndOfLine = true;
+                }
                 return idx;
+            }
+            else if (rx < 0)
+            {
+                Caret.EndOfLine = false;
+                SelectionEndIndex.EndOfLine = false;
+                return Caret.LineToCharIndex(Line, 0);
             }
             for (int i = 0; i < Caret.CharacterWidths[Line].Count; i++)
             {
@@ -941,11 +952,21 @@ namespace MKEditor.Widgets
                     if (rx - thiswidth >= nextwidth - rx)
                     {
                         // More to the right
+                        if (i + 1 == Caret.CharacterWidths[Line].Count && Line != Caret.Lines.Count - 1)
+                        {
+                            Caret.EndOfLine = true;
+                            SelectionEndIndex.EndOfLine = true;
+                        }
                         return Caret.LineToCharIndex(Line, i + 1);
                     }
                     else
                     {
                         // More to the left
+                        if (i == 0)
+                        {
+                            Caret.EndOfLine = false;
+                            SelectionEndIndex.EndOfLine = false;
+                        }
                         return Caret.LineToCharIndex(Line, i);
                     }
                 }
