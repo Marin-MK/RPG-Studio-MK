@@ -327,7 +327,7 @@ namespace MKEditor
             }
             else if (data is JArray)
             {
-                List<object> obj = ((JObject) data).ToObject<List<object>>();
+                List<object> obj = ((JArray) data).ToObject<List<object>>();
                 for (int i = 0; i < obj.Count; i++)
                 {
                     obj[i] = JsonToNative(obj[i]);

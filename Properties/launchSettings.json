@@ -1,7 +1,8 @@
 {
   "profiles": {
     "MKEditor": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "D:/Desktop/MK/mk/project.mkproj"
     }
   }
 }

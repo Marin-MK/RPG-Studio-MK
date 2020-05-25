@@ -25,6 +25,7 @@ namespace MKEditor
                     CommandTypes.Add(new DynamicCommandType(cmd));
                 }
             }
+            CommandTypes.ForEach(t => t.DetermineIfSubBranch());
         }
     }
 
@@ -46,10 +47,20 @@ namespace MKEditor
         }
         public int WindowWidth { get => DynamicType.WindowWidth; }
         public int WindowHeight { get => DynamicType.WindowHeight; }
+        public string PickerTabName { get => DynamicType.PickerTabName; }
+        public bool HasBranches { get => DynamicType.HasBranches; }
+        public string BranchIdentifier { get => DynamicType.BranchIdentifier; }
+        public bool IsSubBranch { get; protected set; }
 
         public DynamicCommandType(dynamic Type)
         {
             this.DynamicType = Type;
+        }
+
+        public void DetermineIfSubBranch()
+        {
+            DynamicCommandType type = CommandPlugins.CommandTypes.Find(t => t.BranchIdentifier == this.Identifier);
+            IsSubBranch = type != null;
         }
 
         protected ODL.Color DynamicToColor(dynamic Color)
@@ -59,7 +70,9 @@ namespace MKEditor
 
         public DynamicCommandType EmptyClone()
         {
-            return new DynamicCommandType(DynamicType.CreateEmptyClone());
+            DynamicCommandType type = new DynamicCommandType(DynamicType.CreateEmptyClone());
+            type.IsSubBranch = this.IsSubBranch;
+            return type;
         }
 
         public dynamic CallCreateReadOnly()
@@ -80,6 +93,11 @@ namespace MKEditor
         public void CallSaveWindow(CommandUtility Utility)
         {
             DynamicType.CallSaveWindow(Utility);
+        }
+
+        public void CallCreateBlank(CommandUtility Utility)
+        {
+            DynamicType.CallCreateBlank(Utility);
         }
     }
 }

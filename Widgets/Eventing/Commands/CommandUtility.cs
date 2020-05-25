@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MKEditor.Game;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,16 +8,25 @@ namespace MKEditor
 {
     public class CommandUtility
     {
+        public List<BasicCommand> Commands;
+        public int CommandIndex;
         public Dictionary<string, object> Parameters;
 
-        public CommandUtility(Dictionary<string, object> Parameters)
+        public CommandUtility(List<BasicCommand> Commands, int CommandIndex, Dictionary<string, object> Parameters)
         {
+            this.Commands = Commands;
+            this.CommandIndex = CommandIndex;
             this.Parameters = Parameters;
         }
 
         public object Param(string Name)
         {
             return Parameters[":" + Name];
+        }
+
+        public void CreateParam(string Name, object Value)
+        {
+            Parameters.Add(":" + Name, Value);
         }
 
         public void SetParam(string Name, object Value)
@@ -64,6 +74,33 @@ namespace MKEditor
             if (Param(Name) is JObject) return ((JObject) Param(Name)).ToObject<Dictionary<string, object>>();
             else if (Param(Name) is Dictionary<string, object>) return (Dictionary<string, object>) Param(Name);
             return null;
+        }
+
+        public bool ParamIsArray(string Name)
+        {
+            return Param(Name) is List<object> || Param(Name) is JArray;
+        }
+
+        public List<object> ParamAsArray(string Name)
+        {
+            if (Param(Name) is JArray) return ((JArray) Param(Name)).ToObject<List<object>>();
+            else if (Param(Name) is List<object>) return (List<object>) Param(Name);
+            return null;
+        }
+
+        public CommandUtility GetBranchParent()
+        {
+            string identifier = this.Commands[this.CommandIndex].Identifier;
+            for (int i = this.CommandIndex - 1; i >= 0; i--)
+            {
+                BasicCommand cmd = this.Commands[i];
+                if (cmd.Identifier == ":choice" ||
+                    cmd.Identifier == ":choice_branch" && identifier != ":choice_branch")
+                {
+                    return new CommandUtility(this.Commands, i, this.Commands[i].Parameters);
+                }
+            }
+            throw new Exception($"Failed to find a branch parent.");
         }
 
         public string GetSwitchName(string GroupID, string SwitchID)

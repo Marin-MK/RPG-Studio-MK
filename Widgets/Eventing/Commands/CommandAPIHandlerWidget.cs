@@ -10,6 +10,8 @@ namespace MKEditor.Widgets
     public class CommandAPIHandlerWidget : Widget
     {
         public BasicCommand Command;
+        public EventPage PageData;
+        public int Indent;
         public bool Selected { get; protected set; } = false;
         public Dictionary<string, Widget> DynamicReadOnlyWidgets = new Dictionary<string, Widget>();
         public Dictionary<string, Widget> DynamicWindowWidgets = new Dictionary<string, Widget>();
@@ -32,11 +34,8 @@ namespace MKEditor.Widgets
             Sprites["bullet"].Bitmap.FillRect(0, 1, 4, 2, Color.WHITE);
             Sprites["bullet"].Bitmap.Lock();
 
-            Sprites["hover"] = new Sprite(this.Viewport, new SolidBitmap(2, this.Size.Height, new Color(55, 187, 255)));
-            Sprites["hover"].Visible = false;
-
             HeaderLabel = new Label(this);
-            HeaderLabel.SetPosition(19, 2);
+            HeaderLabel.SetPosition(19, 3);
 
             WidgetContainer = new Container(this);
             WidgetContainer.SetPosition(19, 20);
@@ -45,17 +44,33 @@ namespace MKEditor.Widgets
         public override void SizeChanged(BaseEventArgs e)
         {
             base.SizeChanged(e);
-            WidgetContainer.SetWidth(Size.Width);
-            ((SolidBitmap) Sprites["hover"].Bitmap).SetSize(2, Size.Height);
+            WidgetContainer.SetWidth(Size.Width - WidgetContainer.Position.X);
         }
 
-        public void SetCommand(BasicCommand Command)
+        public void SetCommand(EventPage PageData, BasicCommand Command, int Indent = -1)
         {
+            this.PageData = PageData;
             this.Command = Command;
-            this.Sprites["bullet"].X = Command.Indent * 24 + 6;
+            if (Indent == -1 && Command != null) Indent = Command.Indent;
+            this.Indent = Indent;
+            this.Sprites["bullet"].X = Indent * CommandBox.Indent + 6;
             this.Sprites["bullet"].Y = 9;
-            ((SolidBitmap) this.Sprites["hover"].Bitmap).SetSize(2, this.Size.Height);
+            HeaderLabel.SetPosition(19 + Indent * CommandBox.Indent, HeaderLabel.Position.Y);
+            if (this.Command == null)
+            {
+                SetHeight(20);
+                return;
+            }
             this.CommandType = CommandPlugins.CommandTypes.Find(t => t.Identifier == Command.Identifier.Substring(1)).EmptyClone();
+            if (this.Command != null && this.CommandType.IsSubBranch)
+            {
+                this.Sprites["bullet"].Visible = false;
+                WidgetContainer.SetPosition(30 + Indent * CommandBox.Indent, WidgetContainer.Position.Y);
+            }
+            else
+            {
+                WidgetContainer.SetPosition(19 + Indent * CommandBox.Indent, WidgetContainer.Position.Y);
+            }
             HeaderLabel.SetText(this.CommandType.Name);
             HeaderLabel.SetVisible(this.CommandType.ShowHeader);
             dynamic basewidgets = this.CommandType.CallCreateReadOnly();
@@ -84,9 +99,14 @@ namespace MKEditor.Widgets
             Reload();
         }
 
+        public dynamic GenerateUtility()
+        {
+            return new CommandUtility(PageData.Commands, PageData.Commands.IndexOf(this.Command), this.Command.Parameters);
+        }
+
         public void Reload()
         {
-            dynamic widgets = this.CommandType.CallLoadReadOnly(new CommandUtility(Command.Parameters));
+            dynamic widgets = this.CommandType.CallLoadReadOnly(GenerateUtility());
             for (int i = 0; i < widgets.Count; i++)
             {
                 dynamic widget = widgets[i];
@@ -132,20 +152,22 @@ namespace MKEditor.Widgets
         {
             w.SetPosition(widget.X, widget.Y);
             w.SetSize(
-                widget.Width == -1 ? (InWindow ? PopupWindow.Size.Width : WidgetContainer.Size.Width) : widget.Width,
-                widget.Height == -1 ? (InWindow ? PopupWindow.Size.Height : WidgetContainer.Size.Height) : widget.Height
+                widget.Width == -1 ? (InWindow ? PopupWindow.Size.Width : WidgetContainer.Size.Width - w.Position.X) : widget.Width,
+                widget.Height == -1 ? (InWindow ? PopupWindow.Size.Height : WidgetContainer.Size.Height - w.Position.Y) : widget.Height
             );
             if (w is MultilineDynamicLabel)
             {
                 ((MultilineDynamicLabel) w).SetColors(this.CommandType.TextColors);
-                if (!string.IsNullOrEmpty(widget.Text)) ((MultilineDynamicLabel) w).SetText(widget.Text);
+                if (widget.Color != null) ((DynamicLabel) w).Colors[0] = ProcessColor(widget.Color);
+                if (widget.Text != null) ((MultilineDynamicLabel) w).SetText(widget.Text);
                 if (!widget.Parse) ((MultilineDynamicLabel) w).Parsing = widget.Parse;
                 ((MultilineDynamicLabel) w).SetEnabled(widget.Enabled);
             }
             else if (w is DynamicLabel)
             {
                 ((DynamicLabel) w).SetColors(this.CommandType.TextColors);
-                if (!string.IsNullOrEmpty(widget.Text)) ((DynamicLabel) w).SetText(widget.Text);
+                if (widget.Color != null) ((DynamicLabel) w).Colors[0] = ProcessColor(widget.Color);
+                if (widget.Text != null) ((DynamicLabel) w).SetText(widget.Text);
                 ((DynamicLabel) w).SetEnabled(widget.Enabled);
             }
             else if (w is MultilineTextBox)
@@ -224,11 +246,17 @@ namespace MKEditor.Widgets
             }
         }
 
+        public Color ProcessColor(dynamic Object)
+        {
+            return new Color(Object.Red, Object.Green, Object.Blue, Object.Alpha);
+        }
+
         public void EditWindow()
         {
+            if (this.Command == null) return;
             PopupWindow = new PopupWindow();
             OldParameters = new Dictionary<string, object>(Command.Parameters);
-            dynamic basewidgets = this.CommandType.CallCreateWindow(new CommandUtility(Command.Parameters));
+            dynamic basewidgets = this.CommandType.CallCreateWindow(GenerateUtility());
             for (int i = 0; i < basewidgets.Count; i++)
             {
                 dynamic widget = basewidgets[i];
@@ -271,7 +299,7 @@ namespace MKEditor.Widgets
 
         public void SaveWindow()
         {
-            this.CommandType.CallSaveWindow(new CommandUtility(Command.Parameters));
+            this.CommandType.CallSaveWindow(GenerateUtility());
         }
 
         public void CloseWindow()
@@ -295,16 +323,15 @@ namespace MKEditor.Widgets
                     if (w != this) ((CommandAPIHandlerWidget) w).SetSelected(false);
                 });
                 this.Selected = Selected;
-                SetBackgroundColor(this.Selected ? new Color(28, 50, 73) : Color.ALPHA);
-                Sprites["hover"].Visible = this.WidgetIM.Hovering;
+                ((CommandBox) Parent.Parent.Parent).UpdateHoverOrSelection(true);
                 if (Selected) ((CommandBox) Parent.Parent.Parent).OnSelectionChanged?.Invoke(new BaseEventArgs());
             }
         }
 
-        public override void MouseMoving(MouseEventArgs e)
+        public override void HoverChanged(MouseEventArgs e)
         {
-            base.MouseMoving(e);
-            Sprites["hover"].Visible = this.WidgetIM.Hovering;
+            base.HoverChanged(e);
+            ((CommandBox) Parent.Parent.Parent).UpdateHoverOrSelection(false);
         }
 
         public override void MouseDown(MouseEventArgs e)

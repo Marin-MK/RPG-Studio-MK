@@ -30,7 +30,7 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = this.Font;
             int x = 0;
-            Color color = this.Colors[0];
+            Color color = this.Colors == null ? this.TextColor : this.Colors[0];
             for (int i = 0; i < Text.Length; i++)
             {
                 if (this.Parsing && Text[i] == '[' && Text[i + 1] == 'c' && Text[i + 2] == '=')
@@ -89,7 +89,7 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = this.Font;
             int x = 0;
-            Color color = this.Colors == null ? Color.WHITE : this.Colors[0];
+            Color color = this.Colors == null ? this.TextColor : this.Colors[0];
             int oldline = -1;
             for (int i = 0; i < Text.Length; i++)
             {

@@ -38,6 +38,10 @@ namespace MKEditor.Widgets
             Sprites["caret"].Y = 2;
             Sprites["caret"].Z = 1;
             OnWidgetSelected += WidgetSelected;
+            this.OnDisposed += delegate (BaseEventArgs e)
+            {
+                this.Window.UI.SetSelectedWidget(null);
+            };
         }
 
         public void SetText(string Text)
