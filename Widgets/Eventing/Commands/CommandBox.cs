@@ -57,6 +57,15 @@ namespace MKEditor.Widgets
             {
                 EditCommand();
             };
+
+            OnWidgetSelected += WidgetSelected;
+
+            RegisterShortcuts(new List<Shortcut>()
+            {
+                new Shortcut(this, new Key(Keycode.DELETE), delegate (BaseEventArgs e) { DeleteCommand(); }),
+                new Shortcut(this, new Key(Keycode.UP), delegate (BaseEventArgs e) { MoveUp(); }),
+                new Shortcut(this, new Key(Keycode.DOWN), delegate (BaseEventArgs e) { MoveDown(); })
+            });
         }
 
         public override void SizeChanged(BaseEventArgs e)
@@ -93,41 +102,46 @@ namespace MKEditor.Widgets
             for (int i = 0; i < PageData.Commands.Count; i++)
             {
                 BasicCommand cmd = PageData.Commands[i];
-                bool emptysub = false;
-                int emptyindex = 0;
                 if (StackPanel.Widgets.Count > 0)
                 {
                     CommandAPIHandlerWidget lastwidget = (CommandAPIHandlerWidget) StackPanel.Widgets.Last();
                     if (lastwidget.CommandType.IsSubBranch && cmd.Indent <= lastwidget.Indent)
                     {
-                        emptysub = true;
-                        emptyindex = lastwidget.Indent + 1;
+                        // Last command started a new branch, but it's empty
+                        InsertEmptyCommand(lastwidget.Indent + 1);
                     }
-                }
-                if (emptysub)
-                {
-                    // Last command started a new branch, but it's empty
-                    CommandAPIHandlerWidget emptyidt = new CommandAPIHandlerWidget(StackPanel);
-                    emptyidt.SetWidth(Size.Width - 13);
-                    emptyidt.SetCommand(PageData, null, emptyindex);
                 }
                 if (OldIndent > cmd.Indent)
                 {
                     // Went from a higher indent to a lower indent (e.g. end of a branch)
                     // Then insert an empty command
-                    CommandAPIHandlerWidget emptyidt = new CommandAPIHandlerWidget(StackPanel);
-                    emptyidt.SetWidth(Size.Width - 13);
-                    emptyidt.SetCommand(PageData, null, OldIndent);
+                    InsertEmptyCommand(OldIndent);
                 }
                 CommandAPIHandlerWidget cew = new CommandAPIHandlerWidget(StackPanel);
                 cew.SetWidth(Size.Width - 13);
                 cew.SetCommand(PageData, cmd);
                 OldIndent = cmd.Indent;
             }
-            CommandAPIHandlerWidget empty = new CommandAPIHandlerWidget(StackPanel);
-            empty.SetWidth(Size.Width - 13);
-            empty.SetCommand(PageData, null, 0);
+            if (StackPanel.Widgets.Count > 0)
+            {
+                // Last command started a new branch, but it's empty (and we're through the whole list, so the earlier
+                // check isn't fired)
+                CommandAPIHandlerWidget widget = (CommandAPIHandlerWidget) StackPanel.Widgets.Last();
+                if (widget.Command != null && widget.CommandType.IsSubBranch) InsertEmptyCommand(widget.Indent + 1);
+                for (int i = widget.Indent; i > 0; i--)
+                {
+                    InsertEmptyCommand(i);
+                }
+            }
+            InsertEmptyCommand(0);
             UpdateList();
+        }
+
+        public void InsertEmptyCommand(int Indent)
+        {
+            CommandAPIHandlerWidget w = new CommandAPIHandlerWidget(StackPanel);
+            w.SetWidth(Size.Width - 13);
+            w.SetCommand(PageData, null, Indent);
         }
 
         public void NewCommand(int Index, int Indent)
@@ -151,6 +165,60 @@ namespace MKEditor.Widgets
                     UpdateList();
                 }
             };
+        }
+
+        public void EditCommand()
+        {
+            CommandAPIHandlerWidget chw = (CommandAPIHandlerWidget)StackPanel.Widgets[SelectedIndex];
+            if (chw.Command == null)
+            {
+                NewCommand(SelectedIndex, chw.Indent);
+            }
+            else chw.EditWindow();
+        }
+
+        public void DeleteCommand()
+        {
+            if (SelectionStartIndex == -1 || SelectionEndIndex == -1 || StackPanel.Widgets.Count == 1) return;
+            CommandAPIHandlerWidget mainwidget = (CommandAPIHandlerWidget) StackPanel.Widgets[SelectionStartIndex];
+            if (mainwidget.Command == null || !mainwidget.CommandType.IsDeletable) return;
+            List<Widget> Widgets = StackPanel.Widgets.GetRange(SelectionStartIndex, SelectionEndIndex - SelectionStartIndex + 1);
+            bool RemovedSomething = false;
+            Widgets.ForEach(widget =>
+            {
+                CommandAPIHandlerWidget w = (CommandAPIHandlerWidget) widget;
+                if (w.Command != null)
+                {
+                    PageData.Commands.Remove(w.Command);
+                    RemovedSomething = true;
+                }
+            });
+            if (RemovedSomething)
+            {
+                if (SelectionStartIndex >= StackPanel.Widgets.Count - 1) SelectionStartIndex -= 1;
+                SetEventPage(this.EventData, this.PageData);
+                if (SelectionStartIndex > 0)
+                {
+                    if (((CommandAPIHandlerWidget) StackPanel.Widgets[SelectionStartIndex]).Command == null) SelectionStartIndex -= 1;
+                }
+                ((CommandAPIHandlerWidget) StackPanel.Widgets[SelectionStartIndex]).SetSelected(true);
+            }
+        }
+
+        public void MoveUp()
+        {
+            if (SelectionStartIndex <= 0) return;
+            StackPanel.Widgets.ForEach(w => ((CommandAPIHandlerWidget) w).SetSelected(false));
+            SelectionStartIndex -= 1;
+            ((CommandAPIHandlerWidget) StackPanel.Widgets[SelectionStartIndex]).SetSelected(true);
+        }
+
+        public void MoveDown()
+        {
+            if (SelectionStartIndex >= StackPanel.Widgets.Count - 1) return;
+            StackPanel.Widgets.ForEach(w => ((CommandAPIHandlerWidget) w).SetSelected(false));
+            SelectionStartIndex += 1;
+            ((CommandAPIHandlerWidget) StackPanel.Widgets[SelectionStartIndex]).SetSelected(true);
         }
 
         public void UpdateList()
@@ -196,15 +264,15 @@ namespace MKEditor.Widgets
         {
             for (int y = StartY; y < EndY - 2; y += 2)
             {
+                BranchSprite.Bitmap.SetPixel(7 + Indent * CommandBox.Indent, y, Color.WHITE);
                 BranchSprite.Bitmap.SetPixel(8 + Indent * CommandBox.Indent, y, Color.WHITE);
-                BranchSprite.Bitmap.SetPixel(9 + Indent * CommandBox.Indent, y, Color.WHITE);
             }
-            BranchSprite.Bitmap.FillRect(7 + Indent * CommandBox.Indent, EndY - 2, 4, 2, Color.WHITE);
+            BranchSprite.Bitmap.FillRect(6 + Indent * CommandBox.Indent, EndY - 2, 4, 2, Color.WHITE);
         }
 
         public void DrawBranchHorizontal(int Indent, int Y)
         {
-            for (int x = 11 + Indent * CommandBox.Indent; x < 26 + Indent * CommandBox.Indent; x += 2)
+            for (int x = 10 + Indent * CommandBox.Indent; x < 25 + Indent * CommandBox.Indent; x += 2)
             {
                 BranchSprite.Bitmap.SetPixel(x, Y, Color.WHITE);
                 BranchSprite.Bitmap.SetPixel(x, Y + 1, Color.WHITE);
@@ -277,16 +345,6 @@ namespace MKEditor.Widgets
             if (Selection && this.SelectionStartIndex != -1 && this.SelectionEndIndex == -1) this.SelectionEndIndex = this.SelectionStartIndex;
             else if (!Selection && this.HoverStartIndex != -1 && this.HoverEndIndex == -1) this.HoverEndIndex = this.HoverStartIndex;
             UpdateList();
-        }
-
-        public void EditCommand()
-        {
-            CommandAPIHandlerWidget chw = (CommandAPIHandlerWidget) StackPanel.Widgets[SelectedIndex];
-            if (chw.Command == null)
-            {
-                NewCommand(SelectedIndex, chw.Indent);
-            }
-            else chw.EditWindow();
         }
     }
 }

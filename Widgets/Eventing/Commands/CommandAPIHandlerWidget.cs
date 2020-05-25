@@ -323,7 +323,7 @@ namespace MKEditor.Widgets
                     if (w != this) ((CommandAPIHandlerWidget) w).SetSelected(false);
                 });
                 this.Selected = Selected;
-                ((CommandBox) Parent.Parent.Parent).UpdateHoverOrSelection(true);
+                if (Selected) ((CommandBox) Parent.Parent.Parent).UpdateHoverOrSelection(true);
                 if (Selected) ((CommandBox) Parent.Parent.Parent).OnSelectionChanged?.Invoke(new BaseEventArgs());
             }
         }

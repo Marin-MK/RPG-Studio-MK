@@ -50,6 +50,7 @@ namespace MKEditor
         public string PickerTabName { get => DynamicType.PickerTabName; }
         public bool HasBranches { get => DynamicType.HasBranches; }
         public string BranchIdentifier { get => DynamicType.BranchIdentifier; }
+        public bool IsDeletable { get => DynamicType.IsDeletable; }
         public bool IsSubBranch { get; protected set; }
 
         public DynamicCommandType(dynamic Type)
