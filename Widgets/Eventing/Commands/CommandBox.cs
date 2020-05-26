@@ -95,6 +95,7 @@ namespace MKEditor.Widgets
 
         public void SetEventPage(Event EventData, EventPage PageData)
         {
+            int OldScroll = MainContainer.ScrolledY;
             this.EventData = EventData;
             this.PageData = PageData;
             while (StackPanel.Widgets.Count > 0) StackPanel.Widgets[0].Dispose();
@@ -135,6 +136,8 @@ namespace MKEditor.Widgets
             }
             InsertEmptyCommand(0);
             UpdateList();
+            MainContainer.ScrolledY = OldScroll;
+            MainContainer.UpdateAutoScroll();
         }
 
         public void InsertEmptyCommand(int Indent)
@@ -144,7 +147,7 @@ namespace MKEditor.Widgets
             w.SetCommand(PageData, null, Indent);
         }
 
-        public void NewCommand(int Index, int Indent)
+        public void NewCommand(int WidgetIndex, int CommandIndex, int Indent)
         {
             CommandPicker picker = new CommandPicker();
             picker.OnClosed += delegate (BaseEventArgs e)
@@ -154,25 +157,41 @@ namespace MKEditor.Widgets
                     CommandAPIHandlerWidget cmdwidget = new CommandAPIHandlerWidget(StackPanel);
                     // Remove from last index and insert at intended index
                     StackPanel.Widgets.Remove(cmdwidget);
-                    StackPanel.Widgets.Insert(Index, cmdwidget);
+                    StackPanel.Widgets.Insert(WidgetIndex, cmdwidget);
                     cmdwidget.SetWidth(Size.Width - 13);
-                    CommandUtility Utility = new CommandUtility(PageData.Commands, Index, new Dictionary<string, object>());
+                    CommandUtility Utility = new CommandUtility(PageData.Commands, CommandIndex, new Dictionary<string, object>());
                     picker.ChosenCommand.CallCreateBlank(Utility);
                     BasicCommand cmd = new BasicCommand(Indent, ":" + picker.ChosenCommand.Identifier, Utility.Parameters);
-                    PageData.Commands.Insert(Index, cmd);
+                    PageData.Commands.Insert(CommandIndex, cmd);
                     cmdwidget.SetCommand(PageData, cmd, Indent);
-                    cmdwidget.EditWindow();
-                    UpdateList();
+                    cmdwidget.SetSelected(true);
+                    cmdwidget.EditWindow(delegate (BaseEventArgs e)
+                    {
+                        SelectionStartIndex = WidgetIndex;
+                        SelectionEndIndex = WidgetIndex;
+                        this.Window.UI.SetSelectedWidget(this);
+                        this.OnWidgetSelected(new BaseEventArgs());
+                    });
                 }
             };
         }
 
         public void EditCommand()
         {
-            CommandAPIHandlerWidget chw = (CommandAPIHandlerWidget)StackPanel.Widgets[SelectedIndex];
+            CommandAPIHandlerWidget chw = (CommandAPIHandlerWidget) StackPanel.Widgets[SelectedIndex];
             if (chw.Command == null)
             {
-                NewCommand(SelectedIndex, chw.Indent);
+                int idx = -1;
+                for (int i = SelectedIndex; i >= 0; i--)
+                {
+                    CommandAPIHandlerWidget w = (CommandAPIHandlerWidget) StackPanel.Widgets[i];
+                    if (w.Command != null)
+                    {
+                        idx = PageData.Commands.IndexOf(w.Command) + 1;
+                        break;
+                    }
+                }
+                NewCommand(SelectedIndex, idx, chw.Indent);
             }
             else chw.EditWindow();
         }

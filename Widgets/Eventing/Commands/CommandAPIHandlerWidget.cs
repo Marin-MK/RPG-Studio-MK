@@ -251,9 +251,9 @@ namespace MKEditor.Widgets
             return new Color(Object.Red, Object.Green, Object.Blue, Object.Alpha);
         }
 
-        public void EditWindow()
+        public void EditWindow(BaseEvent CallBack = null)
         {
-            if (this.Command == null) return;
+            if (this.Command == null || !this.CommandType.IsEditable) return;
             PopupWindow = new PopupWindow();
             OldParameters = new Dictionary<string, object>(Command.Parameters);
             dynamic basewidgets = this.CommandType.CallCreateWindow(GenerateUtility());
@@ -295,6 +295,10 @@ namespace MKEditor.Widgets
                 Reload();
             });
             PopupWindow.Center();
+            PopupWindow.OnClosed += delegate (BaseEventArgs e)
+            {
+                if (CallBack != null) CallBack(e);
+            };
         }
 
         public void SaveWindow()

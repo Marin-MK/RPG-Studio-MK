@@ -51,6 +51,7 @@ namespace MKEditor
         public bool HasBranches { get => DynamicType.HasBranches; }
         public string BranchIdentifier { get => DynamicType.BranchIdentifier; }
         public bool IsDeletable { get => DynamicType.IsDeletable; }
+        public bool IsEditable { get => DynamicType.IsEditable; }
         public bool IsSubBranch { get; protected set; }
 
         public DynamicCommandType(dynamic Type)
