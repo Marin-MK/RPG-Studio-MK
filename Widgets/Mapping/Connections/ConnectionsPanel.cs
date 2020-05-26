@@ -12,6 +12,8 @@ namespace MKEditor.Widgets
 
         public Map MapData;
 
+        Label NoConnectionsLabel;
+
         public ConnectionsPanel(IContainer Parent) : base(Parent)
         {
             SetBackgroundColor(28, 50, 73);
@@ -47,10 +49,11 @@ namespace MKEditor.Widgets
             }
             if (Map.Connections.Count == 0)
             {
-                MultilineLabel label = new MultilineLabel(StackPanel);
-                label.SetFont(Font.Get("Fonts/ProductSans-M", 14));
-                label.SetText("This map does not have any map connections.");
-                label.SetMargin(8, 8);
+                NoConnectionsLabel = new MultilineLabel(StackPanel);
+                NoConnectionsLabel.SetWidth(StackPanel.Size.Width);
+                NoConnectionsLabel.SetFont(Font.Get("Fonts/ProductSans-M", 14));
+                NoConnectionsLabel.SetText("This map does not have any map connections.");
+                NoConnectionsLabel.SetMargin(8, 8);
             }
             new Widget(StackPanel).SetHeight(1).SetMargin(0, 4).SetBackgroundColor(17, 27, 38);
             new NewConnectionWidget(StackPanel, MapData);
@@ -60,9 +63,9 @@ namespace MKEditor.Widgets
 
         public void SelectMap(Map Map)
         {
-            foreach (ConnectionWidget w in StackPanel.Widgets)
+            foreach (Widget w in StackPanel.Widgets)
             {
-                if (w.MapConnection.MapID == Map.ID) w.SetSelected(true);
+                if (w is ConnectionWidget && ((ConnectionWidget) w).MapConnection.MapID == Map.ID) ((ConnectionWidget) w).SetSelected(true);
             }
         }
 
@@ -112,6 +115,13 @@ namespace MKEditor.Widgets
             StackPanel.SetWidth(ConnectionContainer.Size.Width - 2);
             Sprites["slider"].X = Size.Width - 11;
             (Sprites["slider"].Bitmap as SolidBitmap).SetSize(10, Size.Height - 34);
+            if (NoConnectionsLabel != null && !NoConnectionsLabel.Disposed)
+            {
+                NoConnectionsLabel.SetWidth(StackPanel.Size.Width);
+                // Forces a redraw
+                NoConnectionsLabel.SetText("");
+                NoConnectionsLabel.SetText("This map does not have any map connections.");
+            }
         }
     }
 
