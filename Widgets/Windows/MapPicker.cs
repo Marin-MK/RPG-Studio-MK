@@ -73,7 +73,7 @@ namespace MKEditor.Widgets
             PreviewContainer.SetSize(376, 376);
 
             MapBox = new PictureBox(PreviewContainer);
-            MapBox.AutoResize = false;
+            MapBox.ResizeBox = false;
 
             CreateButton("Cancel", Cancel);
             CreateButton("OK", OK);

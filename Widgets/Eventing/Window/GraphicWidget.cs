@@ -26,7 +26,7 @@ namespace MKEditor.Widgets
 
             Graphic = new PictureBox(egb);
             Graphic.SetPosition(2, 2);
-            Graphic.AutoResize = false;
+            Graphic.ResizeBox = false;
             Graphic.SetSize(Size.Width - 4, Size.Height - 4);
         }
 

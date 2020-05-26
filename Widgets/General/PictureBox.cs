@@ -6,16 +6,16 @@ namespace MKEditor.Widgets
     public class PictureBox : Widget
     {
         public Sprite Sprite { get { return Sprites["sprite"] as Sprite; } }
+        public bool ResizeBox = true;
 
         public PictureBox(IContainer Parent) : base(Parent)
         {
             this.Sprites["sprite"] = new Sprite(this.Viewport);
-            this.AutoResize = true;
         }
 
         public override void Update()
         {
-            if (this.AutoResize)
+            if (this.ResizeBox)
             {
                 if (this.Sprite.Bitmap != null && !this.Sprite.Bitmap.Disposed)
                 {
