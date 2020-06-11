@@ -7,7 +7,8 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using MKEditor.Game;
 using Newtonsoft.Json.Linq;
-using ODL;
+using odl;
+using amethyst;
 
 namespace MKEditor
 {
@@ -281,7 +282,7 @@ namespace MKEditor
                 Size s = f.TextSize(txt);
                 if (c == '\n')
                 {
-                    Lines.Add(Text.Substring(startidx, i - startidx + 1));
+                    Lines.Add(Text.Substring(startidx, i - startidx));
                     startidx = i + 1;
                     if (i == Text.Length - 1) Lines.Add("");
                 }
@@ -389,7 +390,7 @@ namespace MKEditor
                 string variable = null;
                 if (!Parameters.ContainsKey(":" + varname))
                 {
-                    Widgets.Widget w = Parser.GetWidgetFromName(varname);
+                    Widget w = Parser.GetWidgetFromName(varname);
                     string Identifier = Parser.GetIdentifierFromName(varname);
                     if (w == null) return false;
                     variable = w.GetValue(Identifier).ToString();
@@ -406,7 +407,7 @@ namespace MKEditor
                 object variable = null;
                 if (!Parameters.ContainsKey(":" + varname))
                 {
-                    Widgets.Widget w = Parser.GetWidgetFromName(varname);
+                    Widget w = Parser.GetWidgetFromName(varname);
                     string Identifier = Parser.GetIdentifierFromName(varname);
                     if (w == null) return false;
                     variable = w.GetValue(Identifier);
@@ -423,7 +424,7 @@ namespace MKEditor
             }
             else
             {
-                Widgets.Widget w = Parser.GetWidgetFromName(Expression);
+                Widget w = Parser.GetWidgetFromName(Expression);
                 if (w == null) return true;
                 object v = w.GetValue(Parser.GetIdentifierFromName(Expression));
                 if (v == null || v is bool && (bool)v == false) return normal ? false : true;
@@ -527,7 +528,7 @@ namespace MKEditor
                 }
                 else if (Parser != null)
                 {
-                    Widgets.Widget w = Parser.GetWidgetFromName(Expression);
+                    Widget w = Parser.GetWidgetFromName(Expression);
                     if (w == null) return Expression;
                     return w.GetValue(Parser.GetIdentifierFromName(Expression));
                 }

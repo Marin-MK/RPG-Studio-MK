@@ -1,7 +1,8 @@
-﻿using ODL;
+﻿using odl;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -49,8 +50,8 @@ namespace MKEditor.Widgets
                     {
                         int idx = 0;
                         if (endnum != startnum) idx = Convert.ToInt32(Text.Substring(startnum, endnum - startnum));
-                        if (idx < this.Colors.Count) color = this.Colors[idx];
-                        else throw new Exception($"Only {this.Colors.Count} defined colors; Index {idx} out of range.");
+                        if (this.Colors != null && idx < this.Colors.Count) color = this.Colors[idx];
+                        else color = Color.WHITE;// throw new Exception($"Only {this.Colors.Count} defined colors; Index {idx} out of range.");
                     }
                     i = endnum;
                     continue;

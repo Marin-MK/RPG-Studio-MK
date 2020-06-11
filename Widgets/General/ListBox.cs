@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using ODL;
+using odl;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -9,6 +10,7 @@ namespace MKEditor.Widgets
         public int SelectedIndex { get { return ListDrawer.SelectedIndex; } }
         public ListItem SelectedItem { get { return ListDrawer.SelectedItem; } }
         public List<ListItem> Items { get { return ListDrawer.Items; } }
+        public bool Enabled { get; protected set; } = true;
 
         public BaseEvent OnSelectionChanged
         {
@@ -48,6 +50,16 @@ namespace MKEditor.Widgets
             SetSize(132, 174);
         }
 
+        public void SetEnabled(bool Enabled)
+        {
+            if (this.Enabled != Enabled)
+            {
+                this.Enabled = Enabled;
+                RedrawBox();
+                ListDrawer.SetEnabled(Enabled);
+            }
+        }
+
         public void SetButtonText(string Text)
         {
             ListDrawer.SetButton(true, Text);
@@ -58,24 +70,30 @@ namespace MKEditor.Widgets
             ListDrawer.SetItems(Items);
         }
 
-        public override void SizeChanged(BaseEventArgs e)
+        public void RedrawBox()
         {
-            base.SizeChanged(e);
             Sprites["bg"].Bitmap?.Dispose();
             Sprites["bg"].Bitmap = new Bitmap(Size);
             Sprites["bg"].Bitmap.Unlock();
-            Sprites["bg"].Bitmap.DrawRect(Size, 86, 108, 134);
-            Sprites["bg"].Bitmap.FillRect(1, 1, Size.Width - 2, Size.Height - 2, 10, 23, 37);
+            Sprites["bg"].Bitmap.DrawRect(Size, this.Enabled ? new Color(86, 108, 134) : new Color(36, 34, 36));
+            Sprites["bg"].Bitmap.FillRect(1, 1, Size.Width - 2, Size.Height - 2, this.Enabled ? new Color(10, 23, 37) : new Color(72, 72, 72));
             Sprites["bg"].Bitmap.SetPixel(0, 0, Color.ALPHA);
             Sprites["bg"].Bitmap.SetPixel(Size.Width - 1, 0, Color.ALPHA);
             Sprites["bg"].Bitmap.SetPixel(0, Size.Height - 1, Color.ALPHA);
             Sprites["bg"].Bitmap.SetPixel(Size.Width - 1, Size.Height - 1, Color.ALPHA);
-            Sprites["bg"].Bitmap.SetPixel(1, 1, 40, 62, 84);
-            Sprites["bg"].Bitmap.SetPixel(Size.Width - 2, 1, 40, 62, 84);
-            Sprites["bg"].Bitmap.SetPixel(1, Size.Height - 2, 40, 62, 84);
-            Sprites["bg"].Bitmap.SetPixel(Size.Width - 2, Size.Height - 2, 40, 62, 84);
-            Sprites["bg"].Bitmap.DrawLine(Size.Width - 12, 1, Size.Width - 12, Size.Height - 2, 40, 62, 84);
+            Color DarkOutline = this.Enabled ? new Color(40, 62, 84) : new Color(36, 34, 36);
+            Sprites["bg"].Bitmap.SetPixel(1, 1, DarkOutline);
+            Sprites["bg"].Bitmap.SetPixel(Size.Width - 2, 1, DarkOutline);
+            Sprites["bg"].Bitmap.SetPixel(1, Size.Height - 2, DarkOutline);
+            Sprites["bg"].Bitmap.SetPixel(Size.Width - 2, Size.Height - 2, DarkOutline);
+            Sprites["bg"].Bitmap.DrawLine(Size.Width - 12, 1, Size.Width - 12, Size.Height - 2, DarkOutline);
             Sprites["bg"].Bitmap.Lock();
+        }
+
+        public override void SizeChanged(BaseEventArgs e)
+        {
+            base.SizeChanged(e);
+            RedrawBox();
             MainContainer.SetSize(Size.Width - 13, Size.Height - 4);
             MainContainer.VScrollBar.SetPosition(Size.Width - 10, 2);
             ListDrawer.SetWidth(MainContainer.Size.Width);

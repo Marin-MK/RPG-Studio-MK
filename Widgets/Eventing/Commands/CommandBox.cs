@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ODL;
+using odl;
 using MKEditor.Game;
 using System.Linq;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -140,6 +141,30 @@ namespace MKEditor.Widgets
             MainContainer.UpdateAutoScroll();
         }
 
+        public void RedrawCommands()
+        {
+            BasicCommand selectedcommand = null;
+            foreach (CommandAPIHandlerWidget widget in StackPanel.Widgets)
+            {
+                if (widget.Selected)
+                {
+                    selectedcommand = widget.Command;
+                    break;
+                }
+            }
+            SetEventPage(EventData, PageData);
+            foreach (CommandAPIHandlerWidget widget in StackPanel.Widgets)
+            {
+                if (widget.Command == selectedcommand)
+                {
+                    widget.SetSelected(true);
+                    break;
+                }
+            }
+            UpdateHoverOrSelection(true);
+            UpdateHoverOrSelection(false);
+        }
+
         public void InsertEmptyCommand(int Indent)
         {
             CommandAPIHandlerWidget w = new CommandAPIHandlerWidget(StackPanel);
@@ -159,7 +184,7 @@ namespace MKEditor.Widgets
                     StackPanel.Widgets.Remove(cmdwidget);
                     StackPanel.Widgets.Insert(WidgetIndex, cmdwidget);
                     cmdwidget.SetWidth(Size.Width - 13);
-                    CommandUtility Utility = new CommandUtility(PageData.Commands, CommandIndex, new Dictionary<string, object>());
+                    CommandUtility Utility = new CommandUtility(this, PageData.Commands, CommandIndex, new Dictionary<string, object>());
                     picker.ChosenCommand.CallCreateBlank(Utility);
                     BasicCommand cmd = new BasicCommand(Indent, ":" + picker.ChosenCommand.Identifier, Utility.Parameters);
                     PageData.Commands.Insert(CommandIndex, cmd);
@@ -191,9 +216,18 @@ namespace MKEditor.Widgets
                         break;
                     }
                 }
-                NewCommand(SelectedIndex, idx, chw.Indent);
+                NewCommand(SelectedIndex, idx == -1 ? 0 : idx, chw.Indent);
             }
             else chw.EditWindow();
+        }
+
+        public DynamicCommandType GetCommandType(BasicCommand Command)
+        {
+            foreach (CommandAPIHandlerWidget cmdwidget in StackPanel.Widgets)
+            {
+                if (cmdwidget.Command == Command) return cmdwidget.CommandType;
+            }
+            return CommandPlugins.CommandTypes.Find(t => ":" + t.Identifier == Command.Identifier);
         }
 
         public void DeleteCommand()
@@ -215,7 +249,7 @@ namespace MKEditor.Widgets
             if (RemovedSomething)
             {
                 if (SelectionStartIndex >= StackPanel.Widgets.Count - 1) SelectionStartIndex -= 1;
-                SetEventPage(this.EventData, this.PageData);
+                RedrawCommands();
                 if (SelectionStartIndex > 0)
                 {
                     if (((CommandAPIHandlerWidget) StackPanel.Widgets[SelectionStartIndex]).Command == null) SelectionStartIndex -= 1;

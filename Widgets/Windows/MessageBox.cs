@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using ODL;
+using odl;
 
 namespace MKEditor.Widgets
 {
@@ -36,7 +36,7 @@ namespace MKEditor.Widgets
                 Icon = new PictureBox(this);
                 Icon.Sprite.Bitmap = new Bitmap("mbox_icons");
                 Icon.Sprite.SrcRect.Width = 32;
-                Icon.Sprite.SrcRect.X = 32 * (int) IconType;
+                Icon.Sprite.SrcRect.X = 32 * ((int) IconType - 1);
             }
 
             label = new MultilineLabel(this);
@@ -173,9 +173,9 @@ namespace MKEditor.Widgets
 
     public enum IconType
     {
-        None = -1,
-        Error = 0,
-        Warning = 1,
-        Info = 2
+        None = 0,
+        Error = 1,
+        Warning = 2,
+        Info = 3
     }
 }

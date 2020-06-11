@@ -1,5 +1,6 @@
 ﻿using System;
-using ODL;
+using odl;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -29,11 +30,6 @@ namespace MKEditor.Widgets
                 if (Visible) Redraw();
             }
             base.Update();
-        }
-
-        public void SetSideVisible(string Side, bool Visible)
-        {
-           //Sprites[Side].Visible = Visible;
         }
 
         public void SetInterval(int Interval)

@@ -1,5 +1,6 @@
 ﻿using System;
-using ODL;
+using odl;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -60,7 +61,7 @@ namespace MKEditor.Widgets
             {
                 this.Checked = Checked;
                 Redraw();
-                if (Checked) OnCheckChanged?.Invoke(new BaseEventArgs());
+                OnCheckChanged?.Invoke(new BaseEventArgs());
             }
         }
 

@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using MKEditor.Game;
-using ODL;
+using odl;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -60,18 +61,17 @@ namespace MKEditor.Widgets
             ConditionBox ConditionBox = new ConditionBox(PropBox);
             ConditionBox.SetPosition(6, 61);
             ConditionBox.SetSize(279, 65);
-            ConditionBox.SetEventPage(EventData, PageData);
+            ConditionBox.SetConditions(PageData.Conditions);
             Button EditConditionsButton = new Button(PropBox);
             EditConditionsButton.SetText("Edit");
             EditConditionsButton.SetPosition(230, 126);
             EditConditionsButton.SetSize(59, 29);
             EditConditionsButton.OnClicked += delegate (BaseEventArgs e) 
             {
-                EditConditionsWindow edw = new EditConditionsWindow(EventData, PageData);
-                edw.OnClosed += delegate (BaseEventArgs e)
+                ConditionBox.Edit(delegate (BaseEventArgs e) 
                 {
-                    if (edw.NeedUpdate) ConditionBox.SetEventPage(EventData, PageData);
-                };
+                    PageData.Conditions = ConditionBox.Conditions;
+                });
             };
 
             Label TriggerLabel = new Label(this);

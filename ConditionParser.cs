@@ -9,7 +9,7 @@ namespace MKEditor
 {
     public static class ConditionParser
     {
-        public static List<ODL.Color> Colors;
+        public static List<odl.Color> Colors;
         public static List<ConditionHeader> Headers;
         public static List<ConditionType> Types;
 
@@ -52,9 +52,9 @@ namespace MKEditor
             }
         }
 
-        public static List<ODL.Color> ParseColors(List<object> colors)
+        public static List<odl.Color> ParseColors(List<object> colors)
         {
-            List<ODL.Color> Colors = new List<ODL.Color>();
+            List<odl.Color> Colors = new List<odl.Color>();
             for (int i = 0; i < colors.Count; i++)
             {
                 object c = colors[i];
@@ -64,7 +64,7 @@ namespace MKEditor
             return Colors;
         }
 
-        public static ODL.Color ParseColor(Dictionary<string, object> colorobject)
+        public static odl.Color ParseColor(Dictionary<string, object> colorobject)
         {
             if (!colorobject.ContainsKey("red")) throw new Exception($"Color definition must have a 'red' key.");
             if (!colorobject.ContainsKey("green")) throw new Exception($"Color definition must have a 'green' key.");
@@ -106,7 +106,7 @@ namespace MKEditor
                         throw new Exception($"Unknown key in color definition: '{colorkey}'");
                 }
             }
-            return new ODL.Color(R, G, B, A);
+            return new odl.Color(R, G, B, A);
         }
 
         public static List<ConditionHeader> ParseHeaders(List<object> headers)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using ODL;
+using odl;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -109,7 +110,7 @@ namespace MKEditor.Widgets
             for (int i = 0; i < this.Tabs.Count; i++)
             {
                 Color c = Color.WHITE;
-                if (i == SelectedIndex) c = new Color(47, 160, 193);
+                if (i == SelectedIndex) c = new Color(55, 187, 255);// 47, 160, 193);
                 Sprites["text"].Bitmap.DrawText(Names[i], i * HeaderWidth + HeaderWidth / 2, TextY, c, DrawOptions.CenterAlign);
             }
             Sprites["text"].Bitmap.Lock();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using ODL;
+using odl;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -27,7 +28,7 @@ namespace MKEditor.Widgets
             }
         }
 
-        public virtual void SetText(string Text, DrawOptions DrawOptions = ODL.DrawOptions.LeftAlign)
+        public virtual void SetText(string Text, DrawOptions DrawOptions = odl.DrawOptions.LeftAlign)
         {
             if (this.Text != Text)
             {
@@ -37,7 +38,7 @@ namespace MKEditor.Widgets
             }
         }
 
-        public void SetDrawOptions(DrawOptions DrawOptions = ODL.DrawOptions.LeftAlign)
+        public void SetDrawOptions(DrawOptions DrawOptions = odl.DrawOptions.LeftAlign)
         {
             if (this.DrawOptions != DrawOptions)
             {
@@ -73,7 +74,7 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = this.Font;
-            Sprites["text"].Bitmap.DrawText(this.Text, this.Enabled ? this.TextColor : new Color(72, 72, 72), this.DrawOptions);
+            Sprites["text"].Bitmap.DrawText(this.Text, this.Enabled ? this.TextColor : new Color(160, 160, 160), this.DrawOptions);
             Sprites["text"].Bitmap.Lock();
             base.Draw();
         }
@@ -111,7 +112,7 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap.Font = this.Font;
             for (int i = 0; i < Lines.Count; i++)
             {
-                Sprites["text"].Bitmap.DrawText(Lines[i], 0, (Font.Size + 2) * i, this.Enabled ? this.TextColor : new Color(72, 72, 72));
+                Sprites["text"].Bitmap.DrawText(Lines[i], 0, (Font.Size + 2) * i, this.Enabled ? this.TextColor : new Color(160, 160, 160));
             }
             Sprites["text"].Bitmap.Lock();
         }

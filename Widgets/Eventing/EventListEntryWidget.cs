@@ -1,6 +1,7 @@
 ﻿using System;
-using ODL;
+using odl;
 using MKEditor.Game;
+using amethyst;
 
 namespace MKEditor.Widgets
 {

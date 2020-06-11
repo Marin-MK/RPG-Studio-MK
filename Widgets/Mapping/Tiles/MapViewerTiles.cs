@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using MKEditor.Game;
-using ODL;
+using odl;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -146,8 +147,8 @@ namespace MKEditor.Widgets
         public void UpdateTilePlacement(int oldx = -1, int oldy = -1, int newx = -1, int newy = -1)
         {
             if (!MainContainer.WidgetIM.Hovering) return;
-            if (MainContainer.HScrollBar != null && (MainContainer.HScrollBar.Dragging || MainContainer.HScrollBar.Hovering)) return;
-            if (MainContainer.VScrollBar != null && (MainContainer.VScrollBar.Dragging || MainContainer.VScrollBar.Hovering)) return;
+            if (MainContainer.HScrollBar != null && (MainContainer.HScrollBar.SliderDragging || MainContainer.HScrollBar.SliderHovering)) return;
+            if (MainContainer.VScrollBar != null && (MainContainer.VScrollBar.SliderDragging || MainContainer.VScrollBar.SliderHovering)) return;
             bool Left = WidgetIM.ClickedLeftInArea == true;
             bool Right = WidgetIM.ClickedRightInArea == true;
 
@@ -287,8 +288,8 @@ namespace MKEditor.Widgets
                 int oldmousex = RelativeMouseX;
                 int oldmousey = RelativeMouseY;
                 // Cursor placement
-                if (MainContainer.HScrollBar != null && (MainContainer.HScrollBar.Dragging || MainContainer.HScrollBar.Hovering)) return;
-                if (MainContainer.VScrollBar != null && (MainContainer.VScrollBar.Dragging || MainContainer.VScrollBar.Hovering)) return;
+                if (MainContainer.HScrollBar != null && (MainContainer.HScrollBar.SliderDragging || MainContainer.HScrollBar.SliderHovering)) return;
+                if (MainContainer.VScrollBar != null && (MainContainer.VScrollBar.SliderDragging || MainContainer.VScrollBar.SliderHovering)) return;
                 int rx = e.X - MapWidget.Viewport.X;
                 int ry = e.Y - MapWidget.Viewport.Y;
                 if (e.X < MainContainer.Viewport.X || e.Y < MainContainer.Viewport.Y ||

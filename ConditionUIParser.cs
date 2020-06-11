@@ -2,11 +2,12 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using ODL;
+using odl;
 using System.Text;
 using MKEditor.Widgets;
 using System.IO;
 using MKEditor.Game;
+using amethyst;
 
 namespace MKEditor
 {

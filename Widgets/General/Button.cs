@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ODL;
+using odl;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -116,7 +117,6 @@ namespace MKEditor.Widgets
 
             Sprites["filler"] = new Sprite(this.Viewport);
             Sprites["filler"].X = Sprites["filler"].Y = 6;
-            Sprites["filler"].Color = new Color(64, 104, 146);
 
             Sprites["text"] = new Sprite(this.Viewport);
 
@@ -155,8 +155,7 @@ namespace MKEditor.Widgets
             if (this.Enabled != Enabled)
             {
                 this.Enabled = Enabled;
-                if (this.Enabled) Sprites["filler"].Color = new Color(64, 104, 146);
-                else Sprites["filler"].Color = new Color(72, 72, 72);
+                RedrawFiller();
                 RedrawText();
             }
         }
@@ -173,25 +172,31 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap.Font = this.Font;
             for (int i = 0; i < Lines.Count; i++)
             {
-                Sprites["text"].Bitmap.DrawText(Lines[i], MaxWidth / 2, i * 18, this.Enabled ? this.TextColor : new Color(72, 72, 72), DrawOptions.CenterAlign);
+                Sprites["text"].Bitmap.DrawText(Lines[i], MaxWidth / 2, i * 18, this.Enabled ? this.TextColor : new Color(160, 160, 160), DrawOptions.CenterAlign);
             }
             Sprites["text"].Bitmap.Lock();
             Sprites["text"].X = Size.Width / 2 - MaxWidth / 2;
             Sprites["text"].Y = Size.Height / 2 - 9 * Lines.Count;
         }
 
-        public override void SizeChanged(BaseEventArgs e)
+        public void RedrawFiller()
         {
-            base.SizeChanged(e);
             if (Sprites["filler"].Bitmap != null) Sprites["filler"].Bitmap.Dispose();
             Sprites["filler"].Bitmap = new Bitmap(Size.Width - 12, Size.Height - 12);
             Sprites["filler"].Bitmap.Unlock();
-            Sprites["filler"].Bitmap.FillRect(0, 0, Size.Width - 12, Size.Height - 12, Color.WHITE);
+            Color filler = this.Enabled ? this.WidgetIM.Hovering ? new Color(59, 227, 255) : new Color(64, 104, 146) : new Color(72, 72, 72);
+            Sprites["filler"].Bitmap.FillRect(0, 0, Size.Width - 12, Size.Height - 12, filler);
             Sprites["filler"].Bitmap.SetPixel(0, 0, Color.ALPHA);
             Sprites["filler"].Bitmap.SetPixel(Size.Width - 13, 0, Color.ALPHA);
             Sprites["filler"].Bitmap.SetPixel(0, Size.Height - 13, Color.ALPHA);
-            Sprites["filler"].Bitmap.SetPixel(Size.Width- 13, Size.Height - 13, Color.ALPHA);
+            Sprites["filler"].Bitmap.SetPixel(Size.Width - 13, Size.Height - 13, Color.ALPHA);
             Sprites["filler"].Bitmap.Lock();
+        }
+
+        public override void SizeChanged(BaseEventArgs e)
+        {
+            base.SizeChanged(e);
+            RedrawFiller();
 
             Sprites["bottomleft"].Y = Size.Height - 10;
             Sprites["topright"].X = Size.Width - 10;
@@ -216,7 +221,7 @@ namespace MKEditor.Widgets
         public override void HoverChanged(MouseEventArgs e)
         {
             base.HoverChanged(e);
-            if (this.Enabled) Sprites["filler"].Color = WidgetIM.Hovering ? new Color(59, 227, 255) : new Color(64, 104, 146);
+            RedrawFiller();
         }
 
         public override void MouseDown(MouseEventArgs e)

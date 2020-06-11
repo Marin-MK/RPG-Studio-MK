@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ODL;
+using odl;
 using MKEditor.Game;
 using System.Linq;
+using amethyst;
 
 namespace MKEditor.Widgets
 {

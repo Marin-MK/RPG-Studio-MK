@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\amethyst\amethyst.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="MKAPI">
       <HintPath>bin\x64\Debug\netcoreapp3.1\ext\netcoreapp3.1\MKAPI.dll</HintPath>
     </Reference>

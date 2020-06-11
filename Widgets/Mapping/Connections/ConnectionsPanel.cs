@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using ODL;
+using odl;
 using MKEditor.Game;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -141,7 +142,7 @@ namespace MKEditor.Widgets
             PlusButton.SetText("+");
 
             Label = new Label(this);
-            Label.SetPosition(25, 3);
+            Label.SetPosition(29, 3);
             Label.SetText("New Connection");
             Label.SetFont(Font.Get("Fonts/Ubuntu-B", 14));
             Label.SetTextColor(Color.WHITE);

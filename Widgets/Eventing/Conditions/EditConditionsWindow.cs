@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ODL;
+using odl;
 using MKEditor.Game;
 
 namespace MKEditor.Widgets
 {
     public class EditConditionsWindow : PopupWindow
     {
-        public Event EventData;
-        public EventPage PageData;
+        public List<BasicCondition> Conditions;
         public List<BasicCondition> OldConditions;
 
         ConditionBox ConditionList;
@@ -18,18 +17,17 @@ namespace MKEditor.Widgets
 
         TabView TypeTabs;
 
-        public BasicCondition SelectedCondition { get { return PageData.Conditions[ConditionList.SelectedIndex]; } }
+        public BasicCondition SelectedCondition { get { return Conditions[ConditionList.SelectedIndex]; } }
 
         public bool NeedUpdate = false;
 
         public Button ApplyButton { get { return Buttons[0]; } }
 
-        public EditConditionsWindow(Event EventData, EventPage PageData)
+        public EditConditionsWindow(List<BasicCondition> Conditions)
         {
-            this.EventData = EventData;
-            this.PageData = PageData;
+            this.Conditions = Conditions;
             this.OldConditions = new List<BasicCondition>();
-            PageData.Conditions.ForEach(c => this.OldConditions.Add(c.Clone()));
+            this.Conditions.ForEach(c => this.OldConditions.Add(c.Clone()));
             SetTitle("Edit Conditions");
             MinimumSize = MaximumSize = new Size(610, 469);
             SetSize(MaximumSize);
@@ -38,10 +36,10 @@ namespace MKEditor.Widgets
             ConditionList = new ConditionBox(this);
             ConditionList.SetPosition(6, 23);
             ConditionList.SetSize(279, Size.Height - 67);
-            ConditionList.SetEventPage(EventData, PageData);
+            ConditionList.SetConditions(this.Conditions);
             ConditionList.SetSelectable(true);
             ConditionList.OnSelectionChanged += delegate (BaseEventArgs e) { ConditionChanged(); };
-            if (PageData.Conditions.Count > 0) ConditionList.SetSelectedIndex(0);
+            if (this.Conditions.Count > 0) ConditionList.SetSelectedIndex(0);
 
             TypeTabs = new TabView(this);
             TypeTabs.SetPosition(285, 23);
@@ -75,7 +73,7 @@ namespace MKEditor.Widgets
             RemoveConditionButton.SetPosition(155, Size.Height - 38);
             RemoveConditionButton.SetSize(122, 31);
             RemoveConditionButton.OnClicked += delegate (BaseEventArgs e) { RemoveCondition(); };
-            if (PageData.Conditions.Count == 0) RemoveConditionButton.SetEnabled(false);
+            if (this.Conditions.Count == 0) RemoveConditionButton.SetEnabled(false);
 
             CreateButton("Apply", Apply);
             CreateButton("Cancel", Cancel);
@@ -84,14 +82,14 @@ namespace MKEditor.Widgets
             ApplyButton.SetEnabled(false);
 
             ConditionChanged();
-            if (PageData.Conditions.Count == 0) SetAllEnabled(false);
+            if (this.Conditions.Count == 0) SetAllEnabled(false);
         }
 
         public void RedrawConditions()
         {
             int oldidx = ConditionList.SelectedIndex;
-            ConditionList.SetEventPage(EventData, PageData);
-            if (oldidx >= PageData.Conditions.Count) oldidx = PageData.Conditions.Count - 1;
+            ConditionList.SetConditions(this.Conditions);
+            if (oldidx >= this.Conditions.Count) oldidx = this.Conditions.Count - 1;
             if (oldidx != -1) ConditionList.SetSelectedIndex(oldidx);
         }
 
@@ -124,8 +122,8 @@ namespace MKEditor.Widgets
 
         public void ConditionChanged()
         {
-            if (SuspendIndexChange || PageData.Conditions.Count == 0) return;
-            BasicCondition condition = PageData.Conditions[ConditionList.SelectedIndex];
+            if (SuspendIndexChange || this.Conditions.Count == 0) return;
+            BasicCondition condition = this.Conditions[ConditionList.SelectedIndex];
             for (int i = 0; i < TypeTabs.Tabs.Count; i++)
             {
                 foreach (ConditionHandlerWidget chw in TypeTabs.Tabs[i].Widgets)
@@ -145,10 +143,10 @@ namespace MKEditor.Widgets
             c.Type = ((ConditionHandlerWidget) TypeTabs.Tabs[0].Widgets[0]).ConditionType;
             c.Identifier = ":" + c.Type.Identifier;
             c.Parameters = c.Type.CreateBlankParameters();
-            PageData.Conditions.Add(c);
+            this.Conditions.Add(c);
             RedrawConditions();
             SetAllEnabled(true);
-            ConditionList.SetSelectedIndex(PageData.Conditions.Count - 1);
+            ConditionList.SetSelectedIndex(this.Conditions.Count - 1);
             RemoveConditionButton.SetEnabled(true);
             ApplyButton.SetEnabled(true);
         }
@@ -156,13 +154,13 @@ namespace MKEditor.Widgets
         public void RemoveCondition()
         {
             int idx = ConditionList.SelectedIndex;
-            PageData.Conditions.RemoveAt(idx);
-            ConditionList.SetEventPage(EventData, PageData);
-            if (idx >= PageData.Conditions.Count) idx -= 1;
-            if (PageData.Conditions.Count == 0) RemoveConditionButton.SetEnabled(false);
+            this.Conditions.RemoveAt(idx);
+            ConditionList.SetConditions(this.Conditions);
+            if (idx >= this.Conditions.Count) idx -= 1;
+            if (this.Conditions.Count == 0) RemoveConditionButton.SetEnabled(false);
             else ConditionList.SetSelectedIndex(idx);
             ApplyButton.SetEnabled(true);
-            if (PageData.Conditions.Count == 0)
+            if (this.Conditions.Count == 0)
             {
                 SetActiveType(null);
                 SetAllEnabled(false);
@@ -173,7 +171,7 @@ namespace MKEditor.Widgets
         {
             NeedUpdate = true;
             OldConditions.Clear();
-            PageData.Conditions.ForEach(c => OldConditions.Add(c.Clone()));
+            this.Conditions.ForEach(c => OldConditions.Add(c.Clone()));
             ApplyButton.SetEnabled(false);
         }
 
@@ -184,7 +182,7 @@ namespace MKEditor.Widgets
 
         public void Cancel(BaseEventArgs e)
         {
-            PageData.Conditions = OldConditions;
+            this.Conditions = OldConditions;
             Close();
         }
 

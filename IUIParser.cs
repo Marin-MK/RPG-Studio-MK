@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using amethyst;
 
 namespace MKEditor
 {
     public interface IUIParser
     {
-        Widgets.Widget GetWidgetFromName(string Name);
+        Widget GetWidgetFromName(string Name);
         string GetIdentifierFromName(string Name);
     }
 }

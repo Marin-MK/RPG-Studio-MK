@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using MKEditor.Game;
-using ODL;
+using odl;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
     public class ConditionBox : Widget
     {
-        public Event EventData;
-        public EventPage PageData;
+        public List<BasicCondition> Conditions;
         public bool Selectable { get; protected set; } = false;
         public int SelectedIndex
         {
@@ -20,6 +20,7 @@ namespace MKEditor.Widgets
                 return StackPanel.Widgets.IndexOf(w);
             }
         }
+        public bool Enabled { get; protected set; } = true;
 
         Container MainContainer;
         VStackPanel StackPanel;
@@ -39,13 +40,23 @@ namespace MKEditor.Widgets
             StackPanel = new VStackPanel(MainContainer);
         }
 
+        public void SetEnabled(bool Enabled)
+        {
+            if (this.Enabled != Enabled)
+            {
+                this.Enabled = Enabled;
+                RedrawBox();
+                foreach (ConditionEntryWidget w in StackPanel.Widgets) w.SetEnabled(Enabled);
+            }
+        }
+
         public void SetSelectable(bool Selectable)
         {
             if (this.Selectable != Selectable)
             {
                 this.Selectable = Selectable;
                 StackPanel.Widgets.ForEach(w => ((ConditionEntryWidget) w).SetSelectable(this.Selectable));
-                if (Selectable && PageData.Conditions.Count > 0) this.SetSelectedIndex(0);
+                if (Selectable && this.Conditions.Count > 0) this.SetSelectedIndex(0);
             }
         }
 
@@ -54,43 +65,59 @@ namespace MKEditor.Widgets
             ((ConditionEntryWidget) StackPanel.Widgets[Index]).SetSelected(true);
         }
 
-        public override void SizeChanged(BaseEventArgs e)
+        public void Edit(BaseEvent Callback = null)
         {
-            base.SizeChanged(e);
+            EditConditionsWindow edw = new EditConditionsWindow(this.Conditions);
+            edw.OnClosed += delegate (BaseEventArgs e)
+            {
+                if (edw.NeedUpdate) SetConditions(edw.Conditions);
+                Callback?.Invoke(e);
+            };
+        }
+
+        public void RedrawBox()
+        {
             Sprites["bg"].Bitmap?.Dispose();
             Sprites["bg"].Bitmap = new Bitmap(Size);
             Sprites["bg"].Bitmap.Unlock();
-            Sprites["bg"].Bitmap.DrawRect(Size, 86, 108, 134);
-            Sprites["bg"].Bitmap.FillRect(1, 1, Size.Width - 2, Size.Height - 2, 10, 23, 37);
+            Sprites["bg"].Bitmap.DrawRect(Size, this.Enabled ? new Color(86, 108, 134) : new Color(36, 34, 36));
+            Sprites["bg"].Bitmap.FillRect(1, 1, Size.Width - 2, Size.Height - 2, this.Enabled ? new Color(10, 23, 37) : new Color(72, 72, 72));
             Sprites["bg"].Bitmap.SetPixel(0, 0, Color.ALPHA);
             Sprites["bg"].Bitmap.SetPixel(Size.Width - 1, 0, Color.ALPHA);
             Sprites["bg"].Bitmap.SetPixel(0, Size.Height - 1, Color.ALPHA);
             Sprites["bg"].Bitmap.SetPixel(Size.Width - 1, Size.Height - 1, Color.ALPHA);
-            Sprites["bg"].Bitmap.SetPixel(1, 1, 40, 62, 84);
-            Sprites["bg"].Bitmap.SetPixel(Size.Width - 2, 1, 40, 62, 84);
-            Sprites["bg"].Bitmap.SetPixel(1, Size.Height - 2, 40, 62, 84);
-            Sprites["bg"].Bitmap.SetPixel(Size.Width - 2, Size.Height - 2, 40, 62, 84);
-            Sprites["bg"].Bitmap.DrawLine(Size.Width - 12, 1, Size.Width - 12, Size.Height - 2, 40, 62, 84);
+            Color DarkOutline = this.Enabled ? new Color(40, 62, 84) : new Color(36, 34, 36);
+            Sprites["bg"].Bitmap.SetPixel(1, 1, DarkOutline);
+            Sprites["bg"].Bitmap.SetPixel(Size.Width - 2, 1, DarkOutline);
+            Sprites["bg"].Bitmap.SetPixel(1, Size.Height - 2, DarkOutline);
+            Sprites["bg"].Bitmap.SetPixel(Size.Width - 2, Size.Height - 2, DarkOutline);
+            Sprites["bg"].Bitmap.DrawLine(Size.Width - 12, 1, Size.Width - 12, Size.Height - 2, DarkOutline);
             Sprites["bg"].Bitmap.Lock();
+        }
+
+        public override void SizeChanged(BaseEventArgs e)
+        {
+            base.SizeChanged(e);
+            RedrawBox();
             MainContainer.SetSize(Size.Width - 13, Size.Height - 4);
             StackPanel.SetWidth(MainContainer.Size.Width);
             MainContainer.VScrollBar.SetPosition(Size.Width - 10, 2);
             MainContainer.VScrollBar.SetSize(8, Size.Height - 4);
         }
 
-        public void SetEventPage(Event Event, EventPage Page)
+        public void SetConditions(List<BasicCondition> Conditions)
         {
-            this.EventData = Event;
-            this.PageData = Page;
+            this.Conditions = Conditions;
             while (StackPanel.Widgets.Count > 0) StackPanel.Widgets[0].Dispose();
-            foreach (BasicCondition condition in Page.Conditions)
+            foreach (BasicCondition condition in Conditions)
             {
                 ConditionEntryWidget cew = new ConditionEntryWidget(StackPanel);
                 cew.SetSize(StackPanel.Size.Width, 20);
                 cew.SetCondition(condition, null);
                 cew.SetSelectable(this.Selectable);
+                cew.SetEnabled(this.Enabled);
             }
-            if (this.Selectable && Page.Conditions.Count > 0) this.SetSelectedIndex(0);
+            if (this.Selectable && this.Conditions.Count > 0) this.SetSelectedIndex(0);
         }
     }
 
@@ -99,6 +126,7 @@ namespace MKEditor.Widgets
         public BasicCondition Condition;
         public bool Selectable { get; protected set; } = false;
         public bool Selected { get; protected set; } = false;
+        public bool Enabled { get; protected set; } = true;
 
         DynamicLabel DynamicLabel;
 
@@ -118,6 +146,15 @@ namespace MKEditor.Widgets
 
             DynamicLabel = new DynamicLabel(this);
             DynamicLabel.SetPosition(16, 2);
+        }
+
+        public void SetEnabled(bool Enabled)
+        {
+            if (this.Enabled != Enabled)
+            {
+                this.Enabled = Enabled;
+                this.DynamicLabel.SetEnabled(this.Enabled);
+            }
         }
 
         public void SetSelectable(bool Selectable)
@@ -147,6 +184,7 @@ namespace MKEditor.Widgets
             //this.DynamicLabel.SetParameters(Condition.Parameters);
             //this.DynamicLabel.SetTextFormat(Condition.Type.Text);
             //this.DynamicLabel.SetParser(Parser);
+            this.DynamicLabel.SetText(Condition.Type.Text.ToString());
             this.DynamicLabel.SetColors(ConditionParser.Colors);
             this.DynamicLabel.RedrawText();
         }

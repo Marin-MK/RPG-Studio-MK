@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using ODL;
+using odl;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -70,7 +71,7 @@ namespace MKEditor.Widgets
         {
             if (this.SelectedIndex != Index)
             {
-                this.TextArea.SetInitialText(Items[Index].Name);
+                this.TextArea.SetInitialText(Index >= Items.Count || Index == -1 ? "" : Items[Index].Name);
                 this.SelectedIndex = Index;
                 this.OnSelectionChanged?.Invoke(new BaseEventArgs());
             }
@@ -79,7 +80,7 @@ namespace MKEditor.Widgets
         public void SetItems(List<ListItem> Items)
         {
             this.Items = Items;
-            this.TextArea.SetInitialText(Items[SelectedIndex].Name);
+            this.TextArea.SetInitialText(SelectedIndex >= Items.Count || SelectedIndex == - 1 ? "" : Items[SelectedIndex].Name);
         }
 
         protected override void Draw()

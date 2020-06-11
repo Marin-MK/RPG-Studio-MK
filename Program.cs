@@ -4,8 +4,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Versioning;
-using ODL;
-using System.Runtime.Loader;
+using odl;
 
 namespace MKEditor
 {
@@ -55,6 +54,10 @@ namespace MKEditor
             Console.WriteLine($"OS Platform: {os.Platform} ({Editor.Platform}) {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}");
             Console.WriteLine($"OS Version: {os.VersionString}");
             Console.WriteLine($"Editor Version: {Editor.GetVersionString()}");
+            // Clean up these strings as they're never going to be used again, and would otherwise exist as long as the program is running.
+            // Yeah, I actually care about two small strings not being GC'd in a huge graphical application.
+            Framework = null;
+            fw = null;
             Graphics.Start();
             MainEditorWindow win = new MainEditorWindow(ProjectFile);
             win.Show();
@@ -63,11 +66,14 @@ namespace MKEditor
             {
                 if (ErrorBox != null && !ErrorBox.Disposed) ErrorBox.SetSize(win.Width, win.Height);
             };
+            // Update all top-level widgets to make sure they're the right size.
             win.UI.Widgets.ForEach(e => e.UpdateBounds());
+            // While there's at least one window open,
             while (Graphics.CanUpdate())
             {
                 if (ReleaseMode)
                 {
+                    // Catch all errors and show them in a message box
                     try
                     {
                         if (ErrorBox != null && !ErrorBox.Disposed)
@@ -91,8 +97,13 @@ namespace MKEditor
                         }
                     }
                 }
-                else Graphics.Update();
+                else
+                {
+                    // Update all renderers
+                    Graphics.Update();
+                }
             }
+            // Stops all windows
             Graphics.Stop();
         }
     }

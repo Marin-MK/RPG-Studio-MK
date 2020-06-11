@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using ODL;
+using odl;
 using MKEditor.Game;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -625,7 +626,7 @@ namespace MKEditor.Widgets
             X = -1;
             Y = -1;
             if (!e.LeftButton && !e.RightButton) return;
-            if (Parent.VScrollBar != null && (Parent.VScrollBar.Dragging || Parent.VScrollBar.Hovering)) return;
+            if (Parent.VScrollBar != null && (Parent.VScrollBar.SliderDragging || Parent.VScrollBar.SliderHovering)) return;
             Container cont = MainContainer;
             int rx = e.X - cont.Viewport.X;
             int ry = e.Y - cont.Viewport.Y;

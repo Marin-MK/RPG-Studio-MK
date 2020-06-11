@@ -6,9 +6,10 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Reflection;
-using ODL;
+using odl;
 using MKEditor.Game;
 using MKEditor.Widgets;
+using amethyst;
 
 namespace MKEditor
 {
@@ -217,21 +218,25 @@ namespace MKEditor
             if (ret is string) Files.Add(ret as string);
             else if (ret is List<string>) Files = ret as List<string>;
             else return; // No files picked
+            for (int i = 0; i < Files.Count; i++)
+            {
+                while (Files[i].Contains('\\')) Files[i] = Files[i].Replace('\\', '/');
+            }
             InitializeRuby();
-            string[] folders = Files[0].Split('\\');
+            string[] folders = Files[0].Split('/');
             string parent = "";
             string root = "";
             for (int i = 0; i < folders.Length - 1; i++)
             {
                 parent += folders[i];
                 if (i != folders.Length - 2) root += folders[i];
-                if (i != folders.Length - 2) parent += '\\';
-                if (i != folders.Length - 3) root += '\\';
+                if (i != folders.Length - 2) parent += '/';
+                if (i != folders.Length - 3) root += '/';
             }
             List<string> Names = new List<string>();
             foreach (string f in Files)
             {
-                string[] l = f.Split('\\').Last().Split('.');
+                string[] l = f.Split('/').Last().Split('.');
                 string n = "";
                 for (int i = 0; i < l.Length - 1; i++)
                 {

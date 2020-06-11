@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using ODL;
+using odl;
 using MKEditor.Game;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -193,8 +194,8 @@ namespace MKEditor.Widgets
                 int oldmousex = RelativeMouseX;
                 int oldmousey = RelativeMouseY;
                 // Cursor placement
-                if (MainContainer.HScrollBar != null && (MainContainer.HScrollBar.Dragging || MainContainer.HScrollBar.Hovering)) return;
-                if (MainContainer.VScrollBar != null && (MainContainer.VScrollBar.Dragging || MainContainer.VScrollBar.Hovering)) return;
+                if (MainContainer.HScrollBar != null && (MainContainer.HScrollBar.SliderDragging || MainContainer.HScrollBar.SliderHovering)) return;
+                if (MainContainer.VScrollBar != null && (MainContainer.VScrollBar.SliderDragging || MainContainer.VScrollBar.SliderHovering)) return;
                 int rx = e.X - MapWidget.Viewport.X;
                 int ry = e.Y - MapWidget.Viewport.Y;
                 if (e.X < MainContainer.Viewport.X || e.Y < MainContainer.Viewport.Y ||

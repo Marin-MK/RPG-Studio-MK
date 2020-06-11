@@ -2,8 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using ODL;
+using odl;
 using System.Linq;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -20,6 +21,7 @@ namespace MKEditor.Widgets
         Label HeaderLabel;
         Container WidgetContainer;
         PopupWindow PopupWindow;
+        CommandUtility WindowUtility;
 
         Dictionary<string, object> OldParameters;
 
@@ -92,8 +94,8 @@ namespace MKEditor.Widgets
                     }
                 }
                 if (parent == null) parent = WidgetContainer;
-                Widget w = ProcessWidgetType(type, parent);
-                ProcessWidget(w, widget, false);
+                Widget w = ProcessWidgetType(widget, type, parent);
+                ProcessWidget(w, widget, false, true);
                 DynamicReadOnlyWidgets.Add(widget.UniqueID, w);
             }
             Reload();
@@ -101,7 +103,7 @@ namespace MKEditor.Widgets
 
         public dynamic GenerateUtility()
         {
-            return new CommandUtility(PageData.Commands, PageData.Commands.IndexOf(this.Command), this.Command.Parameters);
+            return new CommandUtility((CommandBox) Parent.Parent.Parent, PageData.Commands, PageData.Commands.IndexOf(this.Command), this.Command.Parameters);
         }
 
         public void Reload()
@@ -110,7 +112,7 @@ namespace MKEditor.Widgets
             for (int i = 0; i < widgets.Count; i++)
             {
                 dynamic widget = widgets[i];
-                ProcessWidget(DynamicReadOnlyWidgets[widget.UniqueID], widget, false);
+                ProcessWidget(DynamicReadOnlyWidgets[widget.UniqueID], widget, false, false);
             }
             HeaderLabel.SetVisible(this.CommandType.ShowHeader);
             HeaderLabel.SetTextColor(this.CommandType.HeaderColor);
@@ -125,7 +127,7 @@ namespace MKEditor.Widgets
             ((VStackPanel) Parent).UpdateLayout();
         }
 
-        public Widget ProcessWidgetType(string Type, Widget Parent)
+        public Widget ProcessWidgetType(dynamic widget, string Type, Widget Parent)
         {
             switch (Type)
             {
@@ -137,24 +139,58 @@ namespace MKEditor.Widgets
                     return new MultilineTextBox(Parent);
                 case "SwitchPicker":
                     return new GameSwitchBox(Parent);
+                case "VariablePicker":
+                    return new GameVariableBox(Parent);
                 case "Dropdown":
                     return new DropdownBox(Parent);
                 case "RadioButton":
                     return new RadioBox(Parent);
                 case "TextBox":
                     return new TextBox(Parent);
+                case "TabView":
+                    return new TabView(Parent);
+                case "Container":
+                    if (widget.Parent != null)
+                    {
+                        string parentname = widget.Parent.GetType().Name;
+                        string indexstring = widget.UniqueID.Substring(widget.UniqueID.IndexOf('.') + 1);
+                        if (parentname == "TabView" && Utilities.IsNumeric(indexstring))
+                        {
+                            TabView tab = DynamicWindowWidgets[widget.Parent.UniqueID];
+                            int index = Convert.ToInt32(indexstring);
+                            return new Container(tab.Tabs[index]);
+                        }
+                    }
+                    return new Container(Parent);
+                case "List":
+                    return new ListBox(Parent);
+                case "Button":
+                    return new Button(Parent);
+                case "CheckBox":
+                    return new CheckBox(Parent);
+                case "ConditionBox":
+                    return new ConditionBox(Parent);
                 default:
                     throw new Exception($"Invalid widget type '{Type}'!");
             }
         }
 
-        public void ProcessWidget(Widget w, dynamic widget, bool InWindow)
+        public void ProcessWidget(Widget w, dynamic widget, bool InWindow, bool IsNew)
         {
             w.SetPosition(widget.X, widget.Y);
-            w.SetSize(
-                widget.Width == -1 ? (InWindow ? PopupWindow.Size.Width : WidgetContainer.Size.Width - w.Position.X) : widget.Width,
-                widget.Height == -1 ? (InWindow ? PopupWindow.Size.Height : WidgetContainer.Size.Height - w.Position.Y) : widget.Height
-            );
+            int width = widget.Width;
+            int height = widget.Height;
+            if (widget.Width == -1)
+            {
+                if (InWindow) width = PopupWindow.Size.Width;
+                else width = WidgetContainer.Size.Width - w.Position.X;
+            }
+            if (widget.Height == -1)
+            {
+                if (InWindow) height = PopupWindow.Size.Height;
+                else height = WidgetContainer.Size.Height - w.Position.Y;
+            }
+            w.SetSize(width, height);
             if (w is MultilineDynamicLabel)
             {
                 ((MultilineDynamicLabel) w).SetColors(this.CommandType.TextColors);
@@ -172,32 +208,40 @@ namespace MKEditor.Widgets
             }
             else if (w is MultilineTextBox)
             {
-                if (!string.IsNullOrEmpty(widget.Text)) ((MultilineTextBox) w).SetText(widget.Text);
+                ((MultilineTextBox) w).SetText(widget.Text);
                 if (widget.Index != -1) ((MultilineTextBox) w).SetCaretIndex(widget.Index);
                 if (widget.Focus)
                 {
                     Window.UI.SetSelectedWidget(((MultilineTextBox) w).TextArea);
                     ((MultilineTextBox) w).TextArea.OnWidgetSelected(new BaseEventArgs());
                 }
-                ((MultilineTextBox) w).TextArea.OnTextChanged += delegate (BaseEventArgs e)
+                if (IsNew)
                 {
-                    widget.Text = ((MultilineTextBox) w).Text;
-                };
+                    ((MultilineTextBox) w).TextArea.OnTextChanged += delegate (BaseEventArgs e)
+                    {
+                        widget.Text = ((MultilineTextBox) w).Text;
+                        InvokeCallback(widget.OnTextChanged, InWindow);
+                    };
+                }
                 //((MultilineTextBox) w).SetEnabled(widget.Enabled);
             }
             else if (w is TextBox)
             {
-                if (!string.IsNullOrEmpty(widget.Text)) ((TextBox) w).SetInitialText(widget.Text);
+                ((TextBox) w).SetInitialText(widget.Text);
                 if (widget.Index != -1) ((TextBox) w).SetCaretIndex(widget.Index);
                 if (widget.Focus)
                 {
                     Window.UI.SetSelectedWidget(((TextBox) w).TextArea);
                     ((TextBox) w).TextArea.OnWidgetSelected(new BaseEventArgs());
                 }
-                ((TextBox) w).OnTextChanged += delegate (BaseEventArgs e)
+                if (IsNew)
                 {
-                    widget.Text = ((TextBox) w).Text;
-                };
+                    ((TextBox) w).OnTextChanged += delegate (BaseEventArgs e)
+                    {
+                        widget.Text = ((TextBox) w).Text;
+                        InvokeCallback(widget.OnTextChanged, InWindow);
+                    };
+                }
                 ((TextBox) w).SetEnabled(widget.Enabled);
             }
             else if (w is GameSwitchBox)
@@ -205,12 +249,30 @@ namespace MKEditor.Widgets
                 ((GameSwitchBox) w).GroupID = widget.GroupID;
                 ((GameSwitchBox) w).SwitchID = widget.SwitchID;
                 ((GameSwitchBox) w).ResetText();
-                ((GameSwitchBox) w).OnSwitchChanged += delegate (BaseEventArgs e)
+                if (IsNew)
                 {
-                    widget.GroupID = ((GameSwitchBox) w).GroupID;
-                    widget.SwitchID = ((GameSwitchBox) w).SwitchID;
-                };
+                    ((GameSwitchBox) w).OnSwitchChanged += delegate (BaseEventArgs e)
+                    {
+                        widget.GroupID = ((GameSwitchBox) w).GroupID;
+                        widget.SwitchID = ((GameSwitchBox) w).SwitchID;
+                    };
+                }
                 ((GameSwitchBox) w).SetEnabled(widget.Enabled);
+            }
+            else if (w is GameVariableBox)
+            {
+                ((GameVariableBox) w).GroupID = widget.GroupID;
+                ((GameVariableBox) w).VariableID = widget.VariableID;
+                ((GameVariableBox) w).ResetText();
+                if (IsNew)
+                {
+                    ((GameVariableBox) w).OnVariableChanged += delegate (BaseEventArgs e)
+                    {
+                        widget.GroupID = ((GameVariableBox) w).GroupID;
+                        widget.VariableID = ((GameVariableBox) w).VariableID;
+                    };
+                }
+                ((GameVariableBox) w).SetEnabled(widget.Enabled);
             }
             else if (w is DropdownBox)
             {
@@ -218,10 +280,14 @@ namespace MKEditor.Widgets
                 for (int i = 0; i < widget.Items.Count; i++) Items.Add(new ListItem(widget.Items[i]));
                 ((DropdownBox) w).SetItems(Items);
                 if (Items.Count > 0) ((DropdownBox) w).SetSelectedIndex(widget.Index);
-                ((DropdownBox) w).OnSelectionChanged += delegate (BaseEventArgs e)
+                if (IsNew)
                 {
-                    widget.Index = ((DropdownBox) w).SelectedIndex;
-                };
+                    ((DropdownBox) w).OnSelectionChanged += delegate (BaseEventArgs e)
+                    {
+                        widget.Index = ((DropdownBox) w).SelectedIndex;
+                        InvokeCallback(widget.OnSelectionChanged, InWindow);
+                    };
+                }
                 ((DropdownBox) w).SetEnabled(widget.Enabled);
             }
             else if (w is RadioBox)
@@ -229,20 +295,94 @@ namespace MKEditor.Widgets
                 w.SetHeight(16);
                 if (!string.IsNullOrEmpty(widget.Text)) ((RadioBox) w).SetText(widget.Text);
                 ((RadioBox) w).SetChecked(widget.Selected);
-                ((RadioBox) w).OnCheckChanged += delegate (BaseEventArgs e)
+                if (IsNew)
                 {
-                    widget.Selected = ((RadioBox) w).Checked;
-                    if (((RadioBox) w).Checked && widget.OnSelected != null)
+                    ((RadioBox) w).OnCheckChanged += delegate (BaseEventArgs e)
                     {
-                        dynamic widgets = widget.OnSelected?.Invoke();
-                        for (int i = 0; i < widgets.Count; i++)
-                        {
-                            Widget w = DynamicWindowWidgets[widgets[i].UniqueID];
-                            ProcessWidget(w, widgets[i], InWindow);
-                        }
-                    }
-                };
+                        widget.Selected = ((RadioBox) w).Checked;
+                        InvokeCallback(widget.OnSelectionChanged, InWindow);
+                    };
+                }
                 ((RadioBox) w).SetEnabled(widget.Enabled);
+            }
+            else if (w is TabView)
+            {
+                if (IsNew)
+                {
+                    for (int i = 0; i < widget.TabContainers.Count; i++)
+                    {
+                        ((TabView) w).CreateTab(widget.TabNames[i]);
+                    }
+                }
+                ((TabView) w).SetHeaderColor(new Color(59, 91, 124));
+                ((TabView) w).SetXOffset(widget.XOffset);
+            }
+            else if (w is ListBox)
+            {
+                if (IsNew)
+                {
+                    ((ListBox) w).OnSelectionChanged += delegate (BaseEventArgs e)
+                    {
+                        widget.Index = ((ListBox) w).SelectedIndex;
+                        InvokeCallback(widget.OnSelectionChanged, InWindow);
+                    };
+                }
+                ((ListBox) w).SetSelectedIndex(widget.Index);
+                List<ListItem> items = new List<ListItem>();
+                for (int i = 0; i < widget.Items.Count; i++) items.Add(new ListItem(widget.Items[i]));
+                ((ListBox) w).SetItems(items);
+                ((ListBox) w).SetEnabled(widget.Enabled);
+            }
+            else if (w is Button)
+            {
+                ((Button) w).SetText(widget.Text);
+                if (IsNew)
+                {
+                    ((Button) w).OnClicked += delegate (BaseEventArgs e)
+                    {
+                        InvokeCallback(widget.OnPressed, InWindow);
+                    };
+                }
+                ((Button) w).SetEnabled(widget.Enabled);
+            }
+            else if (w is CheckBox)
+            {
+                w.SetHeight(16);
+                ((CheckBox) w).SetChecked(widget.Checked);
+                ((CheckBox) w).SetText(widget.Text);
+                if (IsNew)
+                {
+                    ((CheckBox) w).OnCheckChanged += delegate (BaseEventArgs e)
+                    {
+                        widget.Checked = ((CheckBox) w).Checked;
+                        InvokeCallback(widget.OnCheckChanged, InWindow);
+                    };
+                }
+                ((CheckBox) w).SetEnabled(widget.Enabled);
+            }
+            else if (w is ConditionBox)
+            {
+                ((ConditionBox) w).SetEnabled(widget.Enabled);
+                List<BasicCondition> conditions = new List<BasicCondition>();
+                if (widget.Conditions != null) for (int i = 0; i < widget.Conditions.Count; i++) conditions.Add((BasicCondition) widget.Conditions[i]);
+                ((ConditionBox) w).SetConditions(conditions);
+            }
+            else if (w is Container)
+            {
+
+            }
+            w.SetVisible(widget.Visible);
+        }
+
+        public void InvokeCallback(dynamic Callback, bool InWindow)
+        {
+            if (Callback == null) return;
+            dynamic widgets = Callback.Invoke();
+            if (widgets == null) return;
+            for (int i = 0; i < widgets.Count; i++)
+            {
+                Widget w = DynamicWindowWidgets[widgets[i].UniqueID];
+                ProcessWidget(w, widgets[i], InWindow, false);
             }
         }
 
@@ -256,7 +396,8 @@ namespace MKEditor.Widgets
             if (this.Command == null || !this.CommandType.IsEditable) return;
             PopupWindow = new PopupWindow();
             OldParameters = new Dictionary<string, object>(Command.Parameters);
-            dynamic basewidgets = this.CommandType.CallCreateWindow(GenerateUtility());
+            WindowUtility = GenerateUtility();
+            dynamic basewidgets = this.CommandType.CallCreateWindow(WindowUtility);
             for (int i = 0; i < basewidgets.Count; i++)
             {
                 dynamic widget = basewidgets[i];
@@ -266,7 +407,7 @@ namespace MKEditor.Widgets
                 {
                     foreach (string parentwidgetid in DynamicWindowWidgets.Keys)
                     {
-                        if (parentwidgetid == widget.parent.UniqueID)
+                        if (parentwidgetid == widget.Parent.UniqueID)
                         {
                             parent = DynamicWindowWidgets[parentwidgetid];
                             break;
@@ -274,8 +415,8 @@ namespace MKEditor.Widgets
                     }
                 }
                 if (parent == null) parent = PopupWindow;
-                Widget w = ProcessWidgetType(type, parent);
-                ProcessWidget(w, widget, true);
+                Widget w = ProcessWidgetType(widget, type, parent);
+                ProcessWidget(w, widget, true, true);
                 DynamicWindowWidgets.Add(widget.UniqueID, w);
                 DynamicWindowWidgetObjects.Add(widget.UniqueID, widget);
             }
@@ -290,24 +431,55 @@ namespace MKEditor.Widgets
             });
             PopupWindow.CreateButton("OK", delegate (BaseEventArgs e)
             {
-                SaveWindow();
-                CloseWindow();
-                Reload();
+                SaveWindow(WindowUtility);
+                if (!WindowUtility.AwaitCloseFlag)
+                {
+                    CloseWindow();
+                }
             });
             PopupWindow.Center();
             PopupWindow.OnClosed += delegate (BaseEventArgs e)
             {
-                if (CallBack != null) CallBack(e);
+                CallBack?.Invoke(e);
             };
         }
 
-        public void SaveWindow()
+        public override void Update()
         {
-            this.CommandType.CallSaveWindow(GenerateUtility());
+            base.Update();
+            if (PopupWindow != null && !PopupWindow.Disposed && WindowUtility != null)
+            {
+                if (WindowUtility.AwaitCloseFlag && WindowUtility.CanClose) CloseWindow();
+                else
+                {
+                    foreach (dynamic widget in DynamicWindowWidgetObjects.Values)
+                    {
+                        Widget w = DynamicWindowWidgets[widget.UniqueID];
+                        if (w is ConditionBox)
+                        {
+                            if (widget.AwaitOpen)
+                            {
+                                widget.AwaitOpen = false;
+                                ((ConditionBox) w).Edit(delegate (BaseEventArgs e)
+                                {
+                                    widget.Conditions = ((ConditionBox) w).Conditions;
+                                    InvokeCallback(widget.OnConditionsChanged, true);
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void SaveWindow(CommandUtility Utility)
+        {
+            this.CommandType.CallSaveWindow(Utility);
         }
 
         public void CloseWindow()
         {
+            bool redrawall = WindowUtility.RedrawAll;
             PopupWindow.Close();
             foreach (Widget w in DynamicWindowWidgets.Values)
             {
@@ -315,7 +487,10 @@ namespace MKEditor.Widgets
             }
             DynamicWindowWidgets.Clear();
             DynamicWindowWidgetObjects.Clear();
-            Reload();
+            PopupWindow = null;
+            WindowUtility = null;
+            if (redrawall) ((CommandBox) Parent.Parent.Parent).RedrawCommands();
+            else Reload();
         }
 
         public void SetSelected(bool Selected)

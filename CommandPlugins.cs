@@ -15,17 +15,43 @@ namespace MKEditor
         public static void Initialize()
         {
             AssemblyLoadContext context = new AssemblyLoadContext("Command API");
-            Assembly asm = context.LoadFromAssemblyPath(Path.GetFullPath("ext/netcoreapp3.1/MKAPI"));
-            foreach (Type type in asm.GetTypes())
+            List<string> Libraries = GetLibraries("ext");
+            Libraries.ForEach(library =>
             {
-                List<Type> types = Utilities.GetParentTypes(type);
-                if (types.Find(t => t.FullName == "MKAPI.Command") != null)
+                Assembly asm = null;
+                try
                 {
-                    dynamic cmd = Activator.CreateInstance(type);
-                    CommandTypes.Add(new DynamicCommandType(cmd));
+                    asm = context.LoadFromAssemblyPath(Path.GetFullPath(library));
                 }
-            }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Failed to load extension '{Path.GetFileNameWithoutExtension(library)}': {ex.Message}\n\n{ex.StackTrace}");
+                }
+                foreach (Type type in asm.GetTypes())
+                {
+                    List<Type> types = Utilities.GetParentTypes(type);
+                    if (types.Find(t => t.FullName == "MKAPI.Command") != null)
+                    {
+                        dynamic cmd = Activator.CreateInstance(type);
+                        CommandTypes.Add(new DynamicCommandType(cmd));
+                    }
+                }
+            });
             CommandTypes.ForEach(t => t.DetermineIfSubBranch());
+        }
+
+        public static List<string> GetLibraries(string Folder)
+        {
+            List<string> Files = new List<string>();
+            foreach (string file in Directory.GetFiles(Folder))
+            {
+                if (file.EndsWith(".dll")) Files.Add(file);
+            }
+            foreach (string dir in Directory.GetDirectories(Folder))
+            {
+                Files.AddRange(GetLibraries(dir));
+            }
+            return Files.Select(f => f.Replace('\\', '/')).ToList();
         }
     }
 
@@ -35,12 +61,12 @@ namespace MKEditor
         public string Name { get => DynamicType.Name; }
         public string Identifier { get => DynamicType.Identifier; }
         public bool ShowHeader { get => DynamicType.ShowHeader; }
-        public ODL.Color HeaderColor { get => DynamicToColor(DynamicType.HeaderColor); }
-        public List<ODL.Color> TextColors
+        public odl.Color HeaderColor { get => DynamicToColor(DynamicType.HeaderColor); }
+        public List<odl.Color> TextColors
         {
             get
             {
-                List<ODL.Color> Colors = new List<ODL.Color>();
+                List<odl.Color> Colors = new List<odl.Color>();
                 for (int i = 0; i < DynamicType.TextColors.Count; i++) Colors.Add(DynamicToColor(DynamicType.TextColors[i]));
                 return Colors;
             }
@@ -65,9 +91,9 @@ namespace MKEditor
             IsSubBranch = type != null;
         }
 
-        protected ODL.Color DynamicToColor(dynamic Color)
+        protected odl.Color DynamicToColor(dynamic Color)
         {
-            return new ODL.Color(Color.Red, Color.Green, Color.Blue, Color.Alpha);
+            return new odl.Color(Color.Red, Color.Green, Color.Blue, Color.Alpha);
         }
 
         public DynamicCommandType EmptyClone()

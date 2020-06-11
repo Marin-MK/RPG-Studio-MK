@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using MKEditor.Game;
-using ODL;
+using odl;
+using amethyst;
 
 namespace MKEditor.Widgets
 {

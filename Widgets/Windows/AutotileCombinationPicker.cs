@@ -1,6 +1,6 @@
 ﻿using MKEditor.Game;
 using System;
-using ODL;
+using odl;
 using System.Collections.Generic;
 
 namespace MKEditor.Widgets

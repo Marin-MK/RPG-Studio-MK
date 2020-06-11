@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using MKEditor.Game;
-using ODL;
+using odl;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -373,7 +374,7 @@ namespace MKEditor.Widgets
                 return;
             }
             Data.SetProjectPath(Editor.GeneralSettings.RecentFiles[index][1]);
-            Window.CreateEditor();
+            ((MainEditorWindow) Window).CreateEditor();
             Editor.MakeRecentProject();
         }
 

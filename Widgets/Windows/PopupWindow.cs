@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using ODL;
+using odl;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
-    public class PopupWindow : Widget
+    public class PopupWindow : Widget, IPopupWindow
     {
         public bool Blocked = false;
         public string Title { get; protected set; }

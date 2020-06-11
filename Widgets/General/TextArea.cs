@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using ODL;
+using odl;
 using static SDL2.SDL;
+using amethyst;
 
 namespace MKEditor.Widgets
 {
@@ -42,6 +43,11 @@ namespace MKEditor.Widgets
             Sprites["caret"].Y = 2;
             Sprites["caret"].Z = 1;
             OnWidgetSelected += WidgetSelected;
+            OnDisposed += delegate (BaseEventArgs e)
+            {
+                this.Window.UI.SetSelectedWidget(null);
+                Input.SetCursor(SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
+            };
         }
 
         public void SetEnabled(bool Enabled)
@@ -58,7 +64,7 @@ namespace MKEditor.Widgets
         {
             if (this.Text != Text)
             {
-                this.Text = Text;
+                this.Text = Text ?? "";
                 X = 0;
                 RX = 0;
                 CaretIndex = 0;
@@ -195,7 +201,6 @@ namespace MKEditor.Widgets
             {
                 this.OnTextChanged?.Invoke(new BaseEventArgs());
             }
-            this.OnTextChanged?.Invoke(new BaseEventArgs());
             DrawText();
         }
 
