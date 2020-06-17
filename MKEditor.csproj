@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\amethyst\amethyst.csproj" />
+    <ProjectReference Include="..\peridot\peridot.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -56,7 +56,7 @@ namespace MKEditor
             Editor.LoadGeneralSettings();
             SetPosition(Editor.GeneralSettings.LastX, Editor.GeneralSettings.LastY);
             SetSize(Editor.GeneralSettings.LastWidth, Editor.GeneralSettings.LastHeight);
-            if (Editor.GeneralSettings.WasMaximized) SDL2.SDL.SDL_MaximizeWindow(SDL_Window);
+            if (Editor.GeneralSettings.WasMaximized) Maximize();
 
             this.OnClosing += delegate (BoolEventArgs e)
             {

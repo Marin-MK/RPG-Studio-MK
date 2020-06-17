@@ -74,12 +74,12 @@ namespace MKEditor.Widgets
 
         protected override void Draw()
         {
-            if (Sprites["bg"].Bitmap != null) Sprites["bg"].Bitmap.Dispose();
+            Sprites["bg"].Bitmap?.Dispose();
             Sprites["bg"].Bitmap = new Bitmap(Size.Width, 24 * Layers.Count);
-            if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
+            Sprites["bg"].Bitmap.Unlock();
+            Sprites["text"].Bitmap?.Dispose();
             Sprites["text"].Bitmap = new Bitmap(Size.Width, 24 * Layers.Count);
             Font f = Font.Get("Fonts/ProductSans-M", 14);
-            Sprites["bg"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = f;
             for (int i = 0; i < Layers.Count; i++)

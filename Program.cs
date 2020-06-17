@@ -59,6 +59,7 @@ namespace MKEditor
             Framework = null;
             fw = null;
             Graphics.Start();
+            Audio.Start();
             MainEditorWindow win = new MainEditorWindow(ProjectFile);
             win.Show();
             Widgets.MessageBox ErrorBox = null;
@@ -105,6 +106,7 @@ namespace MKEditor
             }
             // Stops all windows
             Graphics.Stop();
+            Audio.Stop();
         }
     }
 }

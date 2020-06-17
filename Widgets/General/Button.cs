@@ -170,9 +170,10 @@ namespace MKEditor.Widgets
             Sprites["text"].Bitmap = new Bitmap(MaxWidth, Size.Height);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = this.Font;
+            Color c = this.Enabled ? this.WidgetIM.Hovering ? new Color(48, 48, 48) : this.TextColor : new Color(160, 160, 160);
             for (int i = 0; i < Lines.Count; i++)
             {
-                Sprites["text"].Bitmap.DrawText(Lines[i], MaxWidth / 2, i * 18, this.Enabled ? this.TextColor : new Color(160, 160, 160), DrawOptions.CenterAlign);
+                Sprites["text"].Bitmap.DrawText(Lines[i], MaxWidth / 2, i * 18, c, DrawOptions.CenterAlign);
             }
             Sprites["text"].Bitmap.Lock();
             Sprites["text"].X = Size.Width / 2 - MaxWidth / 2;
@@ -184,13 +185,14 @@ namespace MKEditor.Widgets
             if (Sprites["filler"].Bitmap != null) Sprites["filler"].Bitmap.Dispose();
             Sprites["filler"].Bitmap = new Bitmap(Size.Width - 12, Size.Height - 12);
             Sprites["filler"].Bitmap.Unlock();
-            Color filler = this.Enabled ? this.WidgetIM.Hovering ? new Color(59, 227, 255) : new Color(64, 104, 146) : new Color(72, 72, 72);
+            Color filler = this.Enabled ? this.WidgetIM.Hovering ? new Color(55, 187, 255) : new Color(64, 104, 146) : new Color(72, 72, 72);
             Sprites["filler"].Bitmap.FillRect(0, 0, Size.Width - 12, Size.Height - 12, filler);
             Sprites["filler"].Bitmap.SetPixel(0, 0, Color.ALPHA);
             Sprites["filler"].Bitmap.SetPixel(Size.Width - 13, 0, Color.ALPHA);
             Sprites["filler"].Bitmap.SetPixel(0, Size.Height - 13, Color.ALPHA);
             Sprites["filler"].Bitmap.SetPixel(Size.Width - 13, Size.Height - 13, Color.ALPHA);
             Sprites["filler"].Bitmap.Lock();
+            RedrawText();
         }
 
         public override void SizeChanged(BaseEventArgs e)

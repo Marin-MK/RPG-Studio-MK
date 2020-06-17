@@ -17,10 +17,11 @@ namespace MKEditor.Widgets
 
         public TreeView(IContainer Parent) : base(Parent)
         {
-            this.Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(1, 21, new Color(28, 50, 73)));
-            this.Sprites["hover"] = new Sprite(this.Viewport, new SolidBitmap(2, 21, new Color(55, 187, 255)));
-            this.Sprites["hover"].Visible = false;
-            this.Sprites["list"] = new Sprite(this.Viewport);
+            Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(1, 21, new Color(28, 50, 73)));
+            Sprites["hover"] = new Sprite(this.Viewport, new SolidBitmap(2, 21, new Color(55, 187, 255)));
+            Sprites["hover"].Visible = false;
+            Sprites["list"] = new Sprite(this.Viewport);
+            Sprites["text"] = new Sprite(this.Viewport);
             this.OnWidgetSelected += WidgetSelected;
         }
 
@@ -39,7 +40,8 @@ namespace MKEditor.Widgets
 
         protected override void Draw()
         {
-            if (this.Sprites["list"].Bitmap != null) this.Sprites["list"].Bitmap.Dispose();
+            Sprites["list"].Bitmap?.Dispose();
+            Sprites["text"].Bitmap?.Dispose();
             int items = 0;
             for (int i = 0; i < this.Nodes.Count; i++)
             {
@@ -47,9 +49,11 @@ namespace MKEditor.Widgets
                 items += this.Nodes[i].GetDisplayedNodeCount();
             }
             int height = items * 24;
-            this.SetHeight(height + TrailingBlank);
-            this.Sprites["list"].Bitmap = new Bitmap(this.Size.Width, height);
-            this.Sprites["list"].Bitmap.Unlock();
+            SetHeight(height + TrailingBlank);
+            Sprites["list"].Bitmap = new Bitmap(Size.Width, height);
+            Sprites["text"].Bitmap = new Bitmap(Size.Width, height);
+            Sprites["list"].Bitmap.Unlock();
+            Sprites["text"].Bitmap.Unlock();
             
             int y = 0;
             for (int i = 0; i < this.Nodes.Count; i++)
@@ -58,7 +62,8 @@ namespace MKEditor.Widgets
                 y += 24;
             }
 
-            this.Sprites["list"].Bitmap.Lock();
+            Sprites["list"].Bitmap.Lock();
+            Sprites["text"].Bitmap.Lock();
 
             base.Draw();
         }
@@ -68,11 +73,11 @@ namespace MKEditor.Widgets
             if (node == SelectedNode) Sprites["selector"].Y = y;
             node.PixelsIndented = x;
             Font f = Font.Get("Fonts/ProductSans-M", 14);
-            this.Sprites["list"].Bitmap.Font = f;
+            this.Sprites["text"].Bitmap.Font = f;
             string text = node.Name ?? node.Object.ToString();
             Size s = f.TextSize(text);
             Color c = SelectedNode == node ? new Color(55, 187, 255) : Color.WHITE;
-            this.Sprites["list"].Bitmap.DrawText(text, x + 12, y + 1, c);
+            this.Sprites["text"].Bitmap.DrawText(text, x + 12, y + 1, c);
 
             if (!FirstGeneration)
             {

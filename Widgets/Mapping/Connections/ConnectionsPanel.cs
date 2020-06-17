@@ -156,8 +156,8 @@ namespace MKEditor.Widgets
         public override void HoverChanged(MouseEventArgs e)
         {
             base.HoverChanged(e);
-            PlusButton.SetTextColor(WidgetIM.Hovering ? new Color(47, 160, 193) : Color.WHITE);
-            Label.SetTextColor(WidgetIM.Hovering ? new Color(47, 160, 193) : Color.WHITE);
+            PlusButton.SetTextColor(WidgetIM.Hovering ? new Color(55, 187, 255) : Color.WHITE);
+            Label.SetTextColor(WidgetIM.Hovering ? new Color(55, 187, 255) : Color.WHITE);
             Sprites["hover"].Visible = WidgetIM.Hovering;
         }
 
