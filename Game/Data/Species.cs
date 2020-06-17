@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace MKEditor.Game
+namespace RPGStudioMK.Game
 {
     public class Species
     {

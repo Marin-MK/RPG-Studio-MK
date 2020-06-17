@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using amethyst;
 
-namespace MKEditor.Widgets
+namespace RPGStudioMK.Widgets
 {
     public class DynamicLabel : Label
     {

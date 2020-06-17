@@ -2,7 +2,7 @@
 using odl;
 using amethyst;
 
-namespace MKEditor.Widgets
+namespace RPGStudioMK.Widgets
 {
     public class GridBackground : Widget
     {

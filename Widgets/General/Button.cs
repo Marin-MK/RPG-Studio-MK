@@ -4,7 +4,7 @@ using System.Linq;
 using odl;
 using amethyst;
 
-namespace MKEditor.Widgets
+namespace RPGStudioMK.Widgets
 {
     public class Button : Widget
     {

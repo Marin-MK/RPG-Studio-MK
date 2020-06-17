@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using amethyst;
 
-namespace MKEditor.Widgets
+namespace RPGStudioMK.Widgets
 {
     public class FileExplorer : Widget
     {

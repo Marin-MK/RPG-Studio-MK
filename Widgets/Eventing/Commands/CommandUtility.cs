@@ -1,11 +1,11 @@
-﻿using MKEditor.Game;
-using MKEditor.Widgets;
+﻿using RPGStudioMK.Game;
+using RPGStudioMK.Widgets;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MKEditor
+namespace RPGStudioMK
 {
     public class CommandUtility
     {

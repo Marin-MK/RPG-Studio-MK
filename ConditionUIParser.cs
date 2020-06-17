@@ -4,12 +4,12 @@ using System;
 using System.Collections.Generic;
 using odl;
 using System.Text;
-using MKEditor.Widgets;
+using RPGStudioMK.Widgets;
 using System.IO;
-using MKEditor.Game;
+using RPGStudioMK.Game;
 using amethyst;
 
-namespace MKEditor
+namespace RPGStudioMK
 {
     public class ConditionUIParser : IUIParser
     {

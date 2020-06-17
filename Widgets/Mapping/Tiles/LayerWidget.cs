@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using odl;
-using MKEditor.Game;
+using RPGStudioMK.Game;
 using amethyst;
 
-namespace MKEditor.Widgets
+namespace RPGStudioMK.Widgets
 {
     public class LayerWidget : Widget
     {

@@ -4,11 +4,11 @@ using System;
 using System.Collections.Generic;
 using odl;
 using System.Text;
-using MKEditor.Widgets;
+using RPGStudioMK.Widgets;
 using System.IO;
 using amethyst;
 
-namespace MKEditor
+namespace RPGStudioMK
 {
     public class WidgetCreator
     {

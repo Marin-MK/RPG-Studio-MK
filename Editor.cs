@@ -7,11 +7,11 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Reflection;
 using odl;
-using MKEditor.Game;
-using MKEditor.Widgets;
+using RPGStudioMK.Game;
+using RPGStudioMK.Widgets;
 using amethyst;
 
-namespace MKEditor
+namespace RPGStudioMK
 {
     public static class Editor
     {

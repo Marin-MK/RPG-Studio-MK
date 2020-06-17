@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace MKEditor.Game
+namespace RPGStudioMK.Game
 {
     public class Event
     {

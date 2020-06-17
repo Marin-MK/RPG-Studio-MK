@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace MKEditor
+namespace RPGStudioMK
 {
     public class MapEditCommandLineHandler : CommandLineHandler
     {

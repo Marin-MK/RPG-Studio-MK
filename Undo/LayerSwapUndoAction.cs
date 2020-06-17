@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using MKEditor.Game;
+using RPGStudioMK.Game;
 
-namespace MKEditor
+namespace RPGStudioMK
 {
     public class LayerSwapUndoAction : BaseUndoAction
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using odl;
 
-namespace MKEditor.Widgets
+namespace RPGStudioMK.Widgets
 {
     public class DeleteMapPopup : MessageBox
     {

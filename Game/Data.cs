@@ -5,7 +5,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MKEditor.Game
+namespace RPGStudioMK.Game
 {
     public static class Data
     {

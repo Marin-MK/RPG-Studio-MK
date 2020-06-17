@@ -11,6 +11,7 @@
     <Platforms>x64</Platforms>
     <AssemblyName>RPG Studio MK</AssemblyName>
     <Configurations>Debug</Configurations>
+    <RootNamespace>RPGStudioMK</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,16 +20,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\amethyst\amethyst.csproj" />
+    <ProjectReference Include="..\MKAPI\MKAPI.csproj" />
+    <ProjectReference Include="..\odl\odl.csproj" />
     <ProjectReference Include="..\peridot\peridot.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="MKAPI">
-      <HintPath>bin\x64\Debug\netcoreapp3.1\ext\netcoreapp3.1\MKAPI.dll</HintPath>
-    </Reference>
-    <Reference Include="odl">
-      <HintPath>..\odl\bin\x64\Debug\netcoreapp3.1\odl.dll</HintPath>
-    </Reference>
     <Reference Include="RubyDotNET">
       <HintPath>..\rubydotnet\bin\x64\Debug\netcoreapp3.1\RubyDotNET.dll</HintPath>
     </Reference>

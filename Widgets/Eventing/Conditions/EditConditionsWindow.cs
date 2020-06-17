@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using odl;
-using MKEditor.Game;
+using RPGStudioMK.Game;
 
-namespace MKEditor.Widgets
+namespace RPGStudioMK.Widgets
 {
     public class EditConditionsWindow : PopupWindow
     {

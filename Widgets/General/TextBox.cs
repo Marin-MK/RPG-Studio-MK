@@ -3,7 +3,7 @@ using odl;
 using static SDL2.SDL;
 using amethyst;
 
-namespace MKEditor.Widgets
+namespace RPGStudioMK.Widgets
 {
     public class TextBox : Widget
     {

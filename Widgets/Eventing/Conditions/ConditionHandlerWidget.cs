@@ -1,11 +1,11 @@
-﻿using MKEditor.Game;
+﻿using RPGStudioMK.Game;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using odl;
 using amethyst;
 
-namespace MKEditor.Widgets
+namespace RPGStudioMK.Widgets
 {
     public class ConditionHandlerWidget : Widget
     {

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.Versioning;
 using odl;
 
-namespace MKEditor
+namespace RPGStudioMK
 {
     public class Program
     {

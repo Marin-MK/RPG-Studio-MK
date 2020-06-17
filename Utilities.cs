@@ -5,12 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using MKEditor.Game;
+using RPGStudioMK.Game;
 using Newtonsoft.Json.Linq;
 using odl;
 using amethyst;
 
-namespace MKEditor
+namespace RPGStudioMK
 {
     public static class Utilities
     {

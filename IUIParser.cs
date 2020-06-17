@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using amethyst;
 
-namespace MKEditor
+namespace RPGStudioMK
 {
     public interface IUIParser
     {

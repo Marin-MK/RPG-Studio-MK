@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MKEditor
+namespace RPGStudioMK
 {
     public class DataCommandLineHandler : CommandLineHandler
     {

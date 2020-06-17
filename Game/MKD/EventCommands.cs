@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace MKEditor.Game
+namespace RPGStudioMK.Game
 {
     public class BasicCommand
     {

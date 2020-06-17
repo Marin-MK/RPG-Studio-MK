@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
 
-namespace MKEditor
+namespace RPGStudioMK
 {
     public static class CommandPlugins
     {

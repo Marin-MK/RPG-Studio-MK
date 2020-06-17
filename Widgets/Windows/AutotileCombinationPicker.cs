@@ -1,9 +1,9 @@
-﻿using MKEditor.Game;
+﻿using RPGStudioMK.Game;
 using System;
 using odl;
 using System.Collections.Generic;
 
-namespace MKEditor.Widgets
+namespace RPGStudioMK.Widgets
 {
     public class AutotilePickerMap : PopupWindow
     {

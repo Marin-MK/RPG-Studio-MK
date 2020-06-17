@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using odl;
 using amethyst;
 
-namespace MKEditor.Widgets
+namespace RPGStudioMK.Widgets
 {
     public class DatabaseModeList : Widget
     {

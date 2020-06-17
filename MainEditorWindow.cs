@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using MKEditor.Game;
-using MKEditor.Widgets;
+using RPGStudioMK.Game;
+using RPGStudioMK.Widgets;
 using odl;
 using amethyst;
 
-namespace MKEditor
+namespace RPGStudioMK
 {
     public class MainEditorWindow : UIWindow
     {

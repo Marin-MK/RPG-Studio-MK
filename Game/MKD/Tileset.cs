@@ -4,7 +4,7 @@ using System.IO;
 using Newtonsoft.Json.Linq;
 using odl;
 
-namespace MKEditor.Game
+namespace RPGStudioMK.Game
 {
     public class Tileset
     {

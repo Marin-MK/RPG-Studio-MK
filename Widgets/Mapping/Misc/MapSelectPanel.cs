@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using MKEditor.Game;
+using RPGStudioMK.Game;
 using odl;
 using amethyst;
 
-namespace MKEditor.Widgets
+namespace RPGStudioMK.Widgets
 {
     public class MapSelectPanel : Widget
     {
