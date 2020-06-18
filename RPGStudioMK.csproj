@@ -7,7 +7,7 @@
     <StartupObject />
     <Authors>MK Project</Authors>
     <Product>RPG Studio MK</Product>
-    <Version>0.4.3</Version>
+    <Version>0.5.0</Version>
     <Platforms>x64</Platforms>
     <AssemblyName>RPG Studio MK</AssemblyName>
     <Configurations>Debug</Configurations>
@@ -20,15 +20,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\amethyst\amethyst.csproj" />
-    <ProjectReference Include="..\MKAPI\MKAPI.csproj" />
     <ProjectReference Include="..\odl\odl.csproj" />
     <ProjectReference Include="..\peridot\peridot.csproj" />
+    <ProjectReference Include="..\rubydotnet\RubyDotNet.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="RubyDotNET">
-      <HintPath>..\rubydotnet\bin\x64\Debug\netcoreapp3.1\RubyDotNET.dll</HintPath>
-    </Reference>
     <Reference Include="SDL2-CS">
       <HintPath>..\odl\bin\x64\Debug\netcoreapp3.1\SDL2-CS.dll</HintPath>
     </Reference>
