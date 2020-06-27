@@ -16,7 +16,9 @@ namespace RPGStudioMK.Widgets
         public EventWidget(IContainer Parent) : base(Parent)
         {
             Sprites["gfx"] = new Sprite(this.Viewport);
+            Sprites["gfx"].FactorZoomIntoOrigin = false;
             Sprites["box"] = new Sprite(this.Viewport);
+            Sprites["box"].FactorZoomIntoOrigin = false;
         }
 
         public void SetEvent(Event Event)

@@ -270,7 +270,7 @@ namespace RPGStudioMK.Widgets
         {
             foreach (string key in this.Sprites.Keys)
             {
-                if (key != "_bg" && key != "dark")
+                if (Utilities.IsNumeric(key))
                 {
                     this.Sprites[key].Dispose();
                     this.Sprites.Remove(key);
@@ -282,6 +282,7 @@ namespace RPGStudioMK.Widgets
                 this.Sprites[i.ToString()] = new Sprite(this.Viewport);
                 this.Sprites[i.ToString()].Z = i * 2;
                 this.Sprites[i.ToString()].Visible = MapData.Layers[i].Visible;
+                this.Sprites[i.ToString()].FactorZoomIntoOrigin = false;
             }
             List<Bitmap> bmps = new List<Bitmap>();
             AnimatedAutotiles.Clear();
