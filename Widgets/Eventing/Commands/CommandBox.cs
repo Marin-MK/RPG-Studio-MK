@@ -218,7 +218,13 @@ namespace RPGStudioMK.Widgets
                 }
                 NewCommand(SelectedIndex, idx == -1 ? 0 : idx, chw.Indent);
             }
-            else chw.EditWindow();
+            else
+            {
+                chw.EditWindow(delegate (BaseEventArgs e)
+                {
+                    UpdateList();
+                });
+            }
         }
 
         public DynamicCommandType GetCommandType(BasicCommand Command)

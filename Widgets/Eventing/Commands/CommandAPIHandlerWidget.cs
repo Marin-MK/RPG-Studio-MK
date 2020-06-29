@@ -440,6 +440,7 @@ namespace RPGStudioMK.Widgets
             PopupWindow.Center();
             PopupWindow.OnClosed += delegate (BaseEventArgs e)
             {
+                Reload();
                 CallBack?.Invoke(e);
             };
         }
@@ -502,8 +503,11 @@ namespace RPGStudioMK.Widgets
                     if (w != this) ((CommandAPIHandlerWidget) w).SetSelected(false);
                 });
                 this.Selected = Selected;
-                if (Selected) ((CommandBox) Parent.Parent.Parent).UpdateHoverOrSelection(true);
-                if (Selected) ((CommandBox) Parent.Parent.Parent).OnSelectionChanged?.Invoke(new BaseEventArgs());
+                if (Selected)
+                {
+                    ((CommandBox) Parent.Parent.Parent).UpdateHoverOrSelection(true);
+                    ((CommandBox) Parent.Parent.Parent).OnSelectionChanged?.Invoke(new BaseEventArgs());
+                }
             }
         }
 
