@@ -66,6 +66,7 @@ namespace RPGStudioMK.Widgets
                 }
                 this.Redraw();
                 this.OnCollapsedChanged?.Invoke(new BaseEventArgs());
+                ((VStackPanel) Parent).UpdateLayout();
             }
         }
 
