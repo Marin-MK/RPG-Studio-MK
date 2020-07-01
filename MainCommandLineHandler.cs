@@ -160,9 +160,9 @@ namespace RPGStudioMK
             OpenEditor = false;
             try
             {
-                RubyDotNET.Internal.Initialize();
-                string Version = new RubyDotNET.RubyString(RubyDotNET.Internal.Eval("RUBY_VERSION", false)).ToString();
-                Console.WriteLine("Ruby libraries successfully tested.");
+                rubydotnet.Ruby.Initialize();
+                rubydotnet.Ruby.String Version = rubydotnet.Ruby.Eval("RUBY_VERSION").Convert<rubydotnet.Ruby.String>();
+                Console.WriteLine("Ruby library successfully tested.");
                 Console.WriteLine($"Ruby version: {Version}");
             }
             catch (Exception ex)
