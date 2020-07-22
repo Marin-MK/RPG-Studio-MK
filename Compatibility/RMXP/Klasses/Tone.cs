@@ -5,75 +5,73 @@ namespace RPGStudioMK.Compatibility
 {
     public static partial class RMXP
     {
-        public class Tone : Ruby.Object
+        public static class Tone
         {
-            public new static string KlassName = "Tone";
-            public new static Ruby.Class Class { get => (Ruby.Class) GetKlass(KlassName); }
-
-            public Tone(IntPtr Pointer) : base(Pointer, true) { }
+            public static IntPtr Class;
 
             public static void Create()
             {
-                Ruby.Class c = Ruby.Class.DefineClass<Tone>(KlassName);
-                c.DefineClassMethod("_load", _load);
-                c.DefineMethod("initialize", initialize);
+                Class = Ruby.Class.Define("Tone");
+                Ruby.Class.DefineClassMethod(Class, "_load", _load);
+                Ruby.Class.DefineMethod(Class, "initialize", initialize);
             }
 
-            public Ruby.Integer Red
+            public static int Red(IntPtr Self)
             {
-                get => GetIVar("@red").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@red"));
             }
-            public Ruby.Integer Green
+            public static int Green(IntPtr Self)
             {
-                get => GetIVar("@green").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@green"));
             }
-            public Ruby.Integer Blue
+            public static int Blue(IntPtr Self)
             {
-                get => GetIVar("@blue").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@blue"));
             }
-            public Ruby.Integer Grey
+            public static int Grey(IntPtr Self)
             {
-                get => GetIVar("@grey").Convert<Ruby.Integer>();
-            }
-
-            protected static Ruby.Object _load(Ruby.Object Self, Ruby.Array Args)
-            {
-                Args.Expect(1);
-                Ruby.Array unpack = Args[0].Convert<Ruby.String>().Unpack("D*");
-                return Self.Funcall("new", unpack[0], unpack[1], unpack[2], unpack[3]);
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@grey"));
             }
 
-            protected static Ruby.Object initialize(Ruby.Object Self, Ruby.Array Args)
+            static IntPtr _load(IntPtr Self, IntPtr Args)
             {
-                Args.Expect((0, 5));
-                Ruby.Object Red = (Ruby.Integer) 0;
-                Ruby.Object Green = (Ruby.Integer) 0;
-                Ruby.Object Blue = (Ruby.Integer) 0;
-                Ruby.Object Grey = (Ruby.Integer) 0;
-                if (Args.Length >= 1)
+                Ruby.Array.Expect(Args, 1);
+                IntPtr unpacked = Ruby.Funcall(Ruby.Array.Get(Args, 0), "unpack", Ruby.String.ToPtr("D*"));
+                return Ruby.Funcall(Self, "new", Ruby.Array.Get(unpacked, 0), Ruby.Array.Get(unpacked, 1), Ruby.Array.Get(unpacked, 2), Ruby.Array.Get(unpacked, 3));
+            }
+
+            static IntPtr initialize(IntPtr Self, IntPtr Args)
+            {
+                Ruby.Array.Expect(Args, 0, 1, 2, 3, 4);
+                IntPtr Red = Ruby.Integer.ToPtr(0),
+                       Green = Red,
+                       Blue = Red,
+                       Grey = Red;
+                long len = Ruby.Array.Length(Args);
+                if (len >= 1)
                 {
-                    Args[0].Expect(Ruby.Integer.Class, Ruby.Float.Class);
-                    Red = Args[0];
+                    Ruby.Array.Expect(Args, 0, "Integer", "Float");
+                    Red = Ruby.Array.Get(Args, 0);
                 }
-                if (Args.Length >= 2)
+                if (len >= 2)
                 {
-                    Args[1].Expect(Ruby.Integer.Class, Ruby.Float.Class);
-                    Green = Args[1];
+                    Ruby.Array.Expect(Args, 1, "Integer", "Float");
+                    Green = Ruby.Array.Get(Args, 1);
                 }
-                if (Args.Length >= 3)
+                if (len >= 3)
                 {
-                    Args[2].Expect(Ruby.Integer.Class, Ruby.Float.Class);
-                    Blue = Args[2];
+                    Ruby.Array.Expect(Args, 2, "Integer", "Float");
+                    Blue = Ruby.Array.Get(Args, 2);
                 }
-                if (Args.Length >= 4)
+                if (len >= 4)
                 {
-                    Args[3].Expect(Ruby.Integer.Class, Ruby.Float.Class);
-                    Grey = Args[3];
+                    Ruby.Array.Expect(Args, 3, "Integer", "Float");
+                    Grey = Ruby.Array.Get(Args, 3);
                 }
-                Self.SetIVar("@red", Red);
-                Self.SetIVar("@green", Green);
-                Self.SetIVar("@blue", Blue);
-                Self.SetIVar("@grey", Grey);
+                Ruby.SetIVar(Self, "@red", Red);
+                Ruby.SetIVar(Self, "@green", Green);
+                Ruby.SetIVar(Self, "@blue", Blue);
+                Ruby.SetIVar(Self, "@grey", Grey);
                 return Ruby.Nil;
             }
         }

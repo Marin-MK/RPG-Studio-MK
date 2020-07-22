@@ -5,29 +5,26 @@ namespace RPGStudioMK.Compatibility
 {
     public static partial class RMXP
     {
-        public class AudioFile : Ruby.Object
+        public static class AudioFile
         {
-            public new static string KlassName = "RPG::AudioFile";
-            public new static Ruby.Class Class { get => (Ruby.Class) GetKlass(KlassName); }
-
-            public AudioFile(IntPtr Pointer) : base(Pointer, true) { }
+            public static IntPtr Class;
 
             public static void Create()
             {
-                Ruby.Class c = Ruby.Class.DefineClass<AudioFile>("AudioFile", null, "RPG");
+                Class = Ruby.Class.Define("AudioFile", RPG.Module);
             }
 
-            public Ruby.String Name
+            public static string Name(IntPtr Self)
             {
-                get => GetIVar("@name").Convert<Ruby.String>();
+                return Ruby.String.FromPtr(Ruby.GetIVar(Self, "@name"));
             }
-            public Ruby.Integer Volume
+            public static int Volume(IntPtr Self)
             {
-                get => GetIVar("@volume").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@volume"));
             }
-            public Ruby.Integer Pitch
+            public static int Pitch(IntPtr Self)
             {
-                get => GetIVar("@pitch").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@pitch"));
             }
         }
     }

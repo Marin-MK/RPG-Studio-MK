@@ -5,37 +5,34 @@ namespace RPGStudioMK.Compatibility
 {
     public static partial class RMXP
     {
-        public class Event : Ruby.Object
+        public static class Event
         {
-            public new static string KlassName = "RPG::Event";
-            public new static Ruby.Class Class { get => (Ruby.Class) GetKlass(KlassName); }
-
-            public Event(IntPtr Pointer) : base(Pointer, true) { }
+            public static IntPtr Class;
 
             public static void Create()
             {
-                Ruby.Class c = Ruby.Class.DefineClass<Event>("Event", null, "RPG");
+                Class = Ruby.Class.Define("Event", RPG.Module);
             }
 
-            public Ruby.Integer ID
+            public static int ID(IntPtr Self)
             {
-                get => GetIVar("@id").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@id"));
             }
-            public Ruby.String Name
+            public static string Name(IntPtr Self)
             {
-                get => GetIVar("@name").Convert<Ruby.String>();
+                return Ruby.String.FromPtr(Ruby.GetIVar(Self, "@name"));
             }
-            public Ruby.Integer X
+            public static int X(IntPtr Self)
             {
-                get => GetIVar("@x").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@x"));
             }
-            public Ruby.Integer Y
+            public static int Y(IntPtr Self)
             {
-                get => GetIVar("@y").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@y"));
             }
-            public Ruby.Array Pages
+            public static IntPtr Pages(IntPtr Self)
             {
-                get => GetIVar("@pages").Convert<Ruby.Array>();
+                return Ruby.GetIVar(Self, "@pages");
             }
         }
     }

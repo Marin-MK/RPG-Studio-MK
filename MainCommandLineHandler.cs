@@ -161,9 +161,9 @@ namespace RPGStudioMK
             try
             {
                 rubydotnet.Ruby.Initialize();
-                rubydotnet.Ruby.String Version = rubydotnet.Ruby.Eval("RUBY_VERSION").Convert<rubydotnet.Ruby.String>();
+                IntPtr Version = rubydotnet.Ruby.GetConst(rubydotnet.Ruby.Object.Class, "RUBY_VERSION");
                 Console.WriteLine("Ruby library successfully tested.");
-                Console.WriteLine($"Ruby version: {Version}");
+                Console.WriteLine($"Ruby version: {rubydotnet.Ruby.String.FromPtr(Version)}");
             }
             catch (Exception ex)
             {

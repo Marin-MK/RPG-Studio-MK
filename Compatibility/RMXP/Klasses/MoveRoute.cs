@@ -5,29 +5,26 @@ namespace RPGStudioMK.Compatibility
 {
     public static partial class RMXP
     {
-        public class MoveRoute : Ruby.Object
+        public static class MoveRoute
         {
-            public new static string KlassName = "RPG::MoveRoute";
-            public new static Ruby.Class Class { get => (Ruby.Class) GetKlass(KlassName); }
-
-            public MoveRoute(IntPtr Pointer) : base(Pointer, true) { }
+            public static IntPtr Class;
 
             public static void Create()
             {
-                Ruby.Class c = Ruby.Class.DefineClass<MoveRoute>("MoveRoute", null, "RPG");
+                Class = Ruby.Class.Define("MoveRoute", RPG.Module);
             }
 
-            public bool Repeat
+            public static bool Repeat(IntPtr Self)
             {
-                get => GetIVar("@repeat") == Ruby.True;
+                return Ruby.GetIVar(Self, "@repeat") == Ruby.True;
             }
-            public bool Skippable
+            public static bool Skippable(IntPtr Self)
             {
-                get => GetIVar("@skippable") == Ruby.True;
+                return Ruby.GetIVar(Self, "@skippable") == Ruby.True;
             }
-            public Ruby.Array List
+            public static IntPtr List(IntPtr Self)
             {
-                get => GetIVar("@list").Convert<Ruby.Array>();
+                return Ruby.GetIVar(Self, "@list");
             }
         }
     }

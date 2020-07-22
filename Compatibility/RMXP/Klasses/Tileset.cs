@@ -5,85 +5,82 @@ namespace RPGStudioMK.Compatibility
 {
     public static partial class RMXP
     {
-        public class Tileset : Ruby.Object
+        public static class Tileset
         {
-            public new static string KlassName = "RPG::Tileset";
-            public new static Ruby.Class Class { get => (Ruby.Class) GetKlass("Tileset"); }
-
-            public Tileset(IntPtr Pointer) : base(Pointer, true) { }
+            public static IntPtr Class;
 
             public static void Create()
             {
-                Ruby.Class c = Ruby.Class.DefineClass<Tileset>("Tileset", null, "RPG");
+                Class = Ruby.Class.Define("Tileset", RPG.Module);
             }
 
-            public Ruby.Integer ID
+            public static int ID(IntPtr Self)
             {
-                get => GetIVar("@id").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@id"));
             }
-            public Ruby.String Name
+            public static string Name(IntPtr Self)
             {
-                get => GetIVar("@name").Convert<Ruby.String>();
+                return Ruby.String.FromPtr(Ruby.GetIVar(Self, "@name"));
             }
-            public Ruby.String TilesetName
+            public static string TilesetName(IntPtr Self)
             {
-                get => GetIVar("@tileset_name").Convert<Ruby.String>();
+                return Ruby.String.FromPtr(Ruby.GetIVar(Self, "@tileset_name"));
             }
-            public Ruby.Array AutotileNames
+            public static IntPtr AutotileNames(IntPtr Self)
             {
-                get => GetIVar("@autotile_names").Convert<Ruby.Array>();
+                return Ruby.GetIVar(Self, "@autotile_names");
             }
-            public Ruby.String PanoramaName
+            public static string PanoramaName(IntPtr Self)
             {
-                get => GetIVar("@panorama_name").Convert<Ruby.String>();
+                return Ruby.String.FromPtr(Ruby.GetIVar(Self, "@panorama_name"));
             }
-            public Ruby.Integer PanoramaHue
+            public static int PanoramaHue(IntPtr Self)
             {
-                get => GetIVar("@panorama_hue").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@panorama_hue"));
             }
-            public Ruby.String FogName
+            public static string FogName(IntPtr Self)
             {
-                get => GetIVar("@fog_name").Convert<Ruby.String>();
+                return Ruby.String.FromPtr(Ruby.GetIVar(Self, "@fog_name"));
             }
-            public Ruby.Integer FogHue
+            public static int FogHue(IntPtr Self)
             {
-                get => GetIVar("@fog_hue").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@fog_hue"));
             }
-            public Ruby.Integer FogOpacity
+            public static int FogOpacity(IntPtr Self)
             {
-                get => GetIVar("@fog_opacity").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@fog_opacity"));
             }
-            public Ruby.Integer FogBlendType
+            public static int FogBlendType(IntPtr Self)
             {
-                get => GetIVar("@fog_blend_type").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@fog_blend_type"));
             }
-            public Ruby.Integer FogZoom
+            public static int FogZoom(IntPtr Self)
             {
-                get => GetIVar("@fog_zoom").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@fog_zoom"));
             }
-            public Ruby.Integer FogSX
+            public static int FogSX(IntPtr Self)
             {
-                get => GetIVar("@fog_sx").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@fog_sx"));
             }
-            public Ruby.Integer FogSY
+            public static int FogSY(IntPtr Self)
             {
-                get => GetIVar("@fog_sy").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@fog_sy"));
             }
-            public Ruby.String BattleBackName
+            public static string BattleBackName(IntPtr Self)
             {
-                get => GetIVar("@battleback_name").Convert<Ruby.String>();
+                return Ruby.String.FromPtr(Ruby.GetIVar(Self, "@battleback_name"));
             }
-            public Table Passages
+            public static IntPtr Passages(IntPtr Self)
             {
-                get => GetIVar("@passages").Convert<Table>();
+                return Ruby.GetIVar(Self, "@passages");
             }
-            public Table Priorities
+            public static IntPtr Priorities(IntPtr Self)
             {
-                get => GetIVar("@priorities").Convert<Table>();
+                return Ruby.GetIVar(Self, "@priorities");
             }
-            public Table TerrainTags
+            public static IntPtr TerrainTags(IntPtr Self)
             {
-                get => GetIVar("@terrain_tags").Convert<Table>();
+                return Ruby.GetIVar(Self, "@terrain_tags");
             }
         }
     }

@@ -5,45 +5,42 @@ namespace RPGStudioMK.Compatibility
 {
     public static partial class RMXP
     {
-        public class Graphic : Ruby.Object
+        public static class Graphic
         {
-            public new static string KlassName = "RPG::Event::Page::Graphic";
-            public new static Ruby.Class Class { get => (Ruby.Class) GetKlass(KlassName); }
-
-            public Graphic(IntPtr Pointer) : base(Pointer, true) { }
+            public static IntPtr Class;
 
             public static void Create()
             {
-                Ruby.Class c = Ruby.Class.DefineClass<Graphic>("Graphic", null, "RPG::Event::Page");
+                Class = Ruby.Class.Define("Graphic", Page.Class);
             }
 
-            public Ruby.Integer TileID
+            public static int TileID(IntPtr Self)
             {
-                get => GetIVar("@tile_id").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@tile_id"));
             }
-            public Ruby.String CharacterName
+            public static string CharacterName(IntPtr Self)
             {
-                get => GetIVar("@character_name").Convert<Ruby.String>();
+                return Ruby.String.FromPtr(Ruby.GetIVar(Self, "@character_name"));
             }
-            public Ruby.Integer CharacterHue
+            public static int CharacterHue(IntPtr Self)
             {
-                get => GetIVar("@character_hue").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@character_hue"));
             }
-            public Ruby.Integer Direction
+            public static int Direction(IntPtr Self)
             {
-                get => GetIVar("@direction").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@direction"));
             }
-            public Ruby.Integer Pattern
+            public static int Pattern(IntPtr Self)
             {
-                get => GetIVar("@pattern").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@pattern"));
             }
-            public Ruby.Integer Opacity
+            public static int Opacity(IntPtr Self)
             {
-                get => GetIVar("@opacity").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@opacity"));
             }
-            public Ruby.Integer BlendType
+            public static int BlendType(IntPtr Self)
             {
-                get => GetIVar("@blend_type").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@blend_type"));
             }
         }
     }

@@ -5,25 +5,22 @@ namespace RPGStudioMK.Compatibility
 {
     public static partial class RMXP
     {
-        public class MoveCommand : Ruby.Object
+        public static class MoveCommand
         {
-            public new static string KlassName = "RPG::MoveCommand";
-            public new static Ruby.Class Class { get => (Ruby.Class) GetKlass(KlassName); }
-
-            public MoveCommand(IntPtr Pointer) : base(Pointer, true) { }
+            public static IntPtr Class;
 
             public static void Create()
             {
-                Ruby.Class c = Ruby.Class.DefineClass<MoveCommand>("MoveCommand", null, "RPG");
+                Class = Ruby.Class.Define("MoveCommand", RPG.Module);
             }
 
-            public Ruby.Integer Code
+            public static int Code(IntPtr Self)
             {
-                get => GetIVar("@code").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@code"));
             }
-            public Ruby.Array Parameters
+            public static IntPtr Parameters(IntPtr Self)
             {
-                get => GetIVar("@parameters").Convert<Ruby.Array>();
+                return Ruby.GetIVar(Self, "@parameters");
             }
         }
     }

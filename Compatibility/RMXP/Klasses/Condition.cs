@@ -5,53 +5,50 @@ namespace RPGStudioMK.Compatibility
 {
     public static partial class RMXP
     {
-        public class Condition : Ruby.Object
+        public static class Condition
         {
-            public new static string KlassName = "RPG::Event::Page::Condition";
-            public new static Ruby.Class Class { get => (Ruby.Class) GetKlass(KlassName); }
-
-            public Condition(IntPtr Pointer) : base(Pointer, true) { }
+            public static IntPtr Class;
 
             public static void Create()
             {
-                Ruby.Class c = Ruby.Class.DefineClass<Condition>("Condition", null, "RPG::Event::Page");
+                Class = Ruby.Class.Define("Condition", Page.Class);
             }
 
-            public bool Switch1Valid
+            public static bool Switch1Valid(IntPtr Self)
             {
-                get => GetIVar("@switch1_valid") == Ruby.True;
+                return Ruby.GetIVar(Self, "@switch1_valid") == Ruby.True;
             }
-            public bool Switch2Valid
+            public static bool Switch2Valid(IntPtr Self)
             {
-                get => GetIVar("@switch2_valid") == Ruby.True;
+                return Ruby.GetIVar(Self, "@switch2_valid") == Ruby.True;
             }
-            public bool VariableValid
+            public static bool VariableValid(IntPtr Self)
             {
-                get => GetIVar("@variable_valid") == Ruby.True;
+                return Ruby.GetIVar(Self, "@variable_valid") == Ruby.True;
             }
-            public bool SelfSwitchValid
+            public static bool SelfSwitchValid(IntPtr Self)
             {
-                get => GetIVar("@self_switch_valid") == Ruby.True;
+                return Ruby.GetIVar(Self, "@self_switch_valid") == Ruby.True;
             }
-            public Ruby.Integer Switch1ID
+            public static int Switch1ID(IntPtr Self)
             {
-                get => GetIVar("@switch1_id").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@switch1_id"));
             }
-            public Ruby.Integer Switch2ID
+            public static int Switch2ID(IntPtr Self)
             {
-                get => GetIVar("@switch2_id").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@switch2_id"));
             }
-            public Ruby.Integer VariableID
+            public static int VariableID(IntPtr Self)
             {
-                get => GetIVar("@variable_id").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@variable_id"));
             }
-            public Ruby.Integer VariableValue
+            public static int VariableValue(IntPtr Self)
             {
-                get => GetIVar("@variable_value").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@variable_value"));
             }
-            public Ruby.String SelfSwitchCh
+            public static string SelfSwitchCh(IntPtr Self)
             {
-                get => GetIVar("@self_switch_ch").Convert<Ruby.String>();
+                return Ruby.String.FromPtr(Ruby.GetIVar(Self, "@self_switch_ch"));
             }
         }
     }

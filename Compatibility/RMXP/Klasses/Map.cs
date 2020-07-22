@@ -5,61 +5,58 @@ namespace RPGStudioMK.Compatibility
 {
     public static partial class RMXP
     {
-        public class Map : Ruby.Object
+        public static class Map
         {
-            public new static string KlassName = "RPG::Map";
-            public new static Ruby.Class Class { get => (Ruby.Class) GetKlass(KlassName); }
-
-            public Map(IntPtr Pointer) : base(Pointer, true) { }
+            public static IntPtr Class;
 
             public static void Create()
             {
-                Ruby.Class c = Ruby.Class.DefineClass<Map>("Map", null, "RPG");
+                Class = Ruby.Class.Define("Map", RPG.Module);
             }
 
-            public Ruby.Integer TilesetID
+            public static int TilesetID(IntPtr Self)
             {
-                get => GetIVar("@tileset_id").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@tileset_id"));
             }
-            public Ruby.Integer Width
+            public static int Width(IntPtr Self)
             {
-                get => GetIVar("@width").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@width"));
             }
-            public Ruby.Integer Height
+            public static int Height(IntPtr Self)
             {
-                get => GetIVar("@height").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@height"));
             }
-            public bool AutoplayBGM
+            public static bool AutoplayBGM(IntPtr Self)
             {
-                get => GetIVar("@autoplay_bgm") == Ruby.True;
+                return Ruby.GetIVar(Self, "@autoplay_bgm") == Ruby.True;
             }
-            public AudioFile BGM
+            public static IntPtr BGM(IntPtr Self)
             {
-                get => GetIVar("@bgm").Convert<AudioFile>();
+                return Ruby.GetIVar(Self, "@bgm");
             }
-            public bool AutoplayBGS
+            public static bool AutoplayBGS(IntPtr Self)
             {
-                get => GetIVar("@autoplay_bgs") == Ruby.True;
+                return Ruby.GetIVar(Self, "@autoplay_bgs") == Ruby.True;
             }
-            public AudioFile BGS
+            public static IntPtr BGS(IntPtr Self)
             {
-                get => GetIVar("@bgs").Convert<AudioFile>();
+                return Ruby.GetIVar(Self, "@bgs");
             }
-            public Ruby.Array EncounterList
+            public static IntPtr EncounterList(IntPtr Self)
             {
-                get => GetIVar("@encounter_list").Convert<Ruby.Array>();
+                return Ruby.GetIVar(Self, "@encounter_list");
             }
-            public Ruby.Integer EncounterStep
+            public static int EncounterStep(IntPtr Self)
             {
-                get => GetIVar("@encounter_step").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@encounter_step"));
             }
-            public Table Data
+            public static IntPtr Data(IntPtr Self)
             {
-                get => GetIVar("@data").Convert<Table>();
+                return Ruby.GetIVar(Self, "@data");
             }
-            public Ruby.Hash Events
+            public static IntPtr Events(IntPtr Self)
             {
-                get => GetIVar("@events").Convert<Ruby.Hash>();
+                return Ruby.GetIVar(Self, "@events");
             }
         }
     }

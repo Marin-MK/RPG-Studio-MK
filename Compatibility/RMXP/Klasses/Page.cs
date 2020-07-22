@@ -5,69 +5,66 @@ namespace RPGStudioMK.Compatibility
 {
     public static partial class RMXP
     {
-        public class Page : Ruby.Object
+        public static class Page
         {
-            public new static string KlassName = "RPG::Event::Page";
-            public new static Ruby.Class Class { get => (Ruby.Class) GetKlass(KlassName); }
-
-            public Page(IntPtr Pointer) : base(Pointer, true) { }
+            public static IntPtr Class;
 
             public static void Create()
             {
-                Ruby.Class c = Ruby.Class.DefineClass<Page>("Page", null, "RPG::Event");
+                Class = Ruby.Class.Define("Page", RMXP.Event.Class);
             }
 
-            public Condition Condition
+            public static IntPtr Condition(IntPtr Self)
             {
-                get => GetIVar("@condition").Convert<Condition>();
+                return Ruby.GetIVar(Self, "@condition");
             }
-            public Graphic Graphic
+            public static IntPtr Graphic(IntPtr Self)
             {
-                get => GetIVar("@graphic").Convert<Graphic>();
+                return Ruby.GetIVar(Self, "@graphic");
             }
-            public Ruby.Integer MoveType
+            public static int MoveType(IntPtr Self)
             {
-                get => GetIVar("@move_type").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@move_type"));
             }
-            public Ruby.Integer MoveSpeed
+            public static int MoveSpeed(IntPtr Self)
             {
-                get => GetIVar("@move_speed").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@move_speed"));
             }
-            public Ruby.Integer MoveFrequency
+            public static int MoveFrequency(IntPtr Self)
             {
-                get => GetIVar("@move_frequency").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@move_frequency"));
             }
-            public MoveRoute MoveRoute
+            public static IntPtr MoveRoute(IntPtr Self)
             {
-                get => GetIVar("@move_route").Convert<MoveRoute>();
+                return Ruby.GetIVar(Self, "@move_route");
             }
-            public bool WalkAnime
+            public static bool WalkAnime(IntPtr Self)
             {
-                get => GetIVar("@walk_anime") == Ruby.True;
+                return Ruby.GetIVar(Self, "@walk_anime") == Ruby.True;
             }
-            public bool StepAnime
+            public static bool StepAnime(IntPtr Self)
             {
-                get => GetIVar("@step_anime") == Ruby.True;
+                return Ruby.GetIVar(Self, "@step_anime") == Ruby.True;
             }
-            public bool DirectionFix
+            public static bool DirectionFix(IntPtr Self)
             {
-                get => GetIVar("@direction_fix") == Ruby.True;
+                return Ruby.GetIVar(Self, "@direction_fix") == Ruby.True;
             }
-            public bool Through
+            public static bool Through(IntPtr Self)
             {
-                get => GetIVar("@through") == Ruby.True;
+                return Ruby.GetIVar(Self, "@through") == Ruby.True;
             }
-            public bool AlwaysOnTop
+            public static bool AlwaysOnTop(IntPtr Self)
             {
-                get => GetIVar("@always_on_top") == Ruby.True;
+                return Ruby.GetIVar(Self, "@always_on_top") == Ruby.True;
             }
-            public Ruby.Integer Trigger
+            public static int Trigger(IntPtr Self)
             {
-                get => GetIVar("@trigger").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@trigger"));
             }
-            public Ruby.Array List
+            public static IntPtr List(IntPtr Self)
             {
-                get => GetIVar("@list").Convert<Ruby.Array>();
+                return Ruby.GetIVar(Self, "@list");
             }
         }
     }

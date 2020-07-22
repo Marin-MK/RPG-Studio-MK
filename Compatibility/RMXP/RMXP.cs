@@ -75,17 +75,17 @@ namespace RPGStudioMK.Compatibility
                 Names.Add(n);
             }
             // Load MapInfos.rxdata
-            Ruby.File infofile = new Ruby.File(parent + "/MapInfos.rxdata", "rb");
-            Ruby.Hash infos = Ruby.Marshal.Load(infofile).Convert<Ruby.Hash>();
-            infos.Pin();
-            Ruby.Array keys = infos.Keys;
-            keys.Pin();
-            infofile.Close();
+            IntPtr infofile = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(parent + "/MapInfos.rxdata"), Ruby.String.ToPtr("rb"));
+            IntPtr infos = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", infofile);
+            Ruby.Pin(infos);
+            IntPtr keys = Ruby.Funcall(infos, "keys");
+            Ruby.Pin(keys);
+            Ruby.Funcall(infofile, "close");
             // Load Tilesets.rxdata
-            Ruby.File tilesetfile = new Ruby.File(parent + "/Tilesets.rxdata", "rb");
-            Ruby.Array tilesets = Ruby.Marshal.Load(tilesetfile).Convert<Ruby.Array>();
-            tilesets.Pin();
-            tilesetfile.Close();
+            IntPtr tilesetfile = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(parent + "/Tilesets.rxdata"), Ruby.String.ToPtr("rb"));
+            IntPtr tilesets = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", tilesetfile);
+            Ruby.Pin(tilesets);
+            Ruby.Funcall(tilesetfile, "close");
             Action<int> ImportMap = null;
             ImportMap = delegate (int MapIndex)
             {
@@ -94,30 +94,30 @@ namespace RPGStudioMK.Compatibility
                 string file = Files[MapIndex];
                 while (file.Contains('\\')) file = file.Replace('\\', '/');
                 // Load Map.rxdata
-                Ruby.File f = new Ruby.File(file, "rb");
-                Map map = Ruby.Marshal.Load(f).Convert<Map>();
-                map.Pin();
-                f.Close();
+                IntPtr f = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(file), Ruby.String.ToPtr("rb"));
+                IntPtr map = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", f);
+                Ruby.Pin(map);
+                Ruby.Funcall(f, "close");
                 int id = Convert.ToInt32(file.Substring(file.Length - 10, 3));
                 // Link Map with its MapInfo
-                MapInfo info = null;
-                for (int i = 0; i < keys.Length; i++)
+                IntPtr info = IntPtr.Zero;
+                for (int i = 0; i < Ruby.Array.Length(keys); i++)
                 {
-                    if (keys[i] != Ruby.Nil && keys[i].Convert<Ruby.Integer>() == id)
+                    if (Ruby.Array.Get(keys, i) == Ruby.Integer.ToPtr(id))
                     {
-                        info = infos[keys[i]].Convert<MapInfo>();
+                        info = Ruby.Funcall(infos, "[]", Ruby.Array.Get(keys, i));
                     }
                 }
-                if (info == null) throw new Exception($"No MapInfo could be found for map ({MapName}).");
+                if (info == IntPtr.Zero) throw new Exception($"No MapInfo could be found for map ({MapName}).");
                 Game.Map data = new Game.Map();
                 data.ID = Editor.GetFreeMapID();
-                data.DisplayName = info.Name.ToString();
+                data.DisplayName = MapInfo.Name(info);
                 data.DevName = data.DisplayName;
-                data.Width = map.Width.ToInt32();
-                data.Height = map.Height.ToInt32();
-                Tileset tileset = tilesets[map.TilesetID].Convert<Tileset>();
-                tileset.Pin();
-                string tilesetname = tileset.Name.ToString();
+                data.Width = Map.Width(map);
+                data.Height = Map.Height(map);
+                IntPtr tileset = Ruby.Array.Get(tilesets, Map.TilesetID(map));
+                Ruby.Pin(tileset);
+                string tilesetname = Tileset.Name(tileset);
                 Action cont = null;
                 Game.Tileset existing = Data.Tilesets.Find(t => t != null && (t.Name == tilesetname || t.GraphicName == tilesetname));
                 bool exist = existing != null;
@@ -125,7 +125,7 @@ namespace RPGStudioMK.Compatibility
                 if (exist) message += "The tileset of the imported map has the same name as an already-defined tileset in " +
                     $"the database ({existing.Name}).\n" +
                     "Would you like to use this tileset, choose a different one, or import it?";
-                else message += $"No tilesets similar to the one used in the imported map ({tileset.Name}) could be found.\n" +
+                else message += $"No tilesets similar to the one used in the imported map ({Tileset.Name(tileset)}) could be found.\n" +
                     "Would you like to pick an existing tileset, or import it?";
                 List<string> Options = new List<string>();
                 if (exist) Options.Add("Use this");
@@ -152,8 +152,8 @@ namespace RPGStudioMK.Compatibility
                             else // Didn't pick tileset; cancel importing
                             {
                                 data = null;
-                                tileset.Unpin();
-                                map.Unpin();
+                                Ruby.Unpin(tileset);
+                                Ruby.Unpin(map);
                                 MessageBox b = new MessageBox("Warning", $"Importing Map ({MapName})...\n\nAs no tileset was chosen, this map will not be imported.", IconType.Warning);
                                 b.OnButtonPressed += delegate (BaseEventArgs e)
                                 {
@@ -164,7 +164,7 @@ namespace RPGStudioMK.Compatibility
                     }
                     else if (Options[box.Result] == "Import it") // Import the tileset
                     {
-                        string filename = root + "/Graphics/Tilesets/" + tileset.TilesetName.ToString() + ".png";
+                        string filename = root + "/Graphics/Tilesets/" + Tileset.TilesetName(tileset) + ".png";
                         if (!File.Exists(filename)) // Graphic doesn't exist
                         {
                             MessageBox b = new MessageBox("Error", $"Importing Map ({MapName})...\n\nThe tileset graphic could not be found. The tileset cannot be imported, and thus this map will not be imported.", IconType.Error);
@@ -193,21 +193,21 @@ namespace RPGStudioMK.Compatibility
                             else
                             {
                                 string destination = Data.ProjectPath + "/gfx/tilesets/";
-                                string name = tileset.TilesetName.ToString();
-                                if (File.Exists(destination + tileset.TilesetName.ToString() + ".png"))
+                                string name = Tileset.TilesetName(tileset);
+                                if (File.Exists(destination + Tileset.TilesetName(tileset) + ".png"))
                                 {
                                     int i = 0;
                                     do
                                     {
                                         i++;
-                                    } while (File.Exists(destination + tileset.TilesetName.ToString() + " (" + i.ToString() + ").png"));
-                                    destination += tileset.TilesetName.ToString() + " (" + i.ToString() + ").png";
+                                    } while (File.Exists(destination + Tileset.TilesetName(tileset) + " (" + i.ToString() + ").png"));
+                                    destination += Tileset.TilesetName(tileset) + " (" + i.ToString() + ").png";
                                     name += " (" + i.ToString() + ")";
                                 }
-                                else destination += tileset.TilesetName.ToString() + ".png";
+                                else destination += Tileset.TilesetName(tileset) + ".png";
                                 File.Copy(filename, destination);
                                 Game.Tileset set = new Game.Tileset();
-                                set.Name = tileset.Name.ToString();
+                                set.Name = Tileset.Name(tileset);
                                 set.GraphicName = name;
                                 set.ID = Editor.GetFreeTilesetID();
                                 int tilecount = 8 * bmp.Height / 32;
@@ -241,12 +241,13 @@ namespace RPGStudioMK.Compatibility
                     data.Layers = new List<Layer>();
 
                     bool RemovedAutotiles = false;
-                    bool RemovedEvents = map.Events.Length > 0;
+                    bool RemovedEvents = Ruby.Integer.FromPtr(Ruby.Funcall(Map.Events(map), "length")) > 0;
 
-                    Table Tiles = map.Data;
-                    int XSize = Tiles.XSize.ToInt32();
-                    int YSize = Tiles.YSize.ToInt32();
-                    int ZSize = Tiles.ZSize.ToInt32();
+                    IntPtr Tiles = Map.Data(map);
+                    int XSize = Table.XSize(Tiles);
+                    int YSize = Table.YSize(Tiles);
+                    int ZSize = Table.ZSize(Tiles);
+                    IntPtr tiledata = Table.Data(Tiles);
                     for (int z = 0; z < ZSize; z++)
                     {
                         Layer layer = new Layer($"Layer {z + 1}");
@@ -255,7 +256,7 @@ namespace RPGStudioMK.Compatibility
                             for (int x = 0; x < XSize; x++)
                             {
                                 int idx = x + y * XSize + z * XSize * YSize;
-                                int tileid = Tiles[idx].Convert<Ruby.Integer>();
+                                int tileid = (int) Ruby.Integer.FromPtr(Ruby.Array.Get(tiledata, idx));
                                 if (tileid < 384) RemovedAutotiles = true;
                                 if (tileid == 0) layer.Tiles.Add(null);
                                 else layer.Tiles.Add(new TileData() { TileType = TileType.Tileset, Index = 0, ID = tileid - 384 });
@@ -264,8 +265,8 @@ namespace RPGStudioMK.Compatibility
                         data.Layers.Add(layer);
                     }
 
-                    map.Unpin();
-                    tileset.Unpin();
+                    Ruby.Unpin(map);
+                    Ruby.Unpin(tileset);
 
                     Editor.AddMap(data);
 
@@ -299,9 +300,9 @@ namespace RPGStudioMK.Compatibility
                                 Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(data);
                             }
                         };
-                        keys.Unpin();
-                        infos.Unpin();
-                        tilesets.Unpin();
+                        Ruby.Unpin(keys);
+                        Ruby.Unpin(infos);
+                        Ruby.Unpin(tileset);
                         Cleanup();
                     }
                 });

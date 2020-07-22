@@ -5,41 +5,38 @@ namespace RPGStudioMK.Compatibility
 {
     public static partial class RMXP
     {
-        public class MapInfo : Ruby.Object
+        public static class MapInfo
         {
-            public new static string KlassName = "RPG::MapInfo";
-            public new static Ruby.Class Class { get => (Ruby.Class) GetKlass(KlassName); }
-
-            public MapInfo(IntPtr Pointer) : base(Pointer, true) { }
+            public static IntPtr Class;
 
             public static void Create()
             {
-                Ruby.Class c = Ruby.Class.DefineClass<MapInfo>("MapInfo", null, "RPG");
+                Class = Ruby.Class.Define("MapInfo", RPG.Module);
             }
 
-            public Ruby.String Name
+            public static string Name(IntPtr Self)
             {
-                get => GetIVar("@name").Convert<Ruby.String>();
+                return Ruby.String.FromPtr(Ruby.GetIVar(Self, "@name"));
             }
-            public Ruby.Integer ParentID
+            public static int ParentID(IntPtr Self)
             {
-                get => GetIVar("@parent_id").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@parent_id"));
             }
-            public Ruby.Integer Order
+            public static int Order(IntPtr Self)
             {
-                get => GetIVar("@order").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@order"));
             }
-            public bool Expanded
+            public static bool Expanded(IntPtr Self)
             {
-                get => GetIVar("@expanded") == Ruby.True;
+                return Ruby.GetIVar(Self, "@expanded") == Ruby.True;
             }
-            public Ruby.Integer ScrollX
+            public static int ScrollX(IntPtr Self)
             {
-                get => GetIVar("@scroll_x").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@scroll_x"));
             }
-            public Ruby.Integer ScrollY
+            public static int ScrollY(IntPtr Self)
             {
-                get => GetIVar("@scroll_y").Convert<Ruby.Integer>();
+                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@scroll_y"));
             }
         }
     }
