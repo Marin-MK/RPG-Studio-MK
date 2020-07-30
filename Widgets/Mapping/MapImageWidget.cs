@@ -162,7 +162,7 @@ namespace RPGStudioMK.Widgets
 
         public Bitmap GetLayerBitmap(int Layer)
         {
-            LargeBitmap bmp = new LargeBitmap(MapData.Width * 32, MapData.Height * 32, 16 * 32, 16 * 32); // 16x16 tile chunks
+            Bitmap bmp = new Bitmap(MapData.Width * 32, MapData.Height * 32, 16 * 32, 16 * 32); // 16x16 tile chunks
             bmp.Unlock();
             // Iterate through all vertical tiles
             for (int y = 0; y < MapData.Height; y++)

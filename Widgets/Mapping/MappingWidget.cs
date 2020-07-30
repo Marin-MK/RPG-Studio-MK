@@ -149,10 +149,10 @@ namespace RPGStudioMK.Widgets
         public void SetMap(Game.Map Map)
         {
             this.Map = Map;
-            MapImageWidget.LoadLayers(Map);
             MapViewerTiles.SetMap(Map);
-            //MapViewerEvents.SetMap(Map);
             MapViewerConnections.SetMap(Map);
+            MapImageWidget.LoadLayers(Map);
+            //MapViewerEvents.SetMap(Map);
             //MapViewerEncounters.SetMap(Map);
             //MapViewerProperties.SetMap(Map);
             //if (Submodes.SelectedIndex != -1) ActiveMapViewer.PositionMap();
