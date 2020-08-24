@@ -20,25 +20,6 @@ namespace RPGStudioMK
         /// </summary>
         public static bool UnsavedChanges = false;
 
-        private static Platform? _platform;
-        /// <summary>
-        /// The current OS.
-        /// </summary>
-        public static Platform Platform
-        {
-            get
-            {
-                if (_platform != null) return (Platform) _platform;
-                string p = SDL2.SDL.SDL_GetPlatform();
-                if (p == "Windows") _platform = Platform.Windows;
-                if (p == "Linux") _platform = Platform.Linux;
-                if (p == "Mac OS X") _platform = Platform.MacOS;
-                if (p == "iOS") _platform = Platform.IOS;
-                if (p == "Android") _platform = Platform.Android;
-                return (Platform) _platform;
-            }
-        }
-
         /// <summary>
         /// The main Window object for the editor.
         /// </summary>
@@ -491,7 +472,7 @@ namespace RPGStudioMK
         /// </summary>
         public static void StartGame()
         {
-            //peridot.Program.EmbedGame(MainWindow, Data.ProjectPath);
+            peridot.Program.EmbedGame(MainWindow, Data.ProjectPath);
         }
 
         /// <summary>
@@ -839,15 +820,5 @@ namespace RPGStudioMK
         /// Whether to show the map grid overlay.
         /// </summary>
         public bool ShowGrid = true;
-    }
-
-    public enum Platform
-    {
-        Unknown,
-        Windows,
-        Linux,
-        MacOS,
-        IOS,
-        Android
     }
 }

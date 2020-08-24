@@ -169,16 +169,16 @@ namespace RPGStudioMK
         /// </summary>
         public static void OpenLink(string url)
         {
-            if (Editor.Platform == Platform.Windows)
+            if (odl.Graphics.Platform == Platform.Windows)
             {
                 url = url.Replace("&", "^&");
                 Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
             }
-            else if (Editor.Platform == Platform.Linux)
+            else if (odl.Graphics.Platform == Platform.Linux)
             {
                 Process.Start("xdg-open", url);
             }
-            else if (Editor.Platform == Platform.MacOS)
+            else if (odl.Graphics.Platform == Platform.MacOS)
             {
                 Process.Start("open", url);
             }
@@ -200,16 +200,16 @@ namespace RPGStudioMK
         /// </summary>
         public static void OpenFolder(string Folder)
         {
-            string path = FormatPath(Folder, Editor.Platform);
-            if (Editor.Platform == Platform.Windows)
+            string path = FormatPath(Folder, odl.Graphics.Platform);
+            if (odl.Graphics.Platform == Platform.Windows)
             {
                 Process.Start("explorer.exe", path);
             }
-            else if (Editor.Platform == Platform.Linux)
+            else if (odl.Graphics.Platform == Platform.Linux)
             {
                 Process.Start("xdg-open", path);
             }
-            else if (Editor.Platform == Platform.MacOS)
+            else if (odl.Graphics.Platform == Platform.MacOS)
             {
                 Process.Start("open", $"-R \"{path}\"");
             }

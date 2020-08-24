@@ -33,7 +33,7 @@ namespace RPGStudioMK.Widgets
             Sprites["logo"].X = 33;
             Sprites["logo"].Y = 4;
             Sprites["text"] = new Sprite(this.Viewport, new Bitmap(360, 160));
-            Sprites["text"].Bitmap.Font = Font.Get("Fonts/Ubuntu-R", 18); ;
+            Sprites["text"].Bitmap.Font = Font.Get("Fonts/Ubuntu-B", 18);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.DrawText(Editor.GetVersionString(), 348, 88, Color.WHITE, DrawOptions.RightAlign);
             Sprites["text"].Bitmap.Font = Font.Get("Fonts/Ubuntu-B", 22);
@@ -143,7 +143,7 @@ namespace RPGStudioMK.Widgets
             Sprites["files"].Bitmap = new Bitmap(314, 48 * RecentCapacity);
             Sprites["files"].Bitmap.Unlock();
             Font boldfont = Font.Get("Fonts/Ubuntu-B", 16);
-            Font regularfont = Font.Get("Fonts/Ubuntu-R", 14);
+            Font regularfont = Font.Get("Fonts/ProductSans-M", 14);
             for (int i = 0; i < Editor.GeneralSettings.RecentFiles.Count; i++)
             {
                 if (i >= RecentCapacity) break;

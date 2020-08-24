@@ -47,19 +47,19 @@ namespace RPGStudioMK
             if (fw.Contains(".NETCoreApp")) Framework = ".NET Core ";
             else if (fw.Contains(".NETFrameworkApp")) Framework = ".NET Framework ";
             Framework += Environment.Version.ToString();
+            Console.WriteLine($"Editor Version: {Editor.GetVersionString()}");
             Console.WriteLine($"Framework: {Framework}");
             Console.WriteLine($"SDL Version: {SDL2.SDL.SDL_MAJOR_VERSION}.{SDL2.SDL.SDL_MINOR_VERSION}.{SDL2.SDL.SDL_PATCHLEVEL}");
             Console.WriteLine($"SDL_image Version: {SDL2.SDL_image.SDL_IMAGE_MAJOR_VERSION}.{SDL2.SDL_image.SDL_IMAGE_MINOR_VERSION}.{SDL2.SDL_image.SDL_IMAGE_PATCHLEVEL}");
             Console.WriteLine($"SDL_ttf Version: {SDL2.SDL_ttf.SDL_TTF_MAJOR_VERSION}.{SDL2.SDL_ttf.SDL_TTF_MINOR_VERSION}.{SDL2.SDL_ttf.SDL_TTF_PATCHLEVEL}");
-            Console.WriteLine($"OS Platform: {os.Platform} ({Editor.Platform}) {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}");
+            Graphics.Start();
+            Audio.Start();
+            Console.WriteLine($"OS Platform: {os.Platform} ({odl.Graphics.Platform}) {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}");
             Console.WriteLine($"OS Version: {os.VersionString}");
-            Console.WriteLine($"Editor Version: {Editor.GetVersionString()}");
             // Clean up these strings as they're never going to be used again, and would otherwise exist as long as the program is running.
             // Yeah, I actually care about two small strings not being GC'd in a huge graphical application.
             Framework = null;
             fw = null;
-            Graphics.Start();
-            Audio.Start();
             MainEditorWindow win = new MainEditorWindow(ProjectFile);
             win.Show();
             Widgets.MessageBox ErrorBox = null;

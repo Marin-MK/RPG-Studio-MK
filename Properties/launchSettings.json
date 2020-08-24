@@ -1,8 +1,7 @@
 {
   "profiles": {
     "RPGStudioMK": {
-      "commandName": "Project",
-      "commandLineArgs": "D:/Desktop/MK/mk/project.mkproj"
+      "commandName": "Project"
     }
   }
 }
