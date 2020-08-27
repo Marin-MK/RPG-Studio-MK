@@ -66,7 +66,7 @@ namespace RPGStudioMK.Widgets
                 }
                 RenameBox.Dispose();
                 RenameBox = null;
-                Input.SetCursor(SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
+                Input.SetCursor(odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
                 Window.UI.SetSelectedWidget((Parent.Parent as LayerPanel));
             };
             RenameBox.TextArea.OnWidgetSelected(new BaseEventArgs());

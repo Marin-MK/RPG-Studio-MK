@@ -49,9 +49,9 @@ namespace RPGStudioMK
             Framework += Environment.Version.ToString();
             Console.WriteLine($"Editor Version: {Editor.GetVersionString()}");
             Console.WriteLine($"Framework: {Framework}");
-            Console.WriteLine($"SDL Version: {SDL2.SDL.SDL_MAJOR_VERSION}.{SDL2.SDL.SDL_MINOR_VERSION}.{SDL2.SDL.SDL_PATCHLEVEL}");
-            Console.WriteLine($"SDL_image Version: {SDL2.SDL_image.SDL_IMAGE_MAJOR_VERSION}.{SDL2.SDL_image.SDL_IMAGE_MINOR_VERSION}.{SDL2.SDL_image.SDL_IMAGE_PATCHLEVEL}");
-            Console.WriteLine($"SDL_ttf Version: {SDL2.SDL_ttf.SDL_TTF_MAJOR_VERSION}.{SDL2.SDL_ttf.SDL_TTF_MINOR_VERSION}.{SDL2.SDL_ttf.SDL_TTF_PATCHLEVEL}");
+            Console.WriteLine($"SDL Version: {odl.SDL2.SDL.SDL_MAJOR_VERSION}.{odl.SDL2.SDL.SDL_MINOR_VERSION}.{odl.SDL2.SDL.SDL_PATCHLEVEL}");
+            Console.WriteLine($"SDL_image Version: {odl.SDL2.SDL_image.SDL_IMAGE_MAJOR_VERSION}.{odl.SDL2.SDL_image.SDL_IMAGE_MINOR_VERSION}.{odl.SDL2.SDL_image.SDL_IMAGE_PATCHLEVEL}");
+            Console.WriteLine($"SDL_ttf Version: {odl.SDL2.SDL_ttf.SDL_TTF_MAJOR_VERSION}.{odl.SDL2.SDL_ttf.SDL_TTF_MINOR_VERSION}.{odl.SDL2.SDL_ttf.SDL_TTF_PATCHLEVEL}");
             Graphics.Start();
             Audio.Start();
             Console.WriteLine($"OS Platform: {os.Platform} ({odl.Graphics.Platform}) {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}");

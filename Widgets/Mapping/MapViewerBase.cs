@@ -212,7 +212,7 @@ namespace RPGStudioMK.Widgets
             MouseMoving(e);
             if (e.MiddleButton != e.OldMiddleButton && e.MiddleButton && WidgetIM.Hovering)
             {
-                Input.SetCursor(SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_SIZEALL);
+                Input.SetCursor(odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_SIZEALL);
                 this.MiddleMouseScrolling = true;
                 LastMouseX = e.X;
                 LastMouseY = e.Y;
@@ -226,7 +226,7 @@ namespace RPGStudioMK.Widgets
             base.MouseUp(e);
             if (e.MiddleButton != e.OldMiddleButton && !e.MiddleButton)
             {
-                Input.SetCursor(SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
+                Input.SetCursor(odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
                 this.MiddleMouseScrolling = false;
                 Input.ReleaseMouse();
             }
@@ -235,7 +235,7 @@ namespace RPGStudioMK.Widgets
         public override void MouseWheel(MouseEventArgs e)
         {
             base.MouseWheel(e);
-            if (!Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LCTRL) && !Input.Press(SDL2.SDL.SDL_Keycode.SDLK_RCTRL)) return;
+            if (!Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LCTRL) && !Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RCTRL)) return;
             if (e.WheelY > 0) Editor.MainWindow.StatusBar.ZoomControl.IncreaseZoom();
             else Editor.MainWindow.StatusBar.ZoomControl.DecreaseZoom();
         }

@@ -136,22 +136,22 @@ namespace RPGStudioMK
         public bool TestSDL()
         {
             OpenEditor = false;
-            SDL2.SDL.SDL_Init(SDL2.SDL.SDL_INIT_EVERYTHING);
-            string Err = SDL2.SDL.SDL_GetError();
+            odl.SDL2.SDL.SDL_Init(odl.SDL2.SDL.SDL_INIT_EVERYTHING);
+            string Err = odl.SDL2.SDL.SDL_GetError();
             if (!string.IsNullOrEmpty(Err)) return Error(Err);
-            SDL2.SDL_image.IMG_Init(SDL2.SDL_image.IMG_InitFlags.IMG_INIT_PNG);
-            Err = SDL2.SDL.SDL_GetError();
+            odl.SDL2.SDL_image.IMG_Init(odl.SDL2.SDL_image.IMG_INIT_PNG);
+            Err = odl.SDL2.SDL.SDL_GetError();
             if (!string.IsNullOrEmpty(Err)) return Error(Err);
-            SDL2.SDL_ttf.TTF_Init();
-            Err = SDL2.SDL.SDL_GetError();
+            odl.SDL2.SDL_ttf.TTF_Init();
+            Err = odl.SDL2.SDL.SDL_GetError();
             if (!string.IsNullOrEmpty(Err)) return Error(Err);
-            SDL2.SDL_ttf.TTF_Quit();
-            SDL2.SDL_image.IMG_Quit();
-            SDL2.SDL.SDL_Quit();
+            odl.SDL2.SDL_ttf.TTF_Quit();
+            odl.SDL2.SDL_image.IMG_Quit();
+            odl.SDL2.SDL.SDL_Quit();
             Console.WriteLine("SDL libraries initialized successfully.");
-            Console.WriteLine($"SDL Version: {SDL2.SDL.SDL_MAJOR_VERSION}.{SDL2.SDL.SDL_MINOR_VERSION}.{SDL2.SDL.SDL_PATCHLEVEL}");
-            Console.WriteLine($"SDL_image Version: {SDL2.SDL_image.SDL_IMAGE_MAJOR_VERSION}.{SDL2.SDL_image.SDL_IMAGE_MINOR_VERSION}.{SDL2.SDL_image.SDL_IMAGE_PATCHLEVEL}");
-            Console.WriteLine($"SDL_ttf Version: {SDL2.SDL_ttf.SDL_TTF_MAJOR_VERSION}.{SDL2.SDL_ttf.SDL_TTF_MINOR_VERSION}.{SDL2.SDL_ttf.SDL_TTF_PATCHLEVEL}");
+            Console.WriteLine($"SDL Version: {odl.SDL2.SDL.SDL_MAJOR_VERSION}.{odl.SDL2.SDL.SDL_MINOR_VERSION}.{odl.SDL2.SDL.SDL_PATCHLEVEL}");
+            Console.WriteLine($"SDL_image Version: {odl.SDL2.SDL_image.SDL_IMAGE_MAJOR_VERSION}.{odl.SDL2.SDL_image.SDL_IMAGE_MINOR_VERSION}.{odl.SDL2.SDL_image.SDL_IMAGE_PATCHLEVEL}");
+            Console.WriteLine($"SDL_ttf Version: {odl.SDL2.SDL_ttf.SDL_TTF_MAJOR_VERSION}.{odl.SDL2.SDL_ttf.SDL_TTF_MINOR_VERSION}.{odl.SDL2.SDL_ttf.SDL_TTF_PATCHLEVEL}");
             return true;
         }
 

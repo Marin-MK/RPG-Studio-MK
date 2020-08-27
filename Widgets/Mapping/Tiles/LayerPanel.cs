@@ -205,11 +205,11 @@ namespace RPGStudioMK.Widgets
         {
             if (this.SelectedWidget)
             {
-                if (SelectedLayer > 0 && Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_DOWN))
+                if (SelectedLayer > 0 && Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_DOWN))
                 {
                     layerwidget.SetSelectedLayer(SelectedLayer - 1);
                 }
-                if (SelectedLayer < this.Map.Layers.Count - 1 && Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_UP))
+                if (SelectedLayer < this.Map.Layers.Count - 1 && Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_UP))
                 {
                     layerwidget.SetSelectedLayer(SelectedLayer + 1);
                 }

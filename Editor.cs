@@ -75,7 +75,7 @@ namespace RPGStudioMK
             // Changed in Project Settings -> Package -> Package Version (stored in .csproj)
             Assembly assembly = Assembly.GetExecutingAssembly();
             string Version = FileVersionInfo.GetVersionInfo(assembly.Location).ProductVersion;
-            if (string.IsNullOrEmpty(Version)) Version = "0.0.1";
+            if (string.IsNullOrEmpty(Version)) Version = "0.0.0";
             string VersionName = "Version";
             if (Version[0] == '0') VersionName = "Alpha";
             return VersionName + " " + Version;

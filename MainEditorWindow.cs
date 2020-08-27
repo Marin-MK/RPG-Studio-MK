@@ -61,15 +61,15 @@ namespace RPGStudioMK
             this.OnClosing += delegate (BoolEventArgs e)
             {
                 int x, y;
-                SDL2.SDL.SDL_GetWindowPosition(this.SDL_Window, out x, out y);
+                odl.SDL2.SDL.SDL_GetWindowPosition(this.SDL_Window, out x, out y);
                 int w, h;
-                SDL2.SDL.SDL_GetWindowSize(this.SDL_Window, out w, out h);
+                odl.SDL2.SDL.SDL_GetWindowSize(this.SDL_Window, out w, out h);
                 Editor.GeneralSettings.LastX = x;
                 Editor.GeneralSettings.LastY = y;
                 Editor.GeneralSettings.LastWidth = w;
                 Editor.GeneralSettings.LastHeight = h;
-                SDL2.SDL.SDL_WindowFlags flags = (SDL2.SDL.SDL_WindowFlags) SDL2.SDL.SDL_GetWindowFlags(this.SDL_Window);
-                Editor.GeneralSettings.WasMaximized = (flags & SDL2.SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED) == SDL2.SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED;
+                odl.SDL2.SDL.SDL_WindowFlags flags = (odl.SDL2.SDL.SDL_WindowFlags) odl.SDL2.SDL.SDL_GetWindowFlags(this.SDL_Window);
+                Editor.GeneralSettings.WasMaximized = (flags & odl.SDL2.SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED) == odl.SDL2.SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED;
                 Editor.DumpGeneralSettings();
 
                 if (Editor.InProject)

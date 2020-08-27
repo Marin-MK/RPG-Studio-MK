@@ -151,29 +151,29 @@ namespace RPGStudioMK.Widgets
             MapConnectionWidget mcw = Editor.MainWindow.MapWidget.MapViewerConnections.ConnectionWidgets.Find(w => w.MapID == this.MapConnection.MapID);
             if (this.Selected && (this.SelectedWidget || mcw.SelectedWidget))
             {
-                int Diff = Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(SDL2.SDL.SDL_Keycode.SDLK_RSHIFT) ? 10 : 1;
-                if (Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_LEFT) || TimerPassed("left"))
+                int Diff = Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT) ? 10 : 1;
+                if (Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_LEFT) || TimerPassed("left"))
                 {
                     if (TimerPassed("left")) ResetTimer("left");
                     SetOffset(this.MapConnection.RelativeX - Diff, this.MapConnection.RelativeY);
                 }
-                if (Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_RIGHT) || TimerPassed("right"))
+                if (Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_RIGHT) || TimerPassed("right"))
                 {
                     if (TimerPassed("right")) ResetTimer("right");
                     SetOffset(this.MapConnection.RelativeX + Diff, this.MapConnection.RelativeY);
                 }
-                if (Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_UP) || TimerPassed("up"))
+                if (Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_UP) || TimerPassed("up"))
                 {
                     if (TimerPassed("up")) ResetTimer("up");
                     SetOffset(this.MapConnection.RelativeX, this.MapConnection.RelativeY - Diff);
                 }
-                if (Input.Trigger(SDL2.SDL.SDL_Keycode.SDLK_DOWN) || TimerPassed("down"))
+                if (Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_DOWN) || TimerPassed("down"))
                 {
                     if (TimerPassed("down")) ResetTimer("down");
                     SetOffset(this.MapConnection.RelativeX, this.MapConnection.RelativeY + Diff);
                 }
 
-                if (Input.Press(SDL2.SDL.SDL_Keycode.SDLK_LEFT))
+                if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LEFT))
                 {
                     if (!TimerExists("left_initial") && !TimerExists("left"))
                     {
@@ -190,7 +190,7 @@ namespace RPGStudioMK.Widgets
                     if (TimerExists("left")) DestroyTimer("left");
                     if (TimerExists("left_initial")) DestroyTimer("left_initial");
                 }
-                if (Input.Press(SDL2.SDL.SDL_Keycode.SDLK_RIGHT))
+                if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RIGHT))
                 {
                     if (!TimerExists("right_initial") && !TimerExists("right"))
                     {
@@ -207,7 +207,7 @@ namespace RPGStudioMK.Widgets
                     if (TimerExists("right")) DestroyTimer("right");
                     if (TimerExists("right_initial")) DestroyTimer("right_initial");
                 }
-                if (Input.Press(SDL2.SDL.SDL_Keycode.SDLK_UP))
+                if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_UP))
                 {
                     if (!TimerExists("up_initial") && !TimerExists("up"))
                     {
@@ -224,7 +224,7 @@ namespace RPGStudioMK.Widgets
                     if (TimerExists("up")) DestroyTimer("up");
                     if (TimerExists("up_initial")) DestroyTimer("up_initial");
                 }
-                if (Input.Press(SDL2.SDL.SDL_Keycode.SDLK_DOWN))
+                if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_DOWN))
                 {
                     if (!TimerExists("down_initial") && !TimerExists("down"))
                     {

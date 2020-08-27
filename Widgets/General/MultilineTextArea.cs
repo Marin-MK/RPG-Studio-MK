@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using odl;
-using static SDL2.SDL;
+using static odl.SDL2.SDL;
 using amethyst;
 
 namespace RPGStudioMK.Widgets
