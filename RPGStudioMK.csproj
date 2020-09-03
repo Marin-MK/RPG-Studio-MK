@@ -29,10 +29,4 @@
     <ProjectReference Include="..\rubydotnet\rubydotnet.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Bass.Net">
-      <HintPath>bin\x64\Debug\netcoreapp3.1\Bass.Net.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

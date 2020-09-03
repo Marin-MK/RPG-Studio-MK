@@ -144,11 +144,12 @@ namespace RPGStudioMK.Widgets
             Sprites["files"].Bitmap.Unlock();
             Font boldfont = Font.Get("Fonts/Ubuntu-B", 16);
             Font regularfont = Font.Get("Fonts/ProductSans-M", 14);
-            for (int i = 0; i < Editor.GeneralSettings.RecentFiles.Count; i++)
+            int count = Editor.GeneralSettings.RecentFiles.Count;
+            for (int i = 0; i < count; i++)
             {
                 if (i >= RecentCapacity) break;
-                string name = Editor.GeneralSettings.RecentFiles[i][0];
-                string projectpath = Editor.GeneralSettings.RecentFiles[i][1];
+                string name = Editor.GeneralSettings.RecentFiles[count - i - 1][0];
+                string projectpath = Editor.GeneralSettings.RecentFiles[count - i - 1][1];
                 while (projectpath.Contains("\\")) projectpath = projectpath.Replace("\\", "/");
                 Sprites["files"].Bitmap.Font = boldfont;
                 Sprites["files"].Bitmap.DrawText(name, 0, 48 * i + 4, Color.WHITE);
@@ -362,7 +363,7 @@ namespace RPGStudioMK.Widgets
 
         public void LoadRecentProject(int index)
         {
-            if (!System.IO.File.Exists(Editor.GeneralSettings.RecentFiles[index][1]))
+            if (!System.IO.File.Exists(Editor.GeneralSettings.RecentFiles[Editor.GeneralSettings.RecentFiles.Count - index - 1][1]))
             {
                 MessageBox box = new MessageBox("Error", "No project file could be found in this folder.", IconType.Error);
                 box.OnClosed += delegate (BaseEventArgs e)
@@ -373,7 +374,7 @@ namespace RPGStudioMK.Widgets
                 };
                 return;
             }
-            Data.SetProjectPath(Editor.GeneralSettings.RecentFiles[index][1]);
+            Data.SetProjectPath(Editor.GeneralSettings.RecentFiles[Editor.GeneralSettings.RecentFiles.Count - index - 1][1]);
             ((MainEditorWindow) Window).CreateEditor();
             Editor.MakeRecentProject();
         }
