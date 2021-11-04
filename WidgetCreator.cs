@@ -136,13 +136,13 @@ namespace RPGStudioMK
                         w = new NumericBox(ParentWidget);
                         break;
                     case "textbox":
-                        w = new TextBox(ParentWidget);
+                        w = new Widgets.TextBox(ParentWidget);
                         break;
                     case "button":
                         w = new Button(ParentWidget);
                         break;
                     case "dropdown":
-                        w = new DropdownBox(ParentWidget);
+                        w = new Widgets.DropdownBox(ParentWidget);
                         break;
                     default:
                         throw new Exception($"Unknown widget type '{type}' in widget '{name}'");
@@ -294,8 +294,8 @@ namespace RPGStudioMK
                     }
                     if (type == "textbox")
                     {
-                        if (!string.IsNullOrEmpty(text)) ((TextBox) w).SetInitialText(text);
-                        if (font != null) ((TextBox) w).TextArea.SetFont(font);
+                        if (!string.IsNullOrEmpty(text)) ((Widgets.TextBox) w).SetText(text);
+                        if (font != null) ((Widgets.TextBox) w).TextArea.SetFont(font);
                     }
                     if (type == "numeric")
                     {
@@ -311,9 +311,9 @@ namespace RPGStudioMK
                     if (type == "dropdown")
                     {
                         if (items == null && idx != -1 || items != null && idx >= items.Count) throw new Exception($"Index cannot be greater than or equal to the total item size.");
-                        if (items != null) ((DropdownBox) w).SetItems(items);
-                        if (idx != -1) ((DropdownBox) w).SetSelectedIndex(idx);
-                        if (font != null) ((DropdownBox) w).SetFont(font);
+                        if (items != null) ((Widgets.DropdownBox) w).SetItems(items);
+                        if (idx != -1) ((Widgets.DropdownBox) w).SetSelectedIndex(idx);
+                        if (font != null) ((Widgets.DropdownBox) w).SetFont(font);
                     }
                 }
                 Widgets.Add(name, w);
@@ -419,9 +419,9 @@ namespace RPGStudioMK
         {
             if (!WidgetLookup.ContainsKey(Name)) return Name;
             Widget w = WidgetLookup[Name];
-            if (w is TextBox) return ((TextBox) w).Text;
+            if (w is Widgets.TextBox) return ((Widgets.TextBox) w).Text;
             if (w is NumericBox) return ((NumericBox) w).Value;
-            if (w is DropdownBox) return ((DropdownBox) w).SelectedIndex;
+            if (w is Widgets.DropdownBox) return ((Widgets.DropdownBox) w).SelectedIndex;
             throw new Exception($"Cannot replace '{Name}' with a valid value from widget type '{w.GetType().Name}'");
         }
 

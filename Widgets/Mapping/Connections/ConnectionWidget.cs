@@ -139,7 +139,7 @@ namespace RPGStudioMK.Widgets
             this.MapConnection = Connection;
             string text = "[Unknown Map]";
             if (Game.Data.Maps[Connection.MapID] != null) text = Game.Data.Maps[Connection.MapID].DevName;
-            MapBox.SetInitialText(text);
+            MapBox.SetText(text);
             XBox.SetValue(Connection.RelativeX);
             YBox.SetValue(Connection.RelativeY);
             Initialized = true;

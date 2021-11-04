@@ -134,9 +134,9 @@ namespace RPGStudioMK.Widgets
                     RemoveText();
                 }
             }
-            if (Editor.MainWindow.MapWidget != null || Editor.MainWindow.EventingWidget != null)
+            if (Editor.MainWindow.MapWidget != null)
             {
-                MapViewerBase MapViewer = Editor.MainWindow.MapWidget != null ? Editor.MainWindow.MapWidget.ActiveMapViewer : Editor.MainWindow.EventingWidget.MapViewer;
+                MapViewerBase MapViewer = Editor.MainWindow.MapWidget.ActiveMapViewer;
                 if (!MapViewer.WidgetIM.Hovering || MapViewer is MapViewerConnections)
                 {
                     RemoveCursorText();
@@ -157,9 +157,9 @@ namespace RPGStudioMK.Widgets
 
         public void Refresh()
         {
-            if (Editor.MainWindow.MapWidget != null || Editor.MainWindow.EventingWidget != null)
+            if (Editor.MainWindow.MapWidget != null)
             {
-                SetMap(Editor.MainWindow.MapWidget != null ? Editor.MainWindow.MapWidget.Map : Editor.MainWindow.EventingWidget.Map);
+                SetMap(Editor.MainWindow.MapWidget.Map);
                 ZoomControl.SetVisible(true);
                 Sprites["line2"].Visible = true;
             }

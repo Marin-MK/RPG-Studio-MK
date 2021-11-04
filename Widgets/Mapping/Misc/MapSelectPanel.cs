@@ -117,7 +117,6 @@ namespace RPGStudioMK.Widgets
         public void SetMap(Map Map, bool CalledFromTreeView = false)
         {
             if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetMap(Map);
-            if (Editor.MainWindow.EventingWidget != null) Editor.MainWindow.EventingWidget.SetMap(Map);
             Editor.ProjectSettings.LastMapID = Map.ID;
             Editor.ProjectSettings.LastLayer = 0;
             if (!CalledFromTreeView) // Has yet to update the selection
@@ -206,7 +205,6 @@ namespace RPGStudioMK.Widgets
                     mapview.SelectedNode.Name = mpw.Map.DevName;
                     Editor.UnsavedChanges = mpw.UnsavedChanges;
                     if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetMap(mpw.Map);
-                    if (Editor.MainWindow.EventingWidget != null) Editor.MainWindow.EventingWidget.SetMap(mpw.Map);
                 }
             };
         }

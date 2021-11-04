@@ -24,18 +24,6 @@ namespace RPGStudioMK
         {
             // Ensures the working directory becomes the editor directory
             Directory.SetCurrentDirectory(Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName);
-            CommandPlugins.Initialize();
-            MainCommandLineHandler cli = new MainCommandLineHandler();
-            bool StartProgram = cli.Parse(args.ToList());
-            cli.Dispose();
-            cli = null;
-            if (Headless)
-            {
-                HeadlessModeManager headless = new HeadlessModeManager();
-                headless.Start();
-                return;
-            }
-            if (!StartProgram) return;
             Console.WriteLine("Launching RPG Studio MK.");
             if (!ReleaseMode)
             {

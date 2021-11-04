@@ -25,10 +25,11 @@ namespace RPGStudioMK.Game
 
         public static BasicCommand IDToCommand(int Indent, string Identifier, Dictionary<string, object> Parameters)
         {
-            string nativeid = Identifier.Substring(1);
+            throw new NotImplementedException("Legacy event commands");
+            /*string nativeid = Identifier.Substring(1);
             if (CommandPlugins.CommandTypes.Find(t => t.Identifier == nativeid) == null)
                 throw new Exception($"Invalid command identifier: '{nativeid}'");
-            return new BasicCommand(Indent, Identifier, Parameters);
+            return new BasicCommand(Indent, Identifier, Parameters);*/
         }
 
         public List<object> ToJSON()

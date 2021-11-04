@@ -44,7 +44,6 @@ namespace RPGStudioMK.Widgets
                 if (!FromMapViewer)
                 {
                     if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetZoomFactor(Factor, true);
-                    if (Editor.MainWindow.EventingWidget != null) Editor.MainWindow.EventingWidget.SetZoomFactor(Factor, true);
                 }
                 Redraw();
             }

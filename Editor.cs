@@ -91,7 +91,7 @@ namespace RPGStudioMK
 
         public static void InitializeEditor()
         {
-            ConditionParser.Initialize();
+            
         }
 
         public static void WIP()
@@ -288,9 +288,9 @@ namespace RPGStudioMK
             if (ParentID != 0) AddIDToMap(ProjectSettings.MapOrder, ParentID, Map.ID);
             else ProjectSettings.MapOrder.Add(Map.ID);
             TreeNode node = new TreeNode() { Name = Map.DevName, Object = Map.ID };
-            if (MainWindow.MapWidget != null || MainWindow.EventingWidget != null)
+            if (MainWindow.MapWidget != null)
             {
-                TreeView mapview = MainWindow.MapWidget != null ? MainWindow.MapWidget.MapSelectPanel.mapview : MainWindow.EventingWidget.MapSelectPanel.mapview;
+                TreeView mapview = MainWindow.MapWidget.MapSelectPanel.mapview;
                 if (mapview.HoveringNode != null)
                 {
                     mapview.HoveringNode.Nodes.Add(node);
@@ -511,7 +511,6 @@ namespace RPGStudioMK
                 MainWindow.ToolBar.MappingMode.SetSelected(true, Force);
 
                 Map SelectedMap = null;
-                if (MainWindow.EventingWidget != null) SelectedMap = MainWindow.EventingWidget.EventMapImageWidget.MapData;
                 if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
                 MainWindow.MainEditorWidget = new MappingWidget(MainWindow.MainGridLayout);
                 MainWindow.MainEditorWidget.SetGridRow(3);
@@ -538,25 +537,7 @@ namespace RPGStudioMK
             }
             if (Mode == "EVENTING") // Select Eventing mode
             {
-                MainWindow.ToolBar.EventingMode.SetSelected(true, Force);
-
-                Map SelectedMap = null;
-                if (MainWindow.MapWidget != null) SelectedMap = MainWindow.MapWidget.Map;
-                if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
-                MainWindow.MainEditorWidget = new EventingWidget(MainWindow.MainGridLayout);
-                MainWindow.MainEditorWidget.SetGridRow(3);
-
-                // Set list of maps & initial map
-                List<TreeNode> Nodes = MainWindow.EventingWidget.MapSelectPanel.PopulateList(Editor.ProjectSettings.MapOrder, true);
-                GenerateMapOrder(Nodes);
-
-                int mapid = ProjectSettings.LastMapID;
-                if (!Data.Maps.ContainsKey(mapid))
-                {
-                    if (ProjectSettings.MapOrder[0] is List<object>) mapid = (int)((List<object>)ProjectSettings.MapOrder[0])[0];
-                    else mapid = (int) ProjectSettings.MapOrder[0];
-                }
-                MainWindow.EventingWidget.MapSelectPanel.SetMap(SelectedMap?? Data.Maps[mapid]);
+                
             }
             else if (OldMode == "EVENTING") // Deselect Eventing mode
             {
@@ -580,6 +561,7 @@ namespace RPGStudioMK
                 if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
                 MainWindow.MainEditorWidget = new DatabaseWidget(MainWindow.MainGridLayout);
                 MainWindow.MainEditorWidget.SetGridRow(3);
+                MainWindow.DatabaseWidget.SetMode("species");
             }
             else if (OldMode == "DATABASE") // Deselect Database mode
             {

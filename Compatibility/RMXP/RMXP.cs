@@ -222,10 +222,6 @@ namespace RPGStudioMK.Compatibility
                                 }
                                 Data.Tilesets[set.ID] = set;
                                 set.CreateBitmap();
-                                if (Editor.MainWindow.DatabaseWidget != null)
-                                {
-                                    Editor.MainWindow.DatabaseWidget.DBDataList.RefreshList();
-                                }
                                 data.TilesetIDs = new List<int>() { set.ID };
                                 cont();
                             }

@@ -47,7 +47,7 @@ namespace RPGStudioMK.Widgets
             MapName = new TextBox(box1);
             MapName.SetPosition(6, 22);
             MapName.SetSize(136, 27);
-            MapName.SetInitialText(Map.DevName);
+            MapName.SetText(Map.DevName);
             MapName.OnTextChanged += delegate (BaseEventArgs e)
             {
                 this.Map.DevName = MapName.Text;
@@ -60,7 +60,7 @@ namespace RPGStudioMK.Widgets
             DisplayName = new TextBox(box1);
             DisplayName.SetPosition(6, 68);
             DisplayName.SetSize(136, 27);
-            DisplayName.SetInitialText(Map.DisplayName);
+            DisplayName.SetText(Map.DisplayName);
             DisplayName.OnTextChanged += delegate (BaseEventArgs e)
             {
                 this.Map.DisplayName = DisplayName.Text;

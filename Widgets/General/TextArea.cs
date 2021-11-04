@@ -9,6 +9,7 @@ namespace RPGStudioMK.Widgets
     public class TextArea : Widget
     {
         public string Text { get; protected set; } = "";
+        public int TextX { get; protected set; } = 0;
         public int TextY { get; protected set; } = 0;
         public int CaretY { get; protected set; } = 2;
         public int CaretHeight { get; protected set; } = 13;
@@ -16,6 +17,7 @@ namespace RPGStudioMK.Widgets
         public Color TextColor { get; protected set; } = Color.WHITE;
         public bool ReadOnly { get; protected set; } = false;
         public bool Enabled { get; protected set; } = true;
+        public bool NumericOnly { get; protected set; } = false;
 
         public bool EnteringText = false;
 
@@ -60,7 +62,15 @@ namespace RPGStudioMK.Widgets
             }
         }
 
-        public void SetInitialText(string Text)
+        public void SetNumericOnly(bool NumericOnly)
+        {
+            if (this.NumericOnly != NumericOnly)
+            {
+                this.NumericOnly = NumericOnly;
+            }
+        }
+
+        public void SetText(string Text)
         {
             if (this.Text != Text)
             {
@@ -77,6 +87,15 @@ namespace RPGStudioMK.Widgets
         {
             this.Font = f;
             DrawText();
+        }
+
+        public void SetTextX(int TextX)
+        {
+            if (this.TextX != TextX)
+            {
+                this.TextX = TextX;
+                RepositionSprites();
+            }
         }
 
         public void SetTextY(int TextY)
@@ -165,6 +184,7 @@ namespace RPGStudioMK.Widgets
             }
             else if (!string.IsNullOrEmpty(e.Text))
             {
+                if (NumericOnly && !Utilities.IsNumeric(e.Text)) return;
                 if (SelectionStartIndex != -1 && SelectionStartIndex != SelectionEndIndex) DeleteSelection();
                 InsertText(CaretIndex, e.Text);
             }
@@ -706,7 +726,7 @@ namespace RPGStudioMK.Widgets
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = this.Font;
-            if (this.Enabled) Sprites["text"].Bitmap.DrawText(this.Text, this.Enabled ? this.TextColor : new Color(120, 120, 120));
+            Sprites["text"].Bitmap.DrawText(this.Text, this.Enabled ? this.TextColor : new Color(120, 120, 120));
             Sprites["text"].Bitmap.Lock();
         }
 
@@ -715,23 +735,23 @@ namespace RPGStudioMK.Widgets
         /// </summary>
         public void RepositionSprites()
         {
-            Sprites["text"].X = -X;
+            Sprites["text"].X = TextX - X;
             int add = 1;
             if (this.Text.Length > 0 && CaretIndex > 0 && this.Text[CaretIndex - 1] == ' ' && RX != Width) add = 0;
-            Sprites["caret"].X = Math.Max(0, RX - add);
+            Sprites["caret"].X = TextX + Math.Max(0, RX - add);
 
             // Selections
             if (SelectionStartIndex > SelectionEndIndex)
             {
                 if (X + Width < SelectionStartX)
                 {
-                    Sprites["filler"].X = RX;
+                    Sprites["filler"].X = TextX + RX;
                     (Sprites["filler"].Bitmap as SolidBitmap).SetSize(Width - RX, CaretHeight);
                     Sprites["filler"].Visible = true;
                 }
                 else
                 {
-                    Sprites["filler"].X = RX;
+                    Sprites["filler"].X = TextX + RX;
                     (Sprites["filler"].Bitmap as SolidBitmap).SetSize(SelectionStartX - X - RX, CaretHeight);
                     Sprites["filler"].Visible = true;
                 }
@@ -740,13 +760,13 @@ namespace RPGStudioMK.Widgets
             {
                 if (SelectionStartX < X)
                 {
-                    Sprites["filler"].X = 0;
+                    Sprites["filler"].X = TextX;
                     (Sprites["filler"].Bitmap as SolidBitmap).SetSize(RX, CaretHeight);
                     Sprites["filler"].Visible = true;
                 }
                 else
                 {
-                    Sprites["filler"].X = SelectionStartX - X;
+                    Sprites["filler"].X = TextX + SelectionStartX - X;
                     (Sprites["filler"].Bitmap as SolidBitmap).SetSize(X + RX - SelectionStartX, CaretHeight);
                     Sprites["filler"].Visible = true;
                 }
@@ -786,6 +806,7 @@ namespace RPGStudioMK.Widgets
                 string text = this.Text.Substring(startidx, endidx - startidx);
                 SDL_SetClipboardText(text);
                 DeleteSelection();
+                if (!string.IsNullOrEmpty(text)) this.OnTextChanged?.Invoke(new BaseEventArgs());
                 DrawText();
             }
         }
@@ -812,8 +833,11 @@ namespace RPGStudioMK.Widgets
             if (this.ReadOnly) return;
             if (TimerPassed("paste")) ResetTimer("paste");
             string text = SDL_GetClipboardText();
+            if (string.IsNullOrEmpty(text)) return;
+            if (NumericOnly && !Utilities.IsNumeric(text)) return;
             if (SelectionStartIndex != -1 && SelectionStartIndex != SelectionEndIndex) DeleteSelection();
             InsertText(CaretIndex, text);
+            this.OnTextChanged?.Invoke(new BaseEventArgs());
             DrawText();
         }
 

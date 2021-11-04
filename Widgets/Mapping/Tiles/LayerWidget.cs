@@ -54,7 +54,7 @@ namespace RPGStudioMK.Widgets
             RenameBox = new TextBox(this);
             RenameBox.SetPosition(50, (Layers.Count - Index - 1) * 24 + 1);
             RenameBox.SetSize(Size.Width - 58, 22);
-            RenameBox.SetInitialText(Layers[Index].Name);
+            RenameBox.SetText(Layers[Index].Name);
             RenameBox.TextArea.SelectAll();
             RenameBox.TextArea.OnWidgetDeselected += delegate (BaseEventArgs e)
             {

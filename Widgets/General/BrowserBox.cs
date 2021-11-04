@@ -43,24 +43,24 @@ namespace RPGStudioMK.Widgets
             }
         }
 
-        public void SetInitialText(string Text)
+        public void SetText(string Text)
         {
-            if (this.Text != Text) this.TextArea.SetInitialText(Text);
+            TextArea.SetText(Text);
         }
 
         public void SetFont(Font f)
         {
-            this.TextArea.SetFont(f);
+            TextArea.SetFont(f);
         }
 
         public void SetTextColor(Color c)
         {
-            this.TextArea.SetTextColor(c);
+            TextArea.SetTextColor(c);
         }
 
         public void SetReadOnly(bool ReadOnly)
         {
-            this.TextArea.SetReadOnly(ReadOnly);
+            TextArea.SetReadOnly(ReadOnly);
         }
 
         protected override void Draw()

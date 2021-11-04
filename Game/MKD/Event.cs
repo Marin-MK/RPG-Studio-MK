@@ -122,7 +122,8 @@ namespace RPGStudioMK.Game
                     if (!(command[2] is JObject)) throw new Exception($"A command's third argument (command parameter) must be a hash!");
                     parameters = (Dictionary<string, object>) Utilities.JsonToNative(command[2]);
                 }
-                this.Commands.Add(BasicCommand.IDToCommand(indent, id, parameters));
+                // TODO: Parse commands
+                //this.Commands.Add(BasicCommand.IDToCommand(indent, id, parameters));
             }
             foreach (object o in ((JArray) Data["@conditions"]).ToObject<List<object>>())
             {
@@ -136,7 +137,8 @@ namespace RPGStudioMK.Game
                     if (!(command[1] is JObject)) throw new Exception($"A condition's second argument (condition parameter) must be a hash!");
                     parameters = (Dictionary<string, object>) Utilities.JsonToNative(command[1]);
                 }
-                this.Conditions.Add(BasicCondition.IDToCondition(id, parameters));
+                // TODO: Parse conditions
+                //this.Conditions.Add(BasicCondition.IDToCondition(id, parameters));
             }
             this.Name = (string) Data["@name"];
             this.Graphic = new EventGraphic(((JObject) Data["@graphic"]).ToObject<Dictionary<string, object>>());

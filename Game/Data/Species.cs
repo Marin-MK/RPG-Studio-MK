@@ -7,7 +7,7 @@ namespace RPGStudioMK.Game
     public class Species
     {
         public string IntName;
-        public int? ID;
+        public int ID;
         public List<Species> Forms;
         public string Name;
         public string Type1;
@@ -29,6 +29,7 @@ namespace RPGStudioMK.Game
         public byte? Happiness;
         public Moveset Moveset;
         public List<Evolution> Evolutions;
+        public Species BaseForm;
 
         public Species(Dictionary<string, object> Data, string Prefix = "@")
         {
@@ -94,6 +95,7 @@ namespace RPGStudioMK.Game
                 {
                     int id = kvp.Key;
                     Species form = new Species(((JObject) kvp.Value).ToObject<Dictionary<string, object>>(), ":");
+                    form.BaseForm = this;
                     if (id >= this.Forms.Count) this.Forms.AddRange(new Species[id - this.Forms.Count + 1]);
                     this.Forms[id] = form;
                 }
@@ -104,7 +106,7 @@ namespace RPGStudioMK.Game
         {
             Dictionary<string, object> Data = new Dictionary<string, object>();
             if (Prefix == "@") Data["^c"] = "Species";
-            if (ID != null) Data[$"{Prefix}id"] = ID;
+            Data[$"{Prefix}id"] = ID;
             if (Stats != null) Data[$"{Prefix}stats"] = Stats.ToJSON();
             if (EVYield != null) Data[$"{Prefix}ev_yield"] = EVYield.ToJSON();
             if (Moveset != null) Data[$"{Prefix}moveset"] = Moveset.ToJSON();

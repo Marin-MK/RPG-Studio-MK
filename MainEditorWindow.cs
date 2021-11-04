@@ -19,10 +19,6 @@ namespace RPGStudioMK
         /// </summary>
         public MappingWidget MapWidget { get { return MainEditorWidget as MappingWidget; } }
         /// <summary>
-        /// The EventingWidget object of the eventing mode. Null if not active.
-        /// </summary>
-        public EventingWidget EventingWidget { get { return MainEditorWidget as EventingWidget; } }
-        /// <summary>
         /// The DatabaseWidget object of the database mode. Null if not active.
         /// </summary>
         public DatabaseWidget DatabaseWidget { get { return MainEditorWidget as DatabaseWidget; } }
@@ -246,6 +242,11 @@ namespace RPGStudioMK
                         {
                             HelpText = "Shows information about this program.",
                             OnLeftClick = delegate (MouseEventArgs e) { OpenAboutWindow(); }
+                        },
+                        new MenuItem("Legal")
+                        {
+                            HelpText = "Shows legal information about this program.",
+                            OnLeftClick = delegate (MouseEventArgs e) { OpenLegalWindow(); }
                         }
                     }
                 }
@@ -343,6 +344,18 @@ namespace RPGStudioMK
                 "It was created by Marin, with additional support of various other individuals.\n" +
                 "\n" +
                 "Please turn to the GitHub page for a full credits list."
+            );
+        }
+
+        /// <summary>
+        /// Open the Legal window.
+        /// </summary>
+        public void OpenLegalWindow()
+        {
+            new MessageBox("Legal",
+                "Copyright © 2020 Marin\n\n" +
+                "RPG Studio MK is licensed under the GNU General Public License v3+, referred to as GPLv3+.\n\n" +
+                "You may view the details of this license from the file titled LICENSE in the program's root folder.\nIf not, please view https://www.gnu.org/licenses/gpl-3.0.html."
             );
         }
 

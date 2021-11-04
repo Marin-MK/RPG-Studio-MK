@@ -7,7 +7,7 @@ namespace RPGStudioMK.Game
 {
     public class BasicCondition
     {
-        public ConditionType Type;
+        public string Type;
         public string Identifier;
         public Dictionary<string, object> Parameters;
 
@@ -16,7 +16,7 @@ namespace RPGStudioMK.Game
 
         }
 
-        public BasicCondition(ConditionType Type, string Identifier, Dictionary<string, object> Parameters)
+        public BasicCondition(string Type, string Identifier, Dictionary<string, object> Parameters)
         {
             this.Type = Type;
             this.Identifier = Identifier;
@@ -25,10 +25,11 @@ namespace RPGStudioMK.Game
 
         public static BasicCondition IDToCondition(string Identifier, Dictionary<string, object> Parameters)
         {
-            string nativeid = Identifier.Substring(1);
+            throw new NotImplementedException("Legacy event conditions");
+            /*string nativeid = Identifier.Substring(1);
             ConditionType type = ConditionParser.Types.Find(t => t.Identifier == nativeid);
             if (type == null) throw new Exception($"Invalid condition identifier: '{nativeid}'");
-            return new BasicCondition(type, Identifier, Parameters);
+            return new BasicCondition(type, Identifier, Parameters);*/
         }
 
         public List<object> ToJSON()
