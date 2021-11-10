@@ -529,7 +529,6 @@ namespace RPGStudioMK
                 MainWindow.MapWidget.MapSelectPanel.SetMap(SelectedMap?? Data.Maps[mapid]);
                 MainWindow.MapWidget.SetSelectedLayer(lastlayer);
                 MainWindow.MapWidget.SetZoomFactor(ProjectSettings.LastZoomFactor);
-                MainWindow.MapWidget.SetSubmode(ProjectSettings.LastMappingSubmode);
             }
             else if (OldMode == "MAPPING") // Deselect Mapping mode
             {
@@ -537,7 +536,8 @@ namespace RPGStudioMK
             }
             if (Mode == "EVENTING") // Select Eventing mode
             {
-                
+                if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
+                MainWindow.MainEditorWidget = null;
             }
             else if (OldMode == "EVENTING") // Deselect Eventing mode
             {

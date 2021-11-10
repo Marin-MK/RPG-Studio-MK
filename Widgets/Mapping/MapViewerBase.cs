@@ -40,8 +40,6 @@ namespace RPGStudioMK.Widgets
 
         public double ZoomFactor = 1.0;
 
-        public List<MapConnectionWidget> ConnectionWidgets = new List<MapConnectionWidget>();
-
         public int Depth = 10;
 
         public Container MainContainer;
@@ -108,7 +106,6 @@ namespace RPGStudioMK.Widgets
             Editor.ProjectSettings.LastZoomFactor = factor;
             MapWidget.SetZoomFactor(factor);
             if (!FromStatusBar) Editor.MainWindow.StatusBar.ZoomControl.SetZoomFactor(factor, true);
-            ConnectionWidgets.ForEach(w => w.SetZoomFactor(factor));
             PositionMap();
             MouseMoving(Graphics.LastMouseEvent);
         }
@@ -139,18 +136,14 @@ namespace RPGStudioMK.Widgets
         {
             this.Map = Map;
             Editor.MainWindow.StatusBar.SetMap(Map);
-            RedrawConnectedMaps();
-            PositionMap();
-            if (MainContainer.HScrollBar != null) MainContainer.HScrollBar.SetValue(0.5);
-            if (MainContainer.VScrollBar != null) MainContainer.VScrollBar.SetValue(0.5);
-            UpdateConnectionPositions();
+            //PositionMap();
+            //if (MainContainer.HScrollBar != null) MainContainer.HScrollBar.SetValue(0.5);
+            //if (MainContainer.VScrollBar != null) MainContainer.VScrollBar.SetValue(0.5);
             PositionMap();
         }
 
         public virtual void PositionMap()
         {
-            if (Editor.MainWindow.MapWidget != null &&
-                Editor.MainWindow.MapWidget.Submodes.SelectedIndex != -1 && this != Editor.MainWindow.MapWidget.ActiveMapViewer) return;
             int w = (int) Math.Round(Map.Width * 32d * ZoomFactor);
             int h = (int) Math.Round(Map.Height * 32d * ZoomFactor);
             int minx = MainContainer.Size.Width / 2 - w / 2;
@@ -172,7 +165,6 @@ namespace RPGStudioMK.Widgets
             y = Math.Max(y, miny);
             MapWidget.SetPosition(x, y);
             MapWidget.SetSize(w, h);
-            UpdateConnectionPositions();
             DummyWidget.SetSize(2 * x + w, 2 * y + h);
             MainContainer.UpdateBounds();
             MainContainer.UpdateAutoScroll();
@@ -238,32 +230,6 @@ namespace RPGStudioMK.Widgets
             if (!Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LCTRL) && !Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RCTRL)) return;
             if (e.WheelY > 0) Editor.MainWindow.StatusBar.ZoomControl.IncreaseZoom();
             else Editor.MainWindow.StatusBar.ZoomControl.DecreaseZoom();
-        }
-
-        public virtual void UpdateConnectionPositions()
-        {
-            for (int i = 0; i < ConnectionWidgets.Count; i++)
-            {
-                MapConnectionWidget mcw = ConnectionWidgets[i];
-                mcw.SetZoomFactor(ZoomFactor);
-                mcw.UpdateSize();
-                mcw.SetPosition(MapWidget.Position.X + (int) Math.Round(mcw.RelativeX * 32d * ZoomFactor),
-                    MapWidget.Position.Y + (int) Math.Round(mcw.RelativeY * 32d * ZoomFactor));
-            }
-        }
-
-        public virtual void RedrawConnectedMaps()
-        {
-            foreach (MapConnectionWidget mcw in ConnectionWidgets) mcw.Dispose();
-            ConnectionWidgets.Clear();
-            MapWidget.Rect = new Rect(0, 0, Map.Width, Map.Height);
-            foreach (MapConnection c in Map.Connections)
-            {
-                Map map = Data.Maps[c.MapID];
-                MapConnectionWidget mcw = new MapConnectionWidget(MainContainer);
-                mcw.LoadLayers(map, c.RelativeX, c.RelativeY);
-                ConnectionWidgets.Add(mcw);
-            }
         }
     }
 }

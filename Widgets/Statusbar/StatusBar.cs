@@ -136,8 +136,8 @@ namespace RPGStudioMK.Widgets
             }
             if (Editor.MainWindow.MapWidget != null)
             {
-                MapViewerBase MapViewer = Editor.MainWindow.MapWidget.ActiveMapViewer;
-                if (!MapViewer.WidgetIM.Hovering || MapViewer is MapViewerConnections)
+                MapViewerBase MapViewer = Editor.MainWindow.MapWidget.MapViewerTiles;
+                if (!MapViewer.WidgetIM.Hovering)
                 {
                     RemoveCursorText();
                 }
