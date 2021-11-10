@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using Newtonsoft.Json.Linq;
 using odl;
+using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
@@ -15,6 +14,23 @@ namespace RPGStudioMK.Game
         public List<int?> Priorities = new List<int?>();
         public List<int?> Tags = new List<int?>();
 
+        // RMXP properties
+        public int PanoramaHue;
+        public string PanoramaName;
+        public string FogName;
+        public int FogSX;
+        public int FogSY;
+        public int FogOpacity;
+        public int FogHue;
+        public int FogZoom;
+        public int FogBlendType;
+        public string BattlebackName;
+        public List<string> Autotiles = new List<string>();
+        /// <summary>
+        /// List of tile IDs that have the bush flag set.
+        /// </summary>
+        public List<int> BushFlags = new List<int>();
+
         public Bitmap TilesetBitmap;
         public Bitmap TilesetListBitmap;
 
@@ -23,42 +39,57 @@ namespace RPGStudioMK.Game
 
         }
 
-        public Tileset(Dictionary<string, object> Data)
+        public Tileset(IntPtr data)
         {
-            if (Data.ContainsKey("^c"))
+            this.ID = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@id"));
+            this.Name = Ruby.String.FromPtr(Ruby.GetIVar(data, "@name"));
+            this.GraphicName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@tileset_name"));
+            IntPtr passability = Ruby.GetIVar(data, "@passages");
+            for (int i = 0; i < Compatibility.RMXP.Table.Size(passability); i++)
             {
-                if ((string) Data["^c"] != "MKD::Tileset") throw new Exception("Invalid class - Expected class of type MKD::Tileset but got " + (string) Data["^c"] + ".");
+                int code = (int) Ruby.Integer.FromPtr(Compatibility.RMXP.Table.Get(passability, i));
+                if ((code & 64) != 0)
+                {
+                    BushFlags.Add(i);
+                    code -= 64;
+                }
+                Passabilities.Add((Passability) code);
             }
-            else
+            IntPtr priorities = Ruby.GetIVar(data, "@priorities");
+            for (int i = 0; i < Compatibility.RMXP.Table.Size(priorities); i++)
             {
-                throw new Exception("Could not find a ^c key to identify this class.");
+                int code = (int) Ruby.Integer.FromPtr(Compatibility.RMXP.Table.Get(priorities, i));
+                this.Priorities.Add(code);
             }
-            this.ID = Convert.ToInt32(Data["@id"]);
-            this.Name = (string) Data["@name"];
-            this.GraphicName = (string) Data["@graphic_name"];
-            Priorities = new List<int?>();
-            foreach (object o in ((JArray) Data["@priorities"]).ToObject<List<object>>())
+            IntPtr tags = Ruby.GetIVar(data, "@terrain_tags");
+            for (int i = 0; i < Compatibility.RMXP.Table.Size(tags); i++)
             {
-                if (o is null) Priorities.Add(null);
-                else Priorities.Add(Convert.ToInt32(o));
+                int code = (int) Ruby.Integer.FromPtr(Compatibility.RMXP.Table.Get(tags, i));
+                this.Tags.Add(code);
             }
-            Passabilities = new List<Passability>();
-            foreach (object o in ((JArray) Data["@passabilities"]).ToObject<List<object>>())
+            this.PanoramaHue = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@panorama_hue"));
+            this.PanoramaName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@panorama_name"));
+            this.FogName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@fog_name"));
+            this.FogSX = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_sx"));
+            this.FogSY = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_sy"));
+            this.FogOpacity = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_opacity"));
+            this.FogHue = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_hue"));
+            this.FogZoom = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_zoom"));
+            this.FogBlendType = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_blend_type"));
+            this.BattlebackName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@battleback_name"));
+            IntPtr autotiles = Ruby.GetIVar(data, "@autotile_names");
+            for (int i = 0; i < Ruby.Array.Length(autotiles); i++)
             {
-                Passabilities.Add((Passability) Convert.ToInt32(o));
+                string autotile = Ruby.String.FromPtr(Ruby.Array.Get(autotiles, i));
+                this.Autotiles.Add(autotile);
             }
-            Tags = new List<int?>();
-            foreach (object o in ((JArray) Data["@tags"]).ToObject<List<object>>())
-            {
-                if (o is null) Tags.Add(null);
-                else Tags.Add(Convert.ToInt32(o));
-            }
+
             // Make sure the three arrays are just as big; trailing nulls may be left out if the data is edited externally
             int maxcount = Math.Max(Math.Max(Passabilities.Count, Priorities.Count), Tags.Count);
             this.Passabilities.AddRange(new Passability[maxcount - Passabilities.Count]);
             this.Priorities.AddRange(new int?[maxcount - Priorities.Count]);
             this.Tags.AddRange(new int?[maxcount - Tags.Count]);
-            this.CreateBitmap();
+            if (!string.IsNullOrEmpty(this.GraphicName)) this.CreateBitmap();
         }
 
         public Dictionary<string, object> ToJSON()
@@ -90,13 +121,12 @@ namespace RPGStudioMK.Game
 
         public void CreateBitmap(bool Redraw = false)
         {
-            if (Program.Headless) return;
             if (this.TilesetBitmap == null || Redraw)
             {
                 this.TilesetBitmap?.Dispose();
                 this.TilesetListBitmap?.Dispose();
                 
-                Bitmap bmp = new Bitmap($"{Data.ProjectPath}/gfx/tilesets/{this.GraphicName}.png");
+                Bitmap bmp = new Bitmap($"{Data.ProjectPath}/Graphics/Tilesets/{this.GraphicName}.png");
                 this.TilesetBitmap = bmp;
                 int tileycount = (int) Math.Floor(bmp.Height / 32d);
 

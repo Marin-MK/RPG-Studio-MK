@@ -353,7 +353,7 @@ namespace RPGStudioMK
         public void OpenLegalWindow()
         {
             new MessageBox("Legal",
-                "Copyright © 2020 Marin\n\n" +
+                "Copyright © 2021 Marijn Herrebout\n\n" +
                 "RPG Studio MK is licensed under the GNU General Public License v3+, referred to as GPLv3+.\n\n" +
                 "You may view the details of this license from the file titled LICENSE in the program's root folder.\nIf not, please view https://www.gnu.org/licenses/gpl-3.0.html."
             );

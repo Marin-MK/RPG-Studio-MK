@@ -16,7 +16,6 @@ namespace RPGStudioMK
         /// </summary>
         public static bool ReleaseMode = false;
         public static bool Verbose = false;
-        public static bool Headless = false;
         public static string ProjectFile = null;
         public static bool ThrownError = false;
 
@@ -34,6 +33,7 @@ namespace RPGStudioMK
             string fw = Assembly.GetEntryAssembly().GetCustomAttribute<TargetFrameworkAttribute>().FrameworkName;
             if (fw.Contains(".NETCoreApp")) Framework = ".NET Core ";
             else if (fw.Contains(".NETFrameworkApp")) Framework = ".NET Framework ";
+            else Framework = "Unknown ";
             Framework += Environment.Version.ToString();
             Console.WriteLine($"Editor Version: {Editor.GetVersionString()}");
             Console.WriteLine($"Framework: {Framework}");
@@ -44,8 +44,6 @@ namespace RPGStudioMK
             Audio.Start();
             Console.WriteLine($"OS Platform: {os.Platform} ({odl.Graphics.Platform}) {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}");
             Console.WriteLine($"OS Version: {os.VersionString}");
-            // Clean up these strings as they're never going to be used again, and would otherwise exist as long as the program is running.
-            // Yeah, I actually care about two small strings not being GC'd in a huge graphical application.
             Framework = null;
             fw = null;
             MainEditorWindow win = new MainEditorWindow(ProjectFile);

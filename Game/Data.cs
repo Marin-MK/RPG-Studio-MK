@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
@@ -28,12 +29,19 @@ namespace RPGStudioMK.Game
             Species.Clear();
         }
 
+        private static void Initialize()
+        {
+            Compatibility.RMXP.Setup();
+            Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Dir"), "chdir", Ruby.String.ToPtr(DataPath));
+        }
+
         public static void LoadGameData()
         {
-            LoadSpecies();
+            Initialize();
+            //LoadSpecies();
             LoadTilesets();
-            LoadAutotiles();
-            LoadMaps(); // TODO: Event commands/conditions
+            //LoadAutotiles();
+            //LoadMaps(); // TODO: Event commands/conditions
         }
 
         public static void SetProjectPath(string ProjectFilePath)
@@ -50,9 +58,9 @@ namespace RPGStudioMK.Game
                 if (i != splits.Count - 1) path += "/";
             }
             Data.ProjectPath = path;
-            Data.DataPath = path + "/data";
-            Data.ProjectFilePath = path + "/project.mkproj";
-            Editor.ProjectFilePath = ProjectFilePath;
+            Data.DataPath = path + "/Data";
+            Data.ProjectFilePath = path + "/settings.mkproj";
+            Editor.ProjectFilePath = Data.ProjectFilePath;
         }
 
         public static void LoadSpecies()
@@ -92,7 +100,23 @@ namespace RPGStudioMK.Game
 
         public static void LoadTilesets()
         {
-            StreamReader sr = new StreamReader(File.OpenRead(DataPath + "/tilesets.mkd"));
+            IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/Tilesets.rxdata"), Ruby.String.ToPtr("rb"));
+            IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", file);
+            Ruby.Pin(data);
+            Ruby.Funcall(file, "close");
+            long count = Ruby.Integer.FromPtr(Ruby.Funcall(data, "length"));
+            for (int i = 0; i < count; i++)
+            {
+                IntPtr tileset = Ruby.Array.Get(data, i);
+                Ruby.Pin(tileset);
+                if (tileset != Ruby.Nil)
+                {
+                    Tilesets.Add(new Tileset(tileset));
+                }
+                Ruby.Unpin(tileset);
+            }
+            Ruby.Unpin(data);
+            /*StreamReader sr = new StreamReader(File.OpenRead(DataPath + "/tilesets.mkd"));
             string content = sr.ReadToEnd();
             sr.Close();
             Dictionary<string, object> data = JsonConvert.DeserializeObject<Dictionary<string, object>>(content);
@@ -108,7 +132,7 @@ namespace RPGStudioMK.Game
             }
             int MaxID = Tilesets.Count;
             int Missing = Editor.ProjectSettings.TilesetCapacity - MaxID + 1;
-            for (int i = 0; i < Missing; i++) Tilesets.Add(null);
+            for (int i = 0; i < Missing; i++) Tilesets.Add(null);*/
         }
 
         public static void SaveTilesets()

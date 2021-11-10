@@ -412,7 +412,7 @@ namespace RPGStudioMK
         public static void OpenProject()
         {
             OpenFileDialog of = new OpenFileDialog();
-            of.SetFilter(new FileFilter("MK Project File", "mkproj"));
+            of.SetFilter(new FileFilter("RMXP Project", "rxproj"));
             string lastfolder = "";
             if (GeneralSettings.RecentFiles.Count > 0)
             {
@@ -430,7 +430,7 @@ namespace RPGStudioMK
             string result = of.Show() as string;
             if (!string.IsNullOrEmpty(result))
             {
-                if (!result.EndsWith(".mkproj"))
+                if (!result.EndsWith(".rxproj"))
                     new MessageBox("Error", "Invalid project file.", ButtonType.OK, IconType.Error);
                 else
                 {
