@@ -323,10 +323,6 @@ namespace RPGStudioMK
 
             TimeSpan time = DateTime.Now - start;
             StatusBar.QueueMessage($"Project loaded ({time.Milliseconds}ms)", true, 5000);
-            foreach (KeyValuePair<int, Map> kvp in Data.Maps)
-            {
-                Console.WriteLine(kvp.Value.ID.ToString() + " (parent: " + kvp.Value.ParentID.ToString() + ")");
-            }
         }
 
         /// <summary>

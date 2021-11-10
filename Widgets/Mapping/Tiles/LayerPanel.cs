@@ -45,43 +45,45 @@ namespace RPGStudioMK.Widgets
             {
                 new MenuItem("New Layer")
                 {
-                    OnLeftClick = NewLayerEvent
+                    OnLeftClick = NewLayerEvent,
+                    IsClickable = delegate (BoolEventArgs e) { e.Value = false; }
                 },
                 new MenuItem("Rename Layer")
                 {
                     Shortcut = "F2",
-                    OnLeftClick = RenameLayer
+                    OnLeftClick = RenameLayer,
+                    IsClickable = delegate (BoolEventArgs e) { e.Value = false; }
                 },
                 new MenuSeparator(),
                 new MenuItem("Toggle Visibility")
                 {
                     OnLeftClick = ToggleVisibilityLayer,
-                    IsClickable = delegate (BoolEventArgs e ) { e.Value = layerwidget.HoveringIndex >= 0; }
+                    IsClickable = delegate (BoolEventArgs e) { e.Value = layerwidget.HoveringIndex >= 0; }
                 },
                 new MenuItem("Move Layer Up")
                 {
                     OnLeftClick = MoveLayerUpEvent,
-                    IsClickable = delegate (BoolEventArgs e ) { e.Value = SelectedLayer < Map.Layers.Count - 1 && layerwidget.HoveringIndex >= 0; }
+                    IsClickable = delegate (BoolEventArgs e) { e.Value = SelectedLayer < Map.Layers.Count - 1 && layerwidget.HoveringIndex >= 0; }
                 },
                 new MenuItem("Move Layer Down")
                 {
                     OnLeftClick = MoveLayerDownEvent,
-                    IsClickable = delegate (BoolEventArgs e ) { e.Value = SelectedLayer > 0 && layerwidget.HoveringIndex >= 0; }
+                    IsClickable = delegate (BoolEventArgs e) { e.Value = SelectedLayer > 0 && layerwidget.HoveringIndex >= 0; }
                 },
                 new MenuSeparator(),
                 new MenuItem("Delete Layer")
                 {
                     Shortcut = "Del",
                     OnLeftClick = DeleteLayerEvent,
-                    IsClickable = delegate (BoolEventArgs e ) { e.Value = Map.Layers.Count > 1 && layerwidget.HoveringIndex >= 0; }
+                    IsClickable = delegate (BoolEventArgs e) { e.Value = false && Map.Layers.Count > 1 && layerwidget.HoveringIndex >= 0; },
                 }
             });
 
-            RegisterShortcuts(new List<Shortcut>()
-            {
-                new Shortcut(this, new Key(Keycode.DELETE), DeleteLayerEvent),
-                new Shortcut(this, new Key(Keycode.F2), RenameLayer)
-            });
+            //RegisterShortcuts(new List<Shortcut>()
+            //{
+            //    new Shortcut(this, new Key(Keycode.DELETE), DeleteLayerEvent),
+            //    new Shortcut(this, new Key(Keycode.F2), RenameLayer)
+            //});
 
             SetSize(283, 200); // Dummy size so the sprites can be drawn properly
         }
