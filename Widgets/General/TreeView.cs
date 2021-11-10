@@ -168,7 +168,7 @@ namespace RPGStudioMK.Widgets
                 {
                     n.Collapsed = !n.Collapsed;
                     int mapid = (int) n.Object;
-                    (Parent.Parent as MapSelectPanel).SetCollapsed(Editor.ProjectSettings.MapOrder, mapid, n.Collapsed);
+                    Game.Data.Maps[mapid].Expanded = n.Collapsed;
                     if (n.Collapsed && n.ContainsNode(SelectedNode)) SelectedNode = n;
                 }
                 else

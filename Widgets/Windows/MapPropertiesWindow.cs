@@ -15,7 +15,6 @@ namespace RPGStudioMK.Widgets
         public bool UpdateMapViewer = false;
 
         TextBox MapName;
-        TextBox DisplayName;
         NumericBox Width;
         NumericBox Height;
         ListBox Tilesets;
@@ -25,7 +24,7 @@ namespace RPGStudioMK.Widgets
         {
             this.OldMap = Map;
             this.Map = Map.Clone();
-            this.SetTitle($"Map Properties - {Utilities.Digits(Map.ID, 3)}: {Map.DevName}");
+            this.SetTitle($"Map Properties - {Utilities.Digits(Map.ID, 3)}: {Map.Name}");
             MinimumSize = MaximumSize = new Size(540, 460);
             SetSize(MaximumSize);
             this.Center();
@@ -41,29 +40,16 @@ namespace RPGStudioMK.Widgets
             Font f = Font.Get("Fonts/ProductSans-M", 12);
 
             Label namelabel = new Label(box1);
-            namelabel.SetText("Working Name:");
+            namelabel.SetText("Map Name:");
             namelabel.SetFont(f);
             namelabel.SetPosition(7, 6);
             MapName = new TextBox(box1);
             MapName.SetPosition(6, 22);
             MapName.SetSize(136, 27);
-            MapName.SetText(Map.DevName);
+            MapName.SetText(Map.Name);
             MapName.OnTextChanged += delegate (BaseEventArgs e)
             {
-                this.Map.DevName = MapName.Text;
-            };
-
-            Label displaynamelabel = new Label(box1);
-            displaynamelabel.SetText("In-game Name:");
-            displaynamelabel.SetFont(f);
-            displaynamelabel.SetPosition(7, 52);
-            DisplayName = new TextBox(box1);
-            DisplayName.SetPosition(6, 68);
-            DisplayName.SetSize(136, 27);
-            DisplayName.SetText(Map.DisplayName);
-            DisplayName.OnTextChanged += delegate (BaseEventArgs e)
-            {
-                this.Map.DisplayName = DisplayName.Text;
+                this.Map.Name = MapName.Text;
             };
 
             Label widthlabel = new Label(box1);
@@ -215,6 +201,7 @@ namespace RPGStudioMK.Widgets
                 bool autotileschanged = false;
                 if (Map.AutotileIDs.Count != OldMap.AutotileIDs.Count) autotileschanged = true;
                 if (!autotileschanged)
+                {
                     for (int i = 0; i < Map.AutotileIDs.Count; i++)
                     {
                         if (Map.AutotileIDs[i] != OldMap.AutotileIDs[i])
@@ -223,6 +210,7 @@ namespace RPGStudioMK.Widgets
                             break;
                         }
                     }
+                }
                 if (autotileschanged)
                 {
                     UnsavedChanges = true;
@@ -296,7 +284,7 @@ namespace RPGStudioMK.Widgets
                 UnsavedChanges = true;
             }
             // Marks name change
-            if (Map.DevName != OldMap.DevName || Map.DisplayName != OldMap.DisplayName) UnsavedChanges = true;
+            if (Map.Name != OldMap.Name) UnsavedChanges = true;
             // Updates tilesets
             bool tilesetschanged = false;
             if (Map.TilesetIDs.Count != OldMap.TilesetIDs.Count) tilesetschanged = true;

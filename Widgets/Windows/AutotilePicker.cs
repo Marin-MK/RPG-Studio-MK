@@ -214,7 +214,7 @@ namespace RPGStudioMK.Widgets
                 AnimX = (Frame * 96) % Sprites["preview"].Bitmap.Width;
                 int height = 0;
                 if (autotile.Format == AutotileFormat.FullCorners) height = 192;
-                else if (autotile.Format == AutotileFormat.Legacy) height = 128;
+                else if (autotile.Format == AutotileFormat.RMXP) height = 128;
                 else if (autotile.Format == AutotileFormat.RMVX) height = 96;
                 Sprites["preview"].SrcRect = new Rect(AnimX, 0, 96, height);
             }

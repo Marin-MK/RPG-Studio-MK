@@ -1,21 +1,37 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
     public class Map
     {
         public int ID;
-        public string DevName;
-        public string DisplayName;
+        public string Name;
         public int Width;
         public int Height;
         public List<Layer> Layers = new List<Layer>();
         public List<int> TilesetIDs = new List<int>();
         public List<int> AutotileIDs = new List<int>();
         public Dictionary<int, Event> Events = new Dictionary<int, Event>();
-        public List<MapConnection> Connections = new List<MapConnection>();
+
+        // RMXP MapInfo Properties
+        public int ScrollX;
+        public int ScrollY;
+        public bool Expanded;
+        public int Order;
+        public int ParentID;
+
+        // RMXP Map Properties
+        public string BGMName;
+        public int BGMVolume;
+        public int BGMPitch;
+        public bool AutoplayBGM;
+        public string BGSName;
+        public int BGSVolume;
+        public int BGSPitch;
+        public bool AutoplayBGS;
+        public int EncounterStep;
 
         public int SaveX = 0;
         public int SaveY = 0;
@@ -23,61 +39,78 @@ namespace RPGStudioMK.Game
         // Used only for the editor to track which maps exist in the order list
         public bool Added = false;
 
-        public Map() { }
-
-        public Map(Dictionary<string, object> Data)
+        public Map() 
         {
-            if (Data.ContainsKey("^c"))
+            
+        }
+
+        public Map(int ID, IntPtr data, IntPtr mapinfo)
+        {
+            this.ID = ID;
+            this.Name = Ruby.String.FromPtr(Ruby.GetIVar(mapinfo, "@name"));
+            this.ScrollX = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(mapinfo, "@scroll_x"));
+            this.ScrollY = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(mapinfo, "@scroll_y"));
+            this.Order = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(mapinfo, "@order"));
+            this.ParentID = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(mapinfo, "@parent_id"));
+            this.Expanded = Ruby.GetIVar(mapinfo, "@expanded") == Ruby.True;
+
+            int tilesetid = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@tileset_id"));
+            this.TilesetIDs.Add(tilesetid);
+            this.BGMName = Ruby.String.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgm"), "@name"));
+            this.BGMVolume = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgm"), "@volume"));
+            this.BGMPitch = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgm"), "@pitch"));
+            this.BGSName = Ruby.String.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgs"), "@name"));
+            this.BGSVolume = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgs"), "@volume"));
+            this.BGSPitch = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgs"), "@pitch"));
+            this.AutoplayBGM = Ruby.GetIVar(data, "@autoplay_bgm") == Ruby.True;
+            this.AutoplayBGS = Ruby.GetIVar(data, "@autoplay_bgs") == Ruby.True;
+            this.EncounterStep = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@encounter_step"));
+
+            IntPtr table = Ruby.GetIVar(data, "@data");
+            this.Width = Compatibility.RMXP.Table.XSize(table);
+            this.Height = Compatibility.RMXP.Table.YSize(table);
+            for (int layer = 0; layer < 3; layer++)
             {
-                if ((string) Data["^c"] != "MKD::Map") throw new Exception("Invalid class - Expected class of type MKD::Map but got " + (string) Data["^c"] + ".");
-            }
-            else
-            {
-                throw new Exception("Could not find a ^c key to identify this class.");
-            }
-            this.ID = Convert.ToInt32(Data["@id"]);
-            this.DevName = (string) Data["@dev_name"];
-            this.DisplayName = (string) Data["@display_name"];
-            this.Width = Convert.ToInt32(Data["@width"]);
-            this.Height = Convert.ToInt32(Data["@height"]);
-            foreach (object layer in ((JArray) Data["@tiles"]).ToObject<List<object>>())
-            {
-                Layer l = new Layer("Layer " + (Layers.Count + 1).ToString());
-                foreach (object tile in ((JArray) layer).ToObject<List<object>>())
+                Layer l = new Layer($"Layer {layer + 1}");
+                for (int y = 0; y < Height; y++)
                 {
-                    if (tile == null) l.Tiles.Add(null);
-                    else
+                    for (int x = 0; x < Width; x++)
                     {
-                        List<object> tiledata = ((JArray) tile).ToObject<List<object>>();
-                        if (tiledata.Count == 2) tiledata.Insert(0, 0);
-                        int TileType = Convert.ToInt32(tiledata[0]);
-                        int Index = Convert.ToInt32(tiledata[1]);
-                        int ID = Convert.ToInt32(tiledata[2]);
-                        l.Tiles.Add(new TileData() { TileType = (TileType) TileType, Index = Index, ID = ID });
+                        int index = layer * Width * Height + y * Width + x;
+                        int id = (int) Ruby.Integer.FromPtr(Compatibility.RMXP.Table.Get(table, index));
+                        if (id == 0)
+                        {
+                            l.Tiles.Add(null);
+                            continue;
+                        }
+                        TileData tile = new TileData();
+                        tile.TileType = id < 384 ? TileType.Autotile : TileType.Tileset;
+                        if (tile.TileType == TileType.Autotile)
+                        {
+                            tile.Index = (int) Math.Floor(id / 48d) - 1;
+                            tile.ID = id % 48;
+                        }
+                        else
+                        {
+                            tile.Index = 0; // Tileset 0, since only 1 tileset.
+                            tile.ID = id - 384;
+                        }
+                        l.Tiles.Add(tile);
                     }
                 }
                 this.Layers.Add(l);
             }
-            this.TilesetIDs = ((JArray) Data["@tilesets"]).ToObject<List<int>>();
-            if (Data.ContainsKey("@autotiles")) this.AutotileIDs = ((JArray) Data["@autotiles"]).ToObject<List<int>>();
 
-            foreach(KeyValuePair<string, object> kvp in ((JObject) Data["@events"]).ToObject<Dictionary<string, object>>())
+            // Now add all autotile IDs from the tileset to the list of autotile ids
+            foreach (Autotile autotile in Data.Tilesets[tilesetid].Autotiles)
             {
-                Event e = new Event(((JObject) kvp.Value).ToObject<Dictionary<string, object>>());
-                this.Events[e.ID] = e;
-            }
-
-            this.Connections = new List<MapConnection>();
-            foreach (object conn in ((JArray) Data["@connections"]).ToObject<List<object>>())
-            {
-                MapConnection c = new MapConnection(((JObject) conn).ToObject<Dictionary<string, object>>());
-                this.Connections.Add(c);
+                this.AutotileIDs.Add(autotile.ID);
             }
         }
 
         public Dictionary<string, object> ToJSON()
         {
-            Dictionary<string, object> Data = new Dictionary<string, object>();
+            /*Dictionary<string, object> Data = new Dictionary<string, object>();
             Data["^c"] = "MKD::Map";
             Data["@id"] = ID;
             Data["@dev_name"] = DevName;
@@ -104,7 +137,8 @@ namespace RPGStudioMK.Game
                 connections.Add(c.ToJSON());
             }
             Data["@connections"] = connections;
-            return Data;
+            return Data;*/
+            throw new NotImplementedException();
         }
 
         public void SetSize(int width, int height)
@@ -150,7 +184,7 @@ namespace RPGStudioMK.Game
 
         public override string ToString()
         {
-            return this.DisplayName;
+            return this.Name;
         }
 
         public void RemoveTileset(int TilesetID)
@@ -179,7 +213,7 @@ namespace RPGStudioMK.Game
 
         public Map Clone()
         {
-            Map o = new Map();
+            /*Map o = new Map();
             o.ID = this.ID;
             o.DevName = this.DevName;
             o.DisplayName = this.DisplayName;
@@ -190,7 +224,8 @@ namespace RPGStudioMK.Game
             o.AutotileIDs = new List<int>(this.AutotileIDs);
             o.Events = new Dictionary<int, Event>(this.Events);
             o.Connections = new List<MapConnection>(this.Connections);
-            return o;
+            return o;*/
+            throw new NotImplementedException();
         }
     }
 
@@ -224,7 +259,10 @@ namespace RPGStudioMK.Game
             return Data;
         }
 
-        
+        public override string ToString()
+        {
+            return this.Name;
+        }
     }
 
     public enum TileType
@@ -275,8 +313,17 @@ namespace RPGStudioMK.Game
 
     public class TileData
     {
+        /// <summary>
+        /// Regular tile or autotile
+        /// </summary>
         public TileType TileType;
+        /// <summary>
+        /// Tileset or autotile index
+        /// </summary>
         public int Index;
+        /// <summary>
+        /// Specific tile or autotile
+        /// </summary>
         public int ID;
 
 

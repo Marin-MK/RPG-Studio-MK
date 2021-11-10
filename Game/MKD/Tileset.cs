@@ -11,8 +11,8 @@ namespace RPGStudioMK.Game
         public string Name;
         public string GraphicName;
         public List<Passability> Passabilities = new List<Passability>();
-        public List<int?> Priorities = new List<int?>();
-        public List<int?> Tags = new List<int?>();
+        public List<int> Priorities = new List<int>();
+        public List<int> Tags = new List<int>();
 
         // RMXP properties
         public int PanoramaHue;
@@ -25,7 +25,7 @@ namespace RPGStudioMK.Game
         public int FogZoom;
         public int FogBlendType;
         public string BattlebackName;
-        public List<string> Autotiles = new List<string>();
+        public List<Autotile> Autotiles = new List<Autotile>();
         /// <summary>
         /// List of tile IDs that have the bush flag set.
         /// </summary>
@@ -80,15 +80,29 @@ namespace RPGStudioMK.Game
             IntPtr autotiles = Ruby.GetIVar(data, "@autotile_names");
             for (int i = 0; i < Ruby.Array.Length(autotiles); i++)
             {
-                string autotile = Ruby.String.FromPtr(Ruby.Array.Get(autotiles, i));
-                this.Autotiles.Add(autotile);
+                string name = Ruby.String.FromPtr(Ruby.Array.Get(autotiles, i));
+                if (!string.IsNullOrEmpty(name))
+                {
+                    Autotile autotile = new Autotile();
+                    autotile.ID = this.ID * 7 + i;
+                    autotile.Name = name;
+                    autotile.Passability = this.Passabilities[(i + 1) * 48];
+                    autotile.Priority = (int) this.Priorities[(i + 1) * 48];
+                    autotile.Tag = (int) this.Tags[(i + 1) * 48];
+                    autotile.SetGraphic(name);
+                    if (autotile.AutotileBitmap.Height == 32) autotile.Format = AutotileFormat.Single;
+                    else if (autotile.AutotileBitmap.Height == 96) autotile.Format = AutotileFormat.RMVX;
+                    else autotile.Format = AutotileFormat.RMXP;
+                    this.Autotiles.Add(autotile);
+                    Data.Autotiles[autotile.ID] = autotile;
+                }
             }
 
             // Make sure the three arrays are just as big; trailing nulls may be left out if the data is edited externally
             int maxcount = Math.Max(Math.Max(Passabilities.Count, Priorities.Count), Tags.Count);
             this.Passabilities.AddRange(new Passability[maxcount - Passabilities.Count]);
-            this.Priorities.AddRange(new int?[maxcount - Priorities.Count]);
-            this.Tags.AddRange(new int?[maxcount - Tags.Count]);
+            this.Priorities.AddRange(new int[maxcount - Priorities.Count]);
+            this.Tags.AddRange(new int[maxcount - Tags.Count]);
             if (!string.IsNullOrEmpty(this.GraphicName)) this.CreateBitmap();
         }
 
@@ -114,8 +128,8 @@ namespace RPGStudioMK.Game
                 int tileycount = (int) Math.Floor(TilesetBitmap.Height / 32d);
                 int size = tileycount * 8;
                 this.Passabilities.AddRange(new Passability[size - Passabilities.Count]);
-                this.Priorities.AddRange(new int?[size - Priorities.Count]);
-                this.Tags.AddRange(new int?[size - Tags.Count]);
+                this.Priorities.AddRange(new int[size - Priorities.Count]);
+                this.Tags.AddRange(new int[size - Tags.Count]);
             }
         }
 

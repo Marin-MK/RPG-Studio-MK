@@ -49,7 +49,7 @@ namespace RPGStudioMK.Widgets
             List<ListItem> items = new List<ListItem>();
             foreach (Map Map in this.MapList)
             {
-                string Name = ShowIDs ? $"{Utilities.Digits(Map.ID, 3)}: {Map.DevName}" : Map.DevName;
+                string Name = ShowIDs ? $"{Utilities.Digits(Map.ID, 3)}: {Map.Name}" : Map.Name;
                 items.Add(new ListItem(Name, Map));
             }
             Maps.SetItems(items);

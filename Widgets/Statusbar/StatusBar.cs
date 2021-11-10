@@ -43,7 +43,7 @@ namespace RPGStudioMK.Widgets
         {
             if (Sprites["map"].Bitmap != null) Sprites["map"].Bitmap.Dispose();
             Font f = Font.Get("Fonts/ProductSans-M", 14);
-            string text = $"{Utilities.Digits(Map.ID, 3)}: {Map.DevName} ({Map.Width}x{Map.Height})";
+            string text = $"{Utilities.Digits(Map.ID, 3)}: {Map.Name} ({Map.Width}x{Map.Height})";
             Size s = f.TextSize(text);
             Sprites["map"].Bitmap = new Bitmap(s);
             Sprites["map"].Bitmap.Font = f;

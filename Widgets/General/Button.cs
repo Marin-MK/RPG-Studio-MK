@@ -47,8 +47,8 @@ namespace RPGStudioMK.Widgets
             b.SetPixel(8, 3, 0, 2, 4, 26);
             b.SetPixel(6, 4, 1, 0, 7, 33);
             b.SetPixel(4, 6, 1, 0, 7, 33);
-            b.SetPixel(9, 3, 0, 6, 12, 32); //
-            b.SetPixel(3, 9, 0, 6, 12, 32); //
+            b.SetPixel(9, 3, 0, 6, 12, 32);
+            b.SetPixel(3, 9, 0, 6, 12, 32);
             b.SetPixel(5, 5, 0, 2, 4, 38);
             b.SetPixel(7, 4, 0, 5, 4, 45);
             b.SetPixel(4, 7, 0, 5, 4, 45);

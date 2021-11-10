@@ -68,49 +68,24 @@ namespace RPGStudioMK.Widgets
             OnWidgetSelected += WidgetSelected;
         }
 
-        public List<TreeNode> PopulateList(List<object> Maps, bool first = false)
+        public List<TreeNode> PopulateList(int PopulateChildrenOfID = 0)
         {
             List<TreeNode> nodes = new List<TreeNode>();
-            for (int i = (first ? 0 : 2); i < Maps.Count; i++)
+            foreach (Map map in Data.Maps.Values)
             {
-                if (Maps[i] is int)
+                if (map.ParentID == PopulateChildrenOfID)
                 {
-                    if (!Data.Maps.ContainsKey((int) Maps[i])) continue;
-                    nodes.Add(new TreeNode() { Name = Data.Maps[(int) Maps[i]].DevName, Object = (int) Maps[i] });
-                    Data.Maps[(int) Maps[i]].Added = true;
-                }
-                else
-                {
-                    List<object> list = (List<object>) Maps[i];
-                    if (!Data.Maps.ContainsKey((int) list[0]))
-                    {
-                        nodes.AddRange(PopulateList(list));
-                    }
-                    else
-                    {
-                        TreeNode n = new TreeNode();
-                        n.Name = Data.Maps[(int)list[0]].DevName;
-                        n.Object = (int) list[0];
-                        n.Collapsed = (bool)list[1];
-                        Data.Maps[(int) list[0]].Added = true;
-                        n.Nodes = PopulateList(list);
-                        nodes.Add(n);
-                    }
+                    TreeNode node = new TreeNode() { Name = map.ToString(), Object = map.ID };
+                    node.Nodes = PopulateList(map.ID);
+                    node.Collapsed = !map.Expanded;
+                    nodes.Add(node);
                 }
             }
-            if (first)
+            nodes.Sort((TreeNode n1, TreeNode n2) =>
             {
-                foreach (KeyValuePair<int, Map> kvp in Data.Maps)
-                {
-                    if (!kvp.Value.Added)
-                    {
-                        nodes.Add(new TreeNode() { Name = kvp.Value.DevName, Object = kvp.Key });
-                        kvp.Value.Added = true;
-                        Editor.ProjectSettings.MapOrder.Add(kvp.Key);
-                    }
-                }
-                mapview.SetNodes(nodes);
-            }
+                return Data.Maps[(int) n1.Object].Order.CompareTo(Data.Maps[(int) n2.Object].Order);
+            });
+            if (PopulateChildrenOfID == 0) mapview.SetNodes(nodes);
             return nodes;
         }
 
@@ -158,8 +133,7 @@ namespace RPGStudioMK.Widgets
         {
             Map Map = new Map();
             Map.ID = Editor.GetFreeMapID();
-            Map.DevName = "Untitled Map";
-            Map.DisplayName = "Untitled Map";
+            Map.Name = "Untitled Map";
             Map.SetSize(15, 15);
             MapPropertiesWindow mpw = new MapPropertiesWindow(Map);
             mpw.OnClosed += delegate (BaseEventArgs ev)
@@ -202,7 +176,7 @@ namespace RPGStudioMK.Widgets
                 if (mpw.UpdateMapViewer)
                 {
                     Data.Maps[map.ID] = mpw.Map;
-                    mapview.SelectedNode.Name = mpw.Map.DevName;
+                    mapview.SelectedNode.Name = mpw.Map.Name;
                     Editor.UnsavedChanges = mpw.UnsavedChanges;
                     if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetMap(mpw.Map);
                 }
@@ -265,7 +239,6 @@ namespace RPGStudioMK.Widgets
                             }
                         }
                     }
-                    Editor.GenerateMapOrder(mapview.Nodes);
                     mapview.Redraw();
                 }
             };

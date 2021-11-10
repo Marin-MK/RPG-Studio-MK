@@ -12,9 +12,9 @@ namespace RPGStudioMK.Game
         public string Name;
         public AutotileFormat Format;
         public string GraphicName;
-        public List<Passability> Passabilities = new List<Passability>();
-        public List<int?> Priorities = new List<int?>();
-        public List<int?> Tags = new List<int?>();
+        public Passability Passability;
+        public int Priority;
+        public int Tag;
         public int AnimateSpeed = 10;
         public List<int?> QuickIDs = new List<int?>() { null, null, null, null, null, null };
 
@@ -23,7 +23,7 @@ namespace RPGStudioMK.Game
         public static Dictionary<AutotileFormat, List<List<int>>> AutotileCombinations = new Dictionary<AutotileFormat, List<List<int>>>()
         {
             {
-                AutotileFormat.Legacy, new List<List<int>>()
+                AutotileFormat.RMXP, new List<List<int>>()
                 {
                     new List<int>() { 26, 27, 32, 33 }, new List<int>() {  4, 27, 32, 33 }, new List<int>() { 26,  5, 32, 33 }, new List<int>() {  4,  5, 32, 33 },
                     new List<int>() { 26, 27, 32, 11 }, new List<int>() {  4, 27, 32, 11 }, new List<int>() { 26,  5, 32, 11 }, new List<int>() {  4,  5, 32, 11 },
@@ -75,97 +75,12 @@ namespace RPGStudioMK.Game
             }
         };
 
-        public Autotile()
-        {
-
-        }
-
-        public Autotile(Dictionary<string, object> Data)
-        {
-            if (Data.ContainsKey("^c"))
-            {
-                if ((string)Data["^c"] != "MKD::Autotile") throw new Exception("Invalid class - Expected class of type MKD::Autotile but got " + (string)Data["^c"] + ".");
-            }
-            else
-            {
-                throw new Exception("Could not find a ^c key to identify this class.");
-            }
-            this.ID = Convert.ToInt32(Data["@id"]);
-            this.Name = (string) Data["@name"];
-            this.GraphicName = (string) Data["@graphic_name"];
-            string format = (string) Data["@format"];
-            if (format == ":legacy") this.Format = AutotileFormat.Legacy;
-            else if (format == ":full_corners") this.Format = AutotileFormat.FullCorners;
-            else if (format == ":single") this.Format = AutotileFormat.Single;
-            else if (format == ":rmvx") this.Format = AutotileFormat.RMVX;
-            else throw new Exception("Invalid autotile format.");
-            Priorities = new List<int?>();
-            foreach (object o in ((JArray) Data["@priorities"]).ToObject<List<object>>())
-            {
-                if (o is null) Priorities.Add(null);
-                else Priorities.Add(Convert.ToInt32(o));
-            }
-            Passabilities = new List<Passability>();
-            foreach (object o in ((JArray) Data["@passabilities"]).ToObject<List<object>>())
-            {
-                Passabilities.Add((Passability) Convert.ToInt32(o));
-            }
-            Tags = new List<int?>();
-            foreach (object o in ((JArray) Data["@tags"]).ToObject<List<object>>())
-            {
-                if (o is null) Tags.Add(null);
-                else Tags.Add(Convert.ToInt32(o));
-            }
-            this.AnimateSpeed = Convert.ToInt32(Data["@animate_speed"]);
-            QuickIDs = new List<int?>() { null, null, null, null, null, null };
-            if (Data.ContainsKey("@quick_ids"))
-            {
-                List<object> ids = ((JArray) Data["@quick_ids"]).ToObject<List<object>>();
-                for (int i = 0; i < 6; i++)
-                {
-                    if (ids[i] != null) QuickIDs[i] = Convert.ToInt32(ids[i]);
-                }
-            }
-            // Make sure the three arrays are just as big; trailing nulls may be left out if the data is edited externally
-            int maxcount = Math.Max(Math.Max(Passabilities.Count, Priorities.Count), Tags.Count);
-            this.Passabilities.AddRange(new Passability[maxcount - Passabilities.Count]);
-            this.Priorities.AddRange(new int?[maxcount - Priorities.Count]);
-            this.Tags.AddRange(new int?[maxcount - Tags.Count]);
-            this.CreateBitmap();
-        }
-
-        public Dictionary<string, object> ToJSON()
-        {
-            Dictionary<string, object> Data = new Dictionary<string, object>();
-            Data["^c"] = "MKD::Autotile";
-            Data["@id"] = ID;
-            Data["@name"] = Name;
-            string format = null;
-            if (Format == AutotileFormat.FullCorners) format = ":full_corners";
-            else if (Format == AutotileFormat.Legacy) format = ":legacy";
-            else if (Format == AutotileFormat.RMVX) format = ":rmvx";
-            else if (Format == AutotileFormat.Single) format = ":single";
-            Data["@format"] = format;
-            Data["@graphic_name"] = GraphicName;
-            Data["@priorities"] = Priorities;
-            Data["@passabilities"] = Passabilities;
-            Data["@tags"] = Tags;
-            Data["@animate_speed"] = AnimateSpeed;
-            Data["@quick_ids"] = QuickIDs;
-            return Data;
-        }
-
         public void SetGraphic(string GraphicName)
         {
             if (this.GraphicName != GraphicName)
             {
                 this.GraphicName = GraphicName;
                 this.CreateBitmap(true);
-                int tileycount = (int) Math.Floor(AutotileBitmap.Height / 32d);
-                int size = tileycount * 8;
-                this.Passabilities.AddRange(new Passability[size - Passabilities.Count]);
-                this.Priorities.AddRange(new int?[size - Priorities.Count]);
-                this.Tags.AddRange(new int?[size - Tags.Count]);
             }
         }
 
@@ -174,7 +89,7 @@ namespace RPGStudioMK.Game
             if (this.AutotileBitmap == null || Redraw)
             {
                 if (this.AutotileBitmap != null) this.AutotileBitmap.Dispose();
-                Bitmap bmp = new Bitmap($"{Data.ProjectPath}\\gfx\\autotiles\\{this.GraphicName}.png");
+                Bitmap bmp = new Bitmap($"{Data.ProjectPath}\\Graphics\\Autotiles\\{this.GraphicName}.png");
                 this.AutotileBitmap = bmp;
             }
         }
@@ -187,7 +102,7 @@ namespace RPGStudioMK.Game
 
     public enum AutotileFormat
     {
-        Legacy,
+        RMXP,
         FullCorners,
         RMVX,
         Single

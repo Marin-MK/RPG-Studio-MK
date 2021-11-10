@@ -61,8 +61,8 @@ namespace RPGStudioMK.Widgets
         public void SetMap(Game.Map Map)
         {
             this.Map = Map;
-            MapViewerTiles.SetMap(Map);
             MapImageWidget.LoadLayers(Map);
+            MapViewerTiles.SetMap(Map);
         }
 
         public void SetMapAnimations(bool Animations)

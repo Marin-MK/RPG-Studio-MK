@@ -89,7 +89,7 @@ namespace RPGStudioMK.Widgets
             TwitterButton.SetHelpText("Visit MK's Twitter account.");
             TwitterButton.OnLeftClick += delegate (MouseEventArgs e)
             {
-                Utilities.OpenLink("http://twitter.com/MKStarterKit");
+                Utilities.OpenLink("http://twitter.com/RPGStudioMK");
             };
 
             NoProjects = new MultilineLabel(this);

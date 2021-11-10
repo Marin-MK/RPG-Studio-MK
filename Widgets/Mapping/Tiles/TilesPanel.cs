@@ -154,11 +154,11 @@ namespace RPGStudioMK.Widgets
             if (SingleAutotileContainer is CollapsibleContainer) SingleAutotileContainer.Dispose();
             SingleAutotileContainer = null;
             Bitmap singles = null;
-            SingleAutotileCount = MapData.AutotileIDs.FindAll(id => Data.Autotiles[id].Format == AutotileFormat.Single).Count;
+            SingleAutotileCount = MapData.AutotileIDs.Count;// FindAll(id => Data.Autotiles[id].Format == AutotileFormat.Single).Count;
             if (SingleAutotileCount > 0)
             {
                 SingleAutotileContainer = new CollapsibleContainer(MainStackPanel);
-                SingleAutotileContainer.SetText("Single Autotiles");
+                SingleAutotileContainer.SetText("Autotiles");// SetText("Single Autotiles");
                 SingleAutotileContainer.SetMargin(0, 0, 0, 8);
                 SingleAutotileContainer.OnCollapsedChanged += delegate (BaseEventArgs e) { UpdateCursor(); };
                 singles = new Bitmap(263, 33 + 33 * (int) Math.Floor(SingleAutotileCount / 8d));
@@ -174,16 +174,16 @@ namespace RPGStudioMK.Widgets
             {
                 int autotileid = MapData.AutotileIDs[i];
                 Autotile autotile = Data.Autotiles[autotileid];
-                if (autotile.Format == AutotileFormat.Single)
-                {
+                //if (autotile.Format == AutotileFormat.Single)
+                //{
                     int x = 33 * (SingleIndex % 8);
                     int y = 33 * (int) Math.Floor(SingleIndex / 8d);
                     singles.Build(x, y, autotile.AutotileBitmap, new Rect(0, 0, 32, 32));
                     AutotileContainers.Add(SingleIndex);
                     SingleIndex++;
-                    continue;
-                }
-                CollapsibleContainer c = new CollapsibleContainer(MainStackPanel);
+                //    continue;
+                //}
+                /*CollapsibleContainer c = new CollapsibleContainer(MainStackPanel);
                 c.SetText(autotile.Name);
                 c.SetMargin(0, 0, 0, 8);
                 c.OnCollapsedChanged += delegate (BaseEventArgs e) { UpdateCursor(); };
@@ -209,7 +209,7 @@ namespace RPGStudioMK.Widgets
                 image.Sprite.Bitmap = bmp;
                 image.SetSize(image.Sprite.Bitmap.Width, image.Sprite.Bitmap.Height);
                 DrawQuickAutotiles(i);
-                bmp.Lock();
+                bmp.Lock();*/
             }
             if (singles != null) singles.Lock();
             for (int i = 0; i < this.TilesetContainers.Count; i++)
@@ -276,7 +276,8 @@ namespace RPGStudioMK.Widgets
 
         public void SelectTile(int ContainerIndex, int TileX, int TileY)
         {
-            if (ContainerIndex < AutotileContainers.Count) // Autotile
+            int autotileboxes = AutotileContainers.Count - AutotileContainers.FindAll(e => e is int).Count + 1;
+            if (ContainerIndex < autotileboxes) // Autotile
             {
                 if (ContainerIndex == 0 && SingleAutotileCount > 0)
                 {
@@ -374,7 +375,7 @@ namespace RPGStudioMK.Widgets
             {
                 this.AutotileIndex = -1;
                 this.AutotileCombination = -1;
-                this.TilesetIndex = ContainerIndex - AutotileContainers.Count;
+                this.TilesetIndex = ContainerIndex - autotileboxes;
                 this.TileStartX = this.TileEndX = TileX;
                 this.TileStartY = this.TileEndY = TileY;
             }

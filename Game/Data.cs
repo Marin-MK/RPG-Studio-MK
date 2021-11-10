@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using rubydotnet;
@@ -40,8 +41,7 @@ namespace RPGStudioMK.Game
             Initialize();
             //LoadSpecies();
             LoadTilesets();
-            //LoadAutotiles();
-            //LoadMaps(); // TODO: Event commands/conditions
+            LoadMaps();
         }
 
         public static void SetProjectPath(string ProjectFilePath)
@@ -105,6 +105,8 @@ namespace RPGStudioMK.Game
             Ruby.Pin(data);
             Ruby.Funcall(file, "close");
             long count = Ruby.Integer.FromPtr(Ruby.Funcall(data, "length"));
+            Autotiles.AddRange(new Autotile[count * 7]);
+            Tilesets.Add(null);
             for (int i = 0; i < count; i++)
             {
                 IntPtr tileset = Ruby.Array.Get(data, i);
@@ -116,23 +118,6 @@ namespace RPGStudioMK.Game
                 Ruby.Unpin(tileset);
             }
             Ruby.Unpin(data);
-            /*StreamReader sr = new StreamReader(File.OpenRead(DataPath + "/tilesets.mkd"));
-            string content = sr.ReadToEnd();
-            sr.Close();
-            Dictionary<string, object> data = JsonConvert.DeserializeObject<Dictionary<string, object>>(content);
-            if ((string) data[":type"] != ":tilesets")
-            {
-                throw new Exception("Invalid data type for tilesets.mkd - Expected to contain tileset data but found " + data[":type"] + ".");
-            }
-            List<object> AllTilests = ((JArray) data[":data"]).ToObject<List<object>>();
-            for (int i = 0; i < AllTilests.Count; i++)
-            {
-                if (AllTilests[i] == null) Tilesets.Add(null);
-                else Tilesets.Add(new Tileset(((JObject)AllTilests[i]).ToObject<Dictionary<string, object>>()));
-            }
-            int MaxID = Tilesets.Count;
-            int Missing = Editor.ProjectSettings.TilesetCapacity - MaxID + 1;
-            for (int i = 0; i < Missing; i++) Tilesets.Add(null);*/
         }
 
         public static void SaveTilesets()
@@ -153,77 +138,49 @@ namespace RPGStudioMK.Game
             sw.Close();
         }
 
-        public static void LoadAutotiles()
-        {
-            StreamReader sr = new StreamReader(File.OpenRead(DataPath + "/autotiles.mkd"));
-            string content = sr.ReadToEnd();
-            sr.Close();
-            Dictionary<string, object> data = JsonConvert.DeserializeObject<Dictionary<string, object>>(content);
-            if ((string) data[":type"] != ":autotiles")
-            {
-                throw new Exception("Invalid data type for autotiles.mkd - Expected to contain autotile data but found " + data[":type"] + ".");
-            }
-            List<object> AllAutotiles = ((JArray) data[":data"]).ToObject<List<object>>();
-            for (int i = 0; i < AllAutotiles.Count; i++)
-            {
-                if (AllAutotiles[i] == null) Autotiles.Add(null);
-                else Autotiles.Add(new Autotile(((JObject) AllAutotiles[i]).ToObject<Dictionary<string, object>>()));
-            }
-            int MaxID = Autotiles.Count;
-            int Missing = Editor.ProjectSettings.AutotileCapacity - MaxID + 1;
-            for (int i = 0; i < Missing; i++) Autotiles.Add(null);
-        }
-
-        public static void SaveAutotiles()
-        {
-            Dictionary<string, object> Main = new Dictionary<string, object>();
-            Main[":type"] = ":autotiles";
-            List<object> list = new List<object>();
-            for (int i = 0; i < Autotiles.Count; i++)
-            {
-                if (Autotiles[i] == null) list.Add(null);
-                else list.Add(Autotiles[i].ToJSON());
-            }
-            Main[":data"] = list;
-            string jsonstring = JsonConvert.SerializeObject(Main);
-            if (File.Exists(DataPath + "/autotiles.mkd")) File.Delete(DataPath + "/autotiles.mkd");
-            StreamWriter sw = new StreamWriter(File.OpenWrite(DataPath + "/autotiles.mkd"));
-            sw.Write(jsonstring);
-            sw.Close();
-        }
-
         /// <summary>
         /// Returns a list of map files in the given folder.
         /// </summary>
-        public static List<string> GetMapIDs(string path)
+        public static List<(string, int)> GetMapIDs(string path)
         {
-            List<string> Filenames = new List<string>();
+            List<(string, int)> Filenames = new List<(string, int)>();
             foreach (string file in Directory.GetFiles(path))
             {
                 string realfile = file;
                 while (realfile.Contains('\\')) realfile = realfile.Replace('\\', '/');
                 string name = realfile.Split('/').Last();
-                if (name.StartsWith("map") && name.EndsWith(".mkd"))
-                {
-                    name = name.Substring(3, name.Length - 7);
-                    int id;
-                    bool valid = int.TryParse(name, out id);
-                    if (valid) Filenames.Add(realfile);
-                }
+                Match match = Regex.Match(name, @"Map(\d+).rxdata");
+                if (match.Success)
+                    Filenames.Add((name, Convert.ToInt32(match.Groups[1].Value)));
             }
             // Subdirectories
-            foreach (string dir in Directory.GetDirectories(path))
-            {
-                string realdir = dir;
-                while (realdir.Contains('\\')) realdir = realdir.Replace('\\', '/');
-                Filenames.AddRange(GetMapIDs(realdir));
-            }
+            //foreach (string dir in Directory.GetDirectories(path))
+            //{
+            //    string realdir = dir;
+            //    while (realdir.Contains('\\')) realdir = realdir.Replace('\\', '/');
+            //    Filenames.AddRange(GetMapIDs(realdir));
+            //}
             return Filenames;
         }
 
         public static void LoadMaps()
         {
-            List<string> Filenames = GetMapIDs(DataPath + "/maps");
+            IntPtr mapinfofile = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/MapInfos.rxdata"), Ruby.String.ToPtr("rb"));
+            IntPtr mapinfo = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", mapinfofile);
+            Ruby.Pin(mapinfo);
+            Ruby.Funcall(mapinfofile, "close");
+            List<(string, int)> Filenames = GetMapIDs(DataPath);
+            foreach ((string name, int id) tuple in Filenames)
+            {
+                IntPtr mapfile = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/" + tuple.name), Ruby.String.ToPtr("rb"));
+                IntPtr mapdata = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", mapfile);
+                Ruby.Pin(mapdata);
+                int id = tuple.id;
+                Ruby.Funcall(mapfile, "close");
+                Map map = new Map(id, mapdata, Ruby.Hash.Get(mapinfo, Ruby.Integer.ToPtr(id)));
+                Maps[map.ID] = map;
+            }
+            /*List<string> Filenames = GetMapIDs(DataPath + "/maps");
             foreach (string filename in Filenames)
             {
                 StreamReader sr = new StreamReader(File.OpenRead(filename));
@@ -236,11 +193,12 @@ namespace RPGStudioMK.Game
                 }
                 Map map = new Map(((JObject) data[":data"]).ToObject<Dictionary<string, object>>());
                 Maps[map.ID] = map;
-            }
+            }*/
         }
 
         public static void SaveMaps()
         {
+            /*
             // Delete all old map files
             foreach (string map in GetMapIDs(DataPath + "/maps"))
             {
@@ -257,7 +215,8 @@ namespace RPGStudioMK.Game
                 StreamWriter sw = new StreamWriter(File.OpenWrite(file));
                 sw.Write(jsonstring);
                 sw.Close();
-            }
+            }*/
+            throw new NotImplementedException();
         }
     }
 }

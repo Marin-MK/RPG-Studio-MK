@@ -285,9 +285,7 @@ namespace RPGStudioMK
         public static void AddMap(Map Map, int ParentID = 0)
         {
             Data.Maps.Add(Map.ID, Map);
-            if (ParentID != 0) AddIDToMap(ProjectSettings.MapOrder, ParentID, Map.ID);
-            else ProjectSettings.MapOrder.Add(Map.ID);
-            TreeNode node = new TreeNode() { Name = Map.DevName, Object = Map.ID };
+            TreeNode node = new TreeNode() { Name = Map.ToString(), Object = Map.ID };
             if (MainWindow.MapWidget != null)
             {
                 TreeView mapview = MainWindow.MapWidget.MapSelectPanel.mapview;
@@ -302,37 +300,6 @@ namespace RPGStudioMK
                 }
                 mapview.SetSelectedNode(node);
             }
-        }
-
-        /// <summary>
-        /// Adds a Map to the project's map order.
-        /// </summary>
-        /// <param name="collection">The collection to add the map to.</param>
-        /// <param name="ParentID">The parent ID of the map.</param>
-        /// <param name="ChildID">The child ID of the map.</param>
-        public static bool AddIDToMap(List<object> collection, int ParentID, object ChildData, bool first = true)
-        {
-            for (int i = 0; i < collection.Count; i++)
-            {
-                object o = collection[i];
-                if (o is bool) continue;
-                else if (o is int)
-                {
-                    if ((int) o == ParentID)
-                    {
-                        if (i == 0 && !first) // Already in this parent's node list
-                            collection.Add(ChildData);
-                        else // Create new node list
-                            collection[i] = new List<object>() { ParentID, false, ChildData };
-                        return true;
-                    }
-                }
-                else
-                {
-                    if (AddIDToMap((List<object>) o, ParentID, ChildData, false)) break;
-                }
-            }
-            return false;
         }
 
         /// <summary>
@@ -456,7 +423,6 @@ namespace RPGStudioMK
             DateTime t1 = DateTime.Now;
             DumpProjectSettings();
             Data.SaveTilesets();
-            Data.SaveAutotiles();
             Data.SaveMaps();
             Data.SaveSpecies();
             UnsavedChanges = false;
@@ -516,15 +482,9 @@ namespace RPGStudioMK
                 MainWindow.MainEditorWidget.SetGridRow(3);
 
                 // Set list of maps & initial map
-                List<TreeNode> Nodes = MainWindow.MapWidget.MapSelectPanel.PopulateList(Editor.ProjectSettings.MapOrder, true);
-                GenerateMapOrder(Nodes);
+                MainWindow.MapWidget.MapSelectPanel.PopulateList();
 
                 int mapid = ProjectSettings.LastMapID;
-                if (!Data.Maps.ContainsKey(mapid))
-                {
-                    if (ProjectSettings.MapOrder[0] is List<object>) mapid = (int)((List<object>) ProjectSettings.MapOrder[0])[0];
-                    else mapid = (int) ProjectSettings.MapOrder[0];
-                }
                 int lastlayer = ProjectSettings.LastLayer;
                 MainWindow.MapWidget.MapSelectPanel.SetMap(SelectedMap?? Data.Maps[mapid]);
                 MainWindow.MapWidget.SetSelectedLayer(lastlayer);
@@ -570,33 +530,6 @@ namespace RPGStudioMK
             MainWindow.MainGridLayout.UpdateLayout();
             MainWindow.StatusBar.Refresh();
             MainWindow.ToolBar.Refresh();
-        }
-
-        /// <summary>
-        /// Generates a new MapOrder list based on the existing nodes in the map list.
-        /// </summary>
-        public static List<object> GenerateMapOrder(List<TreeNode> Nodes, bool Recursive = false)
-        {
-            List<object> List = new List<object>();
-            for (int i = 0; i < Nodes.Count; i++)
-            {
-                TreeNode n = Nodes[i];
-                if (n.Nodes.Count > 0)
-                {
-                    List<object> sublist = new List<object>() { (int) n.Object, n.Collapsed };
-                    sublist.AddRange(GenerateMapOrder(n.Nodes, true));
-                    List.Add(sublist);
-                }
-                else
-                {
-                    List.Add((int) n.Object);
-                }
-            }
-            if (!Recursive) // First call
-            {
-                Editor.ProjectSettings.MapOrder = List;
-            }
-            return List;
         }
 
         /// <summary>
@@ -713,10 +646,6 @@ namespace RPGStudioMK
         /// The last-used version of the editor to save the project. Can be used to programmatically port old data formats to new formats upon an update.
         /// </summary>
         public string SavedVersion;
-        /// <summary>
-        /// The hierarchy of maps as seen in the map list.
-        /// </summary>
-        public List<object> MapOrder = new List<object>();
         /// <summary>
         /// The name of the project.
         /// </summary>

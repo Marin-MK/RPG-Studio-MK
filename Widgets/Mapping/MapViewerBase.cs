@@ -136,9 +136,6 @@ namespace RPGStudioMK.Widgets
         {
             this.Map = Map;
             Editor.MainWindow.StatusBar.SetMap(Map);
-            //PositionMap();
-            //if (MainContainer.HScrollBar != null) MainContainer.HScrollBar.SetValue(0.5);
-            //if (MainContainer.VScrollBar != null) MainContainer.VScrollBar.SetValue(0.5);
             PositionMap();
         }
 
@@ -152,7 +149,7 @@ namespace RPGStudioMK.Widgets
             if (miny - 12 * 32d * ZoomFactor < 0) miny = (int) Math.Round(12 * 32d * ZoomFactor);
             int x = 0;
             int y = 0;
-            foreach (MapConnection c in Map.Connections)
+            /*foreach (MapConnection c in Map.Connections)
             {
                 int leftx = (int) Math.Round((-c.RelativeX + 2) * 32d * ZoomFactor);
                 int rightx = (int) Math.Round((c.RelativeX - Map.Width + Data.Maps[c.MapID].Width + 2) * 32d * ZoomFactor);
@@ -160,7 +157,7 @@ namespace RPGStudioMK.Widgets
                 int lowery = (int) Math.Round((c.RelativeY - Map.Height + Data.Maps[c.MapID].Height + 2) * 32d * ZoomFactor);
                 x = Math.Max(x, Math.Max(leftx, rightx));
                 y = Math.Max(y, Math.Max(uppery, lowery));
-            }
+            }*/
             x = Math.Max(x, minx);
             y = Math.Max(y, miny);
             MapWidget.SetPosition(x, y);

@@ -111,8 +111,7 @@ namespace RPGStudioMK.Compatibility
                 if (info == IntPtr.Zero) throw new Exception($"No MapInfo could be found for map ({MapName}).");
                 Game.Map data = new Game.Map();
                 data.ID = Editor.GetFreeMapID();
-                data.DisplayName = MapInfo.Name(info);
-                data.DevName = data.DisplayName;
+                data.Name = MapInfo.Name(info);
                 data.Width = Map.Width(map);
                 data.Height = Map.Height(map);
                 IntPtr tileset = Ruby.Array.Get(tilesets, Map.TilesetID(map));
@@ -212,13 +211,13 @@ namespace RPGStudioMK.Compatibility
                                 set.ID = Editor.GetFreeTilesetID();
                                 int tilecount = 8 * bmp.Height / 32;
                                 set.Passabilities = new List<Passability>();
-                                set.Priorities = new List<int?>();
-                                set.Tags = new List<int?>();
+                                set.Priorities = new List<int>();
+                                set.Tags = new List<int>();
                                 for (int i = 0; i < tilecount; i++)
                                 {
                                     set.Passabilities.Add(Passability.All);
                                     set.Priorities.Add(0);
-                                    set.Tags.Add(null);
+                                    set.Tags.Add(0);
                                 }
                                 Data.Tilesets[set.ID] = set;
                                 set.CreateBitmap();
