@@ -68,10 +68,6 @@ namespace RPGStudioMK.Compatibility
                 }
                 int size = (int) (Ruby.Integer.FromPtr(XSize) * Ruby.Integer.FromPtr(YSize) * Ruby.Integer.FromPtr(ZSize));
                 Ruby.SetIVar(Self, "@data", Ruby.Array.Create(size + 5, Ruby.Integer.ToPtr(0)));
-                Ruby.SetIVar(Self, "@xsize", XSize);
-                Ruby.SetIVar(Self, "@ysize", YSize);
-                Ruby.SetIVar(Self, "@zsize", ZSize);
-                Ruby.SetIVar(Self, "@size", ZSize);
                 Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]=", Ruby.Integer.ToPtr(0), ZSize);
                 Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]=", Ruby.Integer.ToPtr(1), XSize);
                 Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]=", Ruby.Integer.ToPtr(2), YSize);

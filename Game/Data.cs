@@ -139,7 +139,7 @@ namespace RPGStudioMK.Game
                     Ruby.Funcall(tilesets, "push", tilesetbin);
                 }
             }
-            IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/Tilesets2.rxdata"), Ruby.String.ToPtr("wb"));
+            IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/Tilesets.rxdata"), Ruby.String.ToPtr("wb"));
             IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", tilesets);
             Ruby.Funcall(file, "write", data);
             Ruby.Funcall(file, "close");
