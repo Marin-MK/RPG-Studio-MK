@@ -13,24 +13,25 @@ namespace RPGStudioMK.Compatibility
             {
                 Class = Ruby.Class.Define("Table");
                 Ruby.Class.DefineClassMethod(Class, "_load", _load);
+                Ruby.Class.DefineMethod(Class, "_dump", _dump);
                 Ruby.Class.DefineMethod(Class, "initialize", initialize);
             }
 
             public static int Size(IntPtr Self)
             {
-                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@size"));
+                return (int) Ruby.Integer.FromPtr(Ruby.Array.Get(Ruby.GetIVar(Self, "@data"), 4));
             }
             public static int XSize(IntPtr Self)
             {
-                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@xsize"));
+                return (int) Ruby.Integer.FromPtr(Ruby.Array.Get(Ruby.GetIVar(Self, "@data"), 1));
             }
             public static int YSize(IntPtr Self)
             {
-                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@ysize"));
+                return (int) Ruby.Integer.FromPtr(Ruby.Array.Get(Ruby.GetIVar(Self, "@data"), 2));
             }
             public static int ZSize(IntPtr Self)
             {
-                return (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Self, "@zsize"));
+                return (int) Ruby.Integer.FromPtr(Ruby.Array.Get(Ruby.GetIVar(Self, "@data"), 3));
             }
             public static IntPtr Data(IntPtr Self)
             {
@@ -39,7 +40,12 @@ namespace RPGStudioMK.Compatibility
 
             public static IntPtr Get(IntPtr Self, int Index)
             {
-                return Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]", Ruby.Integer.ToPtr(Index));
+                return Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]", Ruby.Integer.ToPtr(Index + 5));
+            }
+
+            public static IntPtr Set(IntPtr Self, int Index, IntPtr Value)
+            {
+                return Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]=", Ruby.Integer.ToPtr(Index + 5), Value);
             }
 
             static IntPtr initialize(IntPtr Self, IntPtr Args)
@@ -60,11 +66,17 @@ namespace RPGStudioMK.Compatibility
                     Ruby.Array.Expect(Args, 2, "Integer");
                     ZSize = Ruby.Array.Get(Args, 2);
                 }
+                int size = (int) (Ruby.Integer.FromPtr(XSize) * Ruby.Integer.FromPtr(YSize) * Ruby.Integer.FromPtr(ZSize));
+                Ruby.SetIVar(Self, "@data", Ruby.Array.Create(size + 5, Ruby.Integer.ToPtr(0)));
                 Ruby.SetIVar(Self, "@xsize", XSize);
                 Ruby.SetIVar(Self, "@ysize", YSize);
                 Ruby.SetIVar(Self, "@zsize", ZSize);
-                Ruby.SetIVar(Self, "@size", Ruby.Integer.ToPtr(Ruby.Integer.FromPtr(XSize) * Ruby.Integer.FromPtr(YSize) * Ruby.Integer.FromPtr(ZSize)));
-                Ruby.SetIVar(Self, "@data", Ruby.Array.Create());
+                Ruby.SetIVar(Self, "@size", ZSize);
+                Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]=", Ruby.Integer.ToPtr(0), ZSize);
+                Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]=", Ruby.Integer.ToPtr(1), XSize);
+                Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]=", Ruby.Integer.ToPtr(2), YSize);
+                Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]=", Ruby.Integer.ToPtr(3), ZSize);
+                Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]=", Ruby.Integer.ToPtr(4), Ruby.Integer.ToPtr(size));
                 return Ruby.Nil;
             }
 
@@ -73,8 +85,13 @@ namespace RPGStudioMK.Compatibility
                 Ruby.Array.Expect(Args, 1);
                 IntPtr unpacked = Ruby.Funcall(Ruby.Array.Get(Args, 0), "unpack", Ruby.String.ToPtr("LLLLLS*"));
                 IntPtr obj = Ruby.Funcall(Self, "new", Ruby.Array.Get(unpacked, 1), Ruby.Array.Get(unpacked, 2), Ruby.Array.Get(unpacked, 3));
-                Ruby.SetIVar(obj, "@data", Ruby.Funcall(unpacked, "[]", Ruby.Integer.ToPtr(5), Ruby.Integer.ToPtr(Ruby.Array.Length(unpacked) - 5)));
+                Ruby.SetIVar(obj, "@data", unpacked);
                 return obj;
+            }
+
+            static IntPtr _dump(IntPtr Self, IntPtr Args)
+            {
+                return Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "pack", Ruby.String.ToPtr("LLLLLS*"));
             }
         }
     }

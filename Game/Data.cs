@@ -33,7 +33,6 @@ namespace RPGStudioMK.Game
         private static void Initialize()
         {
             Compatibility.RMXP.Setup();
-            Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Dir"), "chdir", Ruby.String.ToPtr(DataPath));
         }
 
         public static void LoadGameData()
@@ -42,6 +41,13 @@ namespace RPGStudioMK.Game
             //LoadSpecies();
             LoadTilesets();
             LoadMaps();
+        }
+
+        public static void SaveGameData()
+        {
+            SaveTilesets();
+            //SaveMaps();
+            //SaveSpecies();
         }
 
         public static void SetProjectPath(string ProjectFilePath)
@@ -63,7 +69,7 @@ namespace RPGStudioMK.Game
             Editor.ProjectFilePath = Data.ProjectFilePath;
         }
 
-        public static void LoadSpecies()
+        private static void LoadSpecies()
         {
             StreamReader sr = new StreamReader(File.OpenRead(DataPath + "/species.mkd"));
             string content = sr.ReadToEnd();
@@ -81,7 +87,7 @@ namespace RPGStudioMK.Game
             }
         }
 
-        public static void SaveSpecies()
+        private static void SaveSpecies()
         {
             Dictionary<string, object> Main = new Dictionary<string, object>();
             Main[":type"] = ":species";
@@ -97,8 +103,8 @@ namespace RPGStudioMK.Game
             sw.Write(jsonstring);
             sw.Close();
         }
-
-        public static void LoadTilesets()
+        
+        private static void LoadTilesets()
         {
             IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/Tilesets.rxdata"), Ruby.String.ToPtr("rb"));
             IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", file);
@@ -120,28 +126,29 @@ namespace RPGStudioMK.Game
             Ruby.Unpin(data);
         }
 
-        public static void SaveTilesets()
+        private static void SaveTilesets()
         {
-            Dictionary<string, object> Main = new Dictionary<string, object>();
-            Main[":type"] = ":tilesets";
-            List<object> list = new List<object>();
-            for (int i = 0; i < Tilesets.Count; i++)
+            IntPtr tilesets = Ruby.Array.Create();
+            Ruby.Pin(tilesets);
+            foreach (Tileset tileset in Tilesets)
             {
-                if (Tilesets[i] == null) list.Add(null);
-                else list.Add(Tilesets[i].ToJSON());
+                if (tileset == null) Ruby.Funcall(tilesets, "push", Ruby.Nil);
+                else
+                {
+                    IntPtr tilesetbin = tileset.Save();
+                    Ruby.Funcall(tilesets, "push", tilesetbin);
+                }
             }
-            Main[":data"] = list;
-            string jsonstring = JsonConvert.SerializeObject(Main);
-            if (File.Exists(DataPath + "/tilesets.mkd")) File.Delete(DataPath + "/tilesets.mkd");
-            StreamWriter sw = new StreamWriter(File.OpenWrite(DataPath + "/tilesets.mkd"));
-            sw.Write(jsonstring);
-            sw.Close();
+            IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/Tilesets2.rxdata"), Ruby.String.ToPtr("wb"));
+            IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", tilesets);
+            Ruby.Funcall(file, "write", data);
+            Ruby.Funcall(file, "close");
         }
 
         /// <summary>
         /// Returns a list of map files in the given folder.
         /// </summary>
-        public static List<(string, int)> GetMapIDs(string path)
+        private static List<(string, int)> GetMapIDs(string path)
         {
             List<(string, int)> Filenames = new List<(string, int)>();
             foreach (string file in Directory.GetFiles(path))
@@ -163,7 +170,7 @@ namespace RPGStudioMK.Game
             return Filenames;
         }
 
-        public static void LoadMaps()
+        private static void LoadMaps()
         {
             IntPtr mapinfofile = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/MapInfos.rxdata"), Ruby.String.ToPtr("rb"));
             IntPtr mapinfo = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", mapinfofile);
@@ -180,23 +187,9 @@ namespace RPGStudioMK.Game
                 Map map = new Map(id, mapdata, Ruby.Hash.Get(mapinfo, Ruby.Integer.ToPtr(id)));
                 Maps[map.ID] = map;
             }
-            /*List<string> Filenames = GetMapIDs(DataPath + "/maps");
-            foreach (string filename in Filenames)
-            {
-                StreamReader sr = new StreamReader(File.OpenRead(filename));
-                string content = sr.ReadToEnd();
-                sr.Close();
-                Dictionary<string, object> data = JsonConvert.DeserializeObject<Dictionary<string, object>>(content);
-                if ((string) data[":type"] != ":map")
-                {
-                    throw new Exception("Invalid data type for '" + filename + "' - Expected to contain map data but found " + data[":type"] + ".");
-                }
-                Map map = new Map(((JObject) data[":data"]).ToObject<Dictionary<string, object>>());
-                Maps[map.ID] = map;
-            }*/
         }
 
-        public static void SaveMaps()
+        private static void SaveMaps()
         {
             /*
             // Delete all old map files

@@ -422,9 +422,7 @@ namespace RPGStudioMK
             }
             DateTime t1 = DateTime.Now;
             DumpProjectSettings();
-            Data.SaveTilesets();
-            Data.SaveMaps();
-            Data.SaveSpecies();
+            Data.SaveGameData();
             UnsavedChanges = false;
             if (MainWindow != null)
             {

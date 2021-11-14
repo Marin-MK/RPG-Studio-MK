@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
 using odl;
 using rubydotnet;
 
@@ -53,7 +55,7 @@ namespace RPGStudioMK.Game
                     BushFlags.Add(i);
                     code -= 64;
                 }
-                Passabilities.Add((Passability) code);
+                Passabilities.Add((Passability) 15 - code);
             }
             IntPtr priorities = Ruby.GetIVar(data, "@priorities");
             for (int i = 0; i < Compatibility.RMXP.Table.Size(priorities); i++)
@@ -106,17 +108,52 @@ namespace RPGStudioMK.Game
             if (!string.IsNullOrEmpty(this.GraphicName)) this.CreateBitmap();
         }
 
-        public Dictionary<string, object> ToJSON()
+        public IntPtr Save()
         {
-            Dictionary<string, object> Data = new Dictionary<string, object>();
-            Data["^c"] = "MKD::Tileset";
-            Data["@id"] = ID;
-            Data["@name"] = Name;
-            Data["@graphic_name"] = GraphicName;
-            Data["@priorities"] = Priorities;
-            Data["@passabilities"] = Passabilities;
-            Data["@tags"] = Tags;
-            return Data;
+            IntPtr obj = Ruby.Funcall(Compatibility.RMXP.Tileset.Class, "new");
+            Ruby.Pin(obj);
+            Ruby.SetIVar(obj, "@id", Ruby.Integer.ToPtr(this.ID));
+            Ruby.SetIVar(obj, "@name", Ruby.String.ToPtr(this.Name));
+            Ruby.SetIVar(obj, "@tileset_name", Ruby.String.ToPtr(this.GraphicName));
+            Ruby.SetIVar(obj, "@panorama_name", Ruby.String.ToPtr(this.PanoramaName));
+            Ruby.SetIVar(obj, "@panorama_hue", Ruby.Integer.ToPtr(this.PanoramaHue));
+            Ruby.SetIVar(obj, "@fog_name", Ruby.String.ToPtr(this.FogName));
+            Ruby.SetIVar(obj, "@fog_sx", Ruby.Integer.ToPtr(this.FogSX));
+            Ruby.SetIVar(obj, "@fog_sy", Ruby.Integer.ToPtr(this.FogSY));
+            Ruby.SetIVar(obj, "@fog_hue", Ruby.Integer.ToPtr(this.FogHue));
+            Ruby.SetIVar(obj, "@fog_opacity", Ruby.Integer.ToPtr(this.FogOpacity));
+            Ruby.SetIVar(obj, "@fog_zoom", Ruby.Integer.ToPtr(this.FogZoom));
+            Ruby.SetIVar(obj, "@fog_blend_type", Ruby.Integer.ToPtr(this.FogBlendType));
+            Ruby.SetIVar(obj, "@battleback_name", Ruby.String.ToPtr(this.BattlebackName));
+            IntPtr autotile_names = Ruby.Array.Create(7, Ruby.String.ToPtr(""));
+            Ruby.SetIVar(obj, "@autotile_names", autotile_names);
+            foreach (Autotile autotile in this.Autotiles)
+            {
+                int idx = autotile.ID - this.ID * 7;
+                Ruby.Funcall(autotile_names, "[]=", Ruby.Integer.ToPtr(idx), Ruby.String.ToPtr(autotile.GraphicName));
+            }
+            IntPtr passages = Ruby.Funcall(Compatibility.RMXP.Table.Class, "new", Ruby.Integer.ToPtr(this.Passabilities.Count));
+            Ruby.SetIVar(obj, "@passages", passages);
+            for (int i = 0; i < this.Passabilities.Count; i++)
+            {
+                int code = 15 - (int) this.Passabilities[i];
+                if (BushFlags.Contains(i)) code += 64;
+                Compatibility.RMXP.Table.Set(passages, i, Ruby.Integer.ToPtr(code));
+            }
+            IntPtr priorities = Ruby.Funcall(Compatibility.RMXP.Table.Class, "new", Ruby.Integer.ToPtr(this.Priorities.Count));
+            Ruby.SetIVar(obj, "@priorities", priorities);
+            for (int i = 0; i < this.Priorities.Count; i++)
+            {
+                Compatibility.RMXP.Table.Set(priorities, i, Ruby.Integer.ToPtr(this.Priorities[i]));
+            }
+            IntPtr tags = Ruby.Funcall(Compatibility.RMXP.Table.Class, "new", Ruby.Integer.ToPtr(this.Tags.Count));
+            Ruby.SetIVar(obj, "@terrain_tags", tags);
+            for (int i = 0; i < this.Tags.Count; i++)
+            {
+                Compatibility.RMXP.Table.Set(tags, i, Ruby.Integer.ToPtr(this.Tags[i]));
+            }
+            Ruby.Unpin(obj);
+            return obj;
         }
 
         public void SetGraphic(string GraphicName)
