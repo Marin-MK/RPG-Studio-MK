@@ -243,7 +243,7 @@ namespace RPGStudioMK.Widgets
                         PictureBox img = new PictureBox(c);
                         img.SetPosition(0, y);
                         img.Sprite.Bitmap = b;
-                        b.Lock();
+                        if (!b.Locked) b.Lock();
                         img.Sprite.DestroyBitmap = false;
                         img.SetSize(b.Width, b.Height);
                         y += b.Height;
@@ -292,6 +292,7 @@ namespace RPGStudioMK.Widgets
         public void SelectTile(int ContainerIndex, int TileX, int TileY)
         {
             int autotileboxes = AutotileContainers.Count - AutotileContainers.FindAll(e => e is int).Count + 1;
+            if (AutotileContainers.Count == 0) autotileboxes = 0;
             if (ContainerIndex < autotileboxes) // Autotile
             {
                 if (ContainerIndex == 0 && SingleAutotileCount > 0)
