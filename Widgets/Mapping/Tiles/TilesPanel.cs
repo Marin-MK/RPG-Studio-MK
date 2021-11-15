@@ -608,7 +608,9 @@ namespace RPGStudioMK.Widgets
                 }
                 else
                 {
-                    if (idx != TilesetIndex + AutotileContainers.Count) return;
+                    int autotileboxes = AutotileContainers.Count - AutotileContainers.FindAll(e => e is int).Count + 1;
+                    if (autotileboxes < 0) autotileboxes = 0;
+                    if (idx != TilesetIndex + autotileboxes) return;
                 }
                 TileEndX = x;
                 TileEndY = y;
