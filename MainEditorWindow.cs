@@ -4,6 +4,7 @@ using RPGStudioMK.Game;
 using RPGStudioMK.Widgets;
 using odl;
 using amethyst;
+using System.Diagnostics;
 
 namespace RPGStudioMK
 {
@@ -305,7 +306,8 @@ namespace RPGStudioMK
         /// </summary>
         public void CreateEditor()
         {
-            DateTime start = DateTime.Now;
+            Stopwatch s = new Stopwatch();
+            s.Start();
             if (HomeScreen != null)
                 HomeScreen.Dispose();
 
@@ -321,8 +323,8 @@ namespace RPGStudioMK
 
             Editor.SetMode(Editor.ProjectSettings.LastMode, true);
 
-            TimeSpan time = DateTime.Now - start;
-            StatusBar.QueueMessage($"Project loaded ({time.Milliseconds}ms)", true, 5000);
+            s.Stop();
+            StatusBar.QueueMessage($"Project loaded ({s.ElapsedMilliseconds}ms)", true, 5000);
         }
 
         /// <summary>
