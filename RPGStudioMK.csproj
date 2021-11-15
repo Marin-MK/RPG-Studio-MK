@@ -25,7 +25,6 @@
   <ItemGroup>
     <ProjectReference Include="..\amethyst\amethyst.csproj" />
     <ProjectReference Include="..\odl\odl.csproj" />
-    <ProjectReference Include="..\peridot\peridot.csproj" />
     <ProjectReference Include="..\rubydotnet\rubydotnet.csproj" />
   </ItemGroup>
 

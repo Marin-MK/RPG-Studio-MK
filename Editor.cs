@@ -436,7 +436,7 @@ namespace RPGStudioMK
         /// </summary>
         public static void StartGame()
         {
-            peridot.Program.EmbedGame(MainWindow, Data.ProjectPath);
+            //peridot.Program.EmbedGame(MainWindow, Data.ProjectPath);
         }
 
         /// <summary>
