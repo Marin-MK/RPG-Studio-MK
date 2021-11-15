@@ -420,14 +420,15 @@ namespace RPGStudioMK
                 MainWindow.StatusBar.QueueMessage("Saving project...");
                 Graphics.UpdateGraphics(); // Overrides default Logic/Visual update loop by immediately updating just the graphics.
             }
-            DateTime t1 = DateTime.Now;
+            Stopwatch s = new Stopwatch();
+            s.Start();
             DumpProjectSettings();
             Data.SaveGameData();
             UnsavedChanges = false;
             if (MainWindow != null)
             {
-                long time = (long) Math.Round((DateTime.Now - t1).TotalMilliseconds);
-                MainWindow.StatusBar.QueueMessage($"Saved project ({time}ms)", true);
+                s.Stop();
+                MainWindow.StatusBar.QueueMessage($"Saved project ({s.ElapsedMilliseconds}ms)", true);
             }
         }
 

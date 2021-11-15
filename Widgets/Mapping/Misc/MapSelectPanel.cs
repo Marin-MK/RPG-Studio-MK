@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RPGStudioMK.Game;
 using odl;
 using amethyst;
+using System.Diagnostics;
 
 namespace RPGStudioMK.Widgets
 {
@@ -10,6 +11,8 @@ namespace RPGStudioMK.Widgets
     {
         public Container allmapcontainer;
         public TreeView mapview;
+
+        Stopwatch Stopwatch = new Stopwatch();
 
         public MapSelectPanel(IContainer Parent) : base(Parent)
         {
@@ -35,9 +38,11 @@ namespace RPGStudioMK.Widgets
             mapview.SetWidth(212);
             mapview.OnSelectedNodeChanged += delegate (MouseEventArgs e)
             {
-                DateTime start = DateTime.Now;
+                Stopwatch.Start();
                 SetMap(Data.Maps[(int) mapview.SelectedNode.Object], true);
-                Editor.MainWindow.StatusBar.QueueMessage($"Loaded Map #{mapview.SelectedNode.Object} ({(DateTime.Now - start).Milliseconds}ms)", false, 1000);
+                Stopwatch.Stop();
+                Editor.MainWindow.StatusBar.QueueMessage($"Loaded Map #{mapview.SelectedNode.Object} ({Stopwatch.ElapsedMilliseconds}ms)", false, 1000);
+                Stopwatch.Reset();
             };
             mapview.TrailingBlank = 32;
             allmapcontainer.SetContextMenuList(new List<IMenuItem>()
