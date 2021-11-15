@@ -181,7 +181,7 @@ namespace RPGStudioMK.Game
                 this.TilesetBitmap = bmp;
                 int tileycount = (int) Math.Floor(bmp.Height / 32d);
 
-                this.TilesetListBitmap = new Bitmap(bmp.Width + 7, bmp.Height + tileycount - 1);
+                this.TilesetListBitmap = new Bitmap(bmp.Width + 7, bmp.Height + tileycount - 1, Graphics.MaxTextureSize);
                 this.TilesetListBitmap.Unlock();
 
                 for (int tiley = 0; tiley < tileycount; tiley++)

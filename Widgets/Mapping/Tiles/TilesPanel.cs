@@ -42,7 +42,6 @@ namespace RPGStudioMK.Widgets
         int SingleAutotileCount = 0;
         List<object> AutotileContainers = new List<object>();
         List<CollapsibleContainer> TilesetContainers = new List<CollapsibleContainer>();
-        List<PictureBox> TilesetImages = new List<PictureBox>();
 
         public TilesPanel(IContainer Parent) : base(Parent)
         {
@@ -217,7 +216,6 @@ namespace RPGStudioMK.Widgets
                 this.TilesetContainers[i].Dispose();
             }
             this.TilesetContainers.Clear();
-            this.TilesetImages.Clear();
             for (int i = 0; i < MapData.TilesetIDs.Count; i++)
             {
                 int tilesetid = MapData.TilesetIDs[i];
@@ -228,12 +226,29 @@ namespace RPGStudioMK.Widgets
                 c.OnCollapsedChanged += delegate (BaseEventArgs e) { UpdateCursor(); };
                 c.SetSize(MainContainer.Size.Width - 13, tileset.TilesetListBitmap.Height + 23);
                 TilesetContainers.Add(c);
-                PictureBox image = new PictureBox(c);
-                image.SetPosition(0, 23);
-                image.Sprite.Bitmap = tileset.TilesetListBitmap;
-                image.Sprite.DestroyBitmap = false;
-                image.SetSize(image.Sprite.Bitmap.Width, image.Sprite.Bitmap.Height);
-                TilesetImages.Add(image);
+                if (!tileset.TilesetListBitmap.IsChunky)
+                {
+                    PictureBox image = new PictureBox(c);
+                    image.SetPosition(0, 23);
+                    image.Sprite.Bitmap = tileset.TilesetListBitmap.InternalBitmaps[0];
+                    image.Sprite.Bitmap.Lock();
+                    image.Sprite.DestroyBitmap = false;
+                    image.SetSize(image.Sprite.Bitmap.Width, image.Sprite.Bitmap.Height);
+                }
+                else
+                {
+                    int y = 23;
+                    foreach (Bitmap b in tileset.TilesetListBitmap.InternalBitmaps)
+                    {
+                        PictureBox img = new PictureBox(c);
+                        img.SetPosition(0, y);
+                        img.Sprite.Bitmap = b;
+                        b.Lock();
+                        img.Sprite.DestroyBitmap = false;
+                        img.SetSize(b.Width, b.Height);
+                        y += b.Height;
+                    }
+                }
             }
         }
 
