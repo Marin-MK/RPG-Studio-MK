@@ -106,6 +106,18 @@ namespace RPGStudioMK.Game
             {
                 this.AutotileIDs.Add(autotile.ID);
             }
+
+            IntPtr events = Ruby.GetIVar(data, "@events");
+            IntPtr keys = Ruby.Hash.Keys(events);
+            Ruby.Pin(keys);
+            for (int i = 0; i < Ruby.Array.Length(keys); i++)
+            {
+                IntPtr key = Ruby.Array.Get(keys, i);
+                IntPtr eventdata = Ruby.Hash.Get(events, key);
+                int id = (int) Ruby.Integer.FromPtr(key);
+                this.Events.Add(id, new Event(eventdata));
+            }
+            Ruby.Unpin(keys);
         }
 
         public Dictionary<string, object> ToJSON()

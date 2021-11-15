@@ -149,33 +149,20 @@ namespace RPGStudioMK.Widgets
             FileExplorer.SetSize(529, 396);
             FileExplorer.SetBaseDirectory(Data.ProjectPath);
             FileExplorer.SetFileExtensions("png");
-            string dir = "";
-            if (GraphicData.Param != null)
-            {
-                List<string> dirs = ((string) GraphicData.Param).Split('/').ToList();
-                for (int i = 0; i < dirs.Count - 1; i++)
-                {
-                    dir += dirs[i];
-                    if (i != dirs.Count - 2) dir += "/";
-                }
-            }
-            else dir = "gfx/characters";
-            FileExplorer.SetDirectory(dir);
+            FileExplorer.SetDirectory("Graphics/Characters");
             FileExplorer.OnFileSelected += delegate (BaseEventArgs e)
             {
-                string param = FileExplorer.SelectedFilename.Replace(Data.ProjectPath + "/", "").Replace(".png", "");
-                if (param != (string) this.GraphicData.Param)
+                string charname = FileExplorer.SelectedFilename.Replace(Data.ProjectPath + "/", "").Replace(".png", "");
+                if (this.GraphicData.CharacterName != charname)
                 {
-                    this.GraphicData = new EventGraphic();
-                    this.GraphicData.Type = ":file";
-                    this.GraphicData.Param = param;
+                    this.GraphicData = new EventGraphic(charname);
                     DirectionBox.SetSelectedIndex(0);
                     NumDirectionsBox.SetSelectedIndex(1);
                     NumFramesBox.SetValue(4);
                     RedrawGraphic();
                 }
             };
-            FileExplorer.SetSelectedFile((string) GraphicData.Param + ".png");
+            if (!string.IsNullOrEmpty(GraphicData.CharacterName)) FileExplorer.SetSelectedFile(GraphicData.CharacterName + ".png");
 
             CreateButton("Cancel", Cancel);
             Buttons[0].SetPosition(Size.Width - 99, Buttons[0].Position.Y);

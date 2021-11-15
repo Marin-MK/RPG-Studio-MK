@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using RPGStudioMK.Game;
 using Newtonsoft.Json.Linq;
 using odl;
-using amethyst;
+using rubydotnet;
 
 namespace RPGStudioMK
 {
@@ -151,9 +147,9 @@ namespace RPGStudioMK
         /// <summary>
         /// Formats the file path based on the platform.
         /// </summary>
-        public static string FormatPath(string Path, Platform Platform)
+        public static string FormatPath(string Path, odl.Platform Platform)
         {
-            if (Platform == Platform.Windows)
+            if (Platform == odl.Platform.Windows)
             {
                 while (Path.Contains("/")) Path = Path.Replace("/", "\\");
             }
@@ -169,16 +165,16 @@ namespace RPGStudioMK
         /// </summary>
         public static void OpenLink(string url)
         {
-            if (odl.Graphics.Platform == Platform.Windows)
+            if (odl.Graphics.Platform == odl.Platform.Windows)
             {
                 url = url.Replace("&", "^&");
                 Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
             }
-            else if (odl.Graphics.Platform == Platform.Linux)
+            else if (odl.Graphics.Platform == odl.Platform.Linux)
             {
                 Process.Start("xdg-open", url);
             }
-            else if (odl.Graphics.Platform == Platform.MacOS)
+            else if (odl.Graphics.Platform == odl.Platform.MacOS)
             {
                 Process.Start("open", url);
             }
@@ -201,15 +197,15 @@ namespace RPGStudioMK
         public static void OpenFolder(string Folder)
         {
             string path = FormatPath(Folder, odl.Graphics.Platform);
-            if (odl.Graphics.Platform == Platform.Windows)
+            if (odl.Graphics.Platform == odl.Platform.Windows)
             {
                 Process.Start("explorer.exe", path);
             }
-            else if (odl.Graphics.Platform == Platform.Linux)
+            else if (odl.Graphics.Platform == odl.Platform.Linux)
             {
                 Process.Start("xdg-open", path);
             }
-            else if (odl.Graphics.Platform == Platform.MacOS)
+            else if (odl.Graphics.Platform == odl.Platform.MacOS)
             {
                 Process.Start("open", $"-R \"{path}\"");
             }
@@ -376,6 +372,53 @@ namespace RPGStudioMK
                 BaseType = BaseType.BaseType;
             }
             return Types;
+        }
+
+        public static object RubyToNative(IntPtr obj)
+        {
+            if (obj == Ruby.Nil) return null;
+            if (obj == Ruby.True) return true;
+            if (obj == Ruby.False) return false;
+            if (Ruby.Funcall(obj, "is_a?", Ruby.GetConst(Ruby.Object.Class, "Integer")) == Ruby.True) return Ruby.Integer.FromPtr(obj);
+            else if (Ruby.Is(obj, "String")) return Ruby.String.FromPtr(obj);
+            else if (Ruby.Is(obj, "Array"))
+            {
+                List<object> list = new List<object>();
+                for (int i = 0; i < Ruby.Array.Length(obj); i++)
+                {
+                    list.Add(RubyToNative(Ruby.Array.Get(obj, i)));
+                }
+                return list;
+            }
+            else if (Ruby.Is(obj, "Hash"))
+            {
+                Dictionary<object, object> dict = new Dictionary<object, object>();
+                IntPtr keys = Ruby.Hash.Keys(obj);
+                Ruby.Pin(keys);
+                for (int i = 0; i < Ruby.Array.Length(keys); i++)
+                {
+                    IntPtr key = Ruby.Array.Get(keys, i);
+                    object value = RubyToNative(Ruby.Hash.Get(obj, key));
+                    dict.Add(RubyToNative(key), value);
+                }
+                Ruby.Unpin(keys);
+                return dict;
+            }
+            else if (Ruby.Is(obj, "RPG::AudioFile")) return new AudioFile(obj);
+            else if (Ruby.Is(obj, "RPG::MoveRoute")) return new MoveRoute(obj);
+            else if (Ruby.Is(obj, "RPG::MoveCommand")) return new MoveCommand(obj);
+            else if (Ruby.Is(obj, "Tone"))
+            {
+                short red = (short) Ruby.Integer.FromPtr(Ruby.GetIVar(obj, "@red"));
+                short green = (short) Ruby.Integer.FromPtr(Ruby.GetIVar(obj, "@green"));
+                short blue = (short) Ruby.Integer.FromPtr(Ruby.GetIVar(obj, "@blue"));
+                byte gray = (byte) Ruby.Integer.FromPtr(Ruby.GetIVar(obj, "@grey"));
+                return new Tone(red, green, blue, gray);
+            }
+            else
+            {
+                throw new Exception($"Could not convert Ruby's '{Ruby.GetClassName(obj)}' class to a native class.");
+            }
         }
     }
 }

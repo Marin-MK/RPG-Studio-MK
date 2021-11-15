@@ -143,6 +143,7 @@ namespace RPGStudioMK.Game
             IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", tilesets);
             Ruby.Funcall(file, "write", data);
             Ruby.Funcall(file, "close");
+            Ruby.Unpin(tilesets);
         }
 
         /// <summary>
@@ -186,7 +187,9 @@ namespace RPGStudioMK.Game
                 Ruby.Funcall(mapfile, "close");
                 Map map = new Map(id, mapdata, Ruby.Hash.Get(mapinfo, Ruby.Integer.ToPtr(id)));
                 Maps[map.ID] = map;
+                Ruby.Unpin(mapdata);
             }
+            Ruby.Unpin(mapinfo);
         }
 
         private static void SaveMaps()
