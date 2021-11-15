@@ -35,6 +35,23 @@ namespace RPGStudioMK.Game
             }
         }
 
+        public IntPtr Save()
+        {
+            IntPtr moveroute = Ruby.Funcall(Compatibility.RMXP.MoveRoute.Class, "new");
+            Ruby.Pin(moveroute);
+            Ruby.SetIVar(moveroute, "@skippable", this.Skippable ? Ruby.True : Ruby.False);
+            Ruby.SetIVar(moveroute, "@repeat", this.Repeat ? Ruby.True : Ruby.False);
+            IntPtr list = Ruby.Array.Create();
+            Ruby.SetIVar(moveroute, "@list", list);
+            for (int i = 0; i < this.Commands.Count; i++)
+            {
+                IntPtr cmd = this.Commands[i].Save();
+                Ruby.Array.Set(list, i, cmd);
+            }
+            Ruby.Unpin(moveroute);
+            return moveroute;
+        }
+
         public MoveRoute Clone()
         {
             throw new NotImplementedException();

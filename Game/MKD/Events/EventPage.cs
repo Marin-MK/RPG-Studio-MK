@@ -35,7 +35,7 @@ namespace RPGStudioMK.Game
             this.MoveRoute.Type = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@move_type"));
             this.MoveRoute.Frequency = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@move_frequency"));
             this.MoveRoute.Speed = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@move_speed"));
-            this.TriggerMode = (TriggerMode)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@trigger"));
+            this.TriggerMode = (TriggerMode) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@trigger"));
             this.Graphic = new EventGraphic(Ruby.GetIVar(data, "@graphic"));
             this.Condition = new EventCondition(Ruby.GetIVar(data, "@condition"));
             IntPtr list = Ruby.GetIVar(data, "@list");
@@ -44,6 +44,33 @@ namespace RPGStudioMK.Game
                 IntPtr cmd = Ruby.Array.Get(list, i);
                 this.Commands.Add(new EventCommand(cmd));
             }
+        }
+
+        public IntPtr Save()
+        {
+            IntPtr page = Ruby.Funcall(Compatibility.RMXP.Page.Class, "new");
+            Ruby.Pin(page);
+            Ruby.SetIVar(page, "@direction_fix", this.Settings.DirectionFix ? Ruby.True : Ruby.False);
+            Ruby.SetIVar(page, "@step_anime", this.Settings.StepAnime ? Ruby.True : Ruby.False);
+            Ruby.SetIVar(page, "@always_on_top", this.Settings.AlwaysOnTop ? Ruby.True : Ruby.False);
+            Ruby.SetIVar(page, "@walk_anime", this.Settings.WalkAnime ? Ruby.True : Ruby.False);
+            Ruby.SetIVar(page, "@through", this.Settings.Through ? Ruby.True : Ruby.False);
+            Ruby.SetIVar(page, "@trigger", Ruby.Integer.ToPtr((int) this.TriggerMode));
+            Ruby.SetIVar(page, "@move_type", Ruby.Integer.ToPtr(this.MoveRoute.Type));
+            Ruby.SetIVar(page, "@move_frequency", Ruby.Integer.ToPtr(this.MoveRoute.Frequency));
+            Ruby.SetIVar(page, "@move_speed", Ruby.Integer.ToPtr(this.MoveRoute.Speed));
+            Ruby.SetIVar(page, "@move_route", this.MoveRoute.Save());
+            Ruby.SetIVar(page, "@condition", this.Condition.Save());
+            Ruby.SetIVar(page, "@graphic", this.Graphic.Save());
+            IntPtr list = Ruby.Array.Create();
+            Ruby.SetIVar(page, "@list", list);
+            for (int i = 0; i < this.Commands.Count; i++)
+            {
+                IntPtr cmd = this.Commands[i].Save();
+                Ruby.Array.Set(list, i, cmd);
+            }
+            Ruby.Unpin(page);
+            return page;
         }
 
         public EventPage Clone()

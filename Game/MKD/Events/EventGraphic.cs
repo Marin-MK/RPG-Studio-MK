@@ -42,6 +42,21 @@ namespace RPGStudioMK.Game
             this.CharacterName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@character_name"));
         }
 
+        public IntPtr Save()
+        {
+            IntPtr graphic = Ruby.Funcall(Compatibility.RMXP.Graphic.Class, "new");
+            Ruby.Pin(graphic);
+            Ruby.SetIVar(graphic, "@direction", Ruby.Integer.ToPtr(this.Direction));
+            Ruby.SetIVar(graphic, "@character_name", Ruby.String.ToPtr(this.CharacterName));
+            Ruby.SetIVar(graphic, "@tile_id", Ruby.Integer.ToPtr(this.TileID));
+            Ruby.SetIVar(graphic, "@character_hue", Ruby.Integer.ToPtr(this.CharacterHue));
+            Ruby.SetIVar(graphic, "@blend_type", Ruby.Integer.ToPtr(this.BlendType));
+            Ruby.SetIVar(graphic, "@pattern", Ruby.Integer.ToPtr(this.Pattern));
+            Ruby.SetIVar(graphic, "@opacity", Ruby.Integer.ToPtr(this.Opacity));
+            Ruby.Unpin(graphic);
+            return graphic;
+        }
+
         public EventGraphic Clone()
         {
             throw new NotImplementedException();

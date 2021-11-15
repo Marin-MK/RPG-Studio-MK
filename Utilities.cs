@@ -377,9 +377,9 @@ namespace RPGStudioMK
         public static object RubyToNative(IntPtr obj)
         {
             if (obj == Ruby.Nil) return null;
-            if (obj == Ruby.True) return true;
-            if (obj == Ruby.False) return false;
-            if (Ruby.Funcall(obj, "is_a?", Ruby.GetConst(Ruby.Object.Class, "Integer")) == Ruby.True) return Ruby.Integer.FromPtr(obj);
+            else if (obj == Ruby.True) return true;
+            else if (obj == Ruby.False) return false;
+            else if (Ruby.Funcall(obj, "is_a?", Ruby.GetConst(Ruby.Object.Class, "Integer")) == Ruby.True) return Ruby.Integer.FromPtr(obj);
             else if (Ruby.Is(obj, "String")) return Ruby.String.FromPtr(obj);
             else if (Ruby.Is(obj, "Array"))
             {
@@ -409,15 +409,76 @@ namespace RPGStudioMK
             else if (Ruby.Is(obj, "RPG::MoveCommand")) return new MoveCommand(obj);
             else if (Ruby.Is(obj, "Tone"))
             {
-                short red = (short) Ruby.Integer.FromPtr(Ruby.GetIVar(obj, "@red"));
-                short green = (short) Ruby.Integer.FromPtr(Ruby.GetIVar(obj, "@green"));
-                short blue = (short) Ruby.Integer.FromPtr(Ruby.GetIVar(obj, "@blue"));
-                byte gray = (byte) Ruby.Integer.FromPtr(Ruby.GetIVar(obj, "@grey"));
+                short red = (short) Ruby.Float.FromPtr(Ruby.GetIVar(obj, "@red"));
+                short green = (short) Ruby.Float.FromPtr(Ruby.GetIVar(obj, "@green"));
+                short blue = (short) Ruby.Float.FromPtr(Ruby.GetIVar(obj, "@blue"));
+                byte gray = (byte) Ruby.Float.FromPtr(Ruby.GetIVar(obj, "@gray"));
                 return new Tone(red, green, blue, gray);
             }
             else
             {
                 throw new Exception($"Could not convert Ruby's '{Ruby.GetClassName(obj)}' class to a native class.");
+            }
+        }
+
+        public static IntPtr NativeToRuby(object obj)
+        {
+            if (obj == null) return Ruby.Nil;
+            else if (obj is true) return Ruby.True;
+            else if (obj is false) return Ruby.False;
+            else if (obj is long) return Ruby.Integer.ToPtr((long) obj);
+            else if (obj is string) return Ruby.String.ToPtr((string) obj);
+            else if (obj is List<object>)
+            {
+                IntPtr array = Ruby.Array.Create();
+                Ruby.Pin(array);
+                for (int i = 0; i < ((List<object>) obj).Count; i++)
+                {
+                    IntPtr element = NativeToRuby(((List<object>) obj)[i]);
+                    Ruby.Array.Set(array, i, element);
+                }
+                Ruby.Unpin(array);
+                return array;
+            }
+            else if (obj is Dictionary<object, object>)
+            {
+                IntPtr hash = Ruby.Hash.Create();
+                Ruby.Pin(hash);
+                foreach (KeyValuePair<object, object> kvp in (Dictionary<object, object>) obj)
+                {
+                    IntPtr key = NativeToRuby(kvp.Key);
+                    IntPtr value = NativeToRuby(kvp.Value);
+                    Ruby.Hash.Set(hash, key, value);
+                }
+                Ruby.Unpin(hash);
+                return hash;
+            }
+            else if (obj is AudioFile)
+            {
+                IntPtr audiofile = Ruby.Funcall(Compatibility.RMXP.AudioFile.Class, "new");
+                Ruby.Pin(audiofile);
+                Ruby.SetIVar(audiofile, "@name", Ruby.String.ToPtr(((AudioFile) obj).Name));
+                Ruby.SetIVar(audiofile, "@volume", Ruby.Integer.ToPtr(((AudioFile) obj).Volume));
+                Ruby.SetIVar(audiofile, "@pitch", Ruby.Integer.ToPtr(((AudioFile) obj).Pitch));
+                Ruby.Unpin(audiofile);
+                return audiofile;
+            }
+            else if (obj is MoveRoute) return ((MoveRoute) obj).Save();
+            else if (obj is MoveCommand) return ((MoveCommand) obj).Save();
+            else if (obj is Tone)
+            {
+                IntPtr tone = Ruby.Funcall(Compatibility.RMXP.Tone.Class, "new");
+                Ruby.Pin(tone);
+                Ruby.SetIVar(tone, "@red", Ruby.Float.ToPtr(((Tone) obj).Red));
+                Ruby.SetIVar(tone, "@green", Ruby.Float.ToPtr(((Tone) obj).Green));
+                Ruby.SetIVar(tone, "@blue", Ruby.Float.ToPtr(((Tone) obj).Blue));
+                Ruby.SetIVar(tone, "@gray", Ruby.Float.ToPtr(((Tone) obj).Gray));
+                Ruby.Unpin(tone);
+                return tone;
+            }
+            else
+            {
+                throw new Exception($"Could not convert internal class '{obj.GetType().ToString()}' to a Ruby class.");
             }
         }
     }

@@ -46,7 +46,7 @@ namespace RPGStudioMK.Game
         public static void SaveGameData()
         {
             SaveTilesets();
-            //SaveMaps();
+            SaveMaps();
             //SaveSpecies();
         }
 
@@ -140,10 +140,12 @@ namespace RPGStudioMK.Game
                 }
             }
             IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/Tilesets.rxdata"), Ruby.String.ToPtr("wb"));
+            Ruby.Pin(file);
             IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", tilesets);
             Ruby.Funcall(file, "write", data);
             Ruby.Funcall(file, "close");
             Ruby.Unpin(tilesets);
+            Ruby.Unpin(file);
         }
 
         /// <summary>
@@ -194,25 +196,41 @@ namespace RPGStudioMK.Game
 
         private static void SaveMaps()
         {
-            /*
-            // Delete all old map files
-            foreach (string map in GetMapIDs(DataPath + "/maps"))
+            IntPtr mapinfos = Ruby.Hash.Create();
+            Ruby.Pin(mapinfos);
+            foreach (Map map in Maps.Values)
             {
-                File.Delete(map);
+                IntPtr mapinfo = Ruby.Funcall(Compatibility.RMXP.MapInfo.Class, "new");
+                Ruby.Pin(mapinfo);
+                Ruby.SetIVar(mapinfo, "@name", Ruby.String.ToPtr(map.Name));
+                Ruby.SetIVar(mapinfo, "@parent_id", Ruby.Integer.ToPtr(map.ParentID));
+                Ruby.SetIVar(mapinfo, "@order", Ruby.Integer.ToPtr(map.Order));
+                Ruby.SetIVar(mapinfo, "@expanded", map.Expanded ? Ruby.True : Ruby.False);
+                Ruby.SetIVar(mapinfo, "@scroll_x", Ruby.Integer.ToPtr(map.ScrollX));
+                Ruby.SetIVar(mapinfo, "@scroll_y", Ruby.Integer.ToPtr(map.ScrollY));
+                Ruby.Hash.Set(mapinfos, Ruby.Integer.ToPtr(map.ID), mapinfo);
+                Ruby.Unpin(mapinfo);
+
+                IntPtr mapdata = map.Save();
+                IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + $"/Map{Utilities.Digits(map.ID, 3)}.rxdata"), Ruby.String.ToPtr("wb"));
+                Ruby.Pin(file);
+                IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", mapdata);
+                Ruby.Funcall(file, "write", data);
+                Ruby.Funcall(file, "close");
+                Ruby.Unpin(file);
             }
-            // And create the new map files
-            foreach (KeyValuePair<int, Map> kvp in Maps)
+            IntPtr mapinfosfile = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + $"/MapInfos.rxdata"), Ruby.String.ToPtr("wb"));
+            Ruby.Pin(mapinfosfile);
+            IntPtr mapinfosdata = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", mapinfos);
+            Ruby.Funcall(mapinfosfile, "write", mapinfosdata);
+            Ruby.Funcall(mapinfosfile, "close");
+            Ruby.Unpin(mapinfosfile);
+            Ruby.Unpin(mapinfos);
+            // Delete all maps that are not part of of the data anymore
+            foreach ((string filename, int id) map in GetMapIDs(DataPath))
             {
-                Dictionary<string, object> Main = new Dictionary<string, object>();
-                Main[":type"] = ":map";
-                Main[":data"] = kvp.Value.ToJSON();
-                string jsonstring = JsonConvert.SerializeObject(Main);
-                string file = DataPath + "/maps/map" + Utilities.Digits(kvp.Value.ID, 3) + ".mkd";
-                StreamWriter sw = new StreamWriter(File.OpenWrite(file));
-                sw.Write(jsonstring);
-                sw.Close();
-            }*/
-            throw new NotImplementedException();
+                if (!Maps.ContainsKey(map.id)) File.Delete(map.filename);
+            }
         }
     }
 }

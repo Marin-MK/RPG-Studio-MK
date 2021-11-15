@@ -15,9 +15,26 @@ namespace RPGStudioMK.Game
             IntPtr parameters = Ruby.GetIVar(data, "@parameters");
             for (int i = 0; i < Ruby.Array.Length(parameters); i++)
             {
-                IntPtr obj = Ruby.Array.Get(parameters, i);
+                IntPtr param = Ruby.Array.Get(parameters, i);
+                object obj = Utilities.RubyToNative(param);
                 this.Parameters.Add(obj);
             }
+        }
+
+        public IntPtr Save()
+        {
+            IntPtr cmd = Ruby.Funcall(Compatibility.RMXP.MoveCommand.Class, "new");
+            Ruby.Pin(cmd);
+            Ruby.SetIVar(cmd, "@code", Ruby.Integer.ToPtr(Code));
+            IntPtr parameters = Ruby.Array.Create();
+            Ruby.SetIVar(cmd, "@parameters", parameters);
+            for (int i = 0; i < this.Parameters.Count; i++)
+            {
+                IntPtr param = Utilities.NativeToRuby(this.Parameters[i]);
+                Ruby.Array.Set(parameters, i, param);
+            }
+            Ruby.Unpin(cmd);
+            return cmd;
         }
     }
 }

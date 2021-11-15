@@ -146,27 +146,6 @@ namespace RPGStudioMK.Widgets
             };
         }
 
-        public bool SetCollapsed(List<object> collection, int MapID, bool IsCollapsed)
-        {
-            for (int i = 0; i < collection.Count; i++)
-            {
-                object o = collection[i];
-                if (o is List<object>)
-                {
-                    List<object> sub = o as List<object>;
-                    if ((int) sub[0] == MapID)
-                    {
-                        (collection[i] as List<object>)[1] = IsCollapsed;
-                    }
-                    else
-                    {
-                        SetCollapsed(collection[i] as List<object>, MapID, IsCollapsed);
-                    }
-                }
-            }
-            return false;
-        }
-
         private void EditMap(MouseEventArgs e)
         {
             Map map = Data.Maps[(int) mapview.SelectedNode.Object];

@@ -23,6 +23,23 @@ namespace RPGStudioMK.Game
             }
         }
 
+        public IntPtr Save()
+        {
+            IntPtr cmd = Ruby.Funcall(Compatibility.RMXP.EventCommand.Class, "new");
+            Ruby.Pin(cmd);
+            Ruby.SetIVar(cmd, "@indent", Ruby.Integer.ToPtr(this.Indent));
+            Ruby.SetIVar(cmd, "@code", Ruby.Integer.ToPtr((int) this.Code));
+            IntPtr parameters = Ruby.Array.Create();
+            Ruby.SetIVar(cmd, "@parameters", parameters);
+            for (int i = 0; i < this.Parameters.Count; i++)
+            {
+                IntPtr param = Utilities.NativeToRuby(this.Parameters[i]);
+                Ruby.Array.Set(parameters, i, param);
+            }
+            Ruby.Unpin(cmd);
+            return cmd;
+        }
+
         public override string ToString()
         {
             return Code.ToString();

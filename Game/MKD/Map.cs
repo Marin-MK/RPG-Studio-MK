@@ -120,37 +120,54 @@ namespace RPGStudioMK.Game
             Ruby.Unpin(keys);
         }
 
-        public Dictionary<string, object> ToJSON()
+        public IntPtr Save()
         {
-            /*Dictionary<string, object> Data = new Dictionary<string, object>();
-            Data["^c"] = "MKD::Map";
-            Data["@id"] = ID;
-            Data["@dev_name"] = DevName;
-            Data["@display_name"] = DisplayName;
-            Data["@width"] = Width;
-            Data["@height"] = Height;
-            List<List<object>> layers = new List<List<object>>();
-            for (int i = 0; i < Layers.Count; i++)
+            IntPtr map = Ruby.Funcall(Compatibility.RMXP.Map.Class, "new");
+            Ruby.Pin(map);
+            Ruby.SetIVar(map, "@bgm", Ruby.Funcall(Compatibility.RMXP.AudioFile.Class, "new"));
+            Ruby.SetIVar(Ruby.GetIVar(map, "@bgm"), "@name", Ruby.String.ToPtr(this.BGMName));
+            Ruby.SetIVar(Ruby.GetIVar(map, "@bgm"), "@volume", Ruby.Integer.ToPtr(this.BGMVolume));
+            Ruby.SetIVar(Ruby.GetIVar(map, "@bgm"), "@pitch", Ruby.Integer.ToPtr(this.BGMPitch));
+            Ruby.SetIVar(map, "@bgs", Ruby.Funcall(Compatibility.RMXP.AudioFile.Class, "new"));
+            Ruby.SetIVar(Ruby.GetIVar(map, "@bgs"), "@name", Ruby.String.ToPtr(this.BGSName));
+            Ruby.SetIVar(Ruby.GetIVar(map, "@bgs"), "@volume", Ruby.Integer.ToPtr(this.BGSVolume));
+            Ruby.SetIVar(Ruby.GetIVar(map, "@bgs"), "@pitch", Ruby.Integer.ToPtr(this.BGSPitch));
+            Ruby.SetIVar(map, "@autoplay_bgm", this.AutoplayBGM ? Ruby.True : Ruby.False);
+            Ruby.SetIVar(map, "@autoplay_bgs", this.AutoplayBGS ? Ruby.True : Ruby.False);
+            Ruby.SetIVar(map, "@width", Ruby.Integer.ToPtr(this.Width));
+            Ruby.SetIVar(map, "@height", Ruby.Integer.ToPtr(this.Height));
+            Ruby.SetIVar(map, "@tileset_id", Ruby.Integer.ToPtr(this.TilesetIDs[0]));
+            Ruby.SetIVar(map, "@encounter_step", Ruby.Integer.ToPtr(this.EncounterStep));
+            Ruby.SetIVar(map, "@encounter_list", Ruby.Array.Create());
+            IntPtr data = Ruby.Funcall(Compatibility.RMXP.Table.Class, "new", Ruby.Integer.ToPtr(this.Width), Ruby.Integer.ToPtr(this.Height), Ruby.Integer.ToPtr(3));
+            Ruby.SetIVar(map, "@data", data);
+            for (int z = 0; z < this.Layers.Count; z++)
             {
-                layers.Add(Layers[i].ToJSON());
+                for (int y = 0; y < this.Height; y++)
+                {
+                    for (int x = 0; x < this.Width; x++)
+                    {
+                        TileData tile = this.Layers[z].Tiles[y * this.Width + x];
+                        int value = 0;
+                        if (tile != null)
+                        {
+                            if (tile.TileType == TileType.Autotile) value = 48 + tile.Index * 48 + tile.ID;
+                            else value = 384 + tile.ID;
+                        }
+                        int index = z * this.Width * this.Height + y * this.Width + x;
+                        Compatibility.RMXP.Table.Set(data, index, Ruby.Integer.ToPtr(value));
+                    }
+                }
             }
-            Data["@tiles"] = layers;
-            Data["@tilesets"] = TilesetIDs;
-            Data["@autotiles"] = AutotileIDs;
-            Dictionary<int, Dictionary<string, object>> events = new Dictionary<int, Dictionary<string, object>>();
-            foreach (KeyValuePair<int, Event> kvp in Events)
+            IntPtr events = Ruby.Hash.Create();
+            Ruby.SetIVar(map, "@events", events);
+            foreach (Event e in this.Events.Values)
             {
-                events[kvp.Key] = kvp.Value.ToJSON();
+                IntPtr eventdata = e.Save();
+                Ruby.Hash.Set(events, Ruby.Integer.ToPtr(e.ID), eventdata);
             }
-            Data["@events"] = events;
-            List<object> connections = new List<object>();
-            foreach (MapConnection c in this.Connections)
-            {
-                connections.Add(c.ToJSON());
-            }
-            Data["@connections"] = connections;
-            return Data;*/
-            throw new NotImplementedException();
+            Ruby.Unpin(map);
+            return map;
         }
 
         public void SetSize(int width, int height)

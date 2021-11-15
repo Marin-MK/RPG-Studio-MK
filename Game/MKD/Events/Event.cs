@@ -43,6 +43,25 @@ namespace RPGStudioMK.Game
             }
         }
 
+        public IntPtr Save()
+        {
+            IntPtr e = Ruby.Funcall(Compatibility.RMXP.Event.Class, "new");
+            Ruby.Pin(e);
+            Ruby.SetIVar(e, "@name", Ruby.String.ToPtr(this.Name));
+            Ruby.SetIVar(e, "@x", Ruby.Integer.ToPtr(this.X));
+            Ruby.SetIVar(e, "@y", Ruby.Integer.ToPtr(this.Y));
+            Ruby.SetIVar(e, "@id", Ruby.Integer.ToPtr(this.ID));
+            IntPtr pages = Ruby.Array.Create();
+            Ruby.SetIVar(e, "@pages", pages);
+            for (int i = 0; i < this.Pages.Count; i++)
+            {
+                IntPtr page = this.Pages[i].Save();
+                Ruby.Array.Set(pages, i, page);
+            }
+            Ruby.Unpin(e);
+            return e;
+        }
+
         public Event Clone()
         {
             Event e = new Event(this.ID);
