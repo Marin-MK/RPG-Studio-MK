@@ -282,7 +282,6 @@ namespace RPGStudioMK.Widgets
                 this.Sprites[i.ToString()] = new Sprite(this.Viewport);
                 this.Sprites[i.ToString()].Z = i * 2;
                 this.Sprites[i.ToString()].Visible = MapData.Layers[i].Visible;
-                this.Sprites[i.ToString()].FactorZoomIntoOrigin = false;
             }
             List<Bitmap> bmps = new List<Bitmap>();
             AnimatedAutotiles.Clear();
