@@ -38,9 +38,9 @@ namespace RPGStudioMK.Game
         public static void LoadGameData()
         {
             Initialize();
-            //LoadSpecies();
             LoadTilesets();
             LoadMaps();
+            //LoadSpecies();
         }
 
         public static void SaveGameData()
@@ -229,7 +229,7 @@ namespace RPGStudioMK.Game
             // Delete all maps that are not part of of the data anymore
             foreach ((string filename, int id) map in GetMapIDs(DataPath))
             {
-                if (!Maps.ContainsKey(map.id)) File.Delete(map.filename);
+                if (!Maps.ContainsKey(map.id)) File.Delete(DataPath + "/" + map.filename);
             }
         }
     }
