@@ -73,8 +73,8 @@ namespace RPGStudioMK
             public TileChange(int MapPosition, TileData NewTile, TileData OldTile)
             {
                 this.MapPosition = MapPosition;
-                this.NewTile = NewTile?.Clone();
-                this.OldTile = OldTile?.Clone();
+                this.NewTile = (TileData) NewTile?.Clone();
+                this.OldTile = (TileData) OldTile?.Clone();
             }
         }
     }

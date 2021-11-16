@@ -24,7 +24,7 @@ namespace RPGStudioMK.Widgets
         public ChooseGraphic(EventGraphic graphic)
         {
             this.OldGraphic = graphic;
-            this.GraphicData = graphic.Clone();
+            this.GraphicData = (EventGraphic) graphic.Clone();
             SetTitle("Choose Graphic");
             MinimumSize = MaximumSize = new Size(735, 421);
             SetSize(MaximumSize);

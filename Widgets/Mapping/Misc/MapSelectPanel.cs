@@ -153,14 +153,18 @@ namespace RPGStudioMK.Widgets
 
         private void EditMap(MouseEventArgs e)
         {
-            Map map = Data.Maps[(int) mapview.SelectedNode.Object];
+            Map map = Data.Maps[(int) mapview.HoveringNode.Object];
             MapPropertiesWindow mpw = new MapPropertiesWindow(map);
             mpw.OnClosed += delegate (BaseEventArgs ev)
             {
                 if (mpw.UpdateMapViewer)
                 {
                     Data.Maps[map.ID] = mpw.Map;
-                    mapview.SelectedNode.Name = mpw.Map.Name;
+                    if (mapview.HoveringNode.Name != mpw.Map.Name)
+                    {
+                        mapview.HoveringNode.Name = mpw.Map.Name;
+                        mapview.Redraw();
+                    }
                     Editor.UnsavedChanges = mpw.UnsavedChanges;
                     if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetMap(mpw.Map);
                 }
@@ -209,7 +213,7 @@ namespace RPGStudioMK.Widgets
                             {
                                 if (mapview.HoveringNode.Nodes.Count > 0) mapview.Nodes.AddRange(mapview.HoveringNode.Nodes);
                                 mapview.Nodes.Remove(mapview.HoveringNode);
-                                mapview.SetSelectedNode(mapview.Nodes[i - 1]);
+                                mapview.SetSelectedNode(mapview.Nodes[i > 0 ? i - 1 : 0]);
                                 break;
                             }
                             else

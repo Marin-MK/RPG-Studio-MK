@@ -15,7 +15,7 @@ namespace RPGStudioMK
         {
             this.MapID = MapID;
             this.LayerIndex = LayerIndex;
-            this.LayerData = LayerData.Clone();
+            this.LayerData = (Layer) LayerData.Clone();
             this.Removal = Removal;
         }
 

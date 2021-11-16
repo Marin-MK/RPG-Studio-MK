@@ -17,7 +17,6 @@ namespace RPGStudioMK.Widgets
         Button ActionButton;
         ListBox Available;
         ListBox InUse;
-        PictureBox TilesetBox;
         Container TilesetContainer;
 
         public TilesetPickerMap(Map Map)
@@ -49,8 +48,6 @@ namespace RPGStudioMK.Widgets
             vs.SetSize(10, 403);
             TilesetContainer.SetVScrollBar(vs);
 
-            TilesetBox = new PictureBox(TilesetContainer);
-
             Font f = Font.Get("Fonts/Ubuntu-B", 14);
 
             Label labelavail = new Label(this);
@@ -71,6 +68,7 @@ namespace RPGStudioMK.Widgets
             ActionButton = new Button(this);
             ActionButton.SetPosition(52, 225);
             ActionButton.SetSize(85, 30);
+            ActionButton.SetText("Set");
             ActionButton.OnClicked += ActionButtonClicked;
 
             Available = new ListBox(this);
@@ -86,7 +84,7 @@ namespace RPGStudioMK.Widgets
             };
             Available.ListDrawer.SetContextMenuList(new List<IMenuItem>()
             {
-                new MenuItem("Add Tileset")
+                new MenuItem("Set Tileset")
                 {
                     IsClickable = delegate (BoolEventArgs e)
                     {
@@ -107,7 +105,7 @@ namespace RPGStudioMK.Widgets
                     SelectionChanged(e);
                 }
             };
-            InUse.ListDrawer.SetContextMenuList(new List<IMenuItem>()
+            /*InUse.ListDrawer.SetContextMenuList(new List<IMenuItem>()
             {
                 new MenuItem("Move Tileset Up")
                 {
@@ -130,7 +128,7 @@ namespace RPGStudioMK.Widgets
                 {
                     OnLeftClick = ActionButtonClicked
                 }
-            });
+            });*/
 
             List<ListItem> AvailableList = new List<ListItem>();
             List<ListItem> InUseList = new List<ListItem>();
@@ -167,7 +165,7 @@ namespace RPGStudioMK.Widgets
                 Close();
             });
 
-            if (Available.Items.Count > 0)
+            /*if (Available.Items.Count > 0)
             {
                 Available.SetSelectedIndex(0);
                 ActionButton.SetText("Add");
@@ -176,7 +174,7 @@ namespace RPGStudioMK.Widgets
             {
                 InUse.SetSelectedIndex(0);
                 ActionButton.SetText("Remove");
-            }
+            }*/
 
             SetTimer("frame", (long) Math.Round(1000 / 60d));
         }
@@ -184,28 +182,54 @@ namespace RPGStudioMK.Widgets
         public void SelectionChanged(BaseEventArgs e)
         {
             ActionButton.SetEnabled(true);
-            if (InUse.SelectedIndex == -1)
+            //if (InUse.SelectedIndex == -1)
+            //{
+            //    ActionButton.SetText("Add");
+            //}
+            //else
+            //{
+            //    ActionButton.SetText("Remove");
+            //}
+            Tileset tileset = SelectedTileset;
+            if (tileset is null || tileset.TilesetListBitmap is null)
             {
-                ActionButton.SetText("Add");
+                TilesetContainer.Widgets.FindAll(w => w is PictureBox).ForEach(w => w.Dispose());
+                ActionButton.SetEnabled(false);
+            }
+            else if (tileset.TilesetListBitmap.IsChunky)
+            {
+                int y = 0;
+                foreach (Bitmap b in tileset.TilesetListBitmap.InternalBitmaps)
+                {
+                    PictureBox img = new PictureBox(TilesetContainer);
+                    img.SetPosition(0, y);
+                    img.Sprite.Bitmap = b;
+                    if (!b.Locked) b.Lock();
+                    img.Sprite.DestroyBitmap = false;
+                    img.SetSize(b.Width, b.Height);
+                    y += b.Height;
+                }
             }
             else
             {
-                ActionButton.SetText("Remove");
+                PictureBox img = new PictureBox(TilesetContainer);
+                img.Sprite.Bitmap = tileset.TilesetListBitmap;
+                img.Sprite.DestroyBitmap = false;
+                img.SetSize(img.Sprite.Bitmap.Width, img.Sprite.Bitmap.Height);
             }
-            Tileset tileset = SelectedTileset;
-            if (tileset is null)
-            {
-                TilesetBox.Sprite.Bitmap = null;
-                ActionButton.SetEnabled(false);
-                return;
-            }
-            TilesetBox.Sprite.Bitmap = tileset.TilesetListBitmap;
-            TilesetBox.Sprite.DestroyBitmap = false;
         }
 
         private void ActionButtonClicked(BaseEventArgs e)
         {
-            if (InUse.SelectedIndex == -1) // Add
+            ListItem item = Available.SelectedItem;
+            Available.Items.Remove(item);
+            Available.Items.Add(new ListItem($"{Utilities.Digits(((Tileset) InUse.Items[0].Object).ID, 3)}: {((Tileset) InUse.Items[0].Object).Name}", InUse.Items[0].Object));
+            Available.Items.Sort((ListItem i1, ListItem i2) => { return ((Tileset) i1.Object).ID.CompareTo(((Tileset) i2.Object).ID); });
+            Available.SetItems(Available.Items);
+            InUse.Items.Clear();
+            InUse.Items.Add(item);
+            InUse.SetItems(InUse.Items);
+            /*if (InUse.SelectedIndex == -1) // Add
             {
                 if (SelectedTileset is null) return;
                 ListItem item = Available.SelectedItem;
@@ -233,7 +257,7 @@ namespace RPGStudioMK.Widgets
                 InUse.SetItems(InUse.Items);
                 if (Available.SelectedIndex == -1 && InUse.SelectedIndex == -1)
                     Available.SetSelectedIndex(0);
-            }
+            }*/
             SelectionChanged(e);
         }
 

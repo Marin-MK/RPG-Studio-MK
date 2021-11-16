@@ -18,14 +18,14 @@ namespace RPGStudioMK.Widgets
         NumericBox Width;
         NumericBox Height;
         ListBox Tilesets;
-        ListBox Autotiles;
+        //ListBox Autotiles;
 
         public MapPropertiesWindow(Map Map)
         {
             this.OldMap = Map;
-            this.Map = Map.Clone();
+            this.Map = (Map) Map.Clone();
             this.SetTitle($"Map Properties - {Utilities.Digits(Map.ID, 3)}: {Map.Name}");
-            MinimumSize = MaximumSize = new Size(540, 460);
+            MinimumSize = MaximumSize = new Size(330, 290);
             SetSize(MaximumSize);
             this.Center();
             Label settings = new Label(this);
@@ -35,7 +35,7 @@ namespace RPGStudioMK.Widgets
 
             GroupBox box1 = new GroupBox(this);
             box1.SetPosition(19, 47);
-            box1.SetSize(450, 203);
+            box1.SetSize(300, 203);
 
             Font f = Font.Get("Fonts/ProductSans-M", 12);
 
@@ -55,9 +55,9 @@ namespace RPGStudioMK.Widgets
             Label widthlabel = new Label(box1);
             widthlabel.SetText("Width:");
             widthlabel.SetFont(f);
-            widthlabel.SetPosition(7, 99);
+            widthlabel.SetPosition(7, 54);
             Width = new NumericBox(box1);
-            Width.SetPosition(6, 115);
+            Width.SetPosition(6, 70);
             Width.MinValue = 1;
             Width.MaxValue = 255;
             Width.SetSize(66, 27);
@@ -70,9 +70,9 @@ namespace RPGStudioMK.Widgets
             Label heightlabel = new Label(box1);
             heightlabel.SetText("Height:");
             heightlabel.SetFont(f);
-            heightlabel.SetPosition(78, 99);
+            heightlabel.SetPosition(78, 54);
             Height = new NumericBox(box1);
-            Height.SetPosition(77, 115);
+            Height.SetPosition(77, 70);
             Height.MinValue = 1;
             Height.MaxValue = 255;
             Height.SetSize(66, 27);
@@ -92,10 +92,10 @@ namespace RPGStudioMK.Widgets
                 tilesetitems.Add(new ListItem(tileset));
             }
             Tilesets.SetItems(tilesetitems);
-            Tilesets.SetButtonText("Add Tileset");
+            Tilesets.SetButtonText("Set Tileset");
             Tilesets.ListDrawer.OnButtonClicked += AddTileset;
 
-            Autotiles = new ListBox(box1);
+            /*Autotiles = new ListBox(box1);
             Autotiles.SetPosition(312, 22);
             List<ListItem> autotileitems = new List<ListItem>();
             for (int i = 0; i < this.Map.AutotileIDs.Count; i++)
@@ -106,17 +106,17 @@ namespace RPGStudioMK.Widgets
             }
             Autotiles.SetItems(autotileitems);
             Autotiles.SetButtonText("Add Autotile");
-            Autotiles.ListDrawer.OnButtonClicked += AddAutotile;
+            Autotiles.ListDrawer.OnButtonClicked += AddAutotile;*/
 
             Label tilesetslabel = new Label(box1);
             tilesetslabel.SetText("Tilesets:");
             tilesetslabel.SetFont(f);
             tilesetslabel.SetPosition(163, 6);
 
-            Label autotileslabel = new Label(box1);
-            autotileslabel.SetText("Autotiles:");
-            autotileslabel.SetFont(f);
-            autotileslabel.SetPosition(313, 6);
+            //Label autotileslabel = new Label(box1);
+            //autotileslabel.SetText("Autotiles:");
+            //autotileslabel.SetFont(f);
+            //autotileslabel.SetPosition(313, 6);
 
             CreateButton("Cancel", Cancel);
             CreateButton("OK", OK);
@@ -155,7 +155,7 @@ namespace RPGStudioMK.Widgets
             };
         }
 
-        public void AddAutotile(BaseEventArgs e)
+        /*public void AddAutotile(BaseEventArgs e)
         {
             AutotilePicker picker = new AutotilePicker(Map);
             picker.OnClosed += delegate (BaseEventArgs e2)
@@ -186,7 +186,7 @@ namespace RPGStudioMK.Widgets
                     Autotiles.SetItems(autotileitems);
                 }
             };
-        }
+        }*/
 
         public void OK(BaseEventArgs e)
         {
@@ -197,8 +197,9 @@ namespace RPGStudioMK.Widgets
             };
             Action Continue = delegate
             {
+                #region Autotile conversion for multiple tilesets per map
                 // Updates autotiles
-                bool autotileschanged = false;
+                /*bool autotileschanged = false;
                 if (Map.AutotileIDs.Count != OldMap.AutotileIDs.Count) autotileschanged = true;
                 if (!autotileschanged)
                 {
@@ -267,7 +268,7 @@ namespace RPGStudioMK.Widgets
                                 int autotileID = OldMap.AutotileIDs[Map.Layers[layer].Tiles[i].Index];
                                 if (!Map.AutotileIDs.Contains(autotileID))
                                 {
-                                    throw new Exception("Impossible-to-reach code has been reached. This indicates a flaw in autotile conversion. Please contact the maintainer.");
+                                    throw new Exception("Unknown");
                                 }
                                 else Map.Layers[layer].Tiles[i].Index = Map.AutotileIDs.IndexOf(autotileID);
                             }
@@ -275,7 +276,9 @@ namespace RPGStudioMK.Widgets
                         Finalize();
                     }
                 }
-                if (!autotileschanged) Finalize();
+                if (!autotileschanged) Finalize();*/
+                #endregion
+                Finalize();
             };
             // Resizes Map
             if (Map.Width != OldMap.Width || Map.Height != OldMap.Height)
@@ -300,7 +303,8 @@ namespace RPGStudioMK.Widgets
             if (tilesetschanged)
             {
                 UnsavedChanges = true;
-                bool warn = false;
+                #region Tileset conversion for multiple tilesets per map
+                /*bool warn = false;
                 for (int layer = 0; layer < Map.Layers.Count; layer++)
                 {
                     for (int i = 0; i < Map.Width * Map.Height; i++)
@@ -359,7 +363,9 @@ namespace RPGStudioMK.Widgets
                         }
                     }
                     Continue();
-                }
+                }*/
+                #endregion
+                Continue();
             }
             if (!tilesetschanged) Continue();
         }
