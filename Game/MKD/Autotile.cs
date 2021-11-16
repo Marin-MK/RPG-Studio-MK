@@ -6,7 +6,7 @@ using odl;
 
 namespace RPGStudioMK.Game
 {
-    public class Autotile
+    public class Autotile : ICloneable
     {
         public int ID;
         public string Name;
@@ -97,6 +97,22 @@ namespace RPGStudioMK.Game
         public override string ToString()
         {
             return this.Name;
+        }
+
+        public object Clone()
+        {
+            Autotile a = new Autotile();
+            a.ID = this.ID;
+            a.Name = this.Name;
+            a.Format = this.Format;
+            a.GraphicName = this.GraphicName;
+            a.Passability = this.Passability;
+            a.Priority = this.Priority;
+            a.Tag = this.Tag;
+            a.AnimateSpeed = this.AnimateSpeed;
+            a.QuickIDs = new List<int?>(this.QuickIDs);
+            a.AutotileBitmap = this.AutotileBitmap;
+            return a;
         }
     }
 

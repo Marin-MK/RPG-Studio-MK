@@ -4,7 +4,7 @@ using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
-    public class MoveRoute
+    public class MoveRoute : ICloneable
     {
         public int Type;
         public int Frequency;
@@ -52,14 +52,17 @@ namespace RPGStudioMK.Game
             return moveroute;
         }
 
-        public MoveRoute Clone()
+        public object Clone()
         {
-            throw new NotImplementedException();
-            /*MoveRoute amr = new MoveRoute();
-            amr.Type = this.Type;
-            amr.Frequency = this.Frequency;
-            amr.Commands = new List<MoveCommand>(this.Commands);
-            return amr;*/
+            MoveRoute r = new MoveRoute();
+            r.Type = this.Type;
+            r.Frequency = this.Frequency;
+            r.Speed = this.Speed;
+            r.Skippable = this.Skippable;
+            r.Repeat = this.Repeat;
+            r.Commands = new List<MoveCommand>();
+            this.Commands.ForEach(c => r.Commands.Add((MoveCommand) c.Clone()));
+            return r;
         }
     }
 }

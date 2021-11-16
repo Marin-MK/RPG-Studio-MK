@@ -4,7 +4,7 @@ using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
-    public class Map
+    public class Map : ICloneable
     {
         public int ID;
         public string Name;
@@ -32,12 +32,6 @@ namespace RPGStudioMK.Game
         public int BGSPitch;
         public bool AutoplayBGS;
         public int EncounterStep;
-
-        public int SaveX = 0;
-        public int SaveY = 0;
-
-        // Used only for the editor to track which maps exist in the order list
-        public bool Added = false;
 
         public Map() 
         {
@@ -240,57 +234,34 @@ namespace RPGStudioMK.Game
             }
         }
 
-        public Map Clone()
+        public object Clone()
         {
-            /*Map o = new Map();
-            o.ID = this.ID;
-            o.DevName = this.DevName;
-            o.DisplayName = this.DisplayName;
-            o.Width = this.Width;
-            o.Height = this.Height;
-            o.Layers = new List<Layer>(this.Layers);
-            o.TilesetIDs = new List<int>(this.TilesetIDs);
-            o.AutotileIDs = new List<int>(this.AutotileIDs);
-            o.Events = new Dictionary<int, Event>(this.Events);
-            o.Connections = new List<MapConnection>(this.Connections);
-            return o;*/
-            throw new NotImplementedException();
-        }
-    }
-
-    public class Layer
-    {
-        public string Name = "Unnamed Layer";
-        public List<TileData> Tiles = new List<TileData>();
-        public bool Visible = true;
-
-        public Layer(string Name)
-        {
-            this.Name = Name;
-        }
-
-        public Layer Clone()
-        {
-            Layer l = new Layer(this.Name);
-            l.Tiles = new List<TileData>(Tiles);
-            l.Visible = Visible;
-            return l;
-        }
-
-        public List<object> ToJSON()
-        {
-            List<object> Data = new List<object>();
-            for (int i = 0; i < Tiles.Count; i++)
-            {
-                if (Tiles[i] == null) Data.Add(null);
-                else Data.Add(new List<object>() { Convert.ToInt32(Tiles[i].TileType), Tiles[i].Index, Tiles[i].ID });
-            }
-            return Data;
-        }
-
-        public override string ToString()
-        {
-            return this.Name;
+            Map m = new Map();
+            m.ID = this.ID;
+            m.Name = this.Name;
+            m.Width = this.Width;
+            m.Height = this.Height;
+            m.BGMName = this.BGMName;
+            m.BGMVolume = this.BGMVolume;
+            m.BGMPitch = this.BGMPitch;
+            m.BGSName = this.BGSName;
+            m.BGSVolume = this.BGSVolume;
+            m.BGSPitch = this.BGSPitch;
+            m.EncounterStep = this.EncounterStep;
+            m.ScrollX = this.ScrollX;
+            m.ScrollY = this.ScrollY;
+            m.Expanded = this.Expanded;
+            m.Order = this.Order;
+            m.ParentID = this.ParentID;
+            m.AutoplayBGM = this.AutoplayBGM;
+            m.AutoplayBGS = this.AutoplayBGS;
+            m.Layers = new List<Layer>();
+            this.Layers.ForEach(l => m.Layers.Add((Layer) l.Clone()));
+            m.TilesetIDs = new List<int>(this.TilesetIDs);
+            m.AutotileIDs = new List<int>(this.AutotileIDs);
+            m.Events = new Dictionary<int, Event>();
+            foreach (Event e in this.Events.Values) m.Events.Add(e.ID, (Event) e.Clone());
+            return m;
         }
     }
 
@@ -298,72 +269,6 @@ namespace RPGStudioMK.Game
     {
         Tileset = 0,
         Autotile = 1
-    }
-
-    // MKD Data
-    public class MapConnection
-    {
-        public int MapID;
-        public int RelativeX;
-        public int RelativeY;
-
-        public MapConnection(int MapID, int RelativeX, int RelativeY)
-        {
-            this.MapID = MapID;
-            this.RelativeX = RelativeX;
-            this.RelativeY = RelativeY;
-        }
-
-        public MapConnection(Dictionary<string, object> Data)
-        {
-            if (Data.ContainsKey("^c"))
-            {
-                if ((string) Data["^c"] != "MKD::MapConnection") throw new Exception("Invalid class - Expected class of type MKD::MapConnection but got " + (string) Data["^c"] + ".");
-            }
-            else
-            {
-                throw new Exception("Could not find a ^c key to identify this class.");
-            }
-            this.MapID = Convert.ToInt32(Data["@map_id"]);
-            this.RelativeX = Convert.ToInt32(Data["@relative_x"]);
-            this.RelativeY = Convert.ToInt32(Data["@relative_y"]);
-        }
-
-        public Dictionary<string, object> ToJSON()
-        {
-            Dictionary<string, object> Data = new Dictionary<string, object>();
-            Data["^c"] = "MKD::MapConnection";
-            Data["@map_id"] = this.MapID;
-            Data["@relative_x"] = this.RelativeX;
-            Data["@relative_y"] = this.RelativeY;
-            return Data;
-        }
-    }
-
-    public class TileData
-    {
-        /// <summary>
-        /// Regular tile or autotile
-        /// </summary>
-        public TileType TileType;
-        /// <summary>
-        /// Tileset or autotile index
-        /// </summary>
-        public int Index;
-        /// <summary>
-        /// Specific tile or autotile
-        /// </summary>
-        public int ID;
-
-
-        public TileData Clone()
-        {
-            TileData o = new TileData();
-            o.TileType = this.TileType;
-            o.Index = this.Index;
-            o.ID = this.ID;
-            return o;
-        }
     }
 
     public enum Passability

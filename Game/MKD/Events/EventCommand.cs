@@ -4,11 +4,16 @@ using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
-    public class EventCommand
+    public class EventCommand : ICloneable
     {
         public int Indent;
         public CommandCode Code;
         public List<object> Parameters = new List<object>();
+
+        public EventCommand()
+        {
+
+        }
 
         public EventCommand(IntPtr data)
         {
@@ -43,6 +48,21 @@ namespace RPGStudioMK.Game
         public override string ToString()
         {
             return Code.ToString();
+        }
+
+        public object Clone()
+        {
+            EventCommand c = new EventCommand();
+            c.Indent = this.Indent;
+            c.Code = this.Code;
+            c.Parameters = new List<object>();
+            this.Parameters.ForEach(p =>
+            {
+                if (p is int || p is long || p is string || p is true || p is false || p is null) c.Parameters.Add(p);
+                else if (p is ICloneable) c.Parameters.Add(((ICloneable) p).Clone());
+                else throw new Exception("Uncloneable object: " + p.GetType().ToString());
+            });
+            return c;
         }
     }
 
@@ -119,7 +139,7 @@ namespace RPGStudioMK.Game
         BranchWhenXXX = 402,
         BranchWhenCancel = 403,
         BranchEnd = 404,
-        MoreComment= 408,
+        MoreComment = 408,
         BranchElse = 411,
         BranchConditionalEnd = 412,
         RepeatAbove = 413,

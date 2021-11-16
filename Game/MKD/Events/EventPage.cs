@@ -4,7 +4,7 @@ using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
-    public class EventPage
+    public class EventPage : ICloneable
     {
         public string Name;
         public List<EventCommand> Commands = new List<EventCommand>();
@@ -73,19 +73,18 @@ namespace RPGStudioMK.Game
             return page;
         }
 
-        public EventPage Clone()
+        public object Clone()
         {
-            throw new NotImplementedException();
-            /*EventPage p = new EventPage();
+            EventPage p = new EventPage();
             p.Name = this.Name;
-            p.Commands = new List<BasicCommand>(this.Commands);
-            p.Conditions = new List<BasicCondition>(this.Conditions);
-            p.Graphic = this.Graphic.Clone();
+            p.Condition = (EventCondition) this.Condition.Clone();
+            p.Graphic = (EventGraphic) this.Graphic.Clone();
             p.TriggerMode = this.TriggerMode;
-            p.TriggerParam = this.TriggerParam;
-            p.AutoMoveRoute = this.AutoMoveRoute.Clone();
-            p.Settings = this.Settings.Clone();
-            return p;*/
+            p.MoveRoute = (MoveRoute) this.MoveRoute.Clone();
+            p.Settings = (EventSettings) this.Settings.Clone();
+            p.Commands = new List<EventCommand>();
+            this.Commands.ForEach(c => p.Commands.Add((EventCommand) c.Clone()));
+            return p;
         }
     }
 }

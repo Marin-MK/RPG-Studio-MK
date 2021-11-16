@@ -4,10 +4,15 @@ using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
-    public class MoveCommand
+    public class MoveCommand : ICloneable
     {
         public int Code;
         public List<object> Parameters = new List<object>();
+
+        public MoveCommand()
+        {
+
+        }
 
         public MoveCommand(IntPtr data)
         {
@@ -35,6 +40,20 @@ namespace RPGStudioMK.Game
             }
             Ruby.Unpin(cmd);
             return cmd;
+        }
+
+        public object Clone()
+        {
+            MoveCommand c = new MoveCommand();
+            c.Code = this.Code;
+            c.Parameters = new List<object>();
+            this.Parameters.ForEach(p =>
+            {
+                if (p is int || p is long || p is string || p is true || p is false || p is null) c.Parameters.Add(p);
+                else if (p is ICloneable) c.Parameters.Add(((ICloneable) p).Clone());
+                else throw new Exception("Uncloneable object: " + p.GetType().ToString());
+            });
+            return c;
         }
     }
 }

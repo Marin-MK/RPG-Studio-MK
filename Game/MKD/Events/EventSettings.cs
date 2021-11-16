@@ -2,7 +2,7 @@
 
 namespace RPGStudioMK.Game
 {
-    public class EventSettings
+    public class EventSettings : ICloneable
     {
         //public float MoveSpeed;
         //public float IdleSpeed;
@@ -19,27 +19,18 @@ namespace RPGStudioMK.Game
 
         public EventSettings()
         {
-            //this.MoveSpeed = 0.25f;
-            //this.IdleSpeed = 0.25f;
-            //this.MoveAnimation = true;
-            //this.IdleAnimation = false;
-            //this.DirectionLock = false;
-            //this.Passable = false;
-            //this.SavePosition = false;
+
         }
 
-        public EventSettings Clone()
+        public object Clone()
         {
-            throw new NotImplementedException();
-            /*EventSettings es = new EventSettings();
-            es.MoveSpeed = this.MoveSpeed;
-            es.IdleSpeed = this.IdleSpeed;
-            es.MoveAnimation = this.MoveAnimation;
-            es.IdleAnimation = this.IdleAnimation;
-            es.DirectionLock = this.DirectionLock;
-            es.Passable = this.Passable;
-            es.SavePosition = this.SavePosition;
-            return es;*/
+            EventSettings s = new EventSettings();
+            s.DirectionFix = this.DirectionFix;
+            s.StepAnime = this.StepAnime;
+            s.AlwaysOnTop = this.AlwaysOnTop;
+            s.WalkAnime = this.WalkAnime;
+            s.Through = this.Through;
+            return s;
         }
     }
 }

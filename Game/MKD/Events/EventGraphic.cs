@@ -3,7 +3,7 @@ using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
-    public class EventGraphic
+    public class EventGraphic : ICloneable
     {
         public int Direction;
         public int TileID;
@@ -57,16 +57,19 @@ namespace RPGStudioMK.Game
             return graphic;
         }
 
-        public EventGraphic Clone()
+        public object Clone()
         {
-            throw new NotImplementedException();
-            /*EventGraphic o = new EventGraphic();
-            o.Type = this.Type;
-            o.Param = this.Param;
-            o.Direction = this.Direction;
-            o.NumDirections = this.NumDirections;
-            o.NumFrames = this.NumFrames;
-            return o;*/
+            EventGraphic g = new EventGraphic();
+            g.Direction = this.Direction;
+            g.TileID = this.TileID;
+            g.CharacterHue = this.CharacterHue;
+            g.BlendType = this.BlendType;
+            g.Pattern = this.Pattern;
+            g.Opacity = this.Opacity;
+            g.CharacterName = this.CharacterName;
+            g.NumFrames = this.NumFrames;
+            g.NumDirections = this.NumDirections;
+            return g;
         }
     }
 }

@@ -3,7 +3,7 @@ using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
-    public class AudioFile
+    public class AudioFile : ICloneable
     {
         public string Name;
         public int Volume;
@@ -20,6 +20,15 @@ namespace RPGStudioMK.Game
             this.Name = Ruby.String.FromPtr(Ruby.GetIVar(data, "@name"));
             this.Volume = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@volume"));
             this.Pitch = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@pitch"));
+        }
+
+        public object Clone()
+        {
+            AudioFile f = new AudioFile();
+            f.Name = this.Name;
+            f.Volume = this.Volume;
+            f.Pitch = this.Pitch;
+            return f;
         }
     }
 }

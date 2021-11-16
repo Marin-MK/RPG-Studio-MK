@@ -5,7 +5,7 @@ using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
-    public class Event
+    public class Event : ICloneable
     {
         public int ID;
         public string Name;
@@ -62,7 +62,7 @@ namespace RPGStudioMK.Game
             return e;
         }
 
-        public Event Clone()
+        public object Clone()
         {
             Event e = new Event(this.ID);
             e.Name = this.Name;
@@ -71,7 +71,7 @@ namespace RPGStudioMK.Game
             e.Width = this.Width;
             e.Height = this.Height;
             e.Pages = new List<EventPage>();
-            this.Pages.ForEach(p => e.Pages.Add(p.Clone()));
+            this.Pages.ForEach(p => e.Pages.Add((EventPage) p.Clone()));
             return e;
         }
     }

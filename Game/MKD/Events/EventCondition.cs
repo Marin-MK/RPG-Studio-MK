@@ -3,7 +3,7 @@ using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
-    public class EventCondition
+    public class EventCondition : ICloneable
     {
         public bool Switch1Valid;
         public bool Switch2Valid;
@@ -16,6 +16,11 @@ namespace RPGStudioMK.Game
         public int Switch2ID;
         public int VariableValue;
         public int VariableID;
+
+        public EventCondition()
+        {
+
+        }
 
         public EventCondition(IntPtr data)
         {
@@ -45,6 +50,21 @@ namespace RPGStudioMK.Game
             Ruby.SetIVar(condition, "@variable_id", Ruby.Integer.ToPtr(this.VariableID));
             Ruby.Unpin(condition);
             return condition;
+        }
+
+        public object Clone()
+        {
+            EventCondition c = new EventCondition();
+            c.Switch1Valid = this.Switch1Valid;
+            c.Switch2Valid = this.Switch2Valid;
+            c.SelfSwitchValid = this.SelfSwitchValid;
+            c.VariableValid = this.VariableValid;
+            c.SelfSwitchChar = this.SelfSwitchChar;
+            c.Switch1ID = this.Switch1ID;
+            c.Switch2ID = this.Switch2ID;
+            c.VariableValue = this.VariableValue;
+            c.VariableID = this.VariableID;
+            return c;
         }
     }
 }

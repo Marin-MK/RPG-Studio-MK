@@ -7,7 +7,7 @@ using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
-    public class Tileset
+    public class Tileset : ICloneable
     {
         public int ID;
         public string Name;
@@ -198,6 +198,33 @@ namespace RPGStudioMK.Game
         public override string ToString()
         {
             return this.Name;
+        }
+
+        public object Clone()
+        {
+            Tileset t = new Tileset();
+            t.ID = this.ID;
+            t.Name = this.Name;
+            t.GraphicName = this.GraphicName;
+            t.Passabilities = new List<Passability>(this.Passabilities);
+            t.Priorities = new List<int>(this.Priorities);
+            t.Tags = new List<int>(this.Tags);
+            t.PanoramaHue = this.PanoramaHue;
+            t.PanoramaName = this.PanoramaName;
+            t.FogName = this.FogName;
+            t.FogSX = this.FogSX;
+            t.FogSY = this.FogSY;
+            t.FogOpacity = this.FogOpacity;
+            t.FogHue = this.FogHue;
+            t.FogZoom = this.FogZoom;
+            t.FogBlendType = this.FogBlendType;
+            t.BattlebackName = this.BattlebackName;
+            t.Autotiles = new List<Autotile>();
+            this.Autotiles.ForEach(a => t.Autotiles.Add((Autotile) a.Clone()));
+            t.BushFlags = new List<int>(this.BushFlags);
+            t.TilesetBitmap = this.TilesetBitmap;
+            t.TilesetListBitmap = this.TilesetListBitmap;
+            return t;
         }
     }
 }
