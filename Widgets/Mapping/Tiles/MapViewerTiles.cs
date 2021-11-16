@@ -227,9 +227,9 @@ namespace RPGStudioMK.Widgets
                         // Thus you can say, redraw/undo the tiles if the quadrant you're in w.r.t the origin is not equal to
                         // the quadrant your mouse is moving to.
                         // This drastically increases performance over redrawing every single time you move a tile.
-                        if (TilesPanel.RectButton.Selected &&
-                            TileGroupUndoAction.GetLatest() != null && !TileGroupUndoAction.GetLatest().Ready &&
-                            MoveDirection != CursorDirectionFromOrigin)
+                        if (TileGroupUndoAction.GetLatest() != null && !TileGroupUndoAction.GetLatest().Ready &&
+                            (TilesPanel.RectButton.Selected && MoveDirection != CursorDirectionFromOrigin ||
+                            TilesPanel.EllipseButton.Selected)) // Ellipse tool redraws every tile movement regardless of quadrant/direction
                         {
                             List<TileGroupUndoAction.TileChange> changes = new List<TileGroupUndoAction.TileChange>();
                             // For all tiles that are both in the to-be-drawn area and in the current undo group,
@@ -275,7 +275,6 @@ namespace RPGStudioMK.Widgets
                                 }
                             }
                         }
-                        Console.WriteLine($"Drawing {points.Count} tiles.");
                         MapWidget.DrawTiles(points, Layer);
                     }
                 }
@@ -410,7 +409,7 @@ namespace RPGStudioMK.Widgets
                 int tiley = (int) Math.Floor(ry / (32d * ZoomFactor));
                 if (Editor.MainWindow.MapWidget != null && !TilesPanel.SelectButton.Selected)
                 {
-                    if (!TilesPanel.RectButton.Selected || OriginPoint == null) Cursor.SetVisible(true);
+                    if ((!TilesPanel.RectButton.Selected && !TilesPanel.EllipseButton.Selected) || OriginPoint == null) Cursor.SetVisible(true);
                 }
                 int cx = tilex * 32;
                 int cy = tiley * 32;
@@ -455,7 +454,7 @@ namespace RPGStudioMK.Widgets
                 e.RightButton != e.OldRightButton && e.RightButton) &&
                 MainContainer.WidgetIM.Hovering)
             {
-                if (TilesPanel.RectButton.Selected && e.LeftButton && e.LeftButton != e.OldLeftButton) Cursor.SetVisible(false);
+                if ((TilesPanel.RectButton.Selected || TilesPanel.EllipseButton.Selected) && e.LeftButton && e.LeftButton != e.OldLeftButton) Cursor.SetVisible(false);
                 UpdateTilePlacement(RelativeMouseX, RelativeMouseY, RelativeMouseX, RelativeMouseY);
             }
         }
@@ -469,7 +468,7 @@ namespace RPGStudioMK.Widgets
                 {
                     Editor.CanUndo = true;
                     TileGroupUndoAction.GetLatest().Ready = true;
-                    if (TilesPanel.RectButton.Selected && !Cursor.Visible) Cursor.SetVisible(true);
+                    if ((TilesPanel.RectButton.Selected || TilesPanel.EllipseButton.Selected) && !Cursor.Visible) Cursor.SetVisible(true);
                 }
             }
             if (!e.LeftButton && !e.RightButton) OriginPoint = null;

@@ -402,7 +402,38 @@ namespace RPGStudioMK.Widgets
             }
             else if (ellipse)
             {
-
+                int x1 = MapViewer.OriginPoint.X * 32;
+                int y1 = MapViewer.OriginPoint.Y * 32;
+                int x2 = newx;
+                int y2 = newy;
+                double cx = x1 / 2d + x2 / 2d;
+                double cy = y1 / 2d + y2 / 2d;
+                double a = cx - x1;
+                double b = cy - y1;
+                for (int x = 0; x <= cx; x++)
+                {
+                    int ry = (int) Math.Round(b / a * Math.Sqrt(a * a - x * x));
+                    int tilex1 = (int) Math.Round((cx + x) / 32d);
+                    int tilex2 = (int) Math.Round((cx - x) / 32d);
+                    int tiley1 = (int) Math.Round((cy + ry) / 32d);
+                    int tiley2 = (int) Math.Round((cy - ry) / 32d);
+                    if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley1)) Coords.Add(new Point(tilex1, tiley1));
+                    if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley2)) Coords.Add(new Point(tilex1, tiley2));
+                    if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley1)) Coords.Add(new Point(tilex2, tiley1));
+                    if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley2)) Coords.Add(new Point(tilex2, tiley2));
+                }
+                for (int y = 0; y <= cy; y++)
+                {
+                    int rx = (int) Math.Round(a / b * Math.Sqrt(b * b - y * y));
+                    int tilex1 = (int) Math.Round((cx + rx) / 32d);
+                    int tilex2 = (int) Math.Round((cx - rx) / 32d);
+                    int tiley1 = (int) Math.Round((cy + y) / 32d);
+                    int tiley2 = (int) Math.Round((cy - y) / 32d);
+                    if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley1)) Coords.Add(new Point(tilex1, tiley1));
+                    if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley2)) Coords.Add(new Point(tilex1, tiley2));
+                    if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley1)) Coords.Add(new Point(tilex2, tiley1));
+                    if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley2)) Coords.Add(new Point(tilex2, tiley2));
+                }
             }
             else if (rectangle)
             {
