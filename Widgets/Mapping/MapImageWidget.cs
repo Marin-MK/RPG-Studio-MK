@@ -301,7 +301,7 @@ namespace RPGStudioMK.Widgets
             else s.Bitmap.Unlock();
         }
 
-        public void DrawTiles(int oldx, int oldy, int newx, int newy, int layer)
+        public List<Point> GetTilesFromMouse(int oldx, int oldy, int newx, int newy)
         {
             MapViewerTiles MapViewer = this.MapViewer as MapViewerTiles;
             // Avoid drawing a line from top left to current tile
@@ -311,10 +311,10 @@ namespace RPGStudioMK.Widgets
                 oldy = newy;
             }
             Point Origin = MapViewer.OriginPoint;
-            bool blanktile = Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.EraserButton.Selected;
-            bool point = oldx == newx && oldy == newy;
-            bool line = !point;
-            List<Point> TempCoords = new List<Point>();
+            bool line = Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.PencilButton.Selected;
+            bool ellipse = Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.EllipseButton.Selected;
+            bool rectangle = Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.RectButton.Selected;
+            List<Point> Coords = new List<Point>();
             if (Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.FillButton.Selected)
             {
                 int sx, sy, ex, ey;
@@ -326,7 +326,7 @@ namespace RPGStudioMK.Widgets
                     ex = MapViewer.SelectionX + MapViewer.SelectionWidth;
                     sy = MapViewer.SelectionY;
                     ey = MapViewer.SelectionY + MapViewer.SelectionHeight;
-                    if (!(mx >= sx && mx < ex && my >= sy && my < ey)) return; // Outside selection
+                    if (!(mx >= sx && mx < ex && my >= sy && my < ey)) return new List<Point>(); // Outside selection
                 }
                 else
                 {
@@ -339,133 +339,172 @@ namespace RPGStudioMK.Widgets
                 {
                     for (int x = sx; x < ex; x++)
                     {
-                        TempCoords.Add(new Point(x, y));
+                        Coords.Add(new Point(x, y));
                     }
                 }
             }
             else if (line) // Draw tiles between several tiles - use simple line drawing algorithm to determine the tiles to draw on
             {
-                int x1 = oldx;
-                int y1 = oldy;
-                int x2 = newx;
-                int y2 = newy;
+                if (oldx == newx && oldy == newy) // Don't bother with line calculations: it's only one single tile.
+                {
+                    Coords.Add(new Point((int) Math.Floor(newx / 32d), (int) Math.Floor(newy / 32d)));
+                }
+                else
+                {
+                    // Interpolates the new mouse position over the old position and adds all tiles
+                    // in the line so as to not skip any tiles in between the old and new mouse position.
+                    int x1 = oldx;
+                    int y1 = oldy;
+                    int x2 = newx;
+                    int y2 = newy;
+                    for (int x = x1 > x2 ? x2 : x1; (x1 > x2) ? (x <= x1) : (x <= x2); x++)
+                    {
+                        double fact = ((double) x - x1) / (x2 - x1);
+                        int y = (int) Math.Round(y1 + ((y2 - y1) * fact));
+                        int tilex = (int) Math.Floor(x / 32d);
+                        int tiley = (int) Math.Floor(y / 32d);
+                        if (!Coords.Exists(c => c.X == tilex && c.Y == tiley)) Coords.Add(new Point(tilex, tiley));
+                    }
+                    int sy = y1 > y2 ? y2 : y1;
+                    for (int y = y1 > y2 ? y2 : y1; (y1 > y2) ? (y <= y1) : (y <= y2); y++)
+                    {
+                        double fact = ((double) y - y1) / (y2 - y1);
+                        int x = (int) Math.Round(x1 + ((x2 - x1) * fact));
+                        int tilex = (int) Math.Floor(x / 32d);
+                        int tiley = (int) Math.Floor(y / 32d);
+                        if (!Coords.Exists(c => c.X == tilex && c.Y == tiley)) Coords.Add(new Point(tilex, tiley));
+                    }
+                }
+                // Determine how many tiles are part of the line.
+                // We add coordinates after this if the cursor is bigger than 1x1,
+                // thus we use this constant count.
+                int count = Coords.Count;
+                // Now for each recorded tile in the interpolated line, we add all tiles
+                // that need to also be drawn if the cursor was bigger than 1x1.
+                for (int i = 0; i < count; i++)
+                {
+                    for (int cx = 0; cx <= MapViewer.CursorWidth; cx++)
+                    {
+                        for (int cy = 0; cy <= MapViewer.CursorHeight; cy++)
+                        {
+                            if (cx == 0 && cy == 0) continue; // Equal to already-calculated coord
+                            int px = Coords[i].X;
+                            int py = Coords[i].Y;
+                            // If the origin is in the bottom/right, we want to count tiles down, not up (or we'd exceed the cursor bounds)
+                            if (MapViewer.CursorOrigin == Location.TopRight || MapViewer.CursorOrigin == Location.BottomRight) px -= cx;
+                            else px += cx;
+                            if (MapViewer.CursorOrigin == Location.BottomLeft || MapViewer.CursorOrigin == Location.BottomRight) py -= cy;
+                            else py += cy;
+                            if (!Coords.Exists(c => c.X == px && c.Y == py)) Coords.Add(new Point(px, py));
+                        }
+                    }
+                }
+            }
+            else if (ellipse)
+            {
+
+            }
+            else if (rectangle)
+            {
+                int x1 = MapViewer.OriginPoint.X;
+                int y1 = MapViewer.OriginPoint.Y;
+                int x2 = (int) Math.Floor(newx / 32d);
+                int y2 = (int) Math.Floor(newy / 32d);
                 for (int x = x1 > x2 ? x2 : x1; (x1 > x2) ? (x <= x1) : (x <= x2); x++)
                 {
-                    double fact = ((double) x - x1) / (x2 - x1);
-                    int y = (int) Math.Round(y1 + ((y2 - y1) * fact));
-                    int tilex = (int) Math.Floor(x / 32d);
-                    int tiley = (int) Math.Floor(y / 32d);
-                    if (!TempCoords.Exists(c => c.X == tilex && c.Y == tiley)) TempCoords.Add(new Point(tilex, tiley));
-                }
-                int sy = y1 > y2 ? y2 : y1;
-                for (int y = y1 > y2 ? y2 : y1; (y1 > y2) ? (y <= y1) : (y <= y2); y++)
-                {
-                    double fact = ((double) y - y1) / (y2 - y1);
-                    int x = (int) Math.Round(x1 + ((x2 - x1) * fact));
-                    int tilex = (int) Math.Floor(x / 32d);
-                    int tiley = (int) Math.Floor(y / 32d);
-                    if (!TempCoords.Exists(c => c.X == tilex && c.Y == tiley)) TempCoords.Add(new Point(tilex, tiley));
+                    for (int y = y1 > y2 ? y2 : y1; (y1 > y2) ? (y <= y1) : (y <= y2); y++)
+                    {
+                        Coords.Add(new Point(x, y));
+                    }
                 }
             }
-            else if (point) // Just one singular tile
-            {
-                TempCoords.Add(new Point((int) Math.Floor(newx / 32d), (int) Math.Floor(newy / 32d)));
-            }
+            return Coords;
+        }
 
+        public void DrawTiles(List<Point> Coords, int layer)
+        {
+            MapViewerTiles MapViewer = this.MapViewer as MapViewerTiles;
+            bool eraser = Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.EraserButton.Selected;
             SetLayerLocked(layer, false);
-            for (int i = 0; i < TempCoords.Count; i++)
+            for (int i = 0; i < Coords.Count; i++)
             {
                 // Both of these depend on the origin, but we need them both at the top left as we begin drawing there
                 // and to be able to compare them to use in the modulus, they both have to be adjusted
-                int MapTileX = TempCoords[i].X;
-                int MapTileY = TempCoords[i].Y;
+                int MapTileX = Coords[i].X;
+                int MapTileY = Coords[i].Y;
                 int OriginX = MapViewer.OriginPoint.X;
                 int OriginY = MapViewer.OriginPoint.Y;
                 if (MapViewer.CursorOrigin == Location.TopRight || MapViewer.CursorOrigin == Location.BottomRight)
                 {
-                    MapTileX -= MapViewer.CursorWidth;
                     OriginX -= MapViewer.CursorWidth;
                 }
                 if (MapViewer.CursorOrigin == Location.BottomLeft || MapViewer.CursorOrigin == Location.BottomRight)
                 {
-                    MapTileY -= MapViewer.CursorHeight;
                     OriginY -= MapViewer.CursorHeight;
                 }
                 // MapTileX and MapTileY are now the top left no matter the origin point
-                int SelArea = MapViewer.TileDataList.Count;
 
-                int OriginDiffX = (OriginX - MapTileX) % (MapViewer.CursorWidth + 1);
-                int OriginDiffY = (OriginY - MapTileY) % (MapViewer.CursorHeight + 1);
+                int OriginDiffX = (MapTileX - OriginX) % (MapViewer.CursorWidth + 1);
+                int OriginDiffY = (MapTileY - OriginY) % (MapViewer.CursorHeight + 1);
 
-                for (int j = 0; j < SelArea; j++)
+                int MapPosition = MapTileX + MapTileY * MapData.Width;
+                if (MapTileX < 0 || MapTileX >= MapData.Width || MapTileY < 0 || MapTileY >= MapData.Height) continue;
+                if (MapViewer.SelectionX != -1 && MapViewer.SelectionY != -1 && MapViewer.SelectionWidth != 0 && MapViewer.SelectionHeight != 0 && MapViewer.SelectionBackground.Visible)
                 {
-                    bool Blank = blanktile;
+                    // NOT within the selection
+                    if (!(MapTileX >= MapViewer.SelectionX && MapTileX < MapViewer.SelectionX + MapViewer.SelectionWidth &&
+                            MapTileY >= MapViewer.SelectionY && MapTileY < MapViewer.SelectionY + MapViewer.SelectionHeight))
+                        continue;
+                }
 
-                    int actualx = MapTileX + (j % (MapViewer.CursorWidth + 1));
-                    int actualy = MapTileY + (int) Math.Floor((double) j / (MapViewer.CursorWidth + 1));
-                    int MapPosition = actualx + actualy * MapData.Width;
-                    if (actualx < 0 || actualx >= MapData.Width || actualy < 0 || actualy >= MapData.Height) continue;
-                    if (MapViewer.SelectionX != -1 && MapViewer.SelectionY != -1 && MapViewer.SelectionWidth != 0 && MapViewer.SelectionHeight != 0 && MapViewer.SelectionBackground.Visible)
+                int selx = OriginDiffX;
+                if (selx < 0) selx = MapViewer.CursorWidth + 1 + selx;
+                int sely = OriginDiffY;
+                if (sely < 0) sely = MapViewer.CursorHeight + 1 + sely;
+
+                bool Blank = eraser;
+
+                TileData tiledata = MapViewer.TileDataList[sely * (MapViewer.CursorWidth + 1) + selx];
+                TileType tiletype = TileType.Tileset;
+                int tileid = -1;
+                int index = -1;
+                if (tiledata != null)
+                {
+                    tiletype = tiledata.TileType;
+                    tileid = tiledata.ID;
+                    index = tiledata.Index;
+                }
+                else Blank = true;
+
+                TileData OldTile = MapData.Layers[layer].Tiles[MapPosition];
+                TileData NewTile = null;
+                if (!Blank)
+                {
+                    NewTile = new TileData
                     {
-                        // NOT within the selection
-                        if (!(actualx >= MapViewer.SelectionX && actualx < MapViewer.SelectionX + MapViewer.SelectionWidth &&
-                              actualy >= MapViewer.SelectionY && actualy < MapViewer.SelectionY + MapViewer.SelectionHeight))
-                            continue;
-                    }
+                        TileType = tiletype,
+                        Index = index,
+                        ID = tileid
+                    };
+                }
 
-                    int selx = j % (MapViewer.CursorWidth + 1);
-                    if (OriginDiffX < 0) selx -= OriginDiffX;
-                    if (OriginDiffX > 0) selx -= OriginDiffX;
-                    if (selx < 0) selx += MapViewer.CursorWidth + 1;
-                    selx %= MapViewer.CursorWidth + 1;
-                    int sely = (int) Math.Floor((double) j / (MapViewer.CursorWidth + 1));
-                    if (OriginDiffY < 0) sely -= OriginDiffY;
-                    if (OriginDiffY > 0) sely -= OriginDiffY;
-                    if (sely < 0) sely += MapViewer.CursorHeight + 1;
-                    sely %= MapViewer.CursorHeight + 1;
+                bool SameTile = true;
+                if (OldTile == null && NewTile != null ||
+                    OldTile != null && NewTile == null) SameTile = false;
+                else if (OldTile != null && OldTile.TileType != NewTile.TileType) SameTile = false;
+                else if (OldTile != null && OldTile.Index != NewTile.Index) SameTile = false;
+                else if (OldTile != null && OldTile.TileType != TileType.Autotile && OldTile.ID != NewTile.ID) SameTile = false;
 
-                    TileData tiledata = MapViewer.TileDataList[sely * (MapViewer.CursorWidth + 1) + selx];
-                    TileType tiletype = TileType.Tileset;
-                    int tileid = -1;
-                    int index = -1;
-                    if (tiledata != null)
+                if (!SameTile)
+                {
+                    MapData.Layers[layer].Tiles[MapPosition] = NewTile;
+                    if (TileGroupUndoAction.GetLatest() == null || TileGroupUndoAction.GetLatest().Ready)
                     {
-                        tiletype = tiledata.TileType;
-                        tileid = tiledata.ID;
-                        index = tiledata.Index;
+                        Editor.CanUndo = false;
+                        TileGroupUndoAction.Log(MapID, layer);
                     }
-                    else Blank = true;
-
-                    TileData OldTile = MapData.Layers[layer].Tiles[MapPosition];
-                    TileData NewTile = null;
-                    if (!Blank)
-                    {
-                        NewTile = new TileData
-                        {
-                            TileType = tiletype,
-                            Index = index,
-                            ID = tileid
-                        };
-                    }
-
-                    bool SameTile = true;
-                    if (OldTile == null && NewTile != null ||
-                        OldTile != null && NewTile == null) SameTile = false;
-                    else if (OldTile != null && OldTile.TileType != NewTile.TileType) SameTile = false;
-                    else if (OldTile != null && OldTile.Index != NewTile.Index) SameTile = false;
-                    else if (OldTile != null && OldTile.TileType != TileType.Autotile && OldTile.ID != NewTile.ID) SameTile = false;
-
-                    if (!SameTile)
-                    {
-                        MapData.Layers[layer].Tiles[MapPosition] = NewTile;
-                        if (TileGroupUndoAction.GetLatest() == null || TileGroupUndoAction.GetLatest().Ready)
-                        {
-                            Editor.CanUndo = false;
-                            TileGroupUndoAction.Log(MapID, layer);
-                        }
-                        TileGroupUndoAction.AddToLatest(MapPosition, NewTile, OldTile);
-                        DrawTile(actualx, actualy, layer, NewTile, OldTile);
-                    }
+                    TileGroupUndoAction.AddToLatest(MapPosition, NewTile, OldTile);
+                    DrawTile(MapTileX, MapTileY, layer, NewTile, OldTile);
                 }
             }
             SetLayerLocked(layer, true);

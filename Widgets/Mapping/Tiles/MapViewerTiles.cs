@@ -20,6 +20,10 @@ namespace RPGStudioMK.Widgets
         public int SelectionWidth = 0;
         public int SelectionHeight = 0;
 
+        // Used to determine whether an undo is needed for rectangle drawing
+        Location MoveDirection = Location.TopLeft;
+        Location CursorDirectionFromOrigin = Location.TopLeft;
+
         public CursorWidget Cursor;
 
         public override int TopLeftX
@@ -161,6 +165,20 @@ namespace RPGStudioMK.Widgets
                     );
             }
 
+            if (OriginPoint != null && MapTileX != OriginPoint.X && MapTileY != OriginPoint.Y)
+            {
+                if (MapTileX > OriginPoint.X) // Right
+                {
+                    if (MapTileY > OriginPoint.Y) CursorDirectionFromOrigin = Location.BottomRight;
+                    else CursorDirectionFromOrigin = Location.TopRight;
+                }
+                else // Left
+                {
+                    if (MapTileY > OriginPoint.Y) CursorDirectionFromOrigin = Location.BottomLeft;
+                    else CursorDirectionFromOrigin = Location.TopLeft;
+                }
+            }
+
             // Input handling
             if (Left)
             {
@@ -184,7 +202,7 @@ namespace RPGStudioMK.Widgets
                     SelectionHeight = ey - sy + 1;
                     UpdateSelection();
                 }
-                else // Pencil tool
+                else // Draw tool
                 {
                     int Layer = LayerPanel.SelectedLayer;
                     if (TileDataList.Count == 0)
@@ -197,7 +215,69 @@ namespace RPGStudioMK.Widgets
                             throw new Exception($"The tile data list is empty, but the eraser tool is not selected.\nCan't find tiles to draw with.");
                         }
                     }
-                    MapWidget.DrawTiles(oldx, oldy, newx, newy, Layer);
+                    List<Point> points = MapWidget.GetTilesFromMouse(oldx, oldy, newx, newy);
+                    if (points.Count > 0)
+                    {
+                        // Consider the screen split in 4 quadrants, meeting at the origin point.
+                        // If you're drawing in one quadrant, and you go further into that direction,
+                        // all tiles you draw will overlap and thus you do not need to undo those tiles.
+                        // However, if you're in one quadrant, and changing direction to go to the origin or
+                        // another quadrant, there are tiles further into the quadrant that you have already
+                        // drawn, but that need to be undone.
+                        // Thus you can say, redraw/undo the tiles if the quadrant you're in w.r.t the origin is not equal to
+                        // the quadrant your mouse is moving to.
+                        // This drastically increases performance over redrawing every single time you move a tile.
+                        if (TilesPanel.RectButton.Selected &&
+                            TileGroupUndoAction.GetLatest() != null && !TileGroupUndoAction.GetLatest().Ready &&
+                            MoveDirection != CursorDirectionFromOrigin)
+                        {
+                            List<TileGroupUndoAction.TileChange> changes = new List<TileGroupUndoAction.TileChange>();
+                            // For all tiles that are both in the to-be-drawn area and in the current undo group,
+                            // Take them out of the undo and draw group, and then undo the rest (non-drawn area)
+                            // Then put the to-be-drawn area back in a new tile undo group for the next draw.
+                            TileGroupUndoAction action = TileGroupUndoAction.GetLatest();
+                            for (int i = 0; i < action.Tiles.Count; i++)
+                            {
+                                Point point = points.Find(p => p.X + p.Y * Map.Width == action.Tiles[i].MapPosition);
+                                if (point != null)
+                                {
+                                    points.Remove(point);
+                                    TileGroupUndoAction.TileChange tc = action.Tiles[i];
+                                    changes.Add(tc);
+                                    action.Tiles.RemoveAt(i);
+                                    i--;
+                                }
+                            }
+                            action.Ready = true;
+                            Editor.CanUndo = true;
+                            Editor.Undo();
+                            Editor.CanUndo = false;
+                            TileGroupUndoAction.Log(Map.ID, Layer);
+                            TileGroupUndoAction.GetLatest().Tiles.AddRange(changes);
+                        }
+                        else
+                        {
+                            // Our draw area has a large overlapping area, so we take out all the tiles now
+                            // to prevent further processing.
+                            // Since these tiles would draw with the exact same time, it does not have any 
+                            // visual impact, but we can separate these tiles out faster than if we
+                            // proceed with the draw procedure.
+                            TileGroupUndoAction action = TileGroupUndoAction.GetLatest();
+                            if (action != null)
+                            {
+                                for (int i = 0; i < points.Count; i++)
+                                {
+                                    if (action.Tiles.Exists(g => g.MapPosition == points[i].X + points[i].Y * Map.Width))
+                                    {
+                                        points.RemoveAt(i);
+                                        i--;
+                                    }
+                                }
+                            }
+                        }
+                        Console.WriteLine($"Drawing {points.Count} tiles.");
+                        MapWidget.DrawTiles(points, Layer);
+                    }
                 }
             }
             else if (Right)
@@ -281,10 +361,21 @@ namespace RPGStudioMK.Widgets
         public override void MouseMoving(MouseEventArgs e)
         {
             base.MouseMoving(e);
+            if (e.X != LastMouseX || e.Y != LastMouseY)
+            {
+                if (e.X >= LastMouseX) // Right
+                {
+                    if (e.Y >= LastMouseY) MoveDirection = Location.BottomRight;
+                    else MoveDirection = Location.TopRight;
+                }
+                else // Left
+                {
+                    if (e.Y >= LastMouseY) MoveDirection = Location.BottomLeft;
+                    else MoveDirection = Location.TopLeft;
+                }
+            }
             if (!MiddleMouseScrolling)
             {
-                LastMouseX = e.X;
-                LastMouseY = e.Y;
                 int oldmousex = RelativeMouseX;
                 int oldmousey = RelativeMouseY;
                 // Cursor placement
@@ -317,7 +408,10 @@ namespace RPGStudioMK.Widgets
                 }
                 int tilex = (int) Math.Floor(rx / (32d * ZoomFactor));
                 int tiley = (int) Math.Floor(ry / (32d * ZoomFactor));
-                if (Editor.MainWindow.MapWidget != null && !Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.SelectButton.Selected) Cursor.SetVisible(true);
+                if (Editor.MainWindow.MapWidget != null && !TilesPanel.SelectButton.Selected)
+                {
+                    if (!TilesPanel.RectButton.Selected || OriginPoint == null) Cursor.SetVisible(true);
+                }
                 int cx = tilex * 32;
                 int cy = tiley * 32;
                 RelativeMouseX = cx;
@@ -332,6 +426,8 @@ namespace RPGStudioMK.Widgets
                     UpdateTilePlacement(oldmousex, oldmousey, RelativeMouseX, RelativeMouseY);
                 }
             }
+            LastMouseX = e.X;
+            LastMouseY = e.Y;
         }
 
         public void UpdateCursorPosition()
@@ -358,7 +454,10 @@ namespace RPGStudioMK.Widgets
             if ((e.LeftButton != e.OldLeftButton && e.LeftButton ||
                 e.RightButton != e.OldRightButton && e.RightButton) &&
                 MainContainer.WidgetIM.Hovering)
+            {
+                if (TilesPanel.RectButton.Selected && e.LeftButton && e.LeftButton != e.OldLeftButton) Cursor.SetVisible(false);
                 UpdateTilePlacement(RelativeMouseX, RelativeMouseY, RelativeMouseX, RelativeMouseY);
+            }
         }
 
         public override void MouseUp(MouseEventArgs e)
@@ -370,6 +469,7 @@ namespace RPGStudioMK.Widgets
                 {
                     Editor.CanUndo = true;
                     TileGroupUndoAction.GetLatest().Ready = true;
+                    if (TilesPanel.RectButton.Selected && !Cursor.Visible) Cursor.SetVisible(true);
                 }
             }
             if (!e.LeftButton && !e.RightButton) OriginPoint = null;
