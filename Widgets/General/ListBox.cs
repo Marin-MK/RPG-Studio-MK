@@ -11,6 +11,7 @@ namespace RPGStudioMK.Widgets
         public ListItem SelectedItem { get { return ListDrawer.SelectedItem; } }
         public List<ListItem> Items { get { return ListDrawer.Items; } }
         public bool Enabled { get; protected set; } = true;
+        public Color SelectedItemColor { get { return ListDrawer.SelectedItemColor; } }
 
         public BaseEvent OnSelectionChanged
         {
@@ -68,6 +69,11 @@ namespace RPGStudioMK.Widgets
         public void SetItems(List<ListItem> Items)
         {
             ListDrawer.SetItems(Items);
+        }
+
+        public void SetSelectedItemColor(Color SelectedItemColor)
+        {
+            ListDrawer.SetSelectedItemColor(SelectedItemColor);
         }
 
         public void RedrawBox()

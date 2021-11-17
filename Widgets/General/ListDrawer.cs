@@ -22,6 +22,8 @@ namespace RPGStudioMK.Widgets
         public int SelectedIndex { get; protected set; } = -1;
         public ListItem SelectedItem { get { return SelectedIndex == -1 ? null : Items[SelectedIndex]; } }
 
+        public Color SelectedItemColor { get; protected set; } = new Color(55, 187, 255);
+
         public ListDrawer(IContainer Parent) : base(Parent)
         {
             Sprites["selection"] = new Sprite(this.Viewport, new SolidBitmap(Size.Width, 20, new Color(28, 50, 73)));
@@ -83,6 +85,15 @@ namespace RPGStudioMK.Widgets
             RedrawButton();
         }
 
+        public void SetSelectedItemColor(Color SelectedItemColor)
+        {
+            if (this.SelectedItemColor != SelectedItemColor)
+            {
+                this.SelectedItemColor = SelectedItemColor;
+                Redraw();
+            }
+        }
+
         public override void SizeChanged(BaseEventArgs e)
         {
             base.SizeChanged(e);
@@ -103,6 +114,7 @@ namespace RPGStudioMK.Widgets
                     Sprites["selection"].Visible = true;
                     Sprites["selection"].Y = LineHeight * Index;
                 }
+                this.Redraw();
                 this.OnSelectionChanged?.Invoke(new BaseEventArgs());
             }
         }
@@ -141,7 +153,8 @@ namespace RPGStudioMK.Widgets
             Sprites["text"].Bitmap.Unlock();
             for (int i = 0; i < this.Items.Count; i++)
             {
-                Sprites["text"].Bitmap.DrawText(this.Items[i].ToString(), 10, LineHeight * i, this.Enabled ? Color.WHITE : new Color(72, 72, 72));
+                Color c = this.Enabled ? (i == SelectedIndex ? this.SelectedItemColor : Color.WHITE) : new Color(72, 72, 72);
+                Sprites["text"].Bitmap.DrawText(this.Items[i].ToString(), 10, LineHeight * i, c);
             }
             Sprites["text"].Bitmap.Lock();
             Sprites["btn"].Y = LineHeight * this.Items.Count;
@@ -184,7 +197,7 @@ namespace RPGStudioMK.Widgets
             if (HoveringButton)
             {
                 Sprites["selection"].Visible = false;
-                this.SelectedIndex = -1;
+                this.SetSelectedIndex(-1);
                 this.OnButtonClicked?.Invoke(e);
                 this.OnSelectionChanged?.Invoke(new BaseEventArgs());
                 if (TimerExists("double")) DestroyTimer("double");
@@ -194,7 +207,7 @@ namespace RPGStudioMK.Widgets
                 Sprites["selection"].Y = Sprites["hover"].Y;
                 Sprites["selection"].Visible = true;
                 int oldidx = this.SelectedIndex;
-                this.SelectedIndex = Sprites["hover"].Y / this.LineHeight;
+                this.SetSelectedIndex(Sprites["hover"].Y / this.LineHeight);
                 if (oldidx != this.SelectedIndex)
                 {
                     this.OnSelectionChanged?.Invoke(new BaseEventArgs());
