@@ -78,7 +78,7 @@ namespace RPGStudioMK.Widgets
 
             YoutubeButton = new PictureBox(this);
             YoutubeButton.Sprite.Bitmap = new Bitmap("home_icon_youtube.png");
-            YoutubeButton.SetHelpText("Visit MK's YouTube account.");
+            YoutubeButton.SetHelpText("Visit RPG Studio MK's YouTube account.");
             YoutubeButton.OnLeftClick += delegate (MouseEventArgs e)
             {
                 new MessageBox("Oops!", "MK does not have a YouTube channel yet!", IconType.Error);

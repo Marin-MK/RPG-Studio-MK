@@ -87,11 +87,11 @@ namespace RPGStudioMK.Widgets
             {
                 new Shortcut(this, new Key(Keycode.ESCAPE), CancelSelection),
                 new Shortcut(this, new Key(Keycode.A), SetDrawModePencil),
-                new Shortcut(this, new Key(Keycode.S), SetDrawModeBucket),
+                new Shortcut(this, new Key(Keycode.S), SetDrawModeRectangle),
                 new Shortcut(this, new Key(Keycode.D), SetDrawModeEllipse),
-                new Shortcut(this, new Key(Keycode.F), SetDrawModeRectangle),
-                new Shortcut(this, new Key(Keycode.G), SetDrawModeSelection),
-                new Shortcut(this, new Key(Keycode.E), SetDrawModeEraser)
+                new Shortcut(this, new Key(Keycode.F), SetDrawModeBucket),
+                new Shortcut(this, new Key(Keycode.G), SetDrawModeEraser),
+                new Shortcut(this, new Key(Keycode.E), SetDrawModeSelection)
             });
         }
 

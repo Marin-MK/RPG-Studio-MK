@@ -123,35 +123,30 @@ namespace RPGStudioMK.Widgets
 
             DrawToolsContainer = new Container(this);
             DrawToolsContainer.SetPosition(46, 22);
-            DrawToolsContainer.SetSize(186, 28);
-            DrawToolsContainer.Sprites["line1"] = new Sprite(DrawToolsContainer.Viewport, new SolidBitmap(1, 26, new Color(28, 50, 73)));
-            DrawToolsContainer.Sprites["line1"].X = 144;
-            DrawToolsContainer.Sprites["line2"] = new Sprite(DrawToolsContainer.Viewport, new SolidBitmap(1, 26, new Color(28, 50, 73)));
-            DrawToolsContainer.Sprites["line2"].X = 185;
+            DrawToolsContainer.SetSize(194, 28);
+            DrawToolsContainer.Sprites["line"] = new Sprite(DrawToolsContainer.Viewport, new SolidBitmap(1, 22, new Color(79, 108, 159)));
+            DrawToolsContainer.Sprites["line"].X = 160;
+            DrawToolsContainer.Sprites["line"].Y = 2;
 
             PencilButton = new IconButton(DrawToolsContainer);
             PencilButton.SetIcon(15, 0);
             PencilButton.SetSelected(true);
 
-            FillButton = new IconButton(DrawToolsContainer);
-            FillButton.SetIcon(16, 0);
-            FillButton.SetPosition(32, 0);
+            RectButton = new IconButton(DrawToolsContainer);
+            RectButton.SetIcon(18, 0);
+            RectButton.SetPosition(32, 0);
 
             EllipseButton = new IconButton(DrawToolsContainer);
             EllipseButton.SetIcon(17, 0);
             EllipseButton.SetPosition(64, 0);
 
-            RectButton = new IconButton(DrawToolsContainer);
-            RectButton.SetIcon(18, 0);
-            RectButton.SetPosition(96, 0);
-
-            SelectButton = new IconButton(DrawToolsContainer);
-            SelectButton.SetIcon(19, 0);
-            SelectButton.SetPosition(128, 0);
+            FillButton = new IconButton(DrawToolsContainer);
+            FillButton.SetIcon(16, 0);
+            FillButton.SetPosition(96, 0);
 
             EraserButton = new IconButton(DrawToolsContainer);
             EraserButton.SetIcon(20, 0);
-            EraserButton.SetPosition(160, 0);
+            EraserButton.SetPosition(128, 0);
             EraserButton.Toggleable = true;
             EraserButton.OnSelection += delegate (BaseEventArgs e)
             {
@@ -165,6 +160,10 @@ namespace RPGStudioMK.Widgets
                     SelectTile(0, 0, 0);
                 else UpdateCursor();
             };
+
+            SelectButton = new IconButton(DrawToolsContainer);
+            SelectButton.SetIcon(19, 0);
+            SelectButton.SetPosition(168, 0);
 
             SetSize(288, 200); // Dummy size so the sprites can be drawn properly
         }
