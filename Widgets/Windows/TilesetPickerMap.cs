@@ -21,7 +21,7 @@ namespace RPGStudioMK.Widgets
 
         public TilesetPickerMap(Map Map)
         {
-            SetTitle("Change Tilesets");
+            SetTitle("Change Tileset");
             MinimumSize = MaximumSize = new Size(506, 498);
             SetSize(MaximumSize);
             Center();

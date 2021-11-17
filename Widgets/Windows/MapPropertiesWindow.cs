@@ -109,7 +109,7 @@ namespace RPGStudioMK.Widgets
             Autotiles.ListDrawer.OnButtonClicked += AddAutotile;*/
 
             Label tilesetslabel = new Label(box1);
-            tilesetslabel.SetText("Tilesets:");
+            tilesetslabel.SetText("Tileset:");
             tilesetslabel.SetFont(f);
             tilesetslabel.SetPosition(163, 6);
 
