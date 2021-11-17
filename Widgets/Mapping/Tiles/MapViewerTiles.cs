@@ -77,11 +77,11 @@ namespace RPGStudioMK.Widgets
             Editor.MainWindow.MapWidget.LayerPanel = LayerPanel;
 
             SelectionBackground = new SelectionBackground(MainContainer);
-            SelectionBackground.SetZIndex(2);
+            SelectionBackground.SetZIndex(7);
 
             Cursor = new CursorWidget(MainContainer);
             Cursor.ConsiderInAutoScrollCalculation = false;
-            Cursor.SetZIndex(6);
+            Cursor.SetZIndex(8);
 
             RegisterShortcuts(new List<Shortcut>()
             {

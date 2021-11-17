@@ -13,10 +13,10 @@ namespace RPGStudioMK.Widgets
         {
             Sprites["left"] = new Sprite(this.Viewport);
             Sprites["top"] = new Sprite(this.Viewport);
-            Sprites["top"].X = 1;
+            Sprites["top"].X = 2;
             Sprites["right"] = new Sprite(this.Viewport);
             Sprites["bottom"] = new Sprite(this.Viewport);
-            Sprites["bottom"].X = 1;
+            Sprites["bottom"].X = 2;
             SetTimer("offset", Interval);
         }
 
@@ -47,8 +47,8 @@ namespace RPGStudioMK.Widgets
         public override void SizeChanged(BaseEventArgs e)
         {
             base.SizeChanged(e);
-            Sprites["right"].X = this.Size.Width - 1;
-            Sprites["bottom"].Y = this.Size.Height - 1;
+            Sprites["right"].X = this.Size.Width - 2;
+            Sprites["bottom"].Y = this.Size.Height - 2;
             Redraw();
         }
 
@@ -57,9 +57,9 @@ namespace RPGStudioMK.Widgets
             if (Sprites["left"].Bitmap != null) Sprites["left"].Bitmap.Dispose();
             if (Sprites["top"].Bitmap != null) Sprites["top"].Bitmap.Dispose();
 
-            Bitmap v = new Bitmap(1, this.Size.Height);
+            Bitmap v = new Bitmap(2, this.Size.Height);
             v.Unlock();
-            Bitmap h = new Bitmap(this.Size.Width - 2, 1);
+            Bitmap h = new Bitmap(this.Size.Width - 4, 2);
             h.Unlock();
 
             Color c1 = Color.BLACK;
@@ -68,14 +68,28 @@ namespace RPGStudioMK.Widgets
             for (int y = 0; y < v.Height; y++)
             {
                 if (Math.Floor((y + Offset) / 4d) % 2 == 0)
+                {
                     v.SetPixel(0, y, c1);
-                else v.SetPixel(0, y, c2);
+                    v.SetPixel(1, y, c1);
+                }
+                else
+                {
+                    v.SetPixel(0, y, c2);
+                    v.SetPixel(1, y, c2);
+                }
             }
             for (int x = 0; x < h.Width; x++)
             {
                 if (Math.Floor((x + Offset) / 4d) % 2 == 0)
+                {
                     h.SetPixel(x, 0, c1);
-                else h.SetPixel(x, 0, c2);
+                    h.SetPixel(x, 1, c1);
+                }
+                else
+                {
+                    h.SetPixel(x, 0, c2);
+                    h.SetPixel(x, 1, c2);
+                }
             }
 
             v.Lock();
