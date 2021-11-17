@@ -422,12 +422,26 @@ namespace RPGStudioMK.Widgets
                     if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley1)) Coords.Add(new Point(tilex2, tiley1));
                     if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley2)) Coords.Add(new Point(tilex1, tiley2));
                     if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley2)) Coords.Add(new Point(tilex2, tiley2));
-                    for (int y = (tiley1 > tiley2 ? tiley2 : tiley1) + 1; y < (tiley1 > tiley2 ? tiley1 : tiley2); y++)
+                }
+                List<Point> fillpoints = new List<Point>();
+                int sx = (int) Math.Round((x1 > x2 ? x2 : x1) / 32d);
+                int ex = (int) Math.Round((x1 > x2 ? x1 : x2) / 32d);
+                for (int x = sx; x <= ex; x++)
+                {
+                    List<int> ys = Coords.FindAll(p => p.X == x).ConvertAll<int>(p => p.Y);
+                    if (ys.Count >= 2)
                     {
-                        if (!Coords.Exists(c => c.X == tilex1 && c.Y == y)) Coords.Add(new Point(tilex1, y));
-                        if (!Coords.Exists(c => c.X == tilex2 && c.Y == y)) Coords.Add(new Point(tilex2, y));
+                        int miny = int.MaxValue;
+                        foreach (int py in ys) if (py < miny) miny = py;
+                        int maxy = int.MinValue;
+                        foreach (int py in ys) if (py > maxy) maxy = py;
+                        for (int y = miny; y < maxy; y++)
+                        {
+                            if (!fillpoints.Exists(p => p.X == x && p.Y == y)) fillpoints.Add(new Point(x, y));
+                        }
                     }
                 }
+                Coords.AddRange(fillpoints);
             }
             else if (rectangle)
             {
