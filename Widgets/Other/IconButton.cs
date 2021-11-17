@@ -40,7 +40,7 @@ namespace RPGStudioMK.Widgets
                     {
                         if (!(w is IconButton)) continue;
                         IconButton b = w as IconButton;
-                        if (b.Selected) b.SetSelected(false);
+                        if (b.Selected && !b.Toggleable) b.SetSelected(false);
                     }
                 }
                 this.Selected = Selected;

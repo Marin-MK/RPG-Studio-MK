@@ -311,12 +311,9 @@ namespace RPGStudioMK.Widgets
                 oldy = newy;
             }
             Point Origin = MapViewer.OriginPoint;
-            bool bucket = Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.FillButton.Selected;
-            bool line = Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.PencilButton.Selected;
-            bool ellipse = Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.EllipseButton.Selected;
-            bool rectangle = Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.RectButton.Selected;
+            DrawTools DrawTool = MapViewer.TilesPanel.DrawTool;
             List<Point> Coords = new List<Point>();
-            if (bucket)
+            if (DrawTool == DrawTools.Bucket)
             {
                 int x = (int) Math.Floor(newx / 32d);
                 int y = (int) Math.Floor(newy / 32d);
@@ -335,7 +332,7 @@ namespace RPGStudioMK.Widgets
                 }
                 
             }
-            else if (line) // Draw tiles between several tiles - use simple line drawing algorithm to determine the tiles to draw on
+            else if (DrawTool == DrawTools.Pencil) // Draw tiles between several tiles - use simple line drawing algorithm to determine the tiles to draw on
             {
                 if (oldx == newx && oldy == newy) // Don't bother with line calculations: it's only one single tile.
                 {
@@ -392,7 +389,7 @@ namespace RPGStudioMK.Widgets
                     }
                 }
             }
-            else if (ellipse)
+            else if (DrawTool == DrawTools.Ellipse)
             {
                 int x1 = MapViewer.OriginPoint.X * 32;
                 int y1 = MapViewer.OriginPoint.Y * 32;
@@ -435,7 +432,7 @@ namespace RPGStudioMK.Widgets
                 }
                 Coords.AddRange(fillpoints);
             }
-            else if (rectangle)
+            else if (DrawTool == DrawTools.Rectangle)
             {
                 int x1 = MapViewer.OriginPoint.X;
                 int y1 = MapViewer.OriginPoint.Y;
@@ -455,7 +452,6 @@ namespace RPGStudioMK.Widgets
         public void DrawTiles(List<Point> Coords, int layer)
         {
             MapViewerTiles MapViewer = this.MapViewer as MapViewerTiles;
-            bool eraser = Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.EraserButton.Selected;
             SetLayerLocked(layer, false);
             for (int i = 0; i < Coords.Count; i++)
             {
@@ -491,7 +487,7 @@ namespace RPGStudioMK.Widgets
                 int sely = OriginDiffY;
                 if (sely < 0) sely = MapViewer.CursorHeight + 1 + sely;
 
-                bool Blank = eraser;
+                bool Blank = MapViewer.TilesPanel.Erase;
 
                 TileData tiledata = MapViewer.TileDataList[sely * (MapViewer.CursorWidth + 1) + selx];
                 TileType tiletype = TileType.Tileset;

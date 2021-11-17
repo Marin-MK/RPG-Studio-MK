@@ -17,13 +17,59 @@ namespace RPGStudioMK.Widgets
         public int TileEndX     { get; protected set; } = 0;
         public int TileEndY     { get; protected set; } = 0;
 
-        Container DrawToolsContainer;
-        public IconButton PencilButton;
-        public IconButton FillButton;
-        public IconButton EllipseButton;
-        public IconButton RectButton;
-        public IconButton SelectButton;
-        public IconButton EraserButton;
+        public DrawTools DrawTool
+        {
+            get
+            {
+                if (PencilButton.Selected) return DrawTools.Pencil;
+                else if (FillButton.Selected) return DrawTools.Bucket;
+                else if (EllipseButton.Selected) return DrawTools.Ellipse;
+                else if (RectButton.Selected) return DrawTools.Rectangle;
+                else if (SelectButton.Selected) return DrawTools.Selection;
+                else throw new Exception("Unknown draw tool.");
+            }
+            set
+            {
+                PencilButton.SetSelected(value == DrawTools.Pencil);
+                FillButton.SetSelected(value == DrawTools.Bucket);
+                EllipseButton.SetSelected(value == DrawTools.Ellipse);
+                RectButton.SetSelected(value == DrawTools.Rectangle);
+                bool oldsel = SelectButton.Selected;
+                SelectButton.SetSelected(value == DrawTools.Selection);
+                if (SelectButton.Selected != oldsel)
+                {
+                    if (SelectButton.Selected)
+                    {
+                        MapViewer.Cursor.SetVisible(false);
+                        Cursor.SetPosition(0, 0);
+                        Cursor.SetVisible(false);
+                    }
+                    else
+                    {
+                        UpdateCursor();
+                    }
+                }
+            }
+        }
+        public bool Erase
+        {
+            get
+            {
+                return EraserButton.Selected;
+            }
+            set
+            {
+                EraserButton.SetSelected(value);
+            }
+        }
+
+        private Container DrawToolsContainer;
+        private IconButton PencilButton;
+        private IconButton FillButton;
+        private IconButton EllipseButton;
+        private IconButton RectButton;
+        private IconButton SelectButton;
+        private IconButton EraserButton;
 
         public LayerPanel LayerPanel;
         public MapViewerTiles MapViewer;
@@ -102,16 +148,6 @@ namespace RPGStudioMK.Widgets
             SelectButton = new IconButton(DrawToolsContainer);
             SelectButton.SetIcon(19, 0);
             SelectButton.SetPosition(128, 0);
-            SelectButton.OnSelection += delegate (BaseEventArgs e)
-            {
-                MapViewer.Cursor.SetVisible(false);
-                Cursor.SetPosition(0, 0);
-                Cursor.SetVisible(false);
-            };
-            SelectButton.OnDeselection += delegate (BaseEventArgs e)
-            {
-                UpdateCursor();
-            };
 
             EraserButton = new IconButton(DrawToolsContainer);
             EraserButton.SetIcon(20, 0);
@@ -396,11 +432,10 @@ namespace RPGStudioMK.Widgets
                 this.TileStartY = this.TileEndY = TileY;
             }
             MapViewer.SelectionOnMap = false;
-            if (EraserButton.Selected) EraserButton.SetSelected(false);
-            if (SelectButton.Selected)
+            if (this.Erase) this.Erase = false;
+            if (this.DrawTool == DrawTools.Selection)
             {
-                SelectButton.SetSelected(false);
-                PencilButton.SetSelected(true);
+                this.DrawTool = DrawTools.Pencil;
             }
             UpdateCursor();
         }
@@ -415,7 +450,7 @@ namespace RPGStudioMK.Widgets
                 TilesetIndex = -1;
                 TileStartX = TileEndX = -1;
                 TileStartY = TileEndY = -1;
-                EraserButton.SetSelected(true);
+                this.Erase = true;
                 MapViewer.TileDataList = new List<TileData>() { };
                 for (int i = 0; i < MapViewer.CursorWidth * MapViewer.CursorHeight; i++)
                     MapViewer.TileDataList.Add(null);
@@ -428,7 +463,7 @@ namespace RPGStudioMK.Widgets
                     AutotileIndex = tile.Index;
                     AutotileCombination = -1;
                     MapViewer.SelectionOnMap = false;
-                    EraserButton.SetSelected(false);
+                    this.Erase = false;
                 }
                 else if (tile.TileType == TileType.Tileset)
                 {
@@ -438,7 +473,7 @@ namespace RPGStudioMK.Widgets
                     TileStartX = TileEndX = tile.ID % 8;
                     TileStartY = TileEndY = (int) Math.Floor(tile.ID / 8d);
                     MapViewer.SelectionOnMap = false;
-                    EraserButton.SetSelected(false);
+                    this.Erase = false;
                 }
                 else
                 {
@@ -471,17 +506,16 @@ namespace RPGStudioMK.Widgets
                 AutotileIndex = AutotileCombination = TilesetIndex = TileStartX = TileEndX = TileStartY = TileEndY = -1;
             }
             if (AutotileIndex == -1 && (TilesetIndex == -1 || TileStartX == -1 || TileEndX == -1 || TileStartY == -1 || TileEndY == -1) ||
-                SelectButton.Selected)
+                this.DrawTool == DrawTools.Selection)
             {
                 Cursor.SetPosition(0, 0);
                 Cursor.SetVisible(false);
                 MainContainer.UpdateAutoScroll();
                 return;
             }
-            if (SelectButton.Selected)
+            if (this.DrawTool == DrawTools.Selection)
             {
-                SelectButton.SetSelected(false);
-                PencilButton.SetSelected(true);
+                this.DrawTool = DrawTools.Pencil;
             }
             if (AutotileIndex != -1) // Autotile selected
             {
@@ -489,7 +523,7 @@ namespace RPGStudioMK.Widgets
                 if (image is int) // Single autotile
                 {
                     CollapsibleContainer cc = SingleAutotileContainer;
-                    if (cc.Collapsed || EraserButton.Selected || MapViewer.SelectionOnMap)
+                    if (cc.Collapsed || this.Erase || MapViewer.SelectionOnMap)
                     {
                         Cursor.SetVisible(false);
                         Cursor.SetPosition(0, 0);
@@ -505,7 +539,7 @@ namespace RPGStudioMK.Widgets
                 else if (image is CollapsibleContainer) // Other autotile format
                 {
                     CollapsibleContainer cc = image as CollapsibleContainer;
-                    if (cc.Collapsed || EraserButton.Selected || MapViewer.SelectionOnMap)
+                    if (cc.Collapsed || this.Erase || MapViewer.SelectionOnMap)
                     {
                         Cursor.SetVisible(false);
                         Cursor.SetPosition(0, 0);
@@ -576,7 +610,7 @@ namespace RPGStudioMK.Widgets
                     }
                 }
                 CollapsibleContainer cc = TilesetContainers[TilesetIndex];
-                if (cc.Collapsed || EraserButton.Selected || MapViewer.SelectionOnMap)
+                if (cc.Collapsed || this.Erase || MapViewer.SelectionOnMap)
                 {
                     Cursor.SetPosition(0, 0);
                     Cursor.SetVisible(false);
@@ -674,5 +708,14 @@ namespace RPGStudioMK.Widgets
                 break;
             }
         }
+    }
+
+    public enum DrawTools
+    {
+        Pencil,
+        Bucket,
+        Ellipse,
+        Rectangle,
+        Selection
     }
 }
