@@ -410,7 +410,8 @@ namespace RPGStudioMK.Widgets
                 double cy = y1 / 2d + y2 / 2d;
                 double a = cx - x1;
                 double b = cy - y1;
-                for (int x = 0; x <= cx; x++)
+                if (a == 0 || b == 0) return Coords;
+                for (int x = 0; a > 0 ? x <= a : x >= a; x += (a > 0 ? 1 : -1))
                 {
                     int ry = (int) Math.Round(b / a * Math.Sqrt(a * a - x * x));
                     int tilex1 = (int) Math.Round((cx + x) / 32d);
@@ -418,21 +419,14 @@ namespace RPGStudioMK.Widgets
                     int tiley1 = (int) Math.Round((cy + ry) / 32d);
                     int tiley2 = (int) Math.Round((cy - ry) / 32d);
                     if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley1)) Coords.Add(new Point(tilex1, tiley1));
-                    if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley2)) Coords.Add(new Point(tilex1, tiley2));
                     if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley1)) Coords.Add(new Point(tilex2, tiley1));
-                    if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley2)) Coords.Add(new Point(tilex2, tiley2));
-                }
-                for (int y = 0; y <= cy; y++)
-                {
-                    int rx = (int) Math.Round(a / b * Math.Sqrt(b * b - y * y));
-                    int tilex1 = (int) Math.Round((cx + rx) / 32d);
-                    int tilex2 = (int) Math.Round((cx - rx) / 32d);
-                    int tiley1 = (int) Math.Round((cy + y) / 32d);
-                    int tiley2 = (int) Math.Round((cy - y) / 32d);
-                    if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley1)) Coords.Add(new Point(tilex1, tiley1));
                     if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley2)) Coords.Add(new Point(tilex1, tiley2));
-                    if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley1)) Coords.Add(new Point(tilex2, tiley1));
                     if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley2)) Coords.Add(new Point(tilex2, tiley2));
+                    for (int y = (tiley1 > tiley2 ? tiley2 : tiley1) + 1; y < (tiley1 > tiley2 ? tiley1 : tiley2); y++)
+                    {
+                        if (!Coords.Exists(c => c.X == tilex1 && c.Y == y)) Coords.Add(new Point(tilex1, y));
+                        if (!Coords.Exists(c => c.X == tilex2 && c.Y == y)) Coords.Add(new Point(tilex2, y));
+                    }
                 }
             }
             else if (rectangle)
@@ -459,10 +453,9 @@ namespace RPGStudioMK.Widgets
             SetLayerLocked(layer, false);
             for (int i = 0; i < Coords.Count; i++)
             {
-                // Both of these depend on the origin, but we need them both at the top left as we begin drawing there
-                // and to be able to compare them to use in the modulus, they both have to be adjusted
                 int MapTileX = Coords[i].X;
                 int MapTileY = Coords[i].Y;
+                if (MapTileX < 0 || MapTileX >= MapData.Width || MapTileY < 0 || MapTileY >= MapData.Height) continue;
                 int OriginX = MapViewer.OriginPoint.X;
                 int OriginY = MapViewer.OriginPoint.Y;
                 if (MapViewer.CursorOrigin == Location.TopRight || MapViewer.CursorOrigin == Location.BottomRight)
@@ -479,7 +472,6 @@ namespace RPGStudioMK.Widgets
                 int OriginDiffY = (MapTileY - OriginY) % (MapViewer.CursorHeight + 1);
 
                 int MapPosition = MapTileX + MapTileY * MapData.Width;
-                if (MapTileX < 0 || MapTileX >= MapData.Width || MapTileY < 0 || MapTileY >= MapData.Height) continue;
                 if (MapViewer.SelectionX != -1 && MapViewer.SelectionY != -1 && MapViewer.SelectionWidth != 0 && MapViewer.SelectionHeight != 0 && MapViewer.SelectionBackground.Visible)
                 {
                     // NOT within the selection
