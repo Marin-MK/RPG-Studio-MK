@@ -148,13 +148,13 @@ namespace RPGStudioMK.Widgets
             else SelectionBackground.SetVisible(false);
         }
 
-        public void UpdateTilePlacement(int oldx = -1, int oldy = -1, int newx = -1, int newy = -1)
+        public void UpdateTilePlacement(MouseEventArgs e, int oldx = -1, int oldy = -1, int newx = -1, int newy = -1)
         {
             if (!MainContainer.WidgetIM.Hovering) return;
             if (MainContainer.HScrollBar != null && (MainContainer.HScrollBar.SliderDragging || MainContainer.HScrollBar.SliderHovering)) return;
             if (MainContainer.VScrollBar != null && (MainContainer.VScrollBar.SliderDragging || MainContainer.VScrollBar.SliderHovering)) return;
-            bool Left = WidgetIM.ClickedLeftInArea == true;
-            bool Right = WidgetIM.ClickedRightInArea == true;
+            bool Left = WidgetIM.ClickedLeftInArea == true && e.LeftButton;
+            bool Right = WidgetIM.ClickedRightInArea == true && e.RightButton;
 
             if (Left || Right)
             {
@@ -215,7 +215,7 @@ namespace RPGStudioMK.Widgets
                             throw new Exception($"The tile data list is empty, but the eraser tool is not selected.\nCan't find tiles to draw with.");
                         }
                     }
-                    List<Point> points = MapWidget.GetTilesFromMouse(oldx, oldy, newx, newy);
+                    List<Point> points = MapWidget.GetTilesFromMouse(oldx, oldy, newx, newy, Layer);
                     if (points.Count > 0)
                     {
                         // Consider the screen split in 4 quadrants, meeting at the origin point.
@@ -350,6 +350,17 @@ namespace RPGStudioMK.Widgets
                     }
                 }
             }
+            else
+            {
+                // Just in case no MouseUp event was ever received, in case of long computation times for, say, bucket tool
+                if (!Editor.CanUndo)
+                {
+                    Editor.CanUndo = true;
+                    TileGroupUndoAction.GetLatest().Ready = true;
+                    if ((TilesPanel.RectButton.Selected || TilesPanel.EllipseButton.Selected) && !Cursor.Visible) Cursor.SetVisible(true);
+                }
+                OriginPoint = null;
+            }
         }
 
         public void SetLayerVisible(int layerindex, bool Visible)
@@ -422,7 +433,7 @@ namespace RPGStudioMK.Widgets
                 UpdateCursorPosition();
                 if (oldmousex != RelativeMouseX || oldmousey != RelativeMouseY)
                 {
-                    UpdateTilePlacement(oldmousex, oldmousey, RelativeMouseX, RelativeMouseY);
+                    UpdateTilePlacement(e, oldmousex, oldmousey, RelativeMouseX, RelativeMouseY);
                 }
             }
             LastMouseX = e.X;
@@ -455,7 +466,7 @@ namespace RPGStudioMK.Widgets
                 MainContainer.WidgetIM.Hovering)
             {
                 if ((TilesPanel.RectButton.Selected || TilesPanel.EllipseButton.Selected) && e.LeftButton && e.LeftButton != e.OldLeftButton) Cursor.SetVisible(false);
-                UpdateTilePlacement(RelativeMouseX, RelativeMouseY, RelativeMouseX, RelativeMouseY);
+                UpdateTilePlacement(e, RelativeMouseX, RelativeMouseY, RelativeMouseX, RelativeMouseY);
             }
         }
 

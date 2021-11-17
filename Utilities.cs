@@ -481,5 +481,53 @@ namespace RPGStudioMK
                 throw new Exception($"Could not convert internal class '{obj.GetType().ToString()}' to a Ruby class.");
             }
         }
+
+        public static List<Point> GetIdenticalConnected(Map map, int layer, int x, int y)
+        {
+
+            return GetIdenticalConnectedInternal(map, layer, x, y, new List<Point>());
+        }
+
+        private static List<Point> GetIdenticalConnectedInternal(Map map, int layer, int x, int y, List<Point> visited)
+        {
+            if (x < 0 || x >= map.Width || y < 0 || y >= map.Height) return new List<Point>();
+            if (visited.Exists(p => p.X == x && p.Y == y)) return new List<Point>();
+            TileData src = map.Layers[layer].Tiles[x + y * map.Width];
+            visited.Add(new Point(x, y));
+            List<Point> points = new List<Point>() { new Point(x, y) };
+            if (x > 0)
+            {
+                TileData tile = map.Layers[layer].Tiles[(x - 1) + y * map.Width];
+                if (src is null && tile == null || !(src is null) && src.Equals(tile))
+                {
+                    points.AddRange(GetIdenticalConnectedInternal(map, layer, x - 1, y, visited));
+                }
+            }
+            if (x < map.Width - 1)
+            {
+                TileData tile = map.Layers[layer].Tiles[(x + 1) + y * map.Width];
+                if (src is null && tile == null || !(src is null) && src.Equals(tile))
+                {
+                    points.AddRange(GetIdenticalConnectedInternal(map, layer, x + 1, y, visited));
+                }
+            }
+            if (y > 0)
+            {
+                TileData tile = map.Layers[layer].Tiles[x + (y - 1) * map.Width];
+                if (src is null && tile == null || !(src is null) && src.Equals(tile))
+                {
+                    points.AddRange(GetIdenticalConnectedInternal(map, layer, x, y - 1, visited));
+                }
+            }
+            if (y < map.Height - 1)
+            {
+                TileData tile = map.Layers[layer].Tiles[x + (y + 1) * map.Width];
+                if (src is null && tile == null || !(src is null) && src.Equals(tile))
+                {
+                    points.AddRange(GetIdenticalConnectedInternal(map, layer, x, y + 1, visited));
+                }
+            }
+            return points;
+        }
     }
 }

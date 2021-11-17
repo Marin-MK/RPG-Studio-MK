@@ -301,7 +301,7 @@ namespace RPGStudioMK.Widgets
             else s.Bitmap.Unlock();
         }
 
-        public List<Point> GetTilesFromMouse(int oldx, int oldy, int newx, int newy)
+        public List<Point> GetTilesFromMouse(int oldx, int oldy, int newx, int newy, int layer)
         {
             MapViewerTiles MapViewer = this.MapViewer as MapViewerTiles;
             // Avoid drawing a line from top left to current tile
@@ -311,37 +311,29 @@ namespace RPGStudioMK.Widgets
                 oldy = newy;
             }
             Point Origin = MapViewer.OriginPoint;
+            bool bucket = Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.FillButton.Selected;
             bool line = Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.PencilButton.Selected;
             bool ellipse = Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.EllipseButton.Selected;
             bool rectangle = Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.RectButton.Selected;
             List<Point> Coords = new List<Point>();
-            if (Editor.MainWindow.MapWidget.MapViewerTiles.TilesPanel.FillButton.Selected)
+            if (bucket)
             {
-                int sx, sy, ex, ey;
-                if (MapViewer.SelectionX != -1 && MapViewer.SelectionY != -1 && MapViewer.SelectionWidth != 0 && MapViewer.SelectionHeight != 0 && MapViewer.SelectionBackground.Visible)
+                int x = (int) Math.Floor(newx / 32d);
+                int y = (int) Math.Floor(newy / 32d);
+                if (MapViewer.SelectionX != -1 && MapViewer.SelectionY != -1 && MapViewer.SelectionWidth != -1 && MapViewer.SelectionHeight != -1)
                 {
-                    int mx = (int) Math.Floor(newx / 32d);
-                    int my = (int) Math.Floor(newy / 32d);
-                    sx = MapViewer.SelectionX;
-                    ex = MapViewer.SelectionX + MapViewer.SelectionWidth;
-                    sy = MapViewer.SelectionY;
-                    ey = MapViewer.SelectionY + MapViewer.SelectionHeight;
-                    if (!(mx >= sx && mx < ex && my >= sy && my < ey)) return new List<Point>(); // Outside selection
-                }
-                else
-                {
-                    sx = 0;
-                    sy = 0;
-                    ex = MapData.Width;
-                    ey = MapData.Height;
-                }
-                for (int y = sy; y < ey; y++)
-                {
-                    for (int x = sx; x < ex; x++)
+                    if (x < MapViewer.SelectionX || x >= MapViewer.SelectionX + MapViewer.SelectionWidth ||
+                        y < MapViewer.SelectionY || y >= MapViewer.SelectionY + MapViewer.SelectionHeight)
                     {
-                        Coords.Add(new Point(x, y));
+                        return Coords;
                     }
                 }
+                List<Point> tiles = Utilities.GetIdenticalConnected(MapData, layer, x, y);
+                foreach (Point point in tiles)
+                {
+                    Coords.Add(point);
+                }
+                
             }
             else if (line) // Draw tiles between several tiles - use simple line drawing algorithm to determine the tiles to draw on
             {
