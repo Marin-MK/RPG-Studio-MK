@@ -83,6 +83,12 @@ namespace RPGStudioMK.Widgets
             {
                 new MessageBox("Oops!", "MK does not have a YouTube channel yet!", IconType.Error);
             };
+            YoutubeButton.OnHoverChanged += delegate (MouseEventArgs e)
+            {
+                YoutubeButton.Sprite.Bitmap.Dispose();
+                if (YoutubeButton.WidgetIM.Hovering) YoutubeButton.Sprite.Bitmap = new Bitmap("home_icon_youtube_hover.png");
+                else YoutubeButton.Sprite.Bitmap = new Bitmap("home_icon_youtube.png");
+            };
             
             TwitterButton = new PictureBox(this);
             TwitterButton.Sprite.Bitmap = new Bitmap("home_icon_twitter.png");
@@ -90,6 +96,12 @@ namespace RPGStudioMK.Widgets
             TwitterButton.OnLeftClick += delegate (MouseEventArgs e)
             {
                 Utilities.OpenLink("http://twitter.com/RPGStudioMK");
+            };
+            TwitterButton.OnHoverChanged += delegate (MouseEventArgs e)
+            {
+                TwitterButton.Sprite.Bitmap.Dispose();
+                if (TwitterButton.WidgetIM.Hovering) TwitterButton.Sprite.Bitmap = new Bitmap("home_icon_twitter_hover.png");
+                else TwitterButton.Sprite.Bitmap = new Bitmap("home_icon_twitter.png");
             };
 
             NoProjects = new MultilineLabel(this);
