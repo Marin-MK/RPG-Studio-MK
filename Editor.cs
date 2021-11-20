@@ -368,7 +368,7 @@ namespace RPGStudioMK
         /// Adds a Map to the map list.
         /// </summary>
         /// <param name="Map">The new Map object.</param>
-        /// <param name="ParentID">The ID of the parent map.</param>
+        /// <param name="ParentID">The ID of the parent map, or 0 if adding to bottom.</param>
         public static void AddMap(Map Map, int ParentID = 0)
         {
             Map.ParentID = ParentID;
@@ -397,6 +397,10 @@ namespace RPGStudioMK
                     mapview.Nodes.Add(node);
                 }
                 mapview.SetSelectedNode(node);
+            }
+            else
+            {
+                throw NotImplementedException();
             }
         }
 

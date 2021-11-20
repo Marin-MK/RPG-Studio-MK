@@ -200,6 +200,28 @@ namespace RPGStudioMK.Widgets
         private void CutMap(BaseEventArgs e)
         {
             CopyMap(e);
+            DeleteMapAndKeepChildren();
+        }
+
+        private void CopyMap(BaseEventArgs e)
+        {
+            Map map = Data.Maps[(int) mapview.HoveringNode.Object];
+            Utilities.SetClipboard(map, BinaryData.MAP);
+        }
+
+        private void PasteMap(BaseEventArgs e)
+        {
+            if (!Utilities.IsClipboardValidBinary(BinaryData.MAP)) return;
+            Map map = Utilities.GetClipboard<Map>();
+            map.ID = Editor.GetFreeMapID();
+            Editor.AddMap(map, mapview.HoveringNode == null ? 0 : (int) mapview.HoveringNode.Object);
+        }
+
+        /// <summary>
+        /// Deletes the hovered map and moves the children to the parent.
+        /// </summary>
+        void DeleteMapAndKeepChildren()
+        {
             int MapID = (int) mapview.HoveringNode.Object;
             Map Map = Data.Maps[MapID];
             Data.Maps.Remove(MapID);
@@ -237,18 +259,27 @@ namespace RPGStudioMK.Widgets
             mapview.Redraw();
         }
 
-        private void CopyMap(BaseEventArgs e)
+        /// <summary>
+        /// Deletes the hovered map and all its children.
+        /// </summary>
+        void DeleteMapAndDeleteChildren()
         {
-            Map map = Data.Maps[(int) mapview.HoveringNode.Object];
-            Utilities.SetClipboard(map, BinaryData.MAP);
-        }
-
-        private void PasteMap(BaseEventArgs e)
-        {
-            if (!Utilities.IsClipboardValidBinary(BinaryData.MAP)) return;
-            Map map = Utilities.GetClipboard<Map>();
-            map.ID = Editor.GetFreeMapID();
-            Editor.AddMap(map, mapview.HoveringNode == null ? 0 : (int) mapview.HoveringNode.Object);
+            DeleteMapRecursively(mapview.HoveringNode);
+            for (int i = 0; i < mapview.Nodes.Count; i++)
+            {
+                if (mapview.Nodes[i] == mapview.HoveringNode)
+                {
+                    mapview.Nodes.RemoveAt(i);
+                    mapview.SetSelectedNode(i >= mapview.Nodes.Count ? mapview.Nodes[i - 1] : mapview.Nodes[i]);
+                    break;
+                }
+                else if (mapview.Nodes[i].ContainsNode(mapview.HoveringNode))
+                {
+                    mapview.SetSelectedNode(mapview.Nodes[i].RemoveNode(mapview.HoveringNode));
+                    break;
+                }
+            }
+            Editor.OptimizeOrder();
         }
 
         private void DeleteMap(BaseEventArgs e)
@@ -263,61 +294,13 @@ namespace RPGStudioMK.Widgets
                 {
                     bool DeleteChildMaps = mapview.HoveringNode.Nodes.Count > 0 ? confirm.DeleteChildMaps.Checked : false;
                     Editor.UnsavedChanges = true;
-                    if (DeleteChildMaps)
+                    if (DeleteChildMaps) // Delete children
                     {
-                        DeleteMapRecursively(mapview.HoveringNode);
-                        for (int i = 0; i < mapview.Nodes.Count; i++)
-                        {
-                            if (mapview.Nodes[i] == mapview.HoveringNode)
-                            {
-                                mapview.Nodes.RemoveAt(i);
-                                mapview.SetSelectedNode(i >= mapview.Nodes.Count ? mapview.Nodes[i - 1] : mapview.Nodes[i]);
-                                break;
-                            }
-                            else if (mapview.Nodes[i].ContainsNode(mapview.HoveringNode))
-                            {
-                                mapview.SetSelectedNode(mapview.Nodes[i].RemoveNode(mapview.HoveringNode));
-                                break;
-                            }
-                        }
-                        Editor.OptimizeOrder();
+                        DeleteMapAndDeleteChildren();
                     }
-                    else
+                    else // Keep and move children
                     {
-                        int MapID = (int) mapview.HoveringNode.Object;
-                        Map Map = Data.Maps[MapID];
-                        Data.Maps.Remove(MapID);
-                        Editor.DecrementMapOrderFrom(Map.Order);
-                        Editor.DeletedMaps.Add(Map);
-                        for (int i = 0; i < mapview.Nodes.Count; i++)
-                        {
-                            if ((int) mapview.Nodes[i].Object == MapID)
-                            {
-                                if (mapview.HoveringNode.Nodes.Count > 0)
-                                {
-                                    mapview.HoveringNode.Nodes.ForEach(n => Data.Maps[(int) n.Object].ParentID = 0);
-                                    mapview.Nodes.AddRange(mapview.HoveringNode.Nodes);
-                                }
-                                mapview.Nodes.Remove(mapview.HoveringNode);
-                                SortNodeList(mapview.Nodes);
-                                mapview.SetSelectedNode(mapview.Nodes[i > 0 ? i - 1 : 0]);
-                                break;
-                            }
-                            else
-                            {
-                                TreeNode Node = mapview.Nodes[i].FindParentNode(n => n.Object == mapview.HoveringNode.Object);
-                                if (Node == null) continue;
-                                if (mapview.HoveringNode.Nodes.Count > 0)
-                                {
-                                    mapview.HoveringNode.Nodes.ForEach(n => Data.Maps[(int) n.Object].ParentID = 0);
-                                    Node.Nodes.AddRange(mapview.HoveringNode.Nodes);
-                                }
-                                Node.Nodes.Remove(mapview.HoveringNode);
-                                SortNodeList(Node.Nodes);
-                                mapview.SetSelectedNode(Node);
-                                break;
-                            }
-                        }
+                        DeleteMapAndKeepChildren();
                     }
                     mapview.Redraw();
                 }
