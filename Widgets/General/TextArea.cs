@@ -804,7 +804,7 @@ namespace RPGStudioMK.Widgets
                 int startidx = SelectionStartIndex > SelectionEndIndex ? SelectionEndIndex : SelectionStartIndex;
                 int endidx = SelectionStartIndex > SelectionEndIndex ? SelectionStartIndex : SelectionEndIndex;
                 string text = this.Text.Substring(startidx, endidx - startidx);
-                SDL_SetClipboardText(text);
+                Input.SetClipboard(text);
                 DeleteSelection();
                 if (!string.IsNullOrEmpty(text)) this.OnTextChanged?.Invoke(new BaseEventArgs());
                 DrawText();
@@ -821,7 +821,7 @@ namespace RPGStudioMK.Widgets
                 int startidx = SelectionStartIndex > SelectionEndIndex ? SelectionEndIndex : SelectionStartIndex;
                 int endidx = SelectionStartIndex > SelectionEndIndex ? SelectionStartIndex : SelectionEndIndex;
                 string text = this.Text.Substring(startidx, endidx - startidx);
-                SDL_SetClipboardText(text);
+                Input.SetClipboard(text);
             }
         }
 
@@ -832,7 +832,7 @@ namespace RPGStudioMK.Widgets
         {
             if (this.ReadOnly) return;
             if (TimerPassed("paste")) ResetTimer("paste");
-            string text = SDL_GetClipboardText();
+            string text = Input.GetClipboard();
             if (string.IsNullOrEmpty(text)) return;
             if (NumericOnly && !Utilities.IsNumeric(text)) return;
             if (SelectionStartIndex != -1 && SelectionStartIndex != SelectionEndIndex) DeleteSelection();

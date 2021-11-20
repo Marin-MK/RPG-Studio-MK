@@ -1,10 +1,11 @@
 ﻿using System;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace RPGStudioMK.Game
 {
-#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-    public class TileData : ICloneable
-#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
+    [Serializable]
+    public class TileData : ICloneable, ISerializable
     {
         /// <summary>
         /// Regular tile or autotile
@@ -40,6 +41,30 @@ namespace RPGStudioMK.Game
                        this.ID == data.ID;
             }
             return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public string Serialize()
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            MemoryStream stream = new MemoryStream();
+            formatter.Serialize(stream, this);
+            string data = Convert.ToBase64String(stream.ToArray());
+            stream.Close();
+            return data;
+        }
+
+        public static TileData Deserialize(string data)
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            MemoryStream stream = new MemoryStream(Convert.FromBase64String(data));
+            TileData result = (TileData) formatter.Deserialize(stream);
+            stream.Close();
+            return result;
         }
     }
 }

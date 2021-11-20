@@ -292,7 +292,7 @@ namespace RPGStudioMK.Widgets
                 int startidx = SelectionStartIndex.CharacterIndex > SelectionEndIndex.CharacterIndex ? SelectionEndIndex.CharacterIndex : SelectionStartIndex.CharacterIndex;
                 int endidx = SelectionStartIndex.CharacterIndex > SelectionEndIndex.CharacterIndex ? SelectionStartIndex.CharacterIndex : SelectionEndIndex.CharacterIndex;
                 string text = this.Text.Substring(startidx, endidx - startidx);
-                SDL_SetClipboardText(text);
+                Input.SetClipboard(text);
                 DeleteSelection();
                 RedrawText();
             }
@@ -308,7 +308,7 @@ namespace RPGStudioMK.Widgets
                 int startidx = SelectionStartIndex.CharacterIndex > SelectionEndIndex.CharacterIndex ? SelectionEndIndex.CharacterIndex : SelectionStartIndex.CharacterIndex;
                 int endidx = SelectionStartIndex.CharacterIndex > SelectionEndIndex.CharacterIndex ? SelectionStartIndex.CharacterIndex : SelectionEndIndex.CharacterIndex;
                 string text = this.Text.Substring(startidx, endidx - startidx);
-                SDL_SetClipboardText(text);
+                Input.SetClipboard(text);
             }
         }
 
@@ -319,7 +319,7 @@ namespace RPGStudioMK.Widgets
         {
             if (this.ReadOnly) return;
             if (TimerPassed("paste")) ResetTimer("paste");
-            string text = SDL_GetClipboardText();
+            string text = Input.GetClipboard();
             text = text.Replace("\t", "").Replace("\r", "");
             if (SelectionStartIndex.CharacterIndex != -1 && SelectionStartIndex.CharacterIndex != SelectionEndIndex.CharacterIndex) DeleteSelection();
             InsertText(Caret.CharacterIndex, text);

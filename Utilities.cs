@@ -5,6 +5,10 @@ using RPGStudioMK.Game;
 using Newtonsoft.Json.Linq;
 using odl;
 using rubydotnet;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
+using System.Reflection;
+using System.Linq;
 
 namespace RPGStudioMK
 {
@@ -528,6 +532,53 @@ namespace RPGStudioMK
                 }
             }
             return points;
+        }
+
+        public static string SerializeList<T>(IEnumerable<T> list) where T : ISerializable
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            MemoryStream stream = new MemoryStream();
+            formatter.Serialize(stream, list.Select(e => e.Serialize()).ToArray());
+            string data = Convert.ToBase64String(stream.ToArray());
+            stream.Close();
+            return data;
+        }
+
+        public static List<T> DeserializeList<T>(string data) where T : ISerializable
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            MemoryStream stream = new MemoryStream(Convert.FromBase64String(data));
+            object o = formatter.Deserialize(stream);
+            if (!(o is string[])) throw new Exception("Deserialization error.");
+            stream.Close();
+            List<T> list = new List<T>();
+            foreach (string s in ((string[]) o))
+            {
+                MethodInfo method = typeof(T).GetMethod("Deserialize", BindingFlags.Public | BindingFlags.Static);
+                T obj = (T) method.Invoke(null, new object[1]{ s });
+                list.Add(obj);
+            }
+            return list;
+        }
+
+        public static void SetClipboard(object o)
+        {
+            string data = null;
+            if (o is ISerializable) data = ((ISerializable) o).Serialize();
+            else if (o.GetType().GetGenericTypeDefinition() == typeof(List<>)) data = SerializeList((IEnumerable<ISerializable>) o);
+            else throw new Exception($"Could not serialize object.");
+            Input.SetClipboard(data);
+        }
+
+        public static T GetClipboard<T>() where T : ISerializable
+        {
+            MethodInfo method = typeof(T).GetMethod("Deserialize", BindingFlags.Public | BindingFlags.Static);
+            return (T) method.Invoke(null, new object[1] { Input.GetClipboard() });
+        }
+
+        public static List<T> GetClipboardList<T>() where T : ISerializable
+        {
+            return DeserializeList<T>(Input.GetClipboard());
         }
     }
 }
