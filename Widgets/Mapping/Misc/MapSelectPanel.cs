@@ -4,6 +4,7 @@ using RPGStudioMK.Game;
 using odl;
 using amethyst;
 using System.Diagnostics;
+using System.Linq;
 
 namespace RPGStudioMK.Widgets
 {
@@ -73,6 +74,14 @@ namespace RPGStudioMK.Widgets
             OnWidgetSelected += WidgetSelected;
         }
 
+        void SortNodeList(List<TreeNode> Nodes)
+        {
+            Nodes.Sort((TreeNode n1, TreeNode n2) =>
+            {
+                return Data.Maps[(int) n1.Object].Order.CompareTo(Data.Maps[(int) n2.Object].Order);
+            });
+        }
+
         public List<TreeNode> PopulateList(int PopulateChildrenOfID = 0)
         {
             List<TreeNode> nodes = new List<TreeNode>();
@@ -81,15 +90,13 @@ namespace RPGStudioMK.Widgets
                 if (map.ParentID == PopulateChildrenOfID)
                 {
                     TreeNode node = new TreeNode() { Name = map.ToString(), Object = map.ID };
-                    node.Nodes = PopulateList(map.ID);
+                    List<TreeNode> Nodes = PopulateList(map.ID);
+                    node.Nodes = Nodes;
                     node.Collapsed = !map.Expanded;
                     nodes.Add(node);
                 }
             }
-            nodes.Sort((TreeNode n1, TreeNode n2) =>
-            {
-                return Data.Maps[(int) n1.Object].Order.CompareTo(Data.Maps[(int) n2.Object].Order);
-            });
+            SortNodeList(nodes);
             if (PopulateChildrenOfID == 0) mapview.SetNodes(nodes);
             return nodes;
         }
@@ -146,9 +153,26 @@ namespace RPGStudioMK.Widgets
                 if (mpw.UpdateMapViewer)
                 {
                     Editor.UnsavedChanges = true;
+                    mpw.Map.Layers = new List<Layer>();
+                    for (int z = 0; z < 3; z++)
+                    {
+                        Layer Layer = new Layer($"Layer {z + 1}", mpw.Map.Width, mpw.Map.Height);
+                        mpw.Map.Layers.Add(Layer);
+                    }
                     Editor.AddMap(mpw.Map, mapview.HoveringNode == null ? 0 : (int) mapview.HoveringNode.Object);
+                    UpdateNames(mapview.Nodes);
                 }
             };
+        }
+
+        void UpdateNames(List<TreeNode> nodes)
+        {
+            foreach (TreeNode n in nodes)
+            {
+                n.Name = Data.Maps[(int) n.Object].ToString();
+                UpdateNames(n.Nodes);
+            }
+            mapview.Redraw();
         }
 
         private void EditMap(MouseEventArgs e)
@@ -176,12 +200,12 @@ namespace RPGStudioMK.Widgets
             if (mapview.Nodes.Count <= 1) return;
             string message = "Are you sure you want to delete this map?";
             if (mapview.HoveringNode.Nodes.Count > 0) message += " All of its children will also be deleted.";
-            DeleteMapPopup confirm = new DeleteMapPopup("Warning", message, ButtonType.YesNoCancel, IconType.Warning);
+            DeleteMapPopup confirm = new DeleteMapPopup(mapview.HoveringNode.Nodes.Count > 0, "Warning", message, ButtonType.YesNoCancel, IconType.Warning);
             confirm.OnClosed += delegate (BaseEventArgs ev)
             {
                 if (confirm.Result == 0) // Yes
                 {
-                    bool DeleteChildMaps = confirm.DeleteChildMaps.Checked;
+                    bool DeleteChildMaps = mapview.HoveringNode.Nodes.Count > 0 ? confirm.DeleteChildMaps.Checked : false;
                     Editor.UnsavedChanges = true;
                     if (DeleteChildMaps)
                     {
@@ -200,19 +224,26 @@ namespace RPGStudioMK.Widgets
                                 break;
                             }
                         }
+                        Editor.OptimizeOrder();
                     }
                     else
                     {
                         int MapID = (int) mapview.HoveringNode.Object;
                         Map Map = Data.Maps[MapID];
                         Data.Maps.Remove(MapID);
+                        Editor.DecrementMapOrderFrom(Map.Order);
                         Editor.DeletedMaps.Add(Map);
                         for (int i = 0; i < mapview.Nodes.Count; i++)
                         {
                             if ((int) mapview.Nodes[i].Object == MapID)
                             {
-                                if (mapview.HoveringNode.Nodes.Count > 0) mapview.Nodes.AddRange(mapview.HoveringNode.Nodes);
+                                if (mapview.HoveringNode.Nodes.Count > 0)
+                                {
+                                    mapview.HoveringNode.Nodes.ForEach(n => Data.Maps[(int) n.Object].ParentID = 0);
+                                    mapview.Nodes.AddRange(mapview.HoveringNode.Nodes);
+                                }
                                 mapview.Nodes.Remove(mapview.HoveringNode);
+                                SortNodeList(mapview.Nodes);
                                 mapview.SetSelectedNode(mapview.Nodes[i > 0 ? i - 1 : 0]);
                                 break;
                             }
@@ -220,13 +251,19 @@ namespace RPGStudioMK.Widgets
                             {
                                 TreeNode Node = mapview.Nodes[i].FindParentNode(n => n.Object == mapview.HoveringNode.Object);
                                 if (Node == null) continue;
-                                if (mapview.HoveringNode.Nodes.Count > 0) Node.Nodes.AddRange(mapview.HoveringNode.Nodes);
+                                if (mapview.HoveringNode.Nodes.Count > 0)
+                                {
+                                    mapview.HoveringNode.Nodes.ForEach(n => Data.Maps[(int) n.Object].ParentID = 0);
+                                    Node.Nodes.AddRange(mapview.HoveringNode.Nodes);
+                                }
                                 Node.Nodes.Remove(mapview.HoveringNode);
+                                SortNodeList(Node.Nodes);
                                 mapview.SetSelectedNode(Node);
                                 break;
                             }
                         }
                     }
+                    UpdateNames(mapview.Nodes);
                     mapview.Redraw();
                 }
             };

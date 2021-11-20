@@ -7,7 +7,7 @@ namespace RPGStudioMK.Game
     public class Map : ICloneable
     {
         public int ID;
-        public string Name;
+        public string Name = "";
         public int Width;
         public int Height;
         public List<Layer> Layers = new List<Layer>();
@@ -23,19 +23,19 @@ namespace RPGStudioMK.Game
         public int ParentID;
 
         // RMXP Map Properties
-        public string BGMName;
-        public int BGMVolume;
-        public int BGMPitch;
-        public bool AutoplayBGM;
-        public string BGSName;
-        public int BGSVolume;
-        public int BGSPitch;
-        public bool AutoplayBGS;
-        public int EncounterStep;
+        public string BGMName = "";
+        public int BGMVolume = 100;
+        public int BGMPitch = 100;
+        public bool AutoplayBGM = false;
+        public string BGSName = "";
+        public int BGSVolume = 100;
+        public int BGSPitch = 100;
+        public bool AutoplayBGS = false;
+        public int EncounterStep = 0;
 
         public Map() 
         {
-            
+
         }
 
         public Map(int ID, IntPtr data, IntPtr mapinfo)
@@ -207,7 +207,7 @@ namespace RPGStudioMK.Game
 
         public override string ToString()
         {
-            return this.Name;
+            return $"({Order}): {Name}";
         }
 
         public void RemoveTileset(int TilesetID)

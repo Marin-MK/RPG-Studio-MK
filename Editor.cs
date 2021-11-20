@@ -287,6 +287,81 @@ namespace RPGStudioMK
         }
 
         /// <summary>
+        /// Increments the order of all maps higher than a specific order, essentially moving them all down by one.
+        /// </summary>
+        /// <param name="Order">The order from where to start shifting.</param>
+        public static void IncrementMapOrderFrom(int Order)
+        {
+            foreach (Map map in Data.Maps.Values)
+            {
+                if (map.Order >= Order) map.Order++;
+            }
+        }
+
+        /// <summary>
+        /// Decrements the order of all maps higher than a specific order, essentially moving them all up by one.
+        /// </summary>
+        /// <param name="Order">The order from where to start shifting.</param>
+        public static void DecrementMapOrderFrom(int Order)
+        {
+            foreach (Map map in Data.Maps.Values)
+            {
+                if (map.Order >= Order) map.Order--;
+            }
+        }
+
+        /// <summary>
+        /// Get the highest order value in a node and its children.
+        /// </summary>
+        /// <param name="Node">The node to look within.</param>
+        /// <returns>The highest order within the node.</returns>
+        public static int GetHighestMapOrder(TreeNode Node)
+        {
+            int max = Data.Maps[(int) Node.Object].Order;
+            foreach (TreeNode Child in Node.Nodes)
+            {
+                int childmax = GetHighestMapOrder(Child);
+                if (childmax > max) max = childmax;
+            }
+            return max;
+        }
+
+        public static void OptimizeOrder()
+        {
+            List<(int, int)> list = Data.Maps.Values.Select(m => (m.ID, m.Order)).ToList();
+            list.Sort(((int, int) t1, (int, int) t2) =>
+            {
+                return t1.Item2.CompareTo(t2.Item2);
+            });
+            OptimizeOrderInternal(list);
+        }
+
+        private static void OptimizeOrderInternal(List<(int MapID, int Order)> Orders)
+        {
+            for (int i = 0; i < Orders.Count; i++)
+            {
+                int mapid = Orders[i].MapID;
+                if (i == 0)
+                {
+                    if (Orders[i].Order > 1)
+                    {
+                        Data.Maps[mapid].Order = 1;
+                        Orders[i] = (mapid, 1);
+                    }
+                }
+                else
+                {
+                    int diff = Orders[i].Order - Orders[i - 1].Order;
+                    if (diff > 1)
+                    {
+                        Data.Maps[mapid].Order -= diff - 1;
+                        Orders[i] = (mapid, Data.Maps[mapid].Order);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Adds a Map to the map list.
         /// </summary>
         /// <param name="Map">The new Map object.</param>
@@ -300,78 +375,26 @@ namespace RPGStudioMK
                 TreeView mapview = MainWindow.MapWidget.MapSelectPanel.mapview;
                 if (mapview.HoveringNode != null)
                 {
+                    if ((int) mapview.HoveringNode.Object != ParentID) throw new Exception("Adding map to wrong node.");
+                    int maxorder = GetHighestMapOrder(mapview.HoveringNode);
+                    if (Data.Maps.Values.Any(m => m.Order == maxorder + 1)) IncrementMapOrderFrom(maxorder + 1);
+                    if (Data.Maps.Values.Any(m => m.Order == maxorder + 1)) throw new Exception("Error creating unique order");
+                    Map.Order = maxorder + 1;
+                    Map.ParentID = (int) mapview.HoveringNode.Object;
+                    node.Name = Map.ToString();
                     mapview.HoveringNode.Nodes.Add(node);
                     mapview.HoveringNode.Collapsed = false;
                 }
                 else
                 {
+                    int max = 0;
+                    foreach (Map m in Data.Maps.Values) if (m.Order > max) max = m.Order;
+                    Map.Order = max + 1;
+                    node.Name = Map.ToString();
                     mapview.Nodes.Add(node);
                 }
                 mapview.SetSelectedNode(node);
             }
-        }
-
-        /// <summary>
-        /// Removes and returns the object in the map order corresponding with the map ID.
-        /// </summary>
-        /// <param name="MapID">The ID of the map to return.</param>
-        public static object RemoveIDFromOrder(List<object> parentcollection, List<object> collection, int MapID)
-        {
-            for (int i = 0; i < collection.Count; i++)
-            {
-                object o = collection[i];
-                if (o is bool) continue;
-                if (o is List<object>)
-                {
-                    object ret = RemoveIDFromOrder(collection, (List<object>) o, MapID);
-                    if (ret != null) return ret;
-                }
-                else if (i == 0 && (int) o == MapID)
-                {
-                    if (parentcollection == null)
-                    {
-                        collection.RemoveAt(i);
-                        return MapID;
-                    }
-                    parentcollection.Remove(collection);
-                    return collection;
-                }
-                else if ((int) o == MapID)
-                {
-                    if (collection.Count == 3 && i == 2 && parentcollection != null)
-                    {
-                        int Idx = parentcollection.IndexOf(collection);
-                        parentcollection.Remove(collection);
-                        parentcollection.Insert(Idx, collection[0]);
-                    }
-                    collection.RemoveAt(i);
-                    return o;
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Returns true if the parent map has the child map as a child.
-        /// </summary>
-        public static bool MapIsChildMap(List<object> collection, int ParentID, int ChildID, bool First = true, bool FoundParent = false)
-        {
-            for (int i = (First ? 0 : 2); i < collection.Count; i++)
-            {
-                object o = collection[i];
-                if (o is int)
-                {
-                    if ((int) o == ParentID) return false;
-                    if ((int) o == ChildID) return FoundParent;
-                }
-                else if (o is List<object>)
-                {
-                    List<object> newlist = (List<object>) o;
-                    if ((int) newlist[0] == ParentID) return MapIsChildMap(newlist, ParentID, ChildID, false, true);
-                    else if (MapIsChildMap(newlist, ParentID, ChildID, false, false)) return true;
-                }
-            }
-            return false;
         }
 
         /// <summary>
@@ -484,7 +507,6 @@ namespace RPGStudioMK
             {
                 MainWindow.ToolBar.MappingMode.SetSelected(true, Force);
 
-                Map SelectedMap = null;
                 if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
                 MainWindow.MainEditorWidget = new MappingWidget(MainWindow.MainGridLayout);
                 MainWindow.MainEditorWidget.SetGridRow(3);
@@ -494,7 +516,7 @@ namespace RPGStudioMK
 
                 int mapid = ProjectSettings.LastMapID;
                 int lastlayer = ProjectSettings.LastLayer;
-                MainWindow.MapWidget.MapSelectPanel.SetMap(SelectedMap?? Data.Maps[mapid]);
+                MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps.ContainsKey(mapid) ? Data.Maps[mapid] : Data.Maps.Values.First());
                 MainWindow.MapWidget.SetSelectedLayer(lastlayer);
                 MainWindow.MapWidget.SetZoomFactor(ProjectSettings.LastZoomFactor);
             }

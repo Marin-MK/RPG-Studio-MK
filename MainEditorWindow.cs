@@ -321,6 +321,7 @@ namespace RPGStudioMK
             Editor.LoadProjectSettings();
             Data.LoadGameData();
 
+            Editor.OptimizeOrder();
             Editor.SetMode(Editor.ProjectSettings.LastMode, true);
 
             s.Stop();

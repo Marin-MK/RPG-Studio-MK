@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RPGStudioMK.Game
 {
@@ -12,6 +13,12 @@ namespace RPGStudioMK.Game
         public Layer(string Name)
         {
             this.Name = Name;
+        }
+
+        public Layer(string Name, int Width, int Height)
+        {
+            this.Name = Name;
+            this.Tiles = new TileData[Width * Height].ToList();
         }
 
         public object Clone()

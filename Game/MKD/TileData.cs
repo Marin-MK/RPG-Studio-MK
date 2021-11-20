@@ -20,6 +20,12 @@ namespace RPGStudioMK.Game
         /// </summary>
         public int ID;
 
+        public TileData()
+        {
+            this.TileType = TileType.Tileset;
+            this.Index = 0;
+            this.ID = 0;
+        }
 
         public object Clone()
         {
