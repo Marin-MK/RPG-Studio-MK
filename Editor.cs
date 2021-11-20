@@ -326,6 +326,9 @@ namespace RPGStudioMK
             return max;
         }
 
+        /// <summary>
+        /// Reorganises the order values to never skip any values.
+        /// </summary>
         public static void OptimizeOrder()
         {
             List<(int, int)> list = Data.Maps.Values.Select(m => (m.ID, m.Order)).ToList();
@@ -381,7 +384,6 @@ namespace RPGStudioMK
                     if (Data.Maps.Values.Any(m => m.Order == maxorder + 1)) throw new Exception("Error creating unique order");
                     Map.Order = maxorder + 1;
                     Map.ParentID = (int) mapview.HoveringNode.Object;
-                    node.Name = Map.ToString();
                     mapview.HoveringNode.Nodes.Add(node);
                     mapview.HoveringNode.Collapsed = false;
                 }
@@ -390,7 +392,6 @@ namespace RPGStudioMK
                     int max = 0;
                     foreach (Map m in Data.Maps.Values) if (m.Order > max) max = m.Order;
                     Map.Order = max + 1;
-                    node.Name = Map.ToString();
                     mapview.Nodes.Add(node);
                 }
                 mapview.SetSelectedNode(node);

@@ -207,7 +207,7 @@ namespace RPGStudioMK.Game
 
         public override string ToString()
         {
-            return $"({Order}): {Name}";
+            return this.Name;
         }
 
         public void RemoveTileset(int TilesetID)

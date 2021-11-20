@@ -160,19 +160,8 @@ namespace RPGStudioMK.Widgets
                         mpw.Map.Layers.Add(Layer);
                     }
                     Editor.AddMap(mpw.Map, mapview.HoveringNode == null ? 0 : (int) mapview.HoveringNode.Object);
-                    UpdateNames(mapview.Nodes);
                 }
             };
-        }
-
-        void UpdateNames(List<TreeNode> nodes)
-        {
-            foreach (TreeNode n in nodes)
-            {
-                n.Name = Data.Maps[(int) n.Object].ToString();
-                UpdateNames(n.Nodes);
-            }
-            mapview.Redraw();
         }
 
         private void EditMap(MouseEventArgs e)
@@ -263,7 +252,6 @@ namespace RPGStudioMK.Widgets
                             }
                         }
                     }
-                    UpdateNames(mapview.Nodes);
                     mapview.Redraw();
                 }
             };
@@ -279,38 +267,6 @@ namespace RPGStudioMK.Widgets
             Map Map = Data.Maps[MapID];
             Data.Maps.Remove(MapID);
             Editor.DeletedMaps.Add(Map);
-        }
-
-        private void RemoveID(List<object> collection, int ID, bool first = false)
-        {
-            for (int i = (first ? 0 : 2); i < collection.Count; i++)
-            {
-                if (collection[i] is bool) continue;
-                else if (collection[i] is int)
-                {
-                    if ((int) collection[i] == ID)
-                    {
-                        collection.RemoveAt(i);
-                        break;
-                    }
-                }
-                else
-                {
-                    List<object> sub = (List<object>) collection[i];
-                    if (sub[0] is int && (int) sub[0] == ID)
-                    {
-                        collection.RemoveAt(i);
-                    }
-                    else if (sub.Count == 3 && sub[2] is int && (int) sub[2] == ID)
-                    {
-                        collection[i] = (int) sub[0];
-                    }
-                    else
-                    {
-                        RemoveID(sub, ID);
-                    }
-                }
-            }
         }
     }
 
