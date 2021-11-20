@@ -23,7 +23,7 @@ namespace RPGStudioMK.Widgets
             if (this.ReadOnly)
             {
                 Color outline = new Color(10, 23, 37);
-                Color filler = new Color(50, 86, 120);
+                Color filler = this.Enabled ? new Color(50, 86, 120) : new Color(86, 108, 134);
                 Sprites["bg"].Bitmap.DrawRect(Size, outline);
                 Sprites["bg"].Bitmap.SetPixel(0, 0, Color.ALPHA);
                 Sprites["bg"].Bitmap.SetPixel(Size.Width - 1, 0, Color.ALPHA);
