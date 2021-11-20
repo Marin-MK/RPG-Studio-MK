@@ -72,10 +72,10 @@ namespace RPGStudioMK.Widgets
         public override void SizeChanged(BaseEventArgs e)
         {
             base.SizeChanged(e);
-            Sprites["line2"].X = Size.Width - 384;
+            Sprites["line2"].X = Size.Width - 290 - ZoomControl.Size.Width - 6;
             Sprites["line3"].X = Size.Width - 284;
             Sprites["text"].X = Size.Width - 276;
-            ZoomControl.SetPosition(Size.Width - 290 - 88, 0);
+            ZoomControl.SetPosition(Size.Width - 290 - ZoomControl.Size.Width, 0);
         }
 
         public void DrawCursor(int X, int Y, int width, int height)

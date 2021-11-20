@@ -147,8 +147,8 @@ namespace RPGStudioMK.Widgets
             int miny = MainContainer.Size.Height / 2 - h / 2;
             if (minx - 12 * 32d * ZoomFactor < 0) minx = (int) Math.Round(12 * 32d * ZoomFactor);
             if (miny - 12 * 32d * ZoomFactor < 0) miny = (int) Math.Round(12 * 32d * ZoomFactor);
-            int x = 0;
-            int y = 0;
+            int x = minx;
+            int y = miny;
             /*foreach (MapConnection c in Map.Connections)
             {
                 int leftx = (int) Math.Round((-c.RelativeX + 2) * 32d * ZoomFactor);
@@ -158,8 +158,6 @@ namespace RPGStudioMK.Widgets
                 x = Math.Max(x, Math.Max(leftx, rightx));
                 y = Math.Max(y, Math.Max(uppery, lowery));
             }*/
-            x = Math.Max(x, minx);
-            y = Math.Max(y, miny);
             MapWidget.SetPosition(x, y);
             MapWidget.SetSize(w, h);
             DummyWidget.SetSize(2 * x + w, 2 * y + h);
