@@ -317,7 +317,7 @@ namespace RPGStudioMK.Widgets
             {
                 int x = (int) Math.Floor(newx / 32d);
                 int y = (int) Math.Floor(newy / 32d);
-                if (MapViewer.SelectionX != -1 && MapViewer.SelectionY != -1 && MapViewer.SelectionWidth != -1 && MapViewer.SelectionHeight != -1)
+                if (MapViewer.SelectionWidth != 0 && MapViewer.SelectionHeight != 0)
                 {
                     if (x < MapViewer.SelectionX || x >= MapViewer.SelectionX + MapViewer.SelectionWidth ||
                         y < MapViewer.SelectionY || y >= MapViewer.SelectionY + MapViewer.SelectionHeight)
@@ -474,7 +474,7 @@ namespace RPGStudioMK.Widgets
                 int OriginDiffY = (MapTileY - OriginY) % (MapViewer.CursorHeight + 1);
 
                 int MapPosition = MapTileX + MapTileY * MapData.Width;
-                if (MapViewer.SelectionX != -1 && MapViewer.SelectionY != -1 && MapViewer.SelectionWidth != 0 && MapViewer.SelectionHeight != 0 && MapViewer.SelectionBackground.Visible)
+                if (MapViewer.SelectionWidth != 0 && MapViewer.SelectionHeight != 0 && MapViewer.SelectionBackground.Visible)
                 {
                     // NOT within the selection
                     if (!(MapTileX >= MapViewer.SelectionX && MapTileX < MapViewer.SelectionX + MapViewer.SelectionWidth &&

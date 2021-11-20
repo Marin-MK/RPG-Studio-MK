@@ -10,21 +10,28 @@ namespace RPGStudioMK
         public int LayerIndex;
         public List<TileChange> Tiles = new List<TileChange>();
         public bool Ready = false;
+        public bool PartOfSelection = false;
 
-        public TileGroupUndoAction(int MapID, int LayerIndex)
+        public TileGroupUndoAction(int MapID, int LayerIndex, bool PartOfSelection = false)
         {
             this.MapID = MapID;
             this.LayerIndex = LayerIndex;
+            this.PartOfSelection = PartOfSelection;
         }
 
-        public static void Log(int MapID, int LayerIndex)
+        public static void Log(int MapID, int LayerIndex, bool PartOfSelection = false)
         {
-            new TileGroupUndoAction(MapID, LayerIndex);
+            new TileGroupUndoAction(MapID, LayerIndex, PartOfSelection);
         }
 
         public static TileGroupUndoAction GetLatest()
         {
             return (TileGroupUndoAction) Editor.MapUndoList.FindLast(a => a is TileGroupUndoAction && !((TileGroupUndoAction) a).Ready);
+        }
+
+        public static TileGroupUndoAction GetLatestAll()
+        {
+            return (TileGroupUndoAction) Editor.MapUndoList.FindLast(a => a is TileGroupUndoAction);
         }
 
         public static void AddToLatest(int MapPosition, TileData NewTile, TileData OldTile)
