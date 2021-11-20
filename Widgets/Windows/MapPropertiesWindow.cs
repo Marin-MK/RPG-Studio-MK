@@ -93,25 +93,25 @@ namespace RPGStudioMK.Widgets
             {
                 Map.AutoplayBGM = autoplaybgm.Checked;
                 BGM.SetEnabled(autoplaybgm.Checked);
-                BGM.SetText(autoplaybgm.Checked ? Map.BGMName : "");
+                BGM.SetText(autoplaybgm.Checked ? Map.BGM.Name : "");
             };
             BGM = new DropdownBox(box1);
             BGM.SetPosition(6, 123);
             BGM.SetSize(136, 27);
-            BGM.SetText(Map.AutoplayBGM ? Map.BGMName : "");
+            BGM.SetText(Map.AutoplayBGM ? Map.BGM.Name : "");
             BGM.SetEnabled(Map.AutoplayBGM);
             BGM.SetReadOnly(true);
             BGM.OnDropDownClicked += delegate (BaseEventArgs e)
             {
-                AudioPicker picker = new AudioPicker("Audio/BGM", Map.BGMName, Map.BGMVolume, Map.BGMPitch);
+                AudioPicker picker = new AudioPicker("Audio/BGM", Map.BGM.Name, Map.BGM.Volume, Map.BGM.Pitch);
                 picker.OnClosed += delegate (BaseEventArgs _)
                 {
                     if (picker.Result != null)
                     {
-                        Map.BGMName = picker.Result.Value.Filename;
-                        Map.BGMVolume = picker.Result.Value.Volume;
-                        Map.BGMPitch = picker.Result.Value.Pitch;
-                        BGM.SetText(Map.BGMName);
+                        Map.BGM.Name = picker.Result.Value.Filename;
+                        Map.BGM.Volume = picker.Result.Value.Volume;
+                        Map.BGM.Pitch = picker.Result.Value.Pitch;
+                        BGM.SetText(Map.BGM.Name);
                     }
                 };
             };
@@ -125,25 +125,25 @@ namespace RPGStudioMK.Widgets
             {
                 Map.AutoplayBGS = autoplaybgs.Checked;
                 BGS.SetEnabled(autoplaybgs.Checked);
-                BGS.SetText(autoplaybgs.Checked ? Map.BGSName : "");
+                BGS.SetText(autoplaybgs.Checked ? Map.BGS.Name : "");
             };
             BGS = new DropdownBox(box1);
             BGS.SetPosition(6, 178);
             BGS.SetSize(136, 27);
-            BGS.SetText(Map.AutoplayBGS ? Map.BGSName : "");
+            BGS.SetText(Map.AutoplayBGS ? Map.BGS.Name : "");
             BGS.SetEnabled(Map.AutoplayBGS);
             BGS.SetReadOnly(true);
             BGS.OnDropDownClicked += delegate (BaseEventArgs e)
             {
-                AudioPicker picker = new AudioPicker("Audio/BGS", Map.BGSName, Map.BGSVolume, Map.BGSPitch);
+                AudioPicker picker = new AudioPicker("Audio/BGS", Map.BGS.Name, Map.BGS.Volume, Map.BGS.Pitch);
                 picker.OnClosed += delegate (BaseEventArgs _)
                 {
                     if (picker.Result != null)
                     {
-                        Map.BGSName = picker.Result.Value.Filename;
-                        Map.BGSVolume = picker.Result.Value.Volume;
-                        Map.BGSPitch = picker.Result.Value.Pitch;
-                        BGS.SetText(Map.BGSName);
+                        Map.BGS.Name = picker.Result.Value.Filename;
+                        Map.BGS.Volume = picker.Result.Value.Volume;
+                        Map.BGS.Pitch = picker.Result.Value.Pitch;
+                        BGS.SetText(Map.BGS.Name);
                     }
                 };
             };
@@ -355,20 +355,16 @@ namespace RPGStudioMK.Widgets
             // Marks name change
             if (Map.Name != OldMap.Name) UnsavedChanges = true;
             // Marks BGM changes
-            if (Map.BGMName != OldMap.BGMName || Map.BGMVolume != OldMap.BGMVolume || Map.BGMPitch != OldMap.BGMPitch || Map.AutoplayBGM != OldMap.AutoplayBGM)
+            if (!Map.BGM.Equals(OldMap.BGM) || Map.AutoplayBGM != OldMap.AutoplayBGM)
             {
-                Map.BGMName = OldMap.BGMName;
-                Map.BGMVolume = OldMap.BGMVolume;
-                Map.BGMPitch = OldMap.BGMPitch;
+                Map.BGM = OldMap.BGM;
                 Map.AutoplayBGM = OldMap.AutoplayBGM;
                 UnsavedChanges = true;
             }
             // Marks BGS changes
-            if (Map.BGSName != OldMap.BGSName || Map.BGSVolume != OldMap.BGSVolume || Map.BGSPitch != OldMap.BGSPitch || Map.AutoplayBGS != OldMap.AutoplayBGS)
+            if (!Map.BGS.Equals(OldMap.BGS) || Map.AutoplayBGS != OldMap.AutoplayBGS)
             {
-                Map.BGSName = OldMap.BGSName;
-                Map.BGSVolume = OldMap.BGSVolume;
-                Map.BGSPitch = OldMap.BGSPitch;
+                Map.BGS = OldMap.BGS;
                 Map.AutoplayBGS = OldMap.AutoplayBGS;
                 UnsavedChanges = true;
             }

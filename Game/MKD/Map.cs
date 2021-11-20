@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
-    public class Map : ICloneable
+    [Serializable]
+    public class Map : ICloneable, ISerializable
     {
         public int ID;
         public string Name = "";
@@ -23,13 +26,9 @@ namespace RPGStudioMK.Game
         public int ParentID;
 
         // RMXP Map Properties
-        public string BGMName = "";
-        public int BGMVolume = 100;
-        public int BGMPitch = 100;
+        public AudioFile BGM = new AudioFile();
+        public AudioFile BGS = new AudioFile();
         public bool AutoplayBGM = false;
-        public string BGSName = "";
-        public int BGSVolume = 100;
-        public int BGSPitch = 100;
         public bool AutoplayBGS = false;
         public int EncounterStep = 0;
 
@@ -50,12 +49,12 @@ namespace RPGStudioMK.Game
 
             int tilesetid = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@tileset_id"));
             this.TilesetIDs.Add(tilesetid);
-            this.BGMName = Ruby.String.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgm"), "@name"));
-            this.BGMVolume = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgm"), "@volume"));
-            this.BGMPitch = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgm"), "@pitch"));
-            this.BGSName = Ruby.String.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgs"), "@name"));
-            this.BGSVolume = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgs"), "@volume"));
-            this.BGSPitch = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgs"), "@pitch"));
+            this.BGM.Name = Ruby.String.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgm"), "@name"));
+            this.BGM.Volume = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgm"), "@volume"));
+            this.BGM.Pitch = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgm"), "@pitch"));
+            this.BGS.Name = Ruby.String.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgs"), "@name"));
+            this.BGS.Volume = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgs"), "@volume"));
+            this.BGS.Pitch = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Ruby.GetIVar(data, "@bgs"), "@pitch"));
             this.AutoplayBGM = Ruby.GetIVar(data, "@autoplay_bgm") == Ruby.True;
             this.AutoplayBGS = Ruby.GetIVar(data, "@autoplay_bgs") == Ruby.True;
             this.EncounterStep = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@encounter_step"));
@@ -118,14 +117,8 @@ namespace RPGStudioMK.Game
         {
             IntPtr map = Ruby.Funcall(Compatibility.RMXP.Map.Class, "new");
             Ruby.Pin(map);
-            Ruby.SetIVar(map, "@bgm", Ruby.Funcall(Compatibility.RMXP.AudioFile.Class, "new"));
-            Ruby.SetIVar(Ruby.GetIVar(map, "@bgm"), "@name", Ruby.String.ToPtr(this.BGMName));
-            Ruby.SetIVar(Ruby.GetIVar(map, "@bgm"), "@volume", Ruby.Integer.ToPtr(this.BGMVolume));
-            Ruby.SetIVar(Ruby.GetIVar(map, "@bgm"), "@pitch", Ruby.Integer.ToPtr(this.BGMPitch));
-            Ruby.SetIVar(map, "@bgs", Ruby.Funcall(Compatibility.RMXP.AudioFile.Class, "new"));
-            Ruby.SetIVar(Ruby.GetIVar(map, "@bgs"), "@name", Ruby.String.ToPtr(this.BGSName));
-            Ruby.SetIVar(Ruby.GetIVar(map, "@bgs"), "@volume", Ruby.Integer.ToPtr(this.BGSVolume));
-            Ruby.SetIVar(Ruby.GetIVar(map, "@bgs"), "@pitch", Ruby.Integer.ToPtr(this.BGSPitch));
+            Ruby.SetIVar(map, "@bgm", this.BGM.Save());
+            Ruby.SetIVar(map, "@bgs", this.BGS.Save());
             Ruby.SetIVar(map, "@autoplay_bgm", this.AutoplayBGM ? Ruby.True : Ruby.False);
             Ruby.SetIVar(map, "@autoplay_bgs", this.AutoplayBGS ? Ruby.True : Ruby.False);
             Ruby.SetIVar(map, "@width", Ruby.Integer.ToPtr(this.Width));
@@ -234,6 +227,25 @@ namespace RPGStudioMK.Game
             }
         }
 
+        public string Serialize()
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            MemoryStream stream = new MemoryStream();
+            formatter.Serialize(stream, this);
+            string data = Convert.ToBase64String(stream.ToArray());
+            stream.Close();
+            return data;
+        }
+
+        public static Map Deserialize(string data)
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            MemoryStream stream = new MemoryStream(Convert.FromBase64String(data));
+            Map result = (Map) formatter.Deserialize(stream);
+            stream.Close();
+            return result;
+        }
+
         public object Clone()
         {
             Map m = new Map();
@@ -241,12 +253,8 @@ namespace RPGStudioMK.Game
             m.Name = this.Name;
             m.Width = this.Width;
             m.Height = this.Height;
-            m.BGMName = this.BGMName;
-            m.BGMVolume = this.BGMVolume;
-            m.BGMPitch = this.BGMPitch;
-            m.BGSName = this.BGSName;
-            m.BGSVolume = this.BGSVolume;
-            m.BGSPitch = this.BGSPitch;
+            m.BGM = (AudioFile) this.BGM.Clone();
+            m.BGS = (AudioFile) this.BGS.Clone();
             m.EncounterStep = this.EncounterStep;
             m.ScrollX = this.ScrollX;
             m.ScrollY = this.ScrollY;

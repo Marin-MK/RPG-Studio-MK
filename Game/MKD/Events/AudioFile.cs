@@ -3,16 +3,16 @@ using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
+    [Serializable]
     public class AudioFile : ICloneable
     {
-        public string Name;
-        public int Volume;
-        public int Pitch;
+        public string Name = "";
+        public int Volume = 100;
+        public int Pitch = 100;
 
         public AudioFile()
         {
-            this.Volume = 100;
-            this.Pitch = 100;
+            
         }
 
         public AudioFile(IntPtr data)
@@ -29,6 +29,35 @@ namespace RPGStudioMK.Game
             f.Volume = this.Volume;
             f.Pitch = this.Pitch;
             return f;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (this == obj) return true;
+            if (obj is AudioFile)
+            {
+                AudioFile af = (AudioFile) obj;
+                return this.Name == af.Name &&
+                       this.Volume == af.Volume &&
+                       this.Pitch == af.Pitch;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public IntPtr Save()
+        {
+            IntPtr af = Ruby.Funcall(Compatibility.RMXP.AudioFile.Class, "new");
+            Ruby.Pin(af);
+            Ruby.SetIVar(af, "@name", Ruby.String.ToPtr(this.Name));
+            Ruby.SetIVar(af, "@volume", Ruby.Integer.ToPtr(this.Volume));
+            Ruby.SetIVar(af, "@pitch", Ruby.Integer.ToPtr(this.Pitch));
+            Ruby.Unpin(af);
+            return af;
         }
     }
 }
