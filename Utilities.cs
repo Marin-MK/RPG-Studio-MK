@@ -9,6 +9,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using System.Reflection;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace RPGStudioMK
 {
@@ -566,13 +567,13 @@ namespace RPGStudioMK
             Input.SetClipboard(s);
         }
 
-        public static void SetClipboard(object o)
+        public static void SetClipboard(object o, BinaryData Type)
         {
             string data = null;
             if (o is ISerializable) data = ((ISerializable) o).Serialize();
             else if (o.GetType().GetGenericTypeDefinition() == typeof(List<>)) data = SerializeList((IEnumerable<ISerializable>) o);
             else throw new Exception($"Could not serialize object.");
-            Input.SetClipboard("RSMKDATA:" + data);
+            Input.SetClipboard($"RSMKDATA.{Type}:{data}");
         }
 
         public static string GetClipboardString()
@@ -583,7 +584,7 @@ namespace RPGStudioMK
         public static T GetClipboard<T>() where T : ISerializable
         {
             string data = GetClipboardString();
-            if (data.StartsWith("RSMKDATA:")) data = data.Substring(9);
+            if (data.StartsWith("RSMKDATA.")) data = data.Substring(data.IndexOf(':') + 1);
             else throw new Exception("Attempted to parse non-RSMK data.");
             MethodInfo method = typeof(T).GetMethod("Deserialize", BindingFlags.Public | BindingFlags.Static);
             return (T) method.Invoke(null, new object[1] { data });
@@ -592,14 +593,19 @@ namespace RPGStudioMK
         public static List<T> GetClipboardList<T>() where T : ISerializable
         {
             string data = GetClipboardString();
-            if (data.StartsWith("RSMKDATA:")) data = data.Substring(9);
+            if (data.StartsWith("RSMKDATA.")) data = data.Substring(data.IndexOf(':') + 1);
             else throw new Exception("Attempted to parse non-RSMK data.");
             return DeserializeList<T>(data);
         }
 
-        public static bool IsClipboardValidBinary()
+        public static bool IsClipboardValidBinary(BinaryData Type)
         {
-            return GetClipboardString().StartsWith("RSMKDATA:");
+            return GetClipboardString().StartsWith($"RSMKDATA.{Type}:");
         }
+    }
+
+    public enum BinaryData
+    {
+        TILE_SELECTION
     }
 }
