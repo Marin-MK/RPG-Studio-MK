@@ -98,6 +98,7 @@ namespace RPGStudioMK.Widgets
             VolumeSlider = new NumericSlider(VolumeGroup);
             VolumeSlider.SetPosition(38, 18);
             VolumeSlider.SetValue(Volume);
+            VolumeSlider.SetSnapValues(0, 25, 50, 75, 100);
             VolumeSlider.OnValueChanged += delegate (BaseEventArgs e)
             {
                 this.Volume = VolumeSlider.Value;
@@ -129,6 +130,7 @@ namespace RPGStudioMK.Widgets
             PitchSlider.SetValue(Pitch);
             PitchSlider.SetMinimumValue(50);
             PitchSlider.SetMaximumValue(150);
+            PitchSlider.SetSnapValues(50, 75, 100, 125, 150);
             PitchSlider.OnValueChanged += delegate (BaseEventArgs e)
             {
                 this.Pitch = PitchSlider.Value;

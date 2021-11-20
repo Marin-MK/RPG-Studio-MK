@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using amethyst;
 using odl;
 
@@ -11,6 +12,8 @@ namespace RPGStudioMK.Widgets
         public int Value { get; protected set; } = 100;
         public int MinValue { get; protected set; } = 0;
         public int MaxValue { get; protected set; } = 100;
+        public List<(int Value, double Factor, int X)> SnapValues { get; protected set; } = new List<(int, double, int)>();
+        public int PixelSnapDifference { get; protected set; } = 4;
 
         public BaseEvent OnValueChanged;
 
@@ -20,6 +23,7 @@ namespace RPGStudioMK.Widgets
         {
             MinimumSize.Height = MaximumSize.Height = 17;
             Sprites["bars"] = new Sprite(this.Viewport);
+            Sprites["bars"].X = 4;
             Sprites["slider"] = new Sprite(this.Viewport);
             Sprites["slider"].Bitmap = new Bitmap(8, 17);
             Sprites["slider"].Bitmap.Unlock();
@@ -47,6 +51,7 @@ namespace RPGStudioMK.Widgets
             if (this.MinValue != MinValue)
             {
                 this.MinValue = MinValue;
+                RecalculateSnapFactors();
                 this.Redraw();
             }
         }
@@ -56,7 +61,41 @@ namespace RPGStudioMK.Widgets
             if (this.MaxValue != MaxValue)
             {
                 this.MaxValue = MaxValue;
+                RecalculateSnapFactors();
                 this.Redraw();
+            }
+        }
+
+        public void SetSnapValues(params int[] Values)
+        {
+            this.SnapValues.Clear();
+            foreach (int Value in Values)
+            {
+                double snapfactor = Math.Clamp((Value - MinValue) / (double) (MaxValue - MinValue), 0, 1);
+                int x = (int) Math.Round(snapfactor * (Size.Width - 9));
+                this.SnapValues.Add((Value, snapfactor, x));
+            }
+            this.Redraw();
+        }
+
+        public void SetPixelSnapDifference(int PixelSnapDifference)
+        {
+            this.PixelSnapDifference = PixelSnapDifference;
+        }
+
+        public override void SizeChanged(BaseEventArgs e)
+        {
+            base.SizeChanged(e);
+            RecalculateSnapFactors();
+        }
+
+        void RecalculateSnapFactors()
+        {
+            for (int i = 0; i < SnapValues.Count; i++)
+            {
+                double snapfactor = Math.Clamp((SnapValues[i].Value - MinValue) / (double) (MaxValue - MinValue), 0, 1);
+                int x = (int) Math.Round(snapfactor * (Size.Width - 9));
+                SnapValues[i] = (SnapValues[i].Value, snapfactor, x);
             }
         }
 
@@ -68,13 +107,18 @@ namespace RPGStudioMK.Widgets
             Sprites["slider"].X = (int) Math.Round(factor * MaxX);
 
             Sprites["bars"].Bitmap?.Dispose();
-            Sprites["bars"].Bitmap = new Bitmap(this.Size);
+            Sprites["bars"].Bitmap = new Bitmap(Size.Width - 8, Size.Height);
             Sprites["bars"].Bitmap.Unlock();
-            Sprites["bars"].Bitmap.DrawLine(0, 1, 0, Size.Height - 2, new Color(55, 171, 206));
-            Sprites["bars"].Bitmap.DrawLine(Size.Width - 1, 1, Size.Width - 1, Size.Height - 2, new Color(73, 89, 109));
-            Sprites["bars"].Bitmap.FillRect(2, 7, Sprites["slider"].X - 4, 3, new Color(55, 171, 206));
-            if (Sprites["slider"].X < Size.Width - 10)
-                Sprites["bars"].Bitmap.FillRect(Sprites["slider"].X + 10, 7, Size.Width - Sprites["slider"].X - 12, 3, new Color(73, 89, 109));
+            Sprites["bars"].Bitmap.FillRect(2, 7, Sprites["slider"].X - 8, 3, new Color(55, 171, 206));
+            if (Sprites["slider"].X < Size.Width - 14)
+                Sprites["bars"].Bitmap.FillRect(Sprites["slider"].X + 6, 7, Size.Width - 14 - Sprites["slider"].X, 3, new Color(73, 89, 109));
+            foreach ((int Value, double Factor, int X) Snap in SnapValues)
+            {
+                Color c = Snap.Factor > factor ? new Color(73, 89, 109) : new Color(55, 171, 206);
+                Sprites["bars"].Bitmap.DrawLine(Snap.X, 1, Snap.X, Size.Height - 2, c);
+                if (Snap.X > 0) Sprites["bars"].Bitmap.DrawLine(Snap.X - 1, 1, Snap.X - 1, Size.Height - 2, Color.ALPHA);
+                if (Snap.X < Size.Width - 9) Sprites["bars"].Bitmap.DrawLine(Snap.X + 1, 1, Snap.X + 1, Size.Height - 2, Color.ALPHA);
+            }
             Sprites["bars"].Bitmap.Lock();
         }
 
@@ -94,7 +138,21 @@ namespace RPGStudioMK.Widgets
             if (DraggingSlider)
             {
                 int rx = e.X - Viewport.X;
-                double factor = Math.Clamp(rx / (double) Size.Width, 0, 1);
+                if (rx < 4) return;
+                double factor = 0;
+                bool Snapping = false;
+                if (!Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LALT) && !Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RALT))
+                {
+                    foreach ((int Value, double Factor, int X) Snap in SnapValues)
+                    {
+                        if (Math.Abs((rx - 4) - Snap.X) <= this.PixelSnapDifference)
+                        {
+                            factor = Snap.Factor;
+                            Snapping = true;
+                        }
+                    }
+                }
+                if (!Snapping) factor = Math.Clamp((rx - 4) / (double) (Size.Width - 8), 0, 1);
                 this.SetValue((int) Math.Round((MaxValue - MinValue) * factor + MinValue));
             }
         }
