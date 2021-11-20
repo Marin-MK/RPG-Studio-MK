@@ -400,7 +400,7 @@ namespace RPGStudioMK
             }
             else
             {
-                throw NotImplementedException();
+                throw new NotImplementedException();
             }
         }
 
