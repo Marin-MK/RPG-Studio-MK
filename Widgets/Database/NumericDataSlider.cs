@@ -7,7 +7,7 @@ using odl;
 
 namespace RPGStudioMK.Widgets
 {
-    public class NumericSlider : Widget
+    public class NumericDataSlider : Widget
     {
         public bool Slider { get; protected set; } = false;
         public double Value { get; protected set; } = 0;
@@ -19,7 +19,7 @@ namespace RPGStudioMK.Widgets
 
         TextArea TextArea;
 
-        public NumericSlider(IContainer Parent) : base(Parent)
+        public NumericDataSlider(IContainer Parent) : base(Parent)
         {
             Sprites["box"] = new Sprite(this.Viewport);
             Sprites["slider"] = new Sprite(this.Viewport);
