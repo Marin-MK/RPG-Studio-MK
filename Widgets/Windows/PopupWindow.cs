@@ -69,7 +69,7 @@ namespace RPGStudioMK.Widgets
         public void SetTitle(string Title)
         {
             this.Title = Title;
-            Font f = Font.Get("Fonts/ProductSans-B", 14);
+            Font f = Font.Get("Fonts/Ubuntu-B", 14);
             Size s = f.TextSize(Title);
             if (Sprites["title"].Bitmap != null) Sprites["title"].Bitmap.Dispose();
             Sprites["title"].Bitmap = new Bitmap(s);
