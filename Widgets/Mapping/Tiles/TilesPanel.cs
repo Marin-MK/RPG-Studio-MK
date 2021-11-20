@@ -131,18 +131,34 @@ namespace RPGStudioMK.Widgets
             PencilButton = new IconButton(DrawToolsContainer);
             PencilButton.SetIcon(15, 0);
             PencilButton.SetSelected(true);
+            PencilButton.OnSelection += delegate (BaseEventArgs e)
+            {
+                Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
+            };
 
             RectButton = new IconButton(DrawToolsContainer);
             RectButton.SetIcon(18, 0);
             RectButton.SetPosition(32, 0);
+            RectButton.OnSelection += delegate (BaseEventArgs e)
+            {
+                Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
+            };
 
             EllipseButton = new IconButton(DrawToolsContainer);
             EllipseButton.SetIcon(17, 0);
             EllipseButton.SetPosition(64, 0);
+            EllipseButton.OnSelection += delegate (BaseEventArgs e)
+            {
+                Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
+            };
 
             FillButton = new IconButton(DrawToolsContainer);
             FillButton.SetIcon(16, 0);
             FillButton.SetPosition(96, 0);
+            FillButton.OnSelection += delegate (BaseEventArgs e)
+            {
+                Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
+            };
 
             EraserButton = new IconButton(DrawToolsContainer);
             EraserButton.SetIcon(20, 0);
@@ -152,6 +168,7 @@ namespace RPGStudioMK.Widgets
             {
                 if (AutotileIndex != -1 || TilesetIndex != -1 || TileStartX != -1 || TileEndX != -1 || TileStartY != -1 || TileEndY != -1)
                     SelectTile(null);
+                Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
             };
             EraserButton.OnDeselection += delegate (BaseEventArgs e)
             {
@@ -164,6 +181,10 @@ namespace RPGStudioMK.Widgets
             SelectButton = new IconButton(DrawToolsContainer);
             SelectButton.SetIcon(19, 0);
             SelectButton.SetPosition(168, 0);
+            SelectButton.OnSelection += delegate (BaseEventArgs e)
+            {
+                Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
+            };
 
             SetSize(288, 200); // Dummy size so the sprites can be drawn properly
         }
