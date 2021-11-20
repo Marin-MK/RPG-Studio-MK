@@ -5,6 +5,7 @@ using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
+    [Serializable]
     public class Event : ICloneable
     {
         public int ID;

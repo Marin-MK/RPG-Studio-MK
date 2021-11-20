@@ -606,6 +606,7 @@ namespace RPGStudioMK
 
     public enum BinaryData
     {
-        TILE_SELECTION
+        TILE_SELECTION,
+        MAP
     }
 }

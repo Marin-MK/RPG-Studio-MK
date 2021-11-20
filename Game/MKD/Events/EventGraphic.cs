@@ -3,6 +3,7 @@ using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
+    [Serializable]
     public class EventGraphic : ICloneable
     {
         public int Direction;

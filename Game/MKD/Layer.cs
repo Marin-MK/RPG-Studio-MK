@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace RPGStudioMK.Game
 {
+    [Serializable]
     public class Layer : ICloneable
     {
         public string Name = "Unnamed Layer";

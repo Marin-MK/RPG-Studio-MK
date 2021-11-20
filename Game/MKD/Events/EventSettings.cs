@@ -2,6 +2,7 @@
 
 namespace RPGStudioMK.Game
 {
+    [Serializable]
     public class EventSettings : ICloneable
     {
         //public float MoveSpeed;

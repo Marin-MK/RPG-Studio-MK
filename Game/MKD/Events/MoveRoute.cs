@@ -4,6 +4,7 @@ using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
+    [Serializable]
     public class MoveRoute : ICloneable
     {
         public int Type;

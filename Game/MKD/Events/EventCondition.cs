@@ -3,6 +3,7 @@ using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
+    [Serializable]
     public class EventCondition : ICloneable
     {
         public bool Switch1Valid;

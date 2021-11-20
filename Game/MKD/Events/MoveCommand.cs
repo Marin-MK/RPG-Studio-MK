@@ -4,6 +4,7 @@ using rubydotnet;
 
 namespace RPGStudioMK.Game
 {
+    [Serializable]
     public class MoveCommand : ICloneable
     {
         public int Code;
