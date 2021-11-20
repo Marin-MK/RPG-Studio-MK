@@ -371,6 +371,7 @@ namespace RPGStudioMK
         /// <param name="ParentID">The ID of the parent map.</param>
         public static void AddMap(Map Map, int ParentID = 0)
         {
+            Map.ParentID = ParentID;
             Data.Maps.Add(Map.ID, Map);
             TreeNode node = new TreeNode() { Name = Map.ToString(), Object = Map.ID };
             if (MainWindow.MapWidget != null)
@@ -386,6 +387,7 @@ namespace RPGStudioMK
                     Map.ParentID = (int) mapview.HoveringNode.Object;
                     mapview.HoveringNode.Nodes.Add(node);
                     mapview.HoveringNode.Collapsed = false;
+                    Data.Maps[(int) mapview.HoveringNode.Object].Expanded = true;
                 }
                 else
                 {
