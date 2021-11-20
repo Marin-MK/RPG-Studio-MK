@@ -663,7 +663,7 @@ namespace RPGStudioMK.Widgets
                 else
                 {
                     int autotileboxes = AutotileContainers.Count - AutotileContainers.FindAll(e => e is int).Count + 1;
-                    if (autotileboxes < 0) autotileboxes = 0;
+                    if (AutotileContainers.Count == 0) autotileboxes = 0;
                     if (idx != TilesetIndex + autotileboxes) return;
                 }
                 TileEndX = x;
