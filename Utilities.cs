@@ -561,24 +561,45 @@ namespace RPGStudioMK
             return list;
         }
 
+        public static void SetClipboard(string s)
+        {
+            Input.SetClipboard(s);
+        }
+
         public static void SetClipboard(object o)
         {
             string data = null;
             if (o is ISerializable) data = ((ISerializable) o).Serialize();
             else if (o.GetType().GetGenericTypeDefinition() == typeof(List<>)) data = SerializeList((IEnumerable<ISerializable>) o);
             else throw new Exception($"Could not serialize object.");
-            Input.SetClipboard(data);
+            Input.SetClipboard("RSMKDATA:" + data);
+        }
+
+        public static string GetClipboardString()
+        {
+            return Input.GetClipboard();
         }
 
         public static T GetClipboard<T>() where T : ISerializable
         {
+            string data = GetClipboardString();
+            if (data.StartsWith("RSMKDATA:")) data = data.Substring(9);
+            else throw new Exception("Attempted to parse non-RSMK data.");
             MethodInfo method = typeof(T).GetMethod("Deserialize", BindingFlags.Public | BindingFlags.Static);
-            return (T) method.Invoke(null, new object[1] { Input.GetClipboard() });
+            return (T) method.Invoke(null, new object[1] { data });
         }
 
         public static List<T> GetClipboardList<T>() where T : ISerializable
         {
-            return DeserializeList<T>(Input.GetClipboard());
+            string data = GetClipboardString();
+            if (data.StartsWith("RSMKDATA:")) data = data.Substring(9);
+            else throw new Exception("Attempted to parse non-RSMK data.");
+            return DeserializeList<T>(data);
+        }
+
+        public static bool IsClipboardValidBinary()
+        {
+            return GetClipboardString().StartsWith("RSMKDATA:");
         }
     }
 }
