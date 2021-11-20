@@ -10,6 +10,7 @@ namespace RPGStudioMK.Widgets
         public bool Checked { get; protected set; } = false;
         public Font Font { get; protected set; } = Font.Get("Fonts/ProductSans-M", 12);
         public bool Enabled { get; protected set; } = true;
+        public bool Mirrored { get; protected set; } = false;
 
         bool Selecting = false;
 
@@ -62,6 +63,16 @@ namespace RPGStudioMK.Widgets
                 this.Checked = Checked;
                 Redraw();
                 OnCheckChanged?.Invoke(new BaseEventArgs());
+            }
+        }
+
+        public void SetMirrored(bool Mirrored)
+        {
+            if (this.Mirrored != Mirrored)
+            {
+                this.Mirrored = Mirrored;
+                Sprites["text"].X = this.Mirrored ? 0 : 20;
+                Sprites["box"].X = this.Mirrored ? Size.Width - 16 : 0;
             }
         }
 
