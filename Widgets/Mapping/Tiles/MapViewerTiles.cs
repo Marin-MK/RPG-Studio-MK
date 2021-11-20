@@ -144,6 +144,7 @@ namespace RPGStudioMK.Widgets
         public override void SetMap(Map Map)
         {
             this.Map = Map;
+            CancelSelection(new BaseEventArgs());
             LayerPanel.CreateLayers();
             TilesPanel.SetMap(Map);
             TilesPanel.SelectTile(new TileData() { TileType = TileType.Tileset, Index = 0, ID = 0 });
@@ -183,6 +184,11 @@ namespace RPGStudioMK.Widgets
             }
             SetCursorInActiveSelection(false);
             this.MovingSelection = false;
+            this.CursorInActiveSelection = false;
+            this.IgnoreLeftButton = false;
+            this.MovingSelection = false;
+            this.SelectionStartUndoLast = false;
+            this.SelectionFromPaste = false;
         }
 
         public void SelectAll(BaseEventArgs e)
@@ -710,7 +716,11 @@ namespace RPGStudioMK.Widgets
                 TileGroup group = new TileGroup();
                 group.Width = SelectionWidth;
                 group.Height = SelectionHeight;
-                if (DeleteTiles) MapWidget.SetLayerLocked(LayerPanel.SelectedLayer, false);
+                if (DeleteTiles)
+                {
+                    MapWidget.SetLayerLocked(LayerPanel.SelectedLayer, false);
+                    TileGroupUndoAction.Log(Map.ID, LayerPanel.SelectedLayer);
+                }
                 for (int y = 0; y < SelectionHeight; y++)
                 {
                     for (int x = 0; x < SelectionWidth; x++)
@@ -722,17 +732,23 @@ namespace RPGStudioMK.Widgets
                         {
                             Map.Layers[LayerPanel.SelectedLayer].Tiles[idx] = null;
                             MapWidget.DrawTile(SelectionX + x, SelectionY + y, LayerPanel.SelectedLayer, null, tile, true);
+                            TileGroupUndoAction.AddToLatest(idx, null, tile);
                         }
                     }
                 }
                 Utilities.SetClipboard(group, BinaryData.TILE_SELECTION);
-                if (DeleteTiles) MapWidget.SetLayerLocked(LayerPanel.SelectedLayer, true);
+                if (DeleteTiles)
+                {
+                    MapWidget.SetLayerLocked(LayerPanel.SelectedLayer, true);
+                    TileGroupUndoAction.GetLatest().Ready = true;
+                }
             }
         }
 
         void CutSelection()
         {
             CopySelection(true);
+            CancelSelection(new BaseEventArgs());
         }
 
         void PasteSelection()
