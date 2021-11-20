@@ -17,6 +17,8 @@ namespace RPGStudioMK.Widgets
         TextBox MapName;
         NumericBox Width;
         NumericBox Height;
+        DropdownBox BGM;
+        DropdownBox BGS;
         ListBox Tilesets;
         //ListBox Autotiles;
 
@@ -25,7 +27,7 @@ namespace RPGStudioMK.Widgets
             this.OldMap = Map;
             this.Map = (Map) Map.Clone();
             this.SetTitle($"Map Properties - {Utilities.Digits(Map.ID, 3)}: {Map.Name}");
-            MinimumSize = MaximumSize = new Size(330, 290);
+            MinimumSize = MaximumSize = new Size(330, 300);
             SetSize(MaximumSize);
             this.Center();
             Label settings = new Label(this);
@@ -35,7 +37,7 @@ namespace RPGStudioMK.Widgets
 
             GroupBox box1 = new GroupBox(this);
             box1.SetPosition(19, 47);
-            box1.SetSize(300, 203);
+            box1.SetSize(300, 213);
 
             Font f = Font.Get("Fonts/ProductSans-M", 12);
 
@@ -80,6 +82,70 @@ namespace RPGStudioMK.Widgets
             Height.OnValueChanged += delegate (BaseEventArgs e)
             {
                 this.Map.Height = Height.Value;
+            };
+
+            CheckBox autoplaybgm = new CheckBox(box1);
+            autoplaybgm.SetPosition(7, 106);
+            autoplaybgm.SetText("Autoplay BGM");
+            autoplaybgm.SetFont(f);
+            autoplaybgm.SetChecked(Map.AutoplayBGM);
+            autoplaybgm.OnCheckChanged += delegate (BaseEventArgs e)
+            {
+                Map.AutoplayBGM = autoplaybgm.Checked;
+                BGM.SetEnabled(autoplaybgm.Checked);
+                BGM.SetText(autoplaybgm.Checked ? Map.BGMName : "");
+            };
+            BGM = new DropdownBox(box1);
+            BGM.SetPosition(6, 123);
+            BGM.SetSize(136, 27);
+            BGM.SetText(Map.AutoplayBGM ? Map.BGMName : "");
+            BGM.SetEnabled(Map.AutoplayBGM);
+            BGM.SetReadOnly(true);
+            BGM.OnDropDownClicked += delegate (BaseEventArgs e)
+            {
+                AudioPicker picker = new AudioPicker("Audio/BGM", Map.BGMName, Map.BGMVolume, Map.BGMPitch);
+                picker.OnClosed += delegate (BaseEventArgs _)
+                {
+                    if (picker.Result != null)
+                    {
+                        Map.BGMName = picker.Result.Value.Filename;
+                        Map.BGMVolume = picker.Result.Value.Volume;
+                        Map.BGMPitch = picker.Result.Value.Pitch;
+                        BGM.SetText(Map.BGMName);
+                    }
+                };
+            };
+
+            CheckBox autoplaybgs = new CheckBox(box1);
+            autoplaybgs.SetPosition(7, 161);
+            autoplaybgs.SetText("Autoplay BGS");
+            autoplaybgs.SetFont(f);
+            autoplaybgs.SetChecked(Map.AutoplayBGS);
+            autoplaybgs.OnCheckChanged += delegate (BaseEventArgs e)
+            {
+                Map.AutoplayBGS = autoplaybgs.Checked;
+                BGS.SetEnabled(autoplaybgs.Checked);
+                BGS.SetText(autoplaybgs.Checked ? Map.BGSName : "");
+            };
+            BGS = new DropdownBox(box1);
+            BGS.SetPosition(6, 178);
+            BGS.SetSize(136, 27);
+            BGS.SetText(Map.AutoplayBGS ? Map.BGSName : "");
+            BGS.SetEnabled(Map.AutoplayBGS);
+            BGS.SetReadOnly(true);
+            BGS.OnDropDownClicked += delegate (BaseEventArgs e)
+            {
+                AudioPicker picker = new AudioPicker("Audio/BGS", Map.BGSName, Map.BGSVolume, Map.BGSPitch);
+                picker.OnClosed += delegate (BaseEventArgs _)
+                {
+                    if (picker.Result != null)
+                    {
+                        Map.BGSName = picker.Result.Value.Filename;
+                        Map.BGSVolume = picker.Result.Value.Volume;
+                        Map.BGSPitch = picker.Result.Value.Pitch;
+                        BGS.SetText(Map.BGSName);
+                    }
+                };
             };
 
             Tilesets = new ListBox(box1);
@@ -288,6 +354,24 @@ namespace RPGStudioMK.Widgets
             }
             // Marks name change
             if (Map.Name != OldMap.Name) UnsavedChanges = true;
+            // Marks BGM changes
+            if (Map.BGMName != OldMap.BGMName || Map.BGMVolume != OldMap.BGMVolume || Map.BGMPitch != OldMap.BGMPitch || Map.AutoplayBGM != OldMap.AutoplayBGM)
+            {
+                Map.BGMName = OldMap.BGMName;
+                Map.BGMVolume = OldMap.BGMVolume;
+                Map.BGMPitch = OldMap.BGMPitch;
+                Map.AutoplayBGM = OldMap.AutoplayBGM;
+                UnsavedChanges = true;
+            }
+            // Marks BGS changes
+            if (Map.BGSName != OldMap.BGSName || Map.BGSVolume != OldMap.BGSVolume || Map.BGSPitch != OldMap.BGSPitch || Map.AutoplayBGS != OldMap.AutoplayBGS)
+            {
+                Map.BGSName = OldMap.BGSName;
+                Map.BGSVolume = OldMap.BGSVolume;
+                Map.BGSPitch = OldMap.BGSPitch;
+                Map.AutoplayBGS = OldMap.AutoplayBGS;
+                UnsavedChanges = true;
+            }
             // Updates tilesets
             bool tilesetschanged = false;
             if (Map.TilesetIDs.Count != OldMap.TilesetIDs.Count) tilesetschanged = true;
