@@ -56,6 +56,11 @@ namespace RPGStudioMK
         public static List<BaseUndoAction> MapRedoList = new List<BaseUndoAction>();
 
         /// <summary>
+        /// Event that is called after the editor has undone the latest action.
+        /// </summary>
+        public static BaseEvent OnUndoing;
+
+        /// <summary>
         /// Whether or not undo/redo is currently usable. Disable while drawing tiles in map editor, for instance.
         /// </summary>
         public static bool CanUndo = true;
@@ -102,9 +107,13 @@ namespace RPGStudioMK
         /// <summary>
         /// Undoes the latest change you made.
         /// </summary>
-        public static void Undo()
+        public static void Undo(bool Internal = false)
         {
-            if (MapUndoList.Count > 0 && CanUndo) MapUndoList[MapUndoList.Count - 1].RevertTo(false);
+            if (MapUndoList.Count > 0 && (CanUndo || Internal))
+            {
+                MapUndoList[MapUndoList.Count - 1].RevertTo(false);
+                if (!Internal) OnUndoing?.Invoke(new BaseEventArgs());
+            }
         }
 
         /// <summary>

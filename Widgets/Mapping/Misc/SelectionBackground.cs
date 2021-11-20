@@ -63,11 +63,11 @@ namespace RPGStudioMK.Widgets
             h.Unlock();
 
             Color c1 = Color.BLACK;
-            Color c2 = new Color(255, 255, 0);// Color.WHITE;
+            Color c2 = new Color(255, 255, 0);
 
             for (int y = 0; y < v.Height; y++)
             {
-                if (Math.Floor((y + Offset) / 4d) % 2 == 0)
+                if (Math.Floor((y + Offset + 4) / 4d) % 2 == 0)
                 {
                     v.SetPixel(0, y, c1);
                     v.SetPixel(1, y, c1);
@@ -97,10 +97,10 @@ namespace RPGStudioMK.Widgets
 
             Sprites["left"].Bitmap = v;
             Sprites["top"].Bitmap = h;
+            Sprites["top"].MirrorX = true;
             Sprites["right"].Bitmap = v;
             Sprites["right"].MirrorY = true;
             Sprites["bottom"].Bitmap = h;
-            Sprites["bottom"].MirrorX = true;
 
             base.Draw();
         }

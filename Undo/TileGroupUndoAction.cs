@@ -29,7 +29,14 @@ namespace RPGStudioMK
 
         public static void AddToLatest(int MapPosition, TileData NewTile, TileData OldTile)
         {
-            GetLatest().Tiles.Add(new TileChange(MapPosition, NewTile, OldTile));
+            TileGroupUndoAction action = GetLatest();
+            TileChange change = action.Tiles.Find(t => t.MapPosition == MapPosition);
+            if (change != null)
+            {
+                OldTile = change.OldTile;
+                action.Tiles.Remove(change);
+            }
+            action.Tiles.Add(new TileChange(MapPosition, NewTile, OldTile));
         }
 
         public override void Trigger(bool IsRedo)

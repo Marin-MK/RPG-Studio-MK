@@ -24,6 +24,12 @@ namespace RPGStudioMK.Widgets
         Location MoveDirection = Location.TopLeft;
         Location CursorDirectionFromOrigin = Location.TopLeft;
 
+        bool CursorInActiveSelection = false;
+        bool IgnoreLeftButton = false;
+        bool MovingSelection = false;
+        Point SelectionOrigin = new Point(0, 0);
+        List<TileData> SelectionTiles = new List<TileData>();
+
         public CursorWidget Cursor;
 
         public override int TopLeftX
@@ -93,6 +99,11 @@ namespace RPGStudioMK.Widgets
                 new Shortcut(this, new Key(Keycode.G), SetDrawModeEraser),
                 new Shortcut(this, new Key(Keycode.E), SetDrawModeSelection)
             });
+
+            Editor.OnUndoing += delegate (BaseEventArgs e)
+            {
+                if (SelectionX != -1 && SelectionY != -1 && SelectionWidth != 0 && SelectionHeight != 0) CancelSelection(e);
+            };
         }
 
         public void SetDrawModePencil(BaseEventArgs e)
@@ -166,6 +177,15 @@ namespace RPGStudioMK.Widgets
                 SelectionHeight = 0;
                 SelectionBackground.SetVisible(false);
             }
+            SetCursorInActiveSelection(false);
+            this.MovingSelection = false;
+        }
+
+        private void SetCursorInActiveSelection(bool Value)
+        {
+            this.CursorInActiveSelection = Value;
+            if (Value) Input.SetCursor(odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_SIZEALL);
+            else Input.SetCursor(odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
         }
 
         public void UpdateSelection()
@@ -217,27 +237,78 @@ namespace RPGStudioMK.Widgets
             }
 
             // Input handling
-            if (Left)
+            if (Left && !IgnoreLeftButton)
             {
                 if (TilesPanel.DrawTool == DrawTools.Selection) // Selection tool
                 {
-                    int sx = OriginPoint.X < MapTileX ? OriginPoint.X : MapTileX;
-                    int ex = OriginPoint.X < MapTileX ? MapTileX : OriginPoint.X;
-                    int sy = OriginPoint.Y < MapTileY ? OriginPoint.Y : MapTileY;
-                    int ey = OriginPoint.Y < MapTileY ? MapTileY : OriginPoint.Y;
-                    if (sx < 0) sx = 0;
-                    else if (sx >= Map.Width) sx = Map.Width - 1;
-                    if (sy < 0) sy = 0;
-                    else if (sy >= Map.Height) sy = Map.Height - 1;
-                    if (ex < 0) ex = 0;
-                    else if (ex >= Map.Width) ex = Map.Width - 1;
-                    if (ey < 0) ey = 0;
-                    else if (ey >= Map.Height) ey = Map.Height - 1;
-                    SelectionX = sx;
-                    SelectionY = sy;
-                    SelectionWidth = ex - sx + 1;
-                    SelectionHeight = ey - sy + 1;
-                    UpdateSelection();
+                    if (MovingSelection)
+                    {
+                        int mx = (int) Math.Round(newx / 32d);
+                        int my = (int) Math.Round(newy / 32d);
+                        int oldselx = SelectionX;
+                        int oldsely = SelectionY;
+                        if (SelectionOrigin.X + mx - OriginPoint.X != oldselx || SelectionOrigin.Y + my - OriginPoint.Y != oldsely)
+                        {
+                            int Layer = LayerPanel.SelectedLayer;
+                            if (TileGroupUndoAction.GetLatest() != null && !TileGroupUndoAction.GetLatest().Ready)
+                            {
+                                Console.WriteLine(Editor.MapUndoList);
+                                TileGroupUndoAction.GetLatest().Ready = true;
+                                Editor.Undo(true);
+                            }
+                            TileGroupUndoAction.Log(Map.ID, Layer);
+                            MapWidget.SetLayerLocked(Layer, false);
+                            for (int y = 0; y < SelectionHeight; y++)
+                            {
+                                for (int x = 0; x < SelectionWidth; x++)
+                                {
+                                    int idx = SelectionOrigin.X + x + (SelectionOrigin.Y + y) * Map.Width;
+                                    TileData oldtile = Map.Layers[Layer].Tiles[idx];
+                                    Map.Layers[Layer].Tiles[idx] = null;
+                                    MapWidget.DrawTile(SelectionOrigin.X + x, SelectionOrigin.Y + y, Layer, null, oldtile, true);
+                                    TileGroupUndoAction.AddToLatest(idx, null, oldtile);
+                                }
+                            }
+                            SelectionX = SelectionOrigin.X + mx - OriginPoint.X;
+                            SelectionY = SelectionOrigin.Y + my - OriginPoint.Y;
+                            UpdateSelection();
+                            for (int y = SelectionY; y < SelectionY + SelectionHeight; y++)
+                            {
+                                for (int x = SelectionX; x < SelectionX + SelectionWidth; x++)
+                                {
+                                    int tileidx = x + y * Map.Width;
+                                    TileData oldtile = Map.Layers[Layer].Tiles[tileidx];
+                                    int listidx = (x - SelectionX) + (y - SelectionY) * SelectionWidth;
+                                    TileData tile = SelectionTiles[listidx];
+                                    Map.Layers[Layer].Tiles[tileidx] = tile;
+                                    MapWidget.DrawTile(x, y, Layer, tile, oldtile, true);
+                                    TileGroupUndoAction.AddToLatest(tileidx, tile, oldtile);
+                                }
+                            }
+                            Editor.CanUndo = false;
+                            MapWidget.SetLayerLocked(Layer, true);
+                        }
+                    }
+                    else
+                    {
+                        int sx = OriginPoint.X < MapTileX ? OriginPoint.X : MapTileX;
+                        int ex = OriginPoint.X < MapTileX ? MapTileX : OriginPoint.X;
+                        int sy = OriginPoint.Y < MapTileY ? OriginPoint.Y : MapTileY;
+                        int ey = OriginPoint.Y < MapTileY ? MapTileY : OriginPoint.Y;
+                        if (sx < 0) sx = 0;
+                        else if (sx >= Map.Width) sx = Map.Width - 1;
+                        if (sy < 0) sy = 0;
+                        else if (sy >= Map.Height) sy = Map.Height - 1;
+                        if (ex < 0) ex = 0;
+                        else if (ex >= Map.Width) ex = Map.Width - 1;
+                        if (ey < 0) ey = 0;
+                        else if (ey >= Map.Height) ey = Map.Height - 1;
+                        SelectionX = sx;
+                        SelectionY = sy;
+                        SelectionWidth = ex - sx + 1;
+                        SelectionHeight = ey - sy + 1;
+                        UpdateSelection();
+                    }
                 }
                 else // A tile-drawing tool
                 {
@@ -286,9 +357,7 @@ namespace RPGStudioMK.Widgets
                                 }
                             }
                             action.Ready = true;
-                            Editor.CanUndo = true;
-                            Editor.Undo();
-                            Editor.CanUndo = false;
+                            Editor.Undo(true);
                             TileGroupUndoAction.Log(Map.ID, Layer);
                             TileGroupUndoAction.GetLatest().Tiles.AddRange(changes);
                         }
@@ -474,9 +543,49 @@ namespace RPGStudioMK.Widgets
                 {
                     UpdateTilePlacement(e, oldmousex, oldmousey, RelativeMouseX, RelativeMouseY);
                 }
+                if (TilesPanel.DrawTool == DrawTools.Selection)
+                {
+                    if (SelectionX != -1 && SelectionY != -1 && SelectionWidth != -1 && SelectionHeight != -1 && (!e.LeftButton || e.LeftButton && e.LeftButton != e.OldLeftButton))
+                    {
+                        if (MapTileX >= SelectionX && MapTileX < SelectionX + SelectionWidth && 
+                            MapTileY >= SelectionY && MapTileY < SelectionY + SelectionHeight)
+                        {
+                            SetCursorInActiveSelection(true);
+                        }
+                        else
+                        {
+                            SetCursorInActiveSelection(false);
+                        }
+                    }
+                    else
+                    {
+                        SetCursorInActiveSelection(false);
+                    }
+                }
             }
             LastMouseX = e.X;
             LastMouseY = e.Y;
+        }
+
+        private void StartMovingSelection()
+        {
+            this.MovingSelection = true;
+            this.SelectionOrigin = new Point(SelectionX, SelectionY);
+            SelectionTiles.Clear();
+            int Layer = LayerPanel.SelectedLayer;
+            MapWidget.SetLayerLocked(Layer, false);
+            for (int y = 0; y < SelectionHeight; y++)
+            {
+                for (int x = 0; x < SelectionWidth; x++)
+                {
+                    int idx = SelectionX + x + (SelectionY + y) * Map.Width;
+                    TileData oldtile = Map.Layers[Layer].Tiles[idx];
+                    SelectionTiles.Add(Map.Layers[Layer].Tiles[idx]);
+                    //Map.Layers[Layer].Tiles[idx] = null;
+                    //MapWidget.DrawTile(SelectionX + x, SelectionY + y, Layer, null, oldtile, true);
+                }
+            }
+            MapWidget.SetLayerLocked(Layer, true);
         }
 
         public void UpdateCursorPosition()
@@ -506,6 +615,18 @@ namespace RPGStudioMK.Widgets
             {
                 if ((TilesPanel.DrawTool == DrawTools.Rectangle || TilesPanel.DrawTool == DrawTools.Ellipse) &&
                     e.LeftButton && e.LeftButton != e.OldLeftButton) Cursor.SetVisible(false);
+                if (SelectionX != -1 || SelectionY != -1 || SelectionWidth != 0 || SelectionHeight != 0)
+                {
+                    if (this.CursorInActiveSelection) // Start moving selection
+                    {
+                        StartMovingSelection();
+                    }
+                    else // Cancel selection
+                    {
+                        CancelSelection(new BaseEventArgs());
+                        this.IgnoreLeftButton = true;
+                    }
+                }
                 UpdateTilePlacement(e, RelativeMouseX, RelativeMouseY, RelativeMouseX, RelativeMouseY);
             }
         }
@@ -522,6 +643,7 @@ namespace RPGStudioMK.Widgets
                     if ((TilesPanel.DrawTool == DrawTools.Rectangle || TilesPanel.DrawTool == DrawTools.Ellipse) &&
                         !Cursor.Visible) Cursor.SetVisible(true);
                 }
+                IgnoreLeftButton = false;
             }
             if (!e.LeftButton && !e.RightButton) OriginPoint = null;
         }
