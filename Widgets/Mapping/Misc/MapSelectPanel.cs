@@ -61,6 +61,19 @@ namespace RPGStudioMK.Widgets
                     }
                 },
                 new MenuSeparator(),
+                new MenuItem("Cut Map")
+                {
+                    OnLeftClick = CutMap
+                },
+                new MenuItem("Copy Map")
+                {
+                    OnLeftClick = CopyMap
+                },
+                new MenuItem("Paste Map")
+                {
+                    OnLeftClick = PasteMap
+                },
+                new MenuSeparator(),
                 new MenuItem("Delete")
                 {
                     OnLeftClick = DeleteMap,
@@ -141,7 +154,7 @@ namespace RPGStudioMK.Widgets
             allmapcontainer.VScrollBar.SetSize(8, Size.Height - 35);
         }
 
-        private void NewMap(MouseEventArgs e)
+        private void NewMap(BaseEventArgs e)
         {
             Map Map = new Map();
             Map.ID = Editor.GetFreeMapID();
@@ -164,7 +177,7 @@ namespace RPGStudioMK.Widgets
             };
         }
 
-        private void EditMap(MouseEventArgs e)
+        private void EditMap(BaseEventArgs e)
         {
             Map map = Data.Maps[(int) mapview.HoveringNode.Object];
             MapPropertiesWindow mpw = new MapPropertiesWindow(map);
@@ -184,7 +197,61 @@ namespace RPGStudioMK.Widgets
             };
         }
 
-        private void DeleteMap(MouseEventArgs e)
+        private void CutMap(BaseEventArgs e)
+        {
+            CopyMap(e);
+            int MapID = (int) mapview.HoveringNode.Object;
+            Map Map = Data.Maps[MapID];
+            Data.Maps.Remove(MapID);
+            Editor.DecrementMapOrderFrom(Map.Order);
+            Editor.DeletedMaps.Add(Map);
+            for (int i = 0; i < mapview.Nodes.Count; i++)
+            {
+                if ((int) mapview.Nodes[i].Object == MapID)
+                {
+                    if (mapview.HoveringNode.Nodes.Count > 0)
+                    {
+                        mapview.HoveringNode.Nodes.ForEach(n => Data.Maps[(int) n.Object].ParentID = 0);
+                        mapview.Nodes.AddRange(mapview.HoveringNode.Nodes);
+                    }
+                    mapview.Nodes.Remove(mapview.HoveringNode);
+                    SortNodeList(mapview.Nodes);
+                    mapview.SetSelectedNode(mapview.Nodes[i > 0 ? i - 1 : 0]);
+                    break;
+                }
+                else
+                {
+                    TreeNode Node = mapview.Nodes[i].FindParentNode(n => n.Object == mapview.HoveringNode.Object);
+                    if (Node == null) continue;
+                    if (mapview.HoveringNode.Nodes.Count > 0)
+                    {
+                        mapview.HoveringNode.Nodes.ForEach(n => Data.Maps[(int) n.Object].ParentID = 0);
+                        Node.Nodes.AddRange(mapview.HoveringNode.Nodes);
+                    }
+                    Node.Nodes.Remove(mapview.HoveringNode);
+                    SortNodeList(Node.Nodes);
+                    mapview.SetSelectedNode(Node);
+                    break;
+                }
+            }
+            mapview.Redraw();
+        }
+
+        private void CopyMap(BaseEventArgs e)
+        {
+            Map map = Data.Maps[(int) mapview.HoveringNode.Object];
+            Utilities.SetClipboard(map, BinaryData.MAP);
+        }
+
+        private void PasteMap(BaseEventArgs e)
+        {
+            if (!Utilities.IsClipboardValidBinary(BinaryData.MAP)) return;
+            Map map = Utilities.GetClipboard<Map>();
+            map.ID = Editor.GetFreeMapID();
+            Editor.AddMap(map, mapview.HoveringNode == null ? 0 : (int) mapview.HoveringNode.Object);
+        }
+
+        private void DeleteMap(BaseEventArgs e)
         {
             if (mapview.Nodes.Count <= 1) return;
             string message = "Are you sure you want to delete this map?";
