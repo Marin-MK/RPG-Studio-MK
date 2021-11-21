@@ -63,6 +63,9 @@ namespace RPGStudioMK.Widgets
             }
         }
 
+        public bool UsingLeft = false;
+        public bool UsingRight = false;
+
         private Container DrawToolsContainer;
         private IconButton PencilButton;
         private IconButton FillButton;
@@ -648,7 +651,7 @@ namespace RPGStudioMK.Widgets
         public override void MouseMoving(MouseEventArgs e)
         {
             base.MouseMoving(e);
-            if (!DraggingTileset) return;
+            if (!DraggingTileset || MapViewer.UsingLeft || MapViewer.UsingRight || MapViewer.MiddleMouseScrolling) return;
             int idx = -1,
                 x = -1,
                 y = -1;
@@ -676,6 +679,12 @@ namespace RPGStudioMK.Widgets
         {
             base.MouseDown(e);
             if (e.MiddleButton != e.OldMiddleButton) return; // A button other than the middle mouse button was pressed (left or right)
+            if (MapViewer.UsingLeft || MapViewer.UsingRight) return;
+            if (WidgetIM.Hovering)
+            {
+                if (e.LeftButton != e.OldLeftButton && e.LeftButton) UsingLeft = true;
+                if (e.RightButton != e.OldRightButton && e.RightButton) UsingRight = true;
+            }
             int idx = -1,
                 x = -1,
                 y = -1;
@@ -690,6 +699,8 @@ namespace RPGStudioMK.Widgets
         public override void MouseUp(MouseEventArgs e)
         {
             base.MouseUp(e);
+            if (e.LeftButton != e.OldLeftButton && !e.LeftButton) UsingLeft = false;
+            if (e.RightButton != e.OldRightButton && !e.RightButton) UsingRight = false;
             DraggingTileset = e.LeftButton || e.RightButton;
         }
 

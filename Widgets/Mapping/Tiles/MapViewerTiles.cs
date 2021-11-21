@@ -502,6 +502,7 @@ namespace RPGStudioMK.Widgets
         public override void MouseMoving(MouseEventArgs e)
         {
             base.MouseMoving(e);
+            if (TilesPanel.UsingLeft || TilesPanel.UsingRight) return;
             if (e.X != LastMouseX || e.Y != LastMouseY)
             {
                 if (e.X >= LastMouseX) // Right
@@ -650,6 +651,7 @@ namespace RPGStudioMK.Widgets
         public override void MouseDown(MouseEventArgs e)
         {
             base.MouseDown(e);
+            if (TilesPanel.UsingLeft || TilesPanel.UsingRight) return;
             if (e.LeftButton != e.OldLeftButton && !IgnoreLeftButton)
             {
                 IgnoreLeftButton = false;

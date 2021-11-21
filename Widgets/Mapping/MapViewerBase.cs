@@ -21,6 +21,9 @@ namespace RPGStudioMK.Widgets
         public int LastMouseX = 0;
         public int LastMouseY = 0;
 
+        public bool UsingLeft = false;
+        public bool UsingRight = false;
+
         public virtual int TopLeftX
         {
             get
@@ -197,13 +200,18 @@ namespace RPGStudioMK.Widgets
             // Update position - to make sure you're drawing where the mouse is, not where the cursor is
             // (the cursor will also follow the mouse with this call if they're not aligned (which they should be))
             MouseMoving(e);
-            if (e.MiddleButton != e.OldMiddleButton && e.MiddleButton && WidgetIM.Hovering)
+            if (MainContainer.WidgetIM.Hovering)
             {
-                Input.SetCursor(odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_SIZEALL);
-                this.MiddleMouseScrolling = true;
-                LastMouseX = e.X;
-                LastMouseY = e.Y;
-                Input.CaptureMouse();
+                if (e.LeftButton != e.OldLeftButton && e.LeftButton) UsingLeft = true;
+                if (e.RightButton != e.OldRightButton && e.RightButton) UsingRight = true;
+                if (e.MiddleButton != e.OldMiddleButton && e.MiddleButton)
+                {
+                    Input.SetCursor(odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_SIZEALL);
+                    this.MiddleMouseScrolling = true;
+                    LastMouseX = e.X;
+                    LastMouseY = e.Y;
+                    Input.CaptureMouse();
+                }
             }
         }
 
@@ -211,6 +219,8 @@ namespace RPGStudioMK.Widgets
         {
             if (WidgetIM.Ready() && IsVisible() && WidgetIM.WidgetAccessible()) MouseMoving(e);
             base.MouseUp(e);
+            if (e.LeftButton != e.OldLeftButton && !e.LeftButton) UsingLeft = false;
+            if (e.RightButton != e.OldRightButton && !e.RightButton) UsingRight = false;
             if (e.MiddleButton != e.OldMiddleButton && !e.MiddleButton)
             {
                 Input.SetCursor(odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
