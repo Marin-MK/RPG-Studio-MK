@@ -378,7 +378,7 @@ namespace RPGStudioMK.Widgets
                             for (int i = 0; i < action.Tiles.Count; i++)
                             {
                                 Point point = points.Find(p => p.X + p.Y * Map.Width == action.Tiles[i].MapPosition);
-                                if (point != null)
+                                if (point != null && point.X >= 0 && point.Y >= 0 && point.X < Map.Width && point.Y < Map.Height)
                                 {
                                     points.Remove(point);
                                     TileGroupUndoAction.TileChange tc = action.Tiles[i];
@@ -404,7 +404,9 @@ namespace RPGStudioMK.Widgets
                             {
                                 for (int i = 0; i < points.Count; i++)
                                 {
-                                    if (action.Tiles.Exists(g => g.MapPosition == points[i].X + points[i].Y * Map.Width))
+                                    if (points[i].X >= 0 && points[i].Y >= 0 && 
+                                        points[i].X < Map.Width && points[i].Y < Map.Height &&
+                                        action.Tiles.Exists(g => g.MapPosition == points[i].X + points[i].Y * Map.Width))
                                     {
                                         points.RemoveAt(i);
                                         i--;

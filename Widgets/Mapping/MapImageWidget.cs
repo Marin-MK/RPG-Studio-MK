@@ -428,7 +428,21 @@ namespace RPGStudioMK.Widgets
                 double cy = y1 / 2d + y2 / 2d;
                 double a = cx - x1;
                 double b = cy - y1;
-                if (a == 0 || b == 0) return Coords;
+                int ox1 = MapViewer.OriginPoint.X;
+                int oy1 = MapViewer.OriginPoint.Y;
+                int ox2 = (int) Math.Round(newx / 32d);
+                int oy2 = (int) Math.Round(newy / 32d);
+                if (a == 0 || b == 0)
+                {
+                    for (int y = oy1 > oy2 ? oy2 : oy1; y <= (oy1 > oy2 ? oy1 : oy2); y++)
+                    {
+                        for (int x = ox1 > ox2 ? ox2 : ox1; x <= (ox1 > ox2 ? ox1 : ox2); x++)
+                        {
+                            Coords.Add(new Point(x, y));
+                        }
+                    }
+                    return Coords;
+                }
                 for (int x = 0; a > 0 ? x <= a : x >= a; x += (a > 0 ? 1 : -1))
                 {
                     int ry = (int) Math.Round(b / a * Math.Sqrt(a * a - x * x));
@@ -460,6 +474,8 @@ namespace RPGStudioMK.Widgets
                     }
                 }
                 Coords.AddRange(fillpoints);
+                if (Math.Abs(ox2 - ox1) >= 2 && Math.Abs(oy2 - oy1) >= 2)
+                    Coords.RemoveAll(c => c.X == ox1 && (c.Y == oy1 || c.Y == oy2) || c.X == ox2 && (c.Y == oy1 || c.Y == oy2));
             }
             else if (DrawTool == DrawTools.Rectangle)
             {
