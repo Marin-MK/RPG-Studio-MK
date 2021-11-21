@@ -20,6 +20,7 @@ namespace RPGStudioMK.Game
         public static List<Autotile> Autotiles = new List<Autotile>();
         public static List<CommonEvent> CommonEvents = new List<CommonEvent>();
         public static Dictionary<string, Species> Species = new Dictionary<string, Species>();
+        public static List<Script> Scripts = new List<Script>();
         public static System System;
 
         public static void ClearProjectData()
@@ -45,6 +46,7 @@ namespace RPGStudioMK.Game
             LoadMaps();
             LoadSystem();
             LoadCommonEvents();
+            LoadScripts();
             //LoadSpecies();
         }
 
@@ -54,6 +56,7 @@ namespace RPGStudioMK.Game
             SaveMaps();
             SaveSystem();
             SaveCommonEvents();
+            SaveScripts();
             //SaveSpecies();
         }
 
@@ -117,18 +120,15 @@ namespace RPGStudioMK.Game
             IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", file);
             Ruby.Pin(data);
             Ruby.Funcall(file, "close");
-            long count = Ruby.Integer.FromPtr(Ruby.Funcall(data, "length"));
-            Autotiles.AddRange(new Autotile[count * 7]);
+            Autotiles.AddRange(new Autotile[Ruby.Array.Length(data) * 7]);
             Tilesets.Add(null);
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < Ruby.Array.Length(data); i++)
             {
                 IntPtr tileset = Ruby.Array.Get(data, i);
-                Ruby.Pin(tileset);
                 if (tileset != Ruby.Nil)
                 {
                     Tilesets.Add(new Tileset(tileset));
                 }
-                Ruby.Unpin(tileset);
             }
             Ruby.Unpin(data);
         }
@@ -142,8 +142,8 @@ namespace RPGStudioMK.Game
                 if (tileset == null) Ruby.Funcall(tilesets, "push", Ruby.Nil);
                 else
                 {
-                    IntPtr tilesetbin = tileset.Save();
-                    Ruby.Funcall(tilesets, "push", tilesetbin);
+                    IntPtr tilesetdata = tileset.Save();
+                    Ruby.Funcall(tilesets, "push", tilesetdata);
                 }
             }
             IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/Tilesets.rxdata"), Ruby.String.ToPtr("wb"));
@@ -208,15 +208,13 @@ namespace RPGStudioMK.Game
             foreach (Map map in Maps.Values)
             {
                 IntPtr mapinfo = Ruby.Funcall(Compatibility.RMXP.MapInfo.Class, "new");
-                Ruby.Pin(mapinfo);
+                Ruby.Hash.Set(mapinfos, Ruby.Integer.ToPtr(map.ID), mapinfo);
                 Ruby.SetIVar(mapinfo, "@name", Ruby.String.ToPtr(map.Name));
                 Ruby.SetIVar(mapinfo, "@parent_id", Ruby.Integer.ToPtr(map.ParentID));
                 Ruby.SetIVar(mapinfo, "@order", Ruby.Integer.ToPtr(map.Order));
                 Ruby.SetIVar(mapinfo, "@expanded", map.Expanded ? Ruby.True : Ruby.False);
                 Ruby.SetIVar(mapinfo, "@scroll_x", Ruby.Integer.ToPtr(map.ScrollX));
                 Ruby.SetIVar(mapinfo, "@scroll_y", Ruby.Integer.ToPtr(map.ScrollY));
-                Ruby.Hash.Set(mapinfos, Ruby.Integer.ToPtr(map.ID), mapinfo);
-                Ruby.Unpin(mapinfo);
 
                 IntPtr mapdata = map.Save();
                 IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + $"/Map{Utilities.Digits(map.ID, 3)}.rxdata"), Ruby.String.ToPtr("wb"));
@@ -290,6 +288,38 @@ namespace RPGStudioMK.Game
             Ruby.Funcall(file, "close");
             Ruby.Unpin(file);
             Ruby.Unpin(list);
+        }
+
+        private static void LoadScripts()
+        {
+            IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/Scripts.rxdata"), Ruby.String.ToPtr("rb"));
+            IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", file);
+            Ruby.Pin(data);
+            Ruby.Funcall(file, "close");
+            for (int i = 0; i < Ruby.Array.Length(data); i++)
+            {
+                IntPtr script = Ruby.Array.Get(data, i);
+                Scripts.Add(new Script(script));
+            }
+            Ruby.Unpin(data);
+        }
+
+        private static void SaveScripts()
+        {
+            IntPtr scripts = Ruby.Array.Create();
+            Ruby.Pin(scripts);
+            foreach (Script script in Scripts)
+            {
+                IntPtr scriptdata = script.Save();
+                Ruby.Funcall(scripts, "push", scriptdata);
+            }
+            IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/Scripts2.rxdata"), Ruby.String.ToPtr("wb"));
+            Ruby.Pin(file);
+            IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", scripts);
+            Ruby.Funcall(file, "write", data);
+            Ruby.Funcall(file, "close");
+            Ruby.Unpin(scripts);
+            Ruby.Unpin(file);
         }
     }
 }
