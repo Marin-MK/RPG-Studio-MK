@@ -15,7 +15,7 @@ namespace RPGStudioMK.Game
         public Passability Passability;
         public int Priority;
         public int Tag;
-        public int AnimateSpeed = 10;
+        public int AnimateSpeed = 16;
         public List<int?> QuickIDs = new List<int?>() { null, null, null, null, null, null };
 
         public Bitmap AutotileBitmap;
