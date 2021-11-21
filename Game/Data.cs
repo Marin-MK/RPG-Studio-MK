@@ -19,6 +19,7 @@ namespace RPGStudioMK.Game
         public static List<Tileset> Tilesets = new List<Tileset>();
         public static List<Autotile> Autotiles = new List<Autotile>();
         public static Dictionary<string, Species> Species = new Dictionary<string, Species>();
+        public static System System;
 
         public static void ClearProjectData()
         {
@@ -40,6 +41,7 @@ namespace RPGStudioMK.Game
             Initialize();
             LoadTilesets();
             LoadMaps();
+            LoadSystem();
             //LoadSpecies();
         }
 
@@ -47,6 +49,7 @@ namespace RPGStudioMK.Game
         {
             SaveTilesets();
             SaveMaps();
+            SaveSystem();
             //SaveSpecies();
         }
 
@@ -231,6 +234,26 @@ namespace RPGStudioMK.Game
             {
                 if (!Maps.ContainsKey(map.id)) File.Delete(DataPath + "/" + map.filename);
             }
+        }
+
+        private static void LoadSystem()
+        {
+            IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/System.rxdata"), Ruby.String.ToPtr("rb"));
+            IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", file);
+            Ruby.Pin(data);
+            Ruby.Funcall(file, "close");
+            System = new System(data);
+            Ruby.Unpin(data);
+        }
+
+        private static void SaveSystem()
+        {
+            IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/System.rxdata"), Ruby.String.ToPtr("wb"));
+            Ruby.Pin(file);
+            IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", System.Save());
+            Ruby.Funcall(file, "write", data);
+            Ruby.Funcall(file, "close");
+            Ruby.Unpin(file);
         }
     }
 }

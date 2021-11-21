@@ -29,6 +29,9 @@ namespace RPGStudioMK.Compatibility
             Graphic.Create();
             MapInfo.Create();
             Tileset.Create();
+            System.Create();
+            Words.Create();
+            TestBattler.Create();
         }
 
         public static void Cleanup()
