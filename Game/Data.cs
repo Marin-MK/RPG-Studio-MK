@@ -313,7 +313,7 @@ namespace RPGStudioMK.Game
                 IntPtr scriptdata = script.Save();
                 Ruby.Funcall(scripts, "push", scriptdata);
             }
-            IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/Scripts2.rxdata"), Ruby.String.ToPtr("wb"));
+            IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/Scripts.rxdata"), Ruby.String.ToPtr("wb"));
             Ruby.Pin(file);
             IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", scripts);
             Ruby.Funcall(file, "write", data);
