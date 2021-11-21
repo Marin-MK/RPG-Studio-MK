@@ -158,14 +158,6 @@ namespace RPGStudioMK
         }
 
         /// <summary>
-        /// Sets in motion the process of importing maps.
-        /// </summary>
-        public static void ImportMaps()
-        {
-            Compatibility.RMXP.ImportMaps();
-        }
-
-        /// <summary>
         /// Allows the user to restore a map that was deleted during this session.
         /// </summary>
         public static void RestoreMap()

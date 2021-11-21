@@ -172,12 +172,6 @@ namespace RPGStudioMK
                 {
                     Items = new List<IMenuItem>()
                     {
-                        new MenuItem("Import Maps")
-                        {
-                            HelpText = "Import Maps made with RPG Maker XP.",
-                            OnLeftClick = delegate (MouseEventArgs e) { Editor.ImportMaps(); },
-                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
-                        },
                         new MenuItem("Restore Map")
                         {
                             HelpText = "Restore a map that was deleted during this session.",
