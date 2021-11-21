@@ -395,6 +395,35 @@ namespace RPGStudioMK.Widgets
                 int y1 = MapViewer.OriginPoint.Y * 32;
                 int x2 = newx;
                 int y2 = newy;
+                if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT))
+                {
+                    if (x1 < x2)
+                    {
+                        if (y1 < y2)
+                        {
+                            if (x2 - x1 > y2 - y1) x2 = x1 + (y2 - y1);
+                            else if (y2 - y1 > x2 - x1) y2 = y1 + (x2 - x1);
+                        }
+                        else if (y2 < y1)
+                        {
+                            if (x2 - x1 > y1 - y2) x2 = x1 + (y1 - y2);
+                            else if (y1 - y2 > x2 - x1) y2 = y1 - (x2 - x1);
+                        }
+                    }
+                    else if (x2 < x1)
+                    {
+                        if (y1 < y2)
+                        {
+                            if (x1 - x2 > y2 - y1) x2 = x1 - (y2 - y1);
+                            else if (y2 - y1 > x1 - x2) y2 = y1 + (x1 - x2);
+                        }
+                        else if (y2 < y1)
+                        {
+                            if (x1 - x2 > y1 - y2) x2 = x1 - (y1 - y2);
+                            else if (y1 - y2 > x1 - x2) y2 = y1 - (x1 - x2);
+                        }
+                    }
+                }
                 double cx = x1 / 2d + x2 / 2d;
                 double cy = y1 / 2d + y2 / 2d;
                 double a = cx - x1;
@@ -438,6 +467,35 @@ namespace RPGStudioMK.Widgets
                 int y1 = MapViewer.OriginPoint.Y;
                 int x2 = (int) Math.Floor(newx / 32d);
                 int y2 = (int) Math.Floor(newy / 32d);
+                if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT))
+                {
+                    if (x1 < x2)
+                    {
+                        if (y1 < y2)
+                        {
+                            if (x2 - x1 > y2 - y1) x2 = x1 + (y2 - y1);
+                            else if (y2 - y1 > x2 - x1) y2 = y1 + (x2 - x1);
+                        }
+                        else if (y2 < y1)
+                        {
+                            if (x2 - x1 > y1 - y2) x2 = x1 + (y1 - y2);
+                            else if (y1 - y2 > x2 - x1) y2 = y1 - (x2 - x1);
+                        }
+                    }
+                    else if (x2 < x1)
+                    {
+                        if (y1 < y2)
+                        {
+                            if (x1 - x2 > y2 - y1) x2 = x1 - (y2 - y1);
+                            else if (y2 - y1 > x1 - x2) y2 = y1 + (x1 - x2);
+                        }
+                        else if (y2 < y1)
+                        {
+                            if (x1 - x2 > y1 - y2) x2 = x1 - (y1 - y2);
+                            else if (y1 - y2 > x1 - x2) y2 = y1 - (x1 - x2);
+                        }
+                    }
+                }
                 for (int x = x1 > x2 ? x2 : x1; (x1 > x2) ? (x <= x1) : (x <= x2); x++)
                 {
                     for (int y = y1 > y2 ? y2 : y1; (y1 > y2) ? (y <= y1) : (y <= y2); y++)
