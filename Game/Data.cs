@@ -248,6 +248,7 @@ namespace RPGStudioMK.Game
 
         private static void SaveSystem()
         {
+            System.EditMapID = Editor.ProjectSettings.LastMapID;
             IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/System.rxdata"), Ruby.String.ToPtr("wb"));
             Ruby.Pin(file);
             IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", System.Save());
