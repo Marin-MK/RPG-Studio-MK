@@ -24,8 +24,10 @@ namespace RPGStudioMK.Widgets
         Location MoveDirection = Location.TopLeft;
         Location CursorDirectionFromOrigin = Location.TopLeft;
 
-        bool CursorInActiveSelection = false;
         bool IgnoreLeftButton = false;
+        bool IgnoreRightButton = false;
+
+        bool CursorInActiveSelection = false;
         bool MovingSelection = false;
         bool SelectionStartUndoLast = false;
         bool SelectionFromPaste = false;
@@ -414,7 +416,7 @@ namespace RPGStudioMK.Widgets
                     }
                 }
             }
-            else if (Right)
+            else if (Right && !IgnoreRightButton)
             {
                 if (TilesPanel.DrawTool == DrawTools.Selection) // Selection tool
                 {
@@ -648,12 +650,22 @@ namespace RPGStudioMK.Widgets
         public override void MouseDown(MouseEventArgs e)
         {
             base.MouseDown(e);
+            if (e.LeftButton != e.OldLeftButton && !IgnoreLeftButton)
+            {
+                IgnoreLeftButton = false;
+                IgnoreRightButton = true;
+            }
+            else if (e.RightButton != e.OldRightButton && !IgnoreRightButton)
+            {
+                IgnoreLeftButton = true;
+                IgnoreRightButton = false;
+            }
             if ((e.LeftButton != e.OldLeftButton && e.LeftButton ||
                 e.RightButton != e.OldRightButton && e.RightButton) &&
                 MainContainer.WidgetIM.Hovering)
             {
                 if ((TilesPanel.DrawTool == DrawTools.Rectangle || TilesPanel.DrawTool == DrawTools.Ellipse) &&
-                    e.LeftButton && e.LeftButton != e.OldLeftButton) Cursor.SetVisible(false);
+                    e.LeftButton && e.LeftButton != e.OldLeftButton && !IgnoreLeftButton) Cursor.SetVisible(false);
                 if (SelectionWidth != 0 || SelectionHeight != 0)
                 {
                     if (this.CursorInActiveSelection) // Start moving selection
@@ -683,9 +695,13 @@ namespace RPGStudioMK.Widgets
                     if ((TilesPanel.DrawTool == DrawTools.Rectangle || TilesPanel.DrawTool == DrawTools.Ellipse) &&
                         !Cursor.Visible) Cursor.SetVisible(true);
                 }
-                IgnoreLeftButton = false;
             }
-            if (!e.LeftButton && !e.RightButton) OriginPoint = null;
+            if (!e.LeftButton && !e.RightButton)
+            {
+                OriginPoint = null;
+                IgnoreLeftButton = false;
+                IgnoreRightButton = false;
+            }
         }
 
         public override void Update()
