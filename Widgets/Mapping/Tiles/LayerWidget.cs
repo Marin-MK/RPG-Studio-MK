@@ -8,7 +8,9 @@ namespace RPGStudioMK.Widgets
 {
     public class LayerWidget : Widget
     {
-        public MapViewerTiles MapViewer { get { return (Parent.Parent as LayerPanel).MapViewer; } }
+        public LayerPanel LayerPanel { get { return (Parent.Parent) as LayerPanel; } }
+        public TilesPanel TilesPanel { get { return MapViewer.TilesPanel; } }
+        public MapViewerTiles MapViewer { get { return LayerPanel.MapViewer; } }
         public List<Layer> Layers { get; private set; }
         public int SelectedLayer { get; private set; }
         public int HoveringIndex { get; private set; } = -1;
@@ -114,6 +116,7 @@ namespace RPGStudioMK.Widgets
         public override void MouseMoving(MouseEventArgs e)
         {
             base.MouseMoving(e);
+            if (MapViewer.UsingLeft || MapViewer.UsingRight || TilesPanel.UsingLeft || TilesPanel.UsingRight) return;
             if (!WidgetIM.Hovering)
             {
                 Sprites["selector"].Visible = false;
@@ -129,6 +132,12 @@ namespace RPGStudioMK.Widgets
         public override void MouseDown(MouseEventArgs e)
         {
             base.MouseDown(e);
+            if (MapViewer.UsingLeft || MapViewer.UsingRight || TilesPanel.UsingLeft || TilesPanel.UsingRight) return;
+            if (WidgetIM.Hovering)
+            {
+                if (e.LeftButton != e.OldLeftButton && e.LeftButton) LayerPanel.UsingLeft = true;
+                if (e.RightButton != e.OldRightButton && e.RightButton) LayerPanel.UsingRight = true;
+            }
             MouseMoving(e);
             int rx = e.X - Viewport.X;
             int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
@@ -150,6 +159,13 @@ namespace RPGStudioMK.Widgets
             {
                 SetSelectedLayer(layerindex);
             }
+        }
+
+        public override void MouseUp(MouseEventArgs e)
+        {
+            base.MouseUp(e);
+            if (e.LeftButton != e.OldLeftButton && !e.LeftButton) LayerPanel.UsingLeft = false;
+            if (e.RightButton != e.OldRightButton && !e.RightButton) LayerPanel.UsingRight = false;
         }
     }
 }

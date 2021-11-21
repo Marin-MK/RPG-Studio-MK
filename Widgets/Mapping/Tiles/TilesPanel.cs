@@ -74,7 +74,7 @@ namespace RPGStudioMK.Widgets
         private IconButton SelectButton;
         private IconButton EraserButton;
 
-        public LayerPanel LayerPanel;
+        public LayerPanel LayerPanel { get { return MapViewer.LayerPanel; } }
         public MapViewerTiles MapViewer;
 
         bool DraggingTileset = false;
@@ -651,12 +651,12 @@ namespace RPGStudioMK.Widgets
         public override void MouseMoving(MouseEventArgs e)
         {
             base.MouseMoving(e);
-            if (!DraggingTileset || MapViewer.UsingLeft || MapViewer.UsingRight || MapViewer.MiddleMouseScrolling) return;
+            if (!DraggingTileset || MapViewer.UsingLeft || MapViewer.UsingRight || LayerPanel.UsingLeft || LayerPanel.UsingRight) return;
             int idx = -1,
                 x = -1,
                 y = -1;
             GetTilePosition(e, out idx, out x, out y);
-            if (idx != -1 && x != -1 && y != -1)
+            if (idx != -1 && x != -1 && y != -1 && (UsingLeft || UsingRight))
             {
                 // Makes sure you can only have a selection within the same tileset
                 if (AutotileIndex != -1)
@@ -679,7 +679,7 @@ namespace RPGStudioMK.Widgets
         {
             base.MouseDown(e);
             if (e.MiddleButton != e.OldMiddleButton) return; // A button other than the middle mouse button was pressed (left or right)
-            if (MapViewer.UsingLeft || MapViewer.UsingRight) return;
+            if (MapViewer.UsingLeft || MapViewer.UsingRight || LayerPanel.UsingLeft || LayerPanel.UsingRight) return;
             if (WidgetIM.Hovering)
             {
                 if (e.LeftButton != e.OldLeftButton && e.LeftButton) UsingLeft = true;

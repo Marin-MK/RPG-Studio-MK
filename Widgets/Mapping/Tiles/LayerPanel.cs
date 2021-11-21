@@ -14,6 +14,9 @@ namespace RPGStudioMK.Widgets
 
         public int SelectedLayer { get { return layerwidget.SelectedLayer; } }
 
+        public bool UsingLeft = false;
+        public bool UsingRight = false;
+
         private Container layercontainer;
         public LayerWidget layerwidget;
 
