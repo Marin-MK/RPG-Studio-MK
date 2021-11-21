@@ -44,7 +44,7 @@ namespace RPGStudioMK.Game
 
         public System()
         {
-
+            throw new NotImplementedException();
         }
 
         public System(IntPtr data)

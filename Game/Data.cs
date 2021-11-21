@@ -18,6 +18,7 @@ namespace RPGStudioMK.Game
         public static Dictionary<int, Map> Maps = new Dictionary<int, Map>();
         public static List<Tileset> Tilesets = new List<Tileset>();
         public static List<Autotile> Autotiles = new List<Autotile>();
+        public static List<CommonEvent> CommonEvents = new List<CommonEvent>();
         public static Dictionary<string, Species> Species = new Dictionary<string, Species>();
         public static System System;
 
@@ -29,6 +30,7 @@ namespace RPGStudioMK.Game
             Maps.Clear();
             Tilesets.Clear();
             Species.Clear();
+            System = new System();
         }
 
         private static void Initialize()
@@ -42,6 +44,7 @@ namespace RPGStudioMK.Game
             LoadTilesets();
             LoadMaps();
             LoadSystem();
+            LoadCommonEvents();
             //LoadSpecies();
         }
 
@@ -50,6 +53,7 @@ namespace RPGStudioMK.Game
             SaveTilesets();
             SaveMaps();
             SaveSystem();
+            SaveCommonEvents();
             //SaveSpecies();
         }
 
@@ -255,6 +259,37 @@ namespace RPGStudioMK.Game
             Ruby.Funcall(file, "write", data);
             Ruby.Funcall(file, "close");
             Ruby.Unpin(file);
+        }
+
+        private static void LoadCommonEvents()
+        {
+            IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/CommonEvents.rxdata"), Ruby.String.ToPtr("rb"));
+            IntPtr list = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", file);
+            Ruby.Pin(list);
+            Ruby.Funcall(file, "close");
+            for (int i = 1; i < Ruby.Array.Length(list); i++)
+            {
+                CommonEvent ce = new CommonEvent(Ruby.Array.Get(list, i));
+                CommonEvents.Add(ce);
+            }
+            Ruby.Unpin(list);
+        }
+
+        private static void SaveCommonEvents()
+        {
+            IntPtr list = Ruby.Array.Create();
+            Ruby.Pin(list);
+            for (int i = 0; i < CommonEvents.Count; i++)
+            {
+                Ruby.Array.Set(list, i + 1, CommonEvents[i].Save());
+            }
+            IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/CommonEvents.rxdata"), Ruby.String.ToPtr("wb"));
+            Ruby.Pin(file);
+            IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", list);
+            Ruby.Funcall(file, "write", data);
+            Ruby.Funcall(file, "close");
+            Ruby.Unpin(file);
+            Ruby.Unpin(list);
         }
     }
 }
