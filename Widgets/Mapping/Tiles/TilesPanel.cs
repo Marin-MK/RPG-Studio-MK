@@ -23,19 +23,19 @@ namespace RPGStudioMK.Widgets
             {
                 if (PencilButton.Selected) return DrawTools.Pencil;
                 else if (FillButton.Selected) return DrawTools.Bucket;
-                else if (EllipseButton.Selected) return DrawTools.Ellipse;
-                else if (RectButton.Selected) return DrawTools.Rectangle;
-                else if (SelectButton.Selected) return DrawTools.Selection;
+                else if (EllipseButton.Selected) return DrawTools.EllipseFilled;
+                else if (RectButton.Selected) return DrawTools.RectangleOutline;
+                else if (SelectButton.Selected) return DrawTools.SelectionActiveLayer;
                 else throw new Exception("Unknown draw tool.");
             }
             set
             {
                 PencilButton.SetSelected(value == DrawTools.Pencil);
                 FillButton.SetSelected(value == DrawTools.Bucket);
-                EllipseButton.SetSelected(value == DrawTools.Ellipse);
-                RectButton.SetSelected(value == DrawTools.Rectangle);
+                EllipseButton.SetSelected(value == DrawTools.EllipseFilled);
+                RectButton.SetSelected(value == DrawTools.RectangleFilled);
                 bool oldsel = SelectButton.Selected;
-                SelectButton.SetSelected(value == DrawTools.Selection);
+                SelectButton.SetSelected(value == DrawTools.SelectionActiveLayer);
                 if (SelectButton.Selected != oldsel)
                 {
                     if (SelectButton.Selected)
@@ -456,7 +456,7 @@ namespace RPGStudioMK.Widgets
             }
             MapViewer.SelectionOnMap = false;
             if (this.Erase) this.Erase = false;
-            if (this.DrawTool == DrawTools.Selection)
+            if (this.DrawTool == DrawTools.SelectionActiveLayer || this.DrawTool == DrawTools.SelectionAllLayers)
             {
                 this.DrawTool = DrawTools.Pencil;
             }
@@ -529,14 +529,14 @@ namespace RPGStudioMK.Widgets
                 AutotileIndex = AutotileCombination = TilesetIndex = TileStartX = TileEndX = TileStartY = TileEndY = -1;
             }
             if (AutotileIndex == -1 && (TilesetIndex == -1 || TileStartX == -1 || TileEndX == -1 || TileStartY == -1 || TileEndY == -1) ||
-                this.DrawTool == DrawTools.Selection)
+                this.DrawTool == DrawTools.SelectionActiveLayer || this.DrawTool == DrawTools.SelectionAllLayers)
             {
                 Cursor.SetPosition(0, 0);
                 Cursor.SetVisible(false);
                 MainContainer.UpdateAutoScroll();
                 return;
             }
-            if (this.DrawTool == DrawTools.Selection)
+            if (this.DrawTool == DrawTools.SelectionActiveLayer || this.DrawTool == DrawTools.SelectionAllLayers)
             {
                 this.DrawTool = DrawTools.Pencil;
             }
@@ -745,8 +745,11 @@ namespace RPGStudioMK.Widgets
     {
         Pencil,
         Bucket,
-        Ellipse,
-        Rectangle,
-        Selection
+        EllipseOutline,
+        EllipseFilled,
+        RectangleOutline,
+        RectangleFilled,
+        SelectionActiveLayer,
+        SelectionAllLayers
     }
 }

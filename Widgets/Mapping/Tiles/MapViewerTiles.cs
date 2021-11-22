@@ -124,17 +124,17 @@ namespace RPGStudioMK.Widgets
 
         public void SetDrawModeEllipse(BaseEventArgs e)
         {
-            TilesPanel.DrawTool = DrawTools.Ellipse;
+            TilesPanel.DrawTool = DrawTools.EllipseFilled;
         }
 
         public void SetDrawModeRectangle(BaseEventArgs e)
         {
-            TilesPanel.DrawTool = DrawTools.Rectangle;
+            TilesPanel.DrawTool = DrawTools.RectangleFilled;
         }
 
         public void SetDrawModeSelection(BaseEventArgs e)
         {
-            TilesPanel.DrawTool = DrawTools.Selection;
+            TilesPanel.DrawTool = DrawTools.SelectionActiveLayer;
         }
 
         public void SetDrawModeEraser(BaseEventArgs e)
@@ -195,7 +195,7 @@ namespace RPGStudioMK.Widgets
 
         public void SelectAll(BaseEventArgs e)
         {
-            if (TilesPanel.DrawTool != DrawTools.Selection) return;
+            if (TilesPanel.DrawTool != DrawTools.SelectionActiveLayer && TilesPanel.DrawTool != DrawTools.SelectionAllLayers) return;
             SelectionX = 0;
             SelectionY = 0;
             SelectionWidth = Map.Width;
@@ -262,7 +262,7 @@ namespace RPGStudioMK.Widgets
             // Input handling
             if (Left && !IgnoreLeftButton)
             {
-                if (TilesPanel.DrawTool == DrawTools.Selection) // Selection tool
+                if (TilesPanel.DrawTool == DrawTools.SelectionActiveLayer || TilesPanel.DrawTool == DrawTools.SelectionAllLayers) // Selection tool
                 {
                     if (MovingSelection)
                     {
@@ -367,8 +367,10 @@ namespace RPGStudioMK.Widgets
                         // the quadrant your mouse is moving to.
                         // This drastically increases performance over redrawing every single time you move a tile.
                         if (TileGroupUndoAction.GetLatest() != null && !TileGroupUndoAction.GetLatest().Ready &&
-                            (TilesPanel.DrawTool == DrawTools.Rectangle && MoveDirection != CursorDirectionFromOrigin ||
-                            TilesPanel.DrawTool == DrawTools.Ellipse)) // Ellipse tool redraws every tile movement regardless of quadrant/direction
+                            (TilesPanel.DrawTool == DrawTools.RectangleFilled && MoveDirection != CursorDirectionFromOrigin ||
+                            TilesPanel.DrawTool == DrawTools.RectangleOutline ||
+                            TilesPanel.DrawTool == DrawTools.EllipseFilled || 
+                            TilesPanel.DrawTool == DrawTools.EllipseOutline)) // Ellipse tool redraws every tile movement regardless of quadrant/direction
                         {
                             List<TileGroupUndoAction.TileChange> changes = new List<TileGroupUndoAction.TileChange>();
                             // For all tiles that are both in the to-be-drawn area and in the current undo group,
@@ -420,7 +422,7 @@ namespace RPGStudioMK.Widgets
             }
             else if (Right && !IgnoreRightButton)
             {
-                if (TilesPanel.DrawTool == DrawTools.Selection) // Selection tool
+                if (TilesPanel.DrawTool == DrawTools.SelectionActiveLayer || TilesPanel.DrawTool == DrawTools.SelectionAllLayers) // Selection tool
                 {
                     CancelSelection(new BaseEventArgs());
                 }
@@ -489,7 +491,8 @@ namespace RPGStudioMK.Widgets
                 {
                     Editor.CanUndo = true;
                     TileGroupUndoAction.GetLatest().Ready = true;
-                    if ((TilesPanel.DrawTool == DrawTools.Rectangle || TilesPanel.DrawTool == DrawTools.Ellipse) &&
+                    if ((TilesPanel.DrawTool == DrawTools.RectangleFilled || TilesPanel.DrawTool == DrawTools.RectangleOutline ||
+                         TilesPanel.DrawTool == DrawTools.EllipseFilled || TilesPanel.DrawTool == DrawTools.EllipseOutline) &&
                         !Cursor.Visible) Cursor.SetVisible(true);
                 }
                 OriginPoint = null;
@@ -552,9 +555,10 @@ namespace RPGStudioMK.Widgets
                 }
                 int tilex = (int) Math.Floor(rx / (32d * ZoomFactor));
                 int tiley = (int) Math.Floor(ry / (32d * ZoomFactor));
-                if (Editor.MainWindow.MapWidget != null && TilesPanel.DrawTool != DrawTools.Selection)
+                if (Editor.MainWindow.MapWidget != null && TilesPanel.DrawTool != DrawTools.SelectionActiveLayer && TilesPanel.DrawTool != DrawTools.SelectionAllLayers)
                 {
-                    if ((TilesPanel.DrawTool != DrawTools.Ellipse && TilesPanel.DrawTool != DrawTools.Rectangle) ||
+                    if ((TilesPanel.DrawTool != DrawTools.RectangleFilled && TilesPanel.DrawTool != DrawTools.RectangleOutline &&
+                         TilesPanel.DrawTool != DrawTools.EllipseFilled && TilesPanel.DrawTool != DrawTools.EllipseOutline) ||
                          OriginPoint == null) Cursor.SetVisible(true);
                 }
                 int cx = tilex * 32;
@@ -570,7 +574,7 @@ namespace RPGStudioMK.Widgets
                 {
                     UpdateTilePlacement(e, oldmousex, oldmousey, RelativeMouseX, RelativeMouseY);
                 }
-                if (TilesPanel.DrawTool == DrawTools.Selection)
+                if (TilesPanel.DrawTool == DrawTools.SelectionActiveLayer || TilesPanel.DrawTool == DrawTools.SelectionAllLayers)
                 {
                     if (SelectionWidth != 0 && SelectionHeight != 0 && (!e.LeftButton || e.LeftButton && e.LeftButton != e.OldLeftButton))
                     {
@@ -668,7 +672,8 @@ namespace RPGStudioMK.Widgets
                 e.RightButton != e.OldRightButton && e.RightButton) &&
                 MainContainer.WidgetIM.Hovering)
             {
-                if ((TilesPanel.DrawTool == DrawTools.Rectangle || TilesPanel.DrawTool == DrawTools.Ellipse) &&
+                if ((TilesPanel.DrawTool == DrawTools.RectangleFilled || TilesPanel.DrawTool == DrawTools.RectangleOutline ||
+                     TilesPanel.DrawTool == DrawTools.EllipseFilled || TilesPanel.DrawTool == DrawTools.EllipseOutline) &&
                     e.LeftButton && e.LeftButton != e.OldLeftButton && !IgnoreLeftButton) Cursor.SetVisible(false);
                 if (SelectionWidth != 0 || SelectionHeight != 0)
                 {
@@ -696,7 +701,8 @@ namespace RPGStudioMK.Widgets
                 {
                     Editor.CanUndo = true;
                     TileGroupUndoAction.GetLatest().Ready = true;
-                    if ((TilesPanel.DrawTool == DrawTools.Rectangle || TilesPanel.DrawTool == DrawTools.Ellipse) &&
+                    if ((TilesPanel.DrawTool == DrawTools.RectangleFilled || TilesPanel.DrawTool == DrawTools.RectangleOutline ||
+                         TilesPanel.DrawTool == DrawTools.EllipseFilled || TilesPanel.DrawTool == DrawTools.EllipseOutline) &&
                         !Cursor.Visible) Cursor.SetVisible(true);
                 }
             }
@@ -731,7 +737,8 @@ namespace RPGStudioMK.Widgets
 
         void CopySelection(bool DeleteTiles = false)
         {
-            if (TilesPanel.DrawTool == DrawTools.Selection && SelectionWidth != 0 && SelectionHeight != 0)
+            if ((TilesPanel.DrawTool == DrawTools.SelectionActiveLayer || TilesPanel.DrawTool == DrawTools.SelectionAllLayers) &&
+                SelectionWidth != 0 && SelectionHeight != 0)
             {
                 TileGroup group = new TileGroup();
                 group.Width = SelectionWidth;
@@ -774,7 +781,7 @@ namespace RPGStudioMK.Widgets
         void PasteSelection()
         {
             if (!Utilities.IsClipboardValidBinary(BinaryData.TILE_SELECTION)) return;
-            if (TilesPanel.DrawTool != DrawTools.Selection) TilesPanel.DrawTool = DrawTools.Selection;
+            if (TilesPanel.DrawTool != DrawTools.SelectionActiveLayer) TilesPanel.DrawTool = DrawTools.SelectionActiveLayer;
             CancelSelection(new BaseEventArgs());
             TileGroup group = Utilities.GetClipboard<TileGroup>();
             int origtilewidth = group.Width;

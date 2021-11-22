@@ -303,229 +303,391 @@ namespace RPGStudioMK.Widgets
 
         public List<Point> GetTilesFromMouse(int oldx, int oldy, int newx, int newy, int layer)
         {
-            MapViewerTiles MapViewer = this.MapViewer as MapViewerTiles;
+            MapViewerTiles MapViewer = (MapViewerTiles) this.MapViewer;
+            List<Point> Coords = new List<Point>();
+            switch (MapViewer.TilesPanel.DrawTool)
+            {
+                case DrawTools.Pencil:
+                    CalculateTilesPencil(Coords, oldx, oldy, newx, newy);
+                    break;
+                case DrawTools.RectangleFilled:
+                    CalculateTilesRectangleFilled(Coords, newx, newy);
+                    break;
+                case DrawTools.RectangleOutline:
+                    CalculateTilesRectangleOutline(Coords, newx, newy);
+                    break;
+                case DrawTools.EllipseFilled:
+                    CalculateTilesEllipseFilled(Coords, newx, newy);
+                    break;
+                case DrawTools.EllipseOutline:
+                    CalculateTilesEllipseOutline(Coords, newx, newy);
+                    break;
+                case DrawTools.Bucket:
+                    CalculateTilesBucket(Coords, newx, newy, layer);
+                    break;
+            }
+            return Coords;
+        }
+
+        void CalculateTilesBucket(List<Point> Coords, int newx, int newy, int layer)
+        {
+            MapViewerTiles MapViewer = (MapViewerTiles) this.MapViewer;
+            int x = (int) Math.Floor(newx / 32d);
+            int y = (int) Math.Floor(newy / 32d);
+            if (MapViewer.SelectionWidth != 0 && MapViewer.SelectionHeight != 0)
+            {
+                if (x < MapViewer.SelectionX || x >= MapViewer.SelectionX + MapViewer.SelectionWidth ||
+                    y < MapViewer.SelectionY || y >= MapViewer.SelectionY + MapViewer.SelectionHeight)
+                {
+                    return;
+                }
+            }
+            List<Point> tiles = Utilities.GetIdenticalConnected(MapData, layer, x, y);
+            foreach (Point point in tiles)
+            {
+                Coords.Add(point);
+            }
+        }
+
+        void CalculateTilesPencil(List<Point> Coords, int oldx, int oldy, int newx, int newy)
+        {
+            MapViewerTiles MapViewer = (MapViewerTiles) this.MapViewer;
             // Avoid drawing a line from top left to current tile
             if (oldx == -1 || oldy == -1)
             {
                 oldx = newx;
                 oldy = newy;
             }
-            Point Origin = MapViewer.OriginPoint;
-            DrawTools DrawTool = MapViewer.TilesPanel.DrawTool;
-            List<Point> Coords = new List<Point>();
-            if (DrawTool == DrawTools.Bucket)
+            if (oldx == newx && oldy == newy) // Don't bother with line calculations: it's only one single tile.
             {
-                int x = (int) Math.Floor(newx / 32d);
-                int y = (int) Math.Floor(newy / 32d);
-                if (MapViewer.SelectionWidth != 0 && MapViewer.SelectionHeight != 0)
-                {
-                    if (x < MapViewer.SelectionX || x >= MapViewer.SelectionX + MapViewer.SelectionWidth ||
-                        y < MapViewer.SelectionY || y >= MapViewer.SelectionY + MapViewer.SelectionHeight)
-                    {
-                        return Coords;
-                    }
-                }
-                List<Point> tiles = Utilities.GetIdenticalConnected(MapData, layer, x, y);
-                foreach (Point point in tiles)
-                {
-                    Coords.Add(point);
-                }
-                
+                Coords.Add(new Point((int) Math.Floor(newx / 32d), (int) Math.Floor(newy / 32d)));
             }
-            else if (DrawTool == DrawTools.Pencil) // Draw tiles between several tiles - use simple line drawing algorithm to determine the tiles to draw on
+            else
             {
-                if (oldx == newx && oldy == newy) // Don't bother with line calculations: it's only one single tile.
-                {
-                    Coords.Add(new Point((int) Math.Floor(newx / 32d), (int) Math.Floor(newy / 32d)));
-                }
-                else
-                {
-                    // Interpolates the new mouse position over the old position and adds all tiles
-                    // in the line so as to not skip any tiles in between the old and new mouse position.
-                    int x1 = oldx;
-                    int y1 = oldy;
-                    int x2 = newx;
-                    int y2 = newy;
-                    for (int x = x1 > x2 ? x2 : x1; (x1 > x2) ? (x <= x1) : (x <= x2); x++)
-                    {
-                        double fact = ((double) x - x1) / (x2 - x1);
-                        int y = (int) Math.Round(y1 + ((y2 - y1) * fact));
-                        int tilex = (int) Math.Floor(x / 32d);
-                        int tiley = (int) Math.Floor(y / 32d);
-                        if (!Coords.Exists(c => c.X == tilex && c.Y == tiley)) Coords.Add(new Point(tilex, tiley));
-                    }
-                    int sy = y1 > y2 ? y2 : y1;
-                    for (int y = y1 > y2 ? y2 : y1; (y1 > y2) ? (y <= y1) : (y <= y2); y++)
-                    {
-                        double fact = ((double) y - y1) / (y2 - y1);
-                        int x = (int) Math.Round(x1 + ((x2 - x1) * fact));
-                        int tilex = (int) Math.Floor(x / 32d);
-                        int tiley = (int) Math.Floor(y / 32d);
-                        if (!Coords.Exists(c => c.X == tilex && c.Y == tiley)) Coords.Add(new Point(tilex, tiley));
-                    }
-                }
-                // Determine how many tiles are part of the line.
-                // We add coordinates after this if the cursor is bigger than 1x1,
-                // thus we use this constant count.
-                int count = Coords.Count;
-                // Now for each recorded tile in the interpolated line, we add all tiles
-                // that need to also be drawn if the cursor was bigger than 1x1.
-                for (int i = 0; i < count; i++)
-                {
-                    for (int cx = 0; cx <= MapViewer.CursorWidth; cx++)
-                    {
-                        for (int cy = 0; cy <= MapViewer.CursorHeight; cy++)
-                        {
-                            if (cx == 0 && cy == 0) continue; // Equal to already-calculated coord
-                            int px = Coords[i].X;
-                            int py = Coords[i].Y;
-                            // If the origin is in the bottom/right, we want to count tiles down, not up (or we'd exceed the cursor bounds)
-                            if (MapViewer.CursorOrigin == Location.TopRight || MapViewer.CursorOrigin == Location.BottomRight) px -= cx;
-                            else px += cx;
-                            if (MapViewer.CursorOrigin == Location.BottomLeft || MapViewer.CursorOrigin == Location.BottomRight) py -= cy;
-                            else py += cy;
-                            if (!Coords.Exists(c => c.X == px && c.Y == py)) Coords.Add(new Point(px, py));
-                        }
-                    }
-                }
-            }
-            else if (DrawTool == DrawTools.Ellipse)
-            {
-                int x1 = MapViewer.OriginPoint.X * 32;
-                int y1 = MapViewer.OriginPoint.Y * 32;
+                // Interpolates the new mouse position over the old position and adds all tiles
+                // in the line so as to not skip any tiles in between the old and new mouse position.
+                int x1 = oldx;
+                int y1 = oldy;
                 int x2 = newx;
                 int y2 = newy;
-                if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT))
-                {
-                    if (x1 < x2)
-                    {
-                        if (y1 < y2)
-                        {
-                            if (x2 - x1 > y2 - y1) x2 = x1 + (y2 - y1);
-                            else if (y2 - y1 > x2 - x1) y2 = y1 + (x2 - x1);
-                        }
-                        else if (y2 < y1)
-                        {
-                            if (x2 - x1 > y1 - y2) x2 = x1 + (y1 - y2);
-                            else if (y1 - y2 > x2 - x1) y2 = y1 - (x2 - x1);
-                        }
-                    }
-                    else if (x2 < x1)
-                    {
-                        if (y1 < y2)
-                        {
-                            if (x1 - x2 > y2 - y1) x2 = x1 - (y2 - y1);
-                            else if (y2 - y1 > x1 - x2) y2 = y1 + (x1 - x2);
-                        }
-                        else if (y2 < y1)
-                        {
-                            if (x1 - x2 > y1 - y2) x2 = x1 - (y1 - y2);
-                            else if (y1 - y2 > x1 - x2) y2 = y1 - (x1 - x2);
-                        }
-                    }
-                }
-                double cx = x1 / 2d + x2 / 2d;
-                double cy = y1 / 2d + y2 / 2d;
-                double a = cx - x1;
-                double b = cy - y1;
-                int ox1 = MapViewer.OriginPoint.X;
-                int oy1 = MapViewer.OriginPoint.Y;
-                int ox2 = (int) Math.Round(newx / 32d);
-                int oy2 = (int) Math.Round(newy / 32d);
-                if (a == 0 || b == 0)
-                {
-                    for (int y = oy1 > oy2 ? oy2 : oy1; y <= (oy1 > oy2 ? oy1 : oy2); y++)
-                    {
-                        for (int x = ox1 > ox2 ? ox2 : ox1; x <= (ox1 > ox2 ? ox1 : ox2); x++)
-                        {
-                            Coords.Add(new Point(x, y));
-                        }
-                    }
-                    return Coords;
-                }
-                for (int x = 0; a > 0 ? x <= a : x >= a; x += (a > 0 ? 1 : -1))
-                {
-                    int ry = (int) Math.Round(b / a * Math.Sqrt(a * a - x * x));
-                    int tilex1 = (int) Math.Round((cx + x) / 32d);
-                    int tilex2 = (int) Math.Round((cx - x) / 32d);
-                    int tiley1 = (int) Math.Round((cy + ry) / 32d);
-                    int tiley2 = (int) Math.Round((cy - ry) / 32d);
-                    if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley1)) Coords.Add(new Point(tilex1, tiley1));
-                    if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley1)) Coords.Add(new Point(tilex2, tiley1));
-                    if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley2)) Coords.Add(new Point(tilex1, tiley2));
-                    if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley2)) Coords.Add(new Point(tilex2, tiley2));
-                }
-                List<Point> fillpoints = new List<Point>();
-                int sx = (int) Math.Round((x1 > x2 ? x2 : x1) / 32d);
-                int ex = (int) Math.Round((x1 > x2 ? x1 : x2) / 32d);
-                for (int x = sx; x <= ex; x++)
-                {
-                    List<int> ys = Coords.FindAll(p => p.X == x).ConvertAll<int>(p => p.Y);
-                    if (ys.Count >= 2)
-                    {
-                        int miny = int.MaxValue;
-                        foreach (int py in ys) if (py < miny) miny = py;
-                        int maxy = int.MinValue;
-                        foreach (int py in ys) if (py > maxy) maxy = py;
-                        for (int y = miny; y < maxy; y++)
-                        {
-                            if (!fillpoints.Exists(p => p.X == x && p.Y == y)) fillpoints.Add(new Point(x, y));
-                        }
-                    }
-                }
-                Coords.AddRange(fillpoints);
-                if (Math.Abs(ox2 - ox1) >= 2 && Math.Abs(oy2 - oy1) >= 2)
-                    Coords.RemoveAll(c => c.X == ox1 && (c.Y == oy1 || c.Y == oy2) || c.X == ox2 && (c.Y == oy1 || c.Y == oy2));
-            }
-            else if (DrawTool == DrawTools.Rectangle)
-            {
-                int x1 = MapViewer.OriginPoint.X;
-                int y1 = MapViewer.OriginPoint.Y;
-                int x2 = (int) Math.Floor(newx / 32d);
-                int y2 = (int) Math.Floor(newy / 32d);
-                if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT))
-                {
-                    if (x1 < x2)
-                    {
-                        if (y1 < y2)
-                        {
-                            if (x2 - x1 > y2 - y1) x2 = x1 + (y2 - y1);
-                            else if (y2 - y1 > x2 - x1) y2 = y1 + (x2 - x1);
-                        }
-                        else if (y2 < y1)
-                        {
-                            if (x2 - x1 > y1 - y2) x2 = x1 + (y1 - y2);
-                            else if (y1 - y2 > x2 - x1) y2 = y1 - (x2 - x1);
-                        }
-                    }
-                    else if (x2 < x1)
-                    {
-                        if (y1 < y2)
-                        {
-                            if (x1 - x2 > y2 - y1) x2 = x1 - (y2 - y1);
-                            else if (y2 - y1 > x1 - x2) y2 = y1 + (x1 - x2);
-                        }
-                        else if (y2 < y1)
-                        {
-                            if (x1 - x2 > y1 - y2) x2 = x1 - (y1 - y2);
-                            else if (y1 - y2 > x1 - x2) y2 = y1 - (x1 - x2);
-                        }
-                    }
-                }
                 for (int x = x1 > x2 ? x2 : x1; (x1 > x2) ? (x <= x1) : (x <= x2); x++)
+                {
+                    double fact = ((double) x - x1) / (x2 - x1);
+                    int y = (int) Math.Round(y1 + ((y2 - y1) * fact));
+                    int tilex = (int) Math.Floor(x / 32d);
+                    int tiley = (int) Math.Floor(y / 32d);
+                    if (!Coords.Exists(c => c.X == tilex && c.Y == tiley)) Coords.Add(new Point(tilex, tiley));
+                }
+                int sy = y1 > y2 ? y2 : y1;
+                for (int y = y1 > y2 ? y2 : y1; (y1 > y2) ? (y <= y1) : (y <= y2); y++)
+                {
+                    double fact = ((double) y - y1) / (y2 - y1);
+                    int x = (int) Math.Round(x1 + ((x2 - x1) * fact));
+                    int tilex = (int) Math.Floor(x / 32d);
+                    int tiley = (int) Math.Floor(y / 32d);
+                    if (!Coords.Exists(c => c.X == tilex && c.Y == tiley)) Coords.Add(new Point(tilex, tiley));
+                }
+            }
+            // Determine how many tiles are part of the line.
+            // We add coordinates after this if the cursor is bigger than 1x1,
+            // thus we use this constant count.
+            int count = Coords.Count;
+            // Now for each recorded tile in the interpolated line, we add all tiles
+            // that need to also be drawn if the cursor was bigger than 1x1.
+            for (int i = 0; i < count; i++)
+            {
+                for (int cx = 0; cx <= MapViewer.CursorWidth; cx++)
+                {
+                    for (int cy = 0; cy <= MapViewer.CursorHeight; cy++)
+                    {
+                        if (cx == 0 && cy == 0) continue; // Equal to already-calculated top-left coord
+                        int px = Coords[i].X;
+                        int py = Coords[i].Y;
+                        // If the origin is in the bottom/right, we want to count tiles down, not up (or we'd exceed the cursor bounds)
+                        if (MapViewer.CursorOrigin == Location.TopRight || MapViewer.CursorOrigin == Location.BottomRight) px -= cx;
+                        else px += cx;
+                        if (MapViewer.CursorOrigin == Location.BottomLeft || MapViewer.CursorOrigin == Location.BottomRight) py -= cy;
+                        else py += cy;
+                        if (!Coords.Exists(c => c.X == px && c.Y == py)) Coords.Add(new Point(px, py));
+                    }
+                }
+            }
+        }
+
+        void CalculateTilesEllipseFilled(List<Point> Coords, int newx, int newy)
+        {
+            MapViewerTiles MapViewer = (MapViewerTiles) this.MapViewer;
+            int x1 = MapViewer.OriginPoint.X * 32;
+            int y1 = MapViewer.OriginPoint.Y * 32;
+            int x2 = newx;
+            int y2 = newy;
+            if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT))
+            {
+                if (x1 < x2)
+                {
+                    if (y1 < y2)
+                    {
+                        if (x2 - x1 > y2 - y1) x2 = x1 + (y2 - y1);
+                        else if (y2 - y1 > x2 - x1) y2 = y1 + (x2 - x1);
+                    }
+                    else if (y2 < y1)
+                    {
+                        if (x2 - x1 > y1 - y2) x2 = x1 + (y1 - y2);
+                        else if (y1 - y2 > x2 - x1) y2 = y1 - (x2 - x1);
+                    }
+                }
+                else if (x2 < x1)
+                {
+                    if (y1 < y2)
+                    {
+                        if (x1 - x2 > y2 - y1) x2 = x1 - (y2 - y1);
+                        else if (y2 - y1 > x1 - x2) y2 = y1 + (x1 - x2);
+                    }
+                    else if (y2 < y1)
+                    {
+                        if (x1 - x2 > y1 - y2) x2 = x1 - (y1 - y2);
+                        else if (y1 - y2 > x1 - x2) y2 = y1 - (x1 - x2);
+                    }
+                }
+            }
+            double cx = x1 / 2d + x2 / 2d;
+            double cy = y1 / 2d + y2 / 2d;
+            double a = cx - x1;
+            double b = cy - y1;
+            int ox1 = MapViewer.OriginPoint.X;
+            int oy1 = MapViewer.OriginPoint.Y;
+            int ox2 = (int) Math.Round(newx / 32d);
+            int oy2 = (int) Math.Round(newy / 32d);
+            if (a == 0 || b == 0)
+            {
+                for (int y = oy1 > oy2 ? oy2 : oy1; y <= (oy1 > oy2 ? oy1 : oy2); y++)
+                {
+                    for (int x = ox1 > ox2 ? ox2 : ox1; x <= (ox1 > ox2 ? ox1 : ox2); x++)
+                    {
+                        Coords.Add(new Point(x, y));
+                    }
+                }
+                return;
+            }
+            for (int x = 0; a > 0 ? x <= a : x >= a; x += (a > 0 ? 1 : -1))
+            {
+                int ry = (int) Math.Round(b / a * Math.Sqrt(a * a - x * x));
+                int tilex1 = (int) Math.Round((cx + x) / 32d);
+                int tilex2 = (int) Math.Round((cx - x) / 32d);
+                int tiley1 = (int) Math.Round((cy + ry) / 32d);
+                int tiley2 = (int) Math.Round((cy - ry) / 32d);
+                if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley1)) Coords.Add(new Point(tilex1, tiley1));
+                if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley1)) Coords.Add(new Point(tilex2, tiley1));
+                if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley2)) Coords.Add(new Point(tilex1, tiley2));
+                if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley2)) Coords.Add(new Point(tilex2, tiley2));
+            }
+            List<Point> fillpoints = new List<Point>();
+            int sx = (int) Math.Round((x1 > x2 ? x2 : x1) / 32d);
+            int ex = (int) Math.Round((x1 > x2 ? x1 : x2) / 32d);
+            for (int x = sx; x <= ex; x++)
+            {
+                List<int> ys = Coords.FindAll(p => p.X == x).ConvertAll<int>(p => p.Y);
+                if (ys.Count >= 2)
+                {
+                    int miny = int.MaxValue;
+                    foreach (int py in ys) if (py < miny) miny = py;
+                    int maxy = int.MinValue;
+                    foreach (int py in ys) if (py > maxy) maxy = py;
+                    for (int y = miny; y < maxy; y++)
+                    {
+                        if (!fillpoints.Exists(p => p.X == x && p.Y == y)) fillpoints.Add(new Point(x, y));
+                    }
+                }
+            }
+            Coords.AddRange(fillpoints);
+            if (Math.Abs(ox2 - ox1) >= 2 && Math.Abs(oy2 - oy1) >= 2)
+                Coords.RemoveAll(c => c.X == ox1 && (c.Y == oy1 || c.Y == oy2) || c.X == ox2 && (c.Y == oy1 || c.Y == oy2));
+        }
+
+        void CalculateTilesEllipseOutline(List<Point> Coords, int newx, int newy)
+        {
+            MapViewerTiles MapViewer = (MapViewerTiles) this.MapViewer;
+            int x1 = MapViewer.OriginPoint.X * 32;
+            int y1 = MapViewer.OriginPoint.Y * 32;
+            int x2 = newx;
+            int y2 = newy;
+            if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT))
+            {
+                if (x1 < x2)
+                {
+                    if (y1 < y2)
+                    {
+                        if (x2 - x1 > y2 - y1) x2 = x1 + (y2 - y1);
+                        else if (y2 - y1 > x2 - x1) y2 = y1 + (x2 - x1);
+                    }
+                    else if (y2 < y1)
+                    {
+                        if (x2 - x1 > y1 - y2) x2 = x1 + (y1 - y2);
+                        else if (y1 - y2 > x2 - x1) y2 = y1 - (x2 - x1);
+                    }
+                }
+                else if (x2 < x1)
+                {
+                    if (y1 < y2)
+                    {
+                        if (x1 - x2 > y2 - y1) x2 = x1 - (y2 - y1);
+                        else if (y2 - y1 > x1 - x2) y2 = y1 + (x1 - x2);
+                    }
+                    else if (y2 < y1)
+                    {
+                        if (x1 - x2 > y1 - y2) x2 = x1 - (y1 - y2);
+                        else if (y1 - y2 > x1 - x2) y2 = y1 - (x1 - x2);
+                    }
+                }
+            }
+            double cx = x1 / 2d + x2 / 2d;
+            double cy = y1 / 2d + y2 / 2d;
+            double a = cx - x1;
+            double b = cy - y1;
+            int ox1 = MapViewer.OriginPoint.X;
+            int oy1 = MapViewer.OriginPoint.Y;
+            int ox2 = (int) Math.Round(newx / 32d);
+            int oy2 = (int) Math.Round(newy / 32d);
+            if (a == 0 || b == 0)
+            {
+                for (int y = oy1 > oy2 ? oy2 : oy1; y <= (oy1 > oy2 ? oy1 : oy2); y++)
+                {
+                    for (int x = ox1 > ox2 ? ox2 : ox1; x <= (ox1 > ox2 ? ox1 : ox2); x++)
+                    {
+                        Coords.Add(new Point(x, y));
+                    }
+                }
+                return;
+            }
+            for (int x = 0; a > 0 ? x <= a : x >= a; x += (a > 0 ? 1 : -1))
+            {
+                int ry = (int) Math.Round(b / a * Math.Sqrt(a * a - x * x));
+                int tilex1 = (int) Math.Round((cx + x) / 32d);
+                int tilex2 = (int) Math.Round((cx - x) / 32d);
+                int tiley1 = (int) Math.Round((cy + ry) / 32d);
+                int tiley2 = (int) Math.Round((cy - ry) / 32d);
+                if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley1)) Coords.Add(new Point(tilex1, tiley1));
+                if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley1)) Coords.Add(new Point(tilex2, tiley1));
+                if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley2)) Coords.Add(new Point(tilex1, tiley2));
+                if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley2)) Coords.Add(new Point(tilex2, tiley2));
+            }
+            for (int y = 0; b > 0 ? y <= b : y >= b; y += (b > 0 ? 1 : -1))
+            {
+                int rx = (int) Math.Round(a / b * Math.Sqrt(b * b - y * y));
+                int tilex1 = (int) Math.Round((cx + rx) / 32d);
+                int tilex2 = (int) Math.Round((cx - rx) / 32d);
+                int tiley1 = (int) Math.Round((cy + y) / 32d);
+                int tiley2 = (int) Math.Round((cy - y) / 32d);
+                if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley1)) Coords.Add(new Point(tilex1, tiley1));
+                if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley1)) Coords.Add(new Point(tilex2, tiley1));
+                if (!Coords.Exists(c => c.X == tilex1 && c.Y == tiley2)) Coords.Add(new Point(tilex1, tiley2));
+                if (!Coords.Exists(c => c.X == tilex2 && c.Y == tiley2)) Coords.Add(new Point(tilex2, tiley2));
+            }
+            if (Math.Abs(ox2 - ox1) >= 2 && Math.Abs(oy2 - oy1) >= 2)
+                Coords.RemoveAll(c => c.X == ox1 && (c.Y == oy1 || c.Y == oy2) || c.X == ox2 && (c.Y == oy1 || c.Y == oy2));
+        }
+
+        void CalculateTilesRectangleFilled(List<Point> Coords, int newx, int newy)
+        {
+            MapViewerTiles MapViewer = (MapViewerTiles) this.MapViewer;
+            int x1 = MapViewer.OriginPoint.X;
+            int y1 = MapViewer.OriginPoint.Y;
+            int x2 = (int) Math.Floor(newx / 32d);
+            int y2 = (int) Math.Floor(newy / 32d);
+            if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT))
+            {
+                if (x1 < x2)
+                {
+                    if (y1 < y2)
+                    {
+                        if (x2 - x1 > y2 - y1) x2 = x1 + (y2 - y1);
+                        else if (y2 - y1 > x2 - x1) y2 = y1 + (x2 - x1);
+                    }
+                    else if (y2 < y1)
+                    {
+                        if (x2 - x1 > y1 - y2) x2 = x1 + (y1 - y2);
+                        else if (y1 - y2 > x2 - x1) y2 = y1 - (x2 - x1);
+                    }
+                }
+                else if (x2 < x1)
+                {
+                    if (y1 < y2)
+                    {
+                        if (x1 - x2 > y2 - y1) x2 = x1 - (y2 - y1);
+                        else if (y2 - y1 > x1 - x2) y2 = y1 + (x1 - x2);
+                    }
+                    else if (y2 < y1)
+                    {
+                        if (x1 - x2 > y1 - y2) x2 = x1 - (y1 - y2);
+                        else if (y1 - y2 > x1 - x2) y2 = y1 - (x1 - x2);
+                    }
+                }
+            }
+            for (int x = x1 > x2 ? x2 : x1; (x1 > x2) ? (x <= x1) : (x <= x2); x++)
+            {
+                for (int y = y1 > y2 ? y2 : y1; (y1 > y2) ? (y <= y1) : (y <= y2); y++)
+                {
+                    Coords.Add(new Point(x, y));
+                }
+            }
+        }
+
+        void CalculateTilesRectangleOutline(List<Point> Coords, int newx, int newy)
+        {
+            MapViewerTiles MapViewer = (MapViewerTiles) this.MapViewer;
+            int x1 = MapViewer.OriginPoint.X;
+            int y1 = MapViewer.OriginPoint.Y;
+            int x2 = (int) Math.Floor(newx / 32d);
+            int y2 = (int) Math.Floor(newy / 32d);
+            if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT))
+            {
+                if (x1 < x2)
+                {
+                    if (y1 < y2)
+                    {
+                        if (x2 - x1 > y2 - y1) x2 = x1 + (y2 - y1);
+                        else if (y2 - y1 > x2 - x1) y2 = y1 + (x2 - x1);
+                    }
+                    else if (y2 < y1)
+                    {
+                        if (x2 - x1 > y1 - y2) x2 = x1 + (y1 - y2);
+                        else if (y1 - y2 > x2 - x1) y2 = y1 - (x2 - x1);
+                    }
+                }
+                else if (x2 < x1)
+                {
+                    if (y1 < y2)
+                    {
+                        if (x1 - x2 > y2 - y1) x2 = x1 - (y2 - y1);
+                        else if (y2 - y1 > x1 - x2) y2 = y1 + (x1 - x2);
+                    }
+                    else if (y2 < y1)
+                    {
+                        if (x1 - x2 > y1 - y2) x2 = x1 - (y1 - y2);
+                        else if (y1 - y2 > x1 - x2) y2 = y1 - (x1 - x2);
+                    }
+                }
+            }
+            for (int x = x1 > x2 ? x2 : x1; (x1 > x2) ? (x <= x1) : (x <= x2); x++)
+            {
+                if (x == x1 || x == x2)
                 {
                     for (int y = y1 > y2 ? y2 : y1; (y1 > y2) ? (y <= y1) : (y <= y2); y++)
                     {
                         Coords.Add(new Point(x, y));
                     }
                 }
+                else
+                {
+                    Coords.Add(new Point(x, y1));
+                    Coords.Add(new Point(x, y2));
+                }
             }
-            return Coords;
         }
 
         public void DrawTiles(List<Point> Coords, int layer)
         {
-            MapViewerTiles MapViewer = this.MapViewer as MapViewerTiles;
+            MapViewerTiles MapViewer = (MapViewerTiles) this.MapViewer;
             SetLayerLocked(layer, false);
             for (int i = 0; i < Coords.Count; i++)
             {
