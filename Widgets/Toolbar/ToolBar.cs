@@ -8,10 +8,6 @@ namespace RPGStudioMK.Widgets
 {
     public class ToolBar : Widget
     {
-        IconButton Cut;
-        IconButton Copy;
-        IconButton Paste;
-        IconButton Delete;
         IconButton Undo;
         IconButton Redo;
 
@@ -21,7 +17,6 @@ namespace RPGStudioMK.Widgets
         public ModeButton DatabaseMode;
 
         Container ActionContainer;
-        Container CopyContainer;
 
         PlayButton PlayButton;
         SaveButton SaveButton;
@@ -61,43 +56,15 @@ namespace RPGStudioMK.Widgets
             ActionContainer.SetPosition(DatabaseMode.Position.X + DatabaseMode.Size.Width + 12, 3);
             ActionContainer.SetSize(83, 28);
             ActionContainer.Sprites["line"] = new Sprite(ActionContainer.Viewport, new SolidBitmap(1, 26, new Color(28, 50, 73)));
-            Delete = new IconButton(ActionContainer);
-            Delete.SetPosition(6, 0);
-            Delete.SetIcon(3, 0);
-            Delete.Selectable = false;
             Undo = new IconButton(ActionContainer);
-            Undo.SetPosition(30, 0);
             Undo.SetIcon(4, 0);
             Undo.Selectable = false;
-            Undo.OnClicked += delegate (BaseEventArgs e)
-            {
-                Editor.Undo();
-            };
+            Undo.OnClicked += delegate (BaseEventArgs e) { Editor.Undo(); };
             Redo = new IconButton(ActionContainer);
-            Redo.SetPosition(54, 0);
+            Redo.SetPosition(24, 0);
             Redo.SetIcon(5, 0);
             Redo.Selectable = false;
-            Redo.OnClicked += delegate (BaseEventArgs e)
-            {
-                Editor.Redo();
-            };
-
-            CopyContainer = new Container(this);
-            CopyContainer.SetPosition(ActionContainer.Position.X + ActionContainer.Size.Width, 3);
-            CopyContainer.SetSize(83, 28);
-            CopyContainer.Sprites["line"] = new Sprite(CopyContainer.Viewport, new SolidBitmap(1, 26, new Color(28, 50, 73)));
-            Cut = new IconButton(CopyContainer);
-            Cut.SetPosition(6, 0);
-            Cut.SetIcon(0, 0);
-            Cut.Selectable = false;
-            Copy = new IconButton(CopyContainer);
-            Copy.SetPosition(30, 0);
-            Copy.SetIcon(1, 0);
-            Copy.Selectable = false;
-            Paste = new IconButton(CopyContainer);
-            Paste.SetPosition(54, 0);
-            Paste.SetIcon(2, 0);
-            Paste.Selectable = false;
+            Redo.OnClicked += delegate (BaseEventArgs e) { Editor.Redo(); };
 
             PlayButton = new PlayButton(this);
             SaveButton = new SaveButton(this);
@@ -120,17 +87,10 @@ namespace RPGStudioMK.Widgets
             else if (Size.Width < 895)
             {
                 ActionContainer.SetVisible(false);
-                CopyContainer.SetVisible(false);
-            }
-            else if (Size.Width < 978)
-            {
-                ActionContainer.SetVisible(true);
-                CopyContainer.SetVisible(false);
             }
             else
             {
                 ActionContainer.SetVisible(true);
-                CopyContainer.SetVisible(true);
             }
         }
     }
