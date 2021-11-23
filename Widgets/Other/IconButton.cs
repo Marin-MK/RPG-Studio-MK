@@ -15,6 +15,7 @@ namespace RPGStudioMK.Widgets
 
         public BaseEvent OnSelection;
         public BaseEvent OnDeselection;
+        public BaseEvent OnClicked;
 
         public IconButton(IContainer Parent) : base(Parent)
         {
@@ -84,7 +85,7 @@ namespace RPGStudioMK.Widgets
                 {
                     SetIcon(IconX, IconY, true);
                     SetTimer("reset", 100);
-                    this.OnLeftClick?.Invoke( e);
+                    this.OnClicked?.Invoke(e);
                 }
             }
         }

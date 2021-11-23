@@ -69,7 +69,7 @@ namespace RPGStudioMK.Widgets
             Undo.SetPosition(30, 0);
             Undo.SetIcon(4, 0);
             Undo.Selectable = false;
-            Undo.OnLeftClick += delegate (MouseEventArgs e)
+            Undo.OnClicked += delegate (BaseEventArgs e)
             {
                 Editor.Undo();
             };
@@ -77,7 +77,7 @@ namespace RPGStudioMK.Widgets
             Redo.SetPosition(54, 0);
             Redo.SetIcon(5, 0);
             Redo.Selectable = false;
-            Redo.OnLeftClick += delegate (MouseEventArgs e)
+            Redo.OnClicked += delegate (BaseEventArgs e)
             {
                 Editor.Redo();
             };
