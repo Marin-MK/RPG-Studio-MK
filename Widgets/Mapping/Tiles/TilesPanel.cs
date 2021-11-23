@@ -25,7 +25,7 @@ namespace RPGStudioMK.Widgets
                 else if (FillButton.Selected) return DrawTools.Bucket;
                 else if (EllipseButton.Selected) return DrawTools.EllipseFilled;
                 else if (RectButton.Selected) return DrawTools.RectangleOutline;
-                else if (SelectButton.Selected) return DrawTools.SelectionActiveLayer;
+                else if (SelectButton.Selected) return DrawTools.SelectionAllLayers;
                 else throw new Exception("Unknown draw tool.");
             }
             set
@@ -35,7 +35,7 @@ namespace RPGStudioMK.Widgets
                 EllipseButton.SetSelected(value == DrawTools.EllipseFilled);
                 RectButton.SetSelected(value == DrawTools.RectangleFilled);
                 bool oldsel = SelectButton.Selected;
-                SelectButton.SetSelected(value == DrawTools.SelectionActiveLayer);
+                SelectButton.SetSelected(value == DrawTools.SelectionActiveLayer || value == DrawTools.SelectionAllLayers);
                 if (SelectButton.Selected != oldsel)
                 {
                     if (SelectButton.Selected)

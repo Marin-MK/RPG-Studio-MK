@@ -294,6 +294,11 @@ namespace RPGStudioMK.Widgets
             SetZoomFactor(ZoomFactor);
         }
 
+        public bool IsLayerLocked(int LayerIndex)
+        {
+            return this.Sprites[LayerIndex.ToString()].Bitmap.Locked;
+        }
+
         public void SetLayerLocked(int LayerIndex, bool Locked)
         {
             ISprite s = this.Sprites[LayerIndex.ToString()];
@@ -762,9 +767,9 @@ namespace RPGStudioMK.Widgets
                     if (TileGroupUndoAction.GetLatest() == null || TileGroupUndoAction.GetLatest().Ready)
                     {
                         Editor.CanUndo = false;
-                        TileGroupUndoAction.Log(MapID, layer);
+                        TileGroupUndoAction.Log(MapID);
                     }
-                    TileGroupUndoAction.AddToLatest(MapPosition, NewTile, OldTile);
+                    TileGroupUndoAction.AddToLatest(MapPosition, layer, NewTile, OldTile);
                     DrawTile(MapTileX, MapTileY, layer, NewTile, OldTile);
                 }
             }
