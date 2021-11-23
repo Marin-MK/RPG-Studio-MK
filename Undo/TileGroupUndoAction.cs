@@ -44,11 +44,16 @@ namespace RPGStudioMK
             action.Tiles.Add(new TileChange(MapPosition, Layer, NewTile, OldTile));
         }
 
-        public override void Trigger(bool IsRedo)
+        public override bool Trigger(bool IsRedo)
         {
             if (!Ready) throw new Exception("Attempted to undo an unfinished TileGroupUndoAction.");
             bool ActiveMap = Editor.MainWindow.MapWidget.Map.ID == MapID;
-            Map Map = Data.Maps[MapID];
+            if (!ActiveMap)
+            {
+                Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps[this.MapID]);
+                return false;
+            }
+            Map Map = Data.Maps[this.MapID];
             List<int> UnlockedLayers = new List<int>();
             foreach (TileChange tile in Tiles)
             {
@@ -74,17 +79,11 @@ namespace RPGStudioMK
                     );
                 }
             }
-            if (ActiveMap)
+            UnlockedLayers.ForEach(Layer =>
             {
-                UnlockedLayers.ForEach(Layer =>
-                {
-                    Editor.MainWindow.MapWidget.MapImageWidget.SetLayerLocked(Layer, true);
-                });
-            }
-            else
-            {
-                Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Map);
-            }
+                Editor.MainWindow.MapWidget.MapImageWidget.SetLayerLocked(Layer, true);
+            });
+            return true;
         }
 
         public class TileChange

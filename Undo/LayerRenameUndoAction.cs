@@ -24,11 +24,12 @@ namespace RPGStudioMK
             new LayerRenameUndoAction(MapID, LayerIndex, OldName, NewName);
         }
 
-        public override void Trigger(bool IsRedo)
+        public override bool Trigger(bool IsRedo)
         {
             Map Map = Data.Maps[MapID];
             Map.Layers[LayerIndex].Name = IsRedo ? NewName : OldName;
             Editor.MainWindow.MapWidget.MapViewerTiles.LayerPanel.layerwidget.Redraw();
+            return true;
         }
     }
 }

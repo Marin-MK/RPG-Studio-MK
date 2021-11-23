@@ -24,7 +24,7 @@ namespace RPGStudioMK
             new LayerChangeUndoAction(MapID, LayerIndex, LayerData, Removal);
         }
 
-        public override void Trigger(bool IsRedo)
+        public override bool Trigger(bool IsRedo)
         {
             //  Removal &&  IsRedo : Redoing Removal  : Remove
             //  Removal && !IsRedo : Undoing Removal  : Create
@@ -39,6 +39,7 @@ namespace RPGStudioMK
             {
                 Editor.MainWindow.MapWidget.MapViewerTiles.LayerPanel.DeleteLayer(LayerIndex, true);
             }
+            return true;
         }
     }
 }

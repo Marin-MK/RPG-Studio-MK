@@ -22,7 +22,7 @@ namespace RPGStudioMK
             new LayerSwapUndoAction(MapID, LayerIndex, MovedUp);
         }
 
-        public override void Trigger(bool IsRedo)
+        public override bool Trigger(bool IsRedo)
         {
             Widgets.LayerPanel LayerPanel = Editor.MainWindow.MapWidget.MapViewerTiles.LayerPanel;
             bool MoveUp = this.MovedUp == IsRedo;
@@ -34,6 +34,7 @@ namespace RPGStudioMK
             {
                 LayerPanel.MoveLayerDown(LayerIndex + 1, true);
             }
+            return true;
         }
     }
 }
