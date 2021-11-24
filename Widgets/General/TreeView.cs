@@ -23,6 +23,7 @@ namespace RPGStudioMK.Widgets
 
         bool MergeTopLines = false;
         bool MergeBottomLines = false;
+        int LineDepth = 0;
 
         public TreeView(IContainer Parent) : base(Parent)
         {
@@ -132,8 +133,8 @@ namespace RPGStudioMK.Widgets
             if (!Found) throw new Exception($"Failed to find DraggingNode.");
             if (HoverTop || HoverBottom)
             {
-                Sprites["list_drag"].Bitmap = new SolidBitmap(Size.Width - 6, 1, new Color(55, 187, 255));
-                Sprites["list_drag"].X = 3;
+                Sprites["list_drag"].X = LineDepth * 16 + 12;
+                Sprites["list_drag"].Bitmap = new SolidBitmap(Size.Width - Sprites["list_drag"].X - 2, 1, new Color(55, 187, 255));
                 if (HoverTop) Sprites["list_drag"].Y = y + (MergeTopLines? -2 : 3);
                 else Sprites["list_drag"].Y = y + (MergeBottomLines ? 22 : 17);
             }
@@ -157,14 +158,26 @@ namespace RPGStudioMK.Widgets
         {
             if (Node == Target) return (0, false);
             if (Node.Collapsed) return (24, true);
-            int sum = 24;
+            int sumy = 24;
             foreach (TreeNode n in Node.Nodes)
             {
                 (int Y, bool Continue) result = CalculateNodeYUntil(n, Target);
-                sum += result.Y;
-                if (!result.Continue) return (sum, false);
+                sumy += result.Y;
+                if (!result.Continue) return (sumy, false);
             }
-            return (sum, true);
+            return (sumy, true);
+        }
+
+        int GetNodeDepth(TreeNode node, int depth = 0, List<TreeNode> NodeList = null)
+        {
+            if (NodeList == null) NodeList = this.Nodes;
+            foreach (TreeNode child in NodeList)
+            {
+                if (child == node) return depth;
+                int result = GetNodeDepth(node, depth + 1, child.Nodes);
+                if (result != -1) return result;
+            }
+            return -1;
         }
 
         public void SetSelectedNode(TreeNode node, bool CallEvent = true)
@@ -212,6 +225,7 @@ namespace RPGStudioMK.Widgets
             HoveringNode = n;
             if (DraggingNode != null)
             {
+                LineDepth = GetNodeDepth(HoveringNode);
                 MergeTopLines = false;
                 TreeNode upnode = null;
                 if (globalindex > 0)
@@ -242,10 +256,7 @@ namespace RPGStudioMK.Widgets
                             }
                         }
                     }
-                    else if (upnode.Nodes.Count > 0 && upnode.Nodes[0] == HoveringNode)
-                    {
-                        MergeTopLines = true;
-                    }
+                    else if (upnode.Nodes.Count > 0 && upnode.Nodes[0] == HoveringNode) MergeTopLines = true;
                     else
                     {
                         foreach (TreeNode MainNode in this.Nodes)
@@ -284,7 +295,11 @@ namespace RPGStudioMK.Widgets
                     TreeNode HoverParent = null;
                     if (this.Nodes.Contains(HoveringNode))
                     {
-                        if (HoveringNode.Nodes.Count > 0 && HoveringNode.Nodes[0] == btmnode) MergeBottomLines = true;
+                        if (HoveringNode.Nodes.Count > 0 && HoveringNode.Nodes[0] == btmnode)
+                        {
+                            MergeBottomLines = true;
+                            if (HoverBottom) LineDepth = GetNodeDepth(btmnode);
+                        }
                         else
                         {
                             int diff = this.Nodes.IndexOf(btmnode) - this.Nodes.IndexOf(HoveringNode);
@@ -300,7 +315,11 @@ namespace RPGStudioMK.Widgets
                             }
                         }
                     }
-                    else if (HoveringNode.Nodes.Count > 0 && HoveringNode.Nodes[0] == btmnode) MergeBottomLines = true;
+                    else if (HoveringNode.Nodes.Count > 0 && HoveringNode.Nodes[0] == btmnode)
+                    {
+                        MergeBottomLines = true;
+                        if (HoverBottom) LineDepth = GetNodeDepth(btmnode);
+                    }
                     else
                     {
                         foreach (TreeNode MainNode in this.Nodes)
