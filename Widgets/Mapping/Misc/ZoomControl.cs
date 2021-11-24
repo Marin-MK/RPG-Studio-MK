@@ -14,7 +14,11 @@ namespace RPGStudioMK.Widgets
 
         public ZoomControl(IContainer Parent) : base(Parent)
         {
-            SetSize(160, 26);
+            SetSize(204, 26);
+
+            Sprites["text"] = new Sprite(this.Viewport);
+            Sprites["text"].X = 164;
+            Sprites["text"].Y = 2;
 
             ZoomOut = new IconButton(this);
             ZoomOut.Selectable = false;
@@ -27,7 +31,7 @@ namespace RPGStudioMK.Widgets
             ZoomIn = new IconButton(this);
             ZoomIn.Selectable = false;
             ZoomIn.SetIcon(Icon.ZoomIn);
-            ZoomIn.SetPosition(Size.Width - 23, 0);
+            ZoomIn.SetPosition(137, 0);
             ZoomIn.SetSelectorOffset(-2);
             ZoomIn.OnMouseDown += delegate (MouseEventArgs e)
             {
@@ -90,6 +94,28 @@ namespace RPGStudioMK.Widgets
             else if (this.Factor == 2.0) SetZoomFactor(1.0);
             else if (this.Factor == 3.0) SetZoomFactor(2.0);
             else if (this.Factor == 4.0) SetZoomFactor(3.0);
+        }
+
+        protected override void Draw()
+        {
+            base.Draw();
+            Sprites["text"].Bitmap?.Dispose();
+            string txt = null;
+            if (this.Factor == 0.125) txt = "12.5%";
+            else if (this.Factor == 0.25) txt = "25%";
+            else if (this.Factor == 0.5) txt = "50%";
+            else if (this.Factor == 1.0) txt = "100%";
+            else if (this.Factor == 2.0) txt = "200%";
+            else if (this.Factor == 3.0) txt = "300%";
+            else if (this.Factor == 4.0) txt = "400%";
+            else throw new Exception("Unknown zoom factor");
+            Font f = Font.Get("Fonts/ProductSans-M", 14);
+            Size s = f.TextSize(txt);
+            Sprites["text"].Bitmap = new Bitmap(s);
+            Sprites["text"].Bitmap.Font = f;
+            Sprites["text"].Bitmap.Unlock();
+            Sprites["text"].Bitmap.DrawText(txt, Color.WHITE);
+            Sprites["text"].Bitmap.Lock();
         }
     }
 }
