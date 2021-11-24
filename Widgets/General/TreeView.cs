@@ -21,6 +21,9 @@ namespace RPGStudioMK.Widgets
         public bool HoverOver = false;
         public bool HoverBottom = false;
 
+        bool MergeTopLines = false;
+        bool MergeBottomLines = false;
+
         public TreeView(IContainer Parent) : base(Parent)
         {
             Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(1, 21, new Color(28, 50, 73)));
@@ -81,8 +84,7 @@ namespace RPGStudioMK.Widgets
             node.PixelsIndented = x;
             Font f = Font.Get("Fonts/ProductSans-M", 14);
             this.Sprites["text"].Bitmap.Font = f;
-            Game.Map m = Game.Data.Maps[(int) node.Object];
-            string text = $"({m.ParentID}, {m.Order}): " + node.Name ?? node.Object.ToString();
+            string text = node.Name ?? node.Object.ToString();
             Size s = f.TextSize(text);
             Color c = SelectedNode == node ? new Color(55, 187, 255) : Color.WHITE;
             this.Sprites["text"].Bitmap.DrawText(text, x + 12, y + 1, c);
@@ -132,8 +134,8 @@ namespace RPGStudioMK.Widgets
             {
                 Sprites["list_drag"].Bitmap = new SolidBitmap(Size.Width - 6, 1, new Color(55, 187, 255));
                 Sprites["list_drag"].X = 3;
-                if (HoverTop) Sprites["list_drag"].Y = y + 3;
-                else Sprites["list_drag"].Y = y + 17;
+                if (HoverTop) Sprites["list_drag"].Y = y + (MergeTopLines? -2 : 3);
+                else Sprites["list_drag"].Y = y + (MergeBottomLines ? 22 : 17);
             }
             else if (HoverOver)
             {
@@ -154,6 +156,7 @@ namespace RPGStudioMK.Widgets
         (int Y, bool Continue) CalculateNodeYUntil(TreeNode Node, TreeNode Target)
         {
             if (Node == Target) return (0, false);
+            if (Node.Collapsed) return (24, true);
             int sum = 24;
             foreach (TreeNode n in Node.Nodes)
             {
@@ -207,7 +210,122 @@ namespace RPGStudioMK.Widgets
                 index += this.Nodes[i].GetDisplayedNodeCount() + 1;
             }
             HoveringNode = n;
-            if (DraggingNode != null) UpdateHoverDrag();
+            if (DraggingNode != null)
+            {
+                MergeTopLines = false;
+                TreeNode upnode = null;
+                if (globalindex > 0)
+                {
+                    int upidx = globalindex - 1;
+                    index = 0;
+                    for (int i = 0; i < this.Nodes.Count; i++)
+                    {
+                        upnode = this.Nodes[i].FindNodeIndex(upidx - index);
+                        if (upnode != null) break;
+                        index += this.Nodes[i].GetDisplayedNodeCount() + 1;
+                    }
+                }
+                if (upnode != null)
+                {
+                    TreeNode HoverParent = null;
+                    if (this.Nodes.Contains(HoveringNode))
+                    {
+                        int diff = this.Nodes.IndexOf(HoveringNode) - this.Nodes.IndexOf(upnode);
+                        if (diff == 1)
+                        {
+                            // Upnode is indeed above the current node in our parent.
+                            // Now whether it is also visually above our current node
+                            // depends on if it has children and is not collapsed.
+                            if (upnode.Nodes.Count == 0 || upnode.Collapsed)
+                            {
+                                MergeTopLines = true;
+                            }
+                        }
+                    }
+                    else if (upnode.Nodes.Count > 0 && upnode.Nodes[0] == HoveringNode)
+                    {
+                        MergeTopLines = true;
+                    }
+                    else
+                    {
+                        foreach (TreeNode MainNode in this.Nodes)
+                        {
+                            HoverParent = MainNode.FindParentNode(n => n == HoveringNode);
+                            if (HoverParent != null) break;
+                        }
+                        if (HoverParent.Nodes.Contains(upnode))
+                        {
+                            int diff = HoverParent.Nodes.IndexOf(HoveringNode) - HoverParent.Nodes.IndexOf(upnode);
+                            if (diff == 1)
+                            {
+                                // Upnode is indeed above the current node in our parent.
+                                // Now whether it is also visually above our current node
+                                // depends on if it has children and is not collapsed.
+                                if (upnode.Nodes.Count == 0 || upnode.Collapsed)
+                                {
+                                    MergeTopLines = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                MergeBottomLines = false;
+                TreeNode btmnode = null;
+                int dwnidx = globalindex + 1;
+                index = 0;
+                for (int i = 0; i < this.Nodes.Count; i++)
+                {
+                    btmnode = this.Nodes[i].FindNodeIndex(dwnidx - index);
+                    if (btmnode != null) break;
+                    index += this.Nodes[i].GetDisplayedNodeCount() + 1;
+                }
+                if (btmnode != null)
+                {
+                    TreeNode HoverParent = null;
+                    if (this.Nodes.Contains(HoveringNode))
+                    {
+                        if (HoveringNode.Nodes.Count > 0 && HoveringNode.Nodes[0] == btmnode) MergeBottomLines = true;
+                        else
+                        {
+                            int diff = this.Nodes.IndexOf(btmnode) - this.Nodes.IndexOf(HoveringNode);
+                            if (diff == 1)
+                            {
+                                // Btmnode is indeed below the current node in our parent.
+                                // Now whether it is also visually above our current node
+                                // depends on if the hovering node has children and if it is not collapsed.
+                                if (HoveringNode.Nodes.Count == 0 || HoveringNode.Collapsed)
+                                {
+                                    MergeBottomLines = true;
+                                }
+                            }
+                        }
+                    }
+                    else if (HoveringNode.Nodes.Count > 0 && HoveringNode.Nodes[0] == btmnode) MergeBottomLines = true;
+                    else
+                    {
+                        foreach (TreeNode MainNode in this.Nodes)
+                        {
+                            HoverParent = MainNode.FindParentNode(n => n == HoveringNode);
+                            if (HoverParent != null) break;
+                        }
+                        if (HoverParent.Nodes.Contains(btmnode))
+                        {
+                            int diff = HoverParent.Nodes.IndexOf(btmnode) - HoverParent.Nodes.IndexOf(HoveringNode);
+                            if (diff == 1)
+                            {
+                                // Btmnode is indeed below the current node in our parent.
+                                // Now whether it is also visually above our current node
+                                // depends on if the hovering node has children and if it is not collapsed.
+                                if (HoveringNode.Nodes.Count == 0 || HoveringNode.Collapsed)
+                                {
+                                    MergeBottomLines = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                UpdateHoverDrag();
+            }
         }
 
         public override void MouseDown(MouseEventArgs e)
