@@ -23,17 +23,17 @@ namespace RPGStudioMK.Widgets
             {
                 if (PencilButton.Selected) return DrawTools.Pencil;
                 else if (FillButton.Selected) return DrawTools.Bucket;
-                else if (EllipseButton.Selected) return DrawTools.EllipseFilled;
-                else if (RectButton.Selected) return DrawTools.RectangleOutline;
-                else if (SelectButton.Selected) return DrawTools.SelectionAllLayers;
+                else if (EllipseButton.Selected) return Editor.GeneralSettings.PreferEllipseFill ? DrawTools.EllipseFilled : DrawTools.EllipseOutline;
+                else if (RectButton.Selected) return Editor.GeneralSettings.PreferRectangleFill ? DrawTools.RectangleFilled : DrawTools.RectangleOutline;
+                else if (SelectButton.Selected) return Editor.GeneralSettings.PreferSelectionAll ? DrawTools.SelectionAllLayers : DrawTools.SelectionActiveLayer;
                 else throw new Exception("Unknown draw tool.");
             }
             set
             {
                 PencilButton.SetSelected(value == DrawTools.Pencil);
                 FillButton.SetSelected(value == DrawTools.Bucket);
-                EllipseButton.SetSelected(value == DrawTools.EllipseFilled);
-                RectButton.SetSelected(value == DrawTools.RectangleFilled);
+                EllipseButton.SetSelected(value == DrawTools.EllipseFilled || value == DrawTools.EllipseOutline);
+                RectButton.SetSelected(value == DrawTools.RectangleFilled || value == DrawTools.RectangleOutline);
                 bool oldsel = SelectButton.Selected;
                 SelectButton.SetSelected(value == DrawTools.SelectionActiveLayer || value == DrawTools.SelectionAllLayers);
                 if (SelectButton.Selected != oldsel)
@@ -132,7 +132,7 @@ namespace RPGStudioMK.Widgets
             DrawToolsContainer.Sprites["line"].Y = 2;
 
             PencilButton = new IconButton(DrawToolsContainer);
-            PencilButton.SetIcon(15, 0);
+            PencilButton.SetIcon(Icon.Pencil);
             PencilButton.SetSelected(true);
             PencilButton.OnSelection += delegate (BaseEventArgs e)
             {
@@ -140,23 +140,37 @@ namespace RPGStudioMK.Widgets
             };
 
             RectButton = new IconButton(DrawToolsContainer);
-            RectButton.SetIcon(18, 0);
+            RectButton.SetIcon(Editor.GeneralSettings.PreferRectangleFill ? Icon.Map : Icon.RectangleOutline);
             RectButton.SetPosition(32, 0);
             RectButton.OnSelection += delegate (BaseEventArgs e)
             {
                 Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
             };
+            RectButton.OnMouseDown += delegate (MouseEventArgs e)
+            {
+                if (RectButton.WidgetIM.Hovering && e.OldRightButton != e.RightButton && e.RightButton)
+                {
+                    ShowRectOptionsMenu();
+                }
+            };
 
             EllipseButton = new IconButton(DrawToolsContainer);
-            EllipseButton.SetIcon(17, 0);
+            EllipseButton.SetIcon(Editor.GeneralSettings.PreferEllipseFill ? Icon.Event : Icon.CircleOutline);
             EllipseButton.SetPosition(64, 0);
             EllipseButton.OnSelection += delegate (BaseEventArgs e)
             {
                 Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
             };
+            EllipseButton.OnMouseDown += delegate (MouseEventArgs e)
+            {
+                if (EllipseButton.WidgetIM.Hovering && e.OldRightButton != e.RightButton && e.RightButton)
+                {
+                    ShowEllipseOptionsMenu();
+                }
+            };
 
             FillButton = new IconButton(DrawToolsContainer);
-            FillButton.SetIcon(16, 0);
+            FillButton.SetIcon(Icon.Bucket);
             FillButton.SetPosition(96, 0);
             FillButton.OnSelection += delegate (BaseEventArgs e)
             {
@@ -164,7 +178,7 @@ namespace RPGStudioMK.Widgets
             };
 
             EraserButton = new IconButton(DrawToolsContainer);
-            EraserButton.SetIcon(20, 0);
+            EraserButton.SetIcon(Icon.Eraser);
             EraserButton.SetPosition(128, 0);
             EraserButton.Toggleable = true;
             EraserButton.OnSelection += delegate (BaseEventArgs e)
@@ -182,11 +196,18 @@ namespace RPGStudioMK.Widgets
             };
 
             SelectButton = new IconButton(DrawToolsContainer);
-            SelectButton.SetIcon(19, 0);
+            SelectButton.SetIcon(Editor.GeneralSettings.PreferSelectionAll ? Icon.Script : Icon.Selection);
             SelectButton.SetPosition(168, 0);
             SelectButton.OnSelection += delegate (BaseEventArgs e)
             {
                 Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
+            };
+            SelectButton.OnMouseDown += delegate (MouseEventArgs e)
+            {
+                if (SelectButton.WidgetIM.Hovering && e.OldRightButton != e.RightButton && e.RightButton)
+                {
+                    ShowSelectOptionsMenu();
+                }
             };
 
             SetSize(288, 200); // Dummy size so the sprites can be drawn properly
@@ -212,7 +233,7 @@ namespace RPGStudioMK.Widgets
             if (SingleAutotileContainer is CollapsibleContainer) SingleAutotileContainer.Dispose();
             SingleAutotileContainer = null;
             Bitmap singles = null;
-            SingleAutotileCount = MapData.AutotileIDs.Count;// FindAll(id => Data.Autotiles[id].Format == AutotileFormat.Single).Count;
+            SingleAutotileCount = MapData.AutotileIDs.FindAll(id => id != -1/*Data.Autotiles[id].Format == AutotileFormat.Single*/).Count;
             if (SingleAutotileCount > 0)
             {
                 SingleAutotileContainer = new CollapsibleContainer(MainStackPanel);
@@ -537,9 +558,9 @@ namespace RPGStudioMK.Widgets
             }
             if (AutotileIndex != -1) // Autotile selected
             {
-                object image = AutotileContainers.IndexOf(AutotileIndex);
-                if (image is int) // Single autotile
-                {
+                int image = AutotileContainers.IndexOf(AutotileIndex);
+                //if (image is int) // Single autotile
+                //{
                     CollapsibleContainer cc = SingleAutotileContainer;
                     if (cc.Collapsed || this.Erase || MapViewer.SelectionOnMap)
                     {
@@ -553,31 +574,31 @@ namespace RPGStudioMK.Widgets
                         Cursor.SetPosition(1 + 33 * (((int) image) % 8), cc.Position.Y + 19 + 33 * (int) Math.Floor(((int) image) / 8d));
                         Cursor.SetSize(32 + 14, 32 + 14);
                     }
-                }
-                else if (image is CollapsibleContainer) // Other autotile format
-                {
-                    CollapsibleContainer cc = image as CollapsibleContainer;
-                    if (cc.Collapsed || this.Erase || MapViewer.SelectionOnMap)
-                    {
-                        Cursor.SetVisible(false);
-                        Cursor.SetPosition(0, 0);
-                        MainContainer.UpdateAutoScroll();
-                    }
-                    else
-                    {
-                        Cursor.SetVisible(true);
-                        if (AutotileCombination != -1)
-                        {
-                            Cursor.SetPosition(67 + 33 * AutotileCombination, cc.Position.Y + 19 + 16);
-                            Cursor.SetSize(32 + 14, 32 + 14);
-                        }
-                        else
-                        {
-                            Cursor.SetPosition(1, cc.Position.Y + 19);
-                            Cursor.SetSize(64 + 14, 64 + 14);
-                        }
-                    }
-                }
+                //}
+                //else if (image is CollapsibleContainer) // Other autotile format
+                //{
+                //    CollapsibleContainer cc = image as CollapsibleContainer;
+                //    if (cc.Collapsed || this.Erase || MapViewer.SelectionOnMap)
+                //    {
+                //        Cursor.SetVisible(false);
+                //        Cursor.SetPosition(0, 0);
+                //        MainContainer.UpdateAutoScroll();
+                //    }
+                //    else
+                //    {
+                //        Cursor.SetVisible(true);
+                //        if (AutotileCombination != -1)
+                //        {
+                //            Cursor.SetPosition(67 + 33 * AutotileCombination, cc.Position.Y + 19 + 16);
+                //            Cursor.SetSize(32 + 14, 32 + 14);
+                //        }
+                //        else
+                //        {
+                //            Cursor.SetPosition(1, cc.Position.Y + 19);
+                //            Cursor.SetSize(64 + 14, 64 + 14);
+                //        }
+                //    }
+                //}
                 MapViewer.CursorOrigin = Location.TopLeft;
                 MapViewer.TileDataList.Clear();
                 MapViewer.CursorWidth = 0;
@@ -733,6 +754,66 @@ namespace RPGStudioMK.Widgets
                 Y = tiley;
                 break;
             }
+        }
+
+        void ShowRectOptionsMenu()
+        {
+            ToolDropdown d = new ToolDropdown(this);
+            d.SetPosition(DrawToolsContainer.Position.X + RectButton.Position.X - 6, DrawToolsContainer.Position.Y + RectButton.Position.Y - 6);
+            d.SetZIndex(1);
+            d.SetIcon1(Icon.RectangleOutline);
+            d.SetIcon2(Icon.Map);
+            d.OnMouseDown += delegate (MouseEventArgs e)
+            {
+                if (!d.WidgetIM.Hovering || d.HoveringIndex == -1) d.Dispose();
+                else
+                {
+                    Editor.GeneralSettings.PreferRectangleFill = d.HoveringIndex == 1;
+                    RectButton.SetIcon(d.HoveringIndex == 1 ? Icon.Map : Icon.RectangleOutline, RectButton.Selected);
+                    this.DrawTool = d.HoveringIndex == 1 ? DrawTools.RectangleFilled : DrawTools.RectangleOutline;
+                    d.Dispose();
+                }
+            };
+        }
+
+        void ShowEllipseOptionsMenu()
+        {
+            ToolDropdown d = new ToolDropdown(this);
+            d.SetPosition(DrawToolsContainer.Position.X + EllipseButton.Position.X - 6, DrawToolsContainer.Position.Y + EllipseButton.Position.Y - 6);
+            d.SetZIndex(1);
+            d.SetIcon1(Icon.CircleOutline);
+            d.SetIcon2(Icon.Event);
+            d.OnMouseDown += delegate (MouseEventArgs e)
+            {
+                if (!d.WidgetIM.Hovering || d.HoveringIndex == -1) d.Dispose();
+                else
+                {
+                    Editor.GeneralSettings.PreferEllipseFill = d.HoveringIndex == 1;
+                    EllipseButton.SetIcon(d.HoveringIndex == 1 ? Icon.Event : Icon.CircleOutline, EllipseButton.Selected);
+                    this.DrawTool = d.HoveringIndex == 1 ? DrawTools.EllipseFilled : DrawTools.EllipseOutline;
+                    d.Dispose();
+                }
+            };
+        }
+
+        void ShowSelectOptionsMenu()
+        {
+            ToolDropdown d = new ToolDropdown(this);
+            d.SetPosition(DrawToolsContainer.Position.X + SelectButton.Position.X - 6, DrawToolsContainer.Position.Y + SelectButton.Position.Y - 6);
+            d.SetZIndex(1);
+            d.SetIcon1(Icon.Selection);
+            d.SetIcon2(Icon.Script);
+            d.OnMouseDown += delegate (MouseEventArgs e)
+            {
+                if (!d.WidgetIM.Hovering || d.HoveringIndex == -1) d.Dispose();
+                else
+                {
+                    Editor.GeneralSettings.PreferSelectionAll = d.HoveringIndex == 1;
+                    SelectButton.SetIcon(d.HoveringIndex == 1 ? Icon.Script : Icon.Selection, SelectButton.Selected);
+                    this.DrawTool = d.HoveringIndex == 1 ? DrawTools.SelectionAllLayers : DrawTools.SelectionActiveLayer;
+                    d.Dispose();
+                }
+            };
         }
     }
 

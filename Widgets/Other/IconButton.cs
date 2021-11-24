@@ -6,8 +6,7 @@ namespace RPGStudioMK.Widgets
 {
     public class IconButton : Widget
     {
-        public int IconX;
-        public int IconY;
+        public Icon Icon;
         public bool Toggleable = false;
         public bool Selectable = true;
 
@@ -47,18 +46,17 @@ namespace RPGStudioMK.Widgets
                 this.Selected = Selected;
                 if (Selected) this.OnSelection?.Invoke(new BaseEventArgs());
                 if (!Selected) this.OnDeselection?.Invoke(new BaseEventArgs());
-                SetIcon(IconX, IconY, Selected);
+                SetIcon(Icon, Selected);
             }
         }
 
-        public void SetIcon(int IconX, int IconY, bool Selected = false)
+        public void SetIcon(Icon Icon, bool Selected = false)
         {
-            Sprites["icon"].SrcRect.X = IconX * 24;
-            Sprites["icon"].SrcRect.Y = IconY * 24 + (Selected ? 24 : 0);
+            Sprites["icon"].SrcRect.X = (int) Icon * 24;
+            Sprites["icon"].SrcRect.Y = Selected ? 24 : 0;
             // Changing SrcRect doesn't update the viewport/renderer
             Sprites["icon"].Update();
-            this.IconX = IconX;
-            this.IconY = IconY;
+            this.Icon = Icon;
         }
 
         public void SetSelectorOffset(int pixels)
@@ -77,13 +75,13 @@ namespace RPGStudioMK.Widgets
         {
             base.MouseDown(e);
             int ry = e.Y - Viewport.Y;
-            if (WidgetIM.Hovering && ry < 29 && !TimerExists("reset"))
+            if (WidgetIM.Hovering && ry < 29 && !TimerExists("reset") && e.OldLeftButton != e.LeftButton && e.LeftButton)
             {
                 if (Toggleable) SetSelected(!Selected);
                 else if (Selectable) SetSelected(true);
                 else // Normal pressable button
                 {
-                    SetIcon(IconX, IconY, true);
+                    SetIcon(Icon, true);
                     SetTimer("reset", 100);
                     this.OnClicked?.Invoke(e);
                 }
@@ -95,9 +93,40 @@ namespace RPGStudioMK.Widgets
             base.Update();
             if (TimerPassed("reset"))
             {
-                SetIcon(IconX, IconY, false);
+                SetIcon(Icon, false);
                 DestroyTimer("reset");
             }
         }
+    }
+
+    public enum Icon
+    {
+        Cut                 = 0,
+        Copy                = 1,
+        Paste               = 2,
+        Cancel              = 3,
+        Undo                = 4,
+        Redo                = 5,
+        Grid                = 6,
+        ZoomOut             = 7,
+        ZoomIn              = 8,
+
+        Up                  = 10,
+        Down                = 11,
+        Delete              = 12,
+        Eyes                = 13,
+        Eye                 = 14,
+        Pencil              = 15,
+        Bucket              = 16,
+        CircleOutline       = 17,
+        RectangleOutline    = 18,
+        Selection           = 19,
+        Eraser              = 20,
+        Right               = 21,
+        Save                = 22,
+        Map                 = 23,
+        Event               = 24,
+        Script              = 25,
+        Monster             = 26
     }
 }

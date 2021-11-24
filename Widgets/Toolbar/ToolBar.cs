@@ -57,12 +57,12 @@ namespace RPGStudioMK.Widgets
             ActionContainer.SetSize(83, 28);
             ActionContainer.Sprites["line"] = new Sprite(ActionContainer.Viewport, new SolidBitmap(1, 26, new Color(28, 50, 73)));
             Undo = new IconButton(ActionContainer);
-            Undo.SetIcon(4, 0);
+            Undo.SetIcon(Icon.Undo);
             Undo.Selectable = false;
             Undo.OnClicked += delegate (BaseEventArgs e) { Editor.Undo(); };
             Redo = new IconButton(ActionContainer);
             Redo.SetPosition(24, 0);
-            Redo.SetIcon(5, 0);
+            Redo.SetIcon(Icon.Redo);
             Redo.Selectable = false;
             Redo.OnClicked += delegate (BaseEventArgs e) { Editor.Redo(); };
 

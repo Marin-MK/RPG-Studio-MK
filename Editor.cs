@@ -788,5 +788,17 @@ namespace RPGStudioMK
         /// Whether to show the map grid overlay.
         /// </summary>
         public bool ShowGrid = true;
+        /// <summary>
+        /// Whether the user prefers to use the rectangle tool including filling.
+        /// </summary>
+        public bool PreferRectangleFill = false;
+        /// <summary>
+        /// Whether the user prefers to use the ellipse tool including filling.
+        /// </summary>
+        public bool PreferEllipseFill = false;
+        /// <summary>
+        /// Whether the user prefers to use the selection tool for selecting multiple layers.
+        /// </summary>
+        public bool PreferSelectionAll = false;
     }
 }

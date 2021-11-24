@@ -18,7 +18,7 @@ namespace RPGStudioMK.Widgets
 
             ZoomOut = new IconButton(this);
             ZoomOut.Selectable = false;
-            ZoomOut.SetIcon(7, 0);
+            ZoomOut.SetIcon(Icon.ZoomOut);
             ZoomOut.SetSelectorOffset(-2);
             ZoomOut.OnMouseDown += delegate (MouseEventArgs e)
             {
@@ -26,7 +26,7 @@ namespace RPGStudioMK.Widgets
             };
             ZoomIn = new IconButton(this);
             ZoomIn.Selectable = false;
-            ZoomIn.SetIcon(8, 0);
+            ZoomIn.SetIcon(Icon.ZoomIn);
             ZoomIn.SetPosition(Size.Width - 23, 0);
             ZoomIn.SetSelectorOffset(-2);
             ZoomIn.OnMouseDown += delegate (MouseEventArgs e)
