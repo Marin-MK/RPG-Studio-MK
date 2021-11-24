@@ -126,23 +126,27 @@ namespace RPGStudioMK.Widgets
                     if (Parent == null) throw new Exception("No parent node found.");
                     int index = Parent.Nodes.IndexOf(HoveringNode);
                     Parent.Nodes.Insert(index, DraggingNode);
+                    if (Parent.Collapsed)
+                    {
+                        Parent.Collapsed = false;
+                        Data.Maps[(int) Parent.Object].Expanded = true;
+                    }
                 }
             }
             else if (Over)
             {
-                if (HoveringNode.Nodes.Count == 0)
+                HoveringNode.Nodes.Add(DraggingNode);
+                if (HoveringNode.Collapsed)
                 {
                     HoveringNode.Collapsed = false;
                     Data.Maps[(int) HoveringNode.Object].Expanded = true;
                 }
-                HoveringNode.Nodes.Add(DraggingNode);
             }
             else if (Bottom)
             {
                 // Has and showing children; add to children instead
                 if (HoveringNode.Nodes.Count > 0 && !HoveringNode.Collapsed)
                 {
-                    //int maxorder = HoveringMap.Order;
                     HoveringNode.Nodes.Insert(0, DraggingNode);
                 }
                 // Root-level node to add below
@@ -158,6 +162,11 @@ namespace RPGStudioMK.Widgets
                     if (Parent == null) throw new Exception("No parent node found.");
                     int index = Parent.Nodes.IndexOf(HoveringNode);
                     Parent.Nodes.Insert(index + 1, DraggingNode);
+                    if (Parent.Collapsed)
+                    {
+                        Parent.Collapsed = false;
+                        Data.Maps[(int) Parent.Object].Expanded = true;
+                    }
                 }
             }
             // Now update all map ParentID/Order fields to reflect the current Node structure
