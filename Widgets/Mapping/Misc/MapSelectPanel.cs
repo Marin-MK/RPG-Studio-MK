@@ -45,6 +45,7 @@ namespace RPGStudioMK.Widgets
                 Editor.MainWindow.StatusBar.QueueMessage($"Loaded Map #{mapview.SelectedNode.Object} ({Stopwatch.ElapsedMilliseconds}ms)", false, 1000);
                 Stopwatch.Reset();
             };
+            mapview.OnDragAndDropped += delegate (BaseEventArgs e) { DragAndDropped(); };
             mapview.TrailingBlank = 32;
             allmapcontainer.SetContextMenuList(new List<IMenuItem>()
             {
@@ -93,6 +94,86 @@ namespace RPGStudioMK.Widgets
             {
                 return Data.Maps[(int) n1.Object].Order.CompareTo(Data.Maps[(int) n2.Object].Order);
             });
+        }
+
+        public void DragAndDropped()
+        {
+            TreeNode DraggingNode = mapview.DraggingNode;
+            TreeNode HoveringNode = mapview.HoveringNode;
+            bool Top = mapview.HoverTop;
+            bool Over = mapview.HoverOver;
+            bool Bottom = mapview.HoverBottom;
+            // Remove the node
+            if (mapview.Nodes.Contains(DraggingNode)) mapview.Nodes.Remove(DraggingNode);
+            else
+            {
+                TreeNode Parent = GetParent(DraggingNode);
+                if (Parent == null) throw new Exception("No parent node found.");
+                Parent.Nodes.Remove(DraggingNode);
+            }
+            // Add the node
+            if (Top)
+            {
+                // Root-level
+                if (mapview.Nodes.Contains(HoveringNode))
+                {
+                    int index = mapview.Nodes.IndexOf(HoveringNode);
+                    mapview.Nodes.Insert(index, DraggingNode);
+                }
+                else
+                {
+                    TreeNode Parent = GetParent(HoveringNode);
+                    if (Parent == null) throw new Exception("No parent node found.");
+                    int index = Parent.Nodes.IndexOf(HoveringNode);
+                    Parent.Nodes.Insert(index, DraggingNode);
+                }
+            }
+            else if (Over)
+            {
+                if (HoveringNode.Nodes.Count == 0)
+                {
+                    HoveringNode.Collapsed = false;
+                    Data.Maps[(int) HoveringNode.Object].Expanded = true;
+                }
+                HoveringNode.Nodes.Add(DraggingNode);
+            }
+            else if (Bottom)
+            {
+                // Has and showing children; add to children instead
+                if (HoveringNode.Nodes.Count > 0 && !HoveringNode.Collapsed)
+                {
+                    //int maxorder = HoveringMap.Order;
+                    HoveringNode.Nodes.Insert(0, DraggingNode);
+                }
+                // Root-level node to add below
+                else if (mapview.Nodes.Contains(HoveringNode))
+                {
+                    // Add below node in parent list
+                    int index = mapview.Nodes.IndexOf(HoveringNode);
+                    mapview.Nodes.Insert(index + 1, DraggingNode);
+                }
+                else // Deeper node to add below
+                {
+                    TreeNode Parent = GetParent(HoveringNode);
+                    if (Parent == null) throw new Exception("No parent node found.");
+                    int index = Parent.Nodes.IndexOf(HoveringNode);
+                    Parent.Nodes.Insert(index + 1, DraggingNode);
+                }
+            }
+            // Now update all map ParentID/Order fields to reflect the current Node structure
+            Editor.UpdateOrder(mapview.Nodes);
+            mapview.Redraw();
+        }
+
+        public TreeNode GetParent(TreeNode NodeToFindParentOf)
+        {
+            if (mapview.Nodes.Contains(NodeToFindParentOf)) throw new Exception("Must handle root level node manually");
+            foreach (TreeNode Node in mapview.Nodes)
+            {
+                TreeNode result = Node.FindParentNode(n => n == NodeToFindParentOf);
+                if (result != null) return result;
+            }
+            return null;
         }
 
         public List<TreeNode> PopulateList(int PopulateChildrenOfID = 0)

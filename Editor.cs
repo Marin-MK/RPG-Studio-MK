@@ -319,6 +319,34 @@ namespace RPGStudioMK
         }
 
         /// <summary>
+        /// Updates the map data parent/order fields based on the node structure.
+        /// </summary>
+        /// <param name="Nodes">The list of nodes to update the order of.</param>
+        /// <param name="start">The integer to start counting at.</param>
+        public static int UpdateOrder(List<TreeNode> Nodes, int start = 1)
+        {
+            int order = start;
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                TreeNode n = Nodes[i];
+                // Set order
+                Data.Maps[(int) n.Object].Order = order;
+                if (start == 1) // First call; set parent to 0
+                {
+                    Data.Maps[(int) n.Object].ParentID = 0;
+                }
+                order++;
+                order = UpdateOrder(n.Nodes, order);
+                foreach (TreeNode child in n.Nodes)
+                {
+                    // Set parent
+                    Data.Maps[(int) child.Object].ParentID = (int) n.Object;
+                }
+            }
+            return order;
+        }
+
+        /// <summary>
         /// Reorganises the order values to never skip any values.
         /// </summary>
         public static void OptimizeOrder()
