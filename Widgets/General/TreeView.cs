@@ -54,6 +54,7 @@ namespace RPGStudioMK.Widgets
         {
             Sprites["list"].Bitmap?.Dispose();
             Sprites["text"].Bitmap?.Dispose();
+            int maxwidth = GetMaxNodeWidth(this.Nodes);
             int items = 0;
             for (int i = 0; i < this.Nodes.Count; i++)
             {
@@ -61,7 +62,7 @@ namespace RPGStudioMK.Widgets
                 items += this.Nodes[i].GetDisplayedNodeCount();
             }
             int height = items * 24;
-            SetHeight(height + TrailingBlank);
+            SetSize(maxwidth, height + TrailingBlank);
             Sprites["list"].Bitmap = new Bitmap(Size.Width, height);
             Sprites["text"].Bitmap = new Bitmap(Size.Width, height);
             Sprites["list"].Bitmap.Unlock();
@@ -112,6 +113,23 @@ namespace RPGStudioMK.Widgets
                 }
             }
             return y;
+        }
+
+        int GetMaxNodeWidth(List<TreeNode> Nodes, int depth = 0)
+        {
+            int width = 0;
+            foreach (TreeNode n in Nodes)
+            {
+                int textlength = Font.Get("Fonts/ProductSans-M", 14).TextSize(n.Name ?? n.Object.ToString()).Width;
+                int nodelength = 31 + depth * 16 + textlength;
+                if (nodelength > width) width = nodelength;
+                if (!n.Collapsed)
+                {
+                    int result = GetMaxNodeWidth(n.Nodes, depth + 1);
+                    if (result > width) width = result;
+                }
+            }
+            return width;
         }
 
         void UpdateHoverDrag()

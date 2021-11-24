@@ -25,15 +25,21 @@ namespace RPGStudioMK.Widgets
             Sprites["sep"] = new Sprite(this.Viewport, new SolidBitmap(288, 1, new Color(28, 50, 73)));
             Sprites["sep"].Y = 30;
 
-            Sprites["bar"] = new Sprite(this.Viewport, new SolidBitmap(1, Size.Height - 30, new Color(28, 50, 73)));
-            Sprites["bar"].Y = 30;
+            Sprites["bar1"] = new Sprite(this.Viewport, new SolidBitmap(1, Size.Height - 30, new Color(28, 50, 73)));
+            Sprites["bar1"].Y = 30;
+
+            Sprites["bar2"] = new Sprite(this.Viewport, new SolidBitmap(Size.Width - 11, 1, new Color(28, 50, 73)));
 
             allmapcontainer = new Container(this);
             allmapcontainer.SetPosition(0, 35);
             allmapcontainer.VAutoScroll = true;
+            allmapcontainer.HAutoScroll = true;
 
             VScrollBar vs = new VScrollBar(this);
             allmapcontainer.SetVScrollBar(vs);
+
+            HScrollBar hs = new HScrollBar(this);
+            allmapcontainer.SetHScrollBar(hs);
 
             mapview = new TreeView(allmapcontainer);
             mapview.SetWidth(212);
@@ -237,11 +243,16 @@ namespace RPGStudioMK.Widgets
         {
             base.SizeChanged(e);
             if (Size.Width == 50 && Size.Height == 50) return;
-            allmapcontainer.SetSize(this.Size.Width - 11, this.Size.Height - allmapcontainer.Position.Y);
-            Sprites["bar"].X = Size.Width - 11;
-            (Sprites["bar"].Bitmap as SolidBitmap).SetSize(1, Size.Height - 30);
+            mapview.MinimumSize.Width = Size.Width - 11;
+            allmapcontainer.SetSize(this.Size.Width - 11, this.Size.Height - allmapcontainer.Position.Y - 11);
+            Sprites["bar1"].X = Size.Width - 11;
+            (Sprites["bar1"].Bitmap as SolidBitmap).SetSize(1, Size.Height - 41);
+            Sprites["bar2"].Y = Size.Height - 11;
+            (Sprites["bar2"].Bitmap as SolidBitmap).SetSize(Size.Width - 11, 1);
             allmapcontainer.VScrollBar.SetPosition(Size.Width - 9, 33);
-            allmapcontainer.VScrollBar.SetSize(8, Size.Height - 35);
+            allmapcontainer.VScrollBar.SetSize(8, Size.Height - 46);
+            allmapcontainer.HScrollBar.SetPosition(1, Size.Height - 9);
+            allmapcontainer.HScrollBar.SetSize(Size.Width - 13, 8);
         }
 
         private void NewMap(BaseEventArgs e)
@@ -409,5 +420,4 @@ namespace RPGStudioMK.Widgets
             Editor.DeletedMaps.Add(Map);
         }
     }
-
 }
