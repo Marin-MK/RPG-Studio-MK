@@ -83,13 +83,14 @@ namespace RPGStudioMK.Widgets
 
         private int DrawNode(TreeNode node, int x, int y, bool FirstGeneration, bool LastNode)
         {
-            if (node == SelectedNode) Sprites["selector"].Y = y;
+            bool selected = DraggingNode == null && node == SelectedNode || node == DraggingNode;
+            if (selected) Sprites["selector"].Y = y;
             node.PixelsIndented = x;
             Font f = Font.Get("Fonts/ProductSans-M", 14);
             this.Sprites["text"].Bitmap.Font = f;
             string text = node.Name ?? node.Object.ToString();
             Size s = f.TextSize(text);
-            Color c = SelectedNode == node ? new Color(55, 187, 255) : Color.WHITE;
+            Color c = selected ? new Color(55, 187, 255) : Color.WHITE;
             this.Sprites["text"].Bitmap.DrawText(text, x + 12, y + 1, c);
 
             if (!FirstGeneration)
@@ -405,7 +406,6 @@ namespace RPGStudioMK.Widgets
                 }
                 else
                 {
-                    SelectedNode = n;
                     DraggingNode = n;
                 }
             }
@@ -420,7 +420,19 @@ namespace RPGStudioMK.Widgets
         {
             if (e.LeftButton != e.OldLeftButton && !e.LeftButton)
             {
-                if (DraggingNode != null && DraggingNode != HoveringNode) this.OnDragAndDropped?.Invoke(new BaseEventArgs());
+                if (DraggingNode != null)
+                {
+                    if (DraggingNode == HoveringNode)
+                    {
+                        SelectedNode = HoveringNode;
+                        this.OnSelectedNodeChanged?.Invoke(e);
+                        this.Redraw();
+                    }
+                    else
+                    {
+                        this.OnDragAndDropped?.Invoke(new BaseEventArgs());
+                    }
+                }
                 DraggingNode = null;
                 UpdateHoverDrag();
             }

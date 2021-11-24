@@ -109,6 +109,10 @@ namespace RPGStudioMK.Widgets
             bool Top = mapview.HoverTop;
             bool Over = mapview.HoverOver;
             bool Bottom = mapview.HoverBottom;
+            // If the hovering node is a child of our dragging node,
+            // we are trying to move the map inside a child map, which
+            // obviously is not possible.
+            if (DraggingNode.FindNode(n => n == HoveringNode) != null) return;
             // Remove the node
             if (mapview.Nodes.Contains(DraggingNode)) mapview.Nodes.Remove(DraggingNode);
             else
