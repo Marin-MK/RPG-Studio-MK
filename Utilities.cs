@@ -147,6 +147,7 @@ namespace RPGStudioMK
         public static void Initialize()
         {
             IconSheet = new Bitmap("icons.png");
+            Console.WriteLine(Editor.GeneralSettings.SecondsUsed);
         }
 
         /// <summary>

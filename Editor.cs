@@ -16,6 +16,11 @@ namespace RPGStudioMK
     public static class Editor
     {
         /// <summary>
+        /// The time at which the editor was opened.
+        /// </summary>
+        public static DateTime TimeOpened = DateTime.Now;
+
+        /// <summary>
         /// Determines whether the user should be warned of unsaved changed before closing.
         /// </summary>
         public static bool UnsavedChanges = false;
@@ -92,11 +97,6 @@ namespace RPGStudioMK
         public static OperatingSystem GetOperatingSystem()
         {
             return Environment.OSVersion;
-        }
-
-        public static void InitializeEditor()
-        {
-            
         }
 
         public static void WIP()
@@ -491,6 +491,11 @@ namespace RPGStudioMK
             }
         }
 
+        public static void MakeGame()
+        {
+            // That's your job.
+        }
+
         /// <summary>
         /// Runs the current project.
         /// </summary>
@@ -612,6 +617,7 @@ namespace RPGStudioMK
         public static void DumpGeneralSettings()
         {
             IFormatter formatter = new BinaryFormatter();
+            GeneralSettings.SecondsUsed += (int) Math.Floor((DateTime.Now - TimeOpened).TotalSeconds);
             Stream stream = new FileStream("editor.mkd", FileMode.Create, FileAccess.Write);
             formatter.Serialize(stream, GeneralSettings);
             stream.Close();
@@ -800,5 +806,9 @@ namespace RPGStudioMK
         /// Whether the user prefers to use the selection tool for selecting multiple layers.
         /// </summary>
         public bool PreferSelectionAll = false;
+        /// <summary>
+        /// The total number of seconds the program has ever been open.
+        /// </summary>
+        public int SecondsUsed = 0;
     }
 }

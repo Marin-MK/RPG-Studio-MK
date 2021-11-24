@@ -310,8 +310,6 @@ namespace RPGStudioMK
             MainGridLayout.Rows[5] = new GridSize(26, Unit.Pixels);
             MainGridLayout.UpdateContainers();
 
-            Editor.InitializeEditor();
-
             Editor.LoadProjectSettings();
             Data.LoadGameData();
 
