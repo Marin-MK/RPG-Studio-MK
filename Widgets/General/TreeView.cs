@@ -24,6 +24,7 @@ namespace RPGStudioMK.Widgets
         bool MergeTopLines = false;
         bool MergeBottomLines = false;
         int LineDepth = 0;
+        TreeNode OldHoveringNode;
 
         public TreeView(IContainer Parent) : base(Parent)
         {
@@ -405,6 +406,38 @@ namespace RPGStudioMK.Widgets
                 DraggingNode = null;
                 UpdateHoverDrag();
             }
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            if (OldHoveringNode != HoveringNode)
+            {
+                if (TimerExists("long_hover")) DestroyTimer("long_hover");
+            }
+            if (DraggingNode != null)
+            {
+                if (HoveringNode != null && HoveringNode.Collapsed && HoverOver && !TimerExists("long_hover"))
+                {
+                    SetTimer("long_hover", 500);
+                }
+                else if (HoveringNode != null && HoveringNode.Collapsed && HoverOver && TimerPassed("long_hover"))
+                {
+                    DestroyTimer("long_hover");
+                    HoveringNode.Collapsed = false;
+                    Game.Data.Maps[(int) HoveringNode.Object].Expanded = true;
+                    this.Redraw();
+                }
+                else if (TimerExists("long_hover") && (HoveringNode == null || !HoveringNode.Collapsed || !HoverOver))
+                {
+                    DestroyTimer("long_hover");
+                }
+            }
+            else
+            {
+                if (TimerExists("long_hover")) DestroyTimer("long_hover");
+            }
+            OldHoveringNode = HoveringNode;
         }
     }
 
