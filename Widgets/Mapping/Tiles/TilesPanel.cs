@@ -763,9 +763,10 @@ namespace RPGStudioMK.Widgets
             d.SetZIndex(1);
             d.SetIcon1(Icon.RectangleOutline);
             d.SetIcon2(Icon.Map);
+            d.MouseMoving(Graphics.LastMouseEvent);
             d.OnMouseDown += delegate (MouseEventArgs e)
             {
-                if (!d.WidgetIM.Hovering || d.HoveringIndex == -1) d.Dispose();
+                if (d.HoveringIndex == -1) d.Dispose();
                 else
                 {
                     Editor.GeneralSettings.PreferRectangleFill = d.HoveringIndex == 1;
@@ -783,9 +784,10 @@ namespace RPGStudioMK.Widgets
             d.SetZIndex(1);
             d.SetIcon1(Icon.CircleOutline);
             d.SetIcon2(Icon.Event);
+            d.MouseMoving(Graphics.LastMouseEvent);
             d.OnMouseDown += delegate (MouseEventArgs e)
             {
-                if (!d.WidgetIM.Hovering || d.HoveringIndex == -1) d.Dispose();
+                if (d.HoveringIndex == -1) d.Dispose();
                 else
                 {
                     Editor.GeneralSettings.PreferEllipseFill = d.HoveringIndex == 1;
@@ -803,9 +805,10 @@ namespace RPGStudioMK.Widgets
             d.SetZIndex(1);
             d.SetIcon1(Icon.Selection);
             d.SetIcon2(Icon.Script);
+            d.MouseMoving(Graphics.LastMouseEvent);
             d.OnMouseDown += delegate (MouseEventArgs e)
             {
-                if (!d.WidgetIM.Hovering || d.HoveringIndex == -1) d.Dispose();
+                if (d.HoveringIndex == -1) d.Dispose();
                 else
                 {
                     Editor.GeneralSettings.PreferSelectionAll = d.HoveringIndex == 1;
