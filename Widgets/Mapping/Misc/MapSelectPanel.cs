@@ -30,6 +30,8 @@ namespace RPGStudioMK.Widgets
 
             Sprites["bar2"] = new Sprite(this.Viewport, new SolidBitmap(Size.Width - 11, 1, new Color(28, 50, 73)));
 
+            Sprites["block"] = new Sprite(this.Viewport, new SolidBitmap(11, 11, new Color(64, 104, 146)));
+
             allmapcontainer = new Container(this);
             allmapcontainer.SetPosition(0, 35);
             allmapcontainer.VAutoScroll = true;
@@ -253,6 +255,8 @@ namespace RPGStudioMK.Widgets
             (Sprites["bar1"].Bitmap as SolidBitmap).SetSize(1, Size.Height - 41);
             Sprites["bar2"].Y = Size.Height - 11;
             (Sprites["bar2"].Bitmap as SolidBitmap).SetSize(Size.Width - 11, 1);
+            Sprites["block"].X = Size.Width - 11;
+            Sprites["block"].Y = Size.Height - 11;
             allmapcontainer.VScrollBar.SetPosition(Size.Width - 9, 33);
             allmapcontainer.VScrollBar.SetSize(8, Size.Height - 46);
             allmapcontainer.HScrollBar.SetPosition(1, Size.Height - 9);
