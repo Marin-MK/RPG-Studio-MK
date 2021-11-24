@@ -83,7 +83,8 @@ namespace RPGStudioMK.Game
             for (int i = 0; i < Ruby.Array.Length(autotiles); i++)
             {
                 string name = Ruby.String.FromPtr(Ruby.Array.Get(autotiles, i));
-                if (!string.IsNullOrEmpty(name))
+                if (string.IsNullOrEmpty(name)) this.Autotiles.Add(null);
+                else
                 {
                     Autotile autotile = new Autotile();
                     autotile.ID = this.ID * 7 + i;
@@ -129,6 +130,7 @@ namespace RPGStudioMK.Game
             Ruby.SetIVar(obj, "@autotile_names", autotile_names);
             foreach (Autotile autotile in this.Autotiles)
             {
+                if (autotile == null) continue;
                 int idx = autotile.ID - this.ID * 7;
                 Ruby.Funcall(autotile_names, "[]=", Ruby.Integer.ToPtr(idx), Ruby.String.ToPtr(autotile.GraphicName));
             }

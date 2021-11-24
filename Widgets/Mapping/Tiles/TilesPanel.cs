@@ -231,14 +231,15 @@ namespace RPGStudioMK.Widgets
             for (int i = 0; i < MapData.AutotileIDs.Count; i++)
             {
                 int autotileid = MapData.AutotileIDs[i];
+                if (autotileid == -1) continue;
                 Autotile autotile = Data.Autotiles[autotileid];
                 //if (autotile.Format == AutotileFormat.Single)
                 //{
-                    int x = 33 * (SingleIndex % 8);
-                    int y = 33 * (int) Math.Floor(SingleIndex / 8d);
-                    singles.Build(x, y, autotile.AutotileBitmap, new Rect(0, 0, 32, 32));
-                    AutotileContainers.Add(SingleIndex);
-                    SingleIndex++;
+                int x = 33 * (SingleIndex % 8);
+                int y = 33 * (int) Math.Floor(SingleIndex / 8d);
+                singles.Build(x, y, autotile.AutotileBitmap, new Rect(0, 0, 32, 32));
+                AutotileContainers.Add(i);
+                SingleIndex++;
                 //    continue;
                 //}
                 /*CollapsibleContainer c = new CollapsibleContainer(MainStackPanel);
@@ -357,13 +358,7 @@ namespace RPGStudioMK.Widgets
                 if (ContainerIndex == 0 && SingleAutotileCount > 0)
                 {
                     if (TileX + TileY * 8 >= SingleAutotileCount) return;
-                    for (int i = 0; i < AutotileContainers.Count; i++)
-                    {
-                        if (AutotileContainers[i] is int && (int) AutotileContainers[i] == TileX + TileY * 8)
-                        {
-                            this.AutotileIndex = i;
-                        }
-                    }
+                    this.AutotileIndex = (int) AutotileContainers[TileX + TileY * 8];
                 }
                 else
                 {
@@ -542,7 +537,7 @@ namespace RPGStudioMK.Widgets
             }
             if (AutotileIndex != -1) // Autotile selected
             {
-                object image = AutotileContainers[AutotileIndex];
+                object image = AutotileContainers.IndexOf(AutotileIndex);
                 if (image is int) // Single autotile
                 {
                     CollapsibleContainer cc = SingleAutotileContainer;

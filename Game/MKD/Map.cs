@@ -97,7 +97,7 @@ namespace RPGStudioMK.Game
             // Now add all autotile IDs from the tileset to the list of autotile ids
             foreach (Autotile autotile in Data.Tilesets[tilesetid].Autotiles)
             {
-                this.AutotileIDs.Add(autotile.ID);
+                this.AutotileIDs.Add(autotile == null ? -1 : autotile.ID);
             }
 
             IntPtr events = Ruby.GetIVar(data, "@events");
