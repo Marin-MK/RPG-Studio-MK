@@ -27,7 +27,7 @@ namespace RPGStudioMK.Widgets
         public void SetLayers(List<Layer> Layers)
         {
             this.Layers = Layers;
-            SelectedLayer = Layers.Count - 1;
+            SelectedLayer = 0;
             Redraw();
             SetSize(278, Layers.Count * 24);
         }
