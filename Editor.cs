@@ -578,12 +578,15 @@ namespace RPGStudioMK
             }
             if (Mode == "DATABASE") // Select Database mode
             {
-                MainWindow.ToolBar.DatabaseMode.SetSelected(true, Force);
-
                 if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
-                MainWindow.MainEditorWidget = new DatabaseWidget(MainWindow.MainGridLayout);
-                MainWindow.MainEditorWidget.SetGridRow(3);
-                MainWindow.DatabaseWidget.SetMode("species");
+                MainWindow.MainEditorWidget = null;
+                
+                //MainWindow.ToolBar.DatabaseMode.SetSelected(true, Force);
+                //
+                //if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
+                //MainWindow.MainEditorWidget = new DatabaseWidget(MainWindow.MainGridLayout);
+                //MainWindow.MainEditorWidget.SetGridRow(3);
+                //MainWindow.DatabaseWidget.SetMode("species");
             }
             else if (OldMode == "DATABASE") // Deselect Database mode
             {
