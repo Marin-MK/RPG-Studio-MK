@@ -34,7 +34,7 @@ namespace RPGStudioMK.Widgets
             if (IconType != IconType.None)
             {
                 Icon = new PictureBox(this);
-                Icon.Sprite.Bitmap = new Bitmap("mbox_icons");
+                Icon.Sprite.Bitmap = new Bitmap("img/mbox_icons");
                 Icon.Sprite.SrcRect.Width = 32;
                 Icon.Sprite.SrcRect.X = 32 * ((int) IconType - 1);
             }

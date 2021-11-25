@@ -146,7 +146,7 @@ namespace RPGStudioMK
         /// </summary>
         public static void Initialize()
         {
-            IconSheet = new Bitmap("icons.png");
+            IconSheet = new Bitmap("img/icons.png");
             int seconds = Editor.GeneralSettings.SecondsUsed % 60;
             int minutes = Editor.GeneralSettings.SecondsUsed / 60 % 60;
             int hours = Editor.GeneralSettings.SecondsUsed / 60 / 60 % 24;

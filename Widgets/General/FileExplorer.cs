@@ -447,7 +447,7 @@ namespace RPGStudioMK.Widgets
             else if (this.IsFolder && ReopenFile)
             {
                 Sprites["gfx"].Bitmap?.Dispose();
-                Sprites["gfx"].Bitmap = new Bitmap("file_explorer_large_folder");
+                Sprites["gfx"].Bitmap = new Bitmap("img/file_explorer_large_folder");
             }
             if (Sprites["gfx"].Bitmap != null)
             {
