@@ -98,7 +98,7 @@ namespace RPGStudioMK.Widgets
                 if (Tabs.Count > 0) SelectTab(0);
             }
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
-            Font f = Font.Get("Fonts/Ubuntu-B", 15);
+            Font f = Fonts.UbuntuBold.Use(15);
             for (int i = 0; i < this.Tabs.Count; i++)
             {
                 int headerw = f.TextSize(Names[i]).Width;

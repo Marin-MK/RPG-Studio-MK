@@ -107,7 +107,7 @@ namespace RPGStudioMK.Widgets
             {
                 this.Text = Text;
                 Sprites["text"].Bitmap?.Dispose();
-                Font f = Font.Get("Fonts/Ubuntu-B", 16);
+                Font f = Fonts.UbuntuBold.Use(16);
                 Size s = f.TextSize(this.Text);
                 Sprites["text"].Bitmap = new Bitmap(s);
                 Sprites["text"].Bitmap.Unlock();

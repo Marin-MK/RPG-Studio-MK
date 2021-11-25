@@ -15,7 +15,7 @@ namespace RPGStudioMK.Widgets
         public ModeButton(IContainer Parent, string Text, int Icon) : base(Parent)
         {
             Sprites["text"] = new Sprite(this.Viewport);
-            Font f = Font.Get("Fonts/Ubuntu-B", 14);
+            Font f = Fonts.UbuntuBold.Use(14);
             Size s = f.TextSize(Text);
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Font = f;

@@ -8,7 +8,7 @@ namespace RPGStudioMK.Widgets
     {
         public string Text { get; protected set; }
         public bool Checked { get; protected set; } = false;
-        public Font Font { get; protected set; } = Font.Get("Fonts/ProductSans-M", 12);
+        public Font Font { get; protected set; }
         public bool Enabled { get; protected set; } = true;
 
         bool Selecting = false;

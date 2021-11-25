@@ -40,7 +40,7 @@ namespace RPGStudioMK.Widgets
         {
             if (Sprites["header"].Bitmap != null) Sprites["header"].Bitmap.Dispose();
             int TotalWidth = 0;
-            Font f = Font.Get("Fonts/ProductSans-M", 12);
+            Font f = Fonts.ProductSansMedium.Use(12);
             foreach (MenuItem mi in Items)
             {
                 TotalWidth += f.TextSize(mi.Text).Width + 12;

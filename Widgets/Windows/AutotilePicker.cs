@@ -45,7 +45,7 @@ namespace RPGStudioMK.Widgets
 
             Sprites["preview"] = new Sprite(this.Viewport);
 
-            Font f = Font.Get("Fonts/Ubuntu-B", 14);
+            Font f = Fonts.UbuntuBold.Use(14);
 
             Label labelavail = new Label(this);
             labelavail.SetText("Available");

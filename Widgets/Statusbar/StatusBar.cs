@@ -42,7 +42,7 @@ namespace RPGStudioMK.Widgets
         public void SetMap(Map Map)
         {
             if (Sprites["map"].Bitmap != null) Sprites["map"].Bitmap.Dispose();
-            Font f = Font.Get("Fonts/ProductSans-M", 14);
+            Font f = Fonts.ProductSansMedium.Use(14);
             string text = $"{Utilities.Digits(Map.ID, 3)}: {Map.Name} ({Map.Width}x{Map.Height})";
             Size s = f.TextSize(text);
             Sprites["map"].Bitmap = new Bitmap(s);
@@ -55,7 +55,7 @@ namespace RPGStudioMK.Widgets
         public void DrawText(string Text)
         {
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
-            Font f = Font.Get("Fonts/ProductSans-M", 14);
+            Font f = Fonts.ProductSansMedium.Use(14);
             Size s = f.TextSize(Text);
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Font = f;
@@ -81,7 +81,7 @@ namespace RPGStudioMK.Widgets
         public void DrawCursor(int X, int Y, int width, int height)
         {
             if (Sprites["cursor"].Bitmap != null) Sprites["cursor"].Bitmap.Dispose();
-            Font f = Font.Get("Fonts/ProductSans-M", 14);
+            Font f = Fonts.ProductSansMedium.Use(14);
             string text = $"{Utilities.Digits(X, 3)}x{Utilities.Digits(Y, 3)}";
             if (width != 0 || height != 0) text += $" (size {width + 1},{height + 1})";
             Size s = f.TextSize(text);

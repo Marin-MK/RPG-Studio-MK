@@ -98,7 +98,7 @@ namespace RPGStudioMK.Widgets
             path.AddRange(this.Directory.Split('/'));
             GridContainer.VScrollBar.SetValue(0);
             int x = 6;
-            Font f = Font.Get("Fonts/ProductSans-M", 14);
+            Font f = Fonts.ProductSansMedium.Use(14);
             Color arrowcolor = new Color(86, 108, 134);
             Color arrowshadow = new Color(36, 34, 36);
             for (int i = 0; i < path.Count; i++)
@@ -164,7 +164,7 @@ namespace RPGStudioMK.Widgets
             if (Empty)
             {
                 EmptyLabel = new Label(GridContainer);
-                EmptyLabel.SetFont(Font.Get("Fonts/Ubuntu-R", 14));
+                EmptyLabel.SetFont(Fonts.UbuntuRegular.Use(14));
                 EmptyLabel.SetText("This directory does not contain any (relevant) files.");
                 EmptyLabel.SetPosition(GridContainer.Size.Width / 2 - EmptyLabel.Size.Width / 2 - 20, GridContainer.Size.Height / 2 - EmptyLabel.Size.Height / 2 - 50);
             }
@@ -447,7 +447,7 @@ namespace RPGStudioMK.Widgets
             else if (this.IsFolder && ReopenFile)
             {
                 Sprites["gfx"].Bitmap?.Dispose();
-                Sprites["gfx"].Bitmap = new Bitmap("img/file_explorer_large_folder");
+                Sprites["gfx"].Bitmap = new Bitmap("assets/img/file_explorer_large_folder");
             }
             if (Sprites["gfx"].Bitmap != null)
             {
@@ -464,11 +464,11 @@ namespace RPGStudioMK.Widgets
         public void RedrawName()
         {
             Sprites["text"].Bitmap?.Dispose();
-            Font f = Font.Get("Fonts/Ubuntu-R", 14);
+            Font f = Fonts.UbuntuRegular.Use(14);
             List<string> Lines = Utilities.FormatString(f, this.Name, Size.Width - 4);
             if (Lines.Count > 1)
             {
-                f = Font.Get("Fonts/ProductSans-M", 12);
+                f = Fonts.ProductSansMedium.Use(12);
                 Lines = Utilities.FormatString(f, this.Name, Size.Width - 4);
             }
             TwoLines = false;

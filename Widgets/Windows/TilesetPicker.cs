@@ -28,7 +28,7 @@ namespace RPGStudioMK.Widgets
             Label pickerlabel = new Label(this);
             pickerlabel.SetText("Tilesets");
             pickerlabel.SetPosition(18, 24);
-            pickerlabel.SetFont(Font.Get("Fonts/Ubuntu-B", 14));
+            pickerlabel.SetFont(Fonts.UbuntuBold.Use(14));
             Tilesets = new ListBox(this);
             Tilesets.SetPosition(25, 44);
             Tilesets.SetSize(151, 409);
@@ -47,7 +47,7 @@ namespace RPGStudioMK.Widgets
             Label previewlabel = new Label(this);
             previewlabel.SetText("Preview");
             previewlabel.SetPosition(192, 24);
-            previewlabel.SetFont(Font.Get("Fonts/Ubuntu-B", 14));
+            previewlabel.SetFont(Fonts.UbuntuBold.Use(14));
             previewbox = new GroupBox(this);
             previewbox.SetPosition(200, 44);
             previewbox.SetSize(280, 409);

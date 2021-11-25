@@ -11,7 +11,7 @@ namespace RPGStudioMK.Widgets
         public DropdownBox(IContainer Parent) : base(Parent)
         {
             TextArea.SetPosition(6, 4);
-            TextArea.SetFont(Font.Get("Fonts/ProductSans-M", 14));
+            TextArea.SetFont(Fonts.ProductSansMedium.Use(14));
             TextArea.SetCaretColor(Color.WHITE);
         }
 

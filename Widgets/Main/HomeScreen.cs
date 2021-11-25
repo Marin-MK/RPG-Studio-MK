@@ -27,16 +27,16 @@ namespace RPGStudioMK.Widgets
         {
             SetBackgroundColor(28, 50, 73);
             Sprites["map"] = new Sprite(this.Viewport);
-            if (System.IO.File.Exists("img/home_map.png")) Sprites["map"].Bitmap = new Bitmap("img/home_map.png");
-            Sprites["sidebar"] = new Sprite(this.Viewport, "img/home_side.png");
-            Sprites["logo"] = new Sprite(this.Viewport, "img/home_logo.png");
+            if (System.IO.File.Exists("assets/img/home_map.png")) Sprites["map"].Bitmap = new Bitmap("assets/img/home_map.png");
+            Sprites["sidebar"] = new Sprite(this.Viewport, "assets/img/home_side.png");
+            Sprites["logo"] = new Sprite(this.Viewport, "assets/img/home_logo.png");
             Sprites["logo"].X = 33;
             Sprites["logo"].Y = 4;
             Sprites["text"] = new Sprite(this.Viewport, new Bitmap(360, 160));
-            Sprites["text"].Bitmap.Font = Font.Get("Fonts/Ubuntu-B", 18);
+            Sprites["text"].Bitmap.Font = Fonts.UbuntuBold.Use(18);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.DrawText(Editor.GetVersionString(), 348, 88, Color.WHITE, DrawOptions.RightAlign);
-            Sprites["text"].Bitmap.Font = Font.Get("Fonts/Ubuntu-B", 22);
+            Sprites["text"].Bitmap.Font = Fonts.UbuntuBold.Use(22);
             Sprites["text"].Bitmap.DrawText("Recent Projects:", 38, 126, Color.WHITE, DrawOptions.Underlined);
             Sprites["text"].Bitmap.Lock();
             Sprites["filesel"] = new Sprite(this.Viewport, new SolidBitmap(2, 38, new Color(0, 205, 255)));
@@ -49,7 +49,7 @@ namespace RPGStudioMK.Widgets
             NewProjectButton = new HomeScreenButton(this);
             NewProjectButton.SetPosition(445, 108);
             NewProjectButton.SetText("New Project");
-            NewProjectButton.SetIcon("img/home_icon_new");
+            NewProjectButton.SetIcon("assets/img/home_icon_new");
             NewProjectButton.SetHelpText("Create a new project.");
             NewProjectButton.OnLeftClick += delegate (MouseEventArgs e)
             {
@@ -59,7 +59,7 @@ namespace RPGStudioMK.Widgets
             OpenProjectButton = new HomeScreenButton(this);
             OpenProjectButton.SetPosition(690, 108);
             OpenProjectButton.SetText("Open Project");
-            OpenProjectButton.SetIcon("img/home_icon_openfile");
+            OpenProjectButton.SetIcon("assets/img/home_icon_openfile");
             OpenProjectButton.SetHelpText("Open an existing project by selecting its project file.");
             OpenProjectButton.OnLeftClick += delegate (MouseEventArgs e)
             {
@@ -70,14 +70,14 @@ namespace RPGStudioMK.Widgets
             TutorialsButton.SetPosition(935, 108);
             TutorialsButton.SetText("Tutorials");
             TutorialsButton.SetHelpText("Click this button to be directed to various tutorials and documentation for RPG Studio MK.");
-            TutorialsButton.SetIcon("img/home_icon_tutorials");
+            TutorialsButton.SetIcon("assets/img/home_icon_tutorials");
             TutorialsButton.OnLeftClick += delegate (MouseEventArgs e)
             {
                 ShowTutorials();
             };
 
             YoutubeButton = new PictureBox(this);
-            YoutubeButton.Sprite.Bitmap = new Bitmap("img/home_icon_youtube.png");
+            YoutubeButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_youtube.png");
             YoutubeButton.SetHelpText("Visit RPG Studio MK's YouTube account.");
             YoutubeButton.OnLeftClick += delegate (MouseEventArgs e)
             {
@@ -86,12 +86,12 @@ namespace RPGStudioMK.Widgets
             YoutubeButton.OnHoverChanged += delegate (MouseEventArgs e)
             {
                 YoutubeButton.Sprite.Bitmap.Dispose();
-                if (YoutubeButton.WidgetIM.Hovering) YoutubeButton.Sprite.Bitmap = new Bitmap("img/home_icon_youtube_hover.png");
-                else YoutubeButton.Sprite.Bitmap = new Bitmap("img/home_icon_youtube.png");
+                if (YoutubeButton.WidgetIM.Hovering) YoutubeButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_youtube_hover.png");
+                else YoutubeButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_youtube.png");
             };
             
             TwitterButton = new PictureBox(this);
-            TwitterButton.Sprite.Bitmap = new Bitmap("img/home_icon_twitter.png");
+            TwitterButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_twitter.png");
             TwitterButton.SetHelpText("Visit MK's Twitter account.");
             TwitterButton.OnLeftClick += delegate (MouseEventArgs e)
             {
@@ -100,15 +100,15 @@ namespace RPGStudioMK.Widgets
             TwitterButton.OnHoverChanged += delegate (MouseEventArgs e)
             {
                 TwitterButton.Sprite.Bitmap.Dispose();
-                if (TwitterButton.WidgetIM.Hovering) TwitterButton.Sprite.Bitmap = new Bitmap("img/home_icon_twitter_hover.png");
-                else TwitterButton.Sprite.Bitmap = new Bitmap("img/home_icon_twitter.png");
+                if (TwitterButton.WidgetIM.Hovering) TwitterButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_twitter_hover.png");
+                else TwitterButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_twitter.png");
             };
 
             NoProjects = new MultilineLabel(this);
             NoProjects.SetSize(320, 100);
             NoProjects.SetPosition(40, 170);
             NoProjects.SetText("You haven't opened any projects recently.\nGet started by creating or opening a project!");
-            NoProjects.SetFont(Font.Get("Fonts/Ubuntu-R", 15));
+            NoProjects.SetFont(Fonts.UbuntuRegular.Use(15));
 
             VignetteFade = new VignetteFade(this);
         }
@@ -154,8 +154,8 @@ namespace RPGStudioMK.Widgets
             RecentCapacity = (int) Math.Floor(height / 48d);
             Sprites["files"].Bitmap = new Bitmap(314, 48 * RecentCapacity);
             Sprites["files"].Bitmap.Unlock();
-            Font boldfont = Font.Get("Fonts/Ubuntu-B", 16);
-            Font regularfont = Font.Get("Fonts/ProductSans-M", 14);
+            Font boldfont = Fonts.UbuntuBold.Use(16);
+            Font regularfont = Fonts.ProductSansMedium.Use(14);
             int count = Editor.GeneralSettings.RecentFiles.Count;
             for (int i = 0; i < count; i++)
             {
@@ -404,7 +404,7 @@ namespace RPGStudioMK.Widgets
         public HomeScreenButton(IContainer Parent) : base(Parent)
         {
             SetSize(237, 213);
-            Sprites["bg"] = new Sprite(this.Viewport, "img/home_button.png");
+            Sprites["bg"] = new Sprite(this.Viewport, "assets/img/home_button.png");
             Sprites["icon"] = new Sprite(this.Viewport);
             Sprites["text"] = new Sprite(this.Viewport);
             Sprites["text"].Y = 154;
@@ -434,7 +434,7 @@ namespace RPGStudioMK.Widgets
                 if (string.IsNullOrEmpty(Text)) return;
                 Sprites["text"].Bitmap = new Bitmap(212, 47);
                 Sprites["text"].Bitmap.Unlock();
-                Sprites["text"].Bitmap.Font = Font.Get("Fonts/Ubuntu-B", 20);
+                Sprites["text"].Bitmap.Font = Fonts.UbuntuBold.Use(20);
                 Sprites["text"].Bitmap.DrawText(Text, 118, 12, Color.WHITE, DrawOptions.CenterAlign);
                 Sprites["text"].Bitmap.Lock();
             }

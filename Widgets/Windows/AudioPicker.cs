@@ -34,7 +34,7 @@ namespace RPGStudioMK.Widgets
             Label pickerlabel = new Label(this);
             pickerlabel.SetText("Files");
             pickerlabel.SetPosition(22, 26);
-            pickerlabel.SetFont(Font.Get("Fonts/ProductSans-M", 14));
+            pickerlabel.SetFont(Fonts.ProductSansMedium.Use(14));
 
             FileList = new ListBox(this);
             FileList.SetPosition(25, 44);
@@ -61,7 +61,7 @@ namespace RPGStudioMK.Widgets
             Label previewlabel = new Label(this);
             previewlabel.SetText("Preview");
             previewlabel.SetPosition(192, 26);
-            previewlabel.SetFont(Font.Get("Fonts/ProductSans-M", 14));
+            previewlabel.SetFont(Fonts.ProductSansMedium.Use(14));
 
             PlayButton = new Button(this);
             PlayButton.SetText("Play");
@@ -78,22 +78,22 @@ namespace RPGStudioMK.Widgets
 
             Label VolumeGroupLabel = new Label(this);
             VolumeGroupLabel.SetText("Volume");
-            VolumeGroupLabel.SetFont(Font.Get("Fonts/ProductSans-M", 14));
+            VolumeGroupLabel.SetFont(Fonts.ProductSansMedium.Use(14));
             VolumeGroupLabel.SetPosition(192, 132);
             GroupBox VolumeGroup = new GroupBox(this);
             VolumeGroup.SetPosition(197, 151);
             VolumeGroup.SetSize(222, 54);
             Label MinVolumeLabel = new Label(VolumeGroup);
             MinVolumeLabel.SetText("-");
-            MinVolumeLabel.SetFont(Font.Get("Fonts/Ubuntu-R", 26));
+            MinVolumeLabel.SetFont(Fonts.UbuntuRegular.Use(26));
             MinVolumeLabel.SetPosition(27, 10);
             Label MaxVolumeLabel = new Label(VolumeGroup);
             MaxVolumeLabel.SetText("+");
-            MaxVolumeLabel.SetFont(Font.Get("Fonts/Ubuntu-R", 26));
+            MaxVolumeLabel.SetFont(Fonts.UbuntuRegular.Use(26));
             MaxVolumeLabel.SetPosition(147, 10);
             Label VolumeLabel = new Label(VolumeGroup);
             VolumeLabel.SetText(Volume.ToString() + "%");
-            VolumeLabel.SetFont(Font.Get("Fonts/Ubuntu-R", 14));
+            VolumeLabel.SetFont(Fonts.UbuntuRegular.Use(14));
             VolumeLabel.SetPosition(167, 18);
             VolumeSlider = new NumericSlider(VolumeGroup);
             VolumeSlider.SetPosition(38, 18);
@@ -108,22 +108,22 @@ namespace RPGStudioMK.Widgets
 
             Label PitchGroupLabel = new Label(this);
             PitchGroupLabel.SetText("Pitch");
-            PitchGroupLabel.SetFont(Font.Get("Fonts/ProductSans-M", 14));
+            PitchGroupLabel.SetFont(Fonts.ProductSansMedium.Use(14));
             PitchGroupLabel.SetPosition(192, 232);
             GroupBox PitchGroup = new GroupBox(this);
             PitchGroup.SetPosition(197, 251);
             PitchGroup.SetSize(222, 54);
             Label MinPitchLabel = new Label(PitchGroup);
             MinPitchLabel.SetText("-");
-            MinPitchLabel.SetFont(Font.Get("Fonts/Ubuntu-R", 26));
+            MinPitchLabel.SetFont(Fonts.UbuntuRegular.Use(26));
             MinPitchLabel.SetPosition(27, 10);
             Label MaxPitchLabel = new Label(PitchGroup);
             MaxPitchLabel.SetText("+");
-            MaxPitchLabel.SetFont(Font.Get("Fonts/Ubuntu-R", 26));
+            MaxPitchLabel.SetFont(Fonts.UbuntuRegular.Use(26));
             MaxPitchLabel.SetPosition(147, 10);
             Label PitchLabel = new Label(PitchGroup);
             PitchLabel.SetText(Pitch.ToString() + "%");
-            PitchLabel.SetFont(Font.Get("Fonts/Ubuntu-R", 14));
+            PitchLabel.SetFont(Fonts.UbuntuRegular.Use(14));
             PitchLabel.SetPosition(167, 18);
             PitchSlider = new NumericSlider(PitchGroup);
             PitchSlider.SetPosition(38, 18);

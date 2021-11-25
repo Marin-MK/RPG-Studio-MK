@@ -48,7 +48,7 @@ namespace RPGStudioMK.Widgets
             vs.SetSize(10, 403);
             TilesetContainer.SetVScrollBar(vs);
 
-            Font f = Font.Get("Fonts/Ubuntu-B", 14);
+            Font f = Fonts.UbuntuBold.Use(14);
 
             Label labelavail = new Label(this);
             labelavail.SetText("Available");

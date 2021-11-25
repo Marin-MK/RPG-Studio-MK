@@ -32,14 +32,14 @@ namespace RPGStudioMK.Widgets
             this.Center();
             Label settings = new Label(this);
             settings.SetText("Info");
-            settings.SetFont(Font.Get("Fonts/Ubuntu-B", 14));
+            settings.SetFont(Fonts.UbuntuBold.Use(14));
             settings.SetPosition(12, 26);
 
             GroupBox box1 = new GroupBox(this);
             box1.SetPosition(19, 47);
             box1.SetSize(300, 213);
 
-            Font f = Font.Get("Fonts/ProductSans-M", 12);
+            Font f = Fonts.ProductSansMedium.Use(12);
 
             Label namelabel = new Label(box1);
             namelabel.SetText("Map Name:");

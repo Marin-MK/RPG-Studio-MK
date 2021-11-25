@@ -81,7 +81,7 @@ namespace RPGStudioMK.Widgets
             Sprites["bg"].Bitmap.Unlock();
             Sprites["text"].Bitmap?.Dispose();
             Sprites["text"].Bitmap = new Bitmap(Size.Width, 24 * Layers.Count);
-            Font f = Font.Get("Fonts/ProductSans-M", 14);
+            Font f = Fonts.ProductSansMedium.Use(14);
             Sprites["text"].Bitmap.Unlock();
             Sprites["text"].Bitmap.Font = f;
             for (int i = 0; i < Layers.Count; i++)

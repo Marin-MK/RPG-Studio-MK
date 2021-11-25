@@ -88,7 +88,7 @@ namespace RPGStudioMK.Widgets
             string text = "";
             if (Value < 0) text += "-";
             text += Math.Abs(Value).ToString();
-            Font f = Font.Get("Fonts/ProductSans-M", 14);
+            Font f = Fonts.ProductSansMedium.Use(14);
             Size s = f.TextSize(text);
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Unlock();

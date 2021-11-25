@@ -68,7 +68,7 @@ namespace RPGStudioMK.Widgets
         public void RedrawText()
         {
             TextWidget.Sprites["text"].Bitmap?.Dispose();
-            Font f = Font.Get("Fonts/Ubuntu-B", 14);
+            Font f = Fonts.UbuntuBold.Use(14);
             TextWidget.Sprites["text"].Bitmap = new Bitmap(Size.Width, 20 * Items.Count);
             TextWidget.SetSize(Size.Width, 18 + 20 * Items.Count);
             TextWidget.Sprites["text"].Bitmap.Unlock();

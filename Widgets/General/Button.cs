@@ -9,7 +9,7 @@ namespace RPGStudioMK.Widgets
     public class Button : Widget
     {
         public string Text { get; protected set; }
-        public Font Font { get; protected set; } = Font.Get("Fonts/ProductSans-B", 14);
+        public Font Font { get; protected set; }
         public bool Enabled { get; protected set; } = true;
         public Color TextColor { get; protected set; } = Color.WHITE;
 

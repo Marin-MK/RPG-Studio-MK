@@ -31,7 +31,7 @@ namespace RPGStudioMK.Widgets
             Center();
 
             Label GraphicLabel = new Label(this);
-            GraphicLabel.SetFont(Font.Get("Fonts/Ubuntu-B", 16));
+            GraphicLabel.SetFont(Fonts.UbuntuBold.Use(16));
             GraphicLabel.SetText("Current Graphic");
             GraphicLabel.SetPosition(559, 35);
 
@@ -76,7 +76,7 @@ namespace RPGStudioMK.Widgets
             Cursor = new CursorWidget(GraphicContainer);
             Cursor.ConsiderInAutoScrollCalculation = false;
 
-            Font f = Font.Get("Fonts/ProductSans-M", 12);
+            Font f = Fonts.ProductSansMedium.Use(12);
 
             TypeLabel = new Label(this);
             TypeLabel.SetPosition(547, 244);

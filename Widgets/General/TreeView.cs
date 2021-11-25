@@ -86,7 +86,7 @@ namespace RPGStudioMK.Widgets
             bool selected = DraggingNode == null && node == SelectedNode || node == DraggingNode;
             if (selected) Sprites["selector"].Y = y;
             node.PixelsIndented = x;
-            Font f = Font.Get("Fonts/ProductSans-M", 14);
+            Font f = Fonts.ProductSansMedium.Use(14);
             this.Sprites["text"].Bitmap.Font = f;
             string text = node.Name ?? node.Object.ToString();
             Size s = f.TextSize(text);
@@ -121,7 +121,7 @@ namespace RPGStudioMK.Widgets
             int width = 0;
             foreach (TreeNode n in Nodes)
             {
-                int textlength = Font.Get("Fonts/ProductSans-M", 14).TextSize(n.Name ?? n.Object.ToString()).Width;
+                int textlength = Fonts.ProductSansMedium.Use(14).TextSize(n.Name ?? n.Object.ToString()).Width;
                 int nodelength = 31 + depth * 16 + textlength;
                 if (nodelength > width) width = nodelength;
                 if (!n.Collapsed)

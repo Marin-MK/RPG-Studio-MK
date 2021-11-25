@@ -11,7 +11,7 @@ namespace RPGStudioMK.Widgets
     public class MultilineTextArea : Widget
     {
         public string Text { get; protected set; } = "";
-        public Font Font { get; protected set; } = Font.Get("Fonts/ProductSans-M", 12);
+        public Font Font { get; protected set; }
         public Color TextColor { get; protected set; } = Color.WHITE;
         public bool ReadOnly { get; protected set; } = false;
         public int CaretHeight { get; protected set; } = 13;

@@ -109,7 +109,7 @@ namespace RPGStudioMK.Widgets
             else if (this.Factor == 3.0) txt = "300%";
             else if (this.Factor == 4.0) txt = "400%";
             else throw new Exception("Unknown zoom factor");
-            Font f = Font.Get("Fonts/ProductSans-M", 14);
+            Font f = Fonts.ProductSansMedium.Use(14);
             Size s = f.TextSize(txt);
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Font = f;

@@ -30,10 +30,10 @@ namespace RPGStudioMK.Widgets
             this.Icon = Icon;
             this.Text = Text;
             Sprites["icon"].Bitmap?.Dispose();
-            Sprites["icon"].Bitmap = new Bitmap($"img/data_type_{Icon}");
+            Sprites["icon"].Bitmap = new Bitmap($"assets/img/data_type_{Icon}");
             Sprites["icon"].SrcRect.Width = Sprites["icon"].Bitmap.Width / 2;
             Sprites["text"].Bitmap?.Dispose();
-            Font f = Font.Get("Fonts/Ubuntu-B", 16);
+            Font f = Fonts.UbuntuBold.Use(16);
             Size s = f.TextSize(Text);
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Unlock();

@@ -146,7 +146,7 @@ namespace RPGStudioMK
         /// </summary>
         public static void Initialize()
         {
-            IconSheet = new Bitmap("img/icons.png");
+            IconSheet = new Bitmap("assets/img/icons.png");
             int seconds = Editor.GeneralSettings.SecondsUsed % 60;
             int minutes = Editor.GeneralSettings.SecondsUsed / 60 % 60;
             int hours = Editor.GeneralSettings.SecondsUsed / 60 / 60 % 24;
@@ -612,5 +612,21 @@ namespace RPGStudioMK
     {
         MAP_SELECTION,
         MAP
+    }
+
+    public class Fonts
+    {
+        public static Fonts UbuntuRegular       = new Fonts("assets/fonts/Ubuntu-R");
+        public static Fonts UbuntuBold          = new Fonts("assets/fonts/Ubuntu-B");
+        public static Fonts ProductSansMedium   = new Fonts("assets/fonts/ProductSans-M");
+
+        public string Filename;
+
+        public Fonts(string Filename) { this.Filename = Filename; }
+
+        public odl.Font Use(int Size)
+        {
+            return odl.Font.Get(this.Filename, Size);
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace RPGStudioMK.Widgets
 
         public bool Button { get; protected set; } = false;
         public string ButtonText { get; protected set; }
-        public Font Font { get; protected set; } = Font.Get("Fonts/ProductSans-M", 13);
+        public Font Font { get; protected set; }
         public int LineHeight { get; protected set; } = 20;
         public List<ListItem> Items { get; protected set; } = new List<ListItem>();
         private bool HoveringButton = false;
@@ -138,7 +138,7 @@ namespace RPGStudioMK.Widgets
             Sprites["btn"].Bitmap.SetPixel(91, 15, Color.ALPHA);
             Sprites["btn"].Bitmap.DrawLine(5, 7, 9, 7, HoveringButton ? Color.BLACK : Color.WHITE);
             Sprites["btn"].Bitmap.DrawLine(7, 5, 7, 9, HoveringButton ? Color.BLACK : Color.WHITE);
-            Font f = Font.Get("Fonts/Ubuntu-B", 12);
+            Font f = Fonts.UbuntuBold.Use(12);
             Sprites["btn"].Bitmap.Font = f;
             Sprites["btn"].Bitmap.DrawText(this.ButtonText, 15, 0, HoveringButton ? Color.BLACK : Color.WHITE);
             Sprites["btn"].Bitmap.Lock();

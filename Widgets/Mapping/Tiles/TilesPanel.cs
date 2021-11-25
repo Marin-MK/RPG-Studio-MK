@@ -96,7 +96,7 @@ namespace RPGStudioMK.Widgets
         {
             Label Header = new Label(this);
             Header.SetText("Tiles");
-            Header.SetFont(Font.Get("Fonts/Ubuntu-B", 16));
+            Header.SetFont(Fonts.UbuntuBold.Use(16));
             Header.SetPosition(5, 5);
 
             Sprites["sep"] = new Sprite(this.Viewport, new SolidBitmap(288, 2, new Color(10, 23, 37)));

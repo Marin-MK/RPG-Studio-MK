@@ -63,7 +63,7 @@ namespace RPGStudioMK.Widgets
             Main.SetBackgroundColor(23, 40, 56);
 
             VStackPanel MainStackPanel = new VStackPanel(Main);
-            Font f = Font.Get("Fonts/ProductSans-M", 14);
+            Font f = Fonts.ProductSansMedium.Use(14);
 
             DataContainer MainContainer = new DataContainer(MainStackPanel);
             #region Name + Type + Ability

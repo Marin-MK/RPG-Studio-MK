@@ -13,7 +13,7 @@ namespace RPGStudioMK.Widgets
         public int TextY { get; protected set; } = 0;
         public int CaretY { get; protected set; } = 2;
         public int CaretHeight { get; protected set; } = 13;
-        public Font Font { get; protected set; } = Font.Get("Fonts/ProductSans-M", 14);
+        public Font Font { get; protected set; }
         public Color TextColor { get; protected set; } = Color.WHITE;
         public bool ReadOnly { get; protected set; } = false;
         public bool Enabled { get; protected set; } = true;

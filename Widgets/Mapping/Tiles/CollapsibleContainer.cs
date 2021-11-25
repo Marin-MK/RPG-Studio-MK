@@ -31,7 +31,7 @@ namespace RPGStudioMK.Widgets
         protected override void Draw()
         {
             if (this.Sprites["header"].Bitmap != null) this.Sprites["header"].Bitmap.Dispose();
-            Font f = Font.Get("Fonts/ProductSans-M", 14);
+            Font f = Fonts.ProductSansMedium.Use(14);
             this.Sprites["header"].Bitmap = new Bitmap(Size.Width, 22);
             this.Sprites["header"].Bitmap.Unlock();
             this.Sprites["header"].Bitmap.Font = f;

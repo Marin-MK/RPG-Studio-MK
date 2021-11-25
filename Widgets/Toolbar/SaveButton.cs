@@ -38,7 +38,7 @@ namespace RPGStudioMK.Widgets
         protected override void Draw()
         {
             if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
-            Font f = Font.Get("Fonts/Ubuntu-B", 16);
+            Font f = Fonts.UbuntuBold.Use(16);
             Size s = f.TextSize("Save");
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Font = f;

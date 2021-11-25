@@ -42,7 +42,7 @@ namespace RPGStudioMK
             Console.WriteLine($"SDL_ttf Version: {odl.SDL2.SDL_ttf.SDL_TTF_MAJOR_VERSION}.{odl.SDL2.SDL_ttf.SDL_TTF_MINOR_VERSION}.{odl.SDL2.SDL_ttf.SDL_TTF_PATCHLEVEL}");
             Graphics.Start();
             Audio.Start();
-            int Handle = Audio.LoadSoundfont("soundfont.sf2");
+            int Handle = Audio.LoadSoundfont("assets/soundfont.sf2");
             if (Handle == 0) throw new Exception("Failed to load soundfont.");
             Console.WriteLine($"OS Platform: {os.Platform} ({odl.Graphics.Platform}) {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}");
             Console.WriteLine($"OS Version: {os.VersionString}");

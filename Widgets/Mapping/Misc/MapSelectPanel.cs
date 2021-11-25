@@ -19,7 +19,7 @@ namespace RPGStudioMK.Widgets
         {
             Label Header = new Label(this);
             Header.SetText("All Maps");
-            Header.SetFont(Font.Get("Fonts/Ubuntu-B", 16));
+            Header.SetFont(Fonts.UbuntuBold.Use(16));
             Header.SetPosition(5, 5);
 
             Sprites["sep"] = new Sprite(this.Viewport, new SolidBitmap(288, 1, new Color(28, 50, 73)));

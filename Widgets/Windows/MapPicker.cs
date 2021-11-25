@@ -42,7 +42,7 @@ namespace RPGStudioMK.Widgets
             Label pickerlabel = new Label(this);
             pickerlabel.SetText("Maps");
             pickerlabel.SetPosition(18, 24);
-            pickerlabel.SetFont(Font.Get("Fonts/Ubuntu-B", 14));
+            pickerlabel.SetFont(Fonts.UbuntuBold.Use(14));
             Maps = new ListBox(this);
             Maps.SetPosition(25, 44);
             Maps.SetSize(151, 380);
@@ -61,7 +61,7 @@ namespace RPGStudioMK.Widgets
             Label previewlabel = new Label(this);
             previewlabel.SetText("Preview");
             previewlabel.SetPosition(192, 24);
-            previewlabel.SetFont(Font.Get("Fonts/Ubuntu-B", 14));
+            previewlabel.SetFont(Fonts.UbuntuBold.Use(14));
 
             ColoredBox outline = new ColoredBox(this);
             outline.SetPosition(194, 44);
