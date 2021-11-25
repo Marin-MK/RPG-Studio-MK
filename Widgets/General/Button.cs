@@ -18,6 +18,8 @@ namespace RPGStudioMK.Widgets
 
         public Button(IContainer Parent) : base(Parent)
         {
+            this.Font = Fonts.UbuntuBold.Use(14);
+
             Bitmap b = new Bitmap(10, 10);
             #region Corner piece
             b.Unlock();
