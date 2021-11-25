@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using RPGStudioMK.Game;
-using Newtonsoft.Json.Linq;
 using odl;
 using rubydotnet;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -317,37 +316,6 @@ namespace RPGStudioMK
         public static int Random(int Min, int Max)
         {
             return RandomObject.Next(Min, Max);
-        }
-
-        public static object JsonToNative(object data)
-        {
-            if (data is JObject)
-            {
-                Dictionary<string, object> obj = ((JObject) data).ToObject<Dictionary<string, object>>();
-                List<string> keys = new List<string>(obj.Keys);
-                for (int i = 0; i < keys.Count; i++)
-                {
-                    obj[keys[i]] = JsonToNative(obj[keys[i]]);
-                }
-                return obj;
-            }
-            else if (data is JArray)
-            {
-                List<object> obj = ((JArray) data).ToObject<List<object>>();
-                for (int i = 0; i < obj.Count; i++)
-                {
-                    obj[i] = JsonToNative(obj[i]);
-                }
-                return obj;
-            }
-            else if (data is long)
-            {
-                return Convert.ToInt32((long) data);
-            }
-            else
-            {
-                return data;
-            }
         }
 
         public static bool IsNumeric(char c)

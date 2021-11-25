@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using rubydotnet;
 
 namespace RPGStudioMK.Game
@@ -81,37 +79,37 @@ namespace RPGStudioMK.Game
 
         private static void LoadSpecies()
         {
-            StreamReader sr = new StreamReader(File.OpenRead(DataPath + "/species.mkd"));
-            string content = sr.ReadToEnd();
-            sr.Close();
-            Dictionary<string, object> data = JsonConvert.DeserializeObject<Dictionary<string, object>>(content);
-            if ((string) data[":type"] != ":species")
-            {
-                throw new Exception("Invalid data type for species.mkd - Expected to contain species data but found " + data[":type"] + ".");
-            }
-            Dictionary<string, object> AllSpecies = ((JObject) data[":data"]).ToObject<Dictionary<string, object>>();
-            foreach (string key in AllSpecies.Keys)
-            {
-                Species s = new Species(((JObject) AllSpecies[key]).ToObject<Dictionary<string, object>>()); ;
-                Species[s.IntName] = s;
-            }
+            //StreamReader sr = new StreamReader(File.OpenRead(DataPath + "/species.mkd"));
+            //string content = sr.ReadToEnd();
+            //sr.Close();
+            //Dictionary<string, object> data = JsonConvert.DeserializeObject<Dictionary<string, object>>(content);
+            //if ((string) data[":type"] != ":species")
+            //{
+            //    throw new Exception("Invalid data type for species.mkd - Expected to contain species data but found " + data[":type"] + ".");
+            //}
+            //Dictionary<string, object> AllSpecies = ((JObject) data[":data"]).ToObject<Dictionary<string, object>>();
+            //foreach (string key in AllSpecies.Keys)
+            //{
+            //    Species s = new Species(((JObject) AllSpecies[key]).ToObject<Dictionary<string, object>>()); ;
+            //    Species[s.IntName] = s;
+            //}
         }
 
         private static void SaveSpecies()
         {
-            Dictionary<string, object> Main = new Dictionary<string, object>();
-            Main[":type"] = ":species";
-            Dictionary<string, object> list = new Dictionary<string, object>();
-            foreach (KeyValuePair<string, Species> kvp in Species)
-            {
-                list[":" + kvp.Key] = kvp.Value.ToJSON();
-            }
-            Main[":data"] = list;
-            string jsonstring = JsonConvert.SerializeObject(Main);
-            if (File.Exists(DataPath + "/species.mkd")) File.Delete(DataPath + "/species.mkd");
-            StreamWriter sw = new StreamWriter(File.OpenWrite(DataPath + "/species.mkd"));
-            sw.Write(jsonstring);
-            sw.Close();
+            //Dictionary<string, object> Main = new Dictionary<string, object>();
+            //Main[":type"] = ":species";
+            //Dictionary<string, object> list = new Dictionary<string, object>();
+            //foreach (KeyValuePair<string, Species> kvp in Species)
+            //{
+            //    list[":" + kvp.Key] = kvp.Value.ToJSON();
+            //}
+            //Main[":data"] = list;
+            //string jsonstring = JsonConvert.SerializeObject(Main);
+            //if (File.Exists(DataPath + "/species.mkd")) File.Delete(DataPath + "/species.mkd");
+            //StreamWriter sw = new StreamWriter(File.OpenWrite(DataPath + "/species.mkd"));
+            //sw.Write(jsonstring);
+            //sw.Close();
         }
         
         private static void LoadTilesets()
