@@ -136,7 +136,7 @@ namespace RPGStudioMK.Widgets
         void UpdateHoverDrag()
         {
             Sprites["list_drag"].Bitmap?.Dispose();
-            if (DraggingNode == null || HoveringNode == DraggingNode) return;
+            if (DraggingNode == null || HoveringNode == null || HoveringNode == DraggingNode) return;
             Sprites["hover"].Visible = false;
             int y = 0;
             bool Found = false;
@@ -212,6 +212,7 @@ namespace RPGStudioMK.Widgets
             base.HoverChanged(e);
             Sprites["hover"].Visible = WidgetIM.Hovering;
             if (!WidgetIM.Hovering) HoveringNode = null;
+            UpdateHoverDrag();
             MouseMoving(e);
         }
 
@@ -243,7 +244,7 @@ namespace RPGStudioMK.Widgets
                 index += this.Nodes[i].GetDisplayedNodeCount() + 1;
             }
             HoveringNode = n;
-            if (DraggingNode != null)
+            if (DraggingNode != null && HoveringNode != null)
             {
                 LineDepth = GetNodeDepth(HoveringNode);
                 MergeTopLines = false;
@@ -420,7 +421,7 @@ namespace RPGStudioMK.Widgets
         {
             if (e.LeftButton != e.OldLeftButton && !e.LeftButton)
             {
-                if (DraggingNode != null)
+                if (DraggingNode != null && HoveringNode != null)
                 {
                     if (DraggingNode == HoveringNode)
                     {
@@ -435,6 +436,7 @@ namespace RPGStudioMK.Widgets
                 }
                 DraggingNode = null;
                 UpdateHoverDrag();
+                this.Redraw();
             }
         }
 

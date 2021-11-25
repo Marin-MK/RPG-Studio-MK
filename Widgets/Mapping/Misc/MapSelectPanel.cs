@@ -72,11 +72,13 @@ namespace RPGStudioMK.Widgets
                 new MenuSeparator(),
                 new MenuItem("Cut Map")
                 {
-                    OnLeftClick = CutMap
+                    OnLeftClick = CutMap,
+                    IsClickable = delegate (BoolEventArgs e) { e.Value = mapview.HoveringNode != null && mapview.Nodes.Count > 1; }
                 },
                 new MenuItem("Copy Map")
                 {
-                    OnLeftClick = CopyMap
+                    OnLeftClick = CopyMap,
+                    IsClickable = delegate (BoolEventArgs e) { e.Value = mapview.HoveringNode != null; }
                 },
                 new MenuItem("Paste Map")
                 {
