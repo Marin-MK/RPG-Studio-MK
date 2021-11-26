@@ -47,13 +47,7 @@ namespace RPGStudioMK.Game
         {
             MoveCommand c = new MoveCommand();
             c.Code = this.Code;
-            c.Parameters = new List<object>();
-            this.Parameters.ForEach(p =>
-            {
-                if (p is int || p is long || p is string || p is true || p is false || p is null) c.Parameters.Add(p);
-                else if (p is ICloneable) c.Parameters.Add(((ICloneable) p).Clone());
-                else throw new Exception("Uncloneable object: " + p.GetType().ToString());
-            });
+            c.Parameters = (List<object>) Utilities.CloneUnknown(this.Parameters);
             return c;
         }
     }

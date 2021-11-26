@@ -101,6 +101,22 @@ namespace RPGStudioMK
             }
         }
 
+        public static object CloneUnknown(object o)
+        {
+            if (o is int || o is long || o is string || o is true || o is false || o is null) return o;
+            else if (o is ICloneable) return ((ICloneable) o).Clone();
+            else if (o is List<object>)
+            {
+                List<object> list = new List<object>();
+                for (int i = 0; i < ((List<object>) o).Count; i++)
+                {
+                    list.Add(CloneUnknown(((List<object>) o)[i]));
+                }
+                return list;
+            }
+            else throw new Exception("Uncloneable object: " + o.GetType().ToString());
+        }
+
         /// <summary>
         /// Swaps two <paramref name="List"/>&lt;<typeparamref name="T"/>&gt;  elements.
         /// </summary>
