@@ -311,8 +311,7 @@ namespace RPGStudioMK.Widgets
                 {
                     PictureBox image = new PictureBox(c);
                     image.SetPosition(0, 23);
-                    image.Sprite.Bitmap = tileset.TilesetListBitmap.InternalBitmaps[0];
-                    image.Sprite.Bitmap.Lock();
+                    image.Sprite.Bitmap = tileset.TilesetListBitmap;
                     image.Sprite.DestroyBitmap = false;
                     image.SetSize(image.Sprite.Bitmap.Width, image.Sprite.Bitmap.Height);
                 }
