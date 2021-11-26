@@ -375,17 +375,6 @@ namespace RPGStudioMK.Widgets
 
         public void LoadRecentProject(int index)
         {
-            if (!System.IO.File.Exists(Editor.GeneralSettings.RecentFiles[Editor.GeneralSettings.RecentFiles.Count - index - 1][1]))
-            {
-                MessageBox box = new MessageBox("Error", "No project file could be found in this folder.", IconType.Error);
-                box.OnClosed += delegate (BaseEventArgs e)
-                {
-                    Editor.GeneralSettings.RecentFiles.RemoveAt(index);
-                    SizeChanged(new BaseEventArgs());
-                    MouseMoving(Graphics.LastMouseEvent);
-                };
-                return;
-            }
             Data.SetProjectPath(Editor.GeneralSettings.RecentFiles[Editor.GeneralSettings.RecentFiles.Count - index - 1][1]);
             ((MainEditorWindow) Window).CreateEditor();
             Editor.MakeRecentProject();
