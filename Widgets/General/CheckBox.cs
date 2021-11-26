@@ -18,6 +18,7 @@ namespace RPGStudioMK.Widgets
 
         public CheckBox(IContainer Parent) : base(Parent)
         {
+            this.Font = Fonts.ProductSansMedium.Use(14);
             Sprites["box"] = new Sprite(this.Viewport, new Bitmap(16, 16));
             RedrawBox(true);
             Sprites["text"] = new Sprite(this.Viewport);

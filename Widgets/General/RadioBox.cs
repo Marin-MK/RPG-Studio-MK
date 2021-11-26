@@ -17,6 +17,7 @@ namespace RPGStudioMK.Widgets
 
         public RadioBox(IContainer Parent) : base(Parent)
         {
+            this.Font = Fonts.ProductSansMedium.Use(12);
             Sprites["box"] = new Sprite(this.Viewport, new Bitmap(16, 16));
             RedrawBox(true);
             Sprites["text"] = new Sprite(this.Viewport);

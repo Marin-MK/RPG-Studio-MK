@@ -36,6 +36,7 @@ namespace RPGStudioMK.Widgets
 
         public TextArea(IContainer Parent) : base(Parent)
         {
+            this.Font = Fonts.ProductSansMedium.Use(14);
             Sprites["text"] = new Sprite(this.Viewport);
             Sprites["text"].Z = 2;
             Sprites["filler"] = new Sprite(this.Viewport, new SolidBitmap(1, 16, new Color(50, 50, 255, 100)));

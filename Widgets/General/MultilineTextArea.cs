@@ -34,6 +34,7 @@ namespace RPGStudioMK.Widgets
 
         public MultilineTextArea(IContainer Parent) : base(Parent)
         {
+            this.Font = Fonts.ProductSansMedium.Use(12);
             Sprites["text"] = new Sprite(this.Viewport);
             Sprites["caret"] = new Sprite(this.Viewport, new SolidBitmap(1, 16, Color.WHITE));
             Sprites["caret"].Y = 2;
