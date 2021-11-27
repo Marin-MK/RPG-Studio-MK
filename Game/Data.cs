@@ -29,7 +29,7 @@ namespace RPGStudioMK.Game
             Maps.Clear();
             Tilesets.Clear();
             Species.Clear();
-            System = new System();
+            System = null;
         }
 
         private static void Initialize()
