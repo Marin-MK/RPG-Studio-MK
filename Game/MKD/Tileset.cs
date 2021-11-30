@@ -49,8 +49,6 @@ namespace RPGStudioMK.Game
 
         public Tileset(IntPtr data)
         {
-            Ruby.SetGlobal("$n", data);
-            Ruby.Eval("p $n");
             this.ID = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@id"));
             this.Name = Ruby.String.FromPtr(Ruby.GetIVar(data, "@name"));
             this.GraphicName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@tileset_name"));
