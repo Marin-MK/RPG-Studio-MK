@@ -17,6 +17,8 @@ namespace RPGStudioMK.Game
         public int AnimateSpeed = 16;
         public List<int?> QuickIDs = new List<int?>() { null, null, null, null, null, null };
 
+        public List<int> OverlappableBy = new List<int>();
+
         public Bitmap AutotileBitmap;
 
         public static Dictionary<AutotileFormat, List<List<int>>> AutotileCombinations = new Dictionary<AutotileFormat, List<List<int>>>()
@@ -88,6 +90,7 @@ namespace RPGStudioMK.Game
             if (this.AutotileBitmap == null || Redraw)
             {
                 if (this.AutotileBitmap != null) this.AutotileBitmap.Dispose();
+                this.OverlappableBy.Clear();
                 Bitmap bmp = new Bitmap($"{Data.ProjectPath}\\Graphics\\Autotiles\\{this.GraphicName}.png");
                 this.AutotileBitmap = bmp;
             }
@@ -110,6 +113,7 @@ namespace RPGStudioMK.Game
             a.Tag = this.Tag;
             a.AnimateSpeed = this.AnimateSpeed;
             a.QuickIDs = new List<int?>(this.QuickIDs);
+            a.OverlappableBy = new List<int>(this.OverlappableBy);
             a.AutotileBitmap = this.AutotileBitmap;
             return a;
         }

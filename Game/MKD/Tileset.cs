@@ -33,6 +33,12 @@ namespace RPGStudioMK.Game
         /// </summary>
         public List<int> BushFlags = new List<int>();
 
+        /// <summary>
+        /// If an autotile's top center tile is equal to another autotile's top left tile, then this autotile
+        /// is allowed to overlap the other autotile without updating its borders when drawn over it on the same layer.
+        /// </summary>
+        public List<List<int>> AutotileOverlapPermissions = new List<List<int>>();
+
         public Bitmap TilesetBitmap;
         public Bitmap TilesetListBitmap;
 
@@ -43,6 +49,8 @@ namespace RPGStudioMK.Game
 
         public Tileset(IntPtr data)
         {
+            Ruby.SetGlobal("$n", data);
+            Ruby.Eval("p $n");
             this.ID = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@id"));
             this.Name = Ruby.String.FromPtr(Ruby.GetIVar(data, "@name"));
             this.GraphicName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@tileset_name"));
@@ -100,6 +108,8 @@ namespace RPGStudioMK.Game
                     Data.Autotiles[autotile.ID] = autotile;
                 }
             }
+
+            UpdateAutotileOverlapPermissions();
 
             // Make sure the three arrays are just as big; trailing nulls may be left out if the data is edited externally
             int maxcount = Math.Max(Math.Max(Passabilities.Count, Priorities.Count), Tags.Count);
@@ -194,6 +204,43 @@ namespace RPGStudioMK.Game
                     }
                 }
                 this.TilesetListBitmap.Lock();
+            }
+        }
+
+        /// <summary>
+        /// If an autotile's top center tile is equal to another autotile's top left tile, then this autotile
+        /// is allowed to overlap the other autotile without updating its borders when drawn over it on the same layer.
+        /// </summary>
+        public void UpdateAutotileOverlapPermissions()
+        {
+            for (int i1 = 0; i1 < this.Autotiles.Count; i1++)
+            {
+                Autotile a1 = this.Autotiles[i1];
+                for (int i2 = 0; i2 < this.Autotiles.Count; i2++)
+                {
+                    Autotile a2 = this.Autotiles[i2];
+                    if (a1 == a2 || a1 == null || a2 == null || a1.Format != a2.Format || a1.Format != AutotileFormat.RMXP) continue;
+                    bool Equal = true;
+                    for (int y = 0; y < 32; y++)
+                    {
+                        if (!Equal) break;
+                        for (int x = 0; x < 32; x++)
+                        {
+                            if (!Equal) break;
+                            Color c1 = a1.AutotileBitmap.GetPixel(x, y);
+                            Color c2 = a2.AutotileBitmap.GetPixel(x + 32, y);
+                            if (!c1.Equals(c2))
+                            {
+                                Equal = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (Equal)
+                    {
+                        a1.OverlappableBy.Add(a2.ID);
+                    }
+                }
             }
         }
 

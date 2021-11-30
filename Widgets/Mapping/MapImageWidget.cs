@@ -375,22 +375,27 @@ namespace RPGStudioMK.Widgets
                 int y1 = oldy;
                 int x2 = newx;
                 int y2 = newy;
-                for (int x = x1 > x2 ? x2 : x1; (x1 > x2) ? (x <= x1) : (x <= x2); x++)
+                if (x1 != x2)
                 {
-                    double fact = ((double) x - x1) / (x2 - x1);
-                    int y = (int) Math.Round(y1 + ((y2 - y1) * fact));
-                    int tilex = (int) Math.Floor(x / 32d);
-                    int tiley = (int) Math.Floor(y / 32d);
-                    if (!Coords.Exists(c => c.X == tilex && c.Y == tiley)) Coords.Add(new Point(tilex, tiley));
+                    for (int x = x1 > x2 ? x2 : x1; (x1 > x2) ? (x <= x1) : (x <= x2); x++)
+                    {
+                        double fact = ((double) x - x1) / (x2 - x1);
+                        int y = (int) Math.Round(y1 + ((y2 - y1) * fact));
+                        int tilex = (int) Math.Floor(x / 32d);
+                        int tiley = (int) Math.Floor(y / 32d);
+                        if (!Coords.Exists(c => c.X == tilex && c.Y == tiley)) Coords.Add(new Point(tilex, tiley));
+                    }
                 }
-                int sy = y1 > y2 ? y2 : y1;
-                for (int y = y1 > y2 ? y2 : y1; (y1 > y2) ? (y <= y1) : (y <= y2); y++)
+                if (y1 != y2)
                 {
-                    double fact = ((double) y - y1) / (y2 - y1);
-                    int x = (int) Math.Round(x1 + ((x2 - x1) * fact));
-                    int tilex = (int) Math.Floor(x / 32d);
-                    int tiley = (int) Math.Floor(y / 32d);
-                    if (!Coords.Exists(c => c.X == tilex && c.Y == tiley)) Coords.Add(new Point(tilex, tiley));
+                    for (int y = y1 > y2 ? y2 : y1; (y1 > y2) ? (y <= y1) : (y <= y2); y++)
+                    {
+                        double fact = ((double) y - y1) / (y2 - y1);
+                        int x = (int) Math.Round(x1 + ((x2 - x1) * fact));
+                        int tilex = (int) Math.Floor(x / 32d);
+                        int tiley = (int) Math.Floor(y / 32d);
+                        if (!Coords.Exists(c => c.X == tilex && c.Y == tiley)) Coords.Add(new Point(tilex, tiley));
+                    }
                 }
             }
             // Determine how many tiles are part of the line.
@@ -759,24 +764,26 @@ namespace RPGStudioMK.Widgets
                     OldTile != null && NewTile == null) SameTile = false;
                 else if (OldTile != null && OldTile.TileType != NewTile.TileType) SameTile = false;
                 else if (OldTile != null && OldTile.Index != NewTile.Index) SameTile = false;
-                else if (OldTile != null && OldTile.TileType != TileType.Autotile && OldTile.ID != NewTile.ID) SameTile = false;
+                else if (OldTile != null && OldTile.ID != NewTile.ID) SameTile = false;
 
                 if (!SameTile)
                 {
                     MapData.Layers[layer].Tiles[MapPosition] = NewTile;
+                    Editor.UnsavedChanges = true;
                     if (TileGroupUndoAction.GetLatest() == null || TileGroupUndoAction.GetLatest().Ready)
                     {
                         Editor.CanUndo = false;
                         TileGroupUndoAction.Log(MapID);
                     }
                     TileGroupUndoAction.AddToLatest(MapPosition, layer, NewTile, OldTile);
-                    DrawTile(MapTileX, MapTileY, layer, NewTile, OldTile);
+                    DrawTile(MapTileX, MapTileY, layer, NewTile, OldTile,
+                        !Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) && !Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT));
                 }
             }
             SetLayerLocked(layer, true);
         }
 
-        public void DrawTile(int X, int Y, int Layer, TileData Tile, TileData OldTile, bool ForceUpdateNearbyAutotiles = false)
+        public void DrawTile(int X, int Y, int Layer, TileData Tile, TileData OldTile, bool ForceUpdateNearbyAutotiles = false, bool MakeUndoable = true)
         {
             SetZoomFactor(this.ZoomFactor);
             bool Blank = Tile == null;
@@ -790,9 +797,31 @@ namespace RPGStudioMK.Widgets
                 }
             }
 
+            List<TileData> OldSurrounding = new List<TileData>(new TileData[8]);
+            List<Point> Connected = GetConnectedTiles(X, Y);
+            int id0 = Connected[0].X + Connected[0].Y * MapData.Width;
+            int id1 = Connected[1].X + Connected[1].Y * MapData.Width;
+            int id2 = Connected[2].X + Connected[2].Y * MapData.Width;
+            int id3 = Connected[3].X + Connected[3].Y * MapData.Width;
+            int id4 = Connected[4].X + Connected[4].Y * MapData.Width;
+            int id5 = Connected[5].X + Connected[5].Y * MapData.Width;
+            int id6 = Connected[6].X + Connected[6].Y * MapData.Width;
+            int id7 = Connected[7].X + Connected[7].Y * MapData.Width;
+            if (MakeUndoable)
+            {
+                if (X > 0 && Y > 0) OldSurrounding[0] = (TileData) MapData.Layers[Layer].Tiles[id0].Clone();
+                if (Y > 0) OldSurrounding[1] = (TileData) MapData.Layers[Layer].Tiles[id1].Clone();
+                if (X < MapData.Width - 1 && Y > 0) OldSurrounding[2] = (TileData) MapData.Layers[Layer].Tiles[id2].Clone();
+                if (X > 0) OldSurrounding[3] = (TileData) MapData.Layers[Layer].Tiles[id3].Clone();
+                if (X < MapData.Width - 1) OldSurrounding[4] = (TileData) MapData.Layers[Layer].Tiles[id4].Clone();
+                if (X > 0 && Y < MapData.Height - 1) OldSurrounding[5] = (TileData) MapData.Layers[Layer].Tiles[id5].Clone();
+                if (Y < MapData.Height - 1) OldSurrounding[6] = (TileData) MapData.Layers[Layer].Tiles[id6].Clone();
+                if (X < MapData.Width - 1 && Y < MapData.Height - 1) OldSurrounding[7] = (TileData) MapData.Layers[Layer].Tiles[id7].Clone();
+            }
+
             if (OldTile != null && OldTile.TileType == TileType.Autotile)
             {
-                UpdateAutotiles(Layer, X, Y, OldTile.Index, true, true);
+                UpdateAutotiles(Layer, X, Y, OldTile.Index, ForceUpdateNearbyAutotiles, true);
             }
 
             if (Blank)
@@ -804,7 +833,6 @@ namespace RPGStudioMK.Widgets
                 this.Sprites[Layer.ToString()].Bitmap.FillRect(X * 32, Y * 32, 32, 32, Color.ALPHA);
                 if (Tile.TileType == TileType.Tileset)
                 {
-                    Editor.UnsavedChanges = true;
                     this.Sprites[Layer.ToString()].Bitmap.Build(
                         X * 32, Y * 32,
                         Data.Tilesets[MapData.TilesetIDs[Tile.Index]].TilesetBitmap,
@@ -821,9 +849,21 @@ namespace RPGStudioMK.Widgets
                     }
                     else // Draws and updates
                     {
-                        UpdateAutotiles(Layer, X, Y, Tile.Index, true, false);
+                        UpdateAutotiles(Layer, X, Y, Tile.Index, ForceUpdateNearbyAutotiles, false);
                     }
                 }
+            }
+
+            if (MakeUndoable)
+            {
+                if (X > 0 && Y > 0 && !MapData.Layers[Layer].Tiles[id0].Equals(OldSurrounding[0])) TileGroupUndoAction.AddToLatest(id0, Layer, MapData.Layers[Layer].Tiles[id0], OldSurrounding[0], true);
+                if (Y > 0 && !MapData.Layers[Layer].Tiles[id1].Equals(OldSurrounding[1])) TileGroupUndoAction.AddToLatest(id1, Layer, MapData.Layers[Layer].Tiles[id1], OldSurrounding[1], true);
+                if (X < MapData.Width - 1 && Y > 0 && !MapData.Layers[Layer].Tiles[id2].Equals(OldSurrounding[2])) TileGroupUndoAction.AddToLatest(id2, Layer, MapData.Layers[Layer].Tiles[id2], OldSurrounding[2], true);
+                if (X > 0 && !MapData.Layers[Layer].Tiles[id3].Equals(OldSurrounding[3])) TileGroupUndoAction.AddToLatest(id3, Layer, MapData.Layers[Layer].Tiles[id3], OldSurrounding[3], true);
+                if (X < MapData.Width - 1 && !MapData.Layers[Layer].Tiles[id4].Equals(OldSurrounding[4])) TileGroupUndoAction.AddToLatest(id4, Layer, MapData.Layers[Layer].Tiles[id4], OldSurrounding[4], true);
+                if (X > 0 && Y < MapData.Height - 1 && !MapData.Layers[Layer].Tiles[id5].Equals(OldSurrounding[5])) TileGroupUndoAction.AddToLatest(id5, Layer, MapData.Layers[Layer].Tiles[id5], OldSurrounding[5], true);
+                if (Y < MapData.Height - 1 && !MapData.Layers[Layer].Tiles[id6].Equals(OldSurrounding[6])) TileGroupUndoAction.AddToLatest(id6, Layer, MapData.Layers[Layer].Tiles[id6], OldSurrounding[6], true);
+                if (X < MapData.Width - 1 && Y < MapData.Height - 1 && !MapData.Layers[Layer].Tiles[id7].Equals(OldSurrounding[7])) TileGroupUndoAction.AddToLatest(id7, Layer, MapData.Layers[Layer].Tiles[id7], OldSurrounding[7], true);
             }
         }
 
@@ -865,52 +905,64 @@ namespace RPGStudioMK.Widgets
         public void UpdateAutotiles(int Layer, int X, int Y, int AutotileIndex, bool CheckNeighbouring = false, bool DeleteTile = false)
         {
             TileData TileData = MapData.Layers[Layer].Tiles[X + Y * MapData.Width];
-            List<Point> Connected = new List<Point>()
-            {
-                new Point(X - 1, Y - 1), new Point(X, Y - 1), new Point(X + 1, Y - 1),
-                new Point(X - 1, Y    ),                      new Point(X + 1, Y),
-                new Point(X - 1, Y + 1), new Point(X, Y + 1), new Point(X + 1, Y + 1)
-            };
+            List<Point> Connected = GetConnectedTiles(X, Y);
+            int id0 = Connected[0].X + Connected[0].Y * MapData.Width;
+            int id1 = Connected[1].X + Connected[1].Y * MapData.Width;
+            int id2 = Connected[2].X + Connected[2].Y * MapData.Width;
+            int id3 = Connected[3].X + Connected[3].Y * MapData.Width;
+            int id4 = Connected[4].X + Connected[4].Y * MapData.Width;
+            int id5 = Connected[5].X + Connected[5].Y * MapData.Width;
+            int id6 = Connected[6].X + Connected[6].Y * MapData.Width;
+            int id7 = Connected[7].X + Connected[7].Y * MapData.Width;
             bool NWauto = Connected[0].X >= 0 && Connected[0].X < MapData.Width &&
                           Connected[0].Y >= 0 && Connected[0].Y < MapData.Height &&
-                          MapData.Layers[Layer].Tiles[Connected[0].X + Connected[0].Y * MapData.Width] != null &&
-                          MapData.Layers[Layer].Tiles[Connected[0].X + Connected[0].Y * MapData.Width].TileType == TileType.Autotile;
-            bool NW = NWauto && MapData.Layers[Layer].Tiles[Connected[0].X + Connected[0].Y * MapData.Width].Index == AutotileIndex;
+                          MapData.Layers[Layer].Tiles[id0] != null &&
+                          MapData.Layers[Layer].Tiles[id0].TileType == TileType.Autotile;
+            bool NWex = NWauto && MapData.Layers[Layer].Tiles[id0].Index == AutotileIndex;
+            bool NW = NWauto && (NWex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]].OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id0].Index]));
             bool Nauto = Connected[1].X >= 0 && Connected[1].X < MapData.Width &&
                          Connected[1].Y >= 0 && Connected[1].Y < MapData.Height &&
-                         MapData.Layers[Layer].Tiles[Connected[1].X + Connected[1].Y * MapData.Width] != null &&
-                         MapData.Layers[Layer].Tiles[Connected[1].X + Connected[1].Y * MapData.Width].TileType == TileType.Autotile;
-            bool N = Nauto && MapData.Layers[Layer].Tiles[Connected[1].X + Connected[1].Y * MapData.Width].Index == AutotileIndex;
+                         MapData.Layers[Layer].Tiles[id1] != null &&
+                         MapData.Layers[Layer].Tiles[id1].TileType == TileType.Autotile;
+            bool Nex = Nauto && MapData.Layers[Layer].Tiles[id1].Index == AutotileIndex;
+            bool N = Nauto && (Nex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]].OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id1].Index]));
             bool NEauto = Connected[2].X >= 0 && Connected[2].X < MapData.Width &&
                           Connected[2].Y >= 0 && Connected[2].Y < MapData.Height &&
-                          MapData.Layers[Layer].Tiles[Connected[2].X + Connected[2].Y * MapData.Width] != null &&
-                          MapData.Layers[Layer].Tiles[Connected[2].X + Connected[2].Y * MapData.Width].TileType == TileType.Autotile;
-            bool NE = NEauto && MapData.Layers[Layer].Tiles[Connected[2].X + Connected[2].Y * MapData.Width].Index == AutotileIndex;
+                          MapData.Layers[Layer].Tiles[id2] != null &&
+                          MapData.Layers[Layer].Tiles[id2].TileType == TileType.Autotile;
+            bool NEex = NEauto && MapData.Layers[Layer].Tiles[id2].Index == AutotileIndex;
+            bool NE = NEauto && (NEex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]].OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id2].Index]));
             bool Wauto = Connected[3].X >= 0 && Connected[3].X < MapData.Width &&
                          Connected[3].Y >= 0 && Connected[3].Y < MapData.Height &&
-                         MapData.Layers[Layer].Tiles[Connected[3].X + Connected[3].Y * MapData.Width] != null &&
-                         MapData.Layers[Layer].Tiles[Connected[3].X + Connected[3].Y * MapData.Width].TileType == TileType.Autotile;
-            bool W = Wauto && MapData.Layers[Layer].Tiles[Connected[3].X + Connected[3].Y * MapData.Width].Index == AutotileIndex;
+                         MapData.Layers[Layer].Tiles[id3] != null &&
+                         MapData.Layers[Layer].Tiles[id3].TileType == TileType.Autotile;
+            bool Wex = Wauto && MapData.Layers[Layer].Tiles[id3].Index == AutotileIndex;
+            bool W = Wauto && (Wex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]].OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id3].Index]));
             bool Eauto = Connected[4].X >= 0 && Connected[4].X < MapData.Width &&
                          Connected[4].Y >= 0 && Connected[4].Y < MapData.Height &&
-                         MapData.Layers[Layer].Tiles[Connected[4].X + Connected[4].Y * MapData.Width] != null &&
-                         MapData.Layers[Layer].Tiles[Connected[4].X + Connected[4].Y * MapData.Width].TileType == TileType.Autotile;
-            bool E = Eauto && MapData.Layers[Layer].Tiles[Connected[4].X + Connected[4].Y * MapData.Width].Index == AutotileIndex;
+                         MapData.Layers[Layer].Tiles[id4] != null &&
+                         MapData.Layers[Layer].Tiles[id4].TileType == TileType.Autotile;
+            bool Eex = Eauto && MapData.Layers[Layer].Tiles[id4].Index == AutotileIndex;
+            bool E = Eauto && (Eex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]].OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id4].Index]));
             bool SWauto = Connected[5].X >= 0 && Connected[5].X < MapData.Width &&
                           Connected[5].Y >= 0 && Connected[5].Y < MapData.Height &&
-                          MapData.Layers[Layer].Tiles[Connected[5].X + Connected[5].Y * MapData.Width] != null &&
-                          MapData.Layers[Layer].Tiles[Connected[5].X + Connected[5].Y * MapData.Width].TileType == TileType.Autotile;
-            bool SW = SWauto && MapData.Layers[Layer].Tiles[Connected[5].X + Connected[5].Y * MapData.Width].Index == AutotileIndex;
+                          MapData.Layers[Layer].Tiles[id5] != null &&
+                          MapData.Layers[Layer].Tiles[id5].TileType == TileType.Autotile;
+            bool SWex = SWauto && MapData.Layers[Layer].Tiles[id5].Index == AutotileIndex;
+            bool SW = SWauto && (SWex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]].OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id5].Index]));
             bool Sauto = Connected[6].X >= 0 && Connected[6].X < MapData.Width &&
                          Connected[6].Y >= 0 && Connected[6].Y < MapData.Height &&
-                         MapData.Layers[Layer].Tiles[Connected[6].X + Connected[6].Y * MapData.Width] != null &&
-                         MapData.Layers[Layer].Tiles[Connected[6].X + Connected[6].Y * MapData.Width].TileType == TileType.Autotile;
-            bool S = Sauto && MapData.Layers[Layer].Tiles[Connected[6].X + Connected[6].Y * MapData.Width].Index == AutotileIndex;
+                         MapData.Layers[Layer].Tiles[id6] != null &&
+                         MapData.Layers[Layer].Tiles[id6].TileType == TileType.Autotile;
+            bool Sex = MapData.Layers[Layer].Tiles[id6].Index == AutotileIndex;
+            bool S = Sauto && (Sex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]].OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id6].Index]));
             bool SEauto = Connected[7].X >= 0 && Connected[7].X < MapData.Width &&
                           Connected[7].Y >= 0 && Connected[7].Y < MapData.Height &&
-                          MapData.Layers[Layer].Tiles[Connected[7].X + Connected[7].Y * MapData.Width] != null &&
-                          MapData.Layers[Layer].Tiles[Connected[7].X + Connected[7].Y * MapData.Width].TileType == TileType.Autotile;
-            bool SE = SEauto && MapData.Layers[Layer].Tiles[Connected[7].X + Connected[7].Y * MapData.Width].Index == AutotileIndex;
+                          MapData.Layers[Layer].Tiles[id7] != null &&
+                          MapData.Layers[Layer].Tiles[id7].TileType == TileType.Autotile;
+            bool SEex = SEauto && MapData.Layers[Layer].Tiles[id7].Index == AutotileIndex;
+            bool SE = SEauto && (SEex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]].OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id7].Index]));
+
             if (CheckNeighbouring || TileData != null && TileData.TileType == TileType.Autotile && TileData.Index == AutotileIndex)
                   // Only try to update the current tile if it's assignment (not deletion)
                   // and if the current tile is also an autotile
@@ -1006,15 +1058,25 @@ namespace RPGStudioMK.Widgets
             {
                 // Only update neighbours if they contain autotiles
                 // (they don't need to be the same autotile; if autotile B is drawn over A, then surrounding A must also be updated)
-                if (NWauto) UpdateAutotiles(Layer, Connected[0].X, Connected[0].Y, MapData.Layers[Layer].Tiles[Connected[0].X + Connected[0].Y * MapData.Width].Index);
-                if (Nauto) UpdateAutotiles(Layer, Connected[1].X, Connected[1].Y, MapData.Layers[Layer].Tiles[Connected[1].X + Connected[1].Y * MapData.Width].Index);
-                if (NEauto) UpdateAutotiles(Layer, Connected[2].X, Connected[2].Y, MapData.Layers[Layer].Tiles[Connected[2].X + Connected[2].Y * MapData.Width].Index);
-                if (Wauto) UpdateAutotiles(Layer, Connected[3].X, Connected[3].Y, MapData.Layers[Layer].Tiles[Connected[3].X + Connected[3].Y * MapData.Width].Index);
-                if (Eauto) UpdateAutotiles(Layer, Connected[4].X, Connected[4].Y, MapData.Layers[Layer].Tiles[Connected[4].X + Connected[4].Y * MapData.Width].Index);
-                if (SWauto) UpdateAutotiles(Layer, Connected[5].X, Connected[5].Y, MapData.Layers[Layer].Tiles[Connected[5].X + Connected[5].Y * MapData.Width].Index);
-                if (Sauto) UpdateAutotiles(Layer, Connected[6].X, Connected[6].Y, MapData.Layers[Layer].Tiles[Connected[6].X + Connected[6].Y * MapData.Width].Index);
-                if (SEauto) UpdateAutotiles(Layer, Connected[7].X, Connected[7].Y, MapData.Layers[Layer].Tiles[Connected[7].X + Connected[7].Y * MapData.Width].Index);
+                if (NWex && DeleteTile || Nex && Wex) UpdateAutotiles(Layer, Connected[0].X, Connected[0].Y, MapData.Layers[Layer].Tiles[id0].Index);
+                if (Nauto) UpdateAutotiles(Layer, Connected[1].X, Connected[1].Y, MapData.Layers[Layer].Tiles[id1].Index);
+                if (NEex && DeleteTile || Nex && Eex) UpdateAutotiles(Layer, Connected[2].X, Connected[2].Y, MapData.Layers[Layer].Tiles[id2].Index);
+                if (Wauto) UpdateAutotiles(Layer, Connected[3].X, Connected[3].Y, MapData.Layers[Layer].Tiles[id3].Index);
+                if (Eauto) UpdateAutotiles(Layer, Connected[4].X, Connected[4].Y, MapData.Layers[Layer].Tiles[id4].Index);
+                if (SWex && DeleteTile || Sex && Wex) UpdateAutotiles(Layer, Connected[5].X, Connected[5].Y, MapData.Layers[Layer].Tiles[id5].Index);
+                if (Sauto) UpdateAutotiles(Layer, Connected[6].X, Connected[6].Y, MapData.Layers[Layer].Tiles[id6].Index);
+                if (SEex && DeleteTile || Sex && Eex) UpdateAutotiles(Layer, Connected[7].X, Connected[7].Y, MapData.Layers[Layer].Tiles[id7].Index);
             }
+        }
+
+        public List<Point> GetConnectedTiles(int X, int Y)
+        {
+            return new List<Point>()
+             {
+                new Point(X - 1, Y - 1), new Point(X, Y - 1), new Point(X + 1, Y - 1),
+                new Point(X - 1, Y    ),                      new Point(X + 1, Y),
+                new Point(X - 1, Y + 1), new Point(X, Y + 1), new Point(X + 1, Y + 1)
+            };
         }
     }
 }

@@ -414,7 +414,7 @@ namespace RPGStudioMK.Widgets
                                 {
                                     if (points[i].X >= 0 && points[i].Y >= 0 && 
                                         points[i].X < Map.Width && points[i].Y < Map.Height &&
-                                        action.Tiles.Exists(g => g.MapPosition == points[i].X + points[i].Y * Map.Width && g.Layer == Layer))
+                                        action.Tiles.Exists(g => g.MapPosition == points[i].X + points[i].Y * Map.Width && g.Layer == Layer && !g.FromAutotile))
                                     {
                                         points.RemoveAt(i);
                                         i--;

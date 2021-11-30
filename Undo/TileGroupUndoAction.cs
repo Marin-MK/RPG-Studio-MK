@@ -32,7 +32,7 @@ namespace RPGStudioMK
             return (TileGroupUndoAction) Editor.MapUndoList.FindLast(a => a is TileGroupUndoAction);
         }
 
-        public static void AddToLatest(int MapPosition, int Layer, TileData NewTile, TileData OldTile)
+        public static void AddToLatest(int MapPosition, int Layer, TileData NewTile, TileData OldTile, bool FromAutotile = false)
         {
             TileGroupUndoAction action = GetLatest();
             TileChange change = action.Tiles.Find(t => t.MapPosition == MapPosition && t.Layer == Layer);
@@ -41,7 +41,7 @@ namespace RPGStudioMK
                 OldTile = change.OldTile;
                 action.Tiles.Remove(change);
             }
-            action.Tiles.Add(new TileChange(MapPosition, Layer, NewTile, OldTile));
+            action.Tiles.Add(new TileChange(MapPosition, Layer, NewTile, OldTile, FromAutotile));
         }
 
         public override bool Trigger(bool IsRedo)
@@ -75,7 +75,8 @@ namespace RPGStudioMK
                         tile.Layer,
                         NewTile,
                         OldTile,
-                        true
+                        false,
+                        false
                     );
                 }
             }
@@ -92,13 +93,15 @@ namespace RPGStudioMK
             public int Layer;
             public TileData NewTile;
             public TileData OldTile;
+            public bool FromAutotile;
 
-            public TileChange(int MapPosition, int Layer, TileData NewTile, TileData OldTile)
+            public TileChange(int MapPosition, int Layer, TileData NewTile, TileData OldTile, bool FromAutotile)
             {
                 this.MapPosition = MapPosition;
                 this.Layer = Layer;
                 this.NewTile = (TileData) NewTile?.Clone();
                 this.OldTile = (TileData) OldTile?.Clone();
+                this.FromAutotile = FromAutotile;
             }
         }
     }
