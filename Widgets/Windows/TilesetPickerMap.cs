@@ -181,15 +181,16 @@ namespace RPGStudioMK.Widgets
 
         public void SelectionChanged(BaseEventArgs e)
         {
-            ActionButton.SetEnabled(true);
-            //if (InUse.SelectedIndex == -1)
-            //{
-            //    ActionButton.SetText("Add");
-            //}
-            //else
-            //{
-            //    ActionButton.SetText("Remove");
-            //}
+            if (InUse.SelectedIndex == -1)
+            {
+                //ActionButton.SetText("Add");
+                ActionButton.SetEnabled(true);
+            }
+            else
+            {
+                ActionButton.SetText("Remove");
+                ActionButton.SetEnabled(false);
+            }
             Tileset tileset = SelectedTileset;
             if (tileset is null || tileset.TilesetListBitmap is null)
             {
