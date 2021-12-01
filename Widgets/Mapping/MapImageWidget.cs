@@ -783,7 +783,7 @@ namespace RPGStudioMK.Widgets
             SetLayerLocked(layer, true);
         }
 
-        public void DrawTile(int X, int Y, int Layer, TileData Tile, TileData OldTile, bool ForceUpdateNearbyAutotiles = false, bool MakeUndoable = true)
+        public void DrawTile(int X, int Y, int Layer, TileData Tile, TileData OldTile, bool ForceUpdateNearbyAutotiles = false, bool MakeNeighboursUndoable = true)
         {
             SetZoomFactor(this.ZoomFactor);
             bool Blank = Tile == null;
@@ -807,16 +807,16 @@ namespace RPGStudioMK.Widgets
             int id5 = Connected[5].X + Connected[5].Y * MapData.Width;
             int id6 = Connected[6].X + Connected[6].Y * MapData.Width;
             int id7 = Connected[7].X + Connected[7].Y * MapData.Width;
-            if (MakeUndoable)
+            if (MakeNeighboursUndoable)
             {
-                if (X > 0 && Y > 0) OldSurrounding[0] = (TileData) MapData.Layers[Layer].Tiles[id0].Clone();
-                if (Y > 0) OldSurrounding[1] = (TileData) MapData.Layers[Layer].Tiles[id1].Clone();
-                if (X < MapData.Width - 1 && Y > 0) OldSurrounding[2] = (TileData) MapData.Layers[Layer].Tiles[id2].Clone();
-                if (X > 0) OldSurrounding[3] = (TileData) MapData.Layers[Layer].Tiles[id3].Clone();
-                if (X < MapData.Width - 1) OldSurrounding[4] = (TileData) MapData.Layers[Layer].Tiles[id4].Clone();
-                if (X > 0 && Y < MapData.Height - 1) OldSurrounding[5] = (TileData) MapData.Layers[Layer].Tiles[id5].Clone();
-                if (Y < MapData.Height - 1) OldSurrounding[6] = (TileData) MapData.Layers[Layer].Tiles[id6].Clone();
-                if (X < MapData.Width - 1 && Y < MapData.Height - 1) OldSurrounding[7] = (TileData) MapData.Layers[Layer].Tiles[id7].Clone();
+                if (X > 0 && Y > 0) OldSurrounding[0] = (TileData) MapData.Layers[Layer].Tiles[id0]?.Clone();
+                if (Y > 0) OldSurrounding[1] = (TileData) MapData.Layers[Layer].Tiles[id1]?.Clone();
+                if (X < MapData.Width - 1 && Y > 0) OldSurrounding[2] = (TileData) MapData.Layers[Layer].Tiles[id2]?.Clone();
+                if (X > 0) OldSurrounding[3] = (TileData) MapData.Layers[Layer].Tiles[id3]?.Clone();
+                if (X < MapData.Width - 1) OldSurrounding[4] = (TileData) MapData.Layers[Layer].Tiles[id4]?.Clone();
+                if (X > 0 && Y < MapData.Height - 1) OldSurrounding[5] = (TileData) MapData.Layers[Layer].Tiles[id5]?.Clone();
+                if (Y < MapData.Height - 1) OldSurrounding[6] = (TileData) MapData.Layers[Layer].Tiles[id6]?.Clone();
+                if (X < MapData.Width - 1 && Y < MapData.Height - 1) OldSurrounding[7] = (TileData) MapData.Layers[Layer].Tiles[id7]?.Clone();
             }
 
             if (OldTile != null && OldTile.TileType == TileType.Autotile)
@@ -854,16 +854,16 @@ namespace RPGStudioMK.Widgets
                 }
             }
 
-            if (MakeUndoable)
+            if (MakeNeighboursUndoable)
             {
-                if (X > 0 && Y > 0 && !MapData.Layers[Layer].Tiles[id0].Equals(OldSurrounding[0])) TileGroupUndoAction.AddToLatest(id0, Layer, MapData.Layers[Layer].Tiles[id0], OldSurrounding[0], true);
-                if (Y > 0 && !MapData.Layers[Layer].Tiles[id1].Equals(OldSurrounding[1])) TileGroupUndoAction.AddToLatest(id1, Layer, MapData.Layers[Layer].Tiles[id1], OldSurrounding[1], true);
-                if (X < MapData.Width - 1 && Y > 0 && !MapData.Layers[Layer].Tiles[id2].Equals(OldSurrounding[2])) TileGroupUndoAction.AddToLatest(id2, Layer, MapData.Layers[Layer].Tiles[id2], OldSurrounding[2], true);
-                if (X > 0 && !MapData.Layers[Layer].Tiles[id3].Equals(OldSurrounding[3])) TileGroupUndoAction.AddToLatest(id3, Layer, MapData.Layers[Layer].Tiles[id3], OldSurrounding[3], true);
-                if (X < MapData.Width - 1 && !MapData.Layers[Layer].Tiles[id4].Equals(OldSurrounding[4])) TileGroupUndoAction.AddToLatest(id4, Layer, MapData.Layers[Layer].Tiles[id4], OldSurrounding[4], true);
-                if (X > 0 && Y < MapData.Height - 1 && !MapData.Layers[Layer].Tiles[id5].Equals(OldSurrounding[5])) TileGroupUndoAction.AddToLatest(id5, Layer, MapData.Layers[Layer].Tiles[id5], OldSurrounding[5], true);
-                if (Y < MapData.Height - 1 && !MapData.Layers[Layer].Tiles[id6].Equals(OldSurrounding[6])) TileGroupUndoAction.AddToLatest(id6, Layer, MapData.Layers[Layer].Tiles[id6], OldSurrounding[6], true);
-                if (X < MapData.Width - 1 && Y < MapData.Height - 1 && !MapData.Layers[Layer].Tiles[id7].Equals(OldSurrounding[7])) TileGroupUndoAction.AddToLatest(id7, Layer, MapData.Layers[Layer].Tiles[id7], OldSurrounding[7], true);
+                if (X > 0 && Y > 0 && MapData.Layers[Layer].Tiles[id0]?.Equals(OldSurrounding[0]) != true) TileGroupUndoAction.AddToLatest(id0, Layer, MapData.Layers[Layer].Tiles[id0], OldSurrounding[0], true);
+                if (Y > 0 && MapData.Layers[Layer].Tiles[id1]?.Equals(OldSurrounding[1]) != true) TileGroupUndoAction.AddToLatest(id1, Layer, MapData.Layers[Layer].Tiles[id1], OldSurrounding[1], true);
+                if (X < MapData.Width - 1 && Y > 0 && MapData.Layers[Layer].Tiles[id2]?.Equals(OldSurrounding[2]) != true) TileGroupUndoAction.AddToLatest(id2, Layer, MapData.Layers[Layer].Tiles[id2], OldSurrounding[2], true);
+                if (X > 0 && MapData.Layers[Layer].Tiles[id3]?.Equals(OldSurrounding[3]) != true) TileGroupUndoAction.AddToLatest(id3, Layer, MapData.Layers[Layer].Tiles[id3], OldSurrounding[3], true);
+                if (X < MapData.Width - 1 && MapData.Layers[Layer].Tiles[id4]?.Equals(OldSurrounding[4]) != true) TileGroupUndoAction.AddToLatest(id4, Layer, MapData.Layers[Layer].Tiles[id4], OldSurrounding[4], true);
+                if (X > 0 && Y < MapData.Height - 1 && MapData.Layers[Layer].Tiles[id5]?.Equals(OldSurrounding[5]) != true) TileGroupUndoAction.AddToLatest(id5, Layer, MapData.Layers[Layer].Tiles[id5], OldSurrounding[5], true);
+                if (Y < MapData.Height - 1 && MapData.Layers[Layer].Tiles[id6]?.Equals(OldSurrounding[6]) != true) TileGroupUndoAction.AddToLatest(id6, Layer, MapData.Layers[Layer].Tiles[id6], OldSurrounding[6], true);
+                if (X < MapData.Width - 1 && Y < MapData.Height - 1 && MapData.Layers[Layer].Tiles[id7]?.Equals(OldSurrounding[7]) != true) TileGroupUndoAction.AddToLatest(id7, Layer, MapData.Layers[Layer].Tiles[id7], OldSurrounding[7], true);
             }
         }
 
