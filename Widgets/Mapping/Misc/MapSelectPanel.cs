@@ -291,6 +291,7 @@ namespace RPGStudioMK.Widgets
         private void EditMap(BaseEventArgs e)
         {
             Map map = Data.Maps[(int) mapview.HoveringNode.Object];
+            bool activemap = Editor.MainWindow.MapWidget.Map.ID == map.ID;
             MapPropertiesWindow mpw = new MapPropertiesWindow(map);
             mpw.OnClosed += delegate (BaseEventArgs ev)
             {
@@ -303,7 +304,7 @@ namespace RPGStudioMK.Widgets
                         mapview.Redraw();
                     }
                     Editor.UnsavedChanges = mpw.UnsavedChanges;
-                    if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetMap(mpw.Map);
+                    if (Editor.MainWindow.MapWidget != null && activemap) Editor.MainWindow.MapWidget.SetMap(mpw.Map);
                 }
             };
         }
