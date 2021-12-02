@@ -2,20 +2,25 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <ApplicationIcon>logo-64x64.ico</ApplicationIcon>
-    <StartupObject />
-    <Authors>MK Project</Authors>
+    <StartupObject>RPGStudioMK.Program</StartupObject>
+    <Authors>Marijn Herrebout</Authors>
     <Product>RPG Studio MK</Product>
     <Version>0.6.2</Version>
     <Platforms>x64</Platforms>
     <AssemblyName>RPG Studio MK</AssemblyName>
     <Configurations>Debug</Configurations>
     <RootNamespace>RPGStudioMK</RootNamespace>
+    <SignAssembly>False</SignAssembly>
+    <Copyright>Marijn Herrebout</Copyright>
+    <RepositoryUrl>https://github.com/Marin-MK/RPGStudioMK</RepositoryUrl>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>True</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
