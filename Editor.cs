@@ -602,12 +602,26 @@ namespace RPGStudioMK
         /// </summary>
         public static void MakeRecentProject()
         {
-            string path = ProjectFilePath;
+            string path = null;
+            foreach (string file in Directory.GetFiles(Data.ProjectPath))
+            {
+                if (file.EndsWith(".rxproj"))
+                {
+                    path = Path.GetFullPath(file);
+                    break;
+                }
+            }
+            if (path == null)
+            {
+
+                return;
+            }
             while (path.Contains('\\')) path = path.Replace('\\', '/');
             for (int i = 0; i < GeneralSettings.RecentFiles.Count; i++)
             {
                 if (GeneralSettings.RecentFiles[i][1] == path) // Project file paths match - same project
                 {
+                    // Remove and still add to update the ordering in the list
                     GeneralSettings.RecentFiles.RemoveAt(i);
                 }
             }
@@ -656,7 +670,7 @@ namespace RPGStudioMK
             // Saves the assembly version into the project file.
             ProjectSettings.SavedVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
             IFormatter formatter = new BinaryFormatter();
-            Stream stream = new FileStream(ProjectFilePath, FileMode.Create, FileAccess.Write);
+            Stream stream = new FileStream(Data.ProjectPath + "/project.mkproj", FileMode.Create, FileAccess.Write);
             formatter.Serialize(stream, ProjectSettings);
             stream.Close();
         }
@@ -666,10 +680,10 @@ namespace RPGStudioMK
         /// </summary>
         public static void LoadProjectSettings()
         {
-            if (File.Exists(ProjectFilePath))
+            if (File.Exists(Data.ProjectPath + "/project.mkproj"))
             {
                 IFormatter formatter = new BinaryFormatter();
-                Stream stream = new FileStream(ProjectFilePath, FileMode.Open, FileAccess.Read);
+                Stream stream = new FileStream(Data.ProjectPath + "/project.mkproj", FileMode.Open, FileAccess.Read);
                 ProjectSettings = formatter.Deserialize(stream) as ProjectSettings;
                 stream.Close();
             }
