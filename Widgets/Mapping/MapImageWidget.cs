@@ -191,6 +191,7 @@ namespace RPGStudioMK.Widgets
                         int autotile_index = MapData.Layers[Layer].Tiles[y * MapData.Width + x].Index;
                         int autotile_id = MapData.AutotileIDs[autotile_index];
                         Autotile autotile = Data.Autotiles[autotile_id];
+                        if (autotile == null) continue;
                         if (autotile.AnimateSpeed > 0) AnimatedAutotiles.Add(new List<int>() { Layer, x, y, autotile_id, tile_id });
                         Bitmap autotileimage = autotile.AutotileBitmap;
                         if (autotile.Format == AutotileFormat.Single)
@@ -919,49 +920,49 @@ namespace RPGStudioMK.Widgets
                           MapData.Layers[Layer].Tiles[id0] != null &&
                           MapData.Layers[Layer].Tiles[id0].TileType == TileType.Autotile;
             bool NWex = NWauto && MapData.Layers[Layer].Tiles[id0].Index == AutotileIndex;
-            bool NW = NWauto && (NWex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]].OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id0].Index]));
+            bool NW = NWauto && (NWex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]]?.OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id0].Index]) == true);
             bool Nauto = Connected[1].X >= 0 && Connected[1].X < MapData.Width &&
                          Connected[1].Y >= 0 && Connected[1].Y < MapData.Height &&
                          MapData.Layers[Layer].Tiles[id1] != null &&
                          MapData.Layers[Layer].Tiles[id1].TileType == TileType.Autotile;
             bool Nex = Nauto && MapData.Layers[Layer].Tiles[id1].Index == AutotileIndex;
-            bool N = Nauto && (Nex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]].OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id1].Index]));
+            bool N = Nauto && (Nex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]]?.OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id1].Index]) == true);
             bool NEauto = Connected[2].X >= 0 && Connected[2].X < MapData.Width &&
                           Connected[2].Y >= 0 && Connected[2].Y < MapData.Height &&
                           MapData.Layers[Layer].Tiles[id2] != null &&
                           MapData.Layers[Layer].Tiles[id2].TileType == TileType.Autotile;
             bool NEex = NEauto && MapData.Layers[Layer].Tiles[id2].Index == AutotileIndex;
-            bool NE = NEauto && (NEex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]].OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id2].Index]));
+            bool NE = NEauto && (NEex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]]?.OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id2].Index]) == true);
             bool Wauto = Connected[3].X >= 0 && Connected[3].X < MapData.Width &&
                          Connected[3].Y >= 0 && Connected[3].Y < MapData.Height &&
                          MapData.Layers[Layer].Tiles[id3] != null &&
                          MapData.Layers[Layer].Tiles[id3].TileType == TileType.Autotile;
             bool Wex = Wauto && MapData.Layers[Layer].Tiles[id3].Index == AutotileIndex;
-            bool W = Wauto && (Wex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]].OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id3].Index]));
+            bool W = Wauto && (Wex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]]?.OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id3].Index]) == true);
             bool Eauto = Connected[4].X >= 0 && Connected[4].X < MapData.Width &&
                          Connected[4].Y >= 0 && Connected[4].Y < MapData.Height &&
                          MapData.Layers[Layer].Tiles[id4] != null &&
                          MapData.Layers[Layer].Tiles[id4].TileType == TileType.Autotile;
             bool Eex = Eauto && MapData.Layers[Layer].Tiles[id4].Index == AutotileIndex;
-            bool E = Eauto && (Eex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]].OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id4].Index]));
+            bool E = Eauto && (Eex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]]?.OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id4].Index]) == true);
             bool SWauto = Connected[5].X >= 0 && Connected[5].X < MapData.Width &&
                           Connected[5].Y >= 0 && Connected[5].Y < MapData.Height &&
                           MapData.Layers[Layer].Tiles[id5] != null &&
                           MapData.Layers[Layer].Tiles[id5].TileType == TileType.Autotile;
             bool SWex = SWauto && MapData.Layers[Layer].Tiles[id5].Index == AutotileIndex;
-            bool SW = SWauto && (SWex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]].OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id5].Index]));
+            bool SW = SWauto && (SWex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]]?.OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id5].Index]) == true);
             bool Sauto = Connected[6].X >= 0 && Connected[6].X < MapData.Width &&
                          Connected[6].Y >= 0 && Connected[6].Y < MapData.Height &&
                          MapData.Layers[Layer].Tiles[id6] != null &&
                          MapData.Layers[Layer].Tiles[id6].TileType == TileType.Autotile;
-            bool Sex = MapData.Layers[Layer].Tiles[id6].Index == AutotileIndex;
-            bool S = Sauto && (Sex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]].OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id6].Index]));
+            bool Sex = Sauto && MapData.Layers[Layer].Tiles[id6].Index == AutotileIndex;
+            bool S = Sauto && (Sex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]]?.OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id6].Index]) == true);
             bool SEauto = Connected[7].X >= 0 && Connected[7].X < MapData.Width &&
                           Connected[7].Y >= 0 && Connected[7].Y < MapData.Height &&
                           MapData.Layers[Layer].Tiles[id7] != null &&
                           MapData.Layers[Layer].Tiles[id7].TileType == TileType.Autotile;
             bool SEex = SEauto && MapData.Layers[Layer].Tiles[id7].Index == AutotileIndex;
-            bool SE = SEauto && (SEex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]].OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id7].Index]));
+            bool SE = SEauto && (SEex || Data.Autotiles[MapData.AutotileIDs[AutotileIndex]]?.OverlappableBy.Contains(MapData.AutotileIDs[MapData.Layers[Layer].Tiles[id7].Index]) == true);
 
             if (CheckNeighbouring || TileData != null && TileData.TileType == TileType.Autotile && TileData.Index == AutotileIndex)
                   // Only try to update the current tile if it's assignment (not deletion)
@@ -1027,28 +1028,32 @@ namespace RPGStudioMK.Widgets
                         }
                     }
                     MapData.Layers[Layer].Tiles[X + Y * MapData.Width].ID = ID;
-                    Autotile autotile = Data.Autotiles[MapData.AutotileIDs[AutotileIndex]];
-                    if (autotile.AnimateSpeed > 0)
+                    int autotileid = MapData.AutotileIDs[AutotileIndex];
+                    Autotile autotile = Data.Autotiles[autotileid];
+                    if (autotile != null)
                     {
-                        AnimatedAutotiles.Add(new List<int>() { Layer, X, Y, Data.Autotiles.IndexOf(autotile), ID });
-                    }
-                    int AnimX = 0;
-                    if (autotile.Format == AutotileFormat.Single)
-                    {
-                        AnimX = ((int) Math.Floor((double) AnimateCount / autotile.AnimateSpeed) * 32) % autotile.AutotileBitmap.Width;
-                        if (!Editor.GeneralSettings.ShowMapAnimations) AnimX = 0;
-                        this.Sprites[Layer.ToString()].Bitmap.Build(new Rect(32 * X, 32 * Y, 32, 32), autotile.AutotileBitmap,
-                            new Rect(AnimX, 0, 32, 32));
-                    }
-                    else
-                    {
-                        AnimX = ((int) Math.Floor((double) AnimateCount / autotile.AnimateSpeed) * 96) % autotile.AutotileBitmap.Width;
-                        if (!Editor.GeneralSettings.ShowMapAnimations) AnimX = 0;
-                        List<int> Tiles = Autotile.AutotileCombinations[autotile.Format][ID];
-                        for (int i = 0; i < 4; i++)
+                        if (autotile.AnimateSpeed > 0)
                         {
-                            this.Sprites[Layer.ToString()].Bitmap.Build(new Rect(32 * X + 16 * (i % 2), 32 * Y + 16 * (int) Math.Floor(i / 2d), 16, 16), autotile.AutotileBitmap,
-                                new Rect(16 * (Tiles[i] % 6) + AnimX, 16 * (int)Math.Floor(Tiles[i] / 6d), 16, 16));
+                            AnimatedAutotiles.Add(new List<int>() { Layer, X, Y, autotileid, ID });
+                        }
+                        int AnimX = 0;
+                        if (autotile.Format == AutotileFormat.Single)
+                        {
+                            AnimX = ((int) Math.Floor((double) AnimateCount / autotile.AnimateSpeed) * 32) % autotile.AutotileBitmap.Width;
+                            if (!Editor.GeneralSettings.ShowMapAnimations) AnimX = 0;
+                            this.Sprites[Layer.ToString()].Bitmap.Build(new Rect(32 * X, 32 * Y, 32, 32), autotile.AutotileBitmap,
+                                new Rect(AnimX, 0, 32, 32));
+                        }
+                        else
+                        {
+                            AnimX = ((int) Math.Floor((double) AnimateCount / autotile.AnimateSpeed) * 96) % autotile.AutotileBitmap.Width;
+                            if (!Editor.GeneralSettings.ShowMapAnimations) AnimX = 0;
+                            List<int> Tiles = Autotile.AutotileCombinations[autotile.Format][ID];
+                            for (int i = 0; i < 4; i++)
+                            {
+                                this.Sprites[Layer.ToString()].Bitmap.Build(new Rect(32 * X + 16 * (i % 2), 32 * Y + 16 * (int) Math.Floor(i / 2d), 16, 16), autotile.AutotileBitmap,
+                                    new Rect(16 * (Tiles[i] % 6) + AnimX, 16 * (int)Math.Floor(Tiles[i] / 6d), 16, 16));
+                            }
                         }
                     }
                 }

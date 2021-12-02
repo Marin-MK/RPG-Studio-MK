@@ -59,6 +59,12 @@ namespace RPGStudioMK.Game
             this.AutoplayBGS = Ruby.GetIVar(data, "@autoplay_bgs") == Ruby.True;
             this.EncounterStep = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@encounter_step"));
 
+            // Now add all autotile IDs from the tileset to the list of autotile ids
+            for (int i = 0; i < 7; i++)
+            {
+                this.AutotileIDs.Add(Data.Tilesets[tilesetid].ID * 7 + i);
+            }
+
             IntPtr table = Ruby.GetIVar(data, "@data");
             this.Width = Compatibility.RMXP.Table.XSize(table);
             this.Height = Compatibility.RMXP.Table.YSize(table);
@@ -92,12 +98,6 @@ namespace RPGStudioMK.Game
                     }
                 }
                 this.Layers.Add(l);
-            }
-
-            // Now add all autotile IDs from the tileset to the list of autotile ids
-            foreach (Autotile autotile in Data.Tilesets[tilesetid].Autotiles)
-            {
-                this.AutotileIDs.Add(autotile == null ? -1 : autotile.ID);
             }
 
             IntPtr events = Ruby.GetIVar(data, "@events");

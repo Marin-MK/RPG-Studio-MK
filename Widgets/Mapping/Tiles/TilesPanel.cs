@@ -254,6 +254,7 @@ namespace RPGStudioMK.Widgets
                 int autotileid = MapData.AutotileIDs[i];
                 if (autotileid == -1) continue;
                 Autotile autotile = Data.Autotiles[autotileid];
+                if (autotile == null) continue;
                 //if (autotile.Format == AutotileFormat.Single)
                 //{
                 int x = 33 * (SingleIndex % 8);
