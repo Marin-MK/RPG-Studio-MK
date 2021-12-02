@@ -48,6 +48,7 @@ namespace RPGStudioMK
             Console.WriteLine($"OS Version: {os.VersionString}");
             Framework = null;
             fw = null;
+            if (args.Length == 1) ProjectFile = args[0];
             MainEditorWindow win = new MainEditorWindow(ProjectFile);
             win.Show();
             Widgets.MessageBox ErrorBox = null;
