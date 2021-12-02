@@ -111,21 +111,30 @@ namespace RPGStudioMK
             }
         }
 
+        /// <summary>
+        /// Permanently stops the downloader and deletes the downloaded file if it was not fully downloaded.
+        /// </summary>
         public void Stop()
         {
-            if (StopThread) throw new Exception("Downloading already stopped.");
+            if (StopThread) throw new Exception("Downloader already stopped.");
             StopThread = true;
         }
 
+        /// <summary>
+        /// Temporarily pauses the downloader.
+        /// </summary>
         public void Pause()
         {
-            if (PauseThread) throw new Exception("Downloading already paused.");
+            if (PauseThread) throw new Exception("Downloader already paused.");
             PauseThread = true;
         }
 
+        /// <summary>
+        /// Resumes the downloader if it had been paused.
+        /// </summary>
         public void Resume()
         {
-            if (!PauseThread) throw new Exception("Downloading was never paused.");
+            if (!PauseThread) throw new Exception("Downloader was never paused.");
             PauseThread = false;
         }
     }
