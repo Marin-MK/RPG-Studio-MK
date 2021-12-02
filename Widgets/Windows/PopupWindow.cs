@@ -87,10 +87,11 @@ namespace RPGStudioMK.Widgets
 
         public override void Dispose()
         {
+            base.Dispose();
             if (this.Window.ActiveWidget == this)
             {
                 // Remove current widget/window
-                this.Window.Widgets.RemoveAt(Window.Widgets.Count - 1);
+                this.Window.Widgets.Remove(this);
                 // Set the last (undisposed) widget as active
                 for (int i = 0; i < Window.Widgets.Count; i++)
                 {
@@ -107,7 +108,6 @@ namespace RPGStudioMK.Widgets
                 // Update overlay Z
                 Window.SetOverlayZIndex(Window.ActiveWidget.WindowLayer * 10 - 1);
             }
-            base.Dispose();
         }
     }
 }
