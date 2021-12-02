@@ -26,7 +26,7 @@ namespace RPGStudioMK.Widgets
             SetSize(MaximumSize);
             Center();
 
-            OldIDs = new List<int>(Map.AutotileIDs);
+            OldIDs = new List<int>(Map.TilesetIDs);
 
             ColoredBox box1 = new ColoredBox(this);
             box1.SetOuterColor(59, 91, 124);
