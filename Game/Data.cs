@@ -37,11 +37,14 @@ namespace RPGStudioMK.Game
             Compatibility.RMXP.Setup();
         }
 
-        public static void LoadGameData()
+        public static IEnumerable<float> LoadGameData()
         {
             Initialize();
             LoadTilesets();
-            LoadMaps();
+            foreach (float f in LoadMaps())
+            {
+                yield return f;
+            }
             LoadSystem();
             LoadCommonEvents();
             LoadScripts();
@@ -178,13 +181,15 @@ namespace RPGStudioMK.Game
             return Filenames;
         }
 
-        private static void LoadMaps()
+        private static IEnumerable<float> LoadMaps()
         {
             IntPtr mapinfofile = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/MapInfos.rxdata"), Ruby.String.ToPtr("rb"));
             IntPtr mapinfo = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", mapinfofile);
             Ruby.Pin(mapinfo);
             Ruby.Funcall(mapinfofile, "close");
             List<(string, int)> Filenames = GetMapIDs(DataPath);
+            int total = Filenames.Count;
+            int count = 0;
             foreach ((string name, int id) tuple in Filenames)
             {
                 IntPtr mapfile = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/" + tuple.name), Ruby.String.ToPtr("rb"));
@@ -195,6 +200,8 @@ namespace RPGStudioMK.Game
                 Map map = new Map(id, mapdata, Ruby.Hash.Get(mapinfo, Ruby.Integer.ToPtr(id)));
                 Maps[map.ID] = map;
                 Ruby.Unpin(mapdata);
+                count++;
+                yield return count / (float) total;
             }
             Ruby.Unpin(mapinfo);
         }

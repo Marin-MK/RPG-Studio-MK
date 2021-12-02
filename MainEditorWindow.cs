@@ -302,16 +302,24 @@ namespace RPGStudioMK
         {
             Stopwatch s = new Stopwatch();
             s.Start();
-            if (HomeScreen != null)
-                HomeScreen.Dispose();
+            
+            Editor.LoadProjectSettings();
+            ProgressWindow pw = new ProgressWindow("Loading", "Loading project...", true);
+            foreach (float f in Data.LoadGameData())
+            {
+                // f is percentage of maps that have been parsed
+                pw.SetProgress(f);
+                // Force redraw in between maps loaded
+                if (Graphics.CanUpdate()) Graphics.Update();
+                else return;
+            }
+
+            HomeScreen?.Dispose();
 
             MainGridLayout.Rows[1] = new GridSize(31, Unit.Pixels);
             MainGridLayout.Rows[4] = new GridSize(1, Unit.Pixels);
             MainGridLayout.Rows[5] = new GridSize(26, Unit.Pixels);
             MainGridLayout.UpdateContainers();
-
-            Editor.LoadProjectSettings();
-            Data.LoadGameData();
 
             Editor.OptimizeOrder();
             Editor.SetMode(Editor.ProjectSettings.LastMode, true);
