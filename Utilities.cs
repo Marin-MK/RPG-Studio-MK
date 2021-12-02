@@ -189,30 +189,7 @@ public static class Utilities
     /// </summary>
     public static void OpenLink(string url)
     {
-        if (odl.Graphics.Platform == odl.Platform.Windows)
-        {
-            url = url.Replace("&", "^&");
-            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
-        }
-        else if (odl.Graphics.Platform == odl.Platform.Linux)
-        {
-            Process.Start("xdg-open", url);
-        }
-        else if (odl.Graphics.Platform == odl.Platform.MacOS)
-        {
-            Process.Start("open", url);
-        }
-        else
-        {
-            try
-            {
-                Process.Start(url);
-            }
-            catch
-            {
-                throw new Exception("Failed to open link '" + url + "'.");
-            }
-        }
+        odl.SDL2.SDL.SDL_OpenURL(url);
     }
 
     /// <summary>
