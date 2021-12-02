@@ -29,6 +29,7 @@ namespace RPGStudioMK.Compatibility
             RPG.Create();
             Table.Create();
             Tone.Create();
+            Color.Create();
             Map.Create();
             AudioFile.Create();
             Event.Create();

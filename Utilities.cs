@@ -408,6 +408,14 @@ namespace RPGStudioMK
                 byte gray = (byte) Ruby.Float.FromPtr(Ruby.GetIVar(obj, "@gray"));
                 return new Tone(red, green, blue, gray);
             }
+            else if (Ruby.Is(obj, "Color"))
+            {
+                byte red = (byte) Ruby.Float.FromPtr(Ruby.GetIVar(obj, "@red"));
+                byte green = (byte) Ruby.Float.FromPtr(Ruby.GetIVar(obj, "@green"));
+                byte blue = (byte) Ruby.Float.FromPtr(Ruby.GetIVar(obj, "@blue"));
+                byte alpha = (byte) Ruby.Float.FromPtr(Ruby.GetIVar(obj, "@alpha"));
+                return new Color(red, green, blue, alpha);
+            }
             else
             {
                 throw new Exception($"Could not convert Ruby's '{Ruby.GetClassName(obj)}' class to a native class.");
@@ -468,6 +476,17 @@ namespace RPGStudioMK
                 Ruby.SetIVar(tone, "@gray", Ruby.Float.ToPtr(((Tone) obj).Gray));
                 Ruby.Unpin(tone);
                 return tone;
+            }
+            else if (obj is Color)
+            {
+                IntPtr color = Ruby.Funcall(Compatibility.RMXP.Color.Class, "new");
+                Ruby.Pin(color);
+                Ruby.SetIVar(color, "@red", Ruby.Float.ToPtr(((Color) obj).Red));
+                Ruby.SetIVar(color, "@green", Ruby.Float.ToPtr(((Color) obj).Green));
+                Ruby.SetIVar(color, "@blue", Ruby.Float.ToPtr(((Color) obj).Blue));
+                Ruby.SetIVar(color, "@gray", Ruby.Float.ToPtr(((Color) obj).Alpha));
+                Ruby.Unpin(color);
+                return color;
             }
             else
             {
