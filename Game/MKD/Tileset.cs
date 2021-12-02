@@ -39,8 +39,51 @@ namespace RPGStudioMK.Game
         /// </summary>
         public List<List<int>> AutotileOverlapPermissions = new List<List<int>>();
 
-        public Bitmap TilesetBitmap;
-        public Bitmap TilesetListBitmap;
+        private Bitmap _tb;
+        public Bitmap TilesetBitmap
+        {
+            get
+            {
+                if (_tb != null) return _tb;
+                string filename = $"{Data.ProjectPath}/Graphics/Tilesets/{this.GraphicName}.png";
+                _tb = null;
+                if (Bitmap.FindRealFilename(filename) != null)
+                {
+                    _tb = new Bitmap(filename);
+                }
+                return _tb;
+            }
+            set
+            {
+                _tb = value;
+            }
+        }
+        private Bitmap _tlb;
+        public Bitmap TilesetListBitmap
+        {
+            get
+            {
+                if (_tlb != null) return _tlb;
+                int tileycount = (int) Math.Floor(TilesetBitmap.Height / 32d);
+
+                _tlb = new Bitmap(TilesetBitmap.Width + 7, TilesetBitmap.Height + tileycount - 1, Graphics.MaxTextureSize);
+                _tlb.Unlock();
+
+                for (int tiley = 0; tiley < tileycount; tiley++)
+                {
+                    for (int tilex = 0; tilex < 8; tilex++)
+                    {
+                        _tlb.Build(tilex * 32 + tilex, tiley * 32 + tiley, TilesetBitmap, tilex * 32, tiley * 32, 32, 32);
+                    }
+                }
+                _tlb.Lock();
+                return _tlb;
+            }
+            set
+            {
+                _tlb = value;
+            }
+        }
 
         public Tileset()
         {
@@ -86,6 +129,10 @@ namespace RPGStudioMK.Game
             this.FogBlendType = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_blend_type"));
             this.BattlebackName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@battleback_name"));
             IntPtr autotiles = Ruby.GetIVar(data, "@autotile_names");
+            if (this.ID == 28)
+            {
+
+            }
             for (int i = 0; i < Ruby.Array.Length(autotiles); i++)
             {
                 string name = Ruby.String.FromPtr(Ruby.Array.Get(autotiles, i));
@@ -184,28 +231,10 @@ namespace RPGStudioMK.Game
         {
             if (this.TilesetBitmap == null || Redraw)
             {
-                this.TilesetBitmap?.Dispose();
-                this.TilesetListBitmap?.Dispose();
-
-                string filename = $"{Data.ProjectPath}/Graphics/Tilesets/{this.GraphicName}.png";
-                if (Bitmap.FindRealFilename(filename) != null)
-                {
-                    Bitmap bmp = new Bitmap(filename);
-                    this.TilesetBitmap = bmp;
-                    int tileycount = (int) Math.Floor(bmp.Height / 32d);
-
-                    this.TilesetListBitmap = new Bitmap(bmp.Width + 7, bmp.Height + tileycount - 1, Graphics.MaxTextureSize);
-                    this.TilesetListBitmap.Unlock();
-
-                    for (int tiley = 0; tiley < tileycount; tiley++)
-                    {
-                        for (int tilex = 0; tilex < 8; tilex++)
-                        {
-                            this.TilesetListBitmap.Build(tilex * 32 + tilex, tiley * 32 + tiley, bmp, tilex * 32, tiley * 32, 32, 32);
-                        }
-                    }
-                    this.TilesetListBitmap.Lock();
-                }
+                _tb?.Dispose();
+                _tb = null;
+                _tlb?.Dispose();
+                _tlb = null;
             }
         }
 
