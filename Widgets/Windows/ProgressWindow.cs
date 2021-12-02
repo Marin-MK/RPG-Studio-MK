@@ -11,7 +11,7 @@ namespace RPGStudioMK.Widgets
         public string Message { get; protected set; }
         public bool CloseWhenDone { get; protected set; }
 
-        Label msglabel;
+        Label MessageLabel;
         ProgressBar ProgressBar;
 
         public ProgressWindow(string Title, string Message, bool CloseWhenDone = true)
@@ -24,10 +24,10 @@ namespace RPGStudioMK.Widgets
             SetSize(MaximumSize);
             Center();
 
-            msglabel = new Label(this);
-            msglabel.SetFont(Fonts.UbuntuRegular.Use(14));
-            msglabel.SetText(Message);
-            msglabel.SetPosition(Size.Width / 2 - msglabel.Size.Width / 2, 24);
+            MessageLabel = new Label(this);
+            MessageLabel.SetFont(Fonts.UbuntuRegular.Use(14));
+            MessageLabel.SetText(Message);
+            MessageLabel.SetPosition(Size.Width / 2 - MessageLabel.Size.Width / 2, 24);
 
             ProgressBar = new ProgressBar(this);
             ProgressBar.SetPosition(8, 48);
@@ -45,8 +45,8 @@ namespace RPGStudioMK.Widgets
             if (this.Message != Message)
             {
                 this.Message = Message;
-                msglabel.SetText(this.Message);
-                msglabel.SetPosition(Size.Width / 2 - msglabel.Size.Width / 2, 24);
+                MessageLabel.SetText(this.Message);
+                MessageLabel.SetPosition(Size.Width / 2 - MessageLabel.Size.Width / 2, 24);
             }
         }
 
