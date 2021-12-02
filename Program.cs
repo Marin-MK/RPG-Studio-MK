@@ -31,7 +31,11 @@ public class Program
         OperatingSystem os = Editor.GetOperatingSystem();
         string Framework = "";
         string fw = Assembly.GetEntryAssembly().GetCustomAttribute<TargetFrameworkAttribute>().FrameworkName;
-        if (fw.Contains(".NETCoreApp")) Framework = ".NET Core ";
+        if (fw.Contains(".NETCoreApp,Version"))
+        {
+            if (Convert.ToInt32(fw[".NETCoreApp,Version".Length]) <= 3) Framework = ".NET Core ";
+            else Framework = ".NET ";
+        }
         else if (fw.Contains(".NETFrameworkApp")) Framework = ".NET Framework ";
         else Framework = "Unknown ";
         Framework += Environment.Version.ToString();
