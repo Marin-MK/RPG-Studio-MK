@@ -2,22 +2,21 @@
 using odl;
 using amethyst;
 
-namespace RPGStudioMK.Widgets
+namespace RPGStudioMK.Widgets;
+
+class Sidebar : Widget
 {
-    class Sidebar : Widget
+    public TabView TabControl;
+
+    public Sidebar(IContainer Parent) : base(Parent)
     {
-        public TabView TabControl;
+        SetBackgroundColor(10, 23, 37);
+        TabControl = new TabView(this);
+    }
 
-        public Sidebar(IContainer Parent) : base(Parent)
-        {
-            SetBackgroundColor(10, 23, 37);
-            TabControl = new TabView(this);
-        }
-
-        public override void SizeChanged(BaseEventArgs e)
-        {
-            base.SizeChanged(e);
-            TabControl.SetSize(this.Size);
-        }
+    public override void SizeChanged(BaseEventArgs e)
+    {
+        base.SizeChanged(e);
+        TabControl.SetSize(this.Size);
     }
 }

@@ -3,25 +3,25 @@ using System.Collections.Generic;
 using System.IO;
 using odl;
 
-namespace RPGStudioMK.Game
+namespace RPGStudioMK.Game;
+
+public class Autotile : ICloneable
 {
-    public class Autotile : ICloneable
-    {
-        public int ID;
-        public string Name;
-        public AutotileFormat Format;
-        public string GraphicName;
-        public Passability Passability;
-        public int Priority;
-        public int Tag;
-        public int AnimateSpeed = 16;
-        public List<int?> QuickIDs = new List<int?>() { null, null, null, null, null, null };
+    public int ID;
+    public string Name;
+    public AutotileFormat Format;
+    public string GraphicName;
+    public Passability Passability;
+    public int Priority;
+    public int Tag;
+    public int AnimateSpeed = 16;
+    public List<int?> QuickIDs = new List<int?>() { null, null, null, null, null, null };
 
-        public List<int> OverlappableBy = new List<int>();
+    public List<int> OverlappableBy = new List<int>();
 
-        public Bitmap AutotileBitmap;
+    public Bitmap AutotileBitmap;
 
-        public static Dictionary<AutotileFormat, List<List<int>>> AutotileCombinations = new Dictionary<AutotileFormat, List<List<int>>>()
+    public static Dictionary<AutotileFormat, List<List<int>>> AutotileCombinations = new Dictionary<AutotileFormat, List<List<int>>>()
         {
             {
                 AutotileFormat.RMXP, new List<List<int>>()
@@ -76,54 +76,53 @@ namespace RPGStudioMK.Game
             }
         };
 
-        public void SetGraphic(string GraphicName)
-        {
-            if (this.GraphicName != GraphicName)
-            {
-                this.GraphicName = GraphicName;
-                this.CreateBitmap(true);
-            }
-        }
-
-        public void CreateBitmap(bool Redraw = false)
-        {
-            if (this.AutotileBitmap == null || Redraw)
-            {
-                if (this.AutotileBitmap != null) this.AutotileBitmap.Dispose();
-                this.OverlappableBy.Clear();
-                Bitmap bmp = new Bitmap($"{Data.ProjectPath}\\Graphics\\Autotiles\\{this.GraphicName}.png");
-                this.AutotileBitmap = bmp;
-            }
-        }
-
-        public override string ToString()
-        {
-            return this.Name;
-        }
-
-        public object Clone()
-        {
-            Autotile a = new Autotile();
-            a.ID = this.ID;
-            a.Name = this.Name;
-            a.Format = this.Format;
-            a.GraphicName = this.GraphicName;
-            a.Passability = this.Passability;
-            a.Priority = this.Priority;
-            a.Tag = this.Tag;
-            a.AnimateSpeed = this.AnimateSpeed;
-            a.QuickIDs = new List<int?>(this.QuickIDs);
-            a.OverlappableBy = new List<int>(this.OverlappableBy);
-            a.AutotileBitmap = this.AutotileBitmap;
-            return a;
-        }
-    }
-
-    public enum AutotileFormat
+    public void SetGraphic(string GraphicName)
     {
-        RMXP,
-        FullCorners,
-        RMVX,
-        Single
+        if (this.GraphicName != GraphicName)
+        {
+            this.GraphicName = GraphicName;
+            this.CreateBitmap(true);
+        }
     }
+
+    public void CreateBitmap(bool Redraw = false)
+    {
+        if (this.AutotileBitmap == null || Redraw)
+        {
+            if (this.AutotileBitmap != null) this.AutotileBitmap.Dispose();
+            this.OverlappableBy.Clear();
+            Bitmap bmp = new Bitmap($"{Data.ProjectPath}\\Graphics\\Autotiles\\{this.GraphicName}.png");
+            this.AutotileBitmap = bmp;
+        }
+    }
+
+    public override string ToString()
+    {
+        return this.Name;
+    }
+
+    public object Clone()
+    {
+        Autotile a = new Autotile();
+        a.ID = this.ID;
+        a.Name = this.Name;
+        a.Format = this.Format;
+        a.GraphicName = this.GraphicName;
+        a.Passability = this.Passability;
+        a.Priority = this.Priority;
+        a.Tag = this.Tag;
+        a.AnimateSpeed = this.AnimateSpeed;
+        a.QuickIDs = new List<int?>(this.QuickIDs);
+        a.OverlappableBy = new List<int>(this.OverlappableBy);
+        a.AutotileBitmap = this.AutotileBitmap;
+        return a;
+    }
+}
+
+public enum AutotileFormat
+{
+    RMXP,
+    FullCorners,
+    RMVX,
+    Single
 }

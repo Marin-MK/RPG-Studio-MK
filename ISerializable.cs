@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RPGStudioMK
+namespace RPGStudioMK;
+
+public interface ISerializable
 {
-    public interface ISerializable
-    {
-        string Serialize();
-    }
+    string Serialize();
 }

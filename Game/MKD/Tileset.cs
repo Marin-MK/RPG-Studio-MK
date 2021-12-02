@@ -5,306 +5,305 @@ using System.Text;
 using odl;
 using rubydotnet;
 
-namespace RPGStudioMK.Game
+namespace RPGStudioMK.Game;
+
+public class Tileset : ICloneable
 {
-    public class Tileset : ICloneable
+    public int ID;
+    public string Name;
+    public string GraphicName;
+    public List<Passability> Passabilities = new List<Passability>();
+    public List<int> Priorities = new List<int>();
+    public List<int> Tags = new List<int>();
+
+    // RMXP properties
+    public int PanoramaHue;
+    public string PanoramaName;
+    public string FogName;
+    public int FogSX;
+    public int FogSY;
+    public int FogOpacity;
+    public int FogHue;
+    public int FogZoom;
+    public int FogBlendType;
+    public string BattlebackName;
+    public List<Autotile> Autotiles = new List<Autotile>();
+    /// <summary>
+    /// List of tile IDs that have the bush flag set.
+    /// </summary>
+    public List<int> BushFlags = new List<int>();
+
+    /// <summary>
+    /// If an autotile's top center tile is equal to another autotile's top left tile, then this autotile
+    /// is allowed to overlap the other autotile without updating its borders when drawn over it on the same layer.
+    /// </summary>
+    public List<List<int>> AutotileOverlapPermissions = new List<List<int>>();
+
+    private Bitmap _tb;
+    public Bitmap TilesetBitmap
     {
-        public int ID;
-        public string Name;
-        public string GraphicName;
-        public List<Passability> Passabilities = new List<Passability>();
-        public List<int> Priorities = new List<int>();
-        public List<int> Tags = new List<int>();
-
-        // RMXP properties
-        public int PanoramaHue;
-        public string PanoramaName;
-        public string FogName;
-        public int FogSX;
-        public int FogSY;
-        public int FogOpacity;
-        public int FogHue;
-        public int FogZoom;
-        public int FogBlendType;
-        public string BattlebackName;
-        public List<Autotile> Autotiles = new List<Autotile>();
-        /// <summary>
-        /// List of tile IDs that have the bush flag set.
-        /// </summary>
-        public List<int> BushFlags = new List<int>();
-
-        /// <summary>
-        /// If an autotile's top center tile is equal to another autotile's top left tile, then this autotile
-        /// is allowed to overlap the other autotile without updating its borders when drawn over it on the same layer.
-        /// </summary>
-        public List<List<int>> AutotileOverlapPermissions = new List<List<int>>();
-
-        private Bitmap _tb;
-        public Bitmap TilesetBitmap
+        get
         {
-            get
+            if (_tb != null) return _tb;
+            string filename = $"{Data.ProjectPath}/Graphics/Tilesets/{this.GraphicName}.png";
+            _tb = null;
+            if (Bitmap.FindRealFilename(filename) != null)
             {
-                if (_tb != null) return _tb;
-                string filename = $"{Data.ProjectPath}/Graphics/Tilesets/{this.GraphicName}.png";
-                _tb = null;
-                if (Bitmap.FindRealFilename(filename) != null)
-                {
-                    _tb = new Bitmap(filename);
-                }
-                return _tb;
+                _tb = new Bitmap(filename);
             }
-            set
-            {
-                _tb = value;
-            }
+            return _tb;
         }
-        private Bitmap _tlb;
-        public Bitmap TilesetListBitmap
+        set
         {
-            get
-            {
-                if (_tlb != null) return _tlb;
-                int tileycount = (int) Math.Floor(TilesetBitmap.Height / 32d);
-
-                _tlb = new Bitmap(TilesetBitmap.Width + 7, TilesetBitmap.Height + tileycount - 1, Graphics.MaxTextureSize);
-                _tlb.Unlock();
-
-                for (int tiley = 0; tiley < tileycount; tiley++)
-                {
-                    for (int tilex = 0; tilex < 8; tilex++)
-                    {
-                        _tlb.Build(tilex * 32 + tilex, tiley * 32 + tiley, TilesetBitmap, tilex * 32, tiley * 32, 32, 32);
-                    }
-                }
-                _tlb.Lock();
-                return _tlb;
-            }
-            set
-            {
-                _tlb = value;
-            }
+            _tb = value;
         }
-
-        public Tileset()
+    }
+    private Bitmap _tlb;
+    public Bitmap TilesetListBitmap
+    {
+        get
         {
+            if (_tlb != null) return _tlb;
+            int tileycount = (int)Math.Floor(TilesetBitmap.Height / 32d);
 
-        }
+            _tlb = new Bitmap(TilesetBitmap.Width + 7, TilesetBitmap.Height + tileycount - 1, Graphics.MaxTextureSize);
+            _tlb.Unlock();
 
-        public Tileset(IntPtr data)
-        {
-            this.ID = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@id"));
-            this.Name = Ruby.String.FromPtr(Ruby.GetIVar(data, "@name"));
-            this.GraphicName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@tileset_name"));
-            IntPtr passability = Ruby.GetIVar(data, "@passages");
-            for (int i = 0; i < Compatibility.RMXP.Table.Size(passability); i++)
+            for (int tiley = 0; tiley < tileycount; tiley++)
             {
-                int code = (int) Ruby.Integer.FromPtr(Compatibility.RMXP.Table.Get(passability, i));
-                if ((code & 64) != 0)
+                for (int tilex = 0; tilex < 8; tilex++)
                 {
-                    BushFlags.Add(i);
-                    code -= 64;
-                }
-                Passabilities.Add((Passability) 15 - code);
-            }
-            IntPtr priorities = Ruby.GetIVar(data, "@priorities");
-            for (int i = 0; i < Compatibility.RMXP.Table.Size(priorities); i++)
-            {
-                int code = (int) Ruby.Integer.FromPtr(Compatibility.RMXP.Table.Get(priorities, i));
-                this.Priorities.Add(code);
-            }
-            IntPtr tags = Ruby.GetIVar(data, "@terrain_tags");
-            for (int i = 0; i < Compatibility.RMXP.Table.Size(tags); i++)
-            {
-                int code = (int) Ruby.Integer.FromPtr(Compatibility.RMXP.Table.Get(tags, i));
-                this.Tags.Add(code);
-            }
-            this.PanoramaHue = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@panorama_hue"));
-            this.PanoramaName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@panorama_name"));
-            this.FogName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@fog_name"));
-            this.FogSX = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_sx"));
-            this.FogSY = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_sy"));
-            this.FogOpacity = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_opacity"));
-            this.FogHue = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_hue"));
-            this.FogZoom = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_zoom"));
-            this.FogBlendType = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_blend_type"));
-            this.BattlebackName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@battleback_name"));
-            IntPtr autotiles = Ruby.GetIVar(data, "@autotile_names");
-            if (this.ID == 28)
-            {
-
-            }
-            for (int i = 0; i < Ruby.Array.Length(autotiles); i++)
-            {
-                string name = Ruby.String.FromPtr(Ruby.Array.Get(autotiles, i));
-                if (string.IsNullOrEmpty(name)) this.Autotiles.Add(null);
-                else
-                {
-                    Autotile autotile = new Autotile();
-                    autotile.ID = this.ID * 7 + i;
-                    autotile.Name = name;
-                    autotile.Passability = this.Passabilities[(i + 1) * 48];
-                    autotile.Priority = (int) this.Priorities[(i + 1) * 48];
-                    autotile.Tag = (int) this.Tags[(i + 1) * 48];
-                    autotile.SetGraphic(name);
-                    if (autotile.AutotileBitmap.Height == 32) autotile.Format = AutotileFormat.Single;
-                    else if (autotile.AutotileBitmap.Height == 96) autotile.Format = AutotileFormat.RMVX;
-                    else autotile.Format = AutotileFormat.RMXP;
-                    this.Autotiles.Add(autotile);
-                    Data.Autotiles[autotile.ID] = autotile;
+                    _tlb.Build(tilex * 32 + tilex, tiley * 32 + tiley, TilesetBitmap, tilex * 32, tiley * 32, 32, 32);
                 }
             }
-
-            UpdateAutotileOverlapPermissions();
-
-            // Make sure the three arrays are just as big; trailing nulls may be left out if the data is edited externally
-            int maxcount = Math.Max(Math.Max(Passabilities.Count, Priorities.Count), Tags.Count);
-            this.Passabilities.AddRange(new Passability[maxcount - Passabilities.Count]);
-            this.Priorities.AddRange(new int[maxcount - Priorities.Count]);
-            this.Tags.AddRange(new int[maxcount - Tags.Count]);
-            if (!string.IsNullOrEmpty(this.GraphicName)) this.CreateBitmap();
+            _tlb.Lock();
+            return _tlb;
         }
-
-        public IntPtr Save()
+        set
         {
-            IntPtr obj = Ruby.Funcall(Compatibility.RMXP.Tileset.Class, "new");
-            Ruby.Pin(obj);
-            Ruby.SetIVar(obj, "@id", Ruby.Integer.ToPtr(this.ID));
-            Ruby.SetIVar(obj, "@name", Ruby.String.ToPtr(this.Name));
-            Ruby.SetIVar(obj, "@tileset_name", Ruby.String.ToPtr(this.GraphicName));
-            Ruby.SetIVar(obj, "@panorama_name", Ruby.String.ToPtr(this.PanoramaName));
-            Ruby.SetIVar(obj, "@panorama_hue", Ruby.Integer.ToPtr(this.PanoramaHue));
-            Ruby.SetIVar(obj, "@fog_name", Ruby.String.ToPtr(this.FogName));
-            Ruby.SetIVar(obj, "@fog_sx", Ruby.Integer.ToPtr(this.FogSX));
-            Ruby.SetIVar(obj, "@fog_sy", Ruby.Integer.ToPtr(this.FogSY));
-            Ruby.SetIVar(obj, "@fog_hue", Ruby.Integer.ToPtr(this.FogHue));
-            Ruby.SetIVar(obj, "@fog_opacity", Ruby.Integer.ToPtr(this.FogOpacity));
-            Ruby.SetIVar(obj, "@fog_zoom", Ruby.Integer.ToPtr(this.FogZoom));
-            Ruby.SetIVar(obj, "@fog_blend_type", Ruby.Integer.ToPtr(this.FogBlendType));
-            Ruby.SetIVar(obj, "@battleback_name", Ruby.String.ToPtr(this.BattlebackName));
-            IntPtr autotile_names = Ruby.Array.Create(7, Ruby.String.ToPtr(""));
-            Ruby.SetIVar(obj, "@autotile_names", autotile_names);
-            foreach (Autotile autotile in this.Autotiles)
-            {
-                if (autotile == null) continue;
-                int idx = autotile.ID - this.ID * 7;
-                Ruby.Funcall(autotile_names, "[]=", Ruby.Integer.ToPtr(idx), Ruby.String.ToPtr(autotile.GraphicName));
-            }
-            IntPtr passages = Ruby.Funcall(Compatibility.RMXP.Table.Class, "new", Ruby.Integer.ToPtr(this.Passabilities.Count));
-            Ruby.SetIVar(obj, "@passages", passages);
-            for (int i = 0; i < this.Passabilities.Count; i++)
-            {
-                int code = 15 - (int) this.Passabilities[i];
-                if (BushFlags.Contains(i)) code += 64;
-                Compatibility.RMXP.Table.Set(passages, i, Ruby.Integer.ToPtr(code));
-            }
-            IntPtr priorities = Ruby.Funcall(Compatibility.RMXP.Table.Class, "new", Ruby.Integer.ToPtr(this.Priorities.Count));
-            Ruby.SetIVar(obj, "@priorities", priorities);
-            for (int i = 0; i < this.Priorities.Count; i++)
-            {
-                Compatibility.RMXP.Table.Set(priorities, i, Ruby.Integer.ToPtr(this.Priorities[i]));
-            }
-            IntPtr tags = Ruby.Funcall(Compatibility.RMXP.Table.Class, "new", Ruby.Integer.ToPtr(this.Tags.Count));
-            Ruby.SetIVar(obj, "@terrain_tags", tags);
-            for (int i = 0; i < this.Tags.Count; i++)
-            {
-                Compatibility.RMXP.Table.Set(tags, i, Ruby.Integer.ToPtr(this.Tags[i]));
-            }
-            Ruby.Unpin(obj);
-            return obj;
+            _tlb = value;
         }
+    }
 
-        public void SetGraphic(string GraphicName)
+    public Tileset()
+    {
+
+    }
+
+    public Tileset(IntPtr data)
+    {
+        this.ID = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@id"));
+        this.Name = Ruby.String.FromPtr(Ruby.GetIVar(data, "@name"));
+        this.GraphicName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@tileset_name"));
+        IntPtr passability = Ruby.GetIVar(data, "@passages");
+        for (int i = 0; i < Compatibility.RMXP.Table.Size(passability); i++)
         {
-            if (this.GraphicName != GraphicName)
+            int code = (int)Ruby.Integer.FromPtr(Compatibility.RMXP.Table.Get(passability, i));
+            if ((code & 64) != 0)
             {
-                this.GraphicName = GraphicName;
-                this.CreateBitmap(true);
-                int tileycount = (int) Math.Floor(TilesetBitmap.Height / 32d);
-                int size = tileycount * 8;
-                this.Passabilities.AddRange(new Passability[size - Passabilities.Count]);
-                this.Priorities.AddRange(new int[size - Priorities.Count]);
-                this.Tags.AddRange(new int[size - Tags.Count]);
+                BushFlags.Add(i);
+                code -= 64;
             }
+            Passabilities.Add((Passability)15 - code);
         }
-
-        public void CreateBitmap(bool Redraw = false)
+        IntPtr priorities = Ruby.GetIVar(data, "@priorities");
+        for (int i = 0; i < Compatibility.RMXP.Table.Size(priorities); i++)
         {
-            if (this.TilesetBitmap == null || Redraw)
+            int code = (int)Ruby.Integer.FromPtr(Compatibility.RMXP.Table.Get(priorities, i));
+            this.Priorities.Add(code);
+        }
+        IntPtr tags = Ruby.GetIVar(data, "@terrain_tags");
+        for (int i = 0; i < Compatibility.RMXP.Table.Size(tags); i++)
+        {
+            int code = (int)Ruby.Integer.FromPtr(Compatibility.RMXP.Table.Get(tags, i));
+            this.Tags.Add(code);
+        }
+        this.PanoramaHue = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@panorama_hue"));
+        this.PanoramaName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@panorama_name"));
+        this.FogName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@fog_name"));
+        this.FogSX = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_sx"));
+        this.FogSY = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_sy"));
+        this.FogOpacity = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_opacity"));
+        this.FogHue = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_hue"));
+        this.FogZoom = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_zoom"));
+        this.FogBlendType = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_blend_type"));
+        this.BattlebackName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@battleback_name"));
+        IntPtr autotiles = Ruby.GetIVar(data, "@autotile_names");
+        if (this.ID == 28)
+        {
+
+        }
+        for (int i = 0; i < Ruby.Array.Length(autotiles); i++)
+        {
+            string name = Ruby.String.FromPtr(Ruby.Array.Get(autotiles, i));
+            if (string.IsNullOrEmpty(name)) this.Autotiles.Add(null);
+            else
             {
-                _tb?.Dispose();
-                _tb = null;
-                _tlb?.Dispose();
-                _tlb = null;
+                Autotile autotile = new Autotile();
+                autotile.ID = this.ID * 7 + i;
+                autotile.Name = name;
+                autotile.Passability = this.Passabilities[(i + 1) * 48];
+                autotile.Priority = (int)this.Priorities[(i + 1) * 48];
+                autotile.Tag = (int)this.Tags[(i + 1) * 48];
+                autotile.SetGraphic(name);
+                if (autotile.AutotileBitmap.Height == 32) autotile.Format = AutotileFormat.Single;
+                else if (autotile.AutotileBitmap.Height == 96) autotile.Format = AutotileFormat.RMVX;
+                else autotile.Format = AutotileFormat.RMXP;
+                this.Autotiles.Add(autotile);
+                Data.Autotiles[autotile.ID] = autotile;
             }
         }
 
-        /// <summary>
-        /// If an autotile's top center tile is equal to another autotile's top left tile, then this autotile
-        /// is allowed to overlap the other autotile without updating its borders when drawn over it on the same layer.
-        /// </summary>
-        public void UpdateAutotileOverlapPermissions()
+        UpdateAutotileOverlapPermissions();
+
+        // Make sure the three arrays are just as big; trailing nulls may be left out if the data is edited externally
+        int maxcount = Math.Max(Math.Max(Passabilities.Count, Priorities.Count), Tags.Count);
+        this.Passabilities.AddRange(new Passability[maxcount - Passabilities.Count]);
+        this.Priorities.AddRange(new int[maxcount - Priorities.Count]);
+        this.Tags.AddRange(new int[maxcount - Tags.Count]);
+        if (!string.IsNullOrEmpty(this.GraphicName)) this.CreateBitmap();
+    }
+
+    public IntPtr Save()
+    {
+        IntPtr obj = Ruby.Funcall(Compatibility.RMXP.Tileset.Class, "new");
+        Ruby.Pin(obj);
+        Ruby.SetIVar(obj, "@id", Ruby.Integer.ToPtr(this.ID));
+        Ruby.SetIVar(obj, "@name", Ruby.String.ToPtr(this.Name));
+        Ruby.SetIVar(obj, "@tileset_name", Ruby.String.ToPtr(this.GraphicName));
+        Ruby.SetIVar(obj, "@panorama_name", Ruby.String.ToPtr(this.PanoramaName));
+        Ruby.SetIVar(obj, "@panorama_hue", Ruby.Integer.ToPtr(this.PanoramaHue));
+        Ruby.SetIVar(obj, "@fog_name", Ruby.String.ToPtr(this.FogName));
+        Ruby.SetIVar(obj, "@fog_sx", Ruby.Integer.ToPtr(this.FogSX));
+        Ruby.SetIVar(obj, "@fog_sy", Ruby.Integer.ToPtr(this.FogSY));
+        Ruby.SetIVar(obj, "@fog_hue", Ruby.Integer.ToPtr(this.FogHue));
+        Ruby.SetIVar(obj, "@fog_opacity", Ruby.Integer.ToPtr(this.FogOpacity));
+        Ruby.SetIVar(obj, "@fog_zoom", Ruby.Integer.ToPtr(this.FogZoom));
+        Ruby.SetIVar(obj, "@fog_blend_type", Ruby.Integer.ToPtr(this.FogBlendType));
+        Ruby.SetIVar(obj, "@battleback_name", Ruby.String.ToPtr(this.BattlebackName));
+        IntPtr autotile_names = Ruby.Array.Create(7, Ruby.String.ToPtr(""));
+        Ruby.SetIVar(obj, "@autotile_names", autotile_names);
+        foreach (Autotile autotile in this.Autotiles)
         {
-            for (int i1 = 0; i1 < this.Autotiles.Count; i1++)
+            if (autotile == null) continue;
+            int idx = autotile.ID - this.ID * 7;
+            Ruby.Funcall(autotile_names, "[]=", Ruby.Integer.ToPtr(idx), Ruby.String.ToPtr(autotile.GraphicName));
+        }
+        IntPtr passages = Ruby.Funcall(Compatibility.RMXP.Table.Class, "new", Ruby.Integer.ToPtr(this.Passabilities.Count));
+        Ruby.SetIVar(obj, "@passages", passages);
+        for (int i = 0; i < this.Passabilities.Count; i++)
+        {
+            int code = 15 - (int)this.Passabilities[i];
+            if (BushFlags.Contains(i)) code += 64;
+            Compatibility.RMXP.Table.Set(passages, i, Ruby.Integer.ToPtr(code));
+        }
+        IntPtr priorities = Ruby.Funcall(Compatibility.RMXP.Table.Class, "new", Ruby.Integer.ToPtr(this.Priorities.Count));
+        Ruby.SetIVar(obj, "@priorities", priorities);
+        for (int i = 0; i < this.Priorities.Count; i++)
+        {
+            Compatibility.RMXP.Table.Set(priorities, i, Ruby.Integer.ToPtr(this.Priorities[i]));
+        }
+        IntPtr tags = Ruby.Funcall(Compatibility.RMXP.Table.Class, "new", Ruby.Integer.ToPtr(this.Tags.Count));
+        Ruby.SetIVar(obj, "@terrain_tags", tags);
+        for (int i = 0; i < this.Tags.Count; i++)
+        {
+            Compatibility.RMXP.Table.Set(tags, i, Ruby.Integer.ToPtr(this.Tags[i]));
+        }
+        Ruby.Unpin(obj);
+        return obj;
+    }
+
+    public void SetGraphic(string GraphicName)
+    {
+        if (this.GraphicName != GraphicName)
+        {
+            this.GraphicName = GraphicName;
+            this.CreateBitmap(true);
+            int tileycount = (int)Math.Floor(TilesetBitmap.Height / 32d);
+            int size = tileycount * 8;
+            this.Passabilities.AddRange(new Passability[size - Passabilities.Count]);
+            this.Priorities.AddRange(new int[size - Priorities.Count]);
+            this.Tags.AddRange(new int[size - Tags.Count]);
+        }
+    }
+
+    public void CreateBitmap(bool Redraw = false)
+    {
+        if (this.TilesetBitmap == null || Redraw)
+        {
+            _tb?.Dispose();
+            _tb = null;
+            _tlb?.Dispose();
+            _tlb = null;
+        }
+    }
+
+    /// <summary>
+    /// If an autotile's top center tile is equal to another autotile's top left tile, then this autotile
+    /// is allowed to overlap the other autotile without updating its borders when drawn over it on the same layer.
+    /// </summary>
+    public void UpdateAutotileOverlapPermissions()
+    {
+        for (int i1 = 0; i1 < this.Autotiles.Count; i1++)
+        {
+            Autotile a1 = this.Autotiles[i1];
+            for (int i2 = 0; i2 < this.Autotiles.Count; i2++)
             {
-                Autotile a1 = this.Autotiles[i1];
-                for (int i2 = 0; i2 < this.Autotiles.Count; i2++)
+                Autotile a2 = this.Autotiles[i2];
+                if (a1 == a2 || a1 == null || a2 == null || a1.Format != a2.Format || a1.Format != AutotileFormat.RMXP) continue;
+                bool Equal = true;
+                for (int y = 0; y < 32; y++)
                 {
-                    Autotile a2 = this.Autotiles[i2];
-                    if (a1 == a2 || a1 == null || a2 == null || a1.Format != a2.Format || a1.Format != AutotileFormat.RMXP) continue;
-                    bool Equal = true;
-                    for (int y = 0; y < 32; y++)
+                    if (!Equal) break;
+                    for (int x = 0; x < 32; x++)
                     {
                         if (!Equal) break;
-                        for (int x = 0; x < 32; x++)
+                        Color c1 = a1.AutotileBitmap.GetPixel(x, y);
+                        Color c2 = a2.AutotileBitmap.GetPixel(x + 32, y);
+                        if (!c1.Equals(c2))
                         {
-                            if (!Equal) break;
-                            Color c1 = a1.AutotileBitmap.GetPixel(x, y);
-                            Color c2 = a2.AutotileBitmap.GetPixel(x + 32, y);
-                            if (!c1.Equals(c2))
-                            {
-                                Equal = false;
-                                break;
-                            }
+                            Equal = false;
+                            break;
                         }
                     }
-                    if (Equal)
-                    {
-                        a1.OverlappableBy.Add(a2.ID);
-                    }
+                }
+                if (Equal)
+                {
+                    a1.OverlappableBy.Add(a2.ID);
                 }
             }
         }
+    }
 
-        public override string ToString()
-        {
-            return this.Name;
-        }
+    public override string ToString()
+    {
+        return this.Name;
+    }
 
-        public object Clone()
-        {
-            Tileset t = new Tileset();
-            t.ID = this.ID;
-            t.Name = this.Name;
-            t.GraphicName = this.GraphicName;
-            t.Passabilities = new List<Passability>(this.Passabilities);
-            t.Priorities = new List<int>(this.Priorities);
-            t.Tags = new List<int>(this.Tags);
-            t.PanoramaHue = this.PanoramaHue;
-            t.PanoramaName = this.PanoramaName;
-            t.FogName = this.FogName;
-            t.FogSX = this.FogSX;
-            t.FogSY = this.FogSY;
-            t.FogOpacity = this.FogOpacity;
-            t.FogHue = this.FogHue;
-            t.FogZoom = this.FogZoom;
-            t.FogBlendType = this.FogBlendType;
-            t.BattlebackName = this.BattlebackName;
-            t.Autotiles = new List<Autotile>();
-            this.Autotiles.ForEach(a => t.Autotiles.Add((Autotile) a.Clone()));
-            t.BushFlags = new List<int>(this.BushFlags);
-            t.TilesetBitmap = this.TilesetBitmap;
-            t.TilesetListBitmap = this.TilesetListBitmap;
-            return t;
-        }
+    public object Clone()
+    {
+        Tileset t = new Tileset();
+        t.ID = this.ID;
+        t.Name = this.Name;
+        t.GraphicName = this.GraphicName;
+        t.Passabilities = new List<Passability>(this.Passabilities);
+        t.Priorities = new List<int>(this.Priorities);
+        t.Tags = new List<int>(this.Tags);
+        t.PanoramaHue = this.PanoramaHue;
+        t.PanoramaName = this.PanoramaName;
+        t.FogName = this.FogName;
+        t.FogSX = this.FogSX;
+        t.FogSY = this.FogSY;
+        t.FogOpacity = this.FogOpacity;
+        t.FogHue = this.FogHue;
+        t.FogZoom = this.FogZoom;
+        t.FogBlendType = this.FogBlendType;
+        t.BattlebackName = this.BattlebackName;
+        t.Autotiles = new List<Autotile>();
+        this.Autotiles.ForEach(a => t.Autotiles.Add((Autotile)a.Clone()));
+        t.BushFlags = new List<int>(this.BushFlags);
+        t.TilesetBitmap = this.TilesetBitmap;
+        t.TilesetListBitmap = this.TilesetListBitmap;
+        return t;
     }
 }
