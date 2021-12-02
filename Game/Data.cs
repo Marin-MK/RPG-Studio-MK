@@ -58,9 +58,9 @@ namespace RPGStudioMK.Game
             //SaveSpecies();
         }
 
-        public static void SetProjectPath(string ProjectFilePath)
+        public static void SetProjectPath(string RXProjectFilePath)
         {
-            string path = ProjectFilePath;
+            string path = RXProjectFilePath;
             while (path.Contains("\\")) path = path.Replace('\\', '/');
             List<string> splits = new List<string>(path.Split('/'));
             string projectfile = splits[splits.Count - 1];
@@ -73,7 +73,7 @@ namespace RPGStudioMK.Game
             }
             Data.ProjectPath = path;
             Data.DataPath = path + "/Data";
-            Data.ProjectFilePath = path + "/settings.mkproj";
+            Data.ProjectFilePath = path + "/project.mkproj";
             Editor.ProjectFilePath = Data.ProjectFilePath;
         }
 
