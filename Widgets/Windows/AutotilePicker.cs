@@ -84,7 +84,7 @@ public class AutotilePicker : PopupWindow
                 {
                     IsClickable = delegate (BoolEventArgs e)
                     {
-                        e.Value = !(SelectedAutotile is null);
+                        e.Value = SelectedAutotile is not null;
                     },
                     OnLeftClick = ActionButtonClicked
                 }

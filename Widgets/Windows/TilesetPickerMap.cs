@@ -88,7 +88,7 @@ public class TilesetPickerMap : PopupWindow
                 {
                     IsClickable = delegate (BoolEventArgs e)
                     {
-                        e.Value = !(SelectedTileset is null);
+                        e.Value = SelectedTileset is not null;
                     },
                     OnLeftClick = ActionButtonClicked
                 }

@@ -510,7 +510,7 @@ public static class Utilities
         if (x > 0)
         {
             TileData tile = map.Layers[layer].Tiles[(x - 1) + y * map.Width];
-            if (src is null && tile == null || !(src is null) && src.Equals(tile))
+            if (src is null && tile == null || src is not null && src.Equals(tile))
             {
                 points.AddRange(GetIdenticalConnectedInternal(map, layer, x - 1, y, visited));
             }
@@ -518,7 +518,7 @@ public static class Utilities
         if (x < map.Width - 1)
         {
             TileData tile = map.Layers[layer].Tiles[(x + 1) + y * map.Width];
-            if (src is null && tile == null || !(src is null) && src.Equals(tile))
+            if (src is null && tile == null || src is not null && src.Equals(tile))
             {
                 points.AddRange(GetIdenticalConnectedInternal(map, layer, x + 1, y, visited));
             }
@@ -526,7 +526,7 @@ public static class Utilities
         if (y > 0)
         {
             TileData tile = map.Layers[layer].Tiles[x + (y - 1) * map.Width];
-            if (src is null && tile == null || !(src is null) && src.Equals(tile))
+            if (src is null && tile == null || src is not null && src.Equals(tile))
             {
                 points.AddRange(GetIdenticalConnectedInternal(map, layer, x, y - 1, visited));
             }
@@ -534,7 +534,7 @@ public static class Utilities
         if (y < map.Height - 1)
         {
             TileData tile = map.Layers[layer].Tiles[x + (y + 1) * map.Width];
-            if (src is null && tile == null || !(src is null) && src.Equals(tile))
+            if (src is null && tile == null || src is not null && src.Equals(tile))
             {
                 points.AddRange(GetIdenticalConnectedInternal(map, layer, x, y + 1, visited));
             }
