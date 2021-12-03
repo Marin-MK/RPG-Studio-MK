@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using odl;
-using RPGStudioMK.Game;
-using amethyst;
-
-namespace RPGStudioMK.Widgets;
+﻿namespace RPGStudioMK.Widgets;
 
 public class ToolBar : Widget
 {

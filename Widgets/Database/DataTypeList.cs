@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using amethyst;
-using odl;
-using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
 

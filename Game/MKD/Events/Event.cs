@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using rubydotnet;
 
 namespace RPGStudioMK.Game;
 

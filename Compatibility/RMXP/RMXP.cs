@@ -1,12 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using amethyst;
-using odl;
-using rubydotnet;
-using RPGStudioMK.Widgets;
-using RPGStudioMK.Game;
-using System.IO;
 
 namespace RPGStudioMK.Compatibility;
 

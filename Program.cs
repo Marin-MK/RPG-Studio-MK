@@ -1,10 +1,12 @@
-﻿using System;
+﻿global using odl;
+global using amethyst;
+global using rubydotnet;
+
+using System;
 using System.IO;
 using System.Reflection;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Versioning;
-using odl;
 
 namespace RPGStudioMK;
 
@@ -48,7 +50,7 @@ public class Program
         Audio.Start();
         int Handle = Audio.LoadSoundfont("assets/soundfont.sf2");
         if (Handle == 0) throw new Exception("Failed to load soundfont.");
-        Console.WriteLine($"OS Platform: {os.Platform} ({odl.Graphics.Platform}) {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}");
+        Console.WriteLine($"OS Platform: {os.Platform} ({Graphics.Platform}) {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}");
         Console.WriteLine($"OS Version: {os.VersionString}");
         Framework = null;
         fw = null;

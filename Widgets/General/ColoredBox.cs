@@ -1,8 +1,4 @@
-﻿using System;
-using odl;
-using amethyst;
-
-namespace RPGStudioMK.Widgets;
+﻿namespace RPGStudioMK.Widgets;
 
 public class ColoredBox : Widget
 {

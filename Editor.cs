@@ -6,10 +6,8 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Reflection;
-using odl;
 using RPGStudioMK.Game;
 using RPGStudioMK.Widgets;
-using amethyst;
 
 namespace RPGStudioMK;
 

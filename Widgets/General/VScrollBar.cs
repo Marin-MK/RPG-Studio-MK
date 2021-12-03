@@ -1,9 +1,4 @@
-﻿using System;
-using System.Linq;
-using odl;
-using amethyst;
-
-namespace RPGStudioMK.Widgets;
+﻿namespace RPGStudioMK.Widgets;
 
 public class VScrollBar : BasicVScrollBar
 {

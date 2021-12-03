@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using RPGStudioMK.Game;
-using odl;
-using amethyst;
 
 namespace RPGStudioMK.Widgets;
 

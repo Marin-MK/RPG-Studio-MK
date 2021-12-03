@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using odl;
 using System.IO;
 using System.Linq;
-using amethyst;
-using System.Threading;
 
 namespace RPGStudioMK.Widgets;
 

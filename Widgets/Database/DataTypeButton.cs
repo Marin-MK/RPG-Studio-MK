@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using amethyst;
-using odl;
-
-namespace RPGStudioMK.Widgets;
+﻿namespace RPGStudioMK.Widgets;
 
 public class DataTypeButton : Widget
 {
