@@ -291,6 +291,8 @@ public class MainEditorWindow : UIWindow
         this.Start();
 
         UI.SizeChanged(new BaseEventArgs());
+
+        UI.RegisterShortcut(new Shortcut(null, new Key(Keycode.G, Keycode.CTRL), e => Editor.Test(), true));
     }
 
     /// <summary>

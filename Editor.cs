@@ -8,6 +8,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Reflection;
 using RPGStudioMK.Game;
 using RPGStudioMK.Widgets;
+using System.IO.Compression;
 
 namespace RPGStudioMK;
 
@@ -73,6 +74,14 @@ public static class Editor
     /// </summary>
     public static List<Map> DeletedMaps = new List<Map>();
 
+
+    /// <summary>
+    /// Debug method for quickly testing a piece of functionality.
+    /// </summary>
+    public static void Test()
+    {
+        if (Program.ReleaseMode) return;
+    }
 
 
     /// <summary>
