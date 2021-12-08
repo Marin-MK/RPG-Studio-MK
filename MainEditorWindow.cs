@@ -305,12 +305,14 @@ public class MainEditorWindow : UIWindow
 
         Editor.LoadProjectSettings();
         ProgressWindow pw = new ProgressWindow("Loading", "Loading project...", true);
+        Graphics.Update();
         foreach (float f in Data.LoadGameData())
         {
             // f is percentage of maps that have been parsed
             pw.SetProgress(f);
             // Force redraw in between maps loaded
             if (Graphics.CanUpdate()) Graphics.Update();
+            // Window was closed, return to main loop to finish closing program
             else return;
         }
 
