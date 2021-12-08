@@ -22,7 +22,7 @@ public class SaveButton : Widget
 
         Sprites["icon"] = new Sprite(this.Viewport);
         Sprites["icon"].Bitmap = Utilities.IconSheet;
-        Sprites["icon"].SrcRect = new Rect(22 * 24, 0, 24, 24);
+        Sprites["icon"].SrcRect = new Rect((int) Icon.Save * 24, 0, 24, 24);
         Sprites["icon"].X = 3;
         Sprites["icon"].Y = 2;
 

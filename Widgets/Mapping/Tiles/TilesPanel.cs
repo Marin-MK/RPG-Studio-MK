@@ -138,7 +138,7 @@ public class TilesPanel : Widget
         };
 
         RectButton = new IconButton(DrawToolsContainer);
-        RectButton.SetIcon(Editor.GeneralSettings.PreferRectangleFill ? Icon.Map : Icon.RectangleOutline);
+        RectButton.SetIcon(Editor.GeneralSettings.PreferRectangleFill ? Icon.RectangleFilled : Icon.RectangleOutline);
         RectButton.SetPosition(32, 0);
         RectButton.OnSelection += delegate (BaseEventArgs e)
         {
@@ -153,7 +153,7 @@ public class TilesPanel : Widget
         };
 
         EllipseButton = new IconButton(DrawToolsContainer);
-        EllipseButton.SetIcon(Editor.GeneralSettings.PreferEllipseFill ? Icon.Event : Icon.CircleOutline);
+        EllipseButton.SetIcon(Editor.GeneralSettings.PreferEllipseFill ? Icon.CircleFilled : Icon.CircleOutline);
         EllipseButton.SetPosition(64, 0);
         EllipseButton.OnSelection += delegate (BaseEventArgs e)
         {
@@ -194,7 +194,7 @@ public class TilesPanel : Widget
         };
 
         SelectButton = new IconButton(DrawToolsContainer);
-        SelectButton.SetIcon(Editor.GeneralSettings.PreferSelectionAll ? Icon.Script : Icon.Selection);
+        SelectButton.SetIcon(Editor.GeneralSettings.PreferSelectionAll ? Icon.SelectionMultiple : Icon.Selection);
         SelectButton.SetPosition(168, 0);
         SelectButton.OnSelection += delegate (BaseEventArgs e)
         {
@@ -231,7 +231,7 @@ public class TilesPanel : Widget
         if (SingleAutotileContainer is CollapsibleContainer) SingleAutotileContainer.Dispose();
         SingleAutotileContainer = null;
         Bitmap singles = null;
-        SingleAutotileCount = MapData.AutotileIDs.FindAll(id => id != -1/*Data.Autotiles[id].Format == AutotileFormat.Single*/).Count;
+        SingleAutotileCount = MapData.AutotileIDs.FindAll(id => id != -1 && Data.Autotiles[id] != null/*Data.Autotiles[id].Format == AutotileFormat.Single*/).Count;
         if (SingleAutotileCount > 0)
         {
             SingleAutotileContainer = new CollapsibleContainer(MainStackPanel);
@@ -760,7 +760,7 @@ public class TilesPanel : Widget
         d.SetPosition(DrawToolsContainer.Position.X + RectButton.Position.X - 6, DrawToolsContainer.Position.Y + RectButton.Position.Y - 6);
         d.SetZIndex(1);
         d.SetIcon1(Icon.RectangleOutline);
-        d.SetIcon2(Icon.Map);
+        d.SetIcon2(Icon.RectangleFilled);
         d.MouseMoving(Graphics.LastMouseEvent);
         d.OnMouseDown += delegate (MouseEventArgs e)
         {
@@ -768,7 +768,7 @@ public class TilesPanel : Widget
             else
             {
                 Editor.GeneralSettings.PreferRectangleFill = d.HoveringIndex == 1;
-                RectButton.SetIcon(d.HoveringIndex == 1 ? Icon.Map : Icon.RectangleOutline, RectButton.Selected);
+                RectButton.SetIcon(d.HoveringIndex == 1 ? Icon.RectangleFilled : Icon.RectangleOutline, RectButton.Selected);
                 this.DrawTool = d.HoveringIndex == 1 ? DrawTools.RectangleFilled : DrawTools.RectangleOutline;
                 d.Dispose();
             }
@@ -781,7 +781,7 @@ public class TilesPanel : Widget
         d.SetPosition(DrawToolsContainer.Position.X + EllipseButton.Position.X - 6, DrawToolsContainer.Position.Y + EllipseButton.Position.Y - 6);
         d.SetZIndex(1);
         d.SetIcon1(Icon.CircleOutline);
-        d.SetIcon2(Icon.Event);
+        d.SetIcon2(Icon.CircleFilled);
         d.MouseMoving(Graphics.LastMouseEvent);
         d.OnMouseDown += delegate (MouseEventArgs e)
         {
@@ -789,7 +789,7 @@ public class TilesPanel : Widget
             else
             {
                 Editor.GeneralSettings.PreferEllipseFill = d.HoveringIndex == 1;
-                EllipseButton.SetIcon(d.HoveringIndex == 1 ? Icon.Event : Icon.CircleOutline, EllipseButton.Selected);
+                EllipseButton.SetIcon(d.HoveringIndex == 1 ? Icon.CircleFilled : Icon.CircleOutline, EllipseButton.Selected);
                 this.DrawTool = d.HoveringIndex == 1 ? DrawTools.EllipseFilled : DrawTools.EllipseOutline;
                 d.Dispose();
             }
@@ -802,7 +802,7 @@ public class TilesPanel : Widget
         d.SetPosition(DrawToolsContainer.Position.X + SelectButton.Position.X - 6, DrawToolsContainer.Position.Y + SelectButton.Position.Y - 6);
         d.SetZIndex(1);
         d.SetIcon1(Icon.Selection);
-        d.SetIcon2(Icon.Script);
+        d.SetIcon2(Icon.SelectionMultiple);
         d.MouseMoving(Graphics.LastMouseEvent);
         d.OnMouseDown += delegate (MouseEventArgs e)
         {
@@ -810,7 +810,7 @@ public class TilesPanel : Widget
             else
             {
                 Editor.GeneralSettings.PreferSelectionAll = d.HoveringIndex == 1;
-                SelectButton.SetIcon(d.HoveringIndex == 1 ? Icon.Script : Icon.Selection, SelectButton.Selected);
+                SelectButton.SetIcon(d.HoveringIndex == 1 ? Icon.SelectionMultiple : Icon.Selection, SelectButton.Selected);
                 this.DrawTool = d.HoveringIndex == 1 ? DrawTools.SelectionAllLayers : DrawTools.SelectionActiveLayer;
                 d.Dispose();
             }

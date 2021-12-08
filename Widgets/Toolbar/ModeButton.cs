@@ -8,7 +8,7 @@ public class ModeButton : Widget
     public BaseEvent OnSelection;
     public BaseEvent OnDeselection;
 
-    public ModeButton(IContainer Parent, string Text, int Icon) : base(Parent)
+    public ModeButton(IContainer Parent, string Text, Icon Icon) : base(Parent)
     {
         Sprites["text"] = new Sprite(this.Viewport);
         Font f = Fonts.UbuntuBold.Use(14);
@@ -23,7 +23,7 @@ public class ModeButton : Widget
 
         Sprites["icon"] = new Sprite(this.Viewport);
         Sprites["icon"].Bitmap = Utilities.IconSheet;
-        Sprites["icon"].SrcRect = new Rect(Icon * 24, 0, 24, 24);
+        Sprites["icon"].SrcRect = new Rect((int) Icon * 24, 0, 24, 24);
         Sprites["icon"].Y = 3;
 
         Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(27 + s.Width, 2, new Color(59, 227, 255)));

@@ -91,9 +91,9 @@ public class LayerWidget : Widget
             {
                 c = new Color(55, 187, 255);
                 Sprites["bg"].Bitmap.FillRect(0, y, Size.Width, 24, new Color(19, 36, 55));
-                if (visible) Sprites["bg"].Bitmap.Build(8, y - 1, Utilities.IconSheet, new Rect(14 * 24, 24, 24, 24));
             }
-            else if (visible) Sprites["bg"].Bitmap.Build(8, y - 1, Utilities.IconSheet, new Rect(14 * 24, 0, 24, 24));
+            Icon icon = visible ? Icon.EyeOpen : Icon.EyeClosed;
+            Sprites["bg"].Bitmap.Build(8, y - 1, Utilities.IconSheet, new Rect((int) icon * 24, i == SelectedLayer ? 24 : 0, 24, 24));
             Sprites["text"].Bitmap.DrawText(Layers[i].Name, 53, y + 3, c);
         }
         Sprites["bg"].Bitmap.Lock();

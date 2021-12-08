@@ -17,7 +17,7 @@ public class ToolBar : Widget
 
     public ToolBar(IContainer Parent) : base(Parent)
     {
-        MappingMode = new ModeButton(this, "Maps", 23);
+        MappingMode = new ModeButton(this, "Maps", Icon.Map);
         MappingMode.SetPosition(4, 0);
         MappingMode.SetSelected(true);
         MappingMode.OnSelection += delegate (BaseEventArgs e)
@@ -25,21 +25,21 @@ public class ToolBar : Widget
             Editor.SetMode("MAPPING");
         };
 
-        EventingMode = new ModeButton(this, "Events", 24);
+        EventingMode = new ModeButton(this, "Events", Icon.Event);
         EventingMode.SetPosition(MappingMode.Position.X + MappingMode.Size.Width + 12, 0);
         EventingMode.OnSelection += delegate (BaseEventArgs e)
         {
             Editor.SetMode("EVENTING");
         };
 
-        ScriptingMode = new ModeButton(this, "Scripts", 25);
+        ScriptingMode = new ModeButton(this, "Scripts", Icon.Script);
         ScriptingMode.SetPosition(EventingMode.Position.X + EventingMode.Size.Width + 12, 0);
         ScriptingMode.OnSelection += delegate (BaseEventArgs e)
         {
             Editor.SetMode("SCRIPTING");
         };
 
-        DatabaseMode = new ModeButton(this, "Database", 26);
+        DatabaseMode = new ModeButton(this, "Database", Icon.Monster);
         DatabaseMode.SetPosition(ScriptingMode.Position.X + ScriptingMode.Size.Width + 12, 0);
         DatabaseMode.OnSelection += delegate (BaseEventArgs e)
         {
