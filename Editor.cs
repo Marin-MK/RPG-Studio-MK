@@ -563,15 +563,6 @@ public static class Editor
         {
 
         }
-        if (Mode == "EVENTING") // Select Eventing mode
-        {
-            if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
-            MainWindow.MainEditorWidget = null;
-        }
-        else if (OldMode == "EVENTING") // Deselect Eventing mode
-        {
-
-        }
         if (Mode == "SCRIPTING") // Select Scripting mode
         {
             MainWindow.ToolBar.ScriptingMode.SetSelected(true, Force);

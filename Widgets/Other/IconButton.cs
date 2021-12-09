@@ -116,11 +116,6 @@ public enum Icon
     ZoomOut = 18,
     ZoomIn = 19,
 
-    Play = 23,
-    Map = 24,
-    Event = 25,
-    Script = 26,
-    Monster = 27,
     Eyes = 28,
     EyeOpen = 29,
     EyeClosed = 30

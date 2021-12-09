@@ -6,48 +6,40 @@ public class ToolBar : Widget
     IconButton Redo;
 
     public ModeButton MappingMode;
-    public ModeButton EventingMode;
     public ModeButton ScriptingMode;
     public ModeButton DatabaseMode;
 
     Container ActionContainer;
 
-    PlayButton PlayButton;
-    SaveButton SaveButton;
+    GradientButton PlayButton;
+    GradientButton SaveButton;
 
     public ToolBar(IContainer Parent) : base(Parent)
     {
-        MappingMode = new ModeButton(this, "Maps", Icon.Map);
-        MappingMode.SetPosition(4, 0);
+        MappingMode = new ModeButton(this, "Maps");
+        MappingMode.SetPosition(8, 0);
         MappingMode.SetSelected(true);
         MappingMode.OnSelection += delegate (BaseEventArgs e)
         {
             Editor.SetMode("MAPPING");
         };
 
-        EventingMode = new ModeButton(this, "Events", Icon.Event);
-        EventingMode.SetPosition(MappingMode.Position.X + MappingMode.Size.Width + 12, 0);
-        EventingMode.OnSelection += delegate (BaseEventArgs e)
-        {
-            Editor.SetMode("EVENTING");
-        };
-
-        ScriptingMode = new ModeButton(this, "Scripts", Icon.Script);
-        ScriptingMode.SetPosition(EventingMode.Position.X + EventingMode.Size.Width + 12, 0);
+        ScriptingMode = new ModeButton(this, "Scripts");
+        ScriptingMode.SetPosition(MappingMode.Position.X + MappingMode.Size.Width + 8, 0);
         ScriptingMode.OnSelection += delegate (BaseEventArgs e)
         {
             Editor.SetMode("SCRIPTING");
         };
 
-        DatabaseMode = new ModeButton(this, "Database", Icon.Monster);
-        DatabaseMode.SetPosition(ScriptingMode.Position.X + ScriptingMode.Size.Width + 12, 0);
+        DatabaseMode = new ModeButton(this, "Database");
+        DatabaseMode.SetPosition(ScriptingMode.Position.X + ScriptingMode.Size.Width + 8, 0);
         DatabaseMode.OnSelection += delegate (BaseEventArgs e)
         {
             Editor.SetMode("DATABASE");
         };
 
         ActionContainer = new Container(this);
-        ActionContainer.SetPosition(DatabaseMode.Position.X + DatabaseMode.Size.Width + 12, 3);
+        ActionContainer.SetPosition(DatabaseMode.Position.X + DatabaseMode.Size.Width + 8, 3);
         ActionContainer.SetSize(83, 28);
         ActionContainer.Sprites["line"] = new Sprite(ActionContainer.Viewport, new SolidBitmap(1, 26, new Color(28, 50, 73)));
         Undo = new IconButton(ActionContainer);
@@ -60,8 +52,10 @@ public class ToolBar : Widget
         Redo.Selectable = false;
         Redo.OnClicked += delegate (BaseEventArgs e) { Editor.Redo(); };
 
-        PlayButton = new PlayButton(this);
-        SaveButton = new SaveButton(this);
+        PlayButton = new GradientButton(this, "Save");
+        PlayButton.SetGradient(new Color(184, 56, 98), new Color(143, 49, 167));
+        SaveButton = new GradientButton(this, "Play");
+        SaveButton.SetGradient(new Color(87, 168, 127), new Color(78, 102, 195));
     }
 
     public void Refresh()
@@ -72,8 +66,8 @@ public class ToolBar : Widget
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-        PlayButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width, 2);
-        SaveButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width - 7 - SaveButton.Size.Width, 2);
+        SaveButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width, 2);
+        PlayButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width - 12 - SaveButton.Size.Width, 2);
         if (Size.Width < 800)
         {
 
