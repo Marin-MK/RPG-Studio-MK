@@ -530,7 +530,7 @@ public static class Editor
     /// <summary>
     /// Changes the active mode of the editor.
     /// </summary>
-    /// <param name="Mode">The mode to switch to. MAPPING, EVENTING, SCRIPTING or DATABASE.</param>
+    /// <param name="Mode">The mode to switch to. MAPPING, SCRIPTING or DATABASE.</param>
     /// <param name="Force">Whether or not to force a full redraw.</param>
     public static void SetMode(string Mode, bool Force = false)
     {

@@ -59,6 +59,7 @@ public class Tileset : ICloneable
     {
         get
         {
+            if (TilesetBitmap == null && _tlb == null) return null;
             if (_tlb != null) return _tlb;
             int tileycount = (int)Math.Floor(TilesetBitmap.Height / 32d);
 
