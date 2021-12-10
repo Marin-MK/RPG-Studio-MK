@@ -24,17 +24,18 @@ public class MapPropertiesWindow : PopupWindow
     {
         this.OldMap = Map;
         this.Map = (Map)Map.Clone();
-        this.SetTitle($"Map Properties - {Utilities.Digits(Map.ID, 3)}: {Map.Name}");
-        MinimumSize = MaximumSize = new Size(330, 300);
+        this.SetTitle($"Map Properties");
+        MinimumSize = MaximumSize = new Size(337, 312);
         SetSize(MaximumSize);
         this.Center();
+
         Label settings = new Label(this);
         settings.SetText("Info");
         settings.SetFont(Fonts.UbuntuBold.Use(14));
-        settings.SetPosition(12, 26);
+        settings.SetPosition(19, 33);
 
         GroupBox box1 = new GroupBox(this);
-        box1.SetPosition(19, 47);
+        box1.SetPosition(19, 54);
         box1.SetSize(300, 213);
 
         Font f = Fonts.ProductSansMedium.Use(12);
