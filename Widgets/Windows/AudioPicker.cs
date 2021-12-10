@@ -22,7 +22,7 @@ public class AudioPicker : PopupWindow
     public AudioPicker(string Folder, string File, int Volume, int Pitch)
     {
         SetTitle("Pick Audio");
-        MinimumSize = MaximumSize = new Size(442, 411);
+        MinimumSize = MaximumSize = new Size(442, 418);
         SetSize(MaximumSize);
         Center();
 
@@ -31,11 +31,11 @@ public class AudioPicker : PopupWindow
 
         Label pickerlabel = new Label(this);
         pickerlabel.SetText("Files");
-        pickerlabel.SetPosition(22, 26);
+        pickerlabel.SetPosition(22, 33);
         pickerlabel.SetFont(Fonts.ProductSansMedium.Use(14));
 
         FileList = new ListBox(this);
-        FileList.SetPosition(25, 44);
+        FileList.SetPosition(25, 51);
         FileList.SetSize(151, 355);
         List<ListItem> items = new List<ListItem>() { new ListItem("(None)", null) };
         int i = 1;
@@ -58,28 +58,28 @@ public class AudioPicker : PopupWindow
 
         Label previewlabel = new Label(this);
         previewlabel.SetText("Preview");
-        previewlabel.SetPosition(192, 26);
+        previewlabel.SetPosition(192, 33);
         previewlabel.SetFont(Fonts.ProductSansMedium.Use(14));
 
         PlayButton = new Button(this);
         PlayButton.SetText("Play");
-        PlayButton.SetPosition(192, 44);
+        PlayButton.SetPosition(192, 51);
         PlayButton.SetSize(99, 28);
         PlayButton.OnClicked += PlaySound;
         PlayButton.SetEnabled(FileList.SelectedIndex != 0);
 
         StopButton = new Button(this);
         StopButton.SetText("Stop");
-        StopButton.SetPosition(192, 70);
+        StopButton.SetPosition(192, 77);
         StopButton.SetSize(99, 28);
         StopButton.OnClicked += StopSound;
 
         Label VolumeGroupLabel = new Label(this);
         VolumeGroupLabel.SetText("Volume");
         VolumeGroupLabel.SetFont(Fonts.ProductSansMedium.Use(14));
-        VolumeGroupLabel.SetPosition(192, 132);
+        VolumeGroupLabel.SetPosition(192, 139);
         GroupBox VolumeGroup = new GroupBox(this);
-        VolumeGroup.SetPosition(197, 151);
+        VolumeGroup.SetPosition(197, 158);
         VolumeGroup.SetSize(222, 54);
         Label MinVolumeLabel = new Label(VolumeGroup);
         MinVolumeLabel.SetText("-");
@@ -107,9 +107,9 @@ public class AudioPicker : PopupWindow
         Label PitchGroupLabel = new Label(this);
         PitchGroupLabel.SetText("Pitch");
         PitchGroupLabel.SetFont(Fonts.ProductSansMedium.Use(14));
-        PitchGroupLabel.SetPosition(192, 232);
+        PitchGroupLabel.SetPosition(192, 239);
         GroupBox PitchGroup = new GroupBox(this);
-        PitchGroup.SetPosition(197, 251);
+        PitchGroup.SetPosition(197, 258);
         PitchGroup.SetSize(222, 54);
         Label MinPitchLabel = new Label(PitchGroup);
         MinPitchLabel.SetText("-");
