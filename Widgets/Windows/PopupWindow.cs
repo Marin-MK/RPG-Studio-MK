@@ -14,7 +14,7 @@ public class PopupWindow : Widget, IPopupWindow
 
     public PopupWindow() : base(((MainEditorWindow)Graphics.Windows[0]).UI)
     {
-        //Window.SetOverlayOpacity(128);
+        Window.SetOverlayOpacity(96);
         Sprites["shadow"] = new Sprite(this.Viewport);
         Sprites["window"] = new RectSprite(this.Viewport, new Size(this.Size.Width - WindowEdges * 2, this.Size.Height - WindowEdges * 2),
             new Color(59, 227, 255), new Color(40, 62, 84));
