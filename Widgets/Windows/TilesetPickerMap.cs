@@ -20,7 +20,7 @@ public class TilesetPickerMap : PopupWindow
     public TilesetPickerMap(Map Map)
     {
         SetTitle("Change Tileset");
-        MinimumSize = MaximumSize = new Size(506, 498);
+        MinimumSize = MaximumSize = new Size(506, 505);
         SetSize(MaximumSize);
         Center();
 
@@ -29,20 +29,20 @@ public class TilesetPickerMap : PopupWindow
         ColoredBox box1 = new ColoredBox(this);
         box1.SetOuterColor(59, 91, 124);
         box1.SetInnerColor(17, 27, 38);
-        box1.SetPosition(200, 44);
+        box1.SetPosition(200, 51);
         box1.SetSize(280, 409);
 
         ColoredBox box2 = new ColoredBox(this);
         box2.SetOuterColor(24, 38, 53);
-        box2.SetPosition(201, 45);
+        box2.SetPosition(201, 52);
         box2.SetSize(278, 407);
 
         TilesetContainer = new Container(this);
-        TilesetContainer.SetPosition(203, 47);
+        TilesetContainer.SetPosition(203, 54);
         TilesetContainer.SetSize(274, 403);
         TilesetContainer.VAutoScroll = true;
         VScrollBar vs = new VScrollBar(this);
-        vs.SetPosition(469, 47);
+        vs.SetPosition(469, 54);
         vs.SetSize(10, 403);
         TilesetContainer.SetVScrollBar(vs);
 
@@ -50,27 +50,27 @@ public class TilesetPickerMap : PopupWindow
 
         Label labelavail = new Label(this);
         labelavail.SetText("Available");
-        labelavail.SetPosition(16, 24);
+        labelavail.SetPosition(16, 31);
         labelavail.SetFont(f);
 
         Label labelinuse = new Label(this);
         labelinuse.SetText("In-use");
-        labelinuse.SetPosition(16, 250);
+        labelinuse.SetPosition(16, 257);
         labelinuse.SetFont(f);
 
         Label labelprev = new Label(this);
         labelprev.SetText("Preview");
-        labelprev.SetPosition(192, 24);
+        labelprev.SetPosition(192, 31);
         labelprev.SetFont(f);
 
         ActionButton = new Button(this);
-        ActionButton.SetPosition(52, 225);
+        ActionButton.SetPosition(52, 232);
         ActionButton.SetSize(85, 30);
         ActionButton.SetText("Set");
         ActionButton.OnClicked += ActionButtonClicked;
 
         Available = new ListBox(this);
-        Available.SetPosition(25, 44);
+        Available.SetPosition(25, 51);
         Available.SetSize(151, 179);
         Available.OnSelectionChanged += delegate (BaseEventArgs e)
         {
@@ -93,7 +93,7 @@ public class TilesetPickerMap : PopupWindow
             });
 
         InUse = new ListBox(this);
-        InUse.SetPosition(25, 274);
+        InUse.SetPosition(25, 281);
         InUse.SetSize(151, 179);
         InUse.OnSelectionChanged += delegate (BaseEventArgs e)
         {
@@ -163,16 +163,14 @@ public class TilesetPickerMap : PopupWindow
             Close();
         });
 
-        /*if (Available.Items.Count > 0)
+        if (Available.Items.Count > 0)
         {
             Available.SetSelectedIndex(0);
-            ActionButton.SetText("Add");
         }
         else
         {
             InUse.SetSelectedIndex(0);
-            ActionButton.SetText("Remove");
-        }*/
+        }
 
         SetTimer("frame", (long)Math.Round(1000 / 60d));
     }
@@ -186,13 +184,13 @@ public class TilesetPickerMap : PopupWindow
         }
         else
         {
-            ActionButton.SetText("Remove");
+            //ActionButton.SetText("Remove");
             ActionButton.SetEnabled(false);
         }
         Tileset tileset = SelectedTileset;
+        TilesetContainer.Widgets.FindAll(w => w is PictureBox).ForEach(w => w.Dispose());
         if (tileset is null || tileset.TilesetListBitmap is null)
         {
-            TilesetContainer.Widgets.FindAll(w => w is PictureBox).ForEach(w => w.Dispose());
             ActionButton.SetEnabled(false);
         }
         else if (tileset.TilesetListBitmap.IsChunky)
