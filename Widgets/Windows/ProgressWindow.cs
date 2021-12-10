@@ -24,8 +24,8 @@ public class ProgressWindow : PopupWindow
         MessageLabel.SetPosition(Size.Width / 2 - MessageLabel.Size.Width / 2, 24);
 
         ProgressBar = new ProgressBar(this);
-        ProgressBar.SetPosition(8, 48);
-        ProgressBar.SetSize(Size.Width - 16, 32);
+        ProgressBar.SetPosition(14, 48);
+        ProgressBar.SetSize(Size.Width - 14 - WindowEdges * 2, 32);
 
         if (!CloseWhenDone)
         {

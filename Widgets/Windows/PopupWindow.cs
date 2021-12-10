@@ -10,14 +10,19 @@ public class PopupWindow : Widget, IPopupWindow
     public BaseEvent OnClosed;
     public List<Button> Buttons = new List<Button>();
 
+    public int WindowEdges = 7;
+
     public PopupWindow() : base(((MainEditorWindow)Graphics.Windows[0]).UI)
     {
-        Window.SetOverlayOpacity(128);
-        Sprites["window"] = new RectSprite(this.Viewport, new Size(this.Size.Width - 14, this.Size.Height - 14),
+        //Window.SetOverlayOpacity(128);
+        Sprites["shadow"] = new Sprite(this.Viewport);
+        Sprites["window"] = new RectSprite(this.Viewport, new Size(this.Size.Width - WindowEdges * 2, this.Size.Height - WindowEdges * 2),
             new Color(59, 227, 255), new Color(40, 62, 84));
+        Sprites["window"].X = WindowEdges;
+        Sprites["window"].Y = WindowEdges;
         Sprites["title"] = new Sprite(this.Viewport);
-        Sprites["title"].X = 5;
-        Sprites["title"].Y = 3;
+        Sprites["title"].X = 5 + WindowEdges;
+        Sprites["title"].Y = 3 + WindowEdges;
         this.WindowLayer = Window.ActiveWidget.WindowLayer + 1;
         this.Window.SetActiveWidget(this);
         Window.SetOverlayZIndex(WindowLayer * 10 - 1);
@@ -27,9 +32,9 @@ public class PopupWindow : Widget, IPopupWindow
     public void CreateButton(string Text, BaseEvent OnClicked)
     {
         Button b = new Button(this);
-        int x = Buttons.Count > 0 ? Buttons[Buttons.Count - 1].Position.X - b.Size.Width : Size.Width - b.Size.Width - 6;
-        int y = Size.Height - b.Size.Height - 5;
-        b.SetPosition(x, y);
+        int x = Buttons.Count > 0 ? Buttons[Buttons.Count - 1].Position.X - b.Size.Width : Size.Width - b.Size.Width - 4;
+        int y = Size.Height - b.Size.Height - 4;
+        b.SetPosition(x - WindowEdges, y - WindowEdges);
         b.SetText(Text);
         b.OnClicked = OnClicked;
         Buttons.Add(b);
@@ -47,7 +52,25 @@ public class PopupWindow : Widget, IPopupWindow
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-        (Sprites["window"] as RectSprite).SetSize(this.Size.Width, this.Size.Height);
+        (Sprites["window"] as RectSprite).SetSize(this.Size.Width - WindowEdges * 2, this.Size.Height - WindowEdges * 2);
+        Sprites["shadow"].Bitmap?.Dispose();
+        Sprites["shadow"].Bitmap = new Bitmap(Size);
+        Sprites["shadow"].Bitmap.Unlock();
+        Sprites["shadow"].Bitmap.FillGradientRectOutside(
+            new Rect(Size),
+            new Rect(WindowEdges, WindowEdges, Size.Width - WindowEdges * 2, Size.Height - WindowEdges * 2),
+            new Color(0, 0, 0, 200),
+            Color.ALPHA,
+            false
+        );
+        Sprites["shadow"].Bitmap.Lock();
+        for (int i = 0; i < Buttons.Count; i++)
+        {
+            Button b = Buttons[i];
+            int x = Buttons.Count > 0 ? Buttons[Buttons.Count - 1].Position.X - b.Size.Width : Size.Width - b.Size.Width - 4;
+            int y = Size.Height - b.Size.Height - 4;
+            b.SetPosition(x - WindowEdges, y - WindowEdges);
+        }
     }
 
     public override void ParentSizeChanged(BaseEventArgs e)
