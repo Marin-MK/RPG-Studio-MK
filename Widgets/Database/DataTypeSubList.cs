@@ -5,115 +5,88 @@ namespace RPGStudioMK.Widgets;
 
 public class DataTypeSubList : Widget
 {
-    public BaseEvent OnSelectionChanged;
+    public int SelectedIndex { get { return ListDrawer.SelectedIndex; } }
+    public ListItem SelectedItem { get { return ListDrawer.SelectedItem; } }
+    public int HoveringIndex { get { return ListDrawer.HoveringIndex; } }
+    public ListItem HoveringItem { get { return ListDrawer.HoveringItem; } }
+    public List<ListItem> Items { get { return ListDrawer.Items; } }
 
+    ListDrawer ListDrawer;
     Container ScrollContainer;
-    Widget TextWidget;
+    Button ChangeMaxBtn;
 
-    public int SelectedIndex { get; protected set; } = -1;
-    public int HoveringIndex { get; protected set; } = -1;
+    public int ListMaximum;
 
-    public List<ListItem> Items = new List<ListItem>();
+    public BaseEvent OnSelectionChanged { get { return ListDrawer.OnSelectionChanged; } set { ListDrawer.OnSelectionChanged = value; } }
+    public ObjectEvent OnMaximumChanged;
 
-    public DataTypeSubList(IContainer Parent) : base(Parent)
+    public DataTypeSubList(string HeaderText, int InitialListMaximum, IContainer Parent) : base(Parent)
     {
-        Sprites["line1"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, Color.BLACK));
+        ListMaximum = InitialListMaximum;
+        Sprites["line1"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(10, 23, 37)));
         Sprites["line1"].X = 168;
+        Sprites["line1"].Y = 29;
         Sprites["line2"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, Color.BLACK));
         Sprites["line2"].X = 180;
+        Sprites["line2"].Y = 29;
+        Sprites["line3"] = new Sprite(this.Viewport, new SolidBitmap(180, 1, new Color(10, 23, 37)));
+        Sprites["headerbg"] = new Sprite(this.Viewport, new SolidBitmap(181, 29, new Color(17, 33, 51)));
+        Sprites["header"] = new Sprite(this.Viewport);
+        Font f = Fonts.UbuntuBold.Use(18);
+        Size s = f.TextSize(HeaderText);
+        Sprites["header"].Bitmap = new Bitmap(s);
+        Sprites["header"].Bitmap.Font = f;
+        Sprites["header"].Bitmap.Unlock();
+        Sprites["header"].Bitmap.DrawText(HeaderText, Color.WHITE);
+        Sprites["header"].Bitmap.Lock();
+        Sprites["header"].X = 90 - s.Width / 2;
+        Sprites["header"].Y = 6;
         ScrollContainer = new Container(this);
+        ScrollContainer.SetPosition(0, 29);
         VScrollBar vs = new VScrollBar(this);
-        vs.SetPosition(170, 1);
+        vs.SetPosition(170, 30);
         ScrollContainer.SetVScrollBar(vs);
         ScrollContainer.VAutoScroll = true;
-        TextWidget = new Widget(ScrollContainer);
-        TextWidget.Sprites["text"] = new Sprite(this.Viewport);
-        TextWidget.Sprites["text"].X = 11;
-        TextWidget.Sprites["text"].Y = 9;
-        TextWidget.Sprites["selection"] = new Sprite(this.Viewport, new SolidBitmap(2, 20, new Color(37, 192, 250)));
-        TextWidget.Sprites["selection"].Visible = false;
+        ListDrawer = new ListDrawer(ScrollContainer);
+        ListDrawer.SetLineHeight(24);
+        ListDrawer.SetFont(Fonts.ProductSansMedium.Use(14));
+        ChangeMaxBtn = new Button(this);
+        ChangeMaxBtn.SetText("Change Maximum");
+        ChangeMaxBtn.OnClicked += _ =>
+        {
+            SetMaximumWindow win = new SetMaximumWindow(ListMaximum);
+            win.OnClosed += _ =>
+            {
+                if (win.PressedOK)
+                {
+                    OnMaximumChanged?.Invoke(new ObjectEventArgs(win.Maximum));
+                    ListMaximum = win.Maximum;
+                }
+            };
+        };
         SetWidth(181);
     }
 
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-        ScrollContainer.SetSize(Size);
-        ScrollContainer.VScrollBar.SetHeight(Size.Height - 2);
-        ScrollContainer.UpdateAutoScroll();
-        ((SolidBitmap)Sprites["line1"].Bitmap).SetSize(1, Size.Height);
-        ((SolidBitmap)Sprites["line2"].Bitmap).SetSize(1, Size.Height);
-        Sprites["line1"].Visible = ScrollContainer.VScrollBar.Visible;
+        ScrollContainer.SetSize(Size.Width - 13, Size.Height - 70);
+        ScrollContainer.VScrollBar.SetHeight(Size.Height - 72);
+        ListDrawer.SetSize(ScrollContainer.Size);
+        ((SolidBitmap)Sprites["line1"].Bitmap).SetSize(1, Size.Height - 70);
+        ((SolidBitmap)Sprites["line2"].Bitmap).SetSize(1, Size.Height - 29);
+        Sprites["line3"].Y = Size.Height - 41;
+        ChangeMaxBtn.SetPosition(4, Size.Height - 37);
+        ChangeMaxBtn.SetSize(Size.Width - 8, 33);
     }
 
     public void SetItems(List<ListItem> Items)
     {
-        this.Items = Items;
-        RedrawText();
+        ListDrawer.SetItems(Items);
     }
 
     public void SetSelectedIndex(int SelectedIndex)
     {
-        if (this.SelectedIndex != SelectedIndex)
-        {
-            this.SelectedIndex = SelectedIndex;
-            this.OnSelectionChanged?.Invoke(new BaseEventArgs());
-            RedrawText();
-        }
-    }
-
-    public void RedrawText()
-    {
-        TextWidget.Sprites["text"].Bitmap?.Dispose();
-        Font f = Fonts.UbuntuBold.Use(14);
-        TextWidget.Sprites["text"].Bitmap = new Bitmap(Size.Width, 20 * Items.Count);
-        TextWidget.SetSize(Size.Width, 18 + 20 * Items.Count);
-        TextWidget.Sprites["text"].Bitmap.Unlock();
-        TextWidget.Sprites["text"].Bitmap.Font = f;
-        for (int i = 0; i < Items.Count; i++)
-        {
-            string Text = Items[i].ToString();
-            Size s = f.TextSize(Text);
-            TextWidget.Sprites["text"].Bitmap.DrawText(Text, 0, i * 20 + 2, SelectedIndex == i ? new Color(37, 192, 250) : Color.WHITE);
-        }
-        TextWidget.Sprites["text"].Bitmap.Lock();
-        Sprites["line1"].Visible = 20 * Items.Count > ScrollContainer.Size.Height;
-    }
-
-    public override void MouseMoving(MouseEventArgs e)
-    {
-        base.MouseMoving(e);
-        if (!WidgetIM.Hovering)
-        {
-            TextWidget.Sprites["selection"].Visible = false;
-            HoveringIndex = -1;
-            return;
-        }
-        int rx = e.X - Viewport.X;
-        int ry = e.Y - Viewport.Y + TextWidget.Position.Y - TextWidget.ScrolledPosition.Y;
-        if (ry < 9 || ry >= Items.Count * 20 + 9 ||
-            rx >= 170 && ScrollContainer.VScrollBar.Visible ||
-            ScrollContainer.VScrollBar.SliderDragging)
-        {
-            TextWidget.Sprites["selection"].Visible = false;
-            HoveringIndex = -1;
-            return;
-        }
-        HoveringIndex = (int)Math.Floor((ry - 9) / 20d);
-        if (HoveringIndex >= Items.Count)
-        {
-            TextWidget.Sprites["selection"].Visible = false;
-            HoveringIndex = -1;
-            return;
-        }
-        TextWidget.Sprites["selection"].Y = 9 + HoveringIndex * 20;
-        TextWidget.Sprites["selection"].Visible = true;
-    }
-
-    public override void MouseDown(MouseEventArgs e)
-    {
-        base.MouseDown(e);
-        if (!WidgetIM.Hovering || HoveringIndex == -1) return;
-        SetSelectedIndex(HoveringIndex);
+        ListDrawer.SetSelectedIndex(SelectedIndex);
     }
 }

@@ -2,12 +2,12 @@
 
 public class DatabaseWidget : Widget
 {
-    public string Mode { get; protected set; }
+    public DatabaseMode Mode { get; protected set; }
 
     Grid MainGrid;
     DataTypeList DataTypeList;
 
-    Widget ActiveDatabaseWidget;
+    public Widget ActiveDatabaseWidget;
 
     public DatabaseWidget(IContainer Parent) : base(Parent)
     {
@@ -20,18 +20,34 @@ public class DatabaseWidget : Widget
         DataTypeList = new DataTypeList(MainGrid);
     }
 
-    public void SetMode(string Mode)
+    public void SetMode(DatabaseMode Mode)
     {
         if (this.Mode == Mode) return;
         this.Mode = Mode;
         ActiveDatabaseWidget?.Dispose();
         ActiveDatabaseWidget = null;
-        if (Mode == "species")
+        Editor.ProjectSettings.LastDatabaseSubmode = Mode;
+        if (Mode == DatabaseMode.Tilesets)
         {
             DataTypeList.SetSelected(Mode);
-            ActiveDatabaseWidget = new DataTypeSpecies(MainGrid);
+            ActiveDatabaseWidget = new DataTypeTilesets(MainGrid);
             ActiveDatabaseWidget.SetGridColumn(1);
-            ((DataTypeSpecies)ActiveDatabaseWidget).SetSelectedIndex(0);
+            ((DataTypeTilesets) ActiveDatabaseWidget).SetSelectedIndex(0);
         }
     }
+}
+
+public enum DatabaseMode
+{
+    Species,
+    Moves,
+    Abilities,
+    Items,
+    TMs,
+    Tilesets,
+    Autotiles,
+    Types,
+    Trainers,
+    Animations,
+    System
 }

@@ -6,6 +6,8 @@ public class DataTypeButton : Widget
     public string Icon { get; protected set; }
     public string Text { get; protected set; }
 
+    public BaseEvent OnSelectionChanged;
+
     public DataTypeButton(IContainer Parent) : base(Parent)
     {
         Sprites["icon"] = new Sprite(this.Viewport);
@@ -27,7 +29,7 @@ public class DataTypeButton : Widget
         Sprites["icon"].Bitmap = new Bitmap($"assets/img/data_type_{Icon}");
         Sprites["icon"].SrcRect.Width = Sprites["icon"].Bitmap.Width / 2;
         Sprites["text"].Bitmap?.Dispose();
-        Font f = Fonts.UbuntuBold.Use(16);
+        Font f = Fonts.UbuntuBold.Use(18);
         Size s = f.TextSize(Text);
         Sprites["text"].Bitmap = new Bitmap(s);
         Sprites["text"].Bitmap.Unlock();
@@ -53,7 +55,7 @@ public class DataTypeButton : Widget
             Sprites["text"].Bitmap.DrawText(this.Text, Selected ? new Color(37, 192, 250) : Color.WHITE);
             Sprites["text"].Bitmap.Lock();
             this.Selected = Selected;
-            Editor.MainWindow.DatabaseWidget.SetMode(this.Icon);
+            this.OnSelectionChanged?.Invoke(new BaseEventArgs());
         }
     }
 

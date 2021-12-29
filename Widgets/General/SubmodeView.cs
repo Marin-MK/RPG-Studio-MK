@@ -13,16 +13,18 @@ public class SubmodeView : Widget
     public int HeaderHeight { get; protected set; } = 25;
     public int HeaderSelHeight { get; protected set; } = 4;
     public int TextY { get; protected set; } = 3;
+    public Font Font { get; protected set; } = Fonts.UbuntuBold.Use(16);
+    public bool Centered { get; protected set; } = false;
+    public Color HeaderColor { get; protected set; } = Color.ALPHA;
 
     public BaseEvent OnSelectionChanged;
 
     public SubmodeView(IContainer Parent) : base(Parent)
     {
+        Sprites["header"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, HeaderColor));
         Sprites["text"] = new Sprite(this.Viewport);
         Sprites["sel"] = new Sprite(this.Viewport, new SolidBitmap(HeaderWidth, 2, new Color(55, 187, 255)));
         Sprites["sel"].Y = HeaderHeight - HeaderSelHeight - 2;
-        Sprites["line"] = new Sprite(this.Viewport, new SolidBitmap(Size.Width, HeaderSelHeight, new Color(28, 50, 73)));
-        Sprites["line"].Y = HeaderHeight - HeaderSelHeight;
     }
 
     public void SelectTab(int Index)
@@ -65,7 +67,7 @@ public class SubmodeView : Widget
         {
             this.HeaderHeight = Height;
             Sprites["sel"].Y = HeaderHeight - HeaderSelHeight - 2;
-            Sprites["line"].Y = HeaderHeight - HeaderSelHeight;
+            ((SolidBitmap) Sprites["header"].Bitmap).SetSize(Size.Width, HeaderHeight);
         }
     }
 
@@ -84,8 +86,45 @@ public class SubmodeView : Widget
         {
             this.HeaderSelHeight = HeaderSelHeight;
             Sprites["sel"].Y = HeaderHeight - HeaderSelHeight - 2;
-            (Sprites["line"].Bitmap as SolidBitmap).SetSize(Size.Width, HeaderSelHeight);
-            Sprites["line"].Y = HeaderHeight - HeaderSelHeight;
+        }
+    }
+
+    public void SetFont(Font Font)
+    {
+        if (this.Font != Font)
+        {
+            this.Font = Font;
+            Redraw();
+        }
+    }
+
+    public void SetCentered(bool Centered)
+    {
+        if (this.Centered != Centered)
+        {
+            this.Centered = Centered;
+            if (Sprites["text"].Bitmap != null && Centered)
+            {
+                Sprites["text"].X = Size.Width / 2 - Sprites["text"].Bitmap.Width / 2;
+            }
+            else if (!Centered)
+            {
+                Sprites["text"].X = 0;
+            }
+        }
+    }
+
+    public void SetHeaderColor(byte R, byte G, byte B, byte A = 255)
+    {
+        SetHeaderColor(new Color(R, G, B, A));
+    }
+
+    public void SetHeaderColor(Color HeaderColor)
+    {
+        if (this.HeaderColor != HeaderColor)
+        {
+            this.HeaderColor = HeaderColor;
+            ((SolidBitmap) Sprites["header"].Bitmap).SetColor(HeaderColor);
         }
     }
 
@@ -96,15 +135,14 @@ public class SubmodeView : Widget
             if (Tabs.Count > 0) SelectTab(0);
         }
         if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
-        Font f = Fonts.UbuntuBold.Use(15);
         for (int i = 0; i < this.Tabs.Count; i++)
         {
-            int headerw = f.TextSize(Names[i]).Width;
+            int headerw = this.Font.TextSize(Names[i]).Width;
             if (headerw + 8 >= this.HeaderWidth) SetHeaderWidth(headerw + 8);
         }
         Sprites["text"].Bitmap = new Bitmap(HeaderWidth * Tabs.Count, Size.Height);
         Sprites["text"].Bitmap.Unlock();
-        Sprites["text"].Bitmap.Font = f;
+        Sprites["text"].Bitmap.Font = this.Font;
         for (int i = 0; i < this.Tabs.Count; i++)
         {
             Color c = Color.WHITE;
@@ -112,6 +150,7 @@ public class SubmodeView : Widget
             Sprites["text"].Bitmap.DrawText(Names[i], i * HeaderWidth + HeaderWidth / 2, TextY, c, DrawOptions.CenterAlign);
         }
         Sprites["text"].Bitmap.Lock();
+        if (Centered) Sprites["text"].X = Size.Width / 2 - Sprites["text"].Bitmap.Width / 2;
         base.Draw();
     }
 
@@ -129,12 +168,12 @@ public class SubmodeView : Widget
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-        (Sprites["line"].Bitmap as SolidBitmap).SetSize(Size.Width, HeaderSelHeight);
         foreach (TabContainer tc in this.Tabs)
         {
             tc.SetSize(this.Size.Width, this.Size.Height - HeaderHeight);
             tc.Widgets.ForEach(w => w.SetSize(tc.Size));
         }
+        (Sprites["header"].Bitmap as SolidBitmap).SetSize(Size.Width, HeaderHeight);
     }
 
     public override void MouseMoving(MouseEventArgs e)
@@ -156,9 +195,14 @@ public class SubmodeView : Widget
             return;
         }
         Sprites["sel"].Visible = true;
-        HoveringIndex = (int)Math.Floor(rx / (double)HeaderWidth);
-        if (HoveringIndex >= Tabs.Count) HoveringIndex = -1;
-        Sprites["sel"].X = HoveringIndex * HeaderWidth;
+        HoveringIndex = (int)Math.Floor((rx - Sprites["text"].X) / (double)HeaderWidth);
+        if (HoveringIndex >= Tabs.Count || HoveringIndex < 0)
+        {
+            HoveringIndex = -1;
+            Sprites["sel"].Visible = false;
+            return;
+        }
+        Sprites["sel"].X = Sprites["text"].X + HoveringIndex * HeaderWidth;
     }
 
     public override void MouseDown(MouseEventArgs e)
