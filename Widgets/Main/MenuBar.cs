@@ -22,9 +22,9 @@ public class MenuBar : Widget
         Sprites["selector"].Y = 30;
 
         RegisterShortcuts(new List<Shortcut>()
-            {
-                new Shortcut(this, new Key(Keycode.S, Keycode.CTRL), delegate (BaseEventArgs e) { Editor.SaveProject(); }, true)
-            });
+        {
+            new Shortcut(this, new Key(Keycode.S, Keycode.CTRL), delegate (BaseEventArgs e) { Editor.SaveProject(); }, true)
+        });
     }
 
     public void SetItems(List<MenuItem> Items)
@@ -37,7 +37,7 @@ public class MenuBar : Widget
     {
         if (Sprites["header"].Bitmap != null) Sprites["header"].Bitmap.Dispose();
         int TotalWidth = 0;
-        Font f = Fonts.ProductSansMedium.Use(12);
+        Font f = Fonts.ProductSansMedium.Use(14);
         foreach (MenuItem mi in Items)
         {
             TotalWidth += f.TextSize(mi.Text).Width + 12;
