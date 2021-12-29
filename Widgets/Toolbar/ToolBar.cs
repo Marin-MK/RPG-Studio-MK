@@ -2,8 +2,8 @@
 
 public class ToolBar : Widget
 {
-    IconButton Undo;
-    IconButton Redo;
+    public IconButton Undo;
+    public IconButton Redo;
 
     public ModeButton MappingMode;
     public ModeButton ScriptingMode;
@@ -21,21 +21,21 @@ public class ToolBar : Widget
         MappingMode.SetSelected(true);
         MappingMode.OnSelection += delegate (BaseEventArgs e)
         {
-            Editor.SetMode("MAPPING");
+            Editor.SetMode(EditorMode.Mapping);
         };
 
         ScriptingMode = new ModeButton(this, "Scripts");
         ScriptingMode.SetPosition(MappingMode.Position.X + MappingMode.Size.Width + 8, 0);
         ScriptingMode.OnSelection += delegate (BaseEventArgs e)
         {
-            Editor.SetMode("SCRIPTING");
+            Editor.SetMode(EditorMode.Scripting);
         };
 
         DatabaseMode = new ModeButton(this, "Database");
         DatabaseMode.SetPosition(ScriptingMode.Position.X + ScriptingMode.Size.Width + 8, 0);
         DatabaseMode.OnSelection += delegate (BaseEventArgs e)
         {
-            Editor.SetMode("DATABASE");
+            Editor.SetMode(EditorMode.Database);
         };
 
         ActionContainer = new Container(this);
@@ -46,11 +46,13 @@ public class ToolBar : Widget
         Undo.SetIcon(Icon.Undo);
         Undo.Selectable = false;
         Undo.OnClicked += delegate (BaseEventArgs e) { Editor.Undo(); };
+        Undo.SetEnabled(false);
         Redo = new IconButton(ActionContainer);
         Redo.SetPosition(24, 0);
         Redo.SetIcon(Icon.Redo);
         Redo.Selectable = false;
         Redo.OnClicked += delegate (BaseEventArgs e) { Editor.Redo(); };
+        Redo.SetEnabled(false);
 
         PlayButton = new GradientButton(this, "Save");
         PlayButton.SetGradient(new Color(184, 56, 98), new Color(143, 49, 167));

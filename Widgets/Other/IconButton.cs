@@ -7,6 +7,7 @@ public class IconButton : Widget
     public bool Selectable = true;
 
     public bool Selected { get; protected set; } = false;
+    public bool Enabled { get; protected set; } = true;
 
     public BaseEvent OnSelection;
     public BaseEvent OnDeselection;
@@ -61,6 +62,15 @@ public class IconButton : Widget
         Sprites["selector"].Y = 26 + pixels;
     }
 
+    public void SetEnabled(bool Enabled)
+    {
+        if (this.Enabled != Enabled)
+        {
+            this.Enabled = Enabled;
+            Sprites["icon"].Opacity = (byte) (Enabled ? 255 : 128);
+        }
+    }
+
     public override void HoverChanged(MouseEventArgs e)
     {
         base.HoverChanged(e);
@@ -71,7 +81,7 @@ public class IconButton : Widget
     {
         base.MouseDown(e);
         int ry = e.Y - Viewport.Y;
-        if (WidgetIM.Hovering && ry < 29 && !TimerExists("reset") && e.OldLeftButton != e.LeftButton && e.LeftButton)
+        if (WidgetIM.Hovering && ry < 29 && !TimerExists("reset") && e.OldLeftButton != e.LeftButton && e.LeftButton && Enabled)
         {
             if (Toggleable) SetSelected(!Selected);
             else if (Selectable) SetSelected(true);
