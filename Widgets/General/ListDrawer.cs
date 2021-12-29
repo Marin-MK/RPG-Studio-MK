@@ -16,10 +16,10 @@ public class ListDrawer : Widget
     public List<ListItem> Items { get; protected set; } = new List<ListItem>();
     private bool HoveringButton = false;
     public bool Enabled { get; protected set; } = true;
-
     public int SelectedIndex { get; protected set; } = -1;
+    public int HoveringIndex { get; protected set; } = -1;
     public ListItem SelectedItem { get { return SelectedIndex == -1 ? null : Items[SelectedIndex]; } }
-
+    public ListItem HoveringItem { get { return HoveringIndex == -1 ? null : Items[HoveringIndex]; } }
     public Color SelectedItemColor { get; protected set; } = new Color(55, 187, 255);
 
     public ListDrawer(IContainer Parent) : base(Parent)
@@ -65,6 +65,7 @@ public class ListDrawer : Widget
         {
             this.LineHeight = Height;
             if (SelectedIndex != -1) Sprites["selection"].Y = LineHeight * SelectedIndex;
+            ((SolidBitmap)Sprites["hover"].Bitmap).SetSize(2, LineHeight);
             Redraw();
         }
     }
@@ -153,7 +154,7 @@ public class ListDrawer : Widget
         for (int i = 0; i < this.Items.Count; i++)
         {
             Color c = this.Enabled ? (i == SelectedIndex ? this.SelectedItemColor : Color.WHITE) : new Color(72, 72, 72);
-            Sprites["text"].Bitmap.DrawText(this.Items[i].ToString(), 10, LineHeight * i, c);
+            Sprites["text"].Bitmap.DrawText(this.Items[i].ToString(), 10, LineHeight * i + LineHeight / 2 - 10, c);
         }
         Sprites["text"].Bitmap.Lock();
         Sprites["btn"].Y = LineHeight * this.Items.Count;
@@ -166,6 +167,7 @@ public class ListDrawer : Widget
         int rx = e.X - Viewport.X;
         int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
         int index = (int)Math.Floor(ry / (double)LineHeight);
+        HoveringIndex = -1;
         if (!Button && index == this.Items.Count) return;
         Sprites["hover"].Visible = false;
         bool OldHover = HoveringButton;
@@ -179,6 +181,7 @@ public class ListDrawer : Widget
         {
             Sprites["hover"].Visible = true;
             Sprites["hover"].Y = index * LineHeight;
+            HoveringIndex = index;
         }
         if (OldHover != HoveringButton) RedrawButton();
     }
@@ -206,7 +209,7 @@ public class ListDrawer : Widget
             Sprites["selection"].Y = Sprites["hover"].Y;
             Sprites["selection"].Visible = true;
             int oldidx = this.SelectedIndex;
-            this.SetSelectedIndex(Sprites["hover"].Y / this.LineHeight);
+            this.SetSelectedIndex(HoveringIndex);
             if (oldidx != this.SelectedIndex)
             {
                 this.OnSelectionChanged?.Invoke(new BaseEventArgs());
