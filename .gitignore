@@ -18,6 +18,7 @@ line_count.rb
 x64/
 [Bb]in/
 [Oo]bj/
+[Pp]roperties/
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
