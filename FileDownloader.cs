@@ -38,8 +38,8 @@ public class FileDownloader
                 HttpWebResponse response = (HttpWebResponse) request.GetResponse();
                 Stream contentstream = response.GetResponseStream();
 
-                    // Write to disk
-                    this.BytesTotal = response.ContentLength;
+                // Write to disk
+                this.BytesTotal = response.ContentLength;
                 FileStream filestream = new FileStream(Filename, FileMode.Create);
                 byte[] read = new byte[8192];
                 int count = contentstream.Read(read, 0, read.Length);
@@ -62,8 +62,8 @@ public class FileDownloader
                     count = contentstream.Read(read, 0, read.Length);
                     this.BytesRead += count;
                 }
-                    // Close everything
-                    filestream.Close();
+                // Close everything
+                filestream.Close();
                 filestream = null;
                 contentstream.Close();
                 contentstream = null;

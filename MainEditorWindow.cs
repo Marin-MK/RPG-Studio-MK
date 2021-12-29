@@ -45,7 +45,7 @@ public class MainEditorWindow : UIWindow
 
     public MainEditorWindow(string ProjectFile)
     {
-        this.SetMinimumSize(600, 400);
+        this.SetMinimumSize(675, 400);
         this.SetText("RPG Studio MK");
         this.Initialize();
         Editor.LoadGeneralSettings();
@@ -269,13 +269,7 @@ public class MainEditorWindow : UIWindow
         #endregion
 
         // If an argument was passed, load that project file and skip the home screen
-        if (!string.IsNullOrEmpty(ProjectFile))
-        {
-            Data.SetProjectPath(ProjectFile);
-            CreateEditor();
-            Editor.MakeRecentProject();
-        }
-        else
+        if (string.IsNullOrEmpty(ProjectFile))
         {
             MainGridLayout.Rows[1] = new GridSize(0, Unit.Pixels);
             MainGridLayout.Rows[4] = new GridSize(0, Unit.Pixels);
@@ -293,6 +287,15 @@ public class MainEditorWindow : UIWindow
         UI.SizeChanged(new BaseEventArgs());
 
         UI.RegisterShortcut(new Shortcut(null, new Key(Keycode.G, Keycode.CTRL), e => Editor.Test(), true));
+
+        // If an argument was passed, load that project file and skip the home screen
+        if (!string.IsNullOrEmpty(ProjectFile))
+        {
+            Graphics.Update(false, true);
+            Data.SetProjectPath(ProjectFile);
+            CreateEditor();
+            Editor.MakeRecentProject();
+        }
     }
 
     /// <summary>
@@ -380,12 +383,12 @@ public class MainEditorWindow : UIWindow
         box.OnButtonPressed += delegate (BaseEventArgs e)
         {
             if (box.Result == 0) // Save
-                {
+            {
                 Editor.SaveProject();
                 Function();
             }
             else if (box.Result == 1) // Continue
-                {
+            {
                 Function();
             }
         };
