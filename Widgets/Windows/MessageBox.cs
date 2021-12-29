@@ -138,8 +138,8 @@ public class MessageBox : PopupWindow
     {
         base.SizeChanged(e);
         Button3.SetPosition(Size.Width - Button3.Size.Width - 1 - WindowEdges, Size.Height - Button3.Size.Height - 1 - WindowEdges);
-        if (Button2 != null) Button2.SetPosition(Button3.Position.X - Button2.Size.Width - WindowEdges, Button3.Position.Y - WindowEdges);
-        if (Button1 != null) Button1.SetPosition(Button2.Position.X - Button1.Size.Width - WindowEdges, Button3.Position.Y - WindowEdges);
+        if (Button2 != null) Button2.SetPosition(Button3.Position.X - Button2.Size.Width, Button3.Position.Y);
+        if (Button1 != null) Button1.SetPosition(Button2.Position.X - Button1.Size.Width, Button3.Position.Y);
         int x = 10;
         if (Icon != null)
         {
