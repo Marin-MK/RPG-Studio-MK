@@ -93,6 +93,7 @@ public class MapSelectPanel : Widget
                 }
             });
         OnWidgetSelected += WidgetSelected;
+        SetBackgroundColor(10, 23, 37);
     }
 
     void SortNodeList(List<TreeNode> Nodes)
