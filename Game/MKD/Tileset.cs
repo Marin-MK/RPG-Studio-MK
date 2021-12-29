@@ -126,10 +126,6 @@ public class Tileset : ICloneable
         this.FogBlendType = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_blend_type"));
         this.BattlebackName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@battleback_name"));
         IntPtr autotiles = Ruby.GetIVar(data, "@autotile_names");
-        if (this.ID == 28)
-        {
-
-        }
         for (int i = 0; i < Ruby.Array.Length(autotiles); i++)
         {
             string name = Ruby.String.FromPtr(Ruby.Array.Get(autotiles, i));
@@ -296,8 +292,7 @@ public class Tileset : ICloneable
         t.FogZoom = this.FogZoom;
         t.FogBlendType = this.FogBlendType;
         t.BattlebackName = this.BattlebackName;
-        t.Autotiles = new List<Autotile>();
-        this.Autotiles.ForEach(a => t.Autotiles.Add((Autotile)a.Clone()));
+        t.Autotiles = this.Autotiles.ConvertAll(a => (Autotile)a?.Clone());
         t.BushFlags = new List<int>(this.BushFlags);
         t.TilesetBitmap = this.TilesetBitmap;
         t.TilesetListBitmap = this.TilesetListBitmap;
