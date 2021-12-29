@@ -373,9 +373,25 @@ public class HomeScreen : Widget
 
     public void LoadRecentProject(int index)
     {
-        Data.SetProjectPath(Editor.GeneralSettings.RecentFiles[Editor.GeneralSettings.RecentFiles.Count - index - 1][1]);
-        ((MainEditorWindow)Window).CreateEditor();
-        Editor.MakeRecentProject();
+        string ProjectFilePath = Editor.GeneralSettings.RecentFiles[Editor.GeneralSettings.RecentFiles.Count - index - 1][1];
+        if (!System.IO.File.Exists(ProjectFilePath))
+        {
+            MessageBox mbox = new MessageBox("Not Found", "No project could be found at that location.\nDo you want to delete the project from the list of recent projects?", ButtonType.YesNoCancel, IconType.Warning);
+            mbox.OnClosed += _ =>
+            {
+                if (mbox.Result == 0) // Yes, remove project from list of recent projects
+                {
+                    Editor.GeneralSettings.RecentFiles.RemoveAt(Editor.GeneralSettings.RecentFiles.Count - index - 1);
+                    SizeChanged(new BaseEventArgs());
+                }
+            };
+        }
+        else
+        {
+            Data.SetProjectPath(ProjectFilePath);
+            ((MainEditorWindow)Window).CreateEditor();
+            Editor.MakeRecentProject();
+        }
     }
 
     public void ShowTutorials()
