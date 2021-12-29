@@ -291,10 +291,20 @@ public class MainEditorWindow : UIWindow
         // If an argument was passed, load that project file and skip the home screen
         if (!string.IsNullOrEmpty(ProjectFile))
         {
+            MenuBar.SetVisible(false);
+            StatusBar.SetVisible(false);
+            ToolBar.SetVisible(false);
+            Blue1pxSeparator.SetVisible(false);
+            StatusBarDivider.SetVisible(false);
             Graphics.Update(false, true);
             Data.SetProjectPath(ProjectFile);
             CreateEditor();
             Editor.MakeRecentProject();
+            MenuBar.SetVisible(true);
+            StatusBar.SetVisible(true);
+            ToolBar.SetVisible(true);
+            Blue1pxSeparator.SetVisible(true);
+            StatusBarDivider.SetVisible(true);
         }
     }
 
