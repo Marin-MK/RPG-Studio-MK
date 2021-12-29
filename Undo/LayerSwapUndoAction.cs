@@ -20,6 +20,18 @@ public class LayerSwapUndoAction : BaseUndoAction
 
     public override bool Trigger(bool IsRedo)
     {
+        if (!InMode(EditorMode.Mapping))
+        {
+            SetMode(EditorMode.Mapping);
+            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Game.Data.Maps[this.MapID]);
+            return false;
+        }
+        bool ActiveMap = Editor.MainWindow.MapWidget.Map.ID == MapID;
+        if (!ActiveMap)
+        {
+            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Game.Data.Maps[this.MapID]);
+            return false;
+        }
         Widgets.LayerPanel LayerPanel = Editor.MainWindow.MapWidget.MapViewerTiles.LayerPanel;
         bool MoveUp = this.MovedUp == IsRedo;
         if (MoveUp)

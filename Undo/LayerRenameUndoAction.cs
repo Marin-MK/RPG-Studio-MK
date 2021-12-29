@@ -24,6 +24,18 @@ public class LayerRenameUndoAction : BaseUndoAction
 
     public override bool Trigger(bool IsRedo)
     {
+        if (!InMode(EditorMode.Mapping))
+        {
+            SetMode(EditorMode.Mapping);
+            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps[this.MapID]);
+            return false;
+        }
+        bool ActiveMap = Editor.MainWindow.MapWidget.Map.ID == MapID;
+        if (!ActiveMap)
+        {
+            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps[this.MapID]);
+            return false;
+        }
         Map Map = Data.Maps[MapID];
         Map.Layers[LayerIndex].Name = IsRedo ? NewName : OldName;
         Editor.MainWindow.MapWidget.MapViewerTiles.LayerPanel.layerwidget.Redraw();

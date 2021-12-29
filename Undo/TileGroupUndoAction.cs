@@ -24,12 +24,12 @@ public class TileGroupUndoAction : BaseUndoAction
 
     public static TileGroupUndoAction GetLatest()
     {
-        return (TileGroupUndoAction)Editor.MapUndoList.FindLast(a => a is TileGroupUndoAction && !((TileGroupUndoAction)a).Ready);
+        return (TileGroupUndoAction) Editor.UndoList.FindLast(a => a is TileGroupUndoAction && !((TileGroupUndoAction)a).Ready);
     }
 
     public static TileGroupUndoAction GetLatestAll()
     {
-        return (TileGroupUndoAction)Editor.MapUndoList.FindLast(a => a is TileGroupUndoAction);
+        return (TileGroupUndoAction) Editor.UndoList.FindLast(a => a is TileGroupUndoAction);
     }
 
     public static void AddToLatest(int MapPosition, int Layer, TileData NewTile, TileData OldTile, bool FromAutotile = false)
@@ -47,6 +47,12 @@ public class TileGroupUndoAction : BaseUndoAction
     public override bool Trigger(bool IsRedo)
     {
         if (!Ready) throw new Exception("Attempted to undo an unfinished TileGroupUndoAction.");
+        if (!InMode(EditorMode.Mapping))
+        {
+            SetMode(EditorMode.Mapping);
+            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps[this.MapID]);
+            return false;
+        }
         bool ActiveMap = Editor.MainWindow.MapWidget.Map.ID == MapID;
         if (!ActiveMap)
         {

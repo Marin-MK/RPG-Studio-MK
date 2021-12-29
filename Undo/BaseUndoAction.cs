@@ -6,8 +6,10 @@ public class BaseUndoAction
 {
     public BaseUndoAction()
     {
-        Editor.MapUndoList.Add(this);
-        Editor.MapRedoList.Clear();
+        Editor.UndoList.Add(this);
+        Editor.RedoList.Clear();
+        Editor.MainWindow.ToolBar.Undo.SetEnabled(true);
+        Editor.MainWindow.ToolBar.Redo.SetEnabled(false);
     }
 
     public virtual bool Trigger(bool IsRedo)
@@ -17,8 +19,8 @@ public class BaseUndoAction
 
     public void RevertTo(bool IsRedo)
     {
-        List<BaseUndoAction> ListA = IsRedo ? Editor.MapRedoList : Editor.MapUndoList;
-        List<BaseUndoAction> ListB = IsRedo ? Editor.MapUndoList : Editor.MapRedoList;
+        List<BaseUndoAction> ListA = IsRedo ? Editor.RedoList : Editor.UndoList;
+        List<BaseUndoAction> ListB = IsRedo ? Editor.UndoList : Editor.RedoList;
         int Index = ListA.IndexOf(this);
         for (int i = ListA.Count - 1; i >= Index; i--)
         {
@@ -30,5 +32,40 @@ public class BaseUndoAction
                 ListA.RemoveAt(i);
             }
         }
+    }
+
+    public bool InMode(EditorMode Mode)
+    {
+        return Editor.Mode == Mode;
+    }
+
+    public bool SetMode(EditorMode Mode)
+    {
+        Editor.SetMode(Mode);
+        return false;
+    }
+
+    public bool SetDatabaseMode(Widgets.DatabaseMode Submode)
+    {
+        Editor.SetDatabaseMode(Submode);
+        return false;
+    }
+
+    public bool InDatabaseSubmode(Widgets.DatabaseMode Submode)
+    {
+        if (Editor.Mode == EditorMode.Database)
+        {
+            return ((Widgets.DatabaseWidget) Editor.MainWindow.MainEditorWidget).Mode == Submode;
+        }
+        return false;
+    }
+
+    public bool SetDatabaseSubmode(Widgets.DatabaseMode Submode)
+    {
+        if (Editor.Mode == EditorMode.Database)
+        {
+            ((Widgets.DatabaseWidget) Editor.MainWindow.MainEditorWidget).SetMode(Submode);
+        }
+        return false;
     }
 }

@@ -24,6 +24,18 @@ public class LayerChangeUndoAction : BaseUndoAction
 
     public override bool Trigger(bool IsRedo)
     {
+        if (!InMode(EditorMode.Mapping))
+        {
+            SetMode(EditorMode.Mapping);
+            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps[this.MapID]);
+            return false;
+        }
+        bool ActiveMap = Editor.MainWindow.MapWidget.Map.ID == MapID;
+        if (!ActiveMap)
+        {
+            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps[this.MapID]);
+            return false;
+        }
         //  Removal &&  IsRedo : Redoing Removal  : Remove
         //  Removal && !IsRedo : Undoing Removal  : Create
         // !Removal &&  IsRedo : Redoing Creation : Create

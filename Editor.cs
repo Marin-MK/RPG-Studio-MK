@@ -52,12 +52,12 @@ public static class Editor
     /// <summary>
     /// Contains the list of recent actions that you made that you can undo.
     /// </summary>
-    public static List<BaseUndoAction> MapUndoList = new List<BaseUndoAction>();
+    public static List<BaseUndoAction> UndoList = new List<BaseUndoAction>();
 
     /// <summary>
     /// Contains the list of recent actions that you undid that you can redo.
     /// </summary>
-    public static List<BaseUndoAction> MapRedoList = new List<BaseUndoAction>();
+    public static List<BaseUndoAction> RedoList = new List<BaseUndoAction>();
 
     /// <summary>
     /// Event that is called after the editor has undone the latest action.
@@ -74,6 +74,11 @@ public static class Editor
     /// </summary>
     public static List<Map> DeletedMaps = new List<Map>();
 
+    /// <summary>
+    /// The currently active mode of the editor.
+    /// </summary>
+    public static EditorMode Mode;
+
 
     /// <summary>
     /// Debug method for quickly testing a piece of functionality.
@@ -81,7 +86,39 @@ public static class Editor
     public static void Test()
     {
         if (Program.ReleaseMode) return;
+        if (vp != null)
+        {
+            sp.Dispose();
+            vp.Dispose();
+            sp = null;
+            vp = null;
+            return;
+        }
+        int w = 96;
+        int h = 96;
+        vp = new Viewport(0, 0, w, h);
+        vp.Z = 9999999;
+        sp = new Sprite(vp);
+        sp.Bitmap = new Bitmap(w, h);
+        sp.Bitmap.Unlock();
+        sp.Bitmap.FillRect(w, h, Color.WHITE);
+        Stopwatch s = new Stopwatch();
+        s.Start();
+        sp.Bitmap.FillGradientRectOutside(
+            new Rect(0, 0, w, h),
+            new Rect(38, 43, 20, 10),
+            new Color(255, 255, 0),
+            Color.ALPHA
+        );
+        s.Stop();
+        Console.WriteLine(s.ElapsedMilliseconds);
+        sp.Bitmap.Lock();
+        vp.X = MainWindow.Width / 2 - w / 2;
+        vp.Y = MainWindow.Height / 2 - h / 2;
     }
+
+    static Viewport vp;
+    static Sprite sp;
 
 
     /// <summary>
@@ -116,10 +153,12 @@ public static class Editor
     /// </summary>
     public static void Undo(bool Internal = false)
     {
-        if (MapUndoList.Count > 0 && (CanUndo || Internal))
+        if (UndoList.Count > 0 && (CanUndo || Internal))
         {
-            MapUndoList[MapUndoList.Count - 1].RevertTo(false);
+            UndoList[UndoList.Count - 1].RevertTo(false);
             if (!Internal) OnUndoing?.Invoke(new BaseEventArgs());
+            MainWindow.ToolBar.Undo.SetEnabled(UndoList.Count > 0);
+            MainWindow.ToolBar.Redo.SetEnabled(RedoList.Count > 0);
         }
     }
 
@@ -128,7 +167,12 @@ public static class Editor
     /// </summary>
     public static void Redo()
     {
-        if (MapRedoList.Count > 0 && CanUndo) MapRedoList[MapRedoList.Count - 1].RevertTo(true);
+        if (RedoList.Count > 0 && CanUndo)
+        {
+            RedoList[RedoList.Count - 1].RevertTo(true);
+            MainWindow.ToolBar.Undo.SetEnabled(UndoList.Count > 0);
+            MainWindow.ToolBar.Redo.SetEnabled(RedoList.Count > 0);
+        }
     }
 
     /// <summary>
@@ -532,67 +576,79 @@ public static class Editor
     /// </summary>
     /// <param name="Mode">The mode to switch to. MAPPING, SCRIPTING or DATABASE.</param>
     /// <param name="Force">Whether or not to force a full redraw.</param>
-    public static void SetMode(string Mode, bool Force = false)
+    public static void SetMode(EditorMode Mode, bool Force = false)
     {
-        if (Mode == ProjectSettings.LastMode && !Force) return;
+        if (Mode == Editor.Mode && !Force) return;
 
-        string OldMode = ProjectSettings.LastMode;
+        EditorMode OldMode = ProjectSettings.LastMode;
         ProjectSettings.LastMode = Mode;
+        Editor.Mode = Mode;
 
         MainWindow.StatusBar.SetVisible(true);
         MainWindow.ToolBar.SetVisible(true);
 
-        if (Mode == "MAPPING") // Select Mapping mode
+        // Perform any actions upon deselection of a mode.
+        switch (OldMode)
         {
-            MainWindow.ToolBar.MappingMode.SetSelected(true, Force);
-
-            if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
-            MainWindow.MainEditorWidget = new MappingWidget(MainWindow.MainGridLayout);
-            MainWindow.MainEditorWidget.SetGridRow(3);
-
-            // Set list of maps & initial map
-            MainWindow.MapWidget.MapSelectPanel.PopulateList();
-
-            int mapid = ProjectSettings.LastMapID;
-            int lastlayer = ProjectSettings.LastLayer;
-            MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps.ContainsKey(mapid) ? Data.Maps[mapid] : Data.Maps.Values.First());
-            MainWindow.MapWidget.SetSelectedLayer(lastlayer);
-            MainWindow.MapWidget.SetZoomFactor(ProjectSettings.LastZoomFactor);
+            case EditorMode.Mapping:
+                break;
+            case EditorMode.Scripting:
+                break;
+            case EditorMode.Database:
+                break;
         }
-        else if (OldMode == "MAPPING") // Deselect Mapping mode
-        {
 
-        }
-        if (Mode == "SCRIPTING") // Select Scripting mode
-        {
-            MainWindow.ToolBar.ScriptingMode.SetSelected(true, Force);
+        if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
+        MainWindow.MainEditorWidget = null;
 
-            if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
-            MainWindow.MainEditorWidget = null;
-        }
-        else if (OldMode == "SCRIPTING") // Deselect Script mode
+        // Perform any actions upon selection of a mode.
+        switch (Mode)
         {
-
-        }
-        if (Mode == "DATABASE") // Select Database mode
-        {
-            if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
-            MainWindow.MainEditorWidget = null;
-
-            //MainWindow.ToolBar.DatabaseMode.SetSelected(true, Force);
-            //
-            //if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
-            //MainWindow.MainEditorWidget = new DatabaseWidget(MainWindow.MainGridLayout);
-            //MainWindow.MainEditorWidget.SetGridRow(3);
-            //MainWindow.DatabaseWidget.SetMode("species");
-        }
-        else if (OldMode == "DATABASE") // Deselect Database mode
-        {
-
+            case EditorMode.Mapping:
+                // Select Mapping mode
+                SetMappingMode(Force);
+                break;
+            case EditorMode.Scripting:
+                // Select Scripting Mode
+                MainWindow.ToolBar.ScriptingMode.SetSelected(true, Force);
+                break;
+            case EditorMode.Database:
+                // Select Database mode
+                SetDatabaseMode(ProjectSettings.LastDatabaseSubmode);
+                break;
         }
         MainWindow.MainGridLayout.UpdateLayout();
         MainWindow.StatusBar.Refresh();
         MainWindow.ToolBar.Refresh();
+    }
+
+    public static void SetMappingMode(bool Force = false)
+    {
+        MainWindow.ToolBar.MappingMode.SetSelected(true, Force);
+
+        MainWindow.MainEditorWidget = new MappingWidget(MainWindow.MainGridLayout);
+        MainWindow.MainEditorWidget.SetGridRow(3);
+        // Set list of maps & initial map
+        MainWindow.MapWidget.MapSelectPanel.PopulateList();
+        int mapid = ProjectSettings.LastMapID;
+        int lastlayer = ProjectSettings.LastLayer;
+        MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps.ContainsKey(mapid) ? Data.Maps[mapid] : Data.Maps.Values.First());
+        MainWindow.MapWidget.SetSelectedLayer(lastlayer);
+        MainWindow.MapWidget.SetZoomFactor(ProjectSettings.LastZoomFactor);
+    }
+
+    public static void SetDatabaseMode(DatabaseMode Submode, bool Force = false)
+    {
+        MainWindow.ToolBar.DatabaseMode.SetSelected(true, Force);
+        if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
+        MainWindow.MainEditorWidget = new DatabaseWidget(MainWindow.MainGridLayout);
+        MainWindow.MainEditorWidget.SetGridRow(3);
+        MainWindow.DatabaseWidget.SetMode(Submode);
+    }
+
+    public static void SetDatabaseSubmode(DatabaseMode Submode)
+    {
+        MainWindow.DatabaseWidget.SetMode(Submode);
     }
 
     /// <summary>
@@ -691,8 +747,6 @@ public static class Editor
         }
         if (ProjectSettings.LastZoomFactor == 0) ProjectSettings.LastZoomFactor = 1;
         if (ProjectSettings.ProjectName.Length == 0) ProjectSettings.ProjectName = "Untitled Game";
-        if (string.IsNullOrEmpty(ProjectSettings.LastMode)) ProjectSettings.LastMode = "MAPPING";
-        if (string.IsNullOrEmpty(ProjectSettings.LastMappingSubmode)) ProjectSettings.LastMappingSubmode = "TILES";
         if (ProjectSettings.TilesetCapacity == 0) ProjectSettings.TilesetCapacity = 25;
         if (ProjectSettings.AutotileCapacity == 0) ProjectSettings.AutotileCapacity = 25;
         if (ProjectSettings.SwitchGroupCapacity == 0) ProjectSettings.SwitchGroupCapacity = 25;
@@ -710,8 +764,8 @@ public static class Editor
     {
         ProjectFilePath = null;
         ProjectSettings = null;
-        MapUndoList.Clear();
-        MapRedoList.Clear();
+        UndoList.Clear();
+        RedoList.Clear();
         DeletedMaps.Clear();
         UnsavedChanges = false;
     }
@@ -731,11 +785,15 @@ public class ProjectSettings
     /// <summary>
     /// The last-active mode of the project.
     /// </summary>
-    public string LastMode = "MAPPING";
+    public EditorMode LastMode = EditorMode.Mapping;
     /// <summary>
     /// The last-active submode within the Mapping mode.
     /// </summary>
     public string LastMappingSubmode = "TILES";
+    /// <summary>
+    /// The last-active submode within the Database mode.
+    /// </summary>
+    public DatabaseMode LastDatabaseSubmode = DatabaseMode.Tilesets;
     /// <summary>
     /// The last selected Map.
     /// </summary>
@@ -825,4 +883,11 @@ public class GeneralSettings
     /// The total number of seconds the program has ever been open.
     /// </summary>
     public int SecondsUsed = 0;
+}
+
+public enum EditorMode
+{
+    Mapping,
+    Scripting,
+    Database
 }
