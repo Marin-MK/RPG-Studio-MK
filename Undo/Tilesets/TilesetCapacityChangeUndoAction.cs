@@ -30,11 +30,10 @@ public class TilesetCapacityChangeUndoAction : BaseUndoAction
     {
         if (!InMode(EditorMode.Database)) return SetDatabaseMode(Widgets.DatabaseMode.Tilesets);
         if (!InDatabaseSubmode(Widgets.DatabaseMode.Tilesets)) return SetDatabaseSubmode(Widgets.DatabaseMode.Tilesets);
-        Widgets.DatabaseWidget DatabaseWidget = (Widgets.DatabaseWidget)Editor.MainWindow.MainEditorWidget;
-        bool IsActiveTab = DatabaseWidget.Mode == Widgets.DatabaseMode.Tilesets;
-        if (!IsActiveTab)
+        Widgets.DatabaseWidget DatabaseWidget = Editor.MainWindow.DatabaseWidget;
+        if (!InDatabaseSubmode(Widgets.DatabaseMode.Tilesets))
         {
-            DatabaseWidget.SetMode(Widgets.DatabaseMode.Tilesets);
+            SetDatabaseSubmode(Widgets.DatabaseMode.Tilesets);
             return false;
         }
         if (IsRedo)

@@ -9,13 +9,15 @@ public class DataTypeTilesets : Widget
     public DataTypeSubList TilesetList;
     public SubmodeView Tabs;
     public TilesetDisplayContainer TilesetContainer;
+    public Tileset Tileset { get { return TilesetList.SelectedIndex >= 0 ? (Tileset) TilesetList.SelectedItem.Object : null; } }
+    public TextBox NameBox;
+    public TextAreaState OldNameBoxState;
 
     Grid Grid;
     Container MainBox;
     VignetteFade Fade;
 
     Label NameLabel;
-    TextBox NameBox;
     Label GraphicLabel;
     DropdownBox GraphicBox;
     Label FogLabel;
@@ -26,6 +28,8 @@ public class DataTypeTilesets : Widget
     List<DropdownBox> AutotileBoxes = new List<DropdownBox>();
     Container ScrollContainer;
     Container AdjustedScrollContainer;
+
+    bool ChangingSelection = false;
 
     public int SelectedIndex { get { return TilesetList.SelectedIndex; } }
     public Tileset SelectedItem { get { return (Tileset) TilesetList.SelectedItem?.Object; } }
@@ -111,6 +115,14 @@ public class DataTypeTilesets : Widget
         NameBox.SetSize(180, 25);
         NameBox.SetFont(Font);
         NameBox.SetTextY(-2);
+        NameBox.OnTextChanged += _ =>
+        {
+            if (Editor.Undoing || Editor.Redoing || ChangingSelection) return;
+            Tileset.Name = NameBox.Text;
+            RedrawList();
+            TilesetNameChangeUndoAction.Create(Tileset.ID, OldNameBoxState, NameBox.GetState());
+            OldNameBoxState = NameBox.GetState();
+        };
 
         GraphicLabel = new Label(MainBox);
         GraphicLabel.SetText("Tileset Graphic");
@@ -290,8 +302,10 @@ public class DataTypeTilesets : Widget
 
     void UpdateSelection(BaseEventArgs e)
     {
-        Tileset t = TilesetList.SelectedIndex >= 0 ? (Tileset) TilesetList.Items[TilesetList.SelectedIndex].Object : null;
+        Tileset t = this.Tileset;
+        ChangingSelection = true;
         NameBox.SetText(t.Name);
+        OldNameBoxState = NameBox.GetState();
         GraphicBox.SetText(t.GraphicName);
         for (int i = 0; i < 7; i++)
         {
@@ -302,6 +316,7 @@ public class DataTypeTilesets : Widget
         TilesetContainer.SetTileset(t);
         ScrollContainer.SetHeight(MainBox.Size.Height - ScrollContainer.Position.Y - 8);
         if (TilesetContainer.Size.Height < ScrollContainer.Size.Height) ScrollContainer.SetHeight(TilesetContainer.Size.Height);
+        ChangingSelection = false;
     }
 
     void SelectedTabChanged()

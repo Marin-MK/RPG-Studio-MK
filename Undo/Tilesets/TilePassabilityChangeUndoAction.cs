@@ -43,7 +43,7 @@ public class TilePassabilityChangeUndoAction : BaseUndoAction
             SetDatabaseSubmode(Widgets.DatabaseMode.Tilesets);
             Continue = false;
         }
-        Widgets.DataTypeTilesets dtt = (Widgets.DataTypeTilesets) ((Widgets.DatabaseWidget) Editor.MainWindow.MainEditorWidget).ActiveDatabaseWidget;
+        Widgets.DataTypeTilesets dtt = (Widgets.DataTypeTilesets) Editor.MainWindow.DatabaseWidget.ActiveDatabaseWidget;
         if (dtt.SelectedItem == null || dtt.SelectedItem.ID != Tileset.ID)
         {
             dtt.SetSelectedIndex(Tileset.ID - 1);

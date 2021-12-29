@@ -79,6 +79,16 @@ public static class Editor
     /// </summary>
     public static EditorMode Mode;
 
+    /// <summary>
+    /// Whether the editor is currently undoing a change.
+    /// </summary>
+    public static bool Undoing = false;
+
+    /// <summary>
+    /// Whether the editor is currently redoing a change.
+    /// </summary>
+    public static bool Redoing = false;
+
 
     /// <summary>
     /// Debug method for quickly testing a piece of functionality.
@@ -155,10 +165,12 @@ public static class Editor
     {
         if (UndoList.Count > 0 && (CanUndo || Internal))
         {
+            Undoing = true;
             UndoList[UndoList.Count - 1].RevertTo(false);
             if (!Internal) OnUndoing?.Invoke(new BaseEventArgs());
             MainWindow.ToolBar.Undo.SetEnabled(UndoList.Count > 0);
             MainWindow.ToolBar.Redo.SetEnabled(RedoList.Count > 0);
+            Undoing = false;
         }
     }
 
@@ -169,9 +181,11 @@ public static class Editor
     {
         if (RedoList.Count > 0 && CanUndo)
         {
+            Redoing = true;
             RedoList[RedoList.Count - 1].RevertTo(true);
             MainWindow.ToolBar.Undo.SetEnabled(UndoList.Count > 0);
             MainWindow.ToolBar.Redo.SetEnabled(RedoList.Count > 0);
+            Redoing = false;
         }
     }
 
