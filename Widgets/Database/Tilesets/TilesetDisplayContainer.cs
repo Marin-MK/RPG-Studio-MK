@@ -41,11 +41,12 @@ public class TilesetDisplayContainer : Widget
         Sprites["counter"] = new Sprite(this.Viewport);
     }
 
-    public void SetTileset(Game.Tileset Tileset)
+    public void SetTileset(Game.Tileset Tileset, bool ForceRedraw = false)
     {
-        if (this.Tileset != Tileset)
+        if (this.Tileset != Tileset || ForceRedraw)
         {
             this.Tileset = Tileset;
+            Sprites["tileset"].Bitmap = null;
             if (this.Tileset != null && Tileset.TilesetListBitmap != null)
             {
                 Sprites["tileset"].Bitmap = Tileset.TilesetListBitmap;
@@ -77,8 +78,8 @@ public class TilesetDisplayContainer : Widget
                 SetHeight(Tileset.TilesetListBitmap.Height);
             }
             else SetHeight(32);
-            SetMode(Mode);
         }
+        SetMode(Mode);
     }
 
     public void SetMode(TilesetDisplayMode Mode)

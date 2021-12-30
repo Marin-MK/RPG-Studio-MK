@@ -189,7 +189,7 @@ public class MapPropertiesWindow : PopupWindow
 
     public void AddTileset(BaseEventArgs e)
     {
-        TilesetPickerMap picker = new TilesetPickerMap(Map);
+        TilesetPicker picker = new TilesetPicker(Map);
         picker.OnClosed += delegate (BaseEventArgs e2)
         {
             bool update = false;

@@ -12,6 +12,7 @@ public class DataTypeTilesets : Widget
     public Tileset Tileset { get { return TilesetList.SelectedIndex >= 0 ? (Tileset) TilesetList.SelectedItem.Object : null; } }
     public TextBox NameBox;
     public TextAreaState OldNameBoxState;
+    public PickerBox GraphicBox;
 
     Grid Grid;
     Container MainBox;
@@ -19,13 +20,12 @@ public class DataTypeTilesets : Widget
 
     Label NameLabel;
     Label GraphicLabel;
-    DropdownBox GraphicBox;
     Label FogLabel;
-    DropdownBox FogBox;
+    PickerBox FogBox;
     Label PanoramaLabel;
-    DropdownBox PanoramaBox;
+    PickerBox PanoramaBox;
     List<Label> AutotileLabels = new List<Label>();
-    List<DropdownBox> AutotileBoxes = new List<DropdownBox>();
+    List<PickerBox> AutotileBoxes = new List<PickerBox>();
     Container ScrollContainer;
     Container AdjustedScrollContainer;
 
@@ -126,10 +126,26 @@ public class DataTypeTilesets : Widget
         GraphicLabel = new Label(MainBox);
         GraphicLabel.SetText("Tileset Graphic");
         GraphicLabel.SetFont(Font);
-        GraphicBox = new DropdownBox(MainBox);
+        GraphicBox = new PickerBox(MainBox);
         GraphicBox.SetSize(180, 25);
         GraphicBox.SetFont(Font);
         GraphicBox.SetTextY(-2);
+        GraphicBox.OnDropDownClicked += _ =>
+        {
+            TilesetFilePicker picker = new TilesetFilePicker(Tileset.GraphicName);
+            picker.OnClosed += _ =>
+            {
+                if (picker.PressedOK)
+                {
+                    string OldGraphicName = Tileset.GraphicName;
+                    Tileset.GraphicName = picker.TilesetFilename;
+                    GraphicBox.SetText(Tileset.GraphicName);
+                    Tileset.CreateBitmap(true);
+                    TilesetContainer.SetTileset(Tileset, true);
+                    TilesetGraphicChangeUndoAction.Create(Tileset.ID, OldGraphicName, Tileset.GraphicName);
+                }
+            };
+        };
 
         for (int i = 0; i < 7; i++)
         {
@@ -137,7 +153,7 @@ public class DataTypeTilesets : Widget
             AutotileLabel.SetText($"Autotile {i + 1}");
             AutotileLabel.SetFont(Font);
             AutotileLabels.Add(AutotileLabel);
-            DropdownBox AutotileBox = new DropdownBox(MainBox);
+            PickerBox AutotileBox = new PickerBox(MainBox);
             AutotileBox.SetSize(162, 25);
             AutotileBox.SetFont(Font);
             AutotileBox.SetTextY(-2);
@@ -147,7 +163,7 @@ public class DataTypeTilesets : Widget
         FogLabel = new Label(MainBox);
         FogLabel.SetText("Fog Graphic");
         FogLabel.SetFont(Font);
-        FogBox = new DropdownBox(MainBox);
+        FogBox = new PickerBox(MainBox);
         FogBox.SetSize(180, 25);
         FogBox.SetFont(Font);
         FogBox.SetTextY(-2);
@@ -155,7 +171,7 @@ public class DataTypeTilesets : Widget
         PanoramaLabel = new Label(MainBox);
         PanoramaLabel.SetText("Panorama Graphic");
         PanoramaLabel.SetFont(Font);
-        PanoramaBox = new DropdownBox(MainBox);
+        PanoramaBox = new PickerBox(MainBox);
         PanoramaBox.SetSize(180, 25);
         PanoramaBox.SetFont(Font);
         PanoramaBox.SetTextY(-2);
