@@ -6,30 +6,28 @@ using System.Threading.Tasks;
 
 namespace RPGStudioMK;
 
-public class TilePassabilityChangeUndoAction : BaseUndoAction
+public class TileBushChangeUndoAction : BaseUndoAction
 {
     int TilesetID;
     int TileID;
     int TileX;
     int TileY;
-    Game.Passability OldPassability;
-    Game.Passability NewPassability;
-    bool Directional;
+    bool OldBush;
+    bool NewBush;
 
-    public TilePassabilityChangeUndoAction(int TilesetID, int TileID, int TileX, int TileY, Game.Passability OldPassability, Game.Passability NewPassability, bool Directional)
+    public TileBushChangeUndoAction(int TilesetID, int TileID, int TileX, int TileY, bool OldBush, bool NewBush)
     {
         this.TilesetID = TilesetID;
         this.TileID = TileID;
         this.TileX = TileX;
         this.TileY = TileY;
-        this.OldPassability = OldPassability;
-        this.NewPassability = NewPassability;
-        this.Directional = Directional;
+        this.OldBush = OldBush;
+        this.NewBush = NewBush;
     }
 
-    public static void Create(int TilesetID, int TileID, int TileX, int TileY, Game.Passability OldPassability, Game.Passability NewPassability, bool Directional)
+    public static void Create(int TilesetID, int TileID, int TileX, int TileY, bool OldBush, bool NewBush)
     {
-        new TilePassabilityChangeUndoAction(TilesetID, TileID, TileX, TileY, OldPassability, NewPassability, Directional);
+        new TileBushChangeUndoAction(TilesetID, TileID, TileX, TileY, OldBush, NewBush);
     }
 
     public override bool Trigger(bool IsRedo)
@@ -51,22 +49,21 @@ public class TilePassabilityChangeUndoAction : BaseUndoAction
             dtt.SetSelectedIndex(TilesetID - 1);
             Continue = false;
         }
-        int tab = Directional ? 1 : 0;
-        if (dtt.Tabs.SelectedIndex != tab)
+        if (dtt.Tabs.SelectedIndex != 3)
         {
-            dtt.Tabs.SelectTab(tab);
+            dtt.Tabs.SelectTab(3);
             Continue = false;
         }
         if (!Continue) return false;
         if (IsRedo)
         {
-            Game.Data.Tilesets[TilesetID].Passabilities[TileID] = NewPassability;
+            Game.Data.Tilesets[TilesetID].BushFlags[TileID] = NewBush;
         }
         else
         {
-            Game.Data.Tilesets[TilesetID].Passabilities[TileID] = OldPassability;
+            Game.Data.Tilesets[TilesetID].BushFlags[TileID] = OldBush;
         }
-        dtt.TilesetContainer.SetTilePassability(this.TileID, this.TileX, this.TileY, Game.Data.Tilesets[TilesetID].Passabilities[TileID]);
+        dtt.TilesetContainer.SetTileBush(this.TileID, this.TileX, this.TileY, Game.Data.Tilesets[TilesetID].BushFlags[TileID]);
         return true;
     }
 }

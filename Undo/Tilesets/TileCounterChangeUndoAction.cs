@@ -6,30 +6,28 @@ using System.Threading.Tasks;
 
 namespace RPGStudioMK;
 
-public class TilePassabilityChangeUndoAction : BaseUndoAction
+public class TileCounterChangeUndoAction : BaseUndoAction
 {
     int TilesetID;
     int TileID;
     int TileX;
     int TileY;
-    Game.Passability OldPassability;
-    Game.Passability NewPassability;
-    bool Directional;
+    bool OldCounter;
+    bool NewCounter;
 
-    public TilePassabilityChangeUndoAction(int TilesetID, int TileID, int TileX, int TileY, Game.Passability OldPassability, Game.Passability NewPassability, bool Directional)
+    public TileCounterChangeUndoAction(int TilesetID, int TileID, int TileX, int TileY, bool OldCounter, bool NewCounter)
     {
         this.TilesetID = TilesetID;
         this.TileID = TileID;
         this.TileX = TileX;
         this.TileY = TileY;
-        this.OldPassability = OldPassability;
-        this.NewPassability = NewPassability;
-        this.Directional = Directional;
+        this.OldCounter = OldCounter;
+        this.NewCounter = NewCounter;
     }
 
-    public static void Create(int TilesetID, int TileID, int TileX, int TileY, Game.Passability OldPassability, Game.Passability NewPassability, bool Directional)
+    public static void Create(int TilesetID, int TileID, int TileX, int TileY, bool OldCounter, bool NewCounter)
     {
-        new TilePassabilityChangeUndoAction(TilesetID, TileID, TileX, TileY, OldPassability, NewPassability, Directional);
+        new TileCounterChangeUndoAction(TilesetID, TileID, TileX, TileY, OldCounter, NewCounter);
     }
 
     public override bool Trigger(bool IsRedo)
@@ -51,22 +49,21 @@ public class TilePassabilityChangeUndoAction : BaseUndoAction
             dtt.SetSelectedIndex(TilesetID - 1);
             Continue = false;
         }
-        int tab = Directional ? 1 : 0;
-        if (dtt.Tabs.SelectedIndex != tab)
+        if (dtt.Tabs.SelectedIndex != 4)
         {
-            dtt.Tabs.SelectTab(tab);
+            dtt.Tabs.SelectTab(4);
             Continue = false;
         }
         if (!Continue) return false;
         if (IsRedo)
         {
-            Game.Data.Tilesets[TilesetID].Passabilities[TileID] = NewPassability;
+            Game.Data.Tilesets[TilesetID].CounterFlags[TileID] = NewCounter;
         }
         else
         {
-            Game.Data.Tilesets[TilesetID].Passabilities[TileID] = OldPassability;
+            Game.Data.Tilesets[TilesetID].CounterFlags[TileID] = OldCounter;
         }
-        dtt.TilesetContainer.SetTilePassability(this.TileID, this.TileX, this.TileY, Game.Data.Tilesets[TilesetID].Passabilities[TileID]);
+        dtt.TilesetContainer.SetTileCounter(this.TileID, this.TileX, this.TileY, Game.Data.Tilesets[TilesetID].CounterFlags[TileID]);
         return true;
     }
 }

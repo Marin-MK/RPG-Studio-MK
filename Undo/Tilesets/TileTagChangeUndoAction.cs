@@ -6,30 +6,28 @@ using System.Threading.Tasks;
 
 namespace RPGStudioMK;
 
-public class TilePassabilityChangeUndoAction : BaseUndoAction
+public class TileTagChangeUndoAction : BaseUndoAction
 {
     int TilesetID;
     int TileID;
     int TileX;
     int TileY;
-    Game.Passability OldPassability;
-    Game.Passability NewPassability;
-    bool Directional;
+    int OldTag;
+    int NewTag;
 
-    public TilePassabilityChangeUndoAction(int TilesetID, int TileID, int TileX, int TileY, Game.Passability OldPassability, Game.Passability NewPassability, bool Directional)
+    public TileTagChangeUndoAction(int TilesetID, int TileID, int TileX, int TileY, int OldTag, int NewTag)
     {
         this.TilesetID = TilesetID;
         this.TileID = TileID;
         this.TileX = TileX;
         this.TileY = TileY;
-        this.OldPassability = OldPassability;
-        this.NewPassability = NewPassability;
-        this.Directional = Directional;
+        this.OldTag = OldTag;
+        this.NewTag = NewTag;
     }
 
-    public static void Create(int TilesetID, int TileID, int TileX, int TileY, Game.Passability OldPassability, Game.Passability NewPassability, bool Directional)
+    public static void Create(int TilesetID, int TileID, int TileX, int TileY, int OldTag, int NewTag)
     {
-        new TilePassabilityChangeUndoAction(TilesetID, TileID, TileX, TileY, OldPassability, NewPassability, Directional);
+        new TileTagChangeUndoAction(TilesetID, TileID, TileX, TileY, OldTag, NewTag);
     }
 
     public override bool Trigger(bool IsRedo)
@@ -51,22 +49,21 @@ public class TilePassabilityChangeUndoAction : BaseUndoAction
             dtt.SetSelectedIndex(TilesetID - 1);
             Continue = false;
         }
-        int tab = Directional ? 1 : 0;
-        if (dtt.Tabs.SelectedIndex != tab)
+        if (dtt.Tabs.SelectedIndex != 5)
         {
-            dtt.Tabs.SelectTab(tab);
+            dtt.Tabs.SelectTab(5);
             Continue = false;
         }
         if (!Continue) return false;
         if (IsRedo)
         {
-            Game.Data.Tilesets[TilesetID].Passabilities[TileID] = NewPassability;
+            Game.Data.Tilesets[TilesetID].Tags[TileID] = NewTag;
         }
         else
         {
-            Game.Data.Tilesets[TilesetID].Passabilities[TileID] = OldPassability;
+            Game.Data.Tilesets[TilesetID].Tags[TileID] = OldTag;
         }
-        dtt.TilesetContainer.SetTilePassability(this.TileID, this.TileX, this.TileY, Game.Data.Tilesets[TilesetID].Passabilities[TileID]);
+        dtt.TilesetContainer.SetTileTag(this.TileID, this.TileX, this.TileY, Game.Data.Tilesets[TilesetID].Tags[TileID]);
         return true;
     }
 }

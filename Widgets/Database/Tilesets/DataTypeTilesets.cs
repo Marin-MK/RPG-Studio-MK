@@ -94,7 +94,6 @@ public class DataTypeTilesets : Widget
 
         MainBox = new Container(Grid);
         MainBox.SetGrid(1, 1);
-        MainBox.SetZIndex(1);
 
         Fade = new VignetteFade(Grid);
         Fade.SetGrid(1, 1);

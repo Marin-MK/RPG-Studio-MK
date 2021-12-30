@@ -11,6 +11,8 @@ public class Tileset : ICloneable
     public List<Passability> Passabilities = new List<Passability>();
     public List<int> Priorities = new List<int>();
     public List<int> Tags = new List<int>();
+    public List<bool> BushFlags = new List<bool>();
+    public List<bool> CounterFlags = new List<bool>();
 
     // RMXP properties
     public int PanoramaHue;
@@ -24,10 +26,6 @@ public class Tileset : ICloneable
     public int FogBlendType;
     public string BattlebackName;
     public List<Autotile> Autotiles = new List<Autotile>();
-    /// <summary>
-    /// List of tile IDs that have the bush flag set.
-    /// </summary>
-    public List<int> BushFlags = new List<int>();
 
     /// <summary>
     /// If an autotile's top center tile is equal to another autotile's top left tile, then this autotile
@@ -98,9 +96,16 @@ public class Tileset : ICloneable
             int code = (int)Ruby.Integer.FromPtr(Compatibility.RMXP.Table.Get(passability, i));
             if ((code & 64) != 0)
             {
-                BushFlags.Add(i);
-                code -= 64;
+                BushFlags.Add(true);
+                code ^= 64;
             }
+            else BushFlags.Add(false);
+            if ((code & 128) != 0)
+            {
+                CounterFlags.Add(true);
+                code ^= 128;
+            }
+            else CounterFlags.Add(false);
             Passabilities.Add((Passability)15 - code);
         }
         IntPtr priorities = Ruby.GetIVar(data, "@priorities");
@@ -187,7 +192,8 @@ public class Tileset : ICloneable
         for (int i = 0; i < this.Passabilities.Count; i++)
         {
             int code = 15 - (int)this.Passabilities[i];
-            if (BushFlags.Contains(i)) code += 64;
+            if (BushFlags[i]) code += 64;
+            if (CounterFlags[i]) code += 128;
             Compatibility.RMXP.Table.Set(passages, i, Ruby.Integer.ToPtr(code));
         }
         IntPtr priorities = Ruby.Funcall(Compatibility.RMXP.Table.Class, "new", Ruby.Integer.ToPtr(this.Priorities.Count));
@@ -282,6 +288,8 @@ public class Tileset : ICloneable
         t.Passabilities = new List<Passability>(this.Passabilities);
         t.Priorities = new List<int>(this.Priorities);
         t.Tags = new List<int>(this.Tags);
+        t.BushFlags = new List<bool>(this.BushFlags);
+        t.CounterFlags = new List<bool>(this.CounterFlags);
         t.PanoramaHue = this.PanoramaHue;
         t.PanoramaName = this.PanoramaName;
         t.FogName = this.FogName;
@@ -293,7 +301,6 @@ public class Tileset : ICloneable
         t.FogBlendType = this.FogBlendType;
         t.BattlebackName = this.BattlebackName;
         t.Autotiles = this.Autotiles.ConvertAll(a => (Autotile)a?.Clone());
-        t.BushFlags = new List<int>(this.BushFlags);
         t.TilesetBitmap = this.TilesetBitmap;
         t.TilesetListBitmap = this.TilesetListBitmap;
         return t;

@@ -6,30 +6,28 @@ using System.Threading.Tasks;
 
 namespace RPGStudioMK;
 
-public class TilePassabilityChangeUndoAction : BaseUndoAction
+public class TilePriorityChangeUndoAction : BaseUndoAction
 {
     int TilesetID;
     int TileID;
     int TileX;
     int TileY;
-    Game.Passability OldPassability;
-    Game.Passability NewPassability;
-    bool Directional;
+    int OldPriority;
+    int NewPriority;
 
-    public TilePassabilityChangeUndoAction(int TilesetID, int TileID, int TileX, int TileY, Game.Passability OldPassability, Game.Passability NewPassability, bool Directional)
+    public TilePriorityChangeUndoAction(int TilesetID, int TileID, int TileX, int TileY, int OldPriority, int NewPriority)
     {
         this.TilesetID = TilesetID;
         this.TileID = TileID;
         this.TileX = TileX;
         this.TileY = TileY;
-        this.OldPassability = OldPassability;
-        this.NewPassability = NewPassability;
-        this.Directional = Directional;
+        this.OldPriority = OldPriority;
+        this.NewPriority = NewPriority;
     }
 
-    public static void Create(int TilesetID, int TileID, int TileX, int TileY, Game.Passability OldPassability, Game.Passability NewPassability, bool Directional)
+    public static void Create(int TilesetID, int TileID, int TileX, int TileY, int OldPriority, int NewPriority)
     {
-        new TilePassabilityChangeUndoAction(TilesetID, TileID, TileX, TileY, OldPassability, NewPassability, Directional);
+        new TilePriorityChangeUndoAction(TilesetID, TileID, TileX, TileY, OldPriority, NewPriority);
     }
 
     public override bool Trigger(bool IsRedo)
@@ -51,22 +49,21 @@ public class TilePassabilityChangeUndoAction : BaseUndoAction
             dtt.SetSelectedIndex(TilesetID - 1);
             Continue = false;
         }
-        int tab = Directional ? 1 : 0;
-        if (dtt.Tabs.SelectedIndex != tab)
+        if (dtt.Tabs.SelectedIndex != 2)
         {
-            dtt.Tabs.SelectTab(tab);
+            dtt.Tabs.SelectTab(2);
             Continue = false;
         }
         if (!Continue) return false;
         if (IsRedo)
         {
-            Game.Data.Tilesets[TilesetID].Passabilities[TileID] = NewPassability;
+            Game.Data.Tilesets[TilesetID].Priorities[TileID] = NewPriority;
         }
         else
         {
-            Game.Data.Tilesets[TilesetID].Passabilities[TileID] = OldPassability;
+            Game.Data.Tilesets[TilesetID].Priorities[TileID] = OldPriority;
         }
-        dtt.TilesetContainer.SetTilePassability(this.TileID, this.TileX, this.TileY, Game.Data.Tilesets[TilesetID].Passabilities[TileID]);
+        dtt.TilesetContainer.SetTilePriority(this.TileID, this.TileX, this.TileY, Game.Data.Tilesets[TilesetID].Priorities[TileID]);
         return true;
     }
 }
