@@ -47,6 +47,9 @@ public class TilesetDisplayContainer : Widget
         {
             this.Tileset = Tileset;
             Sprites["tileset"].Bitmap = null;
+            Sprites["autotiles"].Bitmap?.Dispose();
+            Sprites["vertical"].Bitmap?.Dispose();
+            Sprites["horizontal"].Visible = false;
             if (this.Tileset != null && Tileset.TilesetListBitmap != null)
             {
                 Sprites["tileset"].Bitmap = Tileset.TilesetListBitmap;
@@ -55,14 +58,13 @@ public class TilesetDisplayContainer : Widget
                 for (int i = 1; i < tilecount; i++)
                 {
                     Sprites["horizontal"].MultiplePositions.Add(new Point(0, 33 * i - 1));
+                    Sprites["horizontal"].Visible = true;
                 }
-                Sprites["vertical"].Bitmap?.Dispose();
                 Sprites["vertical"].Bitmap = new SolidBitmap(1, Tileset.TilesetListBitmap.Height, new Color(121, 121, 122));
                 for (int i = 1; i < 8; i++)
                 {
                     Sprites["vertical"].MultiplePositions.Add(new Point(i * 33 - 1, 0));
                 }
-                Sprites["autotiles"].Bitmap?.Dispose();
                 Sprites["autotiles"].Bitmap = new Bitmap(263, 32);
                 Sprites["autotiles"].Bitmap.Unlock();
                 for (int i = 0; i < Tileset.Autotiles.Count; i++)

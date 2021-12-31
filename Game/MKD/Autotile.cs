@@ -78,6 +78,7 @@ public class Autotile : ICloneable
     {
         if (this.GraphicName != GraphicName)
         {
+            this.Name = GraphicName;
             this.GraphicName = GraphicName;
             this.CreateBitmap(true);
         }
@@ -89,8 +90,16 @@ public class Autotile : ICloneable
         {
             if (this.AutotileBitmap != null) this.AutotileBitmap.Dispose();
             this.OverlappableBy.Clear();
-            Bitmap bmp = new Bitmap($"{Data.ProjectPath}\\Graphics\\Autotiles\\{this.GraphicName}.png");
+            string filename = $"{Data.ProjectPath}\\Graphics\\Autotiles\\{this.GraphicName}.png";
+            Bitmap bmp = null;
+            if (Bitmap.FindRealFilename(filename) != null)
+            {
+                bmp = new Bitmap(filename);
+            }
             this.AutotileBitmap = bmp;
+            if (bmp?.Height == 32) this.Format = AutotileFormat.Single;
+            else if (bmp?.Height == 96) this.Format = AutotileFormat.RMVX;
+            else this.Format = AutotileFormat.RMXP;
         }
     }
 

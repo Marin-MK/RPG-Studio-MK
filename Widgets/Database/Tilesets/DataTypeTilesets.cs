@@ -12,6 +12,9 @@ public class DataTypeTilesets : Widget
     public Tileset Tileset { get { return TilesetList.SelectedIndex >= 0 ? (Tileset) TilesetList.SelectedItem.Object : null; } }
     public TextBox NameBox;
     public PickerBox GraphicBox;
+    public List<PickerBox> AutotileBoxes = new List<PickerBox>();
+    public PickerBox FogBox;
+    public PickerBox PanoramaBox;
 
     Grid Grid;
     Container MainBox;
@@ -20,11 +23,8 @@ public class DataTypeTilesets : Widget
     Label NameLabel;
     Label GraphicLabel;
     Label FogLabel;
-    PickerBox FogBox;
     Label PanoramaLabel;
-    PickerBox PanoramaBox;
     List<Label> AutotileLabels = new List<Label>();
-    List<PickerBox> AutotileBoxes = new List<PickerBox>();
     Container ScrollContainer;
     Container AdjustedScrollContainer;
 
@@ -144,7 +144,7 @@ public class DataTypeTilesets : Widget
                 if (picker.PressedOK)
                 {
                     string OldGraphicName = Tileset.GraphicName;
-                    Tileset.GraphicName = picker.TilesetFilename;
+                    Tileset.GraphicName = picker.ChosenFilename;
                     GraphicBox.SetText(Tileset.GraphicName);
                     Tileset.CreateBitmap(true);
                     TilesetContainer.SetTileset(Tileset, true);
@@ -163,6 +163,35 @@ public class DataTypeTilesets : Widget
             AutotileBox.SetSize(162, 25);
             AutotileBox.SetFont(Font);
             AutotileBox.SetTextY(-2);
+            int id = i;
+            AutotileBox.OnDropDownClicked += _ =>
+            {
+                AutotileFilePicker picker = new AutotileFilePicker(Tileset.Autotiles[id]?.GraphicName);
+                picker.OnClosed += _ =>
+                {
+                    if (picker.PressedOK)
+                    {
+                        string OldGraphicName = Tileset.Autotiles[id]?.GraphicName;
+                        int autotileid = Tileset.ID * 7 + id;
+                        if (Data.Autotiles[autotileid] == null)
+                        {
+                            Autotile a = new Autotile();
+                            a.ID = autotileid;
+                            a.Name = picker.ChosenFilename ?? "";
+                            a.Passability = Tileset.Passabilities[(id + 1) * 48];
+                            a.Priority = Tileset.Priorities[(id + 1) * 48];
+                            a.Tag = Tileset.Tags[(id + 1) * 48];
+                            Data.Autotiles[autotileid] = a;
+                            Tileset.Autotiles[id] = Data.Autotiles[autotileid];
+                        }
+                        Autotile autotile = Data.Autotiles[autotileid];
+                        autotile.SetGraphic(picker.ChosenFilename ?? "");
+                        AutotileBox.SetText(autotile.GraphicName);
+                        TilesetContainer.SetTileset(Tileset, true);
+                        TilesetAutotileChangeUndoAction.Create(Tileset.ID, id, OldGraphicName, autotile.GraphicName);
+                    }
+                };
+            };
             AutotileBoxes.Add(AutotileBox);
         }
 

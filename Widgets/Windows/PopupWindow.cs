@@ -67,7 +67,7 @@ public class PopupWindow : Widget, IPopupWindow
         for (int i = 0; i < Buttons.Count; i++)
         {
             Button b = Buttons[i];
-            int x = Buttons.Count > 0 ? Buttons[Buttons.Count - 1].Position.X - b.Size.Width : Size.Width - b.Size.Width - 4;
+            int x = i > 0 ? Buttons[i - 1].Position.X - b.Size.Width : Size.Width - b.Size.Width - 4;
             int y = Size.Height - b.Size.Height - 4;
             b.SetPosition(x - WindowEdges, y - WindowEdges);
         }
