@@ -48,7 +48,7 @@ public class TilesetFilePicker : PopupWindow
         previewbox = new GroupBox(this);
         previewbox.SetPosition(207, 51);
         previewbox.SetSize(273, 416);
-        previewbox.Sprites["line"] = new Sprite(previewbox.Viewport, new SolidBitmap(1, 405, new Color(40, 62, 84)));
+        previewbox.Sprites["line"] = new Sprite(previewbox.Viewport, new SolidBitmap(1, 412, new Color(40, 62, 84)));
         previewbox.Sprites["line"].X = 260;
         previewbox.Sprites["line"].Y = 2;
         scroll = new Container(previewbox);

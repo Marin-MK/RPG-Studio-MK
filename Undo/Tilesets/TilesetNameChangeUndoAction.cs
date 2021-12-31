@@ -9,19 +9,19 @@ namespace RPGStudioMK;
 public class TilesetNameChangeUndoAction : BaseUndoAction
 {
     int TilesetID;
-    TextAreaState OldState;
-    TextAreaState NewState;
+    string OldText;
+    string NewText;
 
-    public TilesetNameChangeUndoAction(int TilesetID, TextAreaState OldState, TextAreaState NewState)
+    public TilesetNameChangeUndoAction(int TilesetID, string OldText, string NewText)
     {
         this.TilesetID = TilesetID;
-        this.OldState = OldState;
-        this.NewState = NewState;
+        this.OldText = OldText;
+        this.NewText = NewText;
     }
 
-    public static void Create(int TilesetID, TextAreaState OldState, TextAreaState NewState)
+    public static void Create(int TilesetID, string OldText, string NewText)
     {
-        new TilesetNameChangeUndoAction(TilesetID, OldState, NewState);
+        new TilesetNameChangeUndoAction(TilesetID, OldText, NewText);
     }
 
     public override bool Trigger(bool IsRedo)
@@ -46,21 +46,14 @@ public class TilesetNameChangeUndoAction : BaseUndoAction
         if (!Continue) return false;
         if (IsRedo)
         {
-            Game.Data.Tilesets[TilesetID].Name = NewState.Text;
-            dtt.NameBox.SetState(NewState);
+            Game.Data.Tilesets[TilesetID].Name = NewText;
         }
         else
         {
-            Game.Data.Tilesets[TilesetID].Name = OldState.Text;
-            dtt.NameBox.SetState(OldState);
+            Game.Data.Tilesets[TilesetID].Name = OldText;
         }
+        dtt.NameBox.SetText(Game.Data.Tilesets[TilesetID].Name);
         dtt.RedrawList();
-        dtt.OldNameBoxState = dtt.NameBox.GetState();
         return true;
-    }
-
-    public override string ToString()
-    {
-        return OldState.Text + " -> " + NewState.Text;
     }
 }

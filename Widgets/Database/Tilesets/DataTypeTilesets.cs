@@ -11,7 +11,6 @@ public class DataTypeTilesets : Widget
     public TilesetDisplayContainer TilesetContainer;
     public Tileset Tileset { get { return TilesetList.SelectedIndex >= 0 ? (Tileset) TilesetList.SelectedItem.Object : null; } }
     public TextBox NameBox;
-    public TextAreaState OldNameBoxState;
     public PickerBox GraphicBox;
 
     Grid Grid;
@@ -114,13 +113,20 @@ public class DataTypeTilesets : Widget
         NameBox.SetSize(180, 25);
         NameBox.SetFont(Font);
         NameBox.SetTextY(-2);
-        NameBox.OnTextChanged += _ =>
+        NameBox.OnTextChanged += delegate (TextEventArgs e)
         {
             if (Editor.Undoing || Editor.Redoing || ChangingSelection) return;
-            Tileset.Name = NameBox.Text;
+            Tileset.Name = e.Text;
             RedrawList();
-            TilesetNameChangeUndoAction.Create(Tileset.ID, OldNameBoxState, NameBox.GetState());
-            OldNameBoxState = NameBox.GetState();
+        };
+        string OldText = null;
+        NameBox.TextArea.OnWidgetSelected += _ =>
+        {
+            OldText = NameBox.Text;
+        };
+        NameBox.TextArea.OnWidgetDeselected += _ =>
+        {
+            TilesetNameChangeUndoAction.Create(Tileset.ID, OldText, NameBox.Text);
         };
 
         GraphicLabel = new Label(MainBox);
@@ -320,7 +326,6 @@ public class DataTypeTilesets : Widget
         Tileset t = this.Tileset;
         ChangingSelection = true;
         NameBox.SetText(t.Name);
-        OldNameBoxState = NameBox.GetState();
         GraphicBox.SetText(t.GraphicName);
         for (int i = 0; i < 7; i++)
         {

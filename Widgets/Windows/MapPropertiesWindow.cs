@@ -48,7 +48,7 @@ public class MapPropertiesWindow : PopupWindow
         MapName.SetPosition(6, 22);
         MapName.SetSize(136, 27);
         MapName.SetText(Map.Name);
-        MapName.OnTextChanged += delegate (BaseEventArgs e)
+        MapName.OnTextChanged += _ =>
         {
             this.Map.Name = MapName.Text;
         };
