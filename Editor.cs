@@ -163,7 +163,7 @@ public static class Editor
     /// </summary>
     public static void Undo(bool Internal = false)
     {
-        if (UndoList.Count > 0 && (CanUndo || Internal))
+        if (UndoList.Count > 0 && (CanUndo || Internal) && !Input.TextInputActive())
         {
             Undoing = true;
             UndoList[UndoList.Count - 1].RevertTo(false);
@@ -179,7 +179,7 @@ public static class Editor
     /// </summary>
     public static void Redo()
     {
-        if (RedoList.Count > 0 && CanUndo)
+        if (RedoList.Count > 0 && CanUndo && !Input.TextInputActive())
         {
             Redoing = true;
             RedoList[RedoList.Count - 1].RevertTo(true);
