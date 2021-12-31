@@ -27,6 +27,7 @@ public class DataTypeTilesets : Widget
     List<Label> AutotileLabels = new List<Label>();
     Container ScrollContainer;
     Container AdjustedScrollContainer;
+    MultilineLabel TagDetailLabel;
 
     bool ChangingSelection = false;
 
@@ -211,6 +212,31 @@ public class DataTypeTilesets : Widget
         PanoramaBox.SetFont(Font);
         PanoramaBox.SetTextY(-2);
 
+        TagDetailLabel = new MultilineLabel(MainBox);
+        TagDetailLabel.SetFont(Font);
+        TagDetailLabel.SetText(
+@"0 = None
+1 = Ledge
+2 = Tall grass
+3 = Sand
+4 = Rocky
+5 = Deep water
+6 = Still water
+7 = Water
+8 = Waterfall
+9 = Waterfall crest
+10 = Very tall grass
+11 = Underwater grass
+12 = Ice
+13 = Neutral
+14 = Sooty grass
+15 = Bridge
+16 = Puddle
+17 = No effect"
+        );
+        TagDetailLabel.SetPosition(680, 18);
+        TagDetailLabel.SetWidth(400);
+
         ScrollContainer = new Container(MainBox);
         ScrollContainer.SetPosition(386, 18);
         ScrollContainer.SetSize(263, 600);
@@ -239,6 +265,8 @@ public class DataTypeTilesets : Widget
     {
         base.SizeChanged(e);
         Fade.SetSize(MainBox.Size);
+        TagDetailLabel.SetVisible(Window.Width >= 1210);
+        bool AutoscrollingMainBox = MainBox.VAutoScroll;
         if (Window.Width < 1036)
         {
             if (Window.Width < 720)
@@ -329,6 +357,11 @@ public class DataTypeTilesets : Widget
             MainBox.Sprites["box"].X = ScrollContainer.Position.X - 1;
             MainBox.Sprites["box"].Y = ScrollContainer.Position.Y - 1;
             MainBox.Sprites["box"].Visible = true;
+        }
+        if (AutoscrollingMainBox != MainBox.VAutoScroll)
+        {
+            MainBox.VScrollBar.SetValue(0);
+            ScrollContainer.VScrollBar.SetValue(0);
         }
     }
 
