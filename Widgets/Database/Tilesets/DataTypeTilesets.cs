@@ -203,6 +203,14 @@ public class DataTypeTilesets : Widget
         FogBox.SetSize(180, 25);
         FogBox.SetFont(Font);
         FogBox.SetTextY(-2);
+        FogBox.OnDropDownClicked += _ =>
+        {
+            FogFilePicker picker = new FogFilePicker(Tileset);
+            picker.OnClosed += _ =>
+            {
+
+            };
+        };
 
         PanoramaLabel = new Label(MainBox);
         PanoramaLabel.SetText("Panorama Graphic");
@@ -211,6 +219,22 @@ public class DataTypeTilesets : Widget
         PanoramaBox.SetSize(180, 25);
         PanoramaBox.SetFont(Font);
         PanoramaBox.SetTextY(-2);
+        PanoramaBox.OnDropDownClicked = _ =>
+        {
+            PanoramaFilePicker picker = new PanoramaFilePicker(Tileset.PanoramaName, Tileset.PanoramaHue);
+            picker.OnClosed = _ =>
+            {
+                if (picker.PressedOK)
+                {
+                    string OldPanoramaName = Tileset.PanoramaName;
+                    int OldPanoramaHue = Tileset.PanoramaHue;
+                    Tileset.PanoramaName = picker.ChosenPanoramaName;
+                    Tileset.PanoramaHue = picker.ChosenPanoramaHue;
+                    PanoramaBox.SetText(Tileset.PanoramaName);
+                    TilesetPanoramaChangeUndoAction.Create(Tileset.ID, OldPanoramaName, Tileset.PanoramaName, OldPanoramaHue, Tileset.PanoramaHue);
+                }
+            };
+        };
 
         TagDetailLabel = new MultilineLabel(MainBox);
         TagDetailLabel.SetFont(Font);

@@ -26,19 +26,30 @@ public class TilesetDisplayContainer : Widget
             Sprites[$"tag{i}"].Z = 1;
         }
         Sprites["big_up"] = new Sprite(this.Viewport);
+        Sprites["big_up"].Z = 1;
         Sprites["big_left"] = new Sprite(this.Viewport);
+        Sprites["big_left"].Z = 1;
         Sprites["big_right"] = new Sprite(this.Viewport);
+        Sprites["big_right"].Z = 1;
         Sprites["big_down"] = new Sprite(this.Viewport);
+        Sprites["big_down"].Z = 1;
         Sprites["small_up"] = new Sprite(this.Viewport);
+        Sprites["small_up"].Z = 1;
         Sprites["small_left"] = new Sprite(this.Viewport);
+        Sprites["small_left"].Z = 1;
         Sprites["small_right"] = new Sprite(this.Viewport);
+        Sprites["small_right"].Z = 1;
         Sprites["small_down"] = new Sprite(this.Viewport);
+        Sprites["small_down"].Z = 1;
         for (int i = 0; i <= 5; i++)
         {
             Sprites[$"prio{i}"] = new Sprite(this.Viewport);
+            Sprites[$"prio{i}"].Z = 1;
         }
         Sprites["bush"] = new Sprite(this.Viewport);
+        Sprites["bush"].Z = 1;
         Sprites["counter"] = new Sprite(this.Viewport);
+        Sprites["counter"].Z = 1;
     }
 
     public void SetTileset(Game.Tileset Tileset, bool ForceRedraw = false)
@@ -127,6 +138,7 @@ public class TilesetDisplayContainer : Widget
                 LoadTerrainTags();
                 break;
         }
+        this.Viewport.Update();
     }
 
     void LoadPassabilities()
@@ -177,12 +189,10 @@ public class TilesetDisplayContainer : Widget
         Sprites["small_down"].MultiplePositions.Clear();
         if (Tileset != null)
         {
-            for (int i = 384; i < Tileset.Passabilities.Count; i++)
+            for (int i = 0; i < 8; i++)
             {
-                Game.Passability tile = Tileset.Passabilities[i];
-                int x = 33 * ((i - 384) % 8);
-                int y = 33 * ((int) Math.Floor((i - 384) / 8d) + 1);
-                Point p = new Point(x, y);
+                Game.Passability tile = Tileset.Passabilities[i * 48];
+                Point p = new Point(i * 33, 0);
                 if ((tile & Game.Passability.Up) != 0) Sprites["big_up"].MultiplePositions.Add(p);
                 else Sprites["small_up"].MultiplePositions.Add(p);
                 if ((tile & Game.Passability.Left) != 0) Sprites["big_left"].MultiplePositions.Add(p);
@@ -192,10 +202,12 @@ public class TilesetDisplayContainer : Widget
                 if ((tile & Game.Passability.Down) != 0) Sprites["big_down"].MultiplePositions.Add(p);
                 else Sprites["small_down"].MultiplePositions.Add(p);
             }
-            for (int i = 0; i < 8; i++)
+            for (int i = 384; i < Tileset.Passabilities.Count; i++)
             {
-                Game.Passability tile = Tileset.Passabilities[i * 48];
-                Point p = new Point(i * 33, 0);
+                Game.Passability tile = Tileset.Passabilities[i];
+                int x = 33 * ((i - 384) % 8);
+                int y = 33 * ((int) Math.Floor((i - 384) / 8d) + 1);
+                Point p = new Point(x, y);
                 if ((tile & Game.Passability.Up) != 0) Sprites["big_up"].MultiplePositions.Add(p);
                 else Sprites["small_up"].MultiplePositions.Add(p);
                 if ((tile & Game.Passability.Left) != 0) Sprites["big_left"].MultiplePositions.Add(p);

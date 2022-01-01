@@ -9,10 +9,12 @@ public abstract class AbstractFilePicker : PopupWindow
     public bool PressedOK;
     public string ChosenFilename;
 
-    ListBox List;
-    GroupBox previewbox;
-    PictureBox image;
-    Container scroll;
+    protected ListBox List;
+    protected GroupBox previewbox;
+    protected PictureBox image;
+    protected Container scroll;
+
+    protected Bitmap CurrentBitmap;
 
     public AbstractFilePicker(string Label, string Directory, string InitialFilename = null)
     {
@@ -72,27 +74,30 @@ public abstract class AbstractFilePicker : PopupWindow
         Center();
     }
 
-    public void UpdatePreview()
+    public virtual void UpdatePreview()
     {
         string filename = (string)List.SelectedItem.Object;
         image.Sprite.Bitmap?.Dispose();
         image.Sprite.Bitmap = null;
         image.SetSize(1, 1);
+        CurrentBitmap?.Dispose();
+        CurrentBitmap = null;
         if (string.IsNullOrEmpty(filename) || !Bitmap.FileExistsCaseSensitive(filename)) return;
-        image.Sprite.Bitmap = new Bitmap(filename);
+        CurrentBitmap = new Bitmap(filename);
+        image.Sprite.Bitmap = CurrentBitmap;
         image.SetSize(image.Sprite.Bitmap.Width, image.Sprite.Bitmap.Height);
         scroll.VScrollBar.SetValue(0);
         scroll.HScrollBar.SetValue(0);
     }
 
-    public void OK(BaseEventArgs e)
+    public virtual void OK(BaseEventArgs e)
     {
         this.PressedOK = true;
         this.ChosenFilename = List.SelectedItem.Object == null ? "" : List.SelectedItem.Name;
         Close();
     }
 
-    public void Cancel(BaseEventArgs e)
+    public virtual void Cancel(BaseEventArgs e)
     {
         this.PressedOK = false;
         this.ChosenFilename = null;
