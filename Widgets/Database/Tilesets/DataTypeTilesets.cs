@@ -205,10 +205,31 @@ public class DataTypeTilesets : Widget
         FogBox.SetTextY(-2);
         FogBox.OnDropDownClicked += _ =>
         {
-            FogFilePicker picker = new FogFilePicker(Tileset);
+            FogFilePicker picker = new FogFilePicker(Tileset.FogName, Tileset.FogHue,
+                Tileset.FogOpacity, Tileset.FogBlendType, Tileset.FogZoom, Tileset.FogSX, Tileset.FogSY);
             picker.OnClosed += _ =>
             {
-
+                if (picker.PressedOK)
+                {
+                    string OldFogName = Tileset.FogName;
+                    int OldFogHue = Tileset.FogHue;
+                    byte OldFogOpacity = Tileset.FogOpacity;
+                    int OldFogBlendType = Tileset.FogBlendType;
+                    int OldFogZoom = Tileset.FogZoom;
+                    int OldFogSX = Tileset.FogSX;
+                    int OldFogSY = Tileset.FogSY;
+                    Tileset.FogName = picker.ChosenFogName;
+                    Tileset.FogHue = picker.ChosenFogHue;
+                    Tileset.FogOpacity = picker.ChosenFogOpacity;
+                    Tileset.FogBlendType = picker.ChosenFogBlendType;
+                    Tileset.FogZoom = picker.ChosenFogZoom;
+                    Tileset.FogSX = picker.ChosenFogSX;
+                    Tileset.FogSY = picker.ChosenFogSY;
+                    FogBox.SetText(Tileset.FogName);
+                    TilesetFogChangeUndoAction.Create(Tileset.ID, OldFogName, Tileset.FogName, OldFogHue, Tileset.FogHue,
+                                                      OldFogOpacity, Tileset.FogOpacity, OldFogBlendType, Tileset.FogBlendType,
+                                                      OldFogZoom, Tileset.FogZoom, OldFogSX, Tileset.FogSX, OldFogSY, Tileset.FogSY);
+                }
             };
         };
 
@@ -260,6 +281,7 @@ public class DataTypeTilesets : Widget
         );
         TagDetailLabel.SetPosition(680, 18);
         TagDetailLabel.SetWidth(400);
+        TagDetailLabel.SetVisible(false);
 
         ScrollContainer = new Container(MainBox);
         ScrollContainer.SetPosition(386, 18);
@@ -289,7 +311,7 @@ public class DataTypeTilesets : Widget
     {
         base.SizeChanged(e);
         Fade.SetSize(MainBox.Size);
-        TagDetailLabel.SetVisible(Window.Width >= 1210);
+        TagDetailLabel.SetVisible(TilesetContainer.Mode == TilesetDisplayMode.TerrainTag && Window.Width >= 1210);
         bool AutoscrollingMainBox = MainBox.VAutoScroll;
         if (Window.Width < 1036)
         {
@@ -433,5 +455,6 @@ public class DataTypeTilesets : Widget
         else if (Tabs.SelectedIndex == 3) TilesetContainer.SetMode(TilesetDisplayMode.BushFlag);
         else if (Tabs.SelectedIndex == 4) TilesetContainer.SetMode(TilesetDisplayMode.CounterFlag);
         else if (Tabs.SelectedIndex == 5) TilesetContainer.SetMode(TilesetDisplayMode.TerrainTag);
+        TagDetailLabel.SetVisible(TilesetContainer.Mode == TilesetDisplayMode.TerrainTag && Window.Width >= 1210);
     }
 }

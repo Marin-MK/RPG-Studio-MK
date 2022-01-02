@@ -20,7 +20,7 @@ public class Tileset : ICloneable
     public string FogName;
     public int FogSX;
     public int FogSY;
-    public int FogOpacity;
+    public byte FogOpacity;
     public int FogHue;
     public int FogZoom;
     public int FogBlendType;
@@ -125,7 +125,7 @@ public class Tileset : ICloneable
         this.FogName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@fog_name"));
         this.FogSX = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_sx"));
         this.FogSY = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_sy"));
-        this.FogOpacity = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_opacity"));
+        this.FogOpacity = (byte) Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_opacity"));
         this.FogHue = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_hue"));
         this.FogZoom = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_zoom"));
         this.FogBlendType = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@fog_blend_type"));
