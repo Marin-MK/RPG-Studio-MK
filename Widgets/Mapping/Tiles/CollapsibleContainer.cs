@@ -52,7 +52,7 @@ public class CollapsibleContainer : Container
             }
             else
             {
-                int maxheight = 0;
+                int maxheight = 22;
                 foreach (Widget w in this.Widgets)
                 {
                     int h = w.Position.Y + w.Size.Height;

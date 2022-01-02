@@ -180,6 +180,7 @@ public class MapImageWidget : Widget
                     int tileset_index = MapData.Layers[Layer].Tiles[y * MapData.Width + x].Index;
                     int tileset_id = MapData.TilesetIDs[tileset_index];
                     Bitmap tilesetimage = Data.Tilesets[tileset_id].TilesetBitmap;
+                    if (tilesetimage == null) continue;
                     int tilesetx = tile_id % 8;
                     int tilesety = (int)Math.Floor(tile_id / 8d);
                     bmp.Build(new Rect(mapx, mapy, 32, 32), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
@@ -192,6 +193,7 @@ public class MapImageWidget : Widget
                     if (autotile == null) continue;
                     if (autotile.AnimateSpeed > 0) AnimatedAutotiles.Add(new List<int>() { Layer, x, y, autotile_id, tile_id });
                     Bitmap autotileimage = autotile.AutotileBitmap;
+                    if (autotileimage == null) continue;
                     if (autotile.Format == AutotileFormat.Single)
                     {
                         int AnimX = 0;
@@ -832,11 +834,13 @@ public class MapImageWidget : Widget
             this.Sprites[Layer.ToString()].Bitmap.FillRect(X * 32, Y * 32, 32, 32, Color.ALPHA);
             if (Tile.TileType == TileType.Tileset)
             {
-                this.Sprites[Layer.ToString()].Bitmap.Build(
-                    X * 32, Y * 32,
-                    Data.Tilesets[MapData.TilesetIDs[Tile.Index]].TilesetBitmap,
-                    new Rect(32 * (Tile.ID % 8), 32 * (int)Math.Floor(Tile.ID / 8d), 32, 32)
-                );
+                Bitmap bmp = Data.Tilesets[MapData.TilesetIDs[Tile.Index]].TilesetBitmap;
+                if (bmp != null)
+                    this.Sprites[Layer.ToString()].Bitmap.Build(
+                        X * 32, Y * 32,
+                        bmp,
+                        new Rect(32 * (Tile.ID % 8), 32 * (int)Math.Floor(Tile.ID / 8d), 32, 32)
+                    );
             }
             else if (Tile.TileType == TileType.Autotile)
             {
@@ -869,12 +873,12 @@ public class MapImageWidget : Widget
     public void DrawAutotile(int Layer, int X, int Y, int AutotileID, int TileID, int Frame)
     {
         Autotile autotile = Data.Autotiles[AutotileID];
+        if (autotile.AutotileBitmap != null) return;
         int AnimX = 0;
         if (autotile.Format == AutotileFormat.Single)
         {
             AnimX = (Frame * 32) % autotile.AutotileBitmap.Width;
-            this.Sprites[Layer.ToString()].Bitmap.Build(new Rect(32 * X, 32 * Y, 32, 32), autotile.AutotileBitmap,
-                new Rect(AnimX, 0, 32, 32));
+            this.Sprites[Layer.ToString()].Bitmap.Build(new Rect(32 * X, 32 * Y, 32, 32), autotile.AutotileBitmap, new Rect(AnimX, 0, 32, 32));
         }
         else
         {
@@ -1039,10 +1043,11 @@ public class MapImageWidget : Widget
                     {
                         AnimX = ((int)Math.Floor((double)AnimateCount / autotile.AnimateSpeed) * 32) % autotile.AutotileBitmap.Width;
                         if (!Editor.GeneralSettings.ShowMapAnimations) AnimX = 0;
-                        this.Sprites[Layer.ToString()].Bitmap.Build(new Rect(32 * X, 32 * Y, 32, 32), autotile.AutotileBitmap,
-                            new Rect(AnimX, 0, 32, 32));
+                        if (autotile.AutotileBitmap != null) 
+                            this.Sprites[Layer.ToString()].Bitmap.Build(new Rect(32 * X, 32 * Y, 32, 32), autotile.AutotileBitmap,
+                                new Rect(AnimX, 0, 32, 32));
                     }
-                    else
+                    else if (autotile.AutotileBitmap != null)
                     {
                         AnimX = ((int)Math.Floor((double)AnimateCount / autotile.AnimateSpeed) * 96) % autotile.AutotileBitmap.Width;
                         if (!Editor.GeneralSettings.ShowMapAnimations) AnimX = 0;

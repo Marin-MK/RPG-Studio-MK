@@ -304,28 +304,35 @@ public class TilesPanel : Widget
             c.SetText(tileset.Name);
             c.SetMargin(0, 0, 0, 8);
             c.OnCollapsedChanged += delegate (BaseEventArgs e) { UpdateCursor(); };
-            c.SetSize(MainContainer.Size.Width - 13, tileset.TilesetListBitmap.Height + 23);
             TilesetContainers.Add(c);
-            if (!tileset.TilesetListBitmap.IsChunky)
+            if (tileset.TilesetListBitmap == null)
             {
-                PictureBox image = new PictureBox(c);
-                image.SetPosition(0, 23);
-                image.Sprite.Bitmap = tileset.TilesetListBitmap;
-                image.Sprite.DestroyBitmap = false;
-                image.SetSize(image.Sprite.Bitmap.Width, image.Sprite.Bitmap.Height);
+                c.SetSize(MainContainer.Size.Width - 13, 22);
             }
             else
             {
-                int y = 23;
-                foreach (Bitmap b in tileset.TilesetListBitmap.InternalBitmaps)
+                c.SetSize(MainContainer.Size.Width - 13, tileset.TilesetListBitmap.Height + 23);
+                if (!tileset.TilesetListBitmap.IsChunky)
                 {
-                    PictureBox img = new PictureBox(c);
-                    img.SetPosition(0, y);
-                    img.Sprite.Bitmap = b;
-                    if (!b.Locked) b.Lock();
-                    img.Sprite.DestroyBitmap = false;
-                    img.SetSize(b.Width, b.Height);
-                    y += b.Height;
+                    PictureBox image = new PictureBox(c);
+                    image.SetPosition(0, 23);
+                    image.Sprite.Bitmap = tileset.TilesetListBitmap;
+                    image.Sprite.DestroyBitmap = false;
+                    image.SetSize(image.Sprite.Bitmap.Width, image.Sprite.Bitmap.Height);
+                }
+                else
+                {
+                    int y = 23;
+                    foreach (Bitmap b in tileset.TilesetListBitmap.InternalBitmaps)
+                    {
+                        PictureBox img = new PictureBox(c);
+                        img.SetPosition(0, y);
+                        img.Sprite.Bitmap = b;
+                        if (!b.Locked) b.Lock();
+                        img.Sprite.DestroyBitmap = false;
+                        img.SetSize(b.Width, b.Height);
+                        y += b.Height;
+                    }
                 }
             }
         }
@@ -647,7 +654,7 @@ public class TilesPanel : Widget
                 }
             }
             CollapsibleContainer cc = TilesetContainers[TilesetIndex];
-            if (cc.Collapsed || this.Erase || MapViewer.SelectionOnMap)
+            if (cc.Collapsed || this.Erase || MapViewer.SelectionOnMap || Data.Tilesets[MapData.TilesetIDs[TilesetIndex]].TilesetBitmap == null)
             {
                 Cursor.SetPosition(0, 0);
                 Cursor.SetVisible(false);
