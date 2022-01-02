@@ -216,6 +216,11 @@ public class MapPropertiesWindow : PopupWindow
                     tilesetitems.Add(new ListItem(tileset));
                 }
                 Tilesets.SetItems(tilesetitems);
+                Map.AutotileIDs.Clear();
+                for (int i = 0; i < 7; i++)
+                {
+                    Map.AutotileIDs.Add(Data.Tilesets[Map.TilesetIDs[0]].ID * 7 + i);
+                }
             }
         };
     }
