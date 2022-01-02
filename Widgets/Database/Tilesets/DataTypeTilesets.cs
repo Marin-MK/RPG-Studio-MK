@@ -149,7 +149,7 @@ public class DataTypeTilesets : Widget
                     Tileset.GraphicName = picker.ChosenFilename;
                     GraphicBox.SetText(Tileset.GraphicName);
                     Tileset.CreateBitmap(true);
-                    TilesetContainer.SetTileset(Tileset, true);
+                    SetTileset(Tileset, true);
                     TilesetGraphicChangeUndoAction.Create(Tileset.ID, OldGraphicName, Tileset.GraphicName);
                 }
             };
