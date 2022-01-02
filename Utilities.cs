@@ -588,7 +588,8 @@ public static class Utilities
 public enum BinaryData
 {
     MAP_SELECTION,
-    MAP
+    MAP,
+    TILESET
 }
 
 public class Fonts

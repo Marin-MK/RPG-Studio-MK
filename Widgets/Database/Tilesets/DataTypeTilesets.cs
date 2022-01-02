@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using RPGStudioMK.Game;
 
@@ -305,6 +306,24 @@ public class DataTypeTilesets : Widget
 
         TilesetList.OnSelectionChanged += UpdateSelection;
         Tabs.SelectTab(0);
+
+        TilesetList.SetContextMenuList(new List<IMenuItem>()
+        {
+            new MenuItem("Copy")
+            {
+                OnLeftClick = CopyTileset
+            },
+            new MenuItem("Paste")
+            {
+                OnLeftClick = PasteTileset,
+                IsClickable = e => e.Value = Utilities.IsClipboardValidBinary(BinaryData.TILESET)
+            },
+            new MenuSeparator(),
+            new MenuItem("Delete")
+            {
+                OnLeftClick = DeleteTileset
+            }
+        });
     }
 
     public override void SizeChanged(BaseEventArgs e)
@@ -429,7 +448,18 @@ public class DataTypeTilesets : Widget
         TilesetList.SetSelectedIndex(SelectedIndex);
     }
 
-    void UpdateSelection(BaseEventArgs e)
+    public void SetTileset(Tileset Tileset, bool ForceUpdate = false)
+    {
+        ListItem Item = TilesetList.Items.Find(i => i.Object == Tileset);
+        if (Item == null) throw new Exception("Could not find Tileset list item.");
+        TilesetList.SetSelectedIndex(TilesetList.Items.IndexOf(Item));
+        TilesetContainer.SetTileset(Tileset, ForceUpdate);
+        ScrollContainer.SetHeight(MainBox.Size.Height - ScrollContainer.Position.Y - 8);
+        if (TilesetContainer.Size.Height < ScrollContainer.Size.Height) ScrollContainer.SetHeight(TilesetContainer.Size.Height);
+        UpdateSelection(new BaseEventArgs());
+    }
+
+    public void UpdateSelection(BaseEventArgs e)
     {
         Tileset t = this.Tileset;
         ChangingSelection = true;
@@ -456,5 +486,47 @@ public class DataTypeTilesets : Widget
         else if (Tabs.SelectedIndex == 4) TilesetContainer.SetMode(TilesetDisplayMode.CounterFlag);
         else if (Tabs.SelectedIndex == 5) TilesetContainer.SetMode(TilesetDisplayMode.TerrainTag);
         TagDetailLabel.SetVisible(TilesetContainer.Mode == TilesetDisplayMode.TerrainTag && Window.Width >= 1210);
+    }
+
+    void CopyTileset(BaseEventArgs e)
+    {
+        Tileset Tileset = (Tileset) TilesetList.HoveringItem.Object;
+        Utilities.SetClipboard(Tileset, BinaryData.TILESET);
+    }
+
+    void PasteTileset(BaseEventArgs e)
+    {
+        if (!Utilities.IsClipboardValidBinary(BinaryData.TILESET)) return;
+        Tileset OldTileset = (Tileset) TilesetList.HoveringItem.Object;
+        Tileset NewTileset = Utilities.GetClipboard<Tileset>();
+        Data.Tilesets[OldTileset.ID] = NewTileset;
+        NewTileset.ID = OldTileset.ID;
+        OldTileset.TilesetBitmap?.Dispose();
+        OldTileset.TilesetBitmap = null;
+        OldTileset.TilesetListBitmap?.Dispose();
+        OldTileset.TilesetListBitmap = null;
+        for (int i = 0; i < 7; i++)
+        {
+            Data.Autotiles[NewTileset.ID * 7 + i] = NewTileset.Autotiles[i];
+        }
+        RedrawList();
+        SetTileset(NewTileset, true);
+        TilesetChangeUndoAction.Create(OldTileset, NewTileset);
+    }
+
+    void DeleteTileset(BaseEventArgs e)
+    {
+        Tileset OldTileset = (Tileset) TilesetList.HoveringItem.Object;
+        Tileset NewTileset = (Tileset) OldTileset.Clone();
+        NewTileset.MakeEmpty();
+        // Since making the tileset empty will dispose the bitmap,
+        // we should also set the other references to null
+        // or they will point to a disposed bitmap.
+        OldTileset.TilesetBitmap = null;
+        OldTileset.TilesetListBitmap = null;
+        Data.Tilesets[NewTileset.ID] = NewTileset;
+        RedrawList();
+        SetTileset(NewTileset, true);
+        TilesetChangeUndoAction.Create(OldTileset, NewTileset);
     }
 }

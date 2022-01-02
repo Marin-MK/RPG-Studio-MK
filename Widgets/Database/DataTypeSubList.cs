@@ -67,6 +67,11 @@ public class DataTypeSubList : Widget
         SetWidth(181);
     }
 
+    public override void SetContextMenuList(List<IMenuItem> Items)
+    {
+        ListDrawer.SetContextMenuList(Items);
+    }
+
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);

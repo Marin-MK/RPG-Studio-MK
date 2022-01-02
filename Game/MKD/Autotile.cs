@@ -3,11 +3,20 @@ using System.Collections.Generic;
 
 namespace RPGStudioMK.Game;
 
+[Serializable]
 public class Autotile : ICloneable
 {
     public int ID;
     public string Name;
-    public AutotileFormat Format;
+    public AutotileFormat Format
+    {
+        get
+        {
+            if (AutotileBitmap?.Height == 32) return AutotileFormat.Single;
+            else if (AutotileBitmap?.Height == 96) return AutotileFormat.RMVX;
+            else return AutotileFormat.RMXP;
+        }
+    }
     public string GraphicName;
     public Passability Passability;
     public int Priority;
@@ -17,7 +26,26 @@ public class Autotile : ICloneable
 
     public List<int> OverlappableBy = new List<int>();
 
-    public Bitmap AutotileBitmap;
+    [NonSerialized]
+    private Bitmap _bmp;
+    public Bitmap AutotileBitmap
+    {
+        get
+        {
+            if (_bmp != null) return _bmp;
+            string filename = $"{Data.ProjectPath}/Graphics/Autotiles/{this.GraphicName}.png";
+            _bmp = null;
+            if (Bitmap.FindRealFilename(filename) != null)
+            {
+                _bmp = new Bitmap(filename);
+            }
+            return _bmp;
+        }
+        set
+        {
+            _bmp = value;
+        }
+    }
 
     public static Dictionary<AutotileFormat, List<List<int>>> AutotileCombinations = new Dictionary<AutotileFormat, List<List<int>>>()
         {
@@ -86,20 +114,11 @@ public class Autotile : ICloneable
 
     public void CreateBitmap(bool Redraw = false)
     {
-        if (this.AutotileBitmap == null || Redraw)
+        if (_bmp == null || Redraw)
         {
-            if (this.AutotileBitmap != null) this.AutotileBitmap.Dispose();
+            _bmp?.Dispose();
+            _bmp = null;
             this.OverlappableBy.Clear();
-            string filename = $"{Data.ProjectPath}\\Graphics\\Autotiles\\{this.GraphicName}.png";
-            Bitmap bmp = null;
-            if (Bitmap.FindRealFilename(filename) != null)
-            {
-                bmp = new Bitmap(filename);
-            }
-            this.AutotileBitmap = bmp;
-            if (bmp?.Height == 32) this.Format = AutotileFormat.Single;
-            else if (bmp?.Height == 96) this.Format = AutotileFormat.RMVX;
-            else this.Format = AutotileFormat.RMXP;
         }
     }
 
@@ -113,7 +132,6 @@ public class Autotile : ICloneable
         Autotile a = new Autotile();
         a.ID = this.ID;
         a.Name = this.Name;
-        a.Format = this.Format;
         a.GraphicName = this.GraphicName;
         a.Passability = this.Passability;
         a.Priority = this.Priority;

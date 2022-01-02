@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace RPGStudioMK.Game;
 
-public class Tileset : ICloneable
+[Serializable]
+public class Tileset : ICloneable, ISerializable
 {
     public int ID;
     public string Name;
@@ -33,6 +36,7 @@ public class Tileset : ICloneable
     /// </summary>
     public List<List<int>> AutotileOverlapPermissions = new List<List<int>>();
 
+    [NonSerialized]
     private Bitmap _tb;
     public Bitmap TilesetBitmap
     {
@@ -52,6 +56,7 @@ public class Tileset : ICloneable
             _tb = value;
         }
     }
+    [NonSerialized]
     private Bitmap _tlb;
     public Bitmap TilesetListBitmap
     {
@@ -82,7 +87,7 @@ public class Tileset : ICloneable
 
     public Tileset()
     {
-
+        MakeEmpty();
     }
 
     public Tileset(IntPtr data)
@@ -144,9 +149,6 @@ public class Tileset : ICloneable
                 autotile.Priority = (int)this.Priorities[(i + 1) * 48];
                 autotile.Tag = (int)this.Tags[(i + 1) * 48];
                 autotile.SetGraphic(name);
-                if (autotile.AutotileBitmap.Height == 32) autotile.Format = AutotileFormat.Single;
-                else if (autotile.AutotileBitmap.Height == 96) autotile.Format = AutotileFormat.RMVX;
-                else autotile.Format = AutotileFormat.RMXP;
                 this.Autotiles.Add(autotile);
                 Data.Autotiles[autotile.ID] = autotile;
             }
@@ -228,7 +230,7 @@ public class Tileset : ICloneable
 
     public void CreateBitmap(bool Redraw = false)
     {
-        if (this.TilesetBitmap == null || Redraw)
+        if (_tb == null || Redraw)
         {
             _tb?.Dispose();
             _tb = null;
@@ -274,6 +276,46 @@ public class Tileset : ICloneable
         }
     }
 
+    public void MakeEmpty()
+    {
+        this.Name = "";
+        this.GraphicName = "";
+        this.Passabilities = new List<Passability>(new Passability[384]);
+        this.Priorities = new List<int>(new int[384]);
+        this.Tags = new List<int>(new int[384]);
+        this.BushFlags = new List<bool>(new bool[384]);
+        this.CounterFlags = new List<bool>(new bool[384]);
+        for (int i = 0; i < 384; i++)
+        {
+            this.Passabilities[i] = Passability.All;
+            if (i < 48) this.Priorities[i] = 5;
+        }
+        this.PanoramaHue = 0;
+        this.PanoramaName = "";
+        this.FogName = "";
+        this.FogSX = 0;
+        this.FogSY = 0;
+        this.FogOpacity = 64;
+        this.FogHue = 0;
+        this.FogZoom = 200;
+        this.FogBlendType = 0;
+        this.BattlebackName = "";
+        this.Autotiles = new List<Autotile>(new Autotile[7]);
+        for (int i = 0; i < 7; i++)
+        {
+            if (Data.Autotiles[this.ID * 7 + i] != null)
+            {
+                Data.Autotiles[this.ID * 7 + i].AutotileBitmap?.Dispose();
+                Data.Autotiles[this.ID * 7 + i].AutotileBitmap = null;
+            }
+            Data.Autotiles[this.ID * 7 + i] = null;
+        }
+        this.TilesetBitmap?.Dispose();
+        this.TilesetBitmap = null;
+        this.TilesetListBitmap?.Dispose();
+        this.TilesetListBitmap = null;
+    }
+
     public override string ToString()
     {
         return this.Name;
@@ -304,5 +346,24 @@ public class Tileset : ICloneable
         t.TilesetBitmap = this.TilesetBitmap;
         t.TilesetListBitmap = this.TilesetListBitmap;
         return t;
+    }
+
+    public string Serialize()
+    {
+        BinaryFormatter formatter = new BinaryFormatter();
+        MemoryStream stream = new MemoryStream();
+        formatter.Serialize(stream, this);
+        string data = Convert.ToBase64String(stream.ToArray());
+        stream.Close();
+        return data;
+    }
+
+    public static Tileset Deserialize(string data)
+    {
+        BinaryFormatter formatter = new BinaryFormatter();
+        MemoryStream stream = new MemoryStream(Convert.FromBase64String(data));
+        Tileset result = (Tileset) formatter.Deserialize(stream);
+        stream.Close();
+        return result;
     }
 }

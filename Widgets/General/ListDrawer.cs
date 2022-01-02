@@ -195,7 +195,7 @@ public class ListDrawer : Widget
     public override void MouseDown(MouseEventArgs e)
     {
         base.MouseDown(e);
-        if (!WidgetIM.Hovering) return;
+        if (!WidgetIM.Hovering || e.LeftButton == e.OldLeftButton || !e.LeftButton) return;
         if (HoveringButton)
         {
             Sprites["selection"].Visible = false;
