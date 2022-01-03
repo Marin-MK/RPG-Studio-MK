@@ -46,7 +46,10 @@ public class NodeCollapseChangeUndoAction : BaseUndoAction
             this.Node.Collapsed = OldCollapsed;
         }
         Game.Data.Maps[(int) this.Node.Object].Expanded = !this.Node.Collapsed;
-        mapview.SetSelectedNode(this.Node);
+        if (this.Node.FindNode(n => (int) n.Object == SelectedMapID) != null)
+        {
+            mapview.SetSelectedNode(this.Node);
+        }
         mapview.Redraw();
         return true;
     }
