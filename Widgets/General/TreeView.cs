@@ -398,10 +398,12 @@ public class TreeView : Widget
             int nodex = n.PixelsIndented;
             if (n.Nodes.Count > 0 && rx < nodex + 10 && rx > nodex - 10)
             {
+                int selmapid = (int) SelectedNode.Object;
                 n.Collapsed = !n.Collapsed;
                 int mapid = (int)n.Object;
                 Game.Data.Maps[mapid].Expanded = !n.Collapsed;
                 if (n.Collapsed && n.ContainsNode(SelectedNode)) SelectedNode = n;
+                NodeCollapseChangeUndoAction.Create(n, !n.Collapsed, n.Collapsed, selmapid);
             }
             else
             {
@@ -471,7 +473,7 @@ public class TreeView : Widget
     }
 }
 
-public class TreeNode
+public class TreeNode : ICloneable
 {
     public string Name;
     public object Object = "treeNode";
@@ -569,5 +571,36 @@ public class TreeNode
             }
         }
         return null;
+    }
+
+    public object Clone()
+    {
+        TreeNode n = new TreeNode();
+        n.Name = this.Name;
+        n.Object = this.Object;
+        n.Collapsed = this.Collapsed;
+        n.Nodes = this.Nodes.ConvertAll(n => (TreeNode) n.Clone());
+        n.PixelsIndented = this.PixelsIndented;
+        return n;
+    }
+
+    public override string ToString()
+    {
+        return this.Name;
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (this == obj) return true;
+        if (obj is TreeNode)
+        {
+            TreeNode n = (TreeNode) obj;
+            return this.Name == n.Name &&
+                   this.Object.Equals(n.Object) &&
+                   this.Collapsed == n.Collapsed &&
+                   this.Nodes.Equals(n.Nodes) &&
+                   this.PixelsIndented == n.PixelsIndented;
+        }
+        return false;
     }
 }

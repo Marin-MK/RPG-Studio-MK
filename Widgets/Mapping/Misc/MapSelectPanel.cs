@@ -53,45 +53,45 @@ public class MapSelectPanel : Widget
         mapview.OnDragAndDropped += delegate (BaseEventArgs e) { DragAndDropped(); };
         mapview.TrailingBlank = 32;
         allmapcontainer.SetContextMenuList(new List<IMenuItem>()
+        {
+            new MenuItem("New Map")
             {
-                new MenuItem("New Map")
+                OnLeftClick = NewMap
+            },
+            new MenuItem("Edit Map")
+            {
+                OnLeftClick = EditMap,
+                IsClickable = delegate (BoolEventArgs e)
                 {
-                    OnLeftClick = NewMap
-                },
-                new MenuItem("Edit Map")
-                {
-                    OnLeftClick = EditMap,
-                    IsClickable = delegate (BoolEventArgs e)
-                    {
-                        e.Value = mapview.HoveringNode != null;
-                    }
-                },
-                new MenuSeparator(),
-                new MenuItem("Cut Map")
-                {
-                    OnLeftClick = CutMap,
-                    IsClickable = delegate (BoolEventArgs e) { e.Value = mapview.HoveringNode != null && mapview.Nodes.Count > 1; }
-                },
-                new MenuItem("Copy Map")
-                {
-                    OnLeftClick = CopyMap,
-                    IsClickable = delegate (BoolEventArgs e) { e.Value = mapview.HoveringNode != null; }
-                },
-                new MenuItem("Paste Map")
-                {
-                    OnLeftClick = PasteMap
-                },
-                new MenuSeparator(),
-                new MenuItem("Delete")
-                {
-                    OnLeftClick = DeleteMap,
-                    Shortcut = "Del",
-                    IsClickable = delegate (BoolEventArgs e)
-                    {
-                        e.Value = mapview.HoveringNode != null && mapview.Nodes.Count > 1;
-                    }
+                    e.Value = mapview.HoveringNode != null;
                 }
-            });
+            },
+            new MenuSeparator(),
+            new MenuItem("Cut Map")
+            {
+                OnLeftClick = CutMap,
+                IsClickable = delegate (BoolEventArgs e) { e.Value = mapview.HoveringNode != null && mapview.Nodes.Count > 1; }
+            },
+            new MenuItem("Copy Map")
+            {
+                OnLeftClick = CopyMap,
+                IsClickable = delegate (BoolEventArgs e) { e.Value = mapview.HoveringNode != null; }
+            },
+            new MenuItem("Paste Map")
+            {
+                OnLeftClick = PasteMap
+            },
+            new MenuSeparator(),
+            new MenuItem("Delete")
+            {
+                OnLeftClick = DeleteMap,
+                Shortcut = "Del",
+                IsClickable = delegate (BoolEventArgs e)
+                {
+                    e.Value = mapview.HoveringNode != null && mapview.Nodes.Count > 1;
+                }
+            }
+        });
         OnWidgetSelected += WidgetSelected;
         SetBackgroundColor(10, 23, 37);
     }
@@ -106,6 +106,7 @@ public class MapSelectPanel : Widget
 
     public void DragAndDropped()
     {
+        List<TreeNode> OldNodes = mapview.Nodes.ConvertAll(n => (TreeNode) n.Clone());
         TreeNode DraggingNode = mapview.DraggingNode;
         TreeNode HoveringNode = mapview.HoveringNode;
         bool Top = mapview.HoverTop;
@@ -181,9 +182,11 @@ public class MapSelectPanel : Widget
                 }
             }
         }
+        else return;
         // Now update all map ParentID/Order fields to reflect the current Node structure
         Editor.UpdateOrder(mapview.Nodes);
         mapview.Redraw();
+        MapOrderChangeUndoAction.Create(OldNodes, mapview.Nodes.ConvertAll(n => (TreeNode) n.Clone()));
     }
 
     public TreeNode GetParent(TreeNode NodeToFindParentOf)
@@ -401,15 +404,15 @@ public class MapSelectPanel : Widget
         confirm.OnClosed += delegate (BaseEventArgs ev)
         {
             if (confirm.Result == 0) // Yes
-                {
+            {
                 bool DeleteChildMaps = mapview.HoveringNode.Nodes.Count > 0 ? confirm.DeleteChildMaps.Checked : false;
                 Editor.UnsavedChanges = true;
                 if (DeleteChildMaps) // Delete children
-                    {
+                {
                     DeleteMapAndDeleteChildren();
                 }
                 else // Keep and move children
-                    {
+                {
                     DeleteMapAndKeepChildren();
                 }
                 mapview.Redraw();

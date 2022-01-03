@@ -96,40 +96,7 @@ public static class Editor
     public static void Test()
     {
         if (Program.ReleaseMode) return;
-        if (vp != null)
-        {
-            sp.Dispose();
-            vp.Dispose();
-            sp = null;
-            vp = null;
-            return;
-        }
-        int w = 96;
-        int h = 96;
-        vp = new Viewport(0, 0, w, h);
-        vp.Z = 9999999;
-        sp = new Sprite(vp);
-        sp.Bitmap = new Bitmap(w, h);
-        sp.Bitmap.Unlock();
-        sp.Bitmap.FillRect(w, h, Color.WHITE);
-        Stopwatch s = new Stopwatch();
-        s.Start();
-        sp.Bitmap.FillGradientRectOutside(
-            new Rect(0, 0, w, h),
-            new Rect(38, 43, 20, 10),
-            new Color(255, 255, 0),
-            Color.ALPHA
-        );
-        s.Stop();
-        Console.WriteLine(s.ElapsedMilliseconds);
-        sp.Bitmap.Lock();
-        vp.X = MainWindow.Width / 2 - w / 2;
-        vp.Y = MainWindow.Height / 2 - h / 2;
     }
-
-    static Viewport vp;
-    static Sprite sp;
-
 
     /// <summary>
     /// Returns the displayed string for the current editor version.
