@@ -873,7 +873,7 @@ public class MapImageWidget : Widget
     public void DrawAutotile(int Layer, int X, int Y, int AutotileID, int TileID, int Frame)
     {
         Autotile autotile = Data.Autotiles[AutotileID];
-        if (autotile.AutotileBitmap != null) return;
+        if (autotile.AutotileBitmap == null) return;
         int AnimX = 0;
         if (autotile.Format == AutotileFormat.Single)
         {
