@@ -25,7 +25,8 @@ public class TilesetPanoramaChangeUndoAction : BaseUndoAction
 
     public static void Create(int TilesetID, string OldPanoramaName, string NewPanoramaName, int OldPanoramaHue, int NewPanoramaHue)
     {
-        new TilesetPanoramaChangeUndoAction(TilesetID, OldPanoramaName, NewPanoramaName, OldPanoramaHue, NewPanoramaHue);
+        var c = new TilesetPanoramaChangeUndoAction(TilesetID, OldPanoramaName, NewPanoramaName, OldPanoramaHue, NewPanoramaHue);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

@@ -15,7 +15,8 @@ public class LayerSwapUndoAction : BaseUndoAction
 
     public static void Create(int MapID, int LayerIndex, bool MovedUp)
     {
-        new LayerSwapUndoAction(MapID, LayerIndex, MovedUp);
+        var c = new LayerSwapUndoAction(MapID, LayerIndex, MovedUp);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

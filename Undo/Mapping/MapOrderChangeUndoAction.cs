@@ -20,7 +20,8 @@ public class MapOrderChangeUndoAction : BaseUndoAction
 
     public static void Create(List<TreeNode> OldNodes, List<TreeNode> NewNodes)
     {
-        new MapOrderChangeUndoAction(OldNodes, NewNodes);
+        var c = new MapOrderChangeUndoAction(OldNodes, NewNodes);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

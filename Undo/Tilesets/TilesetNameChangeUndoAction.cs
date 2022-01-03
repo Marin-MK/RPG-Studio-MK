@@ -21,7 +21,8 @@ public class TilesetNameChangeUndoAction : BaseUndoAction
 
     public static void Create(int TilesetID, string OldText, string NewText)
     {
-        new TilesetNameChangeUndoAction(TilesetID, OldText, NewText);
+        var c = new TilesetNameChangeUndoAction(TilesetID, OldText, NewText);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

@@ -29,7 +29,8 @@ public class TilePassabilityChangeUndoAction : BaseUndoAction
 
     public static void Create(int TilesetID, int TileID, int TileX, int TileY, Game.Passability OldPassability, Game.Passability NewPassability, bool Directional)
     {
-        new TilePassabilityChangeUndoAction(TilesetID, TileID, TileX, TileY, OldPassability, NewPassability, Directional);
+        var c = new TilePassabilityChangeUndoAction(TilesetID, TileID, TileX, TileY, OldPassability, NewPassability, Directional);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

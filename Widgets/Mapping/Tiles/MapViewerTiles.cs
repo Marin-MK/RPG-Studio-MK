@@ -280,7 +280,7 @@ public class MapViewerTiles : MapViewerBase
                             this.SelectionStartUndoLast = false;
                         }
                         bool All = TilesPanel.DrawTool == DrawTools.SelectionAllLayers;
-                        Undo.TileGroupUndoAction.Log(Map.ID, true);
+                        Undo.TileGroupUndoAction.Create(Map.ID, true);
                         for (int Layer = All ? 0 : LayerPanel.SelectedLayer; Layer < (All ? Map.Layers.Count : LayerPanel.SelectedLayer + 1); Layer++)
                         {
                             MapWidget.SetLayerLocked(Layer, false);
@@ -395,7 +395,7 @@ public class MapViewerTiles : MapViewerBase
                         }
                         action.Ready = true;
                         Editor.Undo(true);
-                        Undo.TileGroupUndoAction.Log(Map.ID);
+                        Undo.TileGroupUndoAction.Create(Map.ID);
                         Undo.TileGroupUndoAction.GetLatest().Tiles.AddRange(changes);
                     }
                     else
@@ -704,7 +704,7 @@ public class MapViewerTiles : MapViewerBase
         base.MouseUp(e);
         if (e.LeftButton != e.OldLeftButton)
         {
-            if (!Editor.CanUndo)
+            if (!Editor.CanUndo && Undo.TileGroupUndoAction.GetLatest() != null)
             {
                 Editor.CanUndo = true;
                 Undo.TileGroupUndoAction.GetLatest().Ready = true;
@@ -755,7 +755,7 @@ public class MapViewerTiles : MapViewerBase
             {
                 if (All) for (int i = 0; i < Map.Layers.Count; i++) MapWidget.SetLayerLocked(i, false);
                 else MapWidget.SetLayerLocked(LayerPanel.SelectedLayer, false);
-                Undo.TileGroupUndoAction.Log(Map.ID);
+                Undo.TileGroupUndoAction.Create(Map.ID);
             }
             for (int Layer = All ? 0 : LayerPanel.SelectedLayer; Layer < (All ? Map.Layers.Count : LayerPanel.SelectedLayer + 1); Layer++)
             {
@@ -825,7 +825,7 @@ public class MapViewerTiles : MapViewerBase
         SelectionWidth = group.Width;
         SelectionHeight = group.Height;
         UpdateSelection();
-        Undo.TileGroupUndoAction.Log(Map.ID, true);
+        Undo.TileGroupUndoAction.Create(Map.ID, true);
         foreach (int Layer in group.LayerSelections.Keys)
         {
             MapWidget.SetLayerLocked(Layer, false);

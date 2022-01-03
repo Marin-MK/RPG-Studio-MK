@@ -23,7 +23,8 @@ public class TilesetCapacityChangeUndoAction : BaseUndoAction
 
     public static void Create(List<Game.Tileset> OldTilesets, List<Game.Tileset> NewTilesets, int OldCapacity, int NewCapacity)
     {
-        new TilesetCapacityChangeUndoAction(OldTilesets, NewTilesets, OldCapacity, NewCapacity);
+        var c = new TilesetCapacityChangeUndoAction(OldTilesets, NewTilesets, OldCapacity, NewCapacity);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

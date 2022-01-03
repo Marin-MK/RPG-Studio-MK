@@ -49,9 +49,10 @@ public class TilesetFogChangeUndoAction : BaseUndoAction
                               byte OldFogOpacity, byte NewFogOpacity, int OldFogBlendType, int NewFogBlendType,
                               int OldFogZoom, int NewFogZoom, int OldFogSX, int NewFogSX, int OldFogSY, int NewFogSY)
     {
-        new TilesetFogChangeUndoAction(TilesetID, OldFogName, NewFogName, OldFogHue, NewFogHue,
-                                       OldFogOpacity, NewFogOpacity, OldFogBlendType, NewFogBlendType,
-                                       OldFogZoom, NewFogZoom, OldFogSX, NewFogSX, OldFogSY, NewFogSY);
+        var c = new TilesetFogChangeUndoAction(TilesetID, OldFogName, NewFogName, OldFogHue, NewFogHue,
+                                               OldFogOpacity, NewFogOpacity, OldFogBlendType, NewFogBlendType,
+                                               OldFogZoom, NewFogZoom, OldFogSX, NewFogSX, OldFogSY, NewFogSY);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

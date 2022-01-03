@@ -23,7 +23,8 @@ public class TilesetAutotileChangeUndoAction : BaseUndoAction
 
     public static void Create(int TilesetID, int AutotileID, string OldAutotile, string NewAutotile)
     {
-        new TilesetAutotileChangeUndoAction(TilesetID, AutotileID, OldAutotile, NewAutotile);
+        var c = new TilesetAutotileChangeUndoAction(TilesetID, AutotileID, OldAutotile, NewAutotile);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

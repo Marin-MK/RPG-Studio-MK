@@ -27,7 +27,8 @@ public class TileBushChangeUndoAction : BaseUndoAction
 
     public static void Create(int TilesetID, int TileID, int TileX, int TileY, bool OldBush, bool NewBush)
     {
-        new TileBushChangeUndoAction(TilesetID, TileID, TileX, TileY, OldBush, NewBush);
+        var c = new TileBushChangeUndoAction(TilesetID, TileID, TileX, TileY, OldBush, NewBush);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

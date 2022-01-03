@@ -24,7 +24,8 @@ public class NodeCollapseChangeUndoAction : BaseUndoAction
 
     public static void Create(TreeNode Node, bool OldCollapsed, bool NewCollapsed, int SelectedMapID)
     {
-        new NodeCollapseChangeUndoAction(Node, OldCollapsed, NewCollapsed, SelectedMapID);
+        var c = new NodeCollapseChangeUndoAction(Node, OldCollapsed, NewCollapsed, SelectedMapID);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

@@ -27,7 +27,8 @@ public class TileTagChangeUndoAction : BaseUndoAction
 
     public static void Create(int TilesetID, int TileID, int TileX, int TileY, int OldTag, int NewTag)
     {
-        new TileTagChangeUndoAction(TilesetID, TileID, TileX, TileY, OldTag, NewTag);
+        var c = new TileTagChangeUndoAction(TilesetID, TileID, TileX, TileY, OldTag, NewTag);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

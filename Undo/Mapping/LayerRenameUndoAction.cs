@@ -19,7 +19,8 @@ public class LayerRenameUndoAction : BaseUndoAction
 
     public static void Create(int MapID, int LayerIndex, string OldName, string NewName)
     {
-        new LayerRenameUndoAction(MapID, LayerIndex, OldName, NewName);
+        var c = new LayerRenameUndoAction(MapID, LayerIndex, OldName, NewName);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

@@ -19,7 +19,8 @@ public class LayerChangeUndoAction : BaseUndoAction
 
     public static void Create(int MapID, int LayerIndex, Layer LayerData, bool Removal)
     {
-        new LayerChangeUndoAction(MapID, LayerIndex, LayerData, Removal);
+        var c = new LayerChangeUndoAction(MapID, LayerIndex, LayerData, Removal);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

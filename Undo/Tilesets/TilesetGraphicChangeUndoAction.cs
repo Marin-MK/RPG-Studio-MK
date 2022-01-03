@@ -21,7 +21,8 @@ public class TilesetGraphicChangeUndoAction : BaseUndoAction
 
     public static void Create(int TilesetID, string OldGraphicName, string NewGraphicName)
     {
-        new TilesetGraphicChangeUndoAction(TilesetID, OldGraphicName, NewGraphicName);
+        var c = new TilesetGraphicChangeUndoAction(TilesetID, OldGraphicName, NewGraphicName);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

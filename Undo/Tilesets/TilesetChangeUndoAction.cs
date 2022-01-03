@@ -17,7 +17,8 @@ public class TilesetChangeUndoAction : BaseUndoAction
 
     public static void Create(Tileset OldTileset, Tileset NewTileset)
     {
-        new TilesetChangeUndoAction(OldTileset, NewTileset);
+        var c = new TilesetChangeUndoAction(OldTileset, NewTileset);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

@@ -6,6 +6,11 @@ public class BaseUndoAction
 {
     public BaseUndoAction()
     {
+        
+    }
+
+    protected void Register()
+    {
         Editor.UndoList.Add(this);
         Editor.RedoList.Clear();
         Editor.MainWindow.ToolBar.Undo.SetEnabled(true);

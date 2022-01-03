@@ -27,7 +27,8 @@ public class TileCounterChangeUndoAction : BaseUndoAction
 
     public static void Create(int TilesetID, int TileID, int TileX, int TileY, bool OldCounter, bool NewCounter)
     {
-        new TileCounterChangeUndoAction(TilesetID, TileID, TileX, TileY, OldCounter, NewCounter);
+        var c = new TileCounterChangeUndoAction(TilesetID, TileID, TileX, TileY, OldCounter, NewCounter);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

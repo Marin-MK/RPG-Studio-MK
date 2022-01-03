@@ -27,7 +27,8 @@ public class TilePriorityChangeUndoAction : BaseUndoAction
 
     public static void Create(int TilesetID, int TileID, int TileX, int TileY, int OldPriority, int NewPriority)
     {
-        new TilePriorityChangeUndoAction(TilesetID, TileID, TileX, TileY, OldPriority, NewPriority);
+        var c = new TilePriorityChangeUndoAction(TilesetID, TileID, TileX, TileY, OldPriority, NewPriority);
+        c.Register();
     }
 
     public override bool Trigger(bool IsRedo)

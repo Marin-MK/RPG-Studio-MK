@@ -17,9 +17,10 @@ public class TileGroupUndoAction : BaseUndoAction
         this.PartOfSelection = PartOfSelection;
     }
 
-    public static void Log(int MapID, bool PartOfSelection = false)
+    public static void Create(int MapID, bool PartOfSelection = false)
     {
-        new TileGroupUndoAction(MapID, PartOfSelection);
+        var c = new TileGroupUndoAction(MapID, PartOfSelection);
+        c.Register();
     }
 
     public static TileGroupUndoAction GetLatest()
