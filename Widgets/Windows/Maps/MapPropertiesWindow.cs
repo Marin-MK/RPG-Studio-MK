@@ -20,10 +20,10 @@ public class MapPropertiesWindow : PopupWindow
     ListBox Tilesets;
     //ListBox Autotiles;
 
-    public MapPropertiesWindow(Map Map)
+    public MapPropertiesWindow(Map OldMap)
     {
-        this.OldMap = Map;
-        this.Map = (Map)Map.Clone();
+        this.OldMap = OldMap;
+        this.Map = (Map) OldMap.Clone();
         this.SetTitle($"Map Properties");
         MinimumSize = MaximumSize = new Size(337, 312);
         SetSize(MaximumSize);
@@ -47,7 +47,7 @@ public class MapPropertiesWindow : PopupWindow
         MapName = new TextBox(box1);
         MapName.SetPosition(6, 22);
         MapName.SetSize(136, 27);
-        MapName.SetText(Map.Name);
+        MapName.SetText(this.Map.Name);
         MapName.OnTextChanged += _ =>
         {
             this.Map.Name = MapName.Text;
@@ -87,30 +87,30 @@ public class MapPropertiesWindow : PopupWindow
         autoplaybgm.SetPosition(7, 106);
         autoplaybgm.SetText("Autoplay BGM");
         autoplaybgm.SetFont(f);
-        autoplaybgm.SetChecked(Map.AutoplayBGM);
+        autoplaybgm.SetChecked(this.Map.AutoplayBGM);
         autoplaybgm.OnCheckChanged += delegate (BaseEventArgs e)
         {
-            Map.AutoplayBGM = autoplaybgm.Checked;
+            this.Map.AutoplayBGM = autoplaybgm.Checked;
             BGM.SetEnabled(autoplaybgm.Checked);
             BGM.SetText(autoplaybgm.Checked ? Map.BGM.Name : "");
         };
         BGM = new DropdownBox(box1);
         BGM.SetPosition(6, 123);
         BGM.SetSize(136, 27);
-        BGM.SetText(Map.AutoplayBGM ? Map.BGM.Name : "");
-        BGM.SetEnabled(Map.AutoplayBGM);
+        BGM.SetText(this.Map.AutoplayBGM ? this.Map.BGM.Name : "");
+        BGM.SetEnabled(this.Map.AutoplayBGM);
         BGM.SetReadOnly(true);
         BGM.OnDropDownClicked += delegate (BaseEventArgs e)
         {
-            AudioPicker picker = new AudioPicker("Audio/BGM", Map.BGM.Name, Map.BGM.Volume, Map.BGM.Pitch);
+            AudioPicker picker = new AudioPicker("Audio/BGM", this.Map.BGM.Name, this.Map.BGM.Volume, this.Map.BGM.Pitch);
             picker.OnClosed += delegate (BaseEventArgs _)
             {
                 if (picker.Result != null)
                 {
-                    Map.BGM.Name = picker.Result.Value.Filename;
-                    Map.BGM.Volume = picker.Result.Value.Volume;
-                    Map.BGM.Pitch = picker.Result.Value.Pitch;
-                    BGM.SetText(Map.BGM.Name);
+                    this.Map.BGM.Name = picker.Result.Value.Filename;
+                    this.Map.BGM.Volume = picker.Result.Value.Volume;
+                    this.Map.BGM.Pitch = picker.Result.Value.Pitch;
+                    BGM.SetText(this.Map.BGM.Name);
                 }
             };
         };
@@ -119,30 +119,30 @@ public class MapPropertiesWindow : PopupWindow
         autoplaybgs.SetPosition(7, 161);
         autoplaybgs.SetText("Autoplay BGS");
         autoplaybgs.SetFont(f);
-        autoplaybgs.SetChecked(Map.AutoplayBGS);
+        autoplaybgs.SetChecked(this.Map.AutoplayBGS);
         autoplaybgs.OnCheckChanged += delegate (BaseEventArgs e)
         {
-            Map.AutoplayBGS = autoplaybgs.Checked;
+            this.Map.AutoplayBGS = autoplaybgs.Checked;
             BGS.SetEnabled(autoplaybgs.Checked);
-            BGS.SetText(autoplaybgs.Checked ? Map.BGS.Name : "");
+            BGS.SetText(autoplaybgs.Checked ? this.Map.BGS.Name : "");
         };
         BGS = new DropdownBox(box1);
         BGS.SetPosition(6, 178);
         BGS.SetSize(136, 27);
-        BGS.SetText(Map.AutoplayBGS ? Map.BGS.Name : "");
-        BGS.SetEnabled(Map.AutoplayBGS);
+        BGS.SetText(this.Map.AutoplayBGS ? this.Map.BGS.Name : "");
+        BGS.SetEnabled(this.Map.AutoplayBGS);
         BGS.SetReadOnly(true);
         BGS.OnDropDownClicked += delegate (BaseEventArgs e)
         {
-            AudioPicker picker = new AudioPicker("Audio/BGS", Map.BGS.Name, Map.BGS.Volume, Map.BGS.Pitch);
+            AudioPicker picker = new AudioPicker("Audio/BGS", this.Map.BGS.Name, this.Map.BGS.Volume, this.Map.BGS.Pitch);
             picker.OnClosed += delegate (BaseEventArgs _)
             {
                 if (picker.Result != null)
                 {
-                    Map.BGS.Name = picker.Result.Value.Filename;
-                    Map.BGS.Volume = picker.Result.Value.Volume;
-                    Map.BGS.Pitch = picker.Result.Value.Pitch;
-                    BGS.SetText(Map.BGS.Name);
+                    this.Map.BGS.Name = picker.Result.Value.Filename;
+                    this.Map.BGS.Volume = picker.Result.Value.Volume;
+                    this.Map.BGS.Pitch = picker.Result.Value.Pitch;
+                    BGS.SetText(this.Map.BGS.Name);
                 }
             };
         };
@@ -261,31 +261,77 @@ public class MapPropertiesWindow : PopupWindow
     public void OK(BaseEventArgs e)
     {
         this.UpdateMapViewer = true;
+        List<Undo.BaseUndoAction> AllChanges = new List<Undo.BaseUndoAction>();
         Action Finalize = delegate
         {
+            if (AllChanges.Count > 0) Undo.MapPropertiesChangeUndoAction.Create(Map.ID, AllChanges);
             Close();
         };
         Action Continue = delegate
         {
-                #region Autotile conversion for multiple tilesets per map
-                // Updates autotiles
-                /*bool autotileschanged = false;
-                if (Map.AutotileIDs.Count != OldMap.AutotileIDs.Count) autotileschanged = true;
-                if (!autotileschanged)
+            #region Autotile conversion for multiple tilesets per map
+            // Updates autotiles
+            /*bool autotileschanged = false;
+            if (Map.AutotileIDs.Count != OldMap.AutotileIDs.Count) autotileschanged = true;
+            if (!autotileschanged)
+            {
+                for (int i = 0; i < Map.AutotileIDs.Count; i++)
                 {
-                    for (int i = 0; i < Map.AutotileIDs.Count; i++)
+                    if (Map.AutotileIDs[i] != OldMap.AutotileIDs[i])
                     {
-                        if (Map.AutotileIDs[i] != OldMap.AutotileIDs[i])
+                        autotileschanged = true;
+                        break;
+                    }
+                }
+            }
+            if (autotileschanged)
+            {
+                UnsavedChanges = true;
+                bool warn = false;
+                for (int layer = 0; layer < Map.Layers.Count; layer++)
+                {
+                    for (int i = 0; i < Map.Width * Map.Height; i++)
+                    {
+                        if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Tileset) continue;
+                        int autotileID = OldMap.AutotileIDs[Map.Layers[layer].Tiles[i].Index];
+                        if (!Map.AutotileIDs.Contains(autotileID))
                         {
-                            autotileschanged = true;
+                            warn = true;
                             break;
                         }
                     }
                 }
-                if (autotileschanged)
+                if (warn)
                 {
-                    UnsavedChanges = true;
-                    bool warn = false;
+                    MessageBox msg = new MessageBox("Warning", "One of the deleted autotiles was still in use. By choosing to continue, tiles of that autotile will be deleted.", new List<string>() { "Continue", "Cancel" }, IconType.Warning);
+                    msg.OnButtonPressed += delegate (BaseEventArgs e2)
+                    {
+                        if (msg.Result == 0) // Continue
+                        {
+                            for (int layer = 0; layer < Map.Layers.Count; layer++)
+                            {
+                                for (int i = 0; i < Map.Width * Map.Height; i++)
+                                {
+                                    if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Tileset) continue;
+                                    int autotileID = OldMap.AutotileIDs[Map.Layers[layer].Tiles[i].Index];
+                                    if (!Map.AutotileIDs.Contains(autotileID))
+                                    {
+                                        Map.Layers[layer].Tiles[i] = null;
+                                    }
+                                    else Map.Layers[layer].Tiles[i].Index = Map.AutotileIDs.IndexOf(autotileID);
+                                }
+                            }
+                            Finalize();
+                        }
+                        else if (msg.Result == 1) // Cancel
+                        {
+                            UnsavedChanges = false;
+                            UpdateMapViewer = false;
+                        }
+                    };
+                }
+                else
+                {
                     for (int layer = 0; layer < Map.Layers.Count; layer++)
                     {
                         for (int i = 0; i < Map.Width * Map.Height; i++)
@@ -294,88 +340,50 @@ public class MapPropertiesWindow : PopupWindow
                             int autotileID = OldMap.AutotileIDs[Map.Layers[layer].Tiles[i].Index];
                             if (!Map.AutotileIDs.Contains(autotileID))
                             {
-                                warn = true;
-                                break;
+                                throw new Exception("Unknown");
                             }
+                            else Map.Layers[layer].Tiles[i].Index = Map.AutotileIDs.IndexOf(autotileID);
                         }
                     }
-                    if (warn)
-                    {
-                        MessageBox msg = new MessageBox("Warning", "One of the deleted autotiles was still in use. By choosing to continue, tiles of that autotile will be deleted.", new List<string>() { "Continue", "Cancel" }, IconType.Warning);
-                        msg.OnButtonPressed += delegate (BaseEventArgs e2)
-                        {
-                            if (msg.Result == 0) // Continue
-                            {
-                                for (int layer = 0; layer < Map.Layers.Count; layer++)
-                                {
-                                    for (int i = 0; i < Map.Width * Map.Height; i++)
-                                    {
-                                        if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Tileset) continue;
-                                        int autotileID = OldMap.AutotileIDs[Map.Layers[layer].Tiles[i].Index];
-                                        if (!Map.AutotileIDs.Contains(autotileID))
-                                        {
-                                            Map.Layers[layer].Tiles[i] = null;
-                                        }
-                                        else Map.Layers[layer].Tiles[i].Index = Map.AutotileIDs.IndexOf(autotileID);
-                                    }
-                                }
-                                Finalize();
-                            }
-                            else if (msg.Result == 1) // Cancel
-                            {
-                                UnsavedChanges = false;
-                                UpdateMapViewer = false;
-                            }
-                        };
-                    }
-                    else
-                    {
-                        for (int layer = 0; layer < Map.Layers.Count; layer++)
-                        {
-                            for (int i = 0; i < Map.Width * Map.Height; i++)
-                            {
-                                if (Map.Layers[layer].Tiles[i] == null || Map.Layers[layer].Tiles[i].TileType == TileType.Tileset) continue;
-                                int autotileID = OldMap.AutotileIDs[Map.Layers[layer].Tiles[i].Index];
-                                if (!Map.AutotileIDs.Contains(autotileID))
-                                {
-                                    throw new Exception("Unknown");
-                                }
-                                else Map.Layers[layer].Tiles[i].Index = Map.AutotileIDs.IndexOf(autotileID);
-                            }
-                        }
-                        Finalize();
-                    }
+                    Finalize();
                 }
-                if (!autotileschanged) Finalize();*/
-                #endregion
-                Finalize();
+            }
+            if (!autotileschanged) Finalize();*/
+            #endregion
+            Finalize();
         };
         // Resizes Map
         if (Map.Width != OldMap.Width || Map.Height != OldMap.Height)
         {
+            List<Layer> OldLayers = OldMap.Layers.ConvertAll(l => (Layer) l.Clone());
+            Size OldSize = new Size(OldMap.Width, OldMap.Height);
             Map.Resize(OldMap.Width, Map.Width, OldMap.Height, Map.Height);
+            AllChanges.Add(new Undo.MapSizeChangeUndoAction(Map.ID, OldLayers, OldSize, Map.Layers.ConvertAll(l => (Layer) l.Clone()), new Size(Map.Width, Map.Height)));
             UnsavedChanges = true;
         }
         // Marks name change
-        if (Map.Name != OldMap.Name) UnsavedChanges = true;
+        if (Map.Name != OldMap.Name)
+        {
+            UnsavedChanges = true;
+            AllChanges.Add(new Undo.MapRenameUndoAction(Map.ID, OldMap.Name, Map.Name));
+        }
         // Marks BGM changes
         if (!Map.BGM.Equals(OldMap.BGM) || Map.AutoplayBGM != OldMap.AutoplayBGM)
         {
-            Map.BGM = OldMap.BGM;
-            Map.AutoplayBGM = OldMap.AutoplayBGM;
             UnsavedChanges = true;
+            AllChanges.Add(new Undo.MapAudioFileChangeUndoAction(Map.ID, (AudioFile) OldMap.BGM.Clone(), OldMap.AutoplayBGM, (AudioFile) Map.BGM.Clone(), Map.AutoplayBGM, true));
         }
         // Marks BGS changes
         if (!Map.BGS.Equals(OldMap.BGS) || Map.AutoplayBGS != OldMap.AutoplayBGS)
         {
-            Map.BGS = OldMap.BGS;
-            Map.AutoplayBGS = OldMap.AutoplayBGS;
             UnsavedChanges = true;
+            AllChanges.Add(new Undo.MapAudioFileChangeUndoAction(Map.ID, (AudioFile) OldMap.BGS.Clone(), OldMap.AutoplayBGS, (AudioFile) Map.BGS.Clone(), Map.AutoplayBGS, false));
         }
         // Updates tilesets
         bool tilesetschanged = false;
         if (Map.TilesetIDs.Count != OldMap.TilesetIDs.Count) tilesetschanged = true;
         if (!tilesetschanged)
+        {
             for (int i = 0; i < Map.TilesetIDs.Count; i++)
             {
                 if (Map.TilesetIDs[i] != OldMap.TilesetIDs[i])
@@ -384,6 +392,7 @@ public class MapPropertiesWindow : PopupWindow
                     break;
                 }
             }
+        }
         if (tilesetschanged)
         {
             UnsavedChanges = true;
@@ -449,6 +458,7 @@ public class MapPropertiesWindow : PopupWindow
                 Continue();
             }*/
             #endregion
+            AllChanges.Add(new Undo.MapTilesetsChangeUndoAction(Map.ID, new List<int>(OldMap.TilesetIDs), new List<int>(Map.TilesetIDs)));
             Continue();
         }
         if (!tilesetschanged) Continue();
