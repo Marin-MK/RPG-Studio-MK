@@ -774,7 +774,7 @@ public class MapImageWidget : Widget
                 if (Undo.TileGroupUndoAction.GetLatest() == null || Undo.TileGroupUndoAction.GetLatest().Ready)
                 {
                     Editor.CanUndo = false;
-                    Undo.TileGroupUndoAction.Log(MapID);
+                    Undo.TileGroupUndoAction.Create(MapID);
                 }
                 Undo.TileGroupUndoAction.AddToLatest(MapPosition, layer, NewTile, OldTile);
                 DrawTile(MapTileX, MapTileY, layer, NewTile, OldTile,
@@ -847,7 +847,8 @@ public class MapImageWidget : Widget
                 if (Tile.ID != -1 && !ForceUpdateNearbyAutotiles) // Only draws
                 {
                     AnimatedAutotiles.Add(new List<int>() { Layer, X, Y, MapData.AutotileIDs[Tile.Index], Tile.ID });
-                    int frame = Editor.GeneralSettings.ShowMapAnimations ? (int)Math.Floor((double)AnimateCount / Data.Autotiles[MapData.AutotileIDs[Tile.Index]].AnimateSpeed) : 0;
+                    Autotile a = Data.Autotiles[MapData.AutotileIDs[Tile.Index]];
+                    int frame = a != null && Editor.GeneralSettings.ShowMapAnimations ? (int)Math.Floor((double)AnimateCount / a.AnimateSpeed) : 0;
                     DrawAutotile(Layer, X, Y, MapData.AutotileIDs[Tile.Index], Tile.ID, frame);
                 }
                 else // Draws and updates
