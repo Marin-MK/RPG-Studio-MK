@@ -79,7 +79,8 @@ public class MapSelectPanel : Widget
             },
             new MenuItem("Paste Map")
             {
-                OnLeftClick = PasteMap
+                OnLeftClick = PasteMap,
+                IsClickable = delegate (BoolEventArgs e) { e.Value = Utilities.IsClipboardValidBinary(BinaryData.MAP); }
             },
             new MenuSeparator(),
             new MenuItem("Delete")
