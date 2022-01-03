@@ -495,7 +495,7 @@ public class TilesPanel : Widget
             TileStartX = TileEndX = -1;
             TileStartY = TileEndY = -1;
             this.Erase = true;
-            MapViewer.TileDataList = new List<TileData>() { };
+            MapViewer.TileDataList.Clear();
             for (int i = 0; i < MapViewer.CursorWidth * MapViewer.CursorHeight; i++)
                 MapViewer.TileDataList.Add(null);
             MapViewer.UpdateCursorPosition();

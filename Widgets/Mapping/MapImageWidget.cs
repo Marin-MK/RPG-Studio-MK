@@ -736,7 +736,7 @@ public class MapImageWidget : Widget
 
             bool Blank = MapViewer.TilesPanel.Erase;
 
-            TileData tiledata = MapViewer.TileDataList[sely * (MapViewer.CursorWidth + 1) + selx];
+            TileData tiledata = Blank ? null : MapViewer.TileDataList[sely * (MapViewer.CursorWidth + 1) + selx];
             TileType tiletype = TileType.Tileset;
             int tileid = -1;
             int index = -1;
