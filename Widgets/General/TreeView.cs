@@ -403,7 +403,7 @@ public class TreeView : Widget
                 int mapid = (int)n.Object;
                 Game.Data.Maps[mapid].Expanded = !n.Collapsed;
                 if (n.Collapsed && n.ContainsNode(SelectedNode)) SelectedNode = n;
-                Undo.NodeCollapseChangeUndoAction.Create(n, !n.Collapsed, n.Collapsed, selmapid);
+                Undo.NodeCollapseChangeUndoAction.Create(mapid, !n.Collapsed, n.Collapsed, selmapid);
             }
             else
             {
@@ -552,6 +552,21 @@ public class TreeNode : ICloneable
             else
             {
                 TreeNode n = Nodes[i].FindNode(match);
+                if (n != null) return n;
+            }
+        }
+        return null;
+    }
+
+    public TreeNode FindVisibleNode(Predicate<TreeNode> match)
+    {
+        for (int i = 0; i < Nodes.Count; i++)
+        {
+            bool it = match.Invoke(Nodes[i]);
+            if (it) return Nodes[i];
+            else if (!Nodes[i].Collapsed)
+            {
+                TreeNode n = Nodes[i].FindVisibleNode(match);
                 if (n != null) return n;
             }
         }

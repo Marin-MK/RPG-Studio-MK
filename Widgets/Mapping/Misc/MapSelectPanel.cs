@@ -335,6 +335,11 @@ public class MapSelectPanel : Widget
     /// </summary>
     void DeleteMapAndKeepChildren()
     {
+        Dictionary<int, (int Order, int Parent)> OldOrderParentList = new Dictionary<int, (int Order, int Parent)>();
+        foreach (KeyValuePair<int, Map> kvp in Data.Maps)
+        {
+            OldOrderParentList.Add(kvp.Key, (kvp.Value.Order, kvp.Value.ParentID));
+        }
         int MapID = (int)mapview.HoveringNode.Object;
         Map Map = Data.Maps[MapID];
         Data.Maps.Remove(MapID);
@@ -370,6 +375,12 @@ public class MapSelectPanel : Widget
             }
         }
         mapview.Redraw();
+        Dictionary<int, (int Order, int Parent)> NewOrderParentList = new Dictionary<int, (int Order, int Parent)>();
+        foreach (KeyValuePair<int, Map> kvp in Data.Maps)
+        {
+            NewOrderParentList.Add(kvp.Key, (kvp.Value.Order, kvp.Value.ParentID));
+        }
+        Undo.MapDeleteUndoAction.Create(new List<Map>() { Map }, OldOrderParentList, NewOrderParentList);
     }
 
     /// <summary>
@@ -377,7 +388,12 @@ public class MapSelectPanel : Widget
     /// </summary>
     void DeleteMapAndDeleteChildren()
     {
-        DeleteMapRecursively(mapview.HoveringNode);
+        Dictionary<int, (int Order, int Parent)> OldOrderParentList = new Dictionary<int, (int Order, int Parent)>();
+        foreach (KeyValuePair<int, Map> kvp in Data.Maps)
+        {
+            OldOrderParentList.Add(kvp.Key, (kvp.Value.Order, kvp.Value.ParentID));
+        }
+        List<Map> Maps = DeleteMapRecursively(mapview.HoveringNode);
         for (int i = 0; i < mapview.Nodes.Count; i++)
         {
             if (mapview.Nodes[i] == mapview.HoveringNode)
@@ -393,6 +409,12 @@ public class MapSelectPanel : Widget
             }
         }
         Editor.OptimizeOrder();
+        Dictionary<int, (int Order, int Parent)> NewOrderParentList = new Dictionary<int, (int Order, int Parent)>();
+        foreach (KeyValuePair<int, Map> kvp in Data.Maps)
+        {
+            NewOrderParentList.Add(kvp.Key, (kvp.Value.Order, kvp.Value.ParentID));
+        }
+        Undo.MapDeleteUndoAction.Create(Maps, OldOrderParentList, NewOrderParentList);
     }
 
     private void DeleteMap(BaseEventArgs e)
@@ -420,15 +442,18 @@ public class MapSelectPanel : Widget
         };
     }
 
-    private void DeleteMapRecursively(TreeNode node)
+    private List<Map> DeleteMapRecursively(TreeNode node)
     {
+        List<Map> DeletedMaps = new List<Map>();
         for (int i = 0; i < node.Nodes.Count; i++)
         {
-            DeleteMapRecursively(node.Nodes[i]);
+            DeletedMaps.AddRange(DeleteMapRecursively(node.Nodes[i]));
         }
         int MapID = (int)node.Object;
         Map Map = Data.Maps[MapID];
         Data.Maps.Remove(MapID);
         Editor.DeletedMaps.Add(Map);
+        DeletedMaps.Add(Map);
+        return DeletedMaps;
     }
 }

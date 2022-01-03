@@ -9,22 +9,22 @@ namespace RPGStudioMK.Undo;
 
 public class NodeCollapseChangeUndoAction : BaseUndoAction
 {
-    public TreeNode Node;
+    public int MapID;
     public bool OldCollapsed;
     public bool NewCollapsed;
     public int SelectedMapID;
 
-    public NodeCollapseChangeUndoAction(TreeNode Node, bool OldCollapsed, bool NewCollapsed, int SelectedMapID)
+    public NodeCollapseChangeUndoAction(int MapID, bool OldCollapsed, bool NewCollapsed, int SelectedMapID)
     {
-        this.Node = Node;
+        this.MapID = MapID;
         this.OldCollapsed = OldCollapsed;
         this.NewCollapsed = NewCollapsed;
         this.SelectedMapID = SelectedMapID;
     }
 
-    public static void Create(TreeNode Node, bool OldCollapsed, bool NewCollapsed, int SelectedMapID)
+    public static void Create(int MapID, bool OldCollapsed, bool NewCollapsed, int SelectedMapID)
     {
-        var c = new NodeCollapseChangeUndoAction(Node, OldCollapsed, NewCollapsed, SelectedMapID);
+        var c = new NodeCollapseChangeUndoAction(MapID, OldCollapsed, NewCollapsed, SelectedMapID);
         c.Register();
     }
 
@@ -38,18 +38,37 @@ public class NodeCollapseChangeUndoAction : BaseUndoAction
         }
         TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.mapview;
         int SelectedMapID = (int) mapview.SelectedNode.Object;
+        TreeNode Node = null;
+        foreach (TreeNode n in mapview.Nodes)
+        {
+            if ((int) n.Object == this.MapID)
+            {
+                Node = n;
+                break;
+            }
+            else
+            {
+                TreeNode foundnode = n.FindNode(n => (int) n.Object == this.MapID);
+                if (foundnode != null)
+                {
+                    Node = foundnode;
+                    break;
+                }
+            }
+        }
         if (IsRedo)
         {
-            this.Node.Collapsed = NewCollapsed;
+            Node.Collapsed = NewCollapsed;
+            Game.Data.Maps[(int) Node.Object].Expanded = !NewCollapsed;
         }
         else
         {
-            this.Node.Collapsed = OldCollapsed;
+            Node.Collapsed = OldCollapsed;
+            Game.Data.Maps[(int) Node.Object].Expanded = !OldCollapsed;
         }
-        Game.Data.Maps[(int) this.Node.Object].Expanded = !this.Node.Collapsed;
-        if (this.Node.FindNode(n => (int) n.Object == SelectedMapID) != null)
+        if (Node.FindNode(n => (int) n.Object == SelectedMapID) != null)
         {
-            mapview.SetSelectedNode(this.Node);
+            mapview.SetSelectedNode(Node);
         }
         mapview.Redraw();
         return true;
