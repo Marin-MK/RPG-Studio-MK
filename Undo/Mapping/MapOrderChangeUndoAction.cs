@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RPGStudioMK;
+namespace RPGStudioMK.Undo;
 
 public class MapOrderChangeUndoAction : BaseUndoAction
 {

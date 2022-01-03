@@ -272,15 +272,15 @@ public class MapViewerTiles : MapViewerBase
                     {
                         // If we're continuing moving a selection, we start by undoing the last (ready!) selection in
                         // order to smoothly continue moving the selection.
-                        if (this.SelectionStartUndoLast && TileGroupUndoAction.GetLatestAll() != null && TileGroupUndoAction.GetLatestAll().PartOfSelection ||
-                            !this.SelectionStartUndoLast && TileGroupUndoAction.GetLatest() != null && !TileGroupUndoAction.GetLatest().Ready)
+                        if (this.SelectionStartUndoLast && Undo.TileGroupUndoAction.GetLatestAll() != null && Undo.TileGroupUndoAction.GetLatestAll().PartOfSelection ||
+                            !this.SelectionStartUndoLast && Undo.TileGroupUndoAction.GetLatest() != null && !Undo.TileGroupUndoAction.GetLatest().Ready)
                         {
-                            TileGroupUndoAction.GetLatestAll().Ready = true;
+                            Undo.TileGroupUndoAction.GetLatestAll().Ready = true;
                             Editor.Undo(true);
                             this.SelectionStartUndoLast = false;
                         }
                         bool All = TilesPanel.DrawTool == DrawTools.SelectionAllLayers;
-                        TileGroupUndoAction.Log(Map.ID, true);
+                        Undo.TileGroupUndoAction.Log(Map.ID, true);
                         for (int Layer = All ? 0 : LayerPanel.SelectedLayer; Layer < (All ? Map.Layers.Count : LayerPanel.SelectedLayer + 1); Layer++)
                         {
                             MapWidget.SetLayerLocked(Layer, false);
@@ -295,7 +295,7 @@ public class MapViewerTiles : MapViewerBase
                                         TileData oldtile = Map.Layers[Layer].Tiles[idx];
                                         Map.Layers[Layer].Tiles[idx] = null;
                                         MapWidget.DrawTile(SelectionTileOrigin.X + x, SelectionTileOrigin.Y + y, Layer, null, oldtile, true);
-                                        TileGroupUndoAction.AddToLatest(idx, Layer, null, oldtile);
+                                        Undo.TileGroupUndoAction.AddToLatest(idx, Layer, null, oldtile);
                                     }
                                 }
                             }
@@ -315,7 +315,7 @@ public class MapViewerTiles : MapViewerBase
                                     TileData tile = SelectionTiles.GetTile(Layer, listidx);
                                     Map.Layers[Layer].Tiles[tileidx] = tile;
                                     MapWidget.DrawTile(x, y, Layer, tile, oldtile, true);
-                                    TileGroupUndoAction.AddToLatest(tileidx, Layer, tile, oldtile);
+                                    Undo.TileGroupUndoAction.AddToLatest(tileidx, Layer, tile, oldtile);
                                 }
                             }
                             MapWidget.SetLayerLocked(Layer, true);
@@ -370,24 +370,24 @@ public class MapViewerTiles : MapViewerBase
                     // Thus you can say, redraw/undo the tiles if the quadrant you're in w.r.t the origin is not equal to
                     // the quadrant your mouse is moving to.
                     // This drastically increases performance over redrawing every single time you move a tile.
-                    if (TileGroupUndoAction.GetLatest() != null && !TileGroupUndoAction.GetLatest().Ready &&
+                    if (Undo.TileGroupUndoAction.GetLatest() != null && !Undo.TileGroupUndoAction.GetLatest().Ready &&
                         (TilesPanel.DrawTool == DrawTools.RectangleFilled && MoveDirection != CursorDirectionFromOrigin ||
                         TilesPanel.DrawTool == DrawTools.RectangleOutline ||
                         TilesPanel.DrawTool == DrawTools.EllipseFilled ||
                         TilesPanel.DrawTool == DrawTools.EllipseOutline)) // Ellipse tool redraws every tile movement regardless of quadrant/direction
                     {
-                        List<TileGroupUndoAction.TileChange> changes = new List<TileGroupUndoAction.TileChange>();
+                        List<Undo.TileGroupUndoAction.TileChange> changes = new List<Undo.TileGroupUndoAction.TileChange>();
                         // For all tiles that are both in the to-be-drawn area and in the current undo group,
                         // Take them out of the undo and draw group, and then undo the rest (non-drawn area)
                         // Then put the to-be-drawn area back in a new tile undo group for the next draw.
-                        TileGroupUndoAction action = TileGroupUndoAction.GetLatest();
+                        Undo.TileGroupUndoAction action = Undo.TileGroupUndoAction.GetLatest();
                         for (int i = 0; i < action.Tiles.Count; i++)
                         {
                             Point point = points.Find(p => p.X + p.Y * Map.Width == action.Tiles[i].MapPosition && action.Tiles[i].Layer == Layer);
                             if (point != null && point.X >= 0 && point.Y >= 0 && point.X < Map.Width && point.Y < Map.Height)
                             {
                                 points.Remove(point);
-                                TileGroupUndoAction.TileChange tc = action.Tiles[i];
+                                Undo.TileGroupUndoAction.TileChange tc = action.Tiles[i];
                                 changes.Add(tc);
                                 action.Tiles.RemoveAt(i);
                                 i--;
@@ -395,8 +395,8 @@ public class MapViewerTiles : MapViewerBase
                         }
                         action.Ready = true;
                         Editor.Undo(true);
-                        TileGroupUndoAction.Log(Map.ID);
-                        TileGroupUndoAction.GetLatest().Tiles.AddRange(changes);
+                        Undo.TileGroupUndoAction.Log(Map.ID);
+                        Undo.TileGroupUndoAction.GetLatest().Tiles.AddRange(changes);
                     }
                     else
                     {
@@ -405,7 +405,7 @@ public class MapViewerTiles : MapViewerBase
                         // Since these tiles would draw with the exact same time, it does not have any 
                         // visual impact, but we can separate these tiles out faster than if we
                         // proceed with the draw procedure.
-                        TileGroupUndoAction action = TileGroupUndoAction.GetLatest();
+                        Undo.TileGroupUndoAction action = Undo.TileGroupUndoAction.GetLatest();
                         if (action != null)
                         {
                             for (int i = 0; i < points.Count; i++)
@@ -494,7 +494,7 @@ public class MapViewerTiles : MapViewerBase
             if (!Editor.CanUndo)
             {
                 Editor.CanUndo = true;
-                TileGroupUndoAction.GetLatest().Ready = true;
+                Undo.TileGroupUndoAction.GetLatest().Ready = true;
                 if ((TilesPanel.DrawTool == DrawTools.RectangleFilled || TilesPanel.DrawTool == DrawTools.RectangleOutline ||
                      TilesPanel.DrawTool == DrawTools.EllipseFilled || TilesPanel.DrawTool == DrawTools.EllipseOutline) &&
                     !Cursor.Visible) Cursor.SetVisible(true);
@@ -707,7 +707,7 @@ public class MapViewerTiles : MapViewerBase
             if (!Editor.CanUndo)
             {
                 Editor.CanUndo = true;
-                TileGroupUndoAction.GetLatest().Ready = true;
+                Undo.TileGroupUndoAction.GetLatest().Ready = true;
                 if ((TilesPanel.DrawTool == DrawTools.RectangleFilled || TilesPanel.DrawTool == DrawTools.RectangleOutline ||
                      TilesPanel.DrawTool == DrawTools.EllipseFilled || TilesPanel.DrawTool == DrawTools.EllipseOutline) &&
                     !Cursor.Visible) Cursor.SetVisible(true);
@@ -755,7 +755,7 @@ public class MapViewerTiles : MapViewerBase
             {
                 if (All) for (int i = 0; i < Map.Layers.Count; i++) MapWidget.SetLayerLocked(i, false);
                 else MapWidget.SetLayerLocked(LayerPanel.SelectedLayer, false);
-                TileGroupUndoAction.Log(Map.ID);
+                Undo.TileGroupUndoAction.Log(Map.ID);
             }
             for (int Layer = All ? 0 : LayerPanel.SelectedLayer; Layer < (All ? Map.Layers.Count : LayerPanel.SelectedLayer + 1); Layer++)
             {
@@ -770,7 +770,7 @@ public class MapViewerTiles : MapViewerBase
                         {
                             Map.Layers[Layer].Tiles[idx] = null;
                             MapWidget.DrawTile(SelectionX + x, SelectionY + y, Layer, null, tile, true);
-                            TileGroupUndoAction.AddToLatest(idx, Layer, null, tile);
+                            Undo.TileGroupUndoAction.AddToLatest(idx, Layer, null, tile);
                         }
                     }
                 }
@@ -780,7 +780,7 @@ public class MapViewerTiles : MapViewerBase
             {
                 if (All) for (int i = 0; i < Map.Layers.Count; i++) MapWidget.SetLayerLocked(i, true);
                 else MapWidget.SetLayerLocked(LayerPanel.SelectedLayer, true);
-                TileGroupUndoAction.GetLatest().Ready = true;
+                Undo.TileGroupUndoAction.GetLatest().Ready = true;
             }
         }
     }
@@ -825,7 +825,7 @@ public class MapViewerTiles : MapViewerBase
         SelectionWidth = group.Width;
         SelectionHeight = group.Height;
         UpdateSelection();
-        TileGroupUndoAction.Log(Map.ID, true);
+        Undo.TileGroupUndoAction.Log(Map.ID, true);
         foreach (int Layer in group.LayerSelections.Keys)
         {
             MapWidget.SetLayerLocked(Layer, false);
@@ -838,14 +838,14 @@ public class MapViewerTiles : MapViewerBase
                     TileData tile = group.LayerSelections[Layer].Tiles[selidx];
                     TileData oldtile = Map.Layers[Layer].Tiles[tileidx];
                     Map.Layers[Layer].Tiles[tileidx] = tile;
-                    TileGroupUndoAction.AddToLatest(tileidx, Layer, tile, oldtile);
+                    Undo.TileGroupUndoAction.AddToLatest(tileidx, Layer, tile, oldtile);
                     MapWidget.DrawTile(SelectionX + x, SelectionY + y, Layer, tile, oldtile, true);
                 }
             }
             MapWidget.SetLayerLocked(Layer, true);
         }
         MouseMoving(Graphics.LastMouseEvent);
-        TileGroupUndoAction.GetLatest().Ready = true;
+        Undo.TileGroupUndoAction.GetLatest().Ready = true;
         this.SelectionStartUndoLast = true;
         this.SelectionFromPaste = true;
     }

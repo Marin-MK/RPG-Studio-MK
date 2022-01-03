@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace RPGStudioMK;
+namespace RPGStudioMK.Undo;
 
 public class BaseUndoAction
 {

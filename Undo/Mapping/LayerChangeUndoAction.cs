@@ -1,6 +1,6 @@
 ﻿using RPGStudioMK.Game;
 
-namespace RPGStudioMK;
+namespace RPGStudioMK.Undo;
 
 public class LayerChangeUndoAction : BaseUndoAction
 {

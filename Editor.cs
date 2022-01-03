@@ -52,12 +52,12 @@ public static class Editor
     /// <summary>
     /// Contains the list of recent actions that you made that you can undo.
     /// </summary>
-    public static List<BaseUndoAction> UndoList = new List<BaseUndoAction>();
+    public static List<Undo.BaseUndoAction> UndoList = new List<Undo.BaseUndoAction>();
 
     /// <summary>
     /// Contains the list of recent actions that you undid that you can redo.
     /// </summary>
-    public static List<BaseUndoAction> RedoList = new List<BaseUndoAction>();
+    public static List<Undo.BaseUndoAction> RedoList = new List<Undo.BaseUndoAction>();
 
     /// <summary>
     /// Event that is called after the editor has undone the latest action.

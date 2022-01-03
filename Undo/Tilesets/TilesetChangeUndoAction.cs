@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using RPGStudioMK.Game;
 
-namespace RPGStudioMK;
+namespace RPGStudioMK.Undo;
 
 public class TilesetChangeUndoAction : BaseUndoAction
 {

@@ -75,7 +75,7 @@ public class DataTypeTilesets : Widget
                 }
             }
             Editor.ProjectSettings.TilesetCapacity = NewCapacity;
-            TilesetCapacityChangeUndoAction.Create(OldTilesets, Data.Tilesets, OldCapacity, NewCapacity);
+            Undo.TilesetCapacityChangeUndoAction.Create(OldTilesets, Data.Tilesets, OldCapacity, NewCapacity);
             RedrawList();
         };
 
@@ -128,7 +128,7 @@ public class DataTypeTilesets : Widget
         };
         NameBox.TextArea.OnWidgetDeselected += _ =>
         {
-            TilesetNameChangeUndoAction.Create(Tileset.ID, OldText, NameBox.Text);
+            Undo.TilesetNameChangeUndoAction.Create(Tileset.ID, OldText, NameBox.Text);
         };
 
         GraphicLabel = new Label(MainBox);
@@ -150,7 +150,7 @@ public class DataTypeTilesets : Widget
                     GraphicBox.SetText(Tileset.GraphicName);
                     Tileset.CreateBitmap(true);
                     SetTileset(Tileset, true);
-                    TilesetGraphicChangeUndoAction.Create(Tileset.ID, OldGraphicName, Tileset.GraphicName);
+                    Undo.TilesetGraphicChangeUndoAction.Create(Tileset.ID, OldGraphicName, Tileset.GraphicName);
                 }
             };
         };
@@ -190,7 +190,7 @@ public class DataTypeTilesets : Widget
                         autotile.SetGraphic(picker.ChosenFilename ?? "");
                         AutotileBox.SetText(autotile.GraphicName);
                         TilesetContainer.SetTileset(Tileset, true);
-                        TilesetAutotileChangeUndoAction.Create(Tileset.ID, id, OldGraphicName, autotile.GraphicName);
+                        Undo.TilesetAutotileChangeUndoAction.Create(Tileset.ID, id, OldGraphicName, autotile.GraphicName);
                     }
                 };
             };
@@ -227,7 +227,7 @@ public class DataTypeTilesets : Widget
                     Tileset.FogSX = picker.ChosenFogSX;
                     Tileset.FogSY = picker.ChosenFogSY;
                     FogBox.SetText(Tileset.FogName);
-                    TilesetFogChangeUndoAction.Create(Tileset.ID, OldFogName, Tileset.FogName, OldFogHue, Tileset.FogHue,
+                    Undo.TilesetFogChangeUndoAction.Create(Tileset.ID, OldFogName, Tileset.FogName, OldFogHue, Tileset.FogHue,
                                                       OldFogOpacity, Tileset.FogOpacity, OldFogBlendType, Tileset.FogBlendType,
                                                       OldFogZoom, Tileset.FogZoom, OldFogSX, Tileset.FogSX, OldFogSY, Tileset.FogSY);
                 }
@@ -253,7 +253,7 @@ public class DataTypeTilesets : Widget
                     Tileset.PanoramaName = picker.ChosenPanoramaName;
                     Tileset.PanoramaHue = picker.ChosenPanoramaHue;
                     PanoramaBox.SetText(Tileset.PanoramaName);
-                    TilesetPanoramaChangeUndoAction.Create(Tileset.ID, OldPanoramaName, Tileset.PanoramaName, OldPanoramaHue, Tileset.PanoramaHue);
+                    Undo.TilesetPanoramaChangeUndoAction.Create(Tileset.ID, OldPanoramaName, Tileset.PanoramaName, OldPanoramaHue, Tileset.PanoramaHue);
                 }
             };
         };
@@ -511,7 +511,7 @@ public class DataTypeTilesets : Widget
         }
         RedrawList();
         SetTileset(NewTileset, true);
-        TilesetChangeUndoAction.Create(OldTileset, NewTileset);
+        Undo.TilesetChangeUndoAction.Create(OldTileset, NewTileset);
     }
 
     void DeleteTileset(BaseEventArgs e)
@@ -527,6 +527,6 @@ public class DataTypeTilesets : Widget
         Data.Tilesets[NewTileset.ID] = NewTileset;
         RedrawList();
         SetTileset(NewTileset, true);
-        TilesetChangeUndoAction.Create(OldTileset, NewTileset);
+        Undo.TilesetChangeUndoAction.Create(OldTileset, NewTileset);
     }
 }

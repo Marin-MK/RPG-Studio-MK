@@ -1,4 +1,4 @@
-﻿namespace RPGStudioMK;
+﻿namespace RPGStudioMK.Undo;
 
 public class LayerSwapUndoAction : BaseUndoAction
 {

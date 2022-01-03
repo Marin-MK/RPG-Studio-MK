@@ -403,7 +403,7 @@ public class TreeView : Widget
                 int mapid = (int)n.Object;
                 Game.Data.Maps[mapid].Expanded = !n.Collapsed;
                 if (n.Collapsed && n.ContainsNode(SelectedNode)) SelectedNode = n;
-                NodeCollapseChangeUndoAction.Create(n, !n.Collapsed, n.Collapsed, selmapid);
+                Undo.NodeCollapseChangeUndoAction.Create(n, !n.Collapsed, n.Collapsed, selmapid);
             }
             else
             {

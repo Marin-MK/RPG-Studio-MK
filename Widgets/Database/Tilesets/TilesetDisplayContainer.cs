@@ -410,7 +410,7 @@ public class TilesetDisplayContainer : Widget
             Game.Passability OldPassability = Tileset.Passabilities[TileID];
             Game.Passability passability = OldPassability == Game.Passability.All ? Game.Passability.None : Game.Passability.All;
             SetTilePassability(TileID, TileX, TileY, passability);
-            TilePassabilityChangeUndoAction.Create(Tileset.ID, TileID, TileX, TileY, OldPassability, Tileset.Passabilities[TileID], false);
+            Undo.TilePassabilityChangeUndoAction.Create(Tileset.ID, TileID, TileX, TileY, OldPassability, Tileset.Passabilities[TileID], false);
         }
     }
 
@@ -442,7 +442,7 @@ public class TilesetDisplayContainer : Widget
                 else passability |= Game.Passability.Down;
             }
             SetTilePassability(TileID, TileX, TileY, passability);
-            TilePassabilityChangeUndoAction.Create(Tileset.ID, TileID, TileX, TileY, OldPassability, Tileset.Passabilities[TileID], true);
+            Undo.TilePassabilityChangeUndoAction.Create(Tileset.ID, TileID, TileX, TileY, OldPassability, Tileset.Passabilities[TileID], true);
         }
     }
 
@@ -456,7 +456,7 @@ public class TilesetDisplayContainer : Widget
         if (priority > 5) priority = 0;
         if (priority < 0) priority = 5;
         SetTilePriority(TileID, TileX, TileY, priority);
-        TilePriorityChangeUndoAction.Create(Tileset.ID, TileID, TileX, TileY, OldPriority, Tileset.Priorities[TileID]);
+        Undo.TilePriorityChangeUndoAction.Create(Tileset.ID, TileID, TileX, TileY, OldPriority, Tileset.Priorities[TileID]);
     }
 
     void InputBush(MouseEventArgs e, int TileID, int TileX, int TileY)
@@ -467,7 +467,7 @@ public class TilesetDisplayContainer : Widget
             bool OldBush = Tileset.BushFlags[TileID];
             bool Bush = !OldBush;
             SetTileBush(TileID, TileX, TileY, Bush);
-            TileBushChangeUndoAction.Create(Tileset.ID, TileID, TileX, TileY, OldBush, Tileset.BushFlags[TileID]);
+            Undo.TileBushChangeUndoAction.Create(Tileset.ID, TileID, TileX, TileY, OldBush, Tileset.BushFlags[TileID]);
         }
     }
 
@@ -479,7 +479,7 @@ public class TilesetDisplayContainer : Widget
             bool OldCounter = Tileset.CounterFlags[TileID];
             bool Counter = !OldCounter;
             SetTileCounter(TileID, TileX, TileY, Counter);
-            TileCounterChangeUndoAction.Create(Tileset.ID, TileID, TileX, TileY, OldCounter, Tileset.CounterFlags[TileID]);
+            Undo.TileCounterChangeUndoAction.Create(Tileset.ID, TileID, TileX, TileY, OldCounter, Tileset.CounterFlags[TileID]);
         }
     }
 
@@ -493,7 +493,7 @@ public class TilesetDisplayContainer : Widget
         if (tag > 17) tag = 0;
         if (tag < 0) tag = 17;
         SetTileTag(TileID, TileX, TileY, tag);
-        TileTagChangeUndoAction.Create(Tileset.ID, TileID, TileX, TileY, OldTag, Tileset.Tags[TileID]);
+        Undo.TileTagChangeUndoAction.Create(Tileset.ID, TileID, TileX, TileY, OldTag, Tileset.Tags[TileID]);
     }
 
     public void SetTilePassability(int TileID, int TileX, int TileY, Game.Passability Passability)

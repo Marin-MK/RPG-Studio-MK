@@ -186,7 +186,7 @@ public class MapSelectPanel : Widget
         // Now update all map ParentID/Order fields to reflect the current Node structure
         Editor.UpdateOrder(mapview.Nodes);
         mapview.Redraw();
-        MapOrderChangeUndoAction.Create(OldNodes, mapview.Nodes.ConvertAll(n => (TreeNode) n.Clone()));
+        Undo.MapOrderChangeUndoAction.Create(OldNodes, mapview.Nodes.ConvertAll(n => (TreeNode) n.Clone()));
     }
 
     public TreeNode GetParent(TreeNode NodeToFindParentOf)

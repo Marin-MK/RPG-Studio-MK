@@ -134,7 +134,7 @@ public class LayerPanel : Widget
         MapViewer.SwapLayers(LayerIndex + 1, LayerIndex);
         CreateLayers();
         layerwidget.SetSelectedLayer(LayerIndex + 1);
-        if (!IsUndoAction) LayerSwapUndoAction.Create(Editor.MainWindow.MapWidget.Map.ID, LayerIndex, true);
+        if (!IsUndoAction) Undo.LayerSwapUndoAction.Create(Editor.MainWindow.MapWidget.Map.ID, LayerIndex, true);
     }
 
     private void MoveLayerDownEvent(BaseEventArgs e)
@@ -149,7 +149,7 @@ public class LayerPanel : Widget
         MapViewer.SwapLayers(LayerIndex - 1, LayerIndex);
         CreateLayers();
         layerwidget.SetSelectedLayer(LayerIndex - 1);
-        if (!IsUndoAction) LayerSwapUndoAction.Create(Editor.MainWindow.MapWidget.Map.ID, LayerIndex, false);
+        if (!IsUndoAction) Undo.LayerSwapUndoAction.Create(Editor.MainWindow.MapWidget.Map.ID, LayerIndex, false);
     }
 
     private void DeleteLayerEvent(BaseEventArgs e)
