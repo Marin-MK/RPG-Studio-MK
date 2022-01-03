@@ -820,7 +820,7 @@ public class MapImageWidget : Widget
             if (X < MapData.Width - 1 && Y < MapData.Height - 1) OldSurrounding[7] = (TileData)MapData.Layers[Layer].Tiles[id7]?.Clone();
         }
 
-        if (OldTile != null && OldTile.TileType == TileType.Autotile)
+        if (OldTile != null && OldTile.TileType == TileType.Autotile && ForceUpdateNearbyAutotiles)
         {
             UpdateAutotiles(Layer, X, Y, OldTile.Index, ForceUpdateNearbyAutotiles, true);
         }
