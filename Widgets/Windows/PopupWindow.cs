@@ -27,6 +27,7 @@ public class PopupWindow : Widget, IPopupWindow
         this.Window.SetActiveWidget(this);
         Window.SetOverlayZIndex(WindowLayer * 10 - 1);
         this.SetZIndex(WindowLayer * 10);
+        Editor.CanUndo = false;
     }
 
     public void CreateButton(string Text, BaseEvent OnClicked)
@@ -103,6 +104,7 @@ public class PopupWindow : Widget, IPopupWindow
     {
         Dispose();
         this.OnClosed?.Invoke(new BaseEventArgs());
+        Editor.CanUndo = true;
     }
 
     public override void Dispose()
