@@ -6,6 +6,8 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using System.Reflection;
 using System.Linq;
+using System.IO.Compression;
+using System.Text;
 
 namespace RPGStudioMK;
 
@@ -554,7 +556,7 @@ public static class Utilities
         if (o is ISerializable) data = ((ISerializable)o).Serialize();
         else if (o.GetType().GetGenericTypeDefinition() == typeof(List<>)) data = SerializeList((IEnumerable<ISerializable>)o);
         else throw new Exception($"Could not serialize object.");
-        Input.SetClipboard($"RSMKDATA.{Type}:{data}");
+        Input.SetClipboard($"RSMKDATA.{Type}:{Compress(data)}");
     }
 
     public static string GetClipboardString()
@@ -568,7 +570,7 @@ public static class Utilities
         if (data.StartsWith("RSMKDATA.")) data = data.Substring(data.IndexOf(':') + 1);
         else throw new Exception("Attempted to parse non-RSMK data.");
         MethodInfo method = typeof(T).GetMethod("Deserialize", BindingFlags.Public | BindingFlags.Static);
-        return (T)method.Invoke(null, new object[1] { data });
+        return (T)method.Invoke(null, new object[1] { Decompress(data) });
     }
 
     public static List<T> GetClipboardList<T>() where T : ISerializable
@@ -576,12 +578,63 @@ public static class Utilities
         string data = GetClipboardString();
         if (data.StartsWith("RSMKDATA.")) data = data.Substring(data.IndexOf(':') + 1);
         else throw new Exception("Attempted to parse non-RSMK data.");
-        return DeserializeList<T>(data);
+        return DeserializeList<T>(Decompress(data));
     }
 
     public static bool IsClipboardValidBinary(BinaryData Type)
     {
         return GetClipboardString().StartsWith($"RSMKDATA.{Type}:");
+    }
+
+    public static string Decompress(string String)
+    {
+        MemoryStream inputstream = new MemoryStream();
+        inputstream.Write(Convert.FromBase64String(String));
+        inputstream.Seek(0, SeekOrigin.Begin);
+        MemoryStream output = new MemoryStream();
+        using (DeflateStream deflate = new DeflateStream(inputstream, CompressionMode.Decompress))
+        {
+            deflate.CopyTo(output);
+            deflate.Close();
+        }
+        byte[] data = output.ToArray();
+        inputstream.Dispose();
+        output.Dispose();
+        return Encoding.UTF8.GetString(data);
+    }
+
+    public static string Compress(string String)
+    {
+        MemoryStream cstream = new MemoryStream();
+        // Optimal compression
+        DeflateStream deflate = new DeflateStream(cstream, CompressionLevel.SmallestSize, true);
+        // Write to cstream
+        byte[] inputbytes = Encoding.UTF8.GetBytes(String);
+        deflate.Write(inputbytes);
+        deflate.Close();
+        // Calculate adler checksum over uncompressed data
+        uint adler = CalculateAdler(inputbytes);
+        // Write checksum to compressed datastream
+        byte[] adlerbytes = BitConverter.GetBytes(adler);
+        if (BitConverter.IsLittleEndian) Array.Reverse(adlerbytes);
+        cstream.Write(adlerbytes, 0, 4);
+        deflate.Dispose();
+        cstream.Seek(0, SeekOrigin.Begin);
+        byte[] outbytes = cstream.ToArray();
+        cstream.Dispose();
+        return Convert.ToBase64String(outbytes);
+    }
+
+    static uint CalculateAdler(byte[] Data)
+    {
+        const int mod = 65521;
+        uint a = 1, b = 0;
+        foreach (byte x in Data)
+        {
+            a = (a + (byte)x) % mod;
+            b = (b + a) % mod;
+        }
+        return (b << 16) | a;
     }
 }
 
