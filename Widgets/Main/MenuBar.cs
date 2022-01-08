@@ -23,7 +23,8 @@ public class MenuBar : Widget
 
         RegisterShortcuts(new List<Shortcut>()
         {
-            new Shortcut(this, new Key(Keycode.S, Keycode.CTRL), delegate (BaseEventArgs e) { Editor.SaveProject(); }, true)
+            new Shortcut(this, new Key(Keycode.S, Keycode.CTRL), delegate (BaseEventArgs e) { Editor.SaveProject(); }, true),
+            new Shortcut(this, new Key(Keycode.F12), delegate (BaseEventArgs e) { Editor.StartGame(); }, true)
         });
     }
 
