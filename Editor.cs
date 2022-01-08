@@ -533,7 +533,7 @@ public static class Editor
     /// </summary>
     public static void StartGame()
     {
-        //peridot.Program.EmbedGame(MainWindow, Data.ProjectPath);
+        GameRunner gr = new GameRunner();
     }
 
     /// <summary>

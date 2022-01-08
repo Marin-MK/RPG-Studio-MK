@@ -12,7 +12,7 @@ public class ModeButton : GradientButton
         Sprites["bg"].Visible = false;
 
         OnWidgetSelected += WidgetSelected;
-        OnLeftClick += delegate (BaseEventArgs e) { SetSelected(true); };
+        OnClicked += delegate (BaseEventArgs e) { SetSelected(true); };
     }
 
     public void SetSelected(bool Selected, bool Starting = false)

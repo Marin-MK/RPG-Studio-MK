@@ -6,10 +6,12 @@ public class GradientButton : Widget
 {
     public string Text { get; private set; } = "";
 
-    public new BaseEvent OnLeftClick;
+    public BaseEvent OnClicked;
 
     public GradientButton(IContainer Parent, string Text) : base(Parent)
     {
+        this.Text = Text;
+
         Sprites["bg"] = new Sprite(this.Viewport);
         Sprites["bg"].Bitmap = new Bitmap(1, 31);
         Sprites["bg"].Bitmap.Unlock();
@@ -48,7 +50,7 @@ public class GradientButton : Widget
         base.MouseDown(e);
         if (WidgetIM.Hovering && e.LeftButton != e.OldLeftButton && e.LeftButton)
         {
-            OnLeftClick?.Invoke(new BaseEventArgs());
+            this.OnClicked?.Invoke(new BaseEventArgs());
         }
     }
 }

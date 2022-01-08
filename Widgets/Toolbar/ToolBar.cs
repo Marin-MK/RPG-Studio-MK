@@ -54,10 +54,12 @@ public class ToolBar : Widget
         Redo.OnClicked += delegate (BaseEventArgs e) { Editor.Redo(); };
         Redo.SetEnabled(false);
 
-        PlayButton = new GradientButton(this, "Save");
-        PlayButton.SetGradient(new Color(184, 56, 98), new Color(143, 49, 167));
-        SaveButton = new GradientButton(this, "Play");
-        SaveButton.SetGradient(new Color(87, 168, 127), new Color(78, 102, 195));
+        PlayButton = new GradientButton(this, "Play");
+        PlayButton.SetGradient(new Color(87, 168, 127), new Color(78, 102, 195));
+        PlayButton.OnClicked = _ => Editor.StartGame();
+        SaveButton = new GradientButton(this, "Save");
+        SaveButton.SetGradient(new Color(184, 56, 98), new Color(143, 49, 167));
+        SaveButton.OnClicked = _ => Editor.SaveProject();
     }
 
     public void Refresh()
@@ -68,8 +70,8 @@ public class ToolBar : Widget
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-        SaveButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width, 2);
-        PlayButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width - 12 - SaveButton.Size.Width, 2);
+        PlayButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width, 2);
+        SaveButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width - 12 - SaveButton.Size.Width, 2);
         if (Size.Width < 800)
         {
 
