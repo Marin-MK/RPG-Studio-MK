@@ -533,6 +533,7 @@ public static class Editor
     /// </summary>
     public static void StartGame()
     {
+        SaveProject();
         GameRunner gr = new GameRunner();
     }
 
