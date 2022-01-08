@@ -285,7 +285,10 @@ public class MapSelectPanel : Widget
                     Layer Layer = new Layer($"Layer {z + 1}", mpw.Map.Width, mpw.Map.Height);
                     mpw.Map.Layers.Add(Layer);
                 }
-                Editor.AddMap(mpw.Map, mapview.HoveringNode == null ? 0 : (int)mapview.HoveringNode.Object);
+                Dictionary<int, (int Order, int Parent)> OldOrderParentList = GetTreeState();
+                Editor.AddMap(mpw.Map, mapview.HoveringNode == null ? 0 : (int) mapview.HoveringNode.Object);
+                Dictionary<int, (int Order, int Parent)> NewOrderParentList = GetTreeState();
+                Undo.MapChangeUndoAction.Create(new List<Map>() { mpw.Map }, OldOrderParentList, NewOrderParentList, true);
             }
         };
     }
@@ -328,7 +331,10 @@ public class MapSelectPanel : Widget
         if (!Utilities.IsClipboardValidBinary(BinaryData.MAP)) return;
         Map map = Utilities.GetClipboard<Map>();
         map.ID = Editor.GetFreeMapID();
+        Dictionary<int, (int Order, int Parent)> OldOrderParentList = GetTreeState();
         Editor.AddMap(map, mapview.HoveringNode == null ? 0 : (int)mapview.HoveringNode.Object);
+        Dictionary<int, (int Order, int Parent)> NewOrderParentList = GetTreeState();
+        Undo.MapChangeUndoAction.Create(new List<Map>() { map }, OldOrderParentList, NewOrderParentList, true);
     }
 
     /// <summary>
@@ -336,11 +342,7 @@ public class MapSelectPanel : Widget
     /// </summary>
     void DeleteMapAndKeepChildren()
     {
-        Dictionary<int, (int Order, int Parent)> OldOrderParentList = new Dictionary<int, (int Order, int Parent)>();
-        foreach (KeyValuePair<int, Map> kvp in Data.Maps)
-        {
-            OldOrderParentList.Add(kvp.Key, (kvp.Value.Order, kvp.Value.ParentID));
-        }
+        Dictionary<int, (int Order, int Parent)> OldOrderParentList = GetTreeState();
         int MapID = (int)mapview.HoveringNode.Object;
         Map Map = Data.Maps[MapID];
         Data.Maps.Remove(MapID);
@@ -376,12 +378,18 @@ public class MapSelectPanel : Widget
             }
         }
         mapview.Redraw();
-        Dictionary<int, (int Order, int Parent)> NewOrderParentList = new Dictionary<int, (int Order, int Parent)>();
+        Dictionary<int, (int Order, int Parent)> NewOrderParentList = GetTreeState();
+        Undo.MapChangeUndoAction.Create(new List<Map>() { Map }, OldOrderParentList, NewOrderParentList, false);
+    }
+
+    Dictionary<int, (int Order, int Parent)> GetTreeState()
+    {
+        Dictionary<int, (int Order, int Parent)> OrderParentList = new Dictionary<int, (int Order, int Parent)>();
         foreach (KeyValuePair<int, Map> kvp in Data.Maps)
         {
-            NewOrderParentList.Add(kvp.Key, (kvp.Value.Order, kvp.Value.ParentID));
+            OrderParentList.Add(kvp.Key, (kvp.Value.Order, kvp.Value.ParentID));
         }
-        Undo.MapDeleteUndoAction.Create(new List<Map>() { Map }, OldOrderParentList, NewOrderParentList);
+        return OrderParentList;
     }
 
     /// <summary>
@@ -389,11 +397,7 @@ public class MapSelectPanel : Widget
     /// </summary>
     void DeleteMapAndDeleteChildren()
     {
-        Dictionary<int, (int Order, int Parent)> OldOrderParentList = new Dictionary<int, (int Order, int Parent)>();
-        foreach (KeyValuePair<int, Map> kvp in Data.Maps)
-        {
-            OldOrderParentList.Add(kvp.Key, (kvp.Value.Order, kvp.Value.ParentID));
-        }
+        Dictionary<int, (int Order, int Parent)> OldOrderParentList = GetTreeState();
         List<Map> Maps = DeleteMapRecursively(mapview.HoveringNode);
         for (int i = 0; i < mapview.Nodes.Count; i++)
         {
@@ -410,12 +414,8 @@ public class MapSelectPanel : Widget
             }
         }
         Editor.OptimizeOrder();
-        Dictionary<int, (int Order, int Parent)> NewOrderParentList = new Dictionary<int, (int Order, int Parent)>();
-        foreach (KeyValuePair<int, Map> kvp in Data.Maps)
-        {
-            NewOrderParentList.Add(kvp.Key, (kvp.Value.Order, kvp.Value.ParentID));
-        }
-        Undo.MapDeleteUndoAction.Create(Maps, OldOrderParentList, NewOrderParentList);
+        Dictionary<int, (int Order, int Parent)> NewOrderParentList = GetTreeState();
+        Undo.MapChangeUndoAction.Create(Maps, OldOrderParentList, NewOrderParentList, false);
     }
 
     private void DeleteMap(BaseEventArgs e)

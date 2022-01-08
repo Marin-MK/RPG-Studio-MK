@@ -8,22 +8,24 @@ using RPGStudioMK.Widgets;
 
 namespace RPGStudioMK.Undo;
 
-public class MapDeleteUndoAction : BaseUndoAction
+public class MapChangeUndoAction : BaseUndoAction
 {
     public List<Map> Maps;
     public Dictionary<int, (int Order, int Parent)> OldOrderParentList;
     public Dictionary<int, (int Order, int Parent)> NewOrderParentList;
+    public bool Creation;
 
-    public MapDeleteUndoAction(List<Map> Maps, Dictionary<int, (int, int)> OldOrderParentList, Dictionary<int, (int, int)> NewOrderParentList)
+    public MapChangeUndoAction(List<Map> Maps, Dictionary<int, (int, int)> OldOrderParentList, Dictionary<int, (int, int)> NewOrderParentList, bool Creation)
     {
         this.Maps = Maps;
         this.OldOrderParentList = OldOrderParentList;
         this.NewOrderParentList = NewOrderParentList;
+        this.Creation = Creation;
     }
 
-    public static void Create(List<Map> Maps, Dictionary<int, (int, int)> OldOrderParentList, Dictionary<int, (int, int)> NewOrderParentList)
+    public static void Create(List<Map> Maps, Dictionary<int, (int, int)> OldOrderParentList, Dictionary<int, (int, int)> NewOrderParentList, bool Creation)
     {
-        var c = new MapDeleteUndoAction(Maps, OldOrderParentList, NewOrderParentList);
+        var c = new MapChangeUndoAction(Maps, OldOrderParentList, NewOrderParentList, Creation);
         c.Register();
     }
 
@@ -39,15 +41,35 @@ public class MapDeleteUndoAction : BaseUndoAction
         TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.mapview;
         int SelectedMapID = (int) mapview.SelectedNode.Object;
         int MinOrder = Maps.Min(m => m.Order);
-        if (IsRedo)
+        if (Creation)
         {
-            Maps.ForEach(m => Data.Maps.Remove(m.ID));
-            OrderParentList = NewOrderParentList;
+            if (IsRedo)
+            {
+                // Redo Creation
+                Maps.ForEach(m => Data.Maps[m.ID] = m);
+                OrderParentList = NewOrderParentList;
+            }
+            else
+            {
+                // Undo Creation
+                Maps.ForEach(m => Data.Maps.Remove(m.ID));
+                OrderParentList = OldOrderParentList;
+            }
         }
         else
         {
-            Maps.ForEach(m => Data.Maps[m.ID] = m);
-            OrderParentList = OldOrderParentList;
+            if (IsRedo)
+            {
+                // Redo deletion
+                Maps.ForEach(m => Data.Maps.Remove(m.ID));
+                OrderParentList = NewOrderParentList;
+            }
+            else
+            {
+                // Undo deletion
+                Maps.ForEach(m => Data.Maps[m.ID] = m);
+                OrderParentList = OldOrderParentList;
+            }
         }
         foreach (KeyValuePair<int, (int Order, int Parent)> kvp in OrderParentList)
         {
