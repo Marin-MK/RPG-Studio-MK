@@ -534,7 +534,7 @@ public static class Editor
     public static void StartGame()
     {
         SaveProject();
-        GameRunner gr = new GameRunner();
+        GameRunner.Start();
     }
 
     /// <summary>

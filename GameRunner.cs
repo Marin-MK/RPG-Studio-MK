@@ -1,52 +1,55 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
 using RPGStudioMK.Game;
 
 namespace RPGStudioMK;
 
-public class GameRunner
+public static class GameRunner
 {
-    private Process Process;
-    private StreamWriter StreamWriter;
+    private static Process Process;
 
-    public bool Running { get { return !this.Process.HasExited; } }
-    public TextEvent OnDataOutput;
+    public static bool Running { get { return !Process.HasExited; } }
+    public static TextEvent OnDataOutput;
 
-    public GameRunner()
+    public static Server Server;
+
+    public static void Start()
     {
-        this.Process = new Process();
-        this.Process.StartInfo.FileName = Data.ProjectPath + "/Game.exe";
-        this.Process.StartInfo.Arguments = "debug";
-        //this.Process.StartInfo.RedirectStandardInput = true;
-        //this.Process.StartInfo.RedirectStandardOutput = true;
-        //this.Process.StartInfo.UseShellExecute = false;
-        
-        this.Process.Start();
-        //this.Process.BeginOutputReadLine();
-
-        //this.Process.OutputDataReceived += delegate (object sender, DataReceivedEventArgs e)
-        //{
-        //    this.OnDataOutput?.Invoke(new TextEventArgs(e.Data, null));
-        //};
-
-        //this.StreamWriter = this.Process.StandardInput;
-    }
-
-    public void Write(string Text, bool WriteInstantly = true)
-    {
-        this.StreamWriter.Write(Text);
-        if (WriteInstantly) this.Flush();
-    }
-
-    public void WriteLine(string Text, bool WriteInstantly = true)
-    {
-        this.StreamWriter.WriteLine(Text);
-        if (WriteInstantly) this.Flush();
-    }
-
-    public void Flush()
-    {
-        this.StreamWriter.Flush();
+        Process = new Process();
+        Process.StartInfo.FileName = Data.ProjectPath + "/Game.exe";
+        Process.StartInfo.Arguments = "debug";
+        Process.Start();
+        if (Server == null)
+        {
+            Server = new Server(59995);
+            Console.WriteLine("Server started.");
+            Server.OnClientAccepted += delegate (Server.Socket Socket)
+            {
+                Console.WriteLine($"Socket {Socket.ID} connected.");
+            };
+            Server.OnClientMessaged += delegate (Server.Socket Socket, string Message)
+            {
+                Console.WriteLine($"Socket {Socket.ID} :: {Message}");
+            };
+            Server.OnClientTimedOut += delegate (Server.Socket Socket)
+            {
+                Console.WriteLine($"Socket {Socket.ID} timed out.");
+            };
+            Server.OnClientClosed += delegate (Server.Socket Socket)
+            {
+                Console.WriteLine($"Socket {Socket.ID} disconnected.");
+                Server.Stop();
+            };
+            Server.OnServerClosed += delegate (BaseEventArgs e)
+            {
+                Console.WriteLine("Server closed.");
+                Server = null;
+            };
+        }
     }
 }
