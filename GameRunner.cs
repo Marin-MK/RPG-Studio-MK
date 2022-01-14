@@ -50,11 +50,12 @@ public static class GameRunner
                     Server = null;
                     FirstConnectedID = null;
                 };
+                Socket.Write("ready");
             }
             else
             {
-                Socket.Write("close_rejected");
                 Console.WriteLine($"Socket {Socket.ID} rejected.");
+                Socket.Close();
             }
         };
         Server.OnServerClosed += delegate (BaseEventArgs e)
