@@ -104,42 +104,46 @@ public class Server
 
         private void Loop()
         {
-            List<byte> Buffer = new List<byte>();
-            while (Connected)
+            try
             {
-                DateTime Now = DateTime.Now;
-                if (!AwaitingPing)
+                List<byte> Buffer = new List<byte>();
+                while (Connected)
                 {
-                    if ((Now - LastPing) > PingInterval)
+                    DateTime Now = DateTime.Now;
+                    if (!AwaitingPing)
                     {
-                        AwaitingPing = true;
-                        PingTimeoutTime = Now + PingTimeout;
-                        Write("ping");
+                        if ((Now - LastPing) > PingInterval)
+                        {
+                            AwaitingPing = true;
+                            PingTimeoutTime = Now + PingTimeout;
+                            Write("ping");
+                        }
                     }
-                }
-                else
-                {
-                    if (Now > PingTimeoutTime)
+                    else
                     {
-                        Connected = false;
-                        OnTimedOut?.Invoke(this);
-                        break;
+                        if (Now > PingTimeoutTime)
+                        {
+                            Connected = false;
+                            OnTimedOut?.Invoke(this);
+                            break;
+                        }
                     }
+                    if (!Stream.DataAvailable) continue;
+                    while (Stream.DataAvailable)
+                    {
+                        int Data = Stream.ReadByte();
+                        if (Data == -1) break;
+                        Buffer.Add((byte)Data);
+                    }
+                    string received = Encoding.UTF8.GetString(Buffer.ToArray()).TrimEnd('\r', '\n');
+                    Buffer.Clear();
+                    OnMessaged?.Invoke(this, received);
+                    AwaitingPing = false;
+                    LastPing = Now;
                 }
-                if (!Stream.DataAvailable) continue;
-                while (Stream.DataAvailable)
-                {
-                    int Data = Stream.ReadByte();
-                    if (Data == -1) break;
-                    Buffer.Add((byte)Data);
-                }
-                string received = Encoding.UTF8.GetString(Buffer.ToArray()).TrimEnd('\r', '\n');
-                Buffer.Clear();
-                OnMessaged?.Invoke(this, received);
-                AwaitingPing = false;
-                LastPing = Now;
             }
-            Close();
+            catch (SocketException) { }
+            finally { Close(); }
         }
 
         public void Write(string Text)
