@@ -69,12 +69,13 @@ public class MainEditorWindow : UIWindow
 
             if (Editor.InProject)
             {
-                    // Save window when closing with the top-right X button
-                    if (Program.ReleaseMode && !Program.ThrownError)
+                // Save window when closing with the top-right X button
+                if (Program.ReleaseMode && !Program.ThrownError)
                 {
                     e.Value = true;
                     EnsureSaved(Dispose);
                 }
+                GameRunner.Stop();
             }
         };
 
@@ -123,127 +124,127 @@ public class MainEditorWindow : UIWindow
         MenuBar.SetBackgroundColor(10, 23, 37);
         MenuBar.SetGridRow(0);
         MenuBar.SetItems(new List<MenuItem>()
+        {
+            new MenuItem("File")
             {
-                new MenuItem("File")
+                Items = new List<IMenuItem>()
                 {
-                    Items = new List<IMenuItem>()
+                    new MenuItem("New")
                     {
-                        new MenuItem("New")
-                        {
-                            HelpText = "Create a new project.",
-                            OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.NewProject); }
-                        },
-                        new MenuItem("Open")
-                        {
-                            HelpText = "Open an existing project.",
-                            Shortcut = "Ctrl+O",
-                            OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.OpenProject); }
-                        },
-                        new MenuItem("Save")
-                        {
-                            HelpText = "Save all changes in the current project.",
-                            Shortcut = "Ctrl+S",
-                            OnLeftClick = delegate (MouseEventArgs e) { Editor.SaveProject(); },
-                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
-                        },
-                        new MenuSeparator(),
-                        new MenuItem("Close Project")
-                        {
-                            HelpText = "Close this project and return to the welcome screen.",
-                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
-                            OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.CloseProject); }
-                        },
-                        new MenuItem("Reload Project")
-                        {
-                            HelpText = "Closes and immediately reopens the project. Used for quickly determining if changes are saved properly, or to restore an old version.",
-                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
-                            OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.ReloadProject); }
-                        },
-                        new MenuItem("Exit Editor")
-                        {
-                            HelpText = "Close this project and quit the program.",
-                            OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.ExitEditor); }
-                        }
-                    }
-                },
-                new MenuItem("Edit")
-                {
-                    Items = new List<IMenuItem>()
+                        HelpText = "Create a new project.",
+                        OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.NewProject); }
+                    },
+                    new MenuItem("Open")
                     {
-                        new MenuItem("Restore Map")
-                        {
-                            HelpText = "Restore a map that was deleted during this session.",
-                            OnLeftClick = delegate (MouseEventArgs e) { Editor.RestoreMap(); },
-                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
-                        },
-                        new MenuItem("Clear deleted map cache")
-                        {
-                            HelpText = "Clears the internal cache of restore-able deleted maps.",
-                            OnLeftClick = delegate (MouseEventArgs e) { Editor.ClearMapCache(); },
-                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
-                        }
-                    }
-                },
-                new MenuItem("View")
-                {
-                    Items = new List<IMenuItem>()
+                        HelpText = "Open an existing project.",
+                        Shortcut = "Ctrl+O",
+                        OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.OpenProject); }
+                    },
+                    new MenuItem("Save")
                     {
-                        new MenuItem("Toggle Animations")
-                        {
-                            HelpText = "Toggles the animation of autotiles, fogs and panoramas.",
-                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
-                            OnLeftClick = delegate (MouseEventArgs e) { Editor.ToggleMapAnimations(); }
-                        },
-                        new MenuItem("Toggle Grid")
-                        {
-                            HelpText = "Toggles the visibility of the grid overlay while mapping.",
-                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
-                            OnLeftClick = delegate (MouseEventArgs e) { Editor.ToggleGrid(); }
-                        }
-                    }
-                },
-                new MenuItem("Game")
-                {
-                    Items = new List<IMenuItem>()
+                        HelpText = "Save all changes in the current project.",
+                        Shortcut = "Ctrl+S",
+                        OnLeftClick = delegate (MouseEventArgs e) { Editor.SaveProject(); },
+                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
+                    },
+                    new MenuSeparator(),
+                    new MenuItem("Close Project")
                     {
-                        new MenuItem("Play Game")
-                        {
-                            Shortcut = "F12",
-                            HelpText = "Play the game.",
-                            OnLeftClick = delegate (MouseEventArgs e) { Editor.StartGame(); },
-                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
-                        },
-                        new MenuItem("Open Game Folder")
-                        {
-                            HelpText = "Opens the file explorer and navigates to the project folder.",
-                            OnLeftClick = delegate (MouseEventArgs e) { Editor.OpenGameFolder(); },
-                            IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
-                        }
-                    }
-                },
-                new MenuItem("Help")
-                {
-                    Items = new List<IMenuItem>()
+                        HelpText = "Close this project and return to the welcome screen.",
+                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
+                        OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.CloseProject); }
+                    },
+                    new MenuItem("Reload Project")
                     {
-                        new MenuItem("Help")
-                        {
-                            Shortcut = "F1",
-                            HelpText = "Opens the help window.",
-                            OnLeftClick = delegate (MouseEventArgs e) { OpenHelpWindow(); }
-                        },
-                        new MenuItem("About RPG Studio MK")
-                        {
-                            HelpText = "Shows information about this program.",
-                            OnLeftClick = delegate (MouseEventArgs e) { OpenAboutWindow(); }
-                        },
-                        new MenuItem("Legal")
-                        {
-                            HelpText = "Shows legal information about this program.",
-                            OnLeftClick = delegate (MouseEventArgs e) { OpenLegalWindow(); }
-                        }
+                        HelpText = "Closes and immediately reopens the project. Used for quickly determining if changes are saved properly, or to restore an old version.",
+                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
+                        OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.ReloadProject); }
+                    },
+                    new MenuItem("Exit Editor")
+                    {
+                        HelpText = "Close this project and quit the program.",
+                        OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.ExitEditor); }
                     }
                 }
-            });
+            },
+            new MenuItem("Edit")
+            {
+                Items = new List<IMenuItem>()
+                {
+                    new MenuItem("Restore Map")
+                    {
+                        HelpText = "Restore a map that was deleted during this session.",
+                        OnLeftClick = delegate (MouseEventArgs e) { Editor.RestoreMap(); },
+                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
+                    },
+                    new MenuItem("Clear deleted map cache")
+                    {
+                        HelpText = "Clears the internal cache of restore-able deleted maps.",
+                        OnLeftClick = delegate (MouseEventArgs e) { Editor.ClearMapCache(); },
+                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
+                    }
+                }
+            },
+            new MenuItem("View")
+            {
+                Items = new List<IMenuItem>()
+                {
+                    new MenuItem("Toggle Animations")
+                    {
+                        HelpText = "Toggles the animation of autotiles, fogs and panoramas.",
+                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
+                        OnLeftClick = delegate (MouseEventArgs e) { Editor.ToggleMapAnimations(); }
+                    },
+                    new MenuItem("Toggle Grid")
+                    {
+                        HelpText = "Toggles the visibility of the grid overlay while mapping.",
+                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
+                        OnLeftClick = delegate (MouseEventArgs e) { Editor.ToggleGrid(); }
+                    }
+                }
+            },
+            new MenuItem("Game")
+            {
+                Items = new List<IMenuItem>()
+                {
+                    new MenuItem("Play Game")
+                    {
+                        Shortcut = "F12",
+                        HelpText = "Play the game.",
+                        OnLeftClick = delegate (MouseEventArgs e) { Editor.StartGame(); },
+                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
+                    },
+                    new MenuItem("Open Game Folder")
+                    {
+                        HelpText = "Opens the file explorer and navigates to the project folder.",
+                        OnLeftClick = delegate (MouseEventArgs e) { Editor.OpenGameFolder(); },
+                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
+                    }
+                }
+            },
+            new MenuItem("Help")
+            {
+                Items = new List<IMenuItem>()
+                {
+                    new MenuItem("Help")
+                    {
+                        Shortcut = "F1",
+                        HelpText = "Opens the help window.",
+                        OnLeftClick = delegate (MouseEventArgs e) { OpenHelpWindow(); }
+                    },
+                    new MenuItem("About RPG Studio MK")
+                    {
+                        HelpText = "Shows information about this program.",
+                        OnLeftClick = delegate (MouseEventArgs e) { OpenAboutWindow(); }
+                    },
+                    new MenuItem("Legal")
+                    {
+                        HelpText = "Shows legal information about this program.",
+                        OnLeftClick = delegate (MouseEventArgs e) { OpenLegalWindow(); }
+                    }
+                }
+            }
+        });
 
 
         // Toolbar (modes, icons, etc)
@@ -281,6 +282,7 @@ public class MainEditorWindow : UIWindow
             HomeScreen.SetGridRow(3);
         }
 
+        this.OnTick += _ => Editor.Update();
         this.UI.Update();
         this.Start();
 

@@ -751,6 +751,14 @@ public static class Editor
         DeletedMaps.Clear();
         UnsavedChanges = false;
     }
+
+    /// <summary>
+    /// Called every tick for logic updates.
+    /// </summary>
+    public static void Update()
+    {
+        GameRunner.Update();
+    }
 }
 
 [Serializable]

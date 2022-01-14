@@ -37,18 +37,17 @@ public class Server
                 {
                     TcpClient tcp = Listener.AcceptTcpClient();
                     Socket client = new Socket(this.ID++, tcp);
-                    Thread thread = new Thread(client.Loop);
-                    thread.Start();
                     Clients.Add(client);
+                    client.OnMessaged += (_, text) => OnClientMessaged?.Invoke(client, text);
+                    client.OnTimedOut += _ => OnClientTimedOut?.Invoke(client);
+                    client.OnClosed += _ => OnClientClosed?.Invoke(client);
                     OnClientAccepted?.Invoke(client);
-                    client.OnMessaged += e => OnClientMessaged?.Invoke(client, e.Text);
-                    client.OnTimedOut += e => OnClientTimedOut?.Invoke(client);
-                    client.OnClosed += e => OnClientClosed?.Invoke(client);
                 }
             }
             catch (SocketException) { }
             finally
             {
+                Stop();
                 Listener?.Stop();
                 Listener = null;
                 this.OnServerClosed?.Invoke(new BaseEventArgs());
@@ -63,9 +62,14 @@ public class Server
 
     public void Stop()
     {
+        if (!Open) return;
         Open = false;
         Listener?.Stop();
         Listener = null;
+        while (Clients.Count > 0)
+        {
+            Clients[0].Close();
+        }
     }
 
     public class Socket
@@ -76,78 +80,83 @@ public class Server
         public TimeSpan PingTimeout;
 
         TcpClient Client;
-        NetworkStream Stream;
+        NetworkStream Stream { get { return Client.GetStream(); } }
         DateTime LastPing;
         DateTime PingTimeoutTime;
         bool AwaitingPing;
+        Thread Thread;
 
-        public TextEvent OnMessaged;
-        public BaseEvent OnTimedOut;
-        public BaseEvent OnClosed;
+        public SocketTextEvent OnMessaged;
+        public SocketEvent OnTimedOut;
+        public SocketEvent OnClosed;
 
         public Socket(int ID, TcpClient Client)
         {
             this.ID = ID;
             this.Client = Client;
-            this.Stream = Client.GetStream();
             this.LastPing = DateTime.Now;
             this.AwaitingPing = false;
-            this.PingInterval = TimeSpan.FromSeconds(1);
-            this.PingTimeout = TimeSpan.FromSeconds(5);
+            this.PingInterval = TimeSpan.FromSeconds(2);
+            this.PingTimeout = TimeSpan.FromSeconds(2);
+            this.Thread = new Thread(Loop);
+            this.Thread.Start();
         }
 
-        public void Loop()
+        private void Loop()
         {
             List<byte> Buffer = new List<byte>();
             while (Connected)
             {
                 DateTime Now = DateTime.Now;
-                try
+                if (!AwaitingPing)
                 {
-                    if (!AwaitingPing)
+                    if ((Now - LastPing) > PingInterval)
                     {
-                        if ((Now - LastPing) > PingInterval)
-                        {
-                            AwaitingPing = true;
-                            PingTimeoutTime = Now + PingTimeout;
-                            Write("ping");
-                        }
+                        AwaitingPing = true;
+                        PingTimeoutTime = Now + PingTimeout;
+                        Write("ping");
                     }
-                    else
-                    {
-                        if (Now > PingTimeoutTime)
-                        {
-                            Connected = false;
-                            OnTimedOut?.Invoke(new BaseEventArgs());
-                            break;
-                        }
-                    }
-                    if (!Stream.DataAvailable) continue;
-                    while (Stream.DataAvailable)
-                    {
-                        int Data = Stream.ReadByte();
-                        if (Data == -1) break;
-                        Buffer.Add((byte)Data);
-                    }
-                    string received = Encoding.UTF8.GetString(Buffer.ToArray()).TrimEnd('\r', '\n');
-                    Buffer.Clear();
-                    OnMessaged?.Invoke(new TextEventArgs(received, null));
-                    AwaitingPing = false;
-                    LastPing = Now;
                 }
-                catch
+                else
                 {
-                    Connected = false;
+                    if (Now > PingTimeoutTime)
+                    {
+                        Connected = false;
+                        OnTimedOut?.Invoke(this);
+                        break;
+                    }
                 }
+                if (!Stream.DataAvailable) continue;
+                while (Stream.DataAvailable)
+                {
+                    int Data = Stream.ReadByte();
+                    if (Data == -1) break;
+                    Buffer.Add((byte)Data);
+                }
+                string received = Encoding.UTF8.GetString(Buffer.ToArray()).TrimEnd('\r', '\n');
+                Buffer.Clear();
+                OnMessaged?.Invoke(this, received);
+                AwaitingPing = false;
+                LastPing = Now;
             }
-            Client.Close();
-            OnClosed?.Invoke(new BaseEventArgs());
+            Close();
         }
 
         public void Write(string Text)
         {
             Stream.Write(Encoding.UTF8.GetBytes(Text + "\n"));
             Stream.Flush();
+        }
+
+        public void Close()
+        {
+            if (!this.Connected) return;
+            try { Write("close"); }
+            catch { }
+            this.Connected = false;
+            Client?.Close();
+            Client = null;
+            OnClosed?.Invoke(this);
         }
     }
 }

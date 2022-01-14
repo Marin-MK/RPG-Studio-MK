@@ -18,38 +18,70 @@ public static class GameRunner
 
     public static Server Server;
 
+    public static int? FirstConnectedID = null;
+
     public static void Start()
     {
+        if (Process != null || Server != null) return;
         Process = new Process();
         Process.StartInfo.FileName = Data.ProjectPath + "/Game.exe";
         Process.StartInfo.Arguments = "debug";
         Process.Start();
-        if (Server == null)
+        Server = new Server(59995);
+        Console.WriteLine("Server started.");
+        Server.OnClientAccepted += delegate (Server.Socket Socket)
         {
-            Server = new Server(59995);
-            Console.WriteLine("Server started.");
-            Server.OnClientAccepted += delegate (Server.Socket Socket)
+            if (FirstConnectedID == null)
             {
+                FirstConnectedID = Socket.ID;
                 Console.WriteLine($"Socket {Socket.ID} connected.");
-            };
-            Server.OnClientMessaged += delegate (Server.Socket Socket, string Message)
+                Socket.OnMessaged += delegate (Server.Socket Socket, string Message)
+                {
+                    Console.WriteLine($"Socket {Socket.ID} :: {Message}");
+                };
+                Socket.OnTimedOut += delegate (Server.Socket Socket)
+                {
+                    Console.WriteLine($"Socket {Socket.ID} timed out.");
+                };
+                Socket.OnClosed += delegate (Server.Socket Socket)
+                {
+                    Console.WriteLine($"Socket {Socket.ID} disconnected.");
+                    Server?.Stop();
+                    Server = null;
+                    FirstConnectedID = null;
+                };
+            }
+            else
             {
-                Console.WriteLine($"Socket {Socket.ID} :: {Message}");
-            };
-            Server.OnClientTimedOut += delegate (Server.Socket Socket)
-            {
-                Console.WriteLine($"Socket {Socket.ID} timed out.");
-            };
-            Server.OnClientClosed += delegate (Server.Socket Socket)
-            {
-                Console.WriteLine($"Socket {Socket.ID} disconnected.");
-                Server.Stop();
-            };
-            Server.OnServerClosed += delegate (BaseEventArgs e)
-            {
-                Console.WriteLine("Server closed.");
-                Server = null;
-            };
+                Socket.Write("close_rejected");
+                Console.WriteLine($"Socket {Socket.ID} rejected.");
+            }
+        };
+        Server.OnServerClosed += delegate (BaseEventArgs e)
+        {
+            Console.WriteLine("Server closed.");
+            Server = null;
+            FirstConnectedID = null;
+        };
+    }
+
+    public static void Update()
+    {
+        if (Process == null && Server != null || Process?.HasExited == true)
+        {
+            Server?.Stop();
+            Server = null;
+            Process = null;
+            FirstConnectedID = null;
         }
+    }
+
+    public static void Stop()
+    {
+        Server?.Stop();
+        Server = null;
+        Process?.Kill();
+        Process = null;
+        FirstConnectedID = null;
     }
 }
