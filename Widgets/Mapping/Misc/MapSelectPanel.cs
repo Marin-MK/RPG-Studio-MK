@@ -347,7 +347,6 @@ public class MapSelectPanel : Widget
         Map Map = Data.Maps[MapID];
         Data.Maps.Remove(MapID);
         Editor.DecrementMapOrderFrom(Map.Order);
-        Editor.DeletedMaps.Add(Map);
         for (int i = 0; i < mapview.Nodes.Count; i++)
         {
             if ((int)mapview.Nodes[i].Object == MapID)
@@ -453,7 +452,6 @@ public class MapSelectPanel : Widget
         int MapID = (int)node.Object;
         Map Map = Data.Maps[MapID];
         Data.Maps.Remove(MapID);
-        Editor.DeletedMaps.Add(Map);
         DeletedMaps.Add(Map);
         return DeletedMaps;
     }

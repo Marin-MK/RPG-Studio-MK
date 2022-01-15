@@ -167,24 +167,6 @@ public class MainEditorWindow : UIWindow
                     }
                 }
             },
-            new MenuItem("Edit")
-            {
-                Items = new List<IMenuItem>()
-                {
-                    new MenuItem("Restore Map")
-                    {
-                        HelpText = "Restore a map that was deleted during this session.",
-                        OnLeftClick = delegate (MouseEventArgs e) { Editor.RestoreMap(); },
-                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
-                    },
-                    new MenuItem("Clear deleted map cache")
-                    {
-                        HelpText = "Clears the internal cache of restore-able deleted maps.",
-                        OnLeftClick = delegate (MouseEventArgs e) { Editor.ClearMapCache(); },
-                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
-                    }
-                }
-            },
             new MenuItem("View")
             {
                 Items = new List<IMenuItem>()

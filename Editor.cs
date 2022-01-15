@@ -70,11 +70,6 @@ public static class Editor
     public static bool CanUndo = true;
 
     /// <summary>
-    /// A list of maps that were deleted this sessions. Allows you to restore a map.
-    /// </summary>
-    public static List<Map> DeletedMaps = new List<Map>();
-
-    /// <summary>
     /// The currently active mode of the editor.
     /// </summary>
     public static EditorMode Mode;
@@ -186,58 +181,6 @@ public static class Editor
         Data.SetProjectPath(projectfile);
         MainWindow.CreateEditor();
         MakeRecentProject();
-    }
-
-    /// <summary>
-    /// Allows the user to restore a map that was deleted during this session.
-    /// </summary>
-    public static void RestoreMap()
-    {
-        if (DeletedMaps.Count == 0)
-        {
-            new MessageBox("Info", "You have not deleted any maps during this session. If you delete a map, it will be available for restoration here for the rest of the session, or until you clear the deleted map cache.", IconType.Info);
-        }
-        else
-        {
-            MapPicker picker = new MapPicker(DeletedMaps, "Restore a Map", false);
-            picker.OnClosed += delegate (BaseEventArgs e)
-            {
-                if (picker.ChosenMap != null)
-                {
-                    bool NewID = false;
-                    Map Map = picker.ChosenMap;
-                    if (Data.Maps.ContainsKey(picker.ChosenMap.ID)) // ID in use, generate new ID
-                        {
-                        Map.ID = GetFreeMapID();
-                        NewID = true;
-                    }
-                    DeletedMaps.Remove(Map);
-                    AddMap(Map);
-                    if (NewID)
-                    {
-                        new MessageBox("Warning", "The ID of the restored map was already in use. It has been assigned a new ID. This may affect map connections or transfer commands.", IconType.Warning);
-                    }
-                }
-            };
-        }
-    }
-
-    /// <summary>
-    /// Clears the map cache for deleted but restore-able maps.
-    /// </summary>
-    public static void ClearMapCache()
-    {
-        MessageBox box = new MessageBox("Warning", "You are about to clear the internal deleted map cache. " +
-            "This means that all maps that you have deleted during this session will be permanently lost. " +
-            "Would you like to continue and clear the cache?", ButtonType.YesNoCancel, IconType.Warning);
-        box.OnClosed += delegate (BaseEventArgs e)
-        {
-            if (box.Result == 0) // Yes
-                {
-                DeletedMaps.Clear();
-                new MessageBox("Info", "The deleted map cache has been cleared.", ButtonType.OK, IconType.Info);
-            }
-        };
     }
 
     /// <summary>
@@ -476,9 +419,9 @@ public static class Editor
         string OldCurrentDirectory = Directory.GetCurrentDirectory();
         Directory.SetCurrentDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
 
-        // Create the folder that was specified if it did not already
-        Folder = Path.Combine(Folder, Utilities.LegalizeFilename(ProjectName));
-        
+        // Create the folder that was specified if it did not already exist
+        Folder = Path.Combine(Folder, Utilities.LegalizeFilename(ProjectName)); 
+
         if (!Directory.Exists(Folder)) Directory.CreateDirectory(Folder);
         // Turn the (potentially) local folder name to an absolute one for further use
         Folder = Path.GetFullPath(Folder);
@@ -512,6 +455,7 @@ public static class Editor
                 else return;
                 window.SetProgress(progress);
             }
+            CloseProject();
             Data.SetProjectPath(Path.Combine(Folder, "Game.rxproj"));
             MainWindow.CreateEditor();
             MakeRecentProject();
@@ -802,7 +746,6 @@ public static class Editor
         ProjectSettings = null;
         UndoList.Clear();
         RedoList.Clear();
-        DeletedMaps.Clear();
         UnsavedChanges = false;
     }
 
