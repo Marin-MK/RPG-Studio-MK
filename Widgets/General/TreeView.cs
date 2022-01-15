@@ -5,6 +5,8 @@ namespace RPGStudioMK.Widgets;
 
 public class TreeView : Widget
 {
+    public delegate void NodeEvent(TreeNode Node, TreeNode OldSelectedNode);
+
     public List<TreeNode> Nodes { get; protected set; } = new List<TreeNode>();
     public TreeNode SelectedNode { get; protected set; }
     public TreeNode HoveringNode { get; protected set; }
@@ -14,6 +16,7 @@ public class TreeView : Widget
 
     public MouseEvent OnSelectedNodeChanged;
     public BaseEvent OnDragAndDropped;
+    public NodeEvent OnNodeCollapseChanged;
 
     public bool HoverTop = false;
     public bool HoverOver = false;
@@ -398,12 +401,10 @@ public class TreeView : Widget
             int nodex = n.PixelsIndented;
             if (n.Nodes.Count > 0 && rx < nodex + 10 && rx > nodex - 10)
             {
-                int selmapid = (int) SelectedNode.Object;
+                TreeNode selnode = SelectedNode;
                 n.Collapsed = !n.Collapsed;
-                int mapid = (int)n.Object;
-                Game.Data.Maps[mapid].Expanded = !n.Collapsed;
                 if (n.Collapsed && n.ContainsNode(SelectedNode)) SelectedNode = n;
-                Undo.NodeCollapseChangeUndoAction.Create(mapid, !n.Collapsed, n.Collapsed, selmapid);
+                this.OnNodeCollapseChanged?.Invoke(n, selnode);
             }
             else
             {

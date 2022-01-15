@@ -51,6 +51,13 @@ public class MapSelectPanel : Widget
             Stopwatch.Reset();
         };
         mapview.OnDragAndDropped += delegate (BaseEventArgs e) { DragAndDropped(); };
+        mapview.OnNodeCollapseChanged += delegate (TreeNode Node, TreeNode OldSelectedNode)
+        {
+            int mapid = (int) Node.Object;
+            int selmapid = (int) OldSelectedNode.Object;
+            Data.Maps[mapid].Expanded = !Node.Collapsed;
+            Undo.NodeCollapseChangeUndoAction.Create(mapid, !Node.Collapsed, Node.Collapsed, selmapid);
+        };
         mapview.TrailingBlank = 32;
         allmapcontainer.SetContextMenuList(new List<IMenuItem>()
         {
