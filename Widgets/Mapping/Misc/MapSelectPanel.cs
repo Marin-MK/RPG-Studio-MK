@@ -150,7 +150,28 @@ public class MapSelectPanel : Widget
                 if (Parent.Collapsed)
                 {
                     Parent.Collapsed = false;
-                    Data.Maps[(int)Parent.Object].Expanded = true;
+                    TreeNode oldnode = null;
+                    foreach (TreeNode node in OldNodes)
+                    {
+                        if (node.Object == Parent.Object)
+                        {
+                            oldnode = node;
+                            break;
+                        }
+                        else
+                        {
+                            TreeNode n = node.FindNode(n => n.Object == Parent.Object);
+                            if (n != null)
+                            {
+                                oldnode = n;
+                                break;
+                            }
+                        }
+                    }
+                    if (oldnode == null) throw new Exception("Could not find old node.");
+                    oldnode.Collapsed = false;
+                    Data.Maps[(int) Parent.Object].Expanded = true;
+                    Undo.NodeCollapseChangeUndoAction.Create((int) Parent.Object, true, false, (int) mapview.SelectedNode.Object);
                 }
             }
         }
@@ -160,7 +181,28 @@ public class MapSelectPanel : Widget
             if (HoveringNode.Collapsed)
             {
                 HoveringNode.Collapsed = false;
-                Data.Maps[(int)HoveringNode.Object].Expanded = true;
+                TreeNode oldnode = null;
+                foreach (TreeNode node in OldNodes)
+                {
+                    if (node.Object == HoveringNode.Object)
+                    {
+                        oldnode = node;
+                        break;
+                    }
+                    else
+                    {
+                        TreeNode n = node.FindNode(n => n.Object == HoveringNode.Object);
+                        if (n != null)
+                        {
+                            oldnode = n;
+                            break;
+                        }
+                    }
+                }
+                if (oldnode == null) throw new Exception("Could not find old node.");
+                oldnode.Collapsed = false;
+                Data.Maps[(int) HoveringNode.Object].Expanded = true;
+                Undo.NodeCollapseChangeUndoAction.Create((int) HoveringNode.Object, true, false, (int) mapview.SelectedNode.Object);
             }
         }
         else if (Bottom)
@@ -186,15 +228,39 @@ public class MapSelectPanel : Widget
                 if (Parent.Collapsed)
                 {
                     Parent.Collapsed = false;
-                    Data.Maps[(int)Parent.Object].Expanded = true;
+                    TreeNode oldnode = null;
+                    foreach (TreeNode node in OldNodes)
+                    {
+                        if (node.Object == Parent.Object)
+                        {
+                            oldnode = node;
+                            break;
+                        }
+                        else
+                        {
+                            TreeNode n = node.FindNode(n => n.Object == Parent.Object);
+                            if (n != null)
+                            {
+                                oldnode = n;
+                                break;
+                            }
+                        }
+                    }
+                    if (oldnode == null) throw new Exception("Could not find old node.");
+                    oldnode.Collapsed = false;
+                    Data.Maps[(int) Parent.Object].Expanded = true;
+                    Undo.NodeCollapseChangeUndoAction.Create((int) Parent.Object, true, false, (int) mapview.SelectedNode.Object);
                 }
             }
         }
         else return;
-        // Now update all map ParentID/Order fields to reflect the current Node structure
-        Editor.UpdateOrder(mapview.Nodes);
-        mapview.Redraw();
-        Undo.MapOrderChangeUndoAction.Create(OldNodes, mapview.Nodes.ConvertAll(n => (TreeNode) n.Clone()));
+        if (!OldNodes.Equals(mapview.Nodes))
+        {
+            // Now update all map ParentID/Order fields to reflect the current Node structure
+            Editor.UpdateOrder(mapview.Nodes);
+            mapview.Redraw();
+            Undo.MapOrderChangeUndoAction.Create(OldNodes, mapview.Nodes.ConvertAll(n => (TreeNode)n.Clone()));
+        }
     }
 
     public TreeNode GetParent(TreeNode NodeToFindParentOf)

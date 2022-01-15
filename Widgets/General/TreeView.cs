@@ -450,18 +450,18 @@ public class TreeView : Widget
         }
         if (DraggingNode != null)
         {
-            if (HoveringNode != null && HoveringNode.Collapsed && HoverOver && !TimerExists("long_hover"))
+            if (HoveringNode != null && HoveringNode.Collapsed && HoveringNode.Nodes.Count > 0 && HoverOver && !TimerExists("long_hover"))
             {
                 SetTimer("long_hover", 500);
             }
-            else if (HoveringNode != null && HoveringNode.Collapsed && HoverOver && TimerPassed("long_hover"))
+            else if (HoveringNode != null && HoveringNode.Collapsed && HoveringNode.Nodes.Count > 0 && HoverOver && TimerPassed("long_hover"))
             {
                 DestroyTimer("long_hover");
                 HoveringNode.Collapsed = false;
-                Game.Data.Maps[(int)HoveringNode.Object].Expanded = true;
+                this.OnNodeCollapseChanged?.Invoke(HoveringNode, SelectedNode);
                 this.Redraw();
             }
-            else if (TimerExists("long_hover") && (HoveringNode == null || !HoveringNode.Collapsed || !HoverOver))
+            else if (TimerExists("long_hover") && (HoveringNode == null || !HoveringNode.Collapsed  || HoveringNode.Nodes.Count == 0 || !HoverOver))
             {
                 DestroyTimer("long_hover");
             }
