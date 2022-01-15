@@ -35,6 +35,14 @@ public class ModeButton : GradientButton
                 if (!Selected) this.OnDeselection?.Invoke(new BaseEventArgs());
             }
             Sprites["bg"].Visible = Selected;
+            Sprites["bg"].SrcRect.Y = 0;
         }
+    }
+
+    public override void HoverChanged(MouseEventArgs e)
+    {
+        base.HoverChanged(e);
+        Sprites["bg"].Visible = this.Selected || WidgetIM.Hovering;
+        if (this.Selected) Sprites["bg"].SrcRect.Y = 0;
     }
 }

@@ -4,7 +4,8 @@ namespace RPGStudioMK.Widgets;
 
 public class GradientButton : Widget
 {
-    public string Text { get; private set; } = "";
+    public bool Enabled { get; protected set; } = true;
+    public string Text { get; protected set; } = "";
 
     public BaseEvent OnClicked;
 
@@ -13,11 +14,6 @@ public class GradientButton : Widget
         this.Text = Text;
 
         Sprites["bg"] = new Sprite(this.Viewport);
-        Sprites["bg"].Bitmap = new Bitmap(1, 31);
-        Sprites["bg"].Bitmap.Unlock();
-        Sprites["bg"].Bitmap.DrawGradientLine(0, 0, 0, 30, new Color(47, 160, 193), new Color(90, 90, 201));
-        Sprites["bg"].Bitmap.Lock();
-
         Sprites["text"] = new Sprite(this.Viewport);
         Font f = Fonts.UbuntuBold.Use(18);
         Size s = f.TextSize(Text);
@@ -26,23 +22,30 @@ public class GradientButton : Widget
         Sprites["text"].Bitmap.Unlock();
         Sprites["text"].Bitmap.DrawText(Text, Color.WHITE);
         Sprites["text"].Bitmap.Lock();
-        Sprites["text"].X = 16;
+        Sprites["text"].X = 40 - s.Width / 2;
         Sprites["text"].Y = 5;
 
-        SetSize(32 + s.Width, 31);
+        MinimumSize = MaximumSize = new Size(80, 30);
+        SetSize(80, 30);
     }
 
-    public void SetGradient(Color c1, Color c2)
+    public void SetButtonColor(Colors Color)
     {
-        Sprites["bg"].Bitmap.Unlock();
-        Sprites["bg"].Bitmap.DrawGradientLine(0, 0, 0, 30, c1, c2);
-        Sprites["bg"].Bitmap.Lock();
+        int srcy = Sprites["bg"].SrcRect.Y;
+        Sprites["bg"].Bitmap?.Dispose();
+        string filename = "assets/img/gradient_button_";
+        if (Color == Colors.Red) filename += "red";
+        else if (Color == Colors.Green) filename += "green";
+        else filename += "blue";
+        Sprites["bg"].Bitmap = new Bitmap(filename);
+        Sprites["bg"].SrcRect.Height = 30;
+        Sprites["bg"].SrcRect.Y = srcy;
     }
 
-    public override void SizeChanged(BaseEventArgs e)
+    public override void HoverChanged(MouseEventArgs e)
     {
-        base.SizeChanged(e);
-        Sprites["bg"].ZoomX = Size.Width;
+        base.HoverChanged(e);
+        Sprites["bg"].SrcRect.Y = Enabled ? (WidgetIM.Hovering ? 30 : 0) : 60;
     }
 
     public override void MouseDown(MouseEventArgs e)
@@ -52,5 +55,12 @@ public class GradientButton : Widget
         {
             this.OnClicked?.Invoke(new BaseEventArgs());
         }
+    }
+
+    public enum Colors
+    {
+        Red,
+        Green,
+        Blue
     }
 }

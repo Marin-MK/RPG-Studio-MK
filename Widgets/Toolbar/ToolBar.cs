@@ -17,6 +17,7 @@ public class ToolBar : Widget
     public ToolBar(IContainer Parent) : base(Parent)
     {
         MappingMode = new ModeButton(this, "Maps");
+        MappingMode.SetButtonColor(GradientButton.Colors.Blue);
         MappingMode.SetPosition(8, 0);
         MappingMode.SetSelected(true);
         MappingMode.OnSelection += delegate (BaseEventArgs e)
@@ -25,6 +26,7 @@ public class ToolBar : Widget
         };
 
         ScriptingMode = new ModeButton(this, "Scripts");
+        ScriptingMode.SetButtonColor(GradientButton.Colors.Blue);
         ScriptingMode.SetPosition(MappingMode.Position.X + MappingMode.Size.Width + 8, 0);
         ScriptingMode.OnSelection += delegate (BaseEventArgs e)
         {
@@ -32,6 +34,7 @@ public class ToolBar : Widget
         };
 
         DatabaseMode = new ModeButton(this, "Database");
+        DatabaseMode.SetButtonColor(GradientButton.Colors.Blue);
         DatabaseMode.SetPosition(ScriptingMode.Position.X + ScriptingMode.Size.Width + 8, 0);
         DatabaseMode.OnSelection += delegate (BaseEventArgs e)
         {
@@ -55,10 +58,10 @@ public class ToolBar : Widget
         Redo.SetEnabled(false);
 
         PlayButton = new GradientButton(this, "Play");
-        PlayButton.SetGradient(new Color(87, 168, 127), new Color(78, 102, 195));
+        PlayButton.SetButtonColor(GradientButton.Colors.Green);
         PlayButton.OnClicked = _ => Editor.StartGame();
         SaveButton = new GradientButton(this, "Save");
-        SaveButton.SetGradient(new Color(184, 56, 98), new Color(143, 49, 167));
+        SaveButton.SetButtonColor(GradientButton.Colors.Red);
         SaveButton.OnClicked = _ => Editor.SaveProject();
     }
 
