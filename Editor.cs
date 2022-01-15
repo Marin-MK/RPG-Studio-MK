@@ -89,7 +89,6 @@ public static class Editor
     /// </summary>
     public static bool Redoing = false;
 
-
     /// <summary>
     /// Debug method for quickly testing a piece of functionality.
     /// </summary>
@@ -461,7 +460,62 @@ public static class Editor
     /// </summary>
     public static void NewProject()
     {
-        new MessageBox("Oops!", "This feature has not been implemented yet.\nTo get started, please use the \"Open Project\" feature and choose the MK Starter Kit.", IconType.Error);
+        NewProjectWindow window = new NewProjectWindow();
+        window.OnClosed += _ =>
+        {
+            if (window.PressedOK)
+            {
+                CreateNewProject(window.Name, window.Kit, window.Folder);
+            }
+        };
+    }
+
+    public static void CreateNewProject(string ProjectName, (string Name, string Download) Kit, string Folder)
+    {
+        // Make the desktop the current directory, in case a relative path was specified.
+        string OldCurrentDirectory = Directory.GetCurrentDirectory();
+        Directory.SetCurrentDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+
+        // Create the folder that was specified if it did not already
+        Folder = Path.Combine(Folder, Utilities.LegalizeFilename(ProjectName));
+        
+        if (!Directory.Exists(Folder)) Directory.CreateDirectory(Folder);
+        // Turn the (potentially) local folder name to an absolute one for further use
+        Folder = Path.GetFullPath(Folder);
+        // Restore current directory to what it was before
+        Directory.SetCurrentDirectory(OldCurrentDirectory);
+
+        // The kit we've chosen has been downloaded in the past, so we can copy that to our game folder.
+        if (Utilities.KitExists(Kit.Name))
+        {
+            CopyStep();
+        }
+        else
+        {
+            // The kit has not been downloaded before, so we download it now.
+            string Filename = Path.Combine("Kits", Kit.Name + ".zip");
+            if (!Directory.Exists("Kits")) Directory.CreateDirectory("Kits");
+            FileDownloaderWindow window = new FileDownloaderWindow(Kit.Download, Filename, "Downloading kit...");
+            window.OnClosed += _ => 
+            {
+                CopyStep();
+            };
+        }
+
+        void CopyStep()
+        {
+            ProgressWindow window = new ProgressWindow("Copying", "Copying files...");
+            Graphics.Update();
+            foreach (float progress in Utilities.CopyKit(Kit.Name, Folder))
+            {
+                if (Graphics.CanUpdate()) Graphics.Update();
+                else return;
+                window.SetProgress(progress);
+            }
+            Data.SetProjectPath(Path.Combine(Folder, "Game.rxproj"));
+            MainWindow.CreateEditor();
+            MakeRecentProject();
+        }
     }
 
     /// <summary>
@@ -485,8 +539,8 @@ public static class Editor
         }
         of.SetInitialDirectory(lastfolder);
         of.SetTitle("Choose a project file...");
-        string result = of.Show() as string;
-        if (!string.IsNullOrEmpty(result))
+        string result = of.ChooseFile();
+        if (result != null)
         {
             if (!result.EndsWith(".rxproj"))
                 new MessageBox("Error", "Invalid project file.", ButtonType.OK, IconType.Error);

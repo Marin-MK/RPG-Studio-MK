@@ -46,6 +46,7 @@ public class ProgressWindow : PopupWindow
 
     public void SetProgress(float Progress)
     {
+        if (ProgressBar.Progress == Progress) return;
         ProgressBar.SetProgress(Progress);
         if (CloseWhenDone && this.ProgressBar.Progress == 1) Close();
     }

@@ -4,14 +4,18 @@ public class FileDownloaderWindow : ProgressWindow
 {
     FileDownloader downloader;
 
-    public FileDownloaderWindow(string URL, string Filename, bool CloseWhenDone = true) : base("Downloader", "Downloading file...", CloseWhenDone)
+    public BaseEvent OnFinished;
+    public BaseEvent OnError;
+
+    public FileDownloaderWindow(string URL, string Filename, string DownloadText = "Downloading file...", bool CloseWhenDone = true) : base("Downloader", DownloadText, CloseWhenDone)
     {
         downloader = new FileDownloader(URL, Filename);
         downloader.OnFinished += delegate (BaseEventArgs e)
         {
-            if (CloseWhenDone) this.Close();
-            else Buttons[0].SetEnabled(true);
             downloader = null;
+            if (CloseWhenDone && !Disposed) this.Close();
+            else if (Buttons.Count > 0) Buttons[0].SetEnabled(true);
+            this.OnFinished?.Invoke(new BaseEventArgs());
         };
         downloader.OnProgress += delegate (BaseEventArgs e)
         {
@@ -23,6 +27,7 @@ public class FileDownloaderWindow : ProgressWindow
             mbox.OnClosed += delegate (BaseEventArgs _)
             {
                 this.Close();
+                this.OnError?.Invoke(new BaseEventArgs());
             };
         };
 

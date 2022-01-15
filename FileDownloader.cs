@@ -80,6 +80,7 @@ public class FileDownloader
             catch (Exception ex)
             {
                 ThreadException = ex;
+                Console.WriteLine("Error downloading: " + ex.Message + "\n" + ex.StackTrace);
             }
         });
         DownloadThread.Start();
