@@ -102,12 +102,42 @@ public class MapViewerBase : Widget
 
     public virtual void SetZoomFactor(double factor, bool FromStatusBar = false)
     {
+        int oldmapx = MapWidget.Position.X;
+        int oldmapy = MapWidget.Position.Y;
+        int oldrx = LastMouseX - MainContainer.Viewport.X;
+        int oldry = LastMouseY - MainContainer.Viewport.Y;
+        int oldscrolledx = MainContainer.ScrolledX;
+        int oldscrolledy = MainContainer.ScrolledY;
+        double factordiff = factor / this.ZoomFactor;
         this.ZoomFactor = factor;
         Editor.ProjectSettings.LastZoomFactor = factor;
         MapWidget.SetZoomFactor(factor);
         if (!FromStatusBar) Editor.MainWindow.StatusBar.ZoomControl.SetZoomFactor(factor, true);
         PositionMap();
         MouseMoving(Graphics.LastMouseEvent);
+
+        if (!MainContainer.WidgetIM.Hovering) // Using control scrolling, so base it off where the user is looking
+        {
+            // Using the zoom buttons, so take the relative coordinates to be the middle of the screen
+            oldrx = MainContainer.Size.Width / 2;
+            oldry = MainContainer.Size.Height / 2;
+        }
+
+        int tx = oldrx + oldscrolledx - oldmapx;
+        int totalw = MainContainer.MaxChildWidth - MainContainer.Viewport.Width;
+        int x = MapWidget.Position.X;
+        double addx = tx * factordiff;
+        double scrollx = x + addx;
+        scrollx -= oldrx;
+        MainContainer.HScrollBar.SetValue(scrollx / totalw);
+
+        int ty = oldry + oldscrolledy - oldmapy;
+        int totalh = MainContainer.MaxChildHeight - MainContainer.Viewport.Height;
+        int y = MapWidget.Position.Y;
+        double addy = ty * factordiff;
+        double scrolly = y + addy;
+        scrolly -= oldry;
+        MainContainer.VScrollBar.SetValue(scrolly / totalh);
     }
 
     public override void SizeChanged(BaseEventArgs e)
@@ -139,6 +169,12 @@ public class MapViewerBase : Widget
         PositionMap();
     }
 
+    //public override void Update()
+    //{
+    //    base.Update();
+    //    Console.WriteLine(MainContainer.VScrollBar.Value);
+    //}
+
     public virtual void PositionMap()
     {
         int w = (int)Math.Round(Map.Width * 32d * ZoomFactor);
@@ -163,8 +199,35 @@ public class MapViewerBase : Widget
         DummyWidget.SetSize(2 * x + w, 2 * y + h);
         MainContainer.UpdateBounds();
         MainContainer.UpdateAutoScroll();
-        MainContainer.HScrollBar.SetValue(0.5);
-        MainContainer.VScrollBar.SetValue(0.5);
+        //int totalw = MainContainer.MaxChildWidth - MainContainer.Viewport.Width;
+        //int addx = LastMouseX - MainContainer.Viewport.X;
+        //int rx = LastMouseX - MainContainer.Viewport.X;
+        //int movedx = MapWidget.Position.X - MapWidget.ScrolledPosition.X;
+        //if (movedx >= MapWidget.Position.X)
+        //{
+        //    movedx -= MapWidget.Position.X;
+        //    rx += movedx;
+        //}
+        //int extrax = rx % ((int) Math.Round(32 * ZoomFactor));
+        //addx -= extrax;
+        //double xfactor = MapTileX / (double) (Map.Width - 1);
+        //double scrollx = x - addx + (w - MainContainer.Viewport.Width) * xfactor;
+        //MainContainer.HScrollBar.SetValue(scrollx / totalw);
+
+        //int totalh = MainContainer.MaxChildHeight - MainContainer.Viewport.Height;
+        //int addy = LastMouseY - MainContainer.Viewport.Y;
+        //int ry = LastMouseY - MainContainer.Viewport.Y;
+        //int movedy = MapWidget.Position.Y - MapWidget.ScrolledPosition.Y;
+        //if (movedy >= MapWidget.Position.Y)
+        //{
+        //    movedy -= MapWidget.Position.Y;
+        //    ry += movedy;
+        //}
+        //int extray = ry % ((int) Math.Round(32 * ZoomFactor));
+        //addy -= extray;
+        //double yfactor = MapTileY / (double) (Map.Height - 1);
+        //double scrolly = y - addy + (h - MainContainer.Viewport.Height) * yfactor;
+        //MainContainer.VScrollBar.SetValue(scrolly / totalh);
     }
 
     public override void MouseMoving(MouseEventArgs e)
