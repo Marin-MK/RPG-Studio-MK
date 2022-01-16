@@ -15,7 +15,7 @@ public class Server
     TcpListener Listener;
 
     public bool Open { get; protected set; } = true;
-    public List<Socket> Clients = new List<Socket>();
+    public List<Socket> Clients { get; } = new List<Socket>();
 
     public SocketEvent OnClientAccepted;
     public SocketTextEvent OnClientMessaged;
@@ -23,7 +23,7 @@ public class Server
     public SocketEvent OnClientClosed;
     public BaseEvent OnServerClosed;
 
-    int ID = 1;
+    int NextSocketID = 1;
 
     public Server(int Port)
     {
@@ -36,11 +36,15 @@ public class Server
                 while (Open && Listener != null)
                 {
                     TcpClient tcp = Listener.AcceptTcpClient();
-                    Socket client = new Socket(this.ID++, tcp);
+                    Socket client = new Socket(this.NextSocketID++, tcp);
                     Clients.Add(client);
                     client.OnMessaged += (_, text) => OnClientMessaged?.Invoke(client, text);
                     client.OnTimedOut += _ => OnClientTimedOut?.Invoke(client);
-                    client.OnClosed += _ => OnClientClosed?.Invoke(client);
+                    client.OnClosed += _ =>
+                    {
+                        OnClientClosed?.Invoke(client);
+                        Clients.Remove(client);
+                    };
                     OnClientAccepted?.Invoke(client);
                 }
             }
@@ -54,10 +58,6 @@ public class Server
             }
         });
         ListenThread.Start();
-        this.OnClientClosed += delegate (Socket Socket)
-        {
-            Clients.Remove(Socket);
-        };
     }
 
     public void Stop()
@@ -66,10 +66,7 @@ public class Server
         Open = false;
         Listener?.Stop();
         Listener = null;
-        while (Clients.Count > 0)
-        {
-            Clients[0].Close();
-        }
+        while (Clients.Count > 0) Clients[0].Close();
     }
 
     public class Socket

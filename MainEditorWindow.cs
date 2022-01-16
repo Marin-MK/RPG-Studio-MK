@@ -314,6 +314,7 @@ public class MainEditorWindow : UIWindow
         }
 
         HomeScreen?.Dispose();
+        HomeScreen = null;
 
         MainGridLayout.Rows[1] = new GridSize(31, Unit.Pixels);
         MainGridLayout.Rows[4] = new GridSize(1, Unit.Pixels);
