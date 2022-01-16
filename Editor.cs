@@ -444,7 +444,7 @@ public static class Editor
             string Filename = Path.Combine("Kits", Kit.Name + ".zip");
             if (!Directory.Exists("Kits")) Directory.CreateDirectory("Kits");
             FileDownloaderWindow window = new FileDownloaderWindow(Kit.Download, Filename, "Downloading kit...");
-            window.OnClosed += _ => 
+            window.OnFinished += _ => 
             {
                 CopyStep();
             };

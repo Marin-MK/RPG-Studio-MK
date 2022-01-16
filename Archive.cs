@@ -188,11 +188,15 @@ public class ArchiveEntry
     /// Extracts this file or directory within the given directory.
     /// </summary>
     /// <param name="Directory">The directory in which to extract the file or directory.</param>
-    public void Extract(string Directory)
+    public void Extract(string Directory, bool Overwrite = false)
     {
         if (!System.IO.Directory.Exists(Directory)) System.IO.Directory.CreateDirectory(Directory);
         if (this.IsDirectory) System.IO.Directory.CreateDirectory(Path.Combine(Directory, this.Filename));
-        else ZipArchiveEntry.ExtractToFile(Path.Combine(Directory, this.Filename));
+        else
+        {
+            string path = Path.Combine(Directory, this.Filename);
+            if (File.Exists(path) && Overwrite || !File.Exists(path)) ZipArchiveEntry.ExtractToFile(path, Overwrite);
+        }
     }
 
     public override string ToString()

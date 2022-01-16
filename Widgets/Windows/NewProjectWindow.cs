@@ -44,7 +44,7 @@ public class NewProjectWindow : PopupWindow
         List<ListItem> Items = new List<ListItem>();
         Items.Add(new ListItem(
             "Pokémon Essentials v19.1",
-            "https://download2391.mediafire.com/17jndnypj0pg/ahqbs30v7mvnx2i/Pokemon+Essentials+v19.1+2021-05-22.zip"
+            "https://www.dropbox.com/s/vlxkcwtcejpa1w3/Pokemon%20Essentials%20v19.1%202021-05-22.zip?dl=1"
         ));
         kitbox.SetItems(Items);
 
