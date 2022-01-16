@@ -90,6 +90,8 @@ public static class Editor
     public static void Test()
     {
         if (Program.ReleaseMode) return;
+        ProgressWindow pw = new ProgressWindow("Testing", "Testing animation...", false);
+        pw.SetProgress(1);
     }
 
     /// <summary>

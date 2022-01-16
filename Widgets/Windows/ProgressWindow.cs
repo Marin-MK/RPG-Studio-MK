@@ -14,7 +14,7 @@ public class ProgressWindow : PopupWindow
         this.CloseWhenDone = CloseWhenDone;
 
         SetTitle(Title);
-        MinimumSize = MaximumSize = new Size(300, CloseWhenDone ? 100 : 120);
+        MinimumSize = MaximumSize = new Size(300, CloseWhenDone ? 100 : 130);
         SetSize(MaximumSize);
         Center();
 
