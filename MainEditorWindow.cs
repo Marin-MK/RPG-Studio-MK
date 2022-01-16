@@ -152,7 +152,7 @@ public class MainEditorWindow : UIWindow
                     {
                         HelpText = "Close this project and return to the welcome screen.",
                         IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
-                        OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.CloseProject); }
+                        OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(delegate () { Editor.CloseProject(true); }); }
                     },
                     new MenuItem("Reload Project")
                     {

@@ -155,20 +155,23 @@ public static class Editor
     /// <summary>
     /// Closes the currently active project, if existent.
     /// </summary>
-    public static void CloseProject()
+    public static void CloseProject(bool GoToHomeScreen = true)
     {
         if (!InProject) return;
-        if (MainWindow.MainEditorWidget != null) MainWindow.MainEditorWidget.Dispose();
-        MainWindow.MainEditorWidget = null;
-        MainWindow.StatusBar.SetVisible(false);
-        MainWindow.ToolBar.SetVisible(false);
-        MainWindow.HomeScreen = new HomeScreen(MainWindow.MainGridLayout);
-        MainWindow.HomeScreen.SetGridRow(3);
-        MainWindow.MainGridLayout.Rows[1] = new GridSize(0, Unit.Pixels);
-        MainWindow.MainGridLayout.Rows[4] = new GridSize(0, Unit.Pixels);
-        MainWindow.MainGridLayout.Rows[5] = new GridSize(0, Unit.Pixels);
-        MainWindow.MainGridLayout.UpdateContainers();
-        MainWindow.MainGridLayout.UpdateLayout();
+        if (GoToHomeScreen)
+        {
+            if (MainWindow.MainEditorWidget != null) MainWindow.MainEditorWidget.Dispose();
+            MainWindow.MainEditorWidget = null;
+            MainWindow.StatusBar.SetVisible(false);
+            MainWindow.ToolBar.SetVisible(false);
+            MainWindow.HomeScreen = new HomeScreen(MainWindow.MainGridLayout);
+            MainWindow.HomeScreen.SetGridRow(3);
+            MainWindow.MainGridLayout.Rows[1] = new GridSize(0, Unit.Pixels);
+            MainWindow.MainGridLayout.Rows[4] = new GridSize(0, Unit.Pixels);
+            MainWindow.MainGridLayout.Rows[5] = new GridSize(0, Unit.Pixels);
+            MainWindow.MainGridLayout.UpdateContainers();
+            MainWindow.MainGridLayout.UpdateLayout();
+        }
         Data.ClearProjectData();
         ClearProjectData();
     }
@@ -179,7 +182,7 @@ public static class Editor
     public static void ReloadProject()
     {
         string projectfile = Data.ProjectFilePath;
-        CloseProject();
+        CloseProject(false);
         Data.SetProjectPath(projectfile);
         MainWindow.CreateEditor();
         MakeRecentProject();
@@ -457,7 +460,7 @@ public static class Editor
                 else return;
                 window.SetProgress(progress);
             }
-            CloseProject();
+            CloseProject(false);
             Data.SetProjectPath(Path.Combine(Folder, "Game.rxproj"));
             MainWindow.CreateEditor();
             MakeRecentProject();
@@ -492,7 +495,7 @@ public static class Editor
                 new MessageBox("Error", "Invalid project file.", ButtonType.OK, IconType.Error);
             else
             {
-                CloseProject();
+                CloseProject(false);
                 Data.SetProjectPath(result);
                 MainWindow.CreateEditor();
                 MakeRecentProject();
