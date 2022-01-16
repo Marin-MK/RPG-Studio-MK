@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RPGStudioMK.Game;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,16 +13,50 @@ public class TilesetGraphicChangeUndoAction : BaseUndoAction
     string OldGraphicName;
     string NewGraphicName;
 
-    public TilesetGraphicChangeUndoAction(int TilesetID, string OldGraphicName, string NewGraphicName)
+    List<Passability> OldPassabilities;
+    List<Passability> NewPassabilities;
+    List<int> OldPriorities;
+    List<int> NewPriorities;
+    List<int> OldTags;
+    List<int> NewTags;
+    List<bool> OldBushFlags;
+    List<bool> NewBushFlags;
+    List<bool> OldCounterFlags;
+    List<bool> NewCounterFlags;
+
+    public TilesetGraphicChangeUndoAction(int TilesetID, string OldGraphicName, string NewGraphicName,
+                                          List<Passability> OldPassabilities, List<Passability> NewPassabilities,
+                                          List<int> OldPriorities, List<int> NewPriorities,
+                                          List<int> OldTags, List<int> NewTags,
+                                          List<bool> OldBushFlags, List<bool> NewBushFlags,
+                                          List<bool> OldCounterFlags, List<bool> NewCounterFlags)
     {
         this.TilesetID = TilesetID;
         this.OldGraphicName = OldGraphicName;
         this.NewGraphicName = NewGraphicName;
+        this.OldPassabilities = OldPassabilities;
+        this.NewPassabilities = NewPassabilities;
+        this.OldPriorities = OldPriorities;
+        this.NewPriorities = NewPriorities;
+        this.OldTags = OldTags;
+        this.NewTags = NewTags;
+        this.OldBushFlags = OldBushFlags;
+        this.NewBushFlags = NewBushFlags;
+        this.OldCounterFlags = OldCounterFlags;
+        this.NewCounterFlags = NewCounterFlags;
     }
 
-    public static void Create(int TilesetID, string OldGraphicName, string NewGraphicName)
+    public static void Create(int TilesetID, string OldGraphicName, string NewGraphicName,
+                              List<Passability> OldPassabilities, List<Passability> NewPassabilities,
+                              List<int> OldPriorities, List<int> NewPriorities,
+                              List<int> OldTags, List<int> NewTags,
+                              List<bool> OldBushFlags, List<bool> NewBushFlags,
+                              List<bool> OldCounterFlags, List<bool> NewCounterFlags)
     {
-        var c = new TilesetGraphicChangeUndoAction(TilesetID, OldGraphicName, NewGraphicName);
+        var c = new TilesetGraphicChangeUndoAction(TilesetID, OldGraphicName, NewGraphicName,
+                                                   OldPassabilities, NewPassabilities, OldPriorities, NewPriorities,
+                                                   OldTags, NewTags, OldBushFlags, NewBushFlags,
+                                                   OldCounterFlags, NewCounterFlags);
         c.Register();
     }
 
@@ -45,17 +80,28 @@ public class TilesetGraphicChangeUndoAction : BaseUndoAction
             Continue = false;
         }
         if (!Continue) return false;
+        Tileset Tileset = Data.Tilesets[TilesetID];
         if (IsRedo)
         {
-            Game.Data.Tilesets[TilesetID].GraphicName = NewGraphicName;
+            Tileset.GraphicName = NewGraphicName;
+            Tileset.Passabilities = NewPassabilities;
+            Tileset.Priorities = NewPriorities;
+            Tileset.Tags = NewTags;
+            Tileset.BushFlags = NewBushFlags;
+            Tileset.CounterFlags = NewCounterFlags;
         }
         else
         {
-            Game.Data.Tilesets[TilesetID].GraphicName = OldGraphicName;
+            Tileset.GraphicName = OldGraphicName;
+            Tileset.Passabilities = OldPassabilities;
+            Tileset.Priorities = OldPriorities;
+            Tileset.Tags = OldTags;
+            Tileset.BushFlags = OldBushFlags;
+            Tileset.CounterFlags = OldCounterFlags;
         }
-        Game.Data.Tilesets[TilesetID].CreateBitmap(true);
-        dtt.GraphicBox.SetText(Game.Data.Tilesets[TilesetID].GraphicName);
-        dtt.TilesetContainer.SetTileset(Game.Data.Tilesets[TilesetID], true);
+        Tileset.CreateBitmap(true);
+        dtt.GraphicBox.SetText(Tileset.GraphicName);
+        dtt.SetTileset(Tileset, true);
         return true;
     }
 }

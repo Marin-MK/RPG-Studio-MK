@@ -239,6 +239,30 @@ public class Tileset : ICloneable, ISerializable
         }
     }
 
+    public void UpdateDataLists()
+    {
+        int newsize = 384;
+        if (TilesetBitmap != null) newsize += 8 * (int) Math.Ceiling(TilesetBitmap.Height / 32d);
+
+        // Resize the data lists
+        if (newsize < Passabilities.Count)
+        {
+            Passabilities.RemoveRange(newsize, Passabilities.Count - newsize);
+            Priorities.RemoveRange(newsize, Priorities.Count - newsize);
+            Tags.RemoveRange(newsize, Tags.Count - newsize);
+            BushFlags.RemoveRange(newsize, BushFlags.Count - newsize);
+            CounterFlags.RemoveRange(newsize, CounterFlags.Count - newsize);
+        }
+        else if (newsize > Passabilities.Count)
+        {
+            Passabilities.AddRange(new Passability[newsize - Passabilities.Count]);
+            Priorities.AddRange(new int[newsize - Priorities.Count]);
+            Tags.AddRange(new int[newsize - Tags.Count]);
+            BushFlags.AddRange(new bool[newsize - BushFlags.Count]);
+            CounterFlags.AddRange(new bool[newsize - CounterFlags.Count]);
+        }
+    }
+
     /// <summary>
     /// If an autotile's top center tile is equal to another autotile's top left tile, then this autotile
     /// is allowed to overlap the other autotile without updating its borders when drawn over it on the same layer.

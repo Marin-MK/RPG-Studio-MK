@@ -146,11 +146,20 @@ public class DataTypeTilesets : Widget
                 if (picker.PressedOK)
                 {
                     string OldGraphicName = Tileset.GraphicName;
+                    List<Passability> OldPassabilities = new List<Passability>(Tileset.Passabilities);
+                    List<int> OldPriorities = new List<int>(Tileset.Priorities);
+                    List<int> OldTags = new List<int>(Tileset.Tags);
+                    List<bool> OldBushFlags = new List<bool>(Tileset.BushFlags);
+                    List<bool> OldCounterFlags = new List<bool>(Tileset.CounterFlags);
                     Tileset.GraphicName = picker.ChosenFilename;
                     GraphicBox.SetText(Tileset.GraphicName);
                     Tileset.CreateBitmap(true);
+                    Tileset.UpdateDataLists();
                     SetTileset(Tileset, true);
-                    Undo.TilesetGraphicChangeUndoAction.Create(Tileset.ID, OldGraphicName, Tileset.GraphicName);
+                    Undo.TilesetGraphicChangeUndoAction.Create(Tileset.ID, OldGraphicName, Tileset.GraphicName,
+                        OldPassabilities, Tileset.Passabilities, OldPriorities, Tileset.Priorities,
+                        OldTags, Tileset.Tags, OldCounterFlags, Tileset.CounterFlags,
+                        OldBushFlags, Tileset.BushFlags);
                 }
             };
         };
