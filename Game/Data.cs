@@ -306,6 +306,40 @@ public static class Data
             Scripts.Add(new Script(script));
         }
         Ruby.Unpin(data);
+        // Injects code at the top of the script list
+        string startcode = Utilities.GetInjectedCodeStart();
+        if (Scripts[0].Name != "RPG Studio MK1")
+        {
+            if (!string.IsNullOrEmpty(startcode))
+            {
+                Script script = new Script();
+                script.Name = "RPG Studio MK1";
+                script.Content = startcode;
+                Scripts.Insert(0, script);
+            }
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(startcode)) Scripts.RemoveAt(0);
+            else Scripts[0].Content = startcode;
+        }
+        // Injects code at the bottom of the script list, above Main
+        string maincode = Utilities.GetInjectedCodeAboveMain();
+        if (Scripts.Count < 3 || Scripts[Scripts.Count - 2].Name != "RPG Studio MK2")
+        {
+            if (!string.IsNullOrEmpty(maincode))
+            {
+                Script script = new Script();
+                script.Name = "RPG Studio MK2";
+                script.Content = maincode;
+                Scripts.Insert(Scripts.Count - 1, script);
+            }
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(maincode)) Scripts.RemoveAt(Scripts.Count - 2);
+            else Scripts[Scripts.Count - 2].Content = maincode;
+        }
     }
 
     private static void SaveScripts()
