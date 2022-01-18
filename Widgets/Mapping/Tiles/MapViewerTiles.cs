@@ -93,16 +93,16 @@ public class MapViewerTiles : MapViewerBase
         Cursor.SetZIndex(8);
 
         RegisterShortcuts(new List<Shortcut>()
-            {
-                new Shortcut(this, new Key(Keycode.ESCAPE), CancelSelection),
-                new Shortcut(this, new Key(Keycode.A, Keycode.CTRL), SelectAll),
-                new Shortcut(this, new Key(Keycode.Q, Keycode.SHIFT), SetDrawModePencil),
-                new Shortcut(this, new Key(Keycode.W, Keycode.SHIFT), SetDrawModeRectangle),
-                new Shortcut(this, new Key(Keycode.E, Keycode.SHIFT), SetDrawModeEllipse),
-                new Shortcut(this, new Key(Keycode.R, Keycode.SHIFT), SetDrawModeBucket),
-                new Shortcut(this, new Key(Keycode.T, Keycode.SHIFT), SetDrawModeEraser),
-                new Shortcut(this, new Key(Keycode.Y, Keycode.SHIFT), SetDrawModeSelection)
-            });
+        {
+            new Shortcut(this, new Key(Keycode.ESCAPE), CancelSelection),
+            new Shortcut(this, new Key(Keycode.A, Keycode.CTRL), SelectAll),
+            new Shortcut(this, new Key(Keycode.Q, Keycode.SHIFT), SetDrawModePencil),
+            new Shortcut(this, new Key(Keycode.W, Keycode.SHIFT), SetDrawModeRectangle),
+            new Shortcut(this, new Key(Keycode.E, Keycode.SHIFT), SetDrawModeEllipse),
+            new Shortcut(this, new Key(Keycode.R, Keycode.SHIFT), SetDrawModeBucket),
+            new Shortcut(this, new Key(Keycode.T, Keycode.SHIFT), SetDrawModeEraser),
+            new Shortcut(this, new Key(Keycode.Y, Keycode.SHIFT), SetDrawModeSelection)
+        });
 
         Editor.OnUndoing += delegate (BaseEventArgs e)
         {
