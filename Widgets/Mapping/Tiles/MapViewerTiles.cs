@@ -376,6 +376,7 @@ public class MapViewerTiles : MapViewerBase
                         TilesPanel.DrawTool == DrawTools.EllipseFilled ||
                         TilesPanel.DrawTool == DrawTools.EllipseOutline)) // Ellipse tool redraws every tile movement regardless of quadrant/direction
                     {
+                        // We have to undo the last draw, at least the part that does not overlap with our new to-be-drawn area.
                         List<Undo.TileGroupUndoAction.TileChange> changes = new List<Undo.TileGroupUndoAction.TileChange>();
                         // For all tiles that are both in the to-be-drawn area and in the current undo group,
                         // Take them out of the undo and draw group, and then undo the rest (non-drawn area)
@@ -386,7 +387,6 @@ public class MapViewerTiles : MapViewerBase
                             Point point = points.Find(p => p.X + p.Y * Map.Width == action.Tiles[i].MapPosition && action.Tiles[i].Layer == Layer);
                             if (point != null && point.X >= 0 && point.Y >= 0 && point.X < Map.Width && point.Y < Map.Height)
                             {
-                                points.Remove(point);
                                 Undo.TileGroupUndoAction.TileChange tc = action.Tiles[i];
                                 changes.Add(tc);
                                 action.Tiles.RemoveAt(i);

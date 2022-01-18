@@ -694,6 +694,7 @@ public class MapImageWidget : Widget
                 Coords.Add(new Point(x, y2));
             }
         }
+        Coords.ForEach(c => Console.Write(c.ToString()));
     }
 
     public void DrawTiles(List<Point> Coords, int layer)
