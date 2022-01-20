@@ -21,6 +21,7 @@ public class Program
     public static string ProjectFile = null;
     public static bool ThrownError = false;
 
+    [STAThread]
     static void Main(params string[] args)
     {
         // Ensures the working directory becomes the editor directory
