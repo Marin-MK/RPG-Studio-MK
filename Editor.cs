@@ -454,16 +454,19 @@ public static class Editor
         {
             ProgressWindow window = new ProgressWindow("Copying", "Copying files...");
             Graphics.Update();
-            foreach (float progress in Utilities.CopyKit(Kit.Name, Folder))
+            Utilities.CopyKit(Kit.Name, Folder, delegate (ObjectEventArgs e)
             {
                 if (Graphics.CanUpdate()) Graphics.Update();
                 else return;
-                window.SetProgress(progress);
-            }
-            CloseProject(false);
-            Data.SetProjectPath(Path.Combine(Folder, "Game.rxproj"));
-            MainWindow.CreateEditor();
-            MakeRecentProject();
+                window.SetProgress((float) e.Object);
+                if ((float) e.Object == 1)
+                {
+                    CloseProject(false);
+                    Data.SetProjectPath(Path.Combine(Folder, "Game.rxproj"));
+                    MainWindow.CreateEditor();
+                    MakeRecentProject();
+                }
+            });
         }
     }
 
