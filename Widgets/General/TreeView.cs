@@ -64,8 +64,8 @@ public class TreeView : Widget
         }
         int height = items * 24;
         SetSize(maxwidth, height + TrailingBlank);
-        Sprites["list"].Bitmap = new Bitmap(Size.Width, height);
-        Sprites["text"].Bitmap = new Bitmap(Size.Width, height);
+        Sprites["list"].Bitmap = new Bitmap(Size.Width, height, Graphics.MaxTextureSize);
+        Sprites["text"].Bitmap = new Bitmap(Size.Width, height, Graphics.MaxTextureSize);
         Sprites["list"].Bitmap.Unlock();
         Sprites["text"].Bitmap.Unlock();
 
