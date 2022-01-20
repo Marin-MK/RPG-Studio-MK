@@ -657,8 +657,7 @@ public static class Editor
         }
         if (path == null)
         {
-
-            return;
+            throw new Exception("No Game.rxproj was found.");
         }
         while (path.Contains('\\')) path = path.Replace('\\', '/');
         for (int i = 0; i < GeneralSettings.RecentFiles.Count; i++)

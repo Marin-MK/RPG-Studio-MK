@@ -27,9 +27,9 @@ public class DatabaseWidget : Widget
         ActiveDatabaseWidget?.Dispose();
         ActiveDatabaseWidget = null;
         Editor.ProjectSettings.LastDatabaseSubmode = Mode;
+        DataTypeList.SetSelected(Mode);
         if (Mode == DatabaseMode.Tilesets)
         {
-            DataTypeList.SetSelected(Mode);
             ActiveDatabaseWidget = new DataTypeTilesets(MainGrid);
             ActiveDatabaseWidget.SetGridColumn(1);
             ((DataTypeTilesets) ActiveDatabaseWidget).SetSelectedIndex(0);
