@@ -1,4 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
 namespace RPGStudioMK.Widgets;
 
 public class HomeScreenButton : Widget
@@ -12,6 +17,13 @@ public class HomeScreenButton : Widget
         Sprites["icon"] = new Sprite(this.Viewport);
         Sprites["text"] = new Sprite(this.Viewport);
         Sprites["text"].Y = 154;
+        Sprites["sel"] = new Sprite(this.Viewport, new Bitmap(224, 200));
+        Sprites["sel"].X = Sprites["sel"].Y = 6;
+        Sprites["sel"].Bitmap.Unlock();
+        Sprites["sel"].Bitmap.DrawRect(0, 0, 224, 200, Color.WHITE);
+        Sprites["sel"].Bitmap.DrawRect(1, 1, 222, 198, Color.WHITE);
+        Sprites["sel"].Bitmap.Lock();
+        Sprites["sel"].Visible = false;
     }
 
     public void SetIcon(string path)
@@ -42,5 +54,6 @@ public class HomeScreenButton : Widget
         base.HoverChanged(e);
         Sprites["bg"].Bitmap?.Dispose();
         Sprites["bg"].Bitmap = new Bitmap($"assets/img/home_button{(WidgetIM.Hovering ? "_hovering" : "")}.png");
+        Sprites["sel"].Visible = WidgetIM.Hovering;
     }
 }
