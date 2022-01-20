@@ -88,7 +88,7 @@ public class DataTypeTilesets : Widget
         Tabs.SetHeaderSelHeight(0);
         Tabs.SetHeaderWidth(140);
         Tabs.SetGrid(0, 1, 1, 2);
-        Tabs.SetFont(Fonts.UbuntuBold.Use(18));
+        Tabs.SetFont(Fonts.UbuntuBold.Use(16));
         Tabs.SetCentered(true);
         Tabs.SetHeaderColor(10, 23, 37);
         Tabs.OnSelectionChanged += _ => SelectedTabChanged();
