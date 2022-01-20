@@ -158,8 +158,8 @@ public class HomeScreen : Widget
         for (int i = 0; i < count; i++)
         {
             if (i >= RecentCapacity) break;
-            string name = Editor.GeneralSettings.RecentFiles[count - i - 1][0];
-            string projectpath = Editor.GeneralSettings.RecentFiles[count - i - 1][1];
+            string name = Editor.GeneralSettings.RecentFiles[count - i - 1].ProjectName;
+            string projectpath = Editor.GeneralSettings.RecentFiles[count - i - 1].ProjectFile;
             while (projectpath.Contains("\\")) projectpath = projectpath.Replace("\\", "/");
             Sprites["files"].Bitmap.Font = boldfont;
             Sprites["files"].Bitmap.DrawText(name, 0, 48 * i + 4, Color.WHITE);
@@ -373,7 +373,7 @@ public class HomeScreen : Widget
 
     public void LoadRecentProject(int index)
     {
-        string ProjectFilePath = Editor.GeneralSettings.RecentFiles[Editor.GeneralSettings.RecentFiles.Count - index - 1][1];
+        string ProjectFilePath = Editor.GeneralSettings.RecentFiles[Editor.GeneralSettings.RecentFiles.Count - index - 1].ProjectFile;
         if (!System.IO.File.Exists(ProjectFilePath))
         {
             MessageBox mbox = new MessageBox("Not Found", "No project could be found at that location.\nDo you want to delete the project from the list of recent projects?", ButtonType.YesNoCancel, IconType.Warning);

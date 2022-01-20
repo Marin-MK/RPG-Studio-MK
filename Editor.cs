@@ -480,7 +480,7 @@ public static class Editor
         string lastfolder = "";
         if (GeneralSettings.RecentFiles.Count > 0)
         {
-            string path = GeneralSettings.RecentFiles[0][1];
+            string path = GeneralSettings.RecentFiles[0].ProjectFile;
             while (path.Contains("/")) path = path.Replace("/", "\\");
             List<string> folders = path.Split('\\').ToList();
             for (int i = 0; i < folders.Count - 1; i++)
@@ -662,13 +662,13 @@ public static class Editor
         while (path.Contains('\\')) path = path.Replace('\\', '/');
         for (int i = 0; i < GeneralSettings.RecentFiles.Count; i++)
         {
-            if (GeneralSettings.RecentFiles[i][1] == path) // Project file paths match - same project
+            if (GeneralSettings.RecentFiles[i].ProjectFile == path) // Project file paths match - same project
             {
                 // Remove and still add to update the ordering in the list
                 GeneralSettings.RecentFiles.RemoveAt(i);
             }
         }
-        GeneralSettings.RecentFiles.Add(new List<string>() { ProjectSettings.ProjectName, path });
+        GeneralSettings.RecentFiles.Add((ProjectSettings.ProjectName, path));
     }
 
     /// <summary>
@@ -692,7 +692,14 @@ public static class Editor
         {
             IFormatter formatter = new BinaryFormatter();
             Stream stream = new FileStream("editor.mkd", FileMode.Open, FileAccess.Read);
-            GeneralSettings = formatter.Deserialize(stream) as GeneralSettings;
+            try
+            {
+                GeneralSettings = formatter.Deserialize(stream) as GeneralSettings;
+            }
+            catch (SerializationException)
+            {
+                GeneralSettings = new GeneralSettings();
+            }
             stream.Close();
         }
         else
@@ -854,7 +861,7 @@ public class GeneralSettings
     /// <summary>
     /// The list of recently opened projects. May contain old/invalid paths.
     /// </summary>
-    public List<List<string>> RecentFiles = new List<List<string>>();
+    public List<(string ProjectName, string ProjectFile)> RecentFiles = new List<(string, string)>();
     /// <summary>
     /// Whether to play map animations.
     /// </summary>
