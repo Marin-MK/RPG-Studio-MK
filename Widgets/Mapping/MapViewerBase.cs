@@ -72,9 +72,10 @@ public class MapViewerBase : Widget
         HScrollContainer = new Container(GridLayout);
         HScrollContainer.SetGridRow(1);
         HScrollBar HScrollBar = new HScrollBar(HScrollContainer);
-        HScrollBar.SetPosition(1, 2);
         HScrollBar.SetZIndex(1);
         HScrollBar.SetValue(0.5);
+        HScrollBar.SetHDocked(true);
+        HScrollBar.SetMargins(1, 2, 1, 0);
         HScrollBar.OnValueChanged += delegate (BaseEventArgs e)
         {
             if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetHorizontalScroll(HScrollBar.Value);
@@ -83,9 +84,10 @@ public class MapViewerBase : Widget
         VScrollContainer = new Container(GridLayout);
         VScrollContainer.SetGridColumn(1);
         VScrollBar VScrollBar = new VScrollBar(VScrollContainer);
-        VScrollBar.SetPosition(2, 1);
         VScrollBar.SetZIndex(1);
         VScrollBar.SetValue(0.5);
+        VScrollBar.SetVDocked(true);
+        VScrollBar.SetMargins(1, 1, 0, 1);
         VScrollBar.OnValueChanged += delegate (BaseEventArgs e)
         {
             if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetVerticalScroll(VScrollBar.Value);
@@ -97,6 +99,7 @@ public class MapViewerBase : Widget
 
         Fade = new VignetteFade(MainContainer);
         Fade.ConsiderInAutoScrollCalculation = Fade.ConsiderInAutoScrollPositioning = false;
+        Fade.SetDocked(true);
         Fade.SetZIndex(9);
     }
 
@@ -144,7 +147,6 @@ public class MapViewerBase : Widget
     {
         base.SizeChanged(e);
         if (Size.Width == 50 && Size.Height == 50) return;
-        GridLayout.SetSize(this.Size);
         PositionMap();
 
         (Sprites["hslider"].Bitmap as SolidBitmap).SetSize(HScrollContainer.Size);
@@ -155,11 +157,6 @@ public class MapViewerBase : Widget
 
         Sprites["block"].X = Sprites["vslider"].X - 1;
         Sprites["block"].Y = Sprites["hslider"].Y - 1;
-
-        MainContainer.HScrollBar.SetWidth(HScrollContainer.Size.Width - 2);
-        MainContainer.VScrollBar.SetHeight(VScrollContainer.Size.Height - 2);
-
-        Fade.SetSize(MainContainer.Size);
     }
 
     public virtual void SetMap(Map Map)

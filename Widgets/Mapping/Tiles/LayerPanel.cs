@@ -33,10 +33,14 @@ public class LayerPanel : Widget
         this.OnWidgetSelected = WidgetSelected;
 
         layercontainer = new Container(this);
-        layercontainer.SetPosition(1, 33);
+        layercontainer.SetDocked(true);
+        layercontainer.SetMargins(1, 33, 13, 0);
         layercontainer.VAutoScroll = true;
 
         VScrollBar vs = new VScrollBar(this);
+        vs.SetVDocked(true);
+        vs.SetRightDocked(true);
+        vs.SetMargins(0, 34, 0, 2);
         layercontainer.SetVScrollBar(vs);
 
         layerwidget = new LayerWidget(layercontainer);
@@ -191,9 +195,6 @@ public class LayerPanel : Widget
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-        layercontainer.SetSize(Size.Width - 13, Size.Height - layercontainer.Position.Y);
-        layercontainer.VScrollBar.SetPosition(Size.Width - 10, 34);
-        layercontainer.VScrollBar.SetSize(8, Size.Height - 36);
         Sprites["slider"].X = Size.Width - 11;
         (Sprites["slider"].Bitmap as SolidBitmap).SetSize(10, Size.Height - 34);
     }

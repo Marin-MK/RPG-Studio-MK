@@ -30,14 +30,21 @@ public class MapSelectPanel : Widget
         Sprites["block"] = new Sprite(this.Viewport, new SolidBitmap(11, 11, new Color(64, 104, 146)));
 
         allmapcontainer = new Container(this);
-        allmapcontainer.SetPosition(0, 35);
+        allmapcontainer.SetDocked(true);
+        allmapcontainer.SetMargins(0, 35, 11, 11);
         allmapcontainer.VAutoScroll = true;
         allmapcontainer.HAutoScroll = true;
 
         VScrollBar vs = new VScrollBar(this);
+        vs.SetVDocked(true);
+        vs.SetRightDocked(true);
+        vs.SetMargins(0, 33, -1, 13);
         allmapcontainer.SetVScrollBar(vs);
 
         HScrollBar hs = new HScrollBar(this);
+        hs.SetHDocked(true);
+        hs.SetBottomDocked(true);
+        hs.SetMargins(1, 0, 13, -1);
         allmapcontainer.SetHScrollBar(hs);
 
         mapview = new TreeView(allmapcontainer);
@@ -327,17 +334,12 @@ public class MapSelectPanel : Widget
         base.SizeChanged(e);
         if (Size.Width == 50 && Size.Height == 50) return;
         mapview.MinimumSize.Width = Size.Width - 11;
-        allmapcontainer.SetSize(this.Size.Width - 11, this.Size.Height - allmapcontainer.Position.Y - 11);
         Sprites["bar1"].X = Size.Width - 11;
         (Sprites["bar1"].Bitmap as SolidBitmap).SetSize(1, Size.Height - 41);
         Sprites["bar2"].Y = Size.Height - 11;
         (Sprites["bar2"].Bitmap as SolidBitmap).SetSize(Size.Width - 11, 1);
         Sprites["block"].X = Size.Width - 11;
         Sprites["block"].Y = Size.Height - 11;
-        allmapcontainer.VScrollBar.SetPosition(Size.Width - 9, 33);
-        allmapcontainer.VScrollBar.SetSize(8, Size.Height - 46);
-        allmapcontainer.HScrollBar.SetPosition(1, Size.Height - 9);
-        allmapcontainer.HScrollBar.SetSize(Size.Width - 13, 8);
     }
 
     private void NewMap(BaseEventArgs e)

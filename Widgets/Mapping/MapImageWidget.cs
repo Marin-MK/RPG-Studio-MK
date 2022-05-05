@@ -25,6 +25,7 @@ public class MapImageWidget : Widget
         SetBackgroundColor(73, 89, 109);
         this.MapViewer = this.Parent.Parent.Parent as MapViewerBase;
         this.GridBackground = new GridBackground(this);
+        this.GridBackground.SetDocked(true);
         this.GridBackground.SetVisible(Editor.GeneralSettings.ShowGrid);
         Sprites["dark"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(0, 0, 0, 0)));
         Sprites["dark"].Z = 999999;
@@ -51,7 +52,6 @@ public class MapImageWidget : Widget
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-        GridBackground.SetSize(this.Size);
         (Sprites["dark"].Bitmap as SolidBitmap).SetSize(this.Size);
     }
 

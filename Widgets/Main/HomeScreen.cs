@@ -109,13 +109,12 @@ public class HomeScreen : Widget
         NoProjects.SetFont(Fonts.UbuntuRegular.Use(15));
 
         VignetteFade = new VignetteFade(this);
+        VignetteFade.SetDocked(true);
     }
 
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-
-        VignetteFade.SetSize(this.Size);
 
         #region Sidebar
         Sprites["sidebar"].SrcRect.Height = Sprites["sidebar"].Bitmap.Height;

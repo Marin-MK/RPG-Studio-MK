@@ -193,7 +193,7 @@ public class FileExplorer : Widget
         }
         FileEntryWidget few = new FileEntryWidget(DirGrid);
         few.SetGrid(ItemRow, ItemColumn);
-        few.SetMargin((int)Math.Floor(ColumnMargin), 4, 0, 0);
+        few.SetMargins((int) Math.Floor(ColumnMargin), 4, 0, 0);
         if (!IsFolder) few.SetFile(Filename);
         else few.SetFolder(Filename);
         few.OnSelectionChanged += delegate (BaseEventArgs e)
@@ -265,7 +265,7 @@ public class FileExplorer : Widget
         {
             DirGrid.Widgets.ForEach(w =>
             {
-                w.SetMargin((int)Math.Floor(ColumnMargin), 4, 0, 0);
+                w.SetMargins((int)Math.Floor(ColumnMargin), 4, 0, 0);
             });
         }
         DirGrid.UpdateLayout();
