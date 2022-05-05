@@ -24,7 +24,11 @@ public static class GameRunner
     {
         if (Process != null || Server != null) return;
         Process = new Process();
-        Process.StartInfo.FileName = Data.ProjectPath + "/Game.exe";
+        string filename = "/Game.exe";
+        if (Graphics.Platform == odl.Platform.Windows) filename = "/Game.exe";
+        else if (Graphics.Platform == odl.Platform.Linux) filename = "/Game";
+        else filename = "/Game.exe";
+        Process.StartInfo.FileName = Data.ProjectPath + filename;
         Process.StartInfo.Arguments = "debug";
         Process.Start();
         Server = new Server(59995);
@@ -38,6 +42,7 @@ public static class GameRunner
                 Socket.OnMessaged += delegate (Server.Socket Socket, string Message)
                 {
                     Console.WriteLine($"Socket {Socket.ID} :: {Message}");
+                    OnDataOutput?.Invoke(new TextEventArgs(Message, null));
                 };
                 Socket.OnTimedOut += delegate (Server.Socket Socket)
                 {
