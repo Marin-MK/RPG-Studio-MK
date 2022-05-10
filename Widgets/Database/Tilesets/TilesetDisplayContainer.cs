@@ -347,7 +347,7 @@ public class TilesetDisplayContainer : Widget
     public override void MouseDown(MouseEventArgs e)
     {
         base.MouseDown(e);
-        if (WidgetIM.Hovering)
+        if (Mouse.Inside)
         {
             int rx = e.X - Viewport.X;
             int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;

@@ -103,7 +103,7 @@ public class MultilineTextArea : Widget
     public override void HoverChanged(MouseEventArgs e)
     {
         base.HoverChanged(e);
-        if (WidgetIM.Hovering)
+        if (Mouse.Inside)
         {
             Input.SetCursor(SDL_SystemCursor.SDL_SYSTEM_CURSOR_IBEAM);
         }
@@ -981,7 +981,7 @@ public class MultilineTextArea : Widget
     public override void MouseDown(MouseEventArgs e)
     {
         base.MouseDown(e);
-        if (!WidgetIM.Hovering || this.Text.Length == 0 || this.ReadOnly) return;
+        if (!Mouse.Inside || this.Text.Length == 0 || this.ReadOnly) return;
         if (SelectionStartIndex.CharacterIndex != -1 && SelectionStartIndex.CharacterIndex != SelectionEndIndex.CharacterIndex) CancelSelectionHidden();
         Caret.CharacterIndex = GetHoveringIndex(e);
         VerticalIndex = Caret.LineIndex;
@@ -1018,7 +1018,7 @@ public class MultilineTextArea : Widget
     public override void MouseMoving(MouseEventArgs e)
     {
         base.MouseMoving(e);
-        if (!e.LeftButton || WidgetIM.ClickedLeftInArea != true || this.ReadOnly) return;
+        if (!e.LeftButton || !Mouse.LeftStartedInside || this.ReadOnly) return;
         int idx = GetHoveringIndex(e);
 
 

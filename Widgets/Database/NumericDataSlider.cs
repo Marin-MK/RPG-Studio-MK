@@ -202,7 +202,7 @@ public class NumericDataSlider : Widget
     public override void MouseDown(MouseEventArgs e)
     {
         base.MouseDown(e);
-        if (!TextArea.WidgetIM.Hovering && TextArea.SelectedWidget)
+        if (!TextArea.Mouse.Inside && TextArea.SelectedWidget)
         {
             Window.UI.SetSelectedWidget(null);
             if (string.IsNullOrEmpty(TextArea.Text)) TextArea.SetText("0");

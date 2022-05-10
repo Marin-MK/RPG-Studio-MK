@@ -22,19 +22,13 @@ public class ZoomControl : Widget
         ZoomOut.Selectable = false;
         ZoomOut.SetIcon(Icon.ZoomOut);
         ZoomOut.SetSelectorOffset(-2);
-        ZoomOut.OnMouseDown += delegate (MouseEventArgs e)
-        {
-            if (ZoomOut.WidgetIM.Hovering && e.LeftButton != e.OldLeftButton) DecreaseZoom();
-        };
+        ZoomOut.OnLeftMouseDownInside += _ => DecreaseZoom();
         ZoomIn = new IconButton(this);
         ZoomIn.Selectable = false;
         ZoomIn.SetIcon(Icon.ZoomIn);
         ZoomIn.SetPosition(137, 0);
         ZoomIn.SetSelectorOffset(-2);
-        ZoomIn.OnMouseDown += delegate (MouseEventArgs e)
-        {
-            if (ZoomIn.WidgetIM.Hovering && e.LeftButton != e.OldLeftButton) IncreaseZoom();
-        };
+        ZoomIn.OnLeftMouseDownInside += _ => IncreaseZoom();
 
         Slider = new NumericSlider(this);
         Slider.SetPosition(30, 4);

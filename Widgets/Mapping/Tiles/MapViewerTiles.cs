@@ -228,11 +228,11 @@ public class MapViewerTiles : MapViewerBase
 
     public void UpdateTilePlacement(MouseEventArgs e, int oldx = -1, int oldy = -1, int newx = -1, int newy = -1)
     {
-        if (!MainContainer.WidgetIM.Hovering) return;
+        if (!MainContainer.Mouse.Inside) return;
         if (MainContainer.HScrollBar != null && (MainContainer.HScrollBar.SliderDragging || MainContainer.HScrollBar.SliderHovering)) return;
         if (MainContainer.VScrollBar != null && (MainContainer.VScrollBar.SliderDragging || MainContainer.VScrollBar.SliderHovering)) return;
-        bool Left = WidgetIM.ClickedLeftInArea == true && e.LeftButton;
-        bool Right = WidgetIM.ClickedRightInArea == true && e.RightButton;
+        bool Left = Mouse.LeftStartedInside && Mouse.LeftMousePressed;
+        bool Right = Mouse.RightStartedInside && Mouse.RightMousePressed;
 
         if (Left || Right)
         {
@@ -665,19 +665,17 @@ public class MapViewerTiles : MapViewerBase
     {
         base.MouseDown(e);
         if (TilesPanel.UsingLeft || TilesPanel.UsingRight || LayerPanel.UsingLeft || LayerPanel.UsingRight) return;
-        if (e.LeftButton != e.OldLeftButton && !IgnoreLeftButton)
+        if (Mouse.LeftMouseTriggered && !IgnoreLeftButton)
         {
             IgnoreLeftButton = false;
             IgnoreRightButton = true;
         }
-        else if (e.RightButton != e.OldRightButton && !IgnoreRightButton)
+        else if (Mouse.RightMouseTriggered && !IgnoreRightButton)
         {
             IgnoreLeftButton = true;
             IgnoreRightButton = false;
         }
-        if ((e.LeftButton != e.OldLeftButton && e.LeftButton ||
-            e.RightButton != e.OldRightButton && e.RightButton) &&
-            MainContainer.WidgetIM.Hovering)
+        if ((Mouse.LeftMouseTriggered || Mouse.RightMouseTriggered) && MainContainer.Mouse.Inside)
         {
             if ((TilesPanel.DrawTool == DrawTools.RectangleFilled || TilesPanel.DrawTool == DrawTools.RectangleOutline ||
                  TilesPanel.DrawTool == DrawTools.EllipseFilled || TilesPanel.DrawTool == DrawTools.EllipseOutline) &&

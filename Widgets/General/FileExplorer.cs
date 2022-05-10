@@ -283,7 +283,7 @@ public class FileExplorer : Widget
     public override void MouseMoving(MouseEventArgs e)
     {
         base.MouseMoving(e);
-        if (!WidgetIM.Hovering) return;
+        if (!Mouse.Inside) return;
         HoveringFEW?.SetHovering(false);
         HoveringFEW = GetHoveringFile(e);
         HoveringFEW?.SetHovering(true);
@@ -302,29 +302,26 @@ public class FileExplorer : Widget
         }
     }
 
-    public override void MouseDown(MouseEventArgs e)
+    public override void LeftMouseDownInside(MouseEventArgs e)
     {
-        base.MouseDown(e);
-        if (WidgetIM.Hovering && e.LeftButton != e.OldLeftButton)
+        base.LeftMouseDownInside(e);
+        if (HoveringLabel != null)
         {
-            if (HoveringLabel != null)
+            int idx = PathLabels.IndexOf(HoveringLabel);
+            string path = "";
+            for (int i = 1; i <= idx; i++)
             {
-                int idx = PathLabels.IndexOf(HoveringLabel);
-                string path = "";
-                for (int i = 1; i <= idx; i++)
-                {
-                    path += PathLabels[i].Text;
-                    if (i != idx) path += "/";
-                }
-                HoveringLabel = null;
-                this.SetDirectory(path);
+                path += PathLabels[i].Text;
+                if (i != idx) path += "/";
             }
-
-            FileEntryWidget few = GetHoveringFile(e);
-            if (few == null || few != SelectedFEW) SelectedFEW?.SetSelected(false);
-            SelectedFEW = few;
-            SelectedFEW?.SetSelected(true);
+            HoveringLabel = null;
+            this.SetDirectory(path);
         }
+
+        FileEntryWidget few = GetHoveringFile(e);
+        if (few == null || few != SelectedFEW) SelectedFEW?.SetSelected(false);
+        SelectedFEW = few;
+        SelectedFEW?.SetSelected(true);
     }
 
     FileEntryWidget GetHoveringFile(MouseEventArgs e)

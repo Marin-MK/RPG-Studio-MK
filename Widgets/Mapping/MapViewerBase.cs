@@ -119,7 +119,7 @@ public class MapViewerBase : Widget
         PositionMap();
         MouseMoving(Graphics.LastMouseEvent);
 
-        if (!MainContainer.WidgetIM.Hovering) // Using control scrolling, so base it off where the user is looking
+        if (!MainContainer.Mouse.Inside) // Using control scrolling, so base it off where the user is looking
         {
             // Using the zoom buttons, so take the relative coordinates to be the middle of the screen
             oldrx = MainContainer.Size.Width / 2;
@@ -224,11 +224,11 @@ public class MapViewerBase : Widget
         // Update position - to make sure you're drawing where the mouse is, not where the cursor is
         // (the cursor will also follow the mouse with this call if they're not aligned (which they should be))
         MouseMoving(e);
-        if (MainContainer.WidgetIM.Hovering)
+        if (MainContainer.Mouse.Inside)
         {
-            if (e.LeftButton != e.OldLeftButton && e.LeftButton) UsingLeft = true;
-            if (e.RightButton != e.OldRightButton && e.RightButton) UsingRight = true;
-            if (e.MiddleButton != e.OldMiddleButton && e.MiddleButton)
+            if (Mouse.LeftMouseTriggered) UsingLeft = true;
+            if (Mouse.RightMouseTriggered) UsingRight = true;
+            if (Mouse.MiddleMouseTriggered)
             {
                 Input.SetCursor(odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_SIZEALL);
                 this.MiddleMouseScrolling = true;
@@ -241,11 +241,11 @@ public class MapViewerBase : Widget
 
     public override void MouseUp(MouseEventArgs e)
     {
-        if (WidgetIM.Ready() && IsVisible() && WidgetIM.WidgetAccessible()) MouseMoving(e);
+        if (Mouse.Accessible) MouseMoving(e);
         base.MouseUp(e);
-        if (e.LeftButton != e.OldLeftButton && !e.LeftButton) UsingLeft = false;
-        if (e.RightButton != e.OldRightButton && !e.RightButton) UsingRight = false;
-        if (e.MiddleButton != e.OldMiddleButton && !e.MiddleButton)
+        if (Mouse.LeftMouseReleased) UsingLeft = false;
+        if (Mouse.RightMouseReleased) UsingRight = false;
+        if (Mouse.MiddleMouseReleased)
         {
             Input.SetCursor(odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
             this.MiddleMouseScrolling = false;

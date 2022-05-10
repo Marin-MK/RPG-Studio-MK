@@ -74,14 +74,14 @@ public class IconButton : Widget
     public override void HoverChanged(MouseEventArgs e)
     {
         base.HoverChanged(e);
-        Sprites["selector"].Visible = WidgetIM.Hovering;
+        Sprites["selector"].Visible = Mouse.Inside;
     }
 
     public override void MouseDown(MouseEventArgs e)
     {
         base.MouseDown(e);
         int ry = e.Y - Viewport.Y;
-        if (WidgetIM.Hovering && ry < 29 && !TimerExists("reset") && e.OldLeftButton != e.LeftButton && e.LeftButton && Enabled)
+        if (Mouse.Inside && Mouse.LeftMouseTriggered && ry < 29 && !TimerExists("reset") && Enabled)
         {
             if (Toggleable) SetSelected(!Selected);
             else if (Selectable) SetSelected(true);

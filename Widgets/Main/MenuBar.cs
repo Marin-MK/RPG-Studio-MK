@@ -134,7 +134,7 @@ public class MenuBar : Widget
                 if (ActiveMenu == null) this.ActiveMenuHovered = false;
                 else
                 {
-                    if (!ActiveMenu.WidgetIM.Hovering) this.ActiveMenuHovered = false;
+                    if (!ActiveMenu.Mouse.Inside) this.ActiveMenuHovered = false;
                 }
             }
             IgnorePress = false;
@@ -158,14 +158,13 @@ public class MenuBar : Widget
         };
         ActiveMenu.OnHoverChanged += delegate (MouseEventArgs e)
         {
-            if (ActiveMenu.WidgetIM.Hovering)
-                this.ActiveMenuHovered = true;
+            if (ActiveMenu.Mouse.Inside) this.ActiveMenuHovered = true;
         };
         ActiveMenu.OnMouseUp += delegate (MouseEventArgs e)
         {
             if (e.LeftButton != e.OldLeftButton && !e.LeftButton)
             {
-                if (!ActiveMenu.WidgetIM.Hovering) IgnorePress = true;
+                if (!ActiveMenu.Mouse.Inside) IgnorePress = true;
                 if (this.ActiveMenuHovered && ActiveMenu.SelectedItem != null) ActiveMenu.TryClick(e);
             }
         };

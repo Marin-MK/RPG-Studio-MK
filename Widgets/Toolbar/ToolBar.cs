@@ -59,10 +59,10 @@ public class ToolBar : Widget
 
         PlayButton = new GradientButton(this, "Play");
         PlayButton.SetButtonColor(GradientButton.Colors.Green);
-        PlayButton.OnClicked = _ => Editor.StartGame();
+        PlayButton.OnLeftMouseDownInside = _ => Editor.StartGame();
         SaveButton = new GradientButton(this, "Save");
         SaveButton.SetButtonColor(GradientButton.Colors.Red);
-        SaveButton.OnClicked = _ => Editor.SaveProject();
+        SaveButton.OnLeftMouseDownInside = _ => Editor.SaveProject();
     }
 
     public void Refresh()

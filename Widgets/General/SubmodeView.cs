@@ -179,7 +179,7 @@ public class SubmodeView : Widget
     public override void MouseMoving(MouseEventArgs e)
     {
         base.MouseMoving(e);
-        if (!WidgetIM.Hovering)
+        if (!Mouse.Inside)
         {
             HoveringIndex = -1;
             Sprites["sel"].Visible = false;

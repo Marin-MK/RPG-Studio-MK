@@ -222,7 +222,7 @@ public class LayerPanel : Widget
 
     public override void WidgetSelected(BaseEventArgs e)
     {
-        if (layerwidget.RenameBox == null || !layerwidget.RenameBox.WidgetIM.Hovering)
+        if (layerwidget.RenameBox == null || !layerwidget.RenameBox.Mouse.Inside)
             Window.UI.SetSelectedWidget(this);
     }
 }

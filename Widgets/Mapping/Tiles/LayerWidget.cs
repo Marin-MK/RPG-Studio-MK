@@ -104,7 +104,7 @@ public class LayerWidget : Widget
     public override void HoverChanged(MouseEventArgs e)
     {
         base.HoverChanged(e);
-        if (!WidgetIM.Hovering)
+        if (!Mouse.Inside)
         {
             Sprites["selector"].Visible = false;
             HoveringIndex = -1;
@@ -115,7 +115,7 @@ public class LayerWidget : Widget
     {
         base.MouseMoving(e);
         if (MapViewer.UsingLeft || MapViewer.UsingRight || TilesPanel.UsingLeft || TilesPanel.UsingRight) return;
-        if (!WidgetIM.Hovering)
+        if (!Mouse.Inside)
         {
             Sprites["selector"].Visible = false;
             HoveringIndex = -1;
@@ -131,15 +131,15 @@ public class LayerWidget : Widget
     {
         base.MouseDown(e);
         if (MapViewer.UsingLeft || MapViewer.UsingRight || TilesPanel.UsingLeft || TilesPanel.UsingRight) return;
-        if (WidgetIM.Hovering)
+        if (Mouse.Inside)
         {
-            if (e.LeftButton != e.OldLeftButton && e.LeftButton) LayerPanel.UsingLeft = true;
-            if (e.RightButton != e.OldRightButton && e.RightButton) LayerPanel.UsingRight = true;
+            if (Mouse.LeftMouseTriggered) LayerPanel.UsingLeft = true;
+            if (Mouse.RightMouseTriggered) LayerPanel.UsingRight = true;
         }
         MouseMoving(e);
         int rx = e.X - Viewport.X;
         int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
-        if (!WidgetIM.Hovering) return;
+        if (!Mouse.Inside) return;
         int layerindex = Layers.Count - 1 - (int)Math.Floor(ry / 24d);
         if (layerindex < 0 || layerindex >= Layers.Count) return;
         if (rx < 39)
@@ -162,7 +162,7 @@ public class LayerWidget : Widget
     public override void MouseUp(MouseEventArgs e)
     {
         base.MouseUp(e);
-        if (e.LeftButton != e.OldLeftButton && !e.LeftButton) LayerPanel.UsingLeft = false;
-        if (e.RightButton != e.OldRightButton && !e.RightButton) LayerPanel.UsingRight = false;
+        if (Mouse.LeftMouseReleased) LayerPanel.UsingLeft = false;
+        if (Mouse.RightMouseReleased) LayerPanel.UsingRight = false;
     }
 }

@@ -118,14 +118,11 @@ public class NumericSlider : Widget
         Sprites["bars"].Bitmap.Lock();
     }
 
-    public override void MouseDown(MouseEventArgs e)
+    public override void LeftMouseDownInside(MouseEventArgs e)
     {
-        base.MouseDown(e);
-        if (e.LeftButton != e.OldLeftButton && e.LeftButton && WidgetIM.Hovering)
-        {
-            DraggingSlider = true;
-            MouseMoving(e);
-        }
+        base.LeftMouseDownInside(e);
+        DraggingSlider = true;
+        MouseMoving(e);
     }
 
     public override void MouseMoving(MouseEventArgs e)

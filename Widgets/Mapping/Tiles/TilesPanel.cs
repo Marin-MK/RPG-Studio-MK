@@ -83,7 +83,7 @@ public class TilesPanel : Widget
     Container MainContainer;
     VStackPanel MainStackPanel;
     public CursorWidget Cursor;
-    MouseInputManager CursorIM;
+    //MouseInputManager CursorIM;
 
     CollapsibleContainer SingleAutotileContainer;
     int SingleAutotileCount = 0;
@@ -105,7 +105,7 @@ public class TilesPanel : Widget
 
         this.OnWidgetSelected += WidgetSelected;
 
-        CursorIM = new MouseInputManager(this);
+        //CursorIM = new MouseInputManager(this);
 
         MainContainer = new Container(this);
         MainContainer.VAutoScroll = true;
@@ -148,13 +148,7 @@ public class TilesPanel : Widget
         {
             Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
         };
-        RectButton.OnMouseDown += delegate (MouseEventArgs e)
-        {
-            if (RectButton.WidgetIM.Hovering && e.OldRightButton != e.RightButton && e.RightButton)
-            {
-                ShowRectOptionsMenu();
-            }
-        };
+        RectButton.OnRightMouseDownInside += _ => ShowRectOptionsMenu();
 
         EllipseButton = new IconButton(DrawToolsContainer);
         EllipseButton.SetIcon(Editor.GeneralSettings.PreferEllipseFill ? Icon.CircleFilled : Icon.CircleOutline);
@@ -163,13 +157,7 @@ public class TilesPanel : Widget
         {
             Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
         };
-        EllipseButton.OnMouseDown += delegate (MouseEventArgs e)
-        {
-            if (EllipseButton.WidgetIM.Hovering && e.OldRightButton != e.RightButton && e.RightButton)
-            {
-                ShowEllipseOptionsMenu();
-            }
-        };
+        EllipseButton.OnRightMouseDownInside += _ => ShowEllipseOptionsMenu();
 
         FillButton = new IconButton(DrawToolsContainer);
         FillButton.SetIcon(Icon.Bucket);
@@ -204,13 +192,7 @@ public class TilesPanel : Widget
         {
             Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
         };
-        SelectButton.OnMouseDown += delegate (MouseEventArgs e)
-        {
-            if (SelectButton.WidgetIM.Hovering && e.OldRightButton != e.RightButton && e.RightButton)
-            {
-                ShowSelectOptionsMenu();
-            }
-        };
+        SelectButton.OnRightMouseDownInside += _ => ShowSelectOptionsMenu();
 
         SetSize(288, 200); // Dummy size so the sprites can be drawn properly
     }
@@ -540,7 +522,7 @@ public class TilesPanel : Widget
 
     public override void Update()
     {
-        CursorIM.Update(MainContainer.Viewport.Rect);
+        //CursorIM.Update(MainContainer.Viewport.Rect);
         base.Update();
     }
 
@@ -702,10 +684,10 @@ public class TilesPanel : Widget
         base.MouseDown(e);
         if (e.MiddleButton != e.OldMiddleButton) return; // A button other than the middle mouse button was pressed (left or right)
         if (MapViewer.UsingLeft || MapViewer.UsingRight || LayerPanel.UsingLeft || LayerPanel.UsingRight) return;
-        if (WidgetIM.Hovering)
+        if (Mouse.Inside)
         {
-            if (e.LeftButton != e.OldLeftButton && e.LeftButton) UsingLeft = true;
-            if (e.RightButton != e.OldRightButton && e.RightButton) UsingRight = true;
+            if (Mouse.LeftMouseTriggered) UsingLeft = true;
+            if (Mouse.RightMouseTriggered) UsingRight = true;
         }
         int idx = -1,
             x = -1,
@@ -721,8 +703,8 @@ public class TilesPanel : Widget
     public override void MouseUp(MouseEventArgs e)
     {
         base.MouseUp(e);
-        if (e.LeftButton != e.OldLeftButton && !e.LeftButton) UsingLeft = false;
-        if (e.RightButton != e.OldRightButton && !e.RightButton) UsingRight = false;
+        if (Mouse.LeftMouseReleased) UsingLeft = false;
+        if (Mouse.RightMouseReleased) UsingRight = false;
         DraggingTileset = e.LeftButton || e.RightButton;
     }
 

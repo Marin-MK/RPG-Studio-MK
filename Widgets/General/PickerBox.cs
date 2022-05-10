@@ -21,7 +21,7 @@ public class PickerBox : amethyst.DropdownBox
         Color lightgrey = new Color(121, 121, 122);
         Color darkgrey = new Color(96, 100, 100);
         Color filler = new Color(10, 23, 37);
-        Color dropdownfiller = WidgetIM.Hovering ? new Color(6, 53, 108) : new Color(28, 50, 73);
+        Color dropdownfiller = Mouse.Inside ? new Color(6, 53, 108) : new Color(28, 50, 73);
         int linex = Size.Width - DropdownWidth + 8;
         Sprites["bg"].Bitmap.DrawRect(Size, lightgrey);
         Sprites["bg"].Bitmap.DrawRect(1, 1, Size.Width - 2, Size.Height - 2, lightgrey);

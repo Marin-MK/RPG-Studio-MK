@@ -62,13 +62,13 @@ public class DataTypeButton : Widget
     public override void HoverChanged(MouseEventArgs e)
     {
         base.HoverChanged(e);
-        Sprites["selection"].Visible = WidgetIM.Hovering;
+        Sprites["selection"].Visible = Mouse.Inside;
     }
 
     public override void MouseDown(MouseEventArgs e)
     {
         base.MouseDown(e);
-        if (WidgetIM.Hovering)
+        if (Mouse.Inside)
         {
             this.SetSelected(true);
         }

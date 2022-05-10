@@ -103,7 +103,7 @@ public class NumericBox : Widget
         base.MouseMoving(e);
         bool oldup = HoveringUp;
         bool olddown = HoveringDown;
-        if (!WidgetIM.Hovering)
+        if (!Mouse.Inside)
         {
             HoveringUp = false;
             HoveringDown = false;
@@ -129,7 +129,7 @@ public class NumericBox : Widget
     public override void HoverChanged(MouseEventArgs e)
     {
         base.HoverChanged(e);
-        if (!WidgetIM.Hovering)
+        if (!Mouse.Inside)
         {
             if (HoveringUp || HoveringDown) Redraw();
             SelectedDown = false;

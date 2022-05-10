@@ -107,7 +107,7 @@ public class MapImageWidget : Widget
     public override void Update()
     {
         base.Update();
-        if (!WidgetIM.WidgetAccessible()) return;
+        if (!Mouse.Accessible) return;
         if (!IsVisible()) return;
         if (TimerPassed("frame"))
         {
@@ -1068,14 +1068,14 @@ public class MapImageWidget : Widget
         {
             // Only update neighbours if they contain autotiles
             // (they don't need to be the same autotile; if autotile B is drawn over A, then surrounding A must also be updated)
-            if (MapData.Layers[Layer].Tiles[id0] != null && (NWex || Nex && Wex)) UpdateAutotiles(Layer, Connected[0].X, Connected[0].Y, MapData.Layers[Layer].Tiles[id0].Index);
-            if (MapData.Layers[Layer].Tiles[id1] != null && Nauto) UpdateAutotiles(Layer, Connected[1].X, Connected[1].Y, MapData.Layers[Layer].Tiles[id1].Index);
-            if (MapData.Layers[Layer].Tiles[id2] != null && (NEex || Nex && Eex)) UpdateAutotiles(Layer, Connected[2].X, Connected[2].Y, MapData.Layers[Layer].Tiles[id2].Index);
-            if (MapData.Layers[Layer].Tiles[id3] != null && Wauto) UpdateAutotiles(Layer, Connected[3].X, Connected[3].Y, MapData.Layers[Layer].Tiles[id3].Index);
-            if (MapData.Layers[Layer].Tiles[id4] != null && Eauto) UpdateAutotiles(Layer, Connected[4].X, Connected[4].Y, MapData.Layers[Layer].Tiles[id4].Index);
-            if (MapData.Layers[Layer].Tiles[id5] != null && (SWex || Sex && Wex)) UpdateAutotiles(Layer, Connected[5].X, Connected[5].Y, MapData.Layers[Layer].Tiles[id5].Index);
-            if (MapData.Layers[Layer].Tiles[id6] != null && Sauto) UpdateAutotiles(Layer, Connected[6].X, Connected[6].Y, MapData.Layers[Layer].Tiles[id6].Index);
-            if (MapData.Layers[Layer].Tiles[id7] != null && (SEex || Sex && Eex)) UpdateAutotiles(Layer, Connected[7].X, Connected[7].Y, MapData.Layers[Layer].Tiles[id7].Index);
+            if (id0 >= 0 && MapData.Layers[Layer].Tiles[id0] != null && (NWex || Nex && Wex)) UpdateAutotiles(Layer, Connected[0].X, Connected[0].Y, MapData.Layers[Layer].Tiles[id0].Index);
+            if (id1 >= 0 && MapData.Layers[Layer].Tiles[id1] != null && Nauto) UpdateAutotiles(Layer, Connected[1].X, Connected[1].Y, MapData.Layers[Layer].Tiles[id1].Index);
+            if (id2 >= 0 && MapData.Layers[Layer].Tiles[id2] != null && (NEex || Nex && Eex)) UpdateAutotiles(Layer, Connected[2].X, Connected[2].Y, MapData.Layers[Layer].Tiles[id2].Index);
+            if (id3 >= 0 && MapData.Layers[Layer].Tiles[id3] != null && Wauto) UpdateAutotiles(Layer, Connected[3].X, Connected[3].Y, MapData.Layers[Layer].Tiles[id3].Index);
+            if (id4 >= 0 && MapData.Layers[Layer].Tiles[id4] != null && Eauto) UpdateAutotiles(Layer, Connected[4].X, Connected[4].Y, MapData.Layers[Layer].Tiles[id4].Index);
+            if (id5 >= 0 && MapData.Layers[Layer].Tiles[id5] != null && (SWex || Sex && Wex)) UpdateAutotiles(Layer, Connected[5].X, Connected[5].Y, MapData.Layers[Layer].Tiles[id5].Index);
+            if (id6 >= 0 && MapData.Layers[Layer].Tiles[id6] != null && Sauto) UpdateAutotiles(Layer, Connected[6].X, Connected[6].Y, MapData.Layers[Layer].Tiles[id6].Index);
+            if (id7 >= 0 && MapData.Layers[Layer].Tiles[id7] != null && (SEex || Sex && Eex)) UpdateAutotiles(Layer, Connected[7].X, Connected[7].Y, MapData.Layers[Layer].Tiles[id7].Index);
         }
     }
 

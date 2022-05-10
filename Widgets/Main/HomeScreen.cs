@@ -49,56 +49,41 @@ public class HomeScreen : Widget
         NewProjectButton.SetText("New Project");
         NewProjectButton.SetIcon("assets/img/home_icon_new");
         NewProjectButton.SetHelpText("Create a new project.");
-        NewProjectButton.OnLeftClick += delegate (MouseEventArgs e)
-        {
-            NewProject();
-        };
+        NewProjectButton.OnLeftMouseDownInside += _ => NewProject();
 
         OpenProjectButton = new HomeScreenButton(this);
         OpenProjectButton.SetPosition(690, 108);
         OpenProjectButton.SetText("Open Project");
         OpenProjectButton.SetIcon("assets/img/home_icon_openfile");
         OpenProjectButton.SetHelpText("Open an existing project by selecting its project file.");
-        OpenProjectButton.OnLeftClick += delegate (MouseEventArgs e)
-        {
-            OpenProject();
-        };
+        OpenProjectButton.OnLeftMouseDownInside += _ => OpenProject();
 
         TutorialsButton = new HomeScreenButton(this);
         TutorialsButton.SetPosition(935, 108);
         TutorialsButton.SetText("Tutorials");
         TutorialsButton.SetHelpText("Click this button to be directed to various tutorials and documentation for RPG Studio MK.");
         TutorialsButton.SetIcon("assets/img/home_icon_tutorials");
-        TutorialsButton.OnLeftClick += delegate (MouseEventArgs e)
-        {
-            ShowTutorials();
-        };
+        TutorialsButton.OnLeftMouseDownInside += _ => ShowTutorials();
 
         YoutubeButton = new PictureBox(this);
         YoutubeButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_youtube.png");
         YoutubeButton.SetHelpText("Visit RPG Studio MK's YouTube account.");
-        YoutubeButton.OnLeftClick += delegate (MouseEventArgs e)
-        {
-            new MessageBox("Oops!", "MK does not have a YouTube channel yet!", IconType.Error);
-        };
-        YoutubeButton.OnHoverChanged += delegate (MouseEventArgs e)
+        YoutubeButton.OnLeftMouseDownInside += _ => new MessageBox("Oops!", "MK does not have a YouTube channel yet!", IconType.Error);
+        YoutubeButton.OnHoverChanged += _ =>
         {
             YoutubeButton.Sprite.Bitmap.Dispose();
-            if (YoutubeButton.WidgetIM.Hovering) YoutubeButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_youtube_hover.png");
+            if (YoutubeButton.Mouse.Inside) YoutubeButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_youtube_hover.png");
             else YoutubeButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_youtube.png");
         };
 
         TwitterButton = new PictureBox(this);
         TwitterButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_twitter.png");
         TwitterButton.SetHelpText("Visit MK's Twitter account.");
-        TwitterButton.OnLeftClick += delegate (MouseEventArgs e)
-        {
-            Utilities.OpenLink("http://twitter.com/RPGStudioMK");
-        };
-        TwitterButton.OnHoverChanged += delegate (MouseEventArgs e)
+        TwitterButton.OnLeftMouseDownInside += _ => Utilities.OpenLink("http://twitter.com/RPGStudioMK");
+        TwitterButton.OnHoverChanged += _ =>
         {
             TwitterButton.Sprite.Bitmap.Dispose();
-            if (TwitterButton.WidgetIM.Hovering) TwitterButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_twitter_hover.png");
+            if (TwitterButton.Mouse.Inside) TwitterButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_twitter_hover.png");
             else TwitterButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_twitter.png");
         };
 
@@ -321,7 +306,7 @@ public class HomeScreen : Widget
     public override void HoverChanged(MouseEventArgs e)
     {
         base.HoverChanged(e);
-        if (!WidgetIM.Hovering)
+        if (!Mouse.Inside)
         {
             Sprites["filesel"].Visible = false;
             SelectedIndex = -1;
@@ -331,7 +316,7 @@ public class HomeScreen : Widget
     public override void MouseMoving(MouseEventArgs e)
     {
         base.MouseMoving(e);
-        if (!WidgetIM.Hovering)
+        if (!Mouse.Inside)
         {
             Sprites["filesel"].Visible = false;
             SelectedIndex = -1;

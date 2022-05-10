@@ -90,21 +90,18 @@ public class AutotilePickerMap : PopupWindow
         base.Draw();
     }
 
-    public override void MouseDown(MouseEventArgs e)
+    public override void LeftMouseDownInside(MouseEventArgs e)
     {
-        base.MouseDown(e);
-        if (WidgetIM.Hovering)
-        {
-            int rx = e.X - Viewport.X;
-            int ry = e.Y - Viewport.Y;
-            if (rx < Sprites["tiles"].X || ry < Sprites["tiles"].Y || rx >= Sprites["tiles"].X + Sprites["tiles"].Bitmap.Width ||
-                ry >= Sprites["tiles"].Y + Sprites["tiles"].Bitmap.Height) return;
-            rx -= Sprites["tiles"].X;
-            ry -= Sprites["tiles"].Y;
-            int TileX = (int)Math.Floor(rx / 34d);
-            int TileY = (int)Math.Floor(ry / 34d);
-            Cursor.SetPosition(Sprites["tiles"].X + TileX * 34 - 7, Sprites["tiles"].Y + TileY * 34 - 7);
-            SelectedTileID = TileX + TileY * 8;
-        }
+        base.LeftMouseDownInside(e);
+        int rx = e.X - Viewport.X;
+        int ry = e.Y - Viewport.Y;
+        if (rx < Sprites["tiles"].X || ry < Sprites["tiles"].Y || rx >= Sprites["tiles"].X + Sprites["tiles"].Bitmap.Width ||
+            ry >= Sprites["tiles"].Y + Sprites["tiles"].Bitmap.Height) return;
+        rx -= Sprites["tiles"].X;
+        ry -= Sprites["tiles"].Y;
+        int TileX = (int) Math.Floor(rx / 34d);
+        int TileY = (int) Math.Floor(ry / 34d);
+        Cursor.SetPosition(Sprites["tiles"].X + TileX * 34 - 7, Sprites["tiles"].Y + TileY * 34 - 7);
+        SelectedTileID = TileX + TileY * 8;
     }
 }

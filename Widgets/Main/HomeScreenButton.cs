@@ -53,7 +53,7 @@ public class HomeScreenButton : Widget
     {
         base.HoverChanged(e);
         Sprites["bg"].Bitmap?.Dispose();
-        Sprites["bg"].Bitmap = new Bitmap($"assets/img/home_button{(WidgetIM.Hovering ? "_hovering" : "")}.png");
-        Sprites["sel"].Visible = WidgetIM.Hovering;
+        Sprites["bg"].Bitmap = new Bitmap($"assets/img/home_button{(Mouse.Inside ? "_hovering" : "")}.png");
+        Sprites["sel"].Visible = Mouse.Inside;
     }
 }

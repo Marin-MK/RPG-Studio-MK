@@ -172,7 +172,7 @@ public class ListDrawer : Widget
         Sprites["hover"].Visible = false;
         bool OldHover = HoveringButton;
         HoveringButton = false;
-        if (!WidgetIM.Hovering) { }
+        if (!Mouse.Inside) { }
         else if (index == this.Items.Count) // Hovering over button
         {
             if (rx >= 7 && rx < 7 + Sprites["btn"].Bitmap.Width) HoveringButton = true;
@@ -189,13 +189,13 @@ public class ListDrawer : Widget
     public override void HoverChanged(MouseEventArgs e)
     {
         base.HoverChanged(e);
-        if (!WidgetIM.Hovering) Sprites["hover"].Visible = false;
+        if (!Mouse.Inside) Sprites["hover"].Visible = false;
     }
 
     public override void MouseDown(MouseEventArgs e)
     {
         base.MouseDown(e);
-        if (!WidgetIM.Hovering || e.LeftButton == e.OldLeftButton || !e.LeftButton) return;
+        if (!Mouse.Inside || e.LeftButton == e.OldLeftButton || !e.LeftButton) return;
         if (HoveringButton)
         {
             Sprites["selection"].Visible = false;

@@ -843,7 +843,7 @@ public class TextArea : Widget
     public override void MouseDown(MouseEventArgs e)
     {
         base.MouseDown(e);
-        if (!WidgetIM.Hovering || this.Text.Length == 0 || this.ReadOnly || !this.Enabled) return;
+        if (!Mouse.Inside || this.Text.Length == 0 || this.ReadOnly || !this.Enabled) return;
         if (SelectionStartIndex != -1 && SelectionStartIndex != SelectionEndIndex) CancelSelectionHidden();
         int OldRX = RX;
         int OldCaretIndex = CaretIndex;
@@ -890,7 +890,7 @@ public class TextArea : Widget
     public override void MouseMoving(MouseEventArgs e)
     {
         base.MouseMoving(e);
-        if (!e.LeftButton || WidgetIM.ClickedLeftInArea != true || this.ReadOnly || !this.Enabled) return;
+        if (!e.LeftButton || !Mouse.LeftStartedInside || this.ReadOnly || !this.Enabled) return;
         int OldRX = RX;
         int OldCaretIndex = CaretIndex;
         int rmx = e.X - Viewport.X;
@@ -937,7 +937,7 @@ public class TextArea : Widget
     public override void HoverChanged(MouseEventArgs e)
     {
         base.HoverChanged(e);
-        if (WidgetIM.Hovering && this.Enabled)
+        if (Mouse.Inside && this.Enabled)
         {
             Input.SetCursor(SDL_SystemCursor.SDL_SYSTEM_CURSOR_IBEAM);
         }

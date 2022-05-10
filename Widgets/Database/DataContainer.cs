@@ -117,7 +117,7 @@ public class DataContainer : Widget
     {
         base.MouseDown(e);
         int ry = e.Y - Viewport.Y;
-        if (!WidgetIM.Hovering || ry >= 36) return;
+        if (!Mouse.Inside || ry >= 36) return;
         SetCollapsed(!Collapsed);
     }
 }

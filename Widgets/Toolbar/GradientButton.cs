@@ -7,8 +7,6 @@ public class GradientButton : Widget
     public bool Enabled { get; protected set; } = true;
     public string Text { get; protected set; } = "";
 
-    public BaseEvent OnClicked;
-
     public GradientButton(IContainer Parent, string Text) : base(Parent)
     {
         this.Text = Text;
@@ -45,16 +43,7 @@ public class GradientButton : Widget
     public override void HoverChanged(MouseEventArgs e)
     {
         base.HoverChanged(e);
-        Sprites["bg"].SrcRect.Y = Enabled ? (WidgetIM.Hovering ? 30 : 0) : 60;
-    }
-
-    public override void MouseDown(MouseEventArgs e)
-    {
-        base.MouseDown(e);
-        if (WidgetIM.Hovering && e.LeftButton != e.OldLeftButton && e.LeftButton)
-        {
-            this.OnClicked?.Invoke(new BaseEventArgs());
-        }
+        Sprites["bg"].SrcRect.Y = Enabled ? (Mouse.Inside ? 30 : 0) : 60;
     }
 
     public enum Colors

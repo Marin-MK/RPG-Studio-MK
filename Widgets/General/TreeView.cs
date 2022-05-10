@@ -211,8 +211,8 @@ public class TreeView : Widget
     public override void HoverChanged(MouseEventArgs e)
     {
         base.HoverChanged(e);
-        Sprites["hover"].Visible = WidgetIM.Hovering;
-        if (!WidgetIM.Hovering) HoveringNode = null;
+        Sprites["hover"].Visible = Mouse.Inside;
+        if (!Mouse.Inside) HoveringNode = null;
         UpdateHoverDrag();
         MouseMoving(e);
     }
@@ -220,7 +220,7 @@ public class TreeView : Widget
     public override void MouseMoving(MouseEventArgs e)
     {
         base.MouseMoving(e);
-        if (!WidgetIM.Hovering) return;
+        if (!Mouse.Inside) return;
         int rx = e.X - this.Viewport.X + Position.X - ScrolledPosition.X;
         int ry = e.Y - this.Viewport.Y + Position.Y - ScrolledPosition.Y;
         if (ry >= Size.Height - TrailingBlank)
@@ -372,7 +372,7 @@ public class TreeView : Widget
     public override void MouseDown(MouseEventArgs e)
     {
         base.MouseDown(e);
-        if (!WidgetIM.Hovering) return;
+        if (!Mouse.Inside) return;
         TreeNode oldselected = this.SelectedNode;
         if (e.LeftButton && !e.OldLeftButton && e.LeftButton)
         {

@@ -12,7 +12,7 @@ public class ModeButton : GradientButton
         Sprites["bg"].Visible = false;
 
         OnWidgetSelected += WidgetSelected;
-        OnClicked += delegate (BaseEventArgs e) { SetSelected(true); };
+        OnLeftMouseDownInside += _ => SetSelected(true);
     }
 
     public void SetSelected(bool Selected, bool Starting = false)
@@ -42,7 +42,7 @@ public class ModeButton : GradientButton
     public override void HoverChanged(MouseEventArgs e)
     {
         base.HoverChanged(e);
-        Sprites["bg"].Visible = this.Selected || WidgetIM.Hovering;
+        Sprites["bg"].Visible = this.Selected || Mouse.Inside;
         if (this.Selected) Sprites["bg"].SrcRect.Y = 0;
     }
 }
