@@ -11,7 +11,7 @@ public class MapImageWidget : Widget
     public int RelativeY;
 
     public GridBackground GridBackground;
-    public MapViewerBase MapViewer;
+    public MapViewer MapViewer;
     public Map MapData;
     public Rect Rect;
 
@@ -23,7 +23,7 @@ public class MapImageWidget : Widget
     public MapImageWidget(IContainer Parent) : base(Parent)
     {
         SetBackgroundColor(73, 89, 109);
-        this.MapViewer = this.Parent.Parent.Parent as MapViewerBase;
+        this.MapViewer = this.Parent.Parent.Parent as MapViewer;
         this.GridBackground = new GridBackground(this);
         this.GridBackground.SetDocked(true);
         this.GridBackground.SetVisible(Editor.GeneralSettings.ShowGrid);
@@ -309,7 +309,6 @@ public class MapImageWidget : Widget
 
     public List<Point> GetTilesFromMouse(int oldx, int oldy, int newx, int newy, int layer)
     {
-        MapViewerTiles MapViewer = (MapViewerTiles)this.MapViewer;
         List<Point> Coords = new List<Point>();
         switch (MapViewer.TilesPanel.DrawTool)
         {
@@ -337,7 +336,6 @@ public class MapImageWidget : Widget
 
     void CalculateTilesBucket(List<Point> Coords, int newx, int newy, int layer)
     {
-        MapViewerTiles MapViewer = (MapViewerTiles)this.MapViewer;
         int x = (int)Math.Floor(newx / 32d);
         int y = (int)Math.Floor(newy / 32d);
         if (MapViewer.SelectionWidth != 0 && MapViewer.SelectionHeight != 0)
@@ -357,7 +355,6 @@ public class MapImageWidget : Widget
 
     void CalculateTilesPencil(List<Point> Coords, int oldx, int oldy, int newx, int newy)
     {
-        MapViewerTiles MapViewer = (MapViewerTiles)this.MapViewer;
         // Avoid drawing a line from top left to current tile
         if (oldx == -1 || oldy == -1)
         {
@@ -427,7 +424,6 @@ public class MapImageWidget : Widget
 
     void CalculateTilesEllipseFilled(List<Point> Coords, int newx, int newy)
     {
-        MapViewerTiles MapViewer = (MapViewerTiles)this.MapViewer;
         int x1 = MapViewer.OriginPoint.X * 32;
         int y1 = MapViewer.OriginPoint.Y * 32;
         int x2 = newx;
@@ -517,7 +513,6 @@ public class MapImageWidget : Widget
 
     void CalculateTilesEllipseOutline(List<Point> Coords, int newx, int newy)
     {
-        MapViewerTiles MapViewer = (MapViewerTiles)this.MapViewer;
         int x1 = MapViewer.OriginPoint.X * 32;
         int y1 = MapViewer.OriginPoint.Y * 32;
         int x2 = newx;
@@ -600,7 +595,6 @@ public class MapImageWidget : Widget
 
     void CalculateTilesRectangleFilled(List<Point> Coords, int newx, int newy)
     {
-        MapViewerTiles MapViewer = (MapViewerTiles)this.MapViewer;
         int x1 = MapViewer.OriginPoint.X;
         int y1 = MapViewer.OriginPoint.Y;
         int x2 = (int)Math.Floor(newx / 32d);
@@ -645,7 +639,6 @@ public class MapImageWidget : Widget
 
     void CalculateTilesRectangleOutline(List<Point> Coords, int newx, int newy)
     {
-        MapViewerTiles MapViewer = (MapViewerTiles)this.MapViewer;
         int x1 = MapViewer.OriginPoint.X;
         int y1 = MapViewer.OriginPoint.Y;
         int x2 = (int)Math.Floor(newx / 32d);
@@ -699,7 +692,6 @@ public class MapImageWidget : Widget
 
     public void DrawTiles(List<Point> Coords, int layer)
     {
-        MapViewerTiles MapViewer = (MapViewerTiles)this.MapViewer;
         SetLayerLocked(layer, false);
         for (int i = 0; i < Coords.Count; i++)
         {

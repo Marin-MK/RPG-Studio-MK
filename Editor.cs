@@ -594,7 +594,7 @@ public static class Editor
         {
             case EditorMode.Mapping:
                 // Select Mapping mode
-                SetMappingMode(Force);
+                SetMappingMode(ProjectSettings.LastMappingSubmode);
                 break;
             case EditorMode.Scripting:
                 // Select Scripting Mode
@@ -610,9 +610,9 @@ public static class Editor
         MainWindow.ToolBar.Refresh();
     }
 
-    public static void SetMappingMode(bool Force = false)
+    public static void SetMappingMode(MapMode Submode)
     {
-        MainWindow.ToolBar.MappingMode.SetSelected(true, Force);
+        MainWindow.ToolBar.MappingMode.SetSelected(true);
 
         MainWindow.MainEditorWidget = new MappingWidget(MainWindow.MainGridLayout);
         MainWindow.MainEditorWidget.SetGridRow(3);
@@ -624,7 +624,8 @@ public static class Editor
         MainWindow.MapWidget.SetSelectedLayer(lastlayer);
         MainWindow.MapWidget.SetZoomFactor(ProjectSettings.LastZoomFactor);
 
-        MainWindow.UI.SetSelectedWidget(MainWindow.MapWidget.MapViewerTiles);
+        MainWindow.UI.SetSelectedWidget(MainWindow.MapWidget.MapViewer);
+        MainWindow.MapWidget.SetMode(Submode);
     }
 
     public static void SetDatabaseMode(DatabaseMode Submode, bool Force = false)
@@ -741,16 +742,6 @@ public static class Editor
         {
             ProjectSettings = new ProjectSettings();
         }
-        if (ProjectSettings.LastZoomFactor == 0) ProjectSettings.LastZoomFactor = 1;
-        if (ProjectSettings.ProjectName.Length == 0) ProjectSettings.ProjectName = "Untitled Game";
-        if (ProjectSettings.TilesetCapacity == 0) ProjectSettings.TilesetCapacity = 25;
-        if (ProjectSettings.AutotileCapacity == 0) ProjectSettings.AutotileCapacity = 25;
-        if (ProjectSettings.SwitchGroupCapacity == 0) ProjectSettings.SwitchGroupCapacity = 25;
-        if (ProjectSettings.Switches == null) ProjectSettings.Switches = new List<GameSwitchGroup>();
-        if (ProjectSettings.Switches.Count == 0) for (int i = 0; i < ProjectSettings.SwitchGroupCapacity; i++) ProjectSettings.Switches.Add(new GameSwitchGroup() { ID = i + 1 });
-        if (ProjectSettings.VariableGroupCapacity == 0) ProjectSettings.VariableGroupCapacity = 25;
-        if (ProjectSettings.Variables == null) ProjectSettings.Variables = new List<GameVariableGroup>();
-        if (ProjectSettings.Variables.Count == 0) for (int i = 0; i < ProjectSettings.VariableGroupCapacity; i++) ProjectSettings.Variables.Add(new GameVariableGroup() { ID = i + 1 });
     }
 
     /// <summary>
@@ -777,115 +768,223 @@ public static class Editor
 [Serializable]
 public class ProjectSettings
 {
+    public Dictionary<string, object> RawData;
+
+    public ProjectSettings()
+    {
+        RawData = new Dictionary<string, object>();
+        RawData.Add("SAVED_VERSION", "1.0.0");
+        RawData.Add("PROJECT_NAME", "Untitled Game");
+        RawData.Add("LAST_MODE", EditorMode.Mapping);
+        RawData.Add("LAST_MAPPING_SUBMODE", MapMode.Tiles);
+        RawData.Add("LAST_DATABASE_SUBMODE", DatabaseMode.Tilesets);
+        RawData.Add("LAST_MAP_ID", 1);
+        RawData.Add("LAST_LAYER", 1);
+        RawData.Add("LAST_ZOOM_FACTOR", 1d);
+        RawData.Add("TILESET_CAPACITY", 25);
+        RawData.Add("AUTOTILE_CAPACITY", 25);
+    }
+
     /// <summary>
     /// The last-used version of the editor to save the project. Can be used to programmatically port old data formats to new formats upon an update.
     /// </summary>
-    public string SavedVersion;
+    public string SavedVersion
+    {
+        get => (string) RawData["SAVED_VERSION"];
+        set => RawData["SAVED_VERSION"] = value;
+    }
     /// <summary>
     /// The name of the project.
     /// </summary>
-    public string ProjectName = "Untitled Game";
+    public string ProjectName
+    {
+        get => (string) RawData["PROJECT_NAME"];
+        set => RawData["PROJECT_NAME"] = value;
+    }
     /// <summary>
     /// The last-active mode of the project.
     /// </summary>
-    public EditorMode LastMode = EditorMode.Mapping;
+    public EditorMode LastMode
+    {
+        get => (EditorMode) RawData["LAST_MODE"];
+        set => RawData["LAST_MODE"] = value;
+    }
     /// <summary>
     /// The last-active submode within the Mapping mode.
     /// </summary>
-    public string LastMappingSubmode = "TILES";
+    public MapMode LastMappingSubmode
+    {
+        get => (MapMode) RawData["LAST_MAPPING_SUBMODE"];
+        set => RawData["LAST_MAPPING_SUBMODE"] = value;
+    }
     /// <summary>
     /// The last-active submode within the Database mode.
     /// </summary>
-    public DatabaseMode LastDatabaseSubmode = DatabaseMode.Tilesets;
+    public DatabaseMode LastDatabaseSubmode
+    {
+        get => (DatabaseMode) RawData["LAST_DATABASE_SUBMODE"];
+        set => RawData["LAST_DATABASE_SUBMODE"] = value;
+    }
     /// <summary>
     /// The last selected Map.
     /// </summary>
-    public int LastMapID = 1;
+    public int LastMapID
+    {
+        get => (int) RawData["LAST_MAP_ID"];
+        set => RawData["LAST_MAP_ID"] = value;
+    }
     /// <summary>
     /// The last selected layer.
     /// </summary>
-    public int LastLayer = 1;
+    public int LastLayer
+    {
+        get => (int) RawData["LAST_LAYER"];
+        set => RawData["LAST_LAYER"] = value;
+    }
     /// <summary>
     /// The last zoom factor.
     /// </summary>
-    public double LastZoomFactor = 1;
+    public double LastZoomFactor
+    {
+        get => (double) RawData["LAST_ZOOM_FACTOR"];
+        set => RawData["LAST_ZOOM_FACTOR"] = value;
+    }
     /// <summary>
     /// The maximum tileset capacity.
     /// </summary>
-    public int TilesetCapacity = 25;
+    public int TilesetCapacity
+    {
+        get => (int) RawData["TILESET_CAPACITY"];
+        set => RawData["TILESET_CAPACITY"] = value;
+    }
     /// <summary>
     /// The maximum autotile capacity.
     /// </summary>
-    public int AutotileCapacity = 25;
-    /// <summary>
-    /// The maximum game switch group capacity.
-    /// </summary>
-    public int SwitchGroupCapacity = 25;
-    /// <summary>
-    /// The data related to game switches.
-    /// </summary>
-    public List<GameSwitchGroup> Switches = new List<GameSwitchGroup>();
-    /// <summary>
-    /// The maximum game variable group capacity.
-    /// </summary>
-    public int VariableGroupCapacity = 25;
-    /// <summary>
-    /// The data related to game variables.
-    /// </summary>
-    public List<GameVariableGroup> Variables = new List<GameVariableGroup>();
+    public int AutotileCapacity
+    {
+        get => (int) RawData["AUTOTILE_CAPACITY"];
+        set => RawData["AUTOTILE_CAPACITY"] = value;
+    }
 }
 
 [Serializable]
 public class GeneralSettings
 {
+    public Dictionary<string, object> RawData;
+
+    public GeneralSettings()
+    {
+        RawData = new Dictionary<string, object>();
+        RawData.Add("WAS_MAXIMIZED", true);
+        RawData.Add("LAST_WIDTH", 600);
+        RawData.Add("LAST_HEIGHT", 600);
+        RawData.Add("LAST_X", 50);
+        RawData.Add("LAST_Y", 50);
+        RawData.Add("RECENT_FILES", new List<(string, string)>());
+        RawData.Add("SHOW_MAP_ANIMATIONS", true);
+        RawData.Add("SHOW_GRID", true);
+        RawData.Add("PREFER_RECTANGLE_FILL", false);
+        RawData.Add("PREFER_ELLIPSE_FILL", false);
+        RawData.Add("PREFER_SELECTION_ALL", false);
+        RawData.Add("SECONDS_USED", 0);
+    }
+
     /// <summary>
     /// Whether the editor window was maximized.
     /// </summary>
-    public bool WasMaximized = true;
+    public bool WasMaximized
+    {
+        get => (bool) RawData["WAS_MAXIMIZED"];
+        set => RawData["WAS_MAXIMIZED"] = value;
+    }
     /// <summary>
     /// The last width the editor window had when it was not maximized.
     /// </summary>
-    public int LastWidth = 600;
+    public int LastWidth
+    {
+        get => (int) RawData["LAST_WIDTH"];
+        set => RawData["LAST_WIDTH"] = value;
+    }
     /// <summary>
     /// The last height the editor window had when it was not maximized.
     /// </summary>
-    public int LastHeight = 600;
+    public int LastHeight
+    {
+        get => (int) RawData["LAST_HEIGHT"];
+        set => RawData["LAST_HEIGHT"] = value;
+    }
     /// <summary>
     /// The last X position the editor window had when it was not maximized.
     /// </summary>
-    public int LastX = 50;
+    public int LastX
+    {
+        get => (int) RawData["LAST_X"];
+        set => RawData["LAST_X"] = value;
+    }
     /// <summary>
     /// The last Y position the editor window had when it was not maximized.
     /// </summary>
-    public int LastY = 50;
+    public int LastY
+    {
+        get => (int) RawData["LAST_Y"];
+        set => RawData["LAST_Y"] = value;
+    }
     /// <summary>
     /// The list of recently opened projects. May contain old/invalid paths.
     /// </summary>
-    public List<(string ProjectName, string ProjectFile)> RecentFiles = new List<(string, string)>();
+    public List<(string ProjectName, string ProjectFile)> RecentFiles
+    {
+        get => (List<(string, string)>) RawData["RECENT_FILES"];
+        set => RawData["RECENT_FILES"] = value;
+    }
     /// <summary>
     /// Whether to play map animations.
     /// </summary>
-    public bool ShowMapAnimations = true;
+    public bool ShowMapAnimations
+    {
+        get => (bool) RawData["SHOW_MAP_ANIMATIONS"];
+        set => RawData["SHOW_MAP_ANIMATIONS"] = value;
+    }
     /// <summary>
     /// Whether to show the map grid overlay.
     /// </summary>
-    public bool ShowGrid = true;
+    public bool ShowGrid
+    {
+        get => (bool) RawData["SHOW_GRID"];
+        set => RawData["SHOW_GRID"] = value;
+    }
     /// <summary>
     /// Whether the user prefers to use the rectangle tool including filling.
     /// </summary>
-    public bool PreferRectangleFill = false;
+    public bool PreferRectangleFill
+    {
+        get => (bool) RawData["PREFER_RECTANGLE_FILL"];
+        set => RawData["PREFER_RECTANGLE_FILL"] = value;
+    }
     /// <summary>
     /// Whether the user prefers to use the ellipse tool including filling.
     /// </summary>
-    public bool PreferEllipseFill = false;
+    public bool PreferEllipseFill
+    {
+        get => (bool) RawData["PREFER_ELLIPSE_FILL"];
+        set => RawData["PREFER_ELLIPSE_FILL"] = value;
+    }
     /// <summary>
     /// Whether the user prefers to use the selection tool for selecting multiple layers.
     /// </summary>
-    public bool PreferSelectionAll = false;
+    public bool PreferSelectionAll
+    {
+        get => (bool) RawData["PREFER_SELECTION_ALL"];
+        set => RawData["PREFER_SELECTION_ALL"] = value;
+    }
     /// <summary>
     /// The total number of seconds the program has ever been open.
     /// </summary>
-    public int SecondsUsed = 0;
+    public int SecondsUsed
+    {
+        get => (int) RawData["SECONDS_USED"];
+        set => RawData["SECONDS_USED"] = value;
+    }
 }
 
 public enum EditorMode

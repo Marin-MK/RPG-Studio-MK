@@ -39,7 +39,7 @@ public class LayerRenameUndoAction : BaseUndoAction
         }
         Map Map = Data.Maps[MapID];
         Map.Layers[LayerIndex].Name = IsRedo ? NewName : OldName;
-        Editor.MainWindow.MapWidget.MapViewerTiles.LayerPanel.layerwidget.Redraw();
+        Editor.MainWindow.MapWidget.MapViewer.LayerPanel.layerwidget.Redraw();
         return true;
     }
 }

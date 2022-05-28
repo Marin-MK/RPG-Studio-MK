@@ -6,7 +6,7 @@ namespace RPGStudioMK.Widgets;
 public class LayerPanel : Widget
 {
     public TilesPanel TilesPanel;
-    public MapViewerTiles MapViewer;
+    public MapViewer MapViewer;
     public Map Map { get { return this.MapViewer.Map; } }
 
     public int SelectedLayer { get { return layerwidget.SelectedLayer; } }

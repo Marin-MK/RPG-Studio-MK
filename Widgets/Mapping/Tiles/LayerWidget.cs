@@ -8,7 +8,7 @@ public class LayerWidget : Widget
 {
     public LayerPanel LayerPanel { get { return (Parent.Parent) as LayerPanel; } }
     public TilesPanel TilesPanel { get { return MapViewer.TilesPanel; } }
-    public MapViewerTiles MapViewer { get { return LayerPanel.MapViewer; } }
+    public MapViewer MapViewer { get { return LayerPanel.MapViewer; } }
     public List<Layer> Layers { get; private set; }
     public int SelectedLayer { get; private set; }
     public int HoveringIndex { get; private set; } = -1;

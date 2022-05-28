@@ -44,11 +44,11 @@ public class LayerChangeUndoAction : BaseUndoAction
         bool Create = Removal != IsRedo;
         if (Create)
         {
-            Editor.MainWindow.MapWidget.MapViewerTiles.LayerPanel.NewLayer(LayerIndex - 1, LayerData, true);
+            Editor.MainWindow.MapWidget.MapViewer.LayerPanel.NewLayer(LayerIndex - 1, LayerData, true);
         }
         else
         {
-            Editor.MainWindow.MapWidget.MapViewerTiles.LayerPanel.DeleteLayer(LayerIndex, true);
+            Editor.MainWindow.MapWidget.MapViewer.LayerPanel.DeleteLayer(LayerIndex, true);
         }
         return true;
     }

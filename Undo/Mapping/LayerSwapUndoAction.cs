@@ -33,7 +33,7 @@ public class LayerSwapUndoAction : BaseUndoAction
             Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Game.Data.Maps[this.MapID]);
             return false;
         }
-        Widgets.LayerPanel LayerPanel = Editor.MainWindow.MapWidget.MapViewerTiles.LayerPanel;
+        Widgets.LayerPanel LayerPanel = Editor.MainWindow.MapWidget.MapViewer.LayerPanel;
         bool MoveUp = this.MovedUp == IsRedo;
         if (MoveUp)
         {

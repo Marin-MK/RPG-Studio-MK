@@ -1,10 +1,13 @@
-﻿using System;
+﻿using RPGStudioMK.Game;
+using System;
 using System.Collections.Generic;
-using RPGStudioMK.Game;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace RPGStudioMK.Widgets;
 
-public class MapViewerTiles : MapViewerBase
+public partial class MapViewer
 {
     public TilesPanel TilesPanel;
     public LayerPanel LayerPanel;
@@ -33,39 +36,21 @@ public class MapViewerTiles : MapViewerBase
     Point SelectionTileOrigin;
     MapSelection SelectionTiles;
 
-    public CursorWidget Cursor;
-
-    public override int TopLeftX
-    {
-        get
-        {
-            int x = base.TopLeftX;
-            if (CursorOrigin == Location.TopRight || CursorOrigin == Location.BottomRight) x -= CursorWidth;
-            return x;
-        }
-    }
-    public override int TopLeftY
-    {
-        get
-        {
-            int y = base.TopLeftY;
-            if (CursorOrigin == Location.BottomLeft || CursorOrigin == Location.BottomRight) y -= CursorHeight;
-            return y;
-        }
-    }
-
     public SelectionBackground SelectionBackground;
 
-    public MapViewerTiles(IContainer Parent) : base(Parent)
+    private partial void ConstructorTiles()
     {
-        GridLayout.Columns.Add(new GridSize(288, Unit.Pixels));
-        GridLayout.UpdateContainers();
+        /**
+         * Create the Tiles mode widgets
+         */
 
-        // Right sidebar
+        // Right sidebar grid
         Grid sidebargrid = new Grid(GridLayout);
         sidebargrid.SetGrid(0, 1, 2, 2);
         sidebargrid.SetRows(new GridSize(5), new GridSize(2, Unit.Pixels), new GridSize(2));
         sidebargrid.SetColumns(new GridSize(1));
+        sidebargrid.SetVisible(Visible);
+        SidebarWidgetTiles = sidebargrid;
 
         // Tileset part of right sidebar
         TilesPanel = new TilesPanel(sidebargrid);
@@ -88,25 +73,9 @@ public class MapViewerTiles : MapViewerBase
         SelectionBackground = new SelectionBackground(MainContainer);
         SelectionBackground.SetZIndex(7);
 
-        Cursor = new CursorWidget(MainContainer);
-        Cursor.ConsiderInAutoScrollCalculation = false;
-        Cursor.SetZIndex(8);
-
-        RegisterShortcuts(new List<Shortcut>()
-        {
-            new Shortcut(this, new Key(Keycode.ESCAPE), CancelSelection),
-            new Shortcut(this, new Key(Keycode.A, Keycode.CTRL), SelectAll),
-            new Shortcut(this, new Key(Keycode.Q, Keycode.SHIFT), SetDrawModePencil),
-            new Shortcut(this, new Key(Keycode.W, Keycode.SHIFT), SetDrawModeRectangle),
-            new Shortcut(this, new Key(Keycode.E, Keycode.SHIFT), SetDrawModeEllipse),
-            new Shortcut(this, new Key(Keycode.R, Keycode.SHIFT), SetDrawModeBucket),
-            new Shortcut(this, new Key(Keycode.T, Keycode.SHIFT), SetDrawModeEraser),
-            new Shortcut(this, new Key(Keycode.Y, Keycode.SHIFT), SetDrawModeSelection)
-        });
-
         Editor.OnUndoing += delegate (BaseEventArgs e)
         {
-            if (SelectionWidth != 0 && SelectionHeight != 0) CancelSelection(e);
+            if (Mode == MapMode.Tiles && SelectionWidth != 0 && SelectionHeight != 0) CancelSelection(e);
         };
     }
 
@@ -139,22 +108,6 @@ public class MapViewerTiles : MapViewerBase
     {
 
         TilesPanel.Erase = !TilesPanel.Erase;
-    }
-
-    public override void SetMap(Map Map)
-    {
-        this.Map = Map;
-        CancelSelection(new BaseEventArgs());
-        LayerPanel.CreateLayers();
-        TilesPanel.SetMap(Map);
-        TilesPanel.SelectTile(new TileData() { TileType = TileType.Tileset, Index = 0, ID = 0 });
-        base.SetMap(Map);
-    }
-
-    public override void PositionMap()
-    {
-        base.PositionMap();
-        UpdateSelection();
     }
 
     public void CreateNewLayer(int Index, Layer LayerData, bool IsUndoAction = false)
@@ -508,100 +461,6 @@ public class MapViewerTiles : MapViewerBase
         MapWidget.SetLayerVisible(layerindex, Visible);
     }
 
-    public override void MouseMoving(MouseEventArgs e)
-    {
-        base.MouseMoving(e);
-        if (TilesPanel.UsingLeft || TilesPanel.UsingRight || LayerPanel.UsingLeft || LayerPanel.UsingRight) return;
-        if (e.X != LastMouseX || e.Y != LastMouseY)
-        {
-            if (e.X >= LastMouseX) // Right
-            {
-                if (e.Y >= LastMouseY) MoveDirection = Location.BottomRight;
-                else MoveDirection = Location.TopRight;
-            }
-            else // Left
-            {
-                if (e.Y >= LastMouseY) MoveDirection = Location.BottomLeft;
-                else MoveDirection = Location.TopLeft;
-            }
-        }
-        if (!MiddleMouseScrolling)
-        {
-            int oldmousex = RelativeMouseX;
-            int oldmousey = RelativeMouseY;
-            // Cursor placement
-            if (MainContainer.HScrollBar != null && (MainContainer.HScrollBar.SliderDragging || MainContainer.HScrollBar.SliderHovering)) return;
-            if (MainContainer.VScrollBar != null && (MainContainer.VScrollBar.SliderDragging || MainContainer.VScrollBar.SliderHovering)) return;
-            int rx = e.X - MapWidget.Viewport.X;
-            int ry = e.Y - MapWidget.Viewport.Y;
-            if (e.X < MainContainer.Viewport.X || e.Y < MainContainer.Viewport.Y ||
-                e.X >= MainContainer.Viewport.X + MainContainer.Viewport.Width ||
-                e.Y >= MainContainer.Viewport.Y + MainContainer.Viewport.Height) // Off the Map Viewer area
-            {
-                if (Cursor.Visible) Cursor.SetVisible(false);
-                MapTileX = -1;
-                MapTileY = -1;
-                RelativeMouseX = -1;
-                RelativeMouseY = -1;
-                return;
-            }
-            int movedx = MapWidget.Position.X - MapWidget.ScrolledPosition.X;
-            int movedy = MapWidget.Position.Y - MapWidget.ScrolledPosition.Y;
-            if (movedx >= MapWidget.Position.X)
-            {
-                movedx -= MapWidget.Position.X;
-                rx += movedx;
-            }
-            if (movedy >= MapWidget.Position.Y)
-            {
-                movedy -= MapWidget.Position.Y;
-                ry += movedy;
-            }
-            int tilex = (int)Math.Floor(rx / (32d * ZoomFactor));
-            int tiley = (int)Math.Floor(ry / (32d * ZoomFactor));
-            if (Editor.MainWindow.MapWidget != null && TilesPanel.DrawTool != DrawTools.SelectionActiveLayer && TilesPanel.DrawTool != DrawTools.SelectionAllLayers)
-            {
-                if ((TilesPanel.DrawTool != DrawTools.RectangleFilled && TilesPanel.DrawTool != DrawTools.RectangleOutline &&
-                     TilesPanel.DrawTool != DrawTools.EllipseFilled && TilesPanel.DrawTool != DrawTools.EllipseOutline) ||
-                     OriginPoint == null) Cursor.SetVisible(true);
-            }
-            int cx = tilex * 32;
-            int cy = tiley * 32;
-            RelativeMouseX = cx;
-            RelativeMouseY = cy;
-            cx += MapWidget.Position.X;
-            cy += MapWidget.Position.Y;
-            MapTileX = tilex;
-            MapTileY = tiley;
-            UpdateCursorPosition();
-            if (oldmousex != RelativeMouseX || oldmousey != RelativeMouseY)
-            {
-                UpdateTilePlacement(e, oldmousex, oldmousey, RelativeMouseX, RelativeMouseY);
-            }
-            if (TilesPanel.DrawTool == DrawTools.SelectionActiveLayer || TilesPanel.DrawTool == DrawTools.SelectionAllLayers)
-            {
-                if (SelectionWidth != 0 && SelectionHeight != 0 && (!e.LeftButton || e.LeftButton && e.LeftButton != e.OldLeftButton))
-                {
-                    if (MapTileX >= SelectionX && MapTileX < SelectionX + SelectionWidth &&
-                        MapTileY >= SelectionY && MapTileY < SelectionY + SelectionHeight)
-                    {
-                        SetCursorInActiveSelection(true);
-                    }
-                    else
-                    {
-                        SetCursorInActiveSelection(false);
-                    }
-                }
-                else
-                {
-                    SetCursorInActiveSelection(false);
-                }
-            }
-        }
-        LastMouseX = e.X;
-        LastMouseY = e.Y;
-    }
-
     private void StartMovingSelection()
     {
         this.SelectionMouseOrigin = new Point(SelectionX, SelectionY);
@@ -643,104 +502,7 @@ public class MapViewerTiles : MapViewerBase
         SelectionTiles = null;
     }
 
-    public void UpdateCursorPosition()
-    {
-        int offsetx = 0;
-        int offsety = 0;
-        if (CursorOrigin == Location.TopRight || CursorOrigin == Location.BottomRight)
-            offsetx = (int)Math.Round(32 * CursorWidth * ZoomFactor);
-        if (CursorOrigin == Location.BottomLeft || CursorOrigin == Location.BottomRight)
-            offsety = (int)Math.Round(32 * CursorHeight * ZoomFactor);
-        Cursor.SetPosition(
-            MapWidget.Position.X + (int)Math.Round(32 * MapTileX * ZoomFactor) - offsetx - 7,
-            MapWidget.Position.Y + (int)Math.Round(32 * MapTileY * ZoomFactor) - offsety - 7
-        );
-        Cursor.SetSize(
-            (int)Math.Round(32 * ZoomFactor) * (CursorWidth + 1) + 14,
-            (int)Math.Round(32 * ZoomFactor) * (CursorHeight + 1) + 14
-        );
-    }
-
-    public override void MouseDown(MouseEventArgs e)
-    {
-        base.MouseDown(e);
-        if (TilesPanel.UsingLeft || TilesPanel.UsingRight || LayerPanel.UsingLeft || LayerPanel.UsingRight) return;
-        if (Mouse.LeftMouseTriggered && !IgnoreLeftButton)
-        {
-            IgnoreLeftButton = false;
-            IgnoreRightButton = true;
-        }
-        else if (Mouse.RightMouseTriggered && !IgnoreRightButton)
-        {
-            IgnoreLeftButton = true;
-            IgnoreRightButton = false;
-        }
-        if ((Mouse.LeftMouseTriggered || Mouse.RightMouseTriggered) && MainContainer.Mouse.Inside)
-        {
-            if ((TilesPanel.DrawTool == DrawTools.RectangleFilled || TilesPanel.DrawTool == DrawTools.RectangleOutline ||
-                 TilesPanel.DrawTool == DrawTools.EllipseFilled || TilesPanel.DrawTool == DrawTools.EllipseOutline) &&
-                e.LeftButton && e.LeftButton != e.OldLeftButton && !IgnoreLeftButton) Cursor.SetVisible(false);
-            if (SelectionWidth != 0 || SelectionHeight != 0)
-            {
-                if (this.CursorInActiveSelection) // Start moving selection
-                {
-                    StartMovingSelection();
-                }
-                else // Cancel selection
-                {
-                    StopMovingSelection();
-                    CancelSelection(new BaseEventArgs());
-                    this.IgnoreLeftButton = true;
-                }
-            }
-            UpdateTilePlacement(e, RelativeMouseX, RelativeMouseY, RelativeMouseX, RelativeMouseY);
-        }
-    }
-
-    public override void MouseUp(MouseEventArgs e)
-    {
-        base.MouseUp(e);
-        if (e.LeftButton != e.OldLeftButton)
-        {
-            if (!Editor.CanUndo && Undo.TileGroupUndoAction.GetLatest() != null)
-            {
-                Editor.CanUndo = true;
-                Undo.TileGroupUndoAction.GetLatest().Ready = true;
-                if ((TilesPanel.DrawTool == DrawTools.RectangleFilled || TilesPanel.DrawTool == DrawTools.RectangleOutline ||
-                     TilesPanel.DrawTool == DrawTools.EllipseFilled || TilesPanel.DrawTool == DrawTools.EllipseOutline) &&
-                    !Cursor.Visible) Cursor.SetVisible(true);
-            }
-        }
-        if (!e.LeftButton && !e.RightButton)
-        {
-            OriginPoint = null;
-            IgnoreLeftButton = false;
-            IgnoreRightButton = false;
-        }
-    }
-
-    public override void Update()
-    {
-        base.Update();
-        if (!SelectedWidget) return;
-        if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LCTRL) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RCTRL))
-        {
-            if (Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_c)) // Copy
-            {
-                CopySelection();
-            }
-            else if (Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_x)) // Cut
-            {
-                CutSelection();
-            }
-            else if (Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_v)) // Paste
-            {
-                PasteSelection();
-            }
-        }
-    }
-
-    void CopySelection(bool DeleteTiles = false)
+    private partial void CopyTiles(bool Cut = false)
     {
         if ((TilesPanel.DrawTool == DrawTools.SelectionActiveLayer || TilesPanel.DrawTool == DrawTools.SelectionAllLayers) &&
             SelectionWidth != 0 && SelectionHeight != 0)
@@ -749,7 +511,7 @@ public class MapViewerTiles : MapViewerBase
             MapSelection sel = new MapSelection();
             sel.Width = SelectionWidth;
             sel.Height = SelectionHeight;
-            if (DeleteTiles)
+            if (Cut)
             {
                 if (All) for (int i = 0; i < Map.Layers.Count; i++) MapWidget.SetLayerLocked(i, false);
                 else MapWidget.SetLayerLocked(LayerPanel.SelectedLayer, false);
@@ -764,7 +526,7 @@ public class MapViewerTiles : MapViewerBase
                         int idx = SelectionX + x + (SelectionY + y) * Map.Width;
                         TileData tile = Map.Layers[Layer].Tiles[idx];
                         sel.AddTile(Layer, tile);
-                        if (DeleteTiles)
+                        if (Cut)
                         {
                             Map.Layers[Layer].Tiles[idx] = null;
                             MapWidget.DrawTile(SelectionX + x, SelectionY + y, Layer, null, tile, true);
@@ -774,7 +536,7 @@ public class MapViewerTiles : MapViewerBase
                 }
             }
             Utilities.SetClipboard(sel, BinaryData.MAP_SELECTION);
-            if (DeleteTiles)
+            if (Cut)
             {
                 if (All) for (int i = 0; i < Map.Layers.Count; i++) MapWidget.SetLayerLocked(i, true);
                 else MapWidget.SetLayerLocked(LayerPanel.SelectedLayer, true);
@@ -783,13 +545,13 @@ public class MapViewerTiles : MapViewerBase
         }
     }
 
-    void CutSelection()
+    private partial void CutTiles()
     {
-        CopySelection(true);
+        CopyTiles(true);
         CancelSelection(new BaseEventArgs());
     }
 
-    void PasteSelection()
+    private partial void PasteTiles()
     {
         if (!Utilities.IsClipboardValidBinary(BinaryData.MAP_SELECTION)) return;
         if (TilesPanel.DrawTool != DrawTools.SelectionActiveLayer) TilesPanel.DrawTool = DrawTools.SelectionActiveLayer;
@@ -846,5 +608,157 @@ public class MapViewerTiles : MapViewerBase
         Undo.TileGroupUndoAction.GetLatest().Ready = true;
         this.SelectionStartUndoLast = true;
         this.SelectionFromPaste = true;
+    }
+
+    private partial void MouseMovingTiles(MouseEventArgs e)
+    {
+        if (Mode == MapMode.Tiles)
+        {
+            if (TilesPanel.UsingLeft || TilesPanel.UsingRight || LayerPanel.UsingLeft || LayerPanel.UsingRight) return;
+            if (e.X != LastMouseX || e.Y != LastMouseY)
+            {
+                if (e.X >= LastMouseX) // Right
+                {
+                    if (e.Y >= LastMouseY) MoveDirection = Location.BottomRight;
+                    else MoveDirection = Location.TopRight;
+                }
+                else // Left
+                {
+                    if (e.Y >= LastMouseY) MoveDirection = Location.BottomLeft;
+                    else MoveDirection = Location.TopLeft;
+                }
+            }
+            if (!MiddleMouseScrolling)
+            {
+                int oldmousex = RelativeMouseX;
+                int oldmousey = RelativeMouseY;
+                // Cursor placement
+                if (MainContainer.HScrollBar != null && (MainContainer.HScrollBar.SliderDragging || MainContainer.HScrollBar.SliderHovering)) return;
+                if (MainContainer.VScrollBar != null && (MainContainer.VScrollBar.SliderDragging || MainContainer.VScrollBar.SliderHovering)) return;
+                int rx = e.X - MapWidget.Viewport.X;
+                int ry = e.Y - MapWidget.Viewport.Y;
+                if (e.X < MainContainer.Viewport.X || e.Y < MainContainer.Viewport.Y ||
+                    e.X >= MainContainer.Viewport.X + MainContainer.Viewport.Width ||
+                    e.Y >= MainContainer.Viewport.Y + MainContainer.Viewport.Height) // Off the Map Viewer area
+                {
+                    if (Cursor.Visible) Cursor.SetVisible(false);
+                    MapTileX = -1;
+                    MapTileY = -1;
+                    RelativeMouseX = -1;
+                    RelativeMouseY = -1;
+                    return;
+                }
+                int movedx = MapWidget.Position.X - MapWidget.ScrolledPosition.X;
+                int movedy = MapWidget.Position.Y - MapWidget.ScrolledPosition.Y;
+                if (movedx >= MapWidget.Position.X)
+                {
+                    movedx -= MapWidget.Position.X;
+                    rx += movedx;
+                }
+                if (movedy >= MapWidget.Position.Y)
+                {
+                    movedy -= MapWidget.Position.Y;
+                    ry += movedy;
+                }
+                int tilex = (int)Math.Floor(rx / (32d * ZoomFactor));
+                int tiley = (int)Math.Floor(ry / (32d * ZoomFactor));
+                if (Editor.MainWindow.MapWidget != null && TilesPanel.DrawTool != DrawTools.SelectionActiveLayer && TilesPanel.DrawTool != DrawTools.SelectionAllLayers)
+                {
+                    if ((TilesPanel.DrawTool != DrawTools.RectangleFilled && TilesPanel.DrawTool != DrawTools.RectangleOutline &&
+                         TilesPanel.DrawTool != DrawTools.EllipseFilled && TilesPanel.DrawTool != DrawTools.EllipseOutline) ||
+                         OriginPoint == null) Cursor.SetVisible(true);
+                }
+                RelativeMouseX = tilex * 32;
+                RelativeMouseY = tiley * 32;
+                MapTileX = tilex;
+                MapTileY = tiley;
+                UpdateCursorPosition();
+                if (oldmousex != RelativeMouseX || oldmousey != RelativeMouseY)
+                {
+                    UpdateTilePlacement(e, oldmousex, oldmousey, RelativeMouseX, RelativeMouseY);
+                }
+                if (TilesPanel.DrawTool == DrawTools.SelectionActiveLayer || TilesPanel.DrawTool == DrawTools.SelectionAllLayers)
+                {
+                    if (SelectionWidth != 0 && SelectionHeight != 0 && (!e.LeftButton || e.LeftButton && e.LeftButton != e.OldLeftButton))
+                    {
+                        if (MapTileX >= SelectionX && MapTileX < SelectionX + SelectionWidth &&
+                            MapTileY >= SelectionY && MapTileY < SelectionY + SelectionHeight)
+                        {
+                            SetCursorInActiveSelection(true);
+                        }
+                        else
+                        {
+                            SetCursorInActiveSelection(false);
+                        }
+                    }
+                    else
+                    {
+                        SetCursorInActiveSelection(false);
+                    }
+                }
+            }
+        }
+    }
+
+    private partial void MouseDownTiles(MouseEventArgs e)
+    {
+        if (Mode == MapMode.Tiles)
+        {
+            if (TilesPanel.UsingLeft || TilesPanel.UsingRight || LayerPanel.UsingLeft || LayerPanel.UsingRight) return;
+            if (Mouse.LeftMouseTriggered && !IgnoreLeftButton)
+            {
+                IgnoreLeftButton = false;
+                IgnoreRightButton = true;
+            }
+            else if (Mouse.RightMouseTriggered && !IgnoreRightButton)
+            {
+                IgnoreLeftButton = true;
+                IgnoreRightButton = false;
+            }
+            if ((Mouse.LeftMouseTriggered || Mouse.RightMouseTriggered) && MainContainer.Mouse.Inside)
+            {
+                if ((TilesPanel.DrawTool == DrawTools.RectangleFilled || TilesPanel.DrawTool == DrawTools.RectangleOutline ||
+                        TilesPanel.DrawTool == DrawTools.EllipseFilled || TilesPanel.DrawTool == DrawTools.EllipseOutline) &&
+                    e.LeftButton && e.LeftButton != e.OldLeftButton && !IgnoreLeftButton) Cursor.SetVisible(false);
+                if (SelectionWidth != 0 || SelectionHeight != 0)
+                {
+                    if (this.CursorInActiveSelection) // Start moving selection
+                    {
+                        StartMovingSelection();
+                    }
+                    else // Cancel selection
+                    {
+                        StopMovingSelection();
+                        CancelSelection(new BaseEventArgs());
+                        this.IgnoreLeftButton = true;
+                    }
+                }
+                UpdateTilePlacement(e, RelativeMouseX, RelativeMouseY, RelativeMouseX, RelativeMouseY);
+            }
+        }
+    }
+
+    private partial void MouseUpTiles(MouseEventArgs e)
+    {
+        if (Mode == MapMode.Tiles)
+        {
+            if (e.LeftButton != e.OldLeftButton)
+            {
+                if (!Editor.CanUndo && Undo.TileGroupUndoAction.GetLatest() != null)
+                {
+                    Editor.CanUndo = true;
+                    Undo.TileGroupUndoAction.GetLatest().Ready = true;
+                    if ((TilesPanel.DrawTool == DrawTools.RectangleFilled || TilesPanel.DrawTool == DrawTools.RectangleOutline ||
+                         TilesPanel.DrawTool == DrawTools.EllipseFilled || TilesPanel.DrawTool == DrawTools.EllipseOutline) &&
+                        !Cursor.Visible) Cursor.SetVisible(true);
+                }
+            }
+            if (!e.LeftButton && !e.RightButton)
+            {
+                OriginPoint = null;
+                IgnoreLeftButton = false;
+                IgnoreRightButton = false;
+            }
+        }
     }
 }

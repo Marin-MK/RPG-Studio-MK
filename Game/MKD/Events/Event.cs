@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace RPGStudioMK.Game;
 
@@ -27,9 +28,18 @@ public class Event : ICloneable
     public Event(IntPtr data)
     {
         this.ID = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@id"));
-        this.Width = 1;
-        this.Height = 1;
         this.Name = Ruby.String.FromPtr(Ruby.GetIVar(data, "@name"));
+        Match match = Regex.Match(this.Name.ToLower(), @"size\((\d+),(\d+)\)");
+        if (match.Success)
+        {
+            this.Width = Convert.ToInt32(match.Groups[1].Value);
+            this.Height = Convert.ToInt32(match.Groups[2].Value);
+        }
+        else
+        {
+            this.Width = 1;
+            this.Height = 1;
+        }
         this.X = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@x"));
         this.Y = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@y"));
         IntPtr pages = Ruby.GetIVar(data, "@pages");

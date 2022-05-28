@@ -80,7 +80,22 @@ public class StatusBar : Widget
         if (Sprites["cursor"].Bitmap != null) Sprites["cursor"].Bitmap.Dispose();
         Font f = Fonts.ProductSansMedium.Use(14);
         string text = $"{Utilities.Digits(X, 3)}x{Utilities.Digits(Y, 3)}";
-        if (width != 0 || height != 0) text += $" (size {width + 1},{height + 1})";
+        MapViewer mv = Editor.MainWindow.MapWidget.MapViewer;
+        if (mv.Mode == MapMode.Tiles)
+        {
+            if (width != 0 || height != 0) text += $" (size {width + 1},{height + 1})";
+        }
+        else if (mv.Mode == MapMode.Events)
+        {
+            foreach (Event e in mv.Map.Events.Values)
+            {
+                if (e.X == mv.MapTileX && e.Y == mv.MapTileY)
+                {
+                    text += $" (event {Utilities.Digits(e.ID, 3)})";
+                    break;
+                }
+            }
+        }
         Size s = f.TextSize(text);
         Sprites["cursor"].Bitmap = new Bitmap(s);
         Sprites["cursor"].Bitmap.Font = f;
@@ -133,7 +148,7 @@ public class StatusBar : Widget
         }
         if (Editor.MainWindow.MapWidget != null)
         {
-            MapViewerBase MapViewer = Editor.MainWindow.MapWidget.MapViewerTiles;
+            MapViewer MapViewer = Editor.MainWindow.MapWidget.MapViewer;
             if (!MapViewer.MainContainer.Mouse.Inside)
             {
                 RemoveCursorText();

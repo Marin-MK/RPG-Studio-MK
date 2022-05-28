@@ -73,7 +73,7 @@ public class TilesPanel : Widget
     private IconButton EraserButton;
 
     public LayerPanel LayerPanel { get { return MapViewer.LayerPanel; } }
-    public MapViewerTiles MapViewer;
+    public MapViewer MapViewer;
 
     bool DraggingTileset = false;
 
@@ -83,7 +83,6 @@ public class TilesPanel : Widget
     Container MainContainer;
     VStackPanel MainStackPanel;
     public CursorWidget Cursor;
-    //MouseInputManager CursorIM;
 
     CollapsibleContainer SingleAutotileContainer;
     int SingleAutotileCount = 0;
@@ -104,8 +103,6 @@ public class TilesPanel : Widget
         Sprites["slider"].Y = 53;
 
         this.OnWidgetSelected += WidgetSelected;
-
-        //CursorIM = new MouseInputManager(this);
 
         MainContainer = new Container(this);
         MainContainer.VAutoScroll = true;
@@ -138,7 +135,7 @@ public class TilesPanel : Widget
         PencilButton.SetSelected(true);
         PencilButton.OnSelection += delegate (BaseEventArgs e)
         {
-            Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
+            Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewer);
         };
 
         RectButton = new IconButton(DrawToolsContainer);
@@ -146,25 +143,33 @@ public class TilesPanel : Widget
         RectButton.SetPosition(32, 0);
         RectButton.OnSelection += delegate (BaseEventArgs e)
         {
-            Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
+            Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewer);
         };
-        RectButton.OnRightMouseDownInside += _ => ShowRectOptionsMenu();
+        RectButton.OnRightMouseDownInside += e =>
+        {
+            e.Handled = true;
+            ShowRectOptionsMenu();
+        };
 
         EllipseButton = new IconButton(DrawToolsContainer);
         EllipseButton.SetIcon(Editor.GeneralSettings.PreferEllipseFill ? Icon.CircleFilled : Icon.CircleOutline);
         EllipseButton.SetPosition(64, 0);
         EllipseButton.OnSelection += delegate (BaseEventArgs e)
         {
-            Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
+            Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewer);
         };
-        EllipseButton.OnRightMouseDownInside += _ => ShowEllipseOptionsMenu();
+        EllipseButton.OnRightMouseDownInside += e =>
+        {
+            e.Handled = true;
+            ShowEllipseOptionsMenu();
+        };
 
         FillButton = new IconButton(DrawToolsContainer);
         FillButton.SetIcon(Icon.Bucket);
         FillButton.SetPosition(96, 0);
         FillButton.OnSelection += delegate (BaseEventArgs e)
         {
-            Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
+            Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewer);
         };
 
         EraserButton = new IconButton(DrawToolsContainer);
@@ -175,7 +180,7 @@ public class TilesPanel : Widget
         {
             if (AutotileIndex != -1 || TilesetIndex != -1 || TileStartX != -1 || TileEndX != -1 || TileStartY != -1 || TileEndY != -1)
                 SelectTile(null);
-            Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
+            Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewer);
         };
         EraserButton.OnDeselection += delegate (BaseEventArgs e)
         {
@@ -190,9 +195,13 @@ public class TilesPanel : Widget
         SelectButton.SetPosition(168, 0);
         SelectButton.OnSelection += delegate (BaseEventArgs e)
         {
-            Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewerTiles);
+            Window.UI.SetSelectedWidget(Editor.MainWindow.MapWidget.MapViewer);
         };
-        SelectButton.OnRightMouseDownInside += _ => ShowSelectOptionsMenu();
+        SelectButton.OnRightMouseDownInside += e =>
+        {
+            e.Handled = true;
+            ShowSelectOptionsMenu();
+        };
 
         SetSize(288, 200); // Dummy size so the sprites can be drawn properly
     }
@@ -517,13 +526,7 @@ public class TilesPanel : Widget
     {
         base.SizeChanged(e);
         Sprites["slider"].X = Size.Width - 11;
-        (Sprites["slider"].Bitmap as SolidBitmap).SetSize(10, Size.Height - 54);
-    }
-
-    public override void Update()
-    {
-        //CursorIM.Update(MainContainer.Viewport.Rect);
-        base.Update();
+        ((SolidBitmap) Sprites["slider"].Bitmap).SetSize(10, Size.Height - 54);
     }
 
     public void UpdateCursor()

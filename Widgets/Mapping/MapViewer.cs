@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
 
-public class MapViewerBase : Widget
+public partial class MapViewer : Widget
 {
     public Map Map;
+    public MapMode Mode;
 
     public Grid GridLayout;
 
@@ -25,14 +27,18 @@ public class MapViewerBase : Widget
     {
         get
         {
-            return MapTileX;
+            int x = MapTileX;
+            if (Mode == MapMode.Tiles && (CursorOrigin == Location.TopRight || CursorOrigin == Location.BottomRight)) x -= CursorWidth;
+            return x;
         }
     }
     public virtual int TopLeftY
     {
         get
         {
-            return MapTileY;
+            int y = MapTileY;
+            if (Mode == MapMode.Tiles && (CursorOrigin == Location.BottomLeft || CursorOrigin == Location.BottomRight)) y -= CursorHeight;
+            return y;
         }
     }
     public int CursorWidth = 0;
@@ -48,8 +54,11 @@ public class MapViewerBase : Widget
     public VignetteFade Fade;
     public Container HScrollContainer;
     public Container VScrollContainer;
+    public Widget SidebarWidgetTiles;
+    public Widget SidebarWidgetEvents;
+    public CursorWidget Cursor;
 
-    public MapViewerBase(IContainer Parent) : base(Parent)
+    public MapViewer(IContainer Parent) : base(Parent)
     {
         this.SetBackgroundColor(28, 50, 73);
         this.OnWidgetSelected += WidgetSelected;
@@ -57,12 +66,14 @@ public class MapViewerBase : Widget
         GridLayout = new Grid(this);
         GridLayout.SetColumns(
             new GridSize(1),
-            new GridSize(11, Unit.Pixels)
+            new GridSize(11, Unit.Pixels),
+            new GridSize(288, Unit.Pixels)
         );
         GridLayout.SetRows(
             new GridSize(1),
             new GridSize(11, Unit.Pixels)
         );
+        
         MainContainer = new Container(GridLayout);
         MainContainer.HAutoScroll = MainContainer.VAutoScroll = true;
         DummyWidget = new Widget(MainContainer);
@@ -101,6 +112,49 @@ public class MapViewerBase : Widget
         Fade.ConsiderInAutoScrollCalculation = Fade.ConsiderInAutoScrollPositioning = false;
         Fade.SetDocked(true);
         Fade.SetZIndex(9);
+
+        Cursor = new CursorWidget(MainContainer);
+        Cursor.ConsiderInAutoScrollCalculation = false;
+        Cursor.SetZIndex(8);
+
+        ConstructorTiles();
+        ConstructorEvents();
+        SidebarWidgetTiles.SetVisible(true);
+        SidebarWidgetEvents.SetVisible(false);
+
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            /* Tiles mode */
+            new Shortcut(this, new Key(Keycode.ESCAPE), CancelSelection, false, e => e.Value = Mode == MapMode.Tiles),
+            new Shortcut(this, new Key(Keycode.A, Keycode.CTRL), SelectAll, false, e => e.Value = Mode == MapMode.Tiles),
+            new Shortcut(this, new Key(Keycode.Q, Keycode.SHIFT), SetDrawModePencil, false, e => e.Value = Mode == MapMode.Tiles),
+            new Shortcut(this, new Key(Keycode.W, Keycode.SHIFT), SetDrawModeRectangle, false, e => e.Value = Mode == MapMode.Tiles),
+            new Shortcut(this, new Key(Keycode.E, Keycode.SHIFT), SetDrawModeEllipse, false, e => e.Value = Mode == MapMode.Tiles),
+            new Shortcut(this, new Key(Keycode.R, Keycode.SHIFT), SetDrawModeBucket, false, e => e.Value = Mode == MapMode.Tiles),
+            new Shortcut(this, new Key(Keycode.T, Keycode.SHIFT), SetDrawModeEraser, false, e => e.Value = Mode == MapMode.Tiles),
+            new Shortcut(this, new Key(Keycode.Y, Keycode.SHIFT), SetDrawModeSelection, false, e => e.Value = Mode == MapMode.Tiles),
+
+            /* Events mode */
+            new Shortcut(this, new Key(Keycode.ENTER), _ => OpenEventCursorIsOver(), false, e => e.Value = Mode == MapMode.Events),
+            new Shortcut(this, new Key(Keycode.LEFT), _ => MoveCursorLeft(), false, e => e.Value = Mode == MapMode.Events),
+            new Shortcut(this, new Key(Keycode.RIGHT), _ => MoveCursorRight(), false, e => e.Value = Mode == MapMode.Events),
+            new Shortcut(this, new Key(Keycode.UP), _ => MoveCursorUp(), false, e => e.Value = Mode == MapMode.Events),
+            new Shortcut(this, new Key(Keycode.DOWN), _ => MoveCursorDown(), false, e => e.Value = Mode == MapMode.Events),
+        });
+    }
+
+    private partial void ConstructorTiles();
+    private partial void ConstructorEvents();
+
+    public void SetMode(MapMode Mode)
+    {
+        if (this.Mode == Mode) return;
+        this.Mode = Mode;
+        Editor.ProjectSettings.LastMappingSubmode = this.Mode;
+        SidebarWidgetTiles.SetVisible(this.Mode == MapMode.Tiles);
+        SidebarWidgetEvents.SetVisible(this.Mode == MapMode.Events);
+        EventBoxes.ForEach(eb => eb.SetVisible(this.Mode == MapMode.Events));
+        Editor.MainWindow.MapWidget.SubmodePicker.SelectTab((int) Mode);
     }
 
     public virtual void SetZoomFactor(double factor, bool FromStatusBar = false)
@@ -143,6 +197,24 @@ public class MapViewerBase : Widget
         MainContainer.VScrollBar.SetValue(scrolly / totalh);
     }
 
+    public void UpdateCursorPosition()
+    {
+        int offsetx = 0;
+        int offsety = 0;
+        if (CursorOrigin == Location.TopRight || CursorOrigin == Location.BottomRight)
+            offsetx = (int)Math.Round(32 * CursorWidth * ZoomFactor);
+        if (CursorOrigin == Location.BottomLeft || CursorOrigin == Location.BottomRight)
+            offsety = (int)Math.Round(32 * CursorHeight * ZoomFactor);
+        Cursor.SetPosition(
+            MapWidget.Position.X + (int)Math.Round(32 * MapTileX * ZoomFactor) - offsetx - 7,
+            MapWidget.Position.Y + (int)Math.Round(32 * MapTileY * ZoomFactor) - offsety - 7
+        );
+        Cursor.SetSize(
+            (int)Math.Round(32 * ZoomFactor) * (CursorWidth + 1) + 14,
+            (int)Math.Round(32 * ZoomFactor) * (CursorHeight + 1) + 14
+        );
+    }
+
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
@@ -162,6 +234,15 @@ public class MapViewerBase : Widget
     public virtual void SetMap(Map Map)
     {
         this.Map = Map;
+
+        CancelSelection(new BaseEventArgs());
+        LayerPanel.CreateLayers();
+        TilesPanel.SetMap(Map);
+        TilesPanel.SelectTile(new TileData() { TileType = TileType.Tileset, Index = 0, ID = 0 });
+
+        EventsPanel.SetMap(Map);
+        DrawEvents();
+
         Editor.MainWindow.StatusBar.SetMap(Map);
         PositionMap();
         MainContainer.HScrollBar.SetValue(0.5);
@@ -192,7 +273,12 @@ public class MapViewerBase : Widget
         DummyWidget.SetSize(2 * x + w, 2 * y + h);
         MainContainer.UpdateBounds();
         MainContainer.UpdateAutoScroll();
+
+        if (Mode == MapMode.Tiles) UpdateSelection();
+        if (Mode == MapMode.Events) RepositionEvents();
     }
+
+    private partial void MouseMovingTiles(MouseEventArgs e);
 
     public override void MouseMoving(MouseEventArgs e)
     {
@@ -216,7 +302,15 @@ public class MapViewerBase : Widget
                 Editor.MainWindow.MapWidget.SetVerticalScroll(MainContainer.VScrollBar.Value);
             }
         }
+        MouseMovingTiles(e);
+        LastMouseX = e.X;
+        LastMouseY = e.Y;
     }
+
+    // MouseDown event for the Tiles mode
+    private partial void MouseDownTiles(MouseEventArgs e);
+    // MouseDown event for the Events mode
+    private partial void MouseDownEvents(MouseEventArgs e);
 
     public override void MouseDown(MouseEventArgs e)
     {
@@ -237,7 +331,12 @@ public class MapViewerBase : Widget
                 Input.CaptureMouse();
             }
         }
+        MouseDownTiles(e);
+        MouseDownEvents(e);
     }
+
+    // MouseUp event for the Tiles mode
+    private partial void MouseUpTiles(MouseEventArgs e);
 
     public override void MouseUp(MouseEventArgs e)
     {
@@ -251,6 +350,7 @@ public class MapViewerBase : Widget
             this.MiddleMouseScrolling = false;
             Input.ReleaseMouse();
         }
+        MouseUpTiles(e);
     }
 
     public override void MouseWheel(MouseEventArgs e)
@@ -260,4 +360,50 @@ public class MapViewerBase : Widget
         if (e.WheelY > 0) Editor.MainWindow.StatusBar.ZoomControl.IncreaseZoom();
         else Editor.MainWindow.StatusBar.ZoomControl.DecreaseZoom();
     }
+
+    public override void Update()
+    {
+        base.Update();
+        if (!SelectedWidget) return;
+        if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LCTRL) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RCTRL))
+        {
+            if (Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_c)) // Copy
+            {
+                Copy();
+            }
+            else if (Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_x)) // Cut
+            {
+                Cut();
+            }
+            else if (Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_v)) // Paste
+            {
+                Paste();
+            }
+        }
+    }
+
+    private partial void CopyTiles(bool Cut = false);
+    private partial void CutTiles();
+    private partial void PasteTiles();
+
+    public void Copy()
+    {
+        if (Mode == MapMode.Tiles) CopyTiles();
+    }
+
+    public void Cut()
+    {
+        if (Mode == MapMode.Tiles) CutTiles();
+    }
+
+    public void Paste()
+    {
+        if (Mode == MapMode.Tiles) PasteTiles();
+    }
+}
+
+public enum MapMode
+{
+    Tiles = 0,
+    Events = 1
 }
