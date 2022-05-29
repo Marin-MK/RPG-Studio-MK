@@ -140,6 +140,7 @@ public class Server
                 }
             }
             catch (SocketException) { }
+            catch (InvalidOperationException) { }
             finally { Close(); }
         }
 
