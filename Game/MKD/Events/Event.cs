@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
 
 namespace RPGStudioMK.Game;
 
 [Serializable]
-public class Event : ICloneable
+public class Event : ICloneable, ISerializable
 {
     public int ID;
     public string Name;
@@ -29,11 +31,12 @@ public class Event : ICloneable
     {
         this.ID = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@id"));
         this.Name = Ruby.String.FromPtr(Ruby.GetIVar(data, "@name"));
-        Match match = Regex.Match(this.Name.ToLower(), @"size\((\d+),(\d+)\)");
+        Match match = Regex.Match(this.Name, @"[sS]ize\((\d+),(\d+)\)");
         if (match.Success)
         {
             this.Width = Convert.ToInt32(match.Groups[1].Value);
             this.Height = Convert.ToInt32(match.Groups[2].Value);
+            this.Name = this.Name.Remove(match.Index, match.Length).TrimEnd();
         }
         else
         {
@@ -56,7 +59,9 @@ public class Event : ICloneable
     {
         IntPtr e = Ruby.Funcall(Compatibility.RMXP.Event.Class, "new");
         Ruby.Pin(e);
-        Ruby.SetIVar(e, "@name", Ruby.String.ToPtr(this.Name));
+        string savename = this.Name;
+        if (this.Width > 1 || this.Height > 1) savename += $"{(savename.Length > 0 ? " " : "")}size({this.Width},{this.Height})";
+        Ruby.SetIVar(e, "@name", Ruby.String.ToPtr(savename));
         Ruby.SetIVar(e, "@x", Ruby.Integer.ToPtr(this.X));
         Ruby.SetIVar(e, "@y", Ruby.Integer.ToPtr(this.Y));
         Ruby.SetIVar(e, "@id", Ruby.Integer.ToPtr(this.ID));
@@ -82,6 +87,25 @@ public class Event : ICloneable
         e.Pages = new List<EventPage>();
         this.Pages.ForEach(p => e.Pages.Add((EventPage)p.Clone()));
         return e;
+    }
+
+    public string Serialize()
+    {
+        BinaryFormatter formatter = new BinaryFormatter();
+        MemoryStream stream = new MemoryStream();
+        formatter.Serialize(stream, this);
+        string data = Convert.ToBase64String(stream.ToArray());
+        stream.Close();
+        return data;
+    }
+
+    public static Event Deserialize(string data)
+    {
+        BinaryFormatter formatter = new BinaryFormatter();
+        MemoryStream stream = new MemoryStream(Convert.FromBase64String(data));
+        Event result = (Event) formatter.Deserialize(stream);
+        stream.Close();
+        return result;
     }
 }
 

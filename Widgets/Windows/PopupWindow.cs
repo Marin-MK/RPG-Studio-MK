@@ -102,13 +102,19 @@ public class PopupWindow : Widget, IPopupWindow
 
     public virtual void Close()
     {
+        Editor.CanUndo = true;
         Dispose();
         this.OnClosed?.Invoke(new BaseEventArgs());
-        Editor.CanUndo = true;
     }
 
     public override void Dispose()
     {
+        if (!Editor.CanUndo)
+        {
+            // I've accidentally Disposed instead of Closing, so close first anyway
+            Editor.CanUndo = true;
+            this.OnClosed?.Invoke(new BaseEventArgs());
+        }
         base.Dispose();
         if (this.Window.ActiveWidget == this)
         {

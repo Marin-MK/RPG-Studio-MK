@@ -17,11 +17,11 @@ public class EventBox : Widget
         Sprites["box"] = new Sprite(this.Viewport);
     }
 
-    public void RepositionSprites(MapImageWidget MapWidget)
+    public void RepositionSprites(MapImageWidget MapWidget, int EventX, int EventY)
     {
         this.MapWidget = MapWidget;
-        int tx = MapWidget.Position.X + (int) Math.Round(this.Event.X * 32 * MapWidget.ZoomFactor);
-        int ty = MapWidget.Position.Y + (int) Math.Round(this.Event.Y * 32 * MapWidget.ZoomFactor);
+        int tx = MapWidget.Position.X + (int) Math.Round(EventX * 32 * MapWidget.ZoomFactor);
+        int ty = MapWidget.Position.Y + (int) Math.Round(EventY * 32 * MapWidget.ZoomFactor);
         ty -= (int) Math.Round(32 * (Event.Height - 1) * MapWidget.ZoomFactor);
         Sprites["box"].Bitmap?.Dispose();
         Sprites["box"].Bitmap = new Bitmap((int) Math.Round(Event.Width * 32 * MapWidget.ZoomFactor), (int) Math.Round(Event.Height * 32 * MapWidget.ZoomFactor));
@@ -32,15 +32,19 @@ public class EventBox : Widget
         Sprites["box"].Bitmap.Lock();
         Sprites["box"].X = tx;
         Sprites["box"].Y = ty;
-        Sprites["gfx"].X = tx + (int) Math.Round(this.Event.Width * MapWidget.ZoomFactor / 2d);
-        Sprites["gfx"].Y = ty + (int) Math.Round((32 - Sprites["gfx"].SrcRect.Height) * MapWidget.ZoomFactor);
+        if (Sprites["gfx"].DestroyBitmap) // Image
+            Sprites["gfx"].X = tx + (int) Math.Round((this.Event.Width * 32 - Sprites["gfx"].SrcRect.Width) * MapWidget.ZoomFactor / 2d);
+        else // Tile
+            Sprites["gfx"].X = tx;
+        Sprites["gfx"].Y = ty + (int) Math.Round((this.Event.Height * 32 - Sprites["gfx"].SrcRect.Height) * MapWidget.ZoomFactor);
         Sprites["gfx"].ZoomX = Sprites["gfx"].ZoomY = MapWidget.ZoomFactor;
     }
 
-    public void SetEvent(Event Event)
+    public void SetEvent(Map Map, Event Event)
     {
         this.Event = Event;
-        Sprites["gfx"].Bitmap?.Dispose();
+        if (Sprites["gfx"].DestroyBitmap) Sprites["gfx"].Bitmap?.Dispose();
+        else Sprites["gfx"].Bitmap = null;
         for (int i = 0; i < Event.Pages.Count; i++)
         {
             EventGraphic gfx = Event.Pages[i].Graphic;
@@ -53,6 +57,30 @@ public class EventBox : Widget
                     Sprites["gfx"].SrcRect.Width = Sprites["gfx"].Bitmap.Width / gfx.NumFrames;
                     Sprites["gfx"].SrcRect.Height = Sprites["gfx"].Bitmap.Height / gfx.NumDirections;
                     Sprites["gfx"].SrcRect.Y = Sprites["gfx"].SrcRect.Height * (gfx.Direction / 2 - 1);
+                    Sprites["gfx"].DestroyBitmap = true;
+                    break;
+                }
+            }
+            else if (gfx.TileID >= 384)
+            {
+                Tileset tileset = Data.Tilesets[Map.TilesetIDs[0]];
+                if (tileset.TilesetBitmap != null)
+                {
+                    Sprites["gfx"].Bitmap = tileset.TilesetBitmap;
+                    Sprites["gfx"].DestroyBitmap = false;
+                    int tx = (gfx.TileID - 384) % 8;
+                    int ty = (gfx.TileID - 384) / 8;
+                    Sprites["gfx"].SrcRect.X = tx * 32;
+                    Sprites["gfx"].SrcRect.Y = ty * 32 - (Event.Height - 1) * 32;
+                    Sprites["gfx"].SrcRect.Width = Event.Width * 32;
+                    Sprites["gfx"].SrcRect.Height = Event.Height * 32;
+                    if (Sprites["gfx"].SrcRect.X + Sprites["gfx"].SrcRect.Width >= tileset.TilesetBitmap.Width)
+                        Sprites["gfx"].SrcRect.Width = tileset.TilesetBitmap.Width - Sprites["gfx"].SrcRect.X;
+                    if (Sprites["gfx"].SrcRect.Y < 0)
+                    {
+                        Sprites["gfx"].SrcRect.Height += Sprites["gfx"].SrcRect.Y;
+                        Sprites["gfx"].SrcRect.Y = 0;
+                    }
                     break;
                 }
             }

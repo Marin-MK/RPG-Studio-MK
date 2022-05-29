@@ -154,6 +154,7 @@ public partial class MapViewer : Widget
         SidebarWidgetTiles.SetVisible(this.Mode == MapMode.Tiles);
         SidebarWidgetEvents.SetVisible(this.Mode == MapMode.Events);
         EventBoxes.ForEach(eb => eb.SetVisible(this.Mode == MapMode.Events));
+        if (this.Mode == MapMode.Tiles) CursorWidth = CursorHeight = 0;
         Editor.MainWindow.MapWidget.SubmodePicker.SelectTab((int) Mode);
     }
 
@@ -240,6 +241,14 @@ public partial class MapViewer : Widget
         TilesPanel.SetMap(Map);
         TilesPanel.SelectTile(new TileData() { TileType = TileType.Tileset, Index = 0, ID = 0 });
 
+        if (Mode == MapMode.Events)
+        {
+            MapTileX = -1;
+            MapTileY = -1;
+            CursorWidth = 0;
+            CursorHeight = 0;
+            Cursor.SetVisible(false);
+        }
         EventsPanel.SetMap(Map);
         DrawEvents();
 
@@ -279,6 +288,7 @@ public partial class MapViewer : Widget
     }
 
     private partial void MouseMovingTiles(MouseEventArgs e);
+    private partial void MouseMovingEvents(MouseEventArgs e);
 
     public override void MouseMoving(MouseEventArgs e)
     {
@@ -303,13 +313,12 @@ public partial class MapViewer : Widget
             }
         }
         MouseMovingTiles(e);
+        MouseMovingEvents(e);
         LastMouseX = e.X;
         LastMouseY = e.Y;
     }
 
-    // MouseDown event for the Tiles mode
     private partial void MouseDownTiles(MouseEventArgs e);
-    // MouseDown event for the Events mode
     private partial void MouseDownEvents(MouseEventArgs e);
 
     public override void MouseDown(MouseEventArgs e)
@@ -335,8 +344,8 @@ public partial class MapViewer : Widget
         MouseDownEvents(e);
     }
 
-    // MouseUp event for the Tiles mode
     private partial void MouseUpTiles(MouseEventArgs e);
+    private partial void MouseUpEvents(MouseEventArgs e);
 
     public override void MouseUp(MouseEventArgs e)
     {
@@ -351,6 +360,7 @@ public partial class MapViewer : Widget
             Input.ReleaseMouse();
         }
         MouseUpTiles(e);
+        MouseUpEvents(e);
     }
 
     public override void MouseWheel(MouseEventArgs e)
@@ -382,23 +392,29 @@ public partial class MapViewer : Widget
         }
     }
 
-    private partial void CopyTiles(bool Cut = false);
+    private partial void CopyTiles(bool Cut);
     private partial void CutTiles();
     private partial void PasteTiles();
+    private partial void CopyEvents(bool Cut);
+    private partial void CutEvents();
+    private partial void PasteEvents();
 
     public void Copy()
     {
-        if (Mode == MapMode.Tiles) CopyTiles();
+        if (Mode == MapMode.Tiles) CopyTiles(false);
+        else if (Mode == MapMode.Events) CopyEvents(false);
     }
 
     public void Cut()
     {
         if (Mode == MapMode.Tiles) CutTiles();
+        else if (Mode == MapMode.Events) CutEvents();
     }
 
     public void Paste()
     {
         if (Mode == MapMode.Tiles) PasteTiles();
+        else if (Mode == MapMode.Events) PasteEvents();
     }
 }
 

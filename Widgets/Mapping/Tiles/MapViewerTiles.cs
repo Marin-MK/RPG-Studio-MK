@@ -502,7 +502,7 @@ public partial class MapViewer
         SelectionTiles = null;
     }
 
-    private partial void CopyTiles(bool Cut = false)
+    private partial void CopyTiles(bool Cut)
     {
         if ((TilesPanel.DrawTool == DrawTools.SelectionActiveLayer || TilesPanel.DrawTool == DrawTools.SelectionAllLayers) &&
             SelectionWidth != 0 && SelectionHeight != 0)

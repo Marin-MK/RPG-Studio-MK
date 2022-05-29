@@ -56,6 +56,11 @@ public class EventsPanel : Widget
         Editor.MainWindow.MapWidget.MapViewer.SelectEventOnMap(Event);
     }
 
+    public void OpenEvent(Event Event)
+    {
+        Editor.MainWindow.MapWidget.MapViewer.OpenEvent(Event);
+    }
+
     public void SelectEventInList(Event Event)
     {
         SelectLabel((EventLabel) StackPanel.Widgets.Find(w => ((EventLabel) w).Event == Event));
@@ -84,6 +89,10 @@ public class EventsPanel : Widget
             {
                 SelectLabel(label);
                 SelectEventOnMap(label.Event);
+            };
+            label.OnDoubleLeftMouseDownInside += _ =>
+            {
+                OpenEvent(label.Event);
             };
         }
     }

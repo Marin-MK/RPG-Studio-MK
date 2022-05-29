@@ -15,6 +15,7 @@ public class EventPageControl : Widget
     NumericBox VarValueBox;
     CheckBox SelfSwitchBox;
     DropdownBox SelfSwitchVarBox;
+    EventGraphicBox EventGraphicBox;
     CheckBox MoveAnimationBox;
     CheckBox StopAnimationBox;
     CheckBox DirectionFixBox;
@@ -149,6 +150,9 @@ public class EventPageControl : Widget
         GroupBox GraphicBox = new GroupBox(this);
         GraphicBox.SetPosition(7, 201);
         GraphicBox.SetSize(121, 121);
+        EventGraphicBox = new EventGraphicBox(GraphicBox);
+        EventGraphicBox.SetDocked(true);
+        EventGraphicBox.SetMargins(2);
 
         Label AutoMoveLabel = new Label(this);
         AutoMoveLabel.SetFont(HeaderFont);
@@ -261,7 +265,12 @@ public class EventPageControl : Widget
         ParallelBox.SetText("Parallel Process");
     }
 
-    public void SetEventPage(EventPage Page)
+    public void RedrawGraphic()
+    {
+        EventGraphicBox.RedrawGraphic();
+    }
+
+    public void SetEventPage(Map Map, Event Event, EventPage Page)
     {
         Switch1Box.SetChecked(Page.Condition.Switch1Valid);
         Switch1VarBox.SetText($"[{Utilities.Digits(Page.Condition.Switch1ID, 3)}]: {Data.System.Switches[Page.Condition.Switch1ID]}");
@@ -272,6 +281,7 @@ public class EventPageControl : Widget
         VarValueBox.SetValue(Page.Condition.VariableValue);
         SelfSwitchBox.SetChecked(Page.Condition.SelfSwitchValid);
         SelfSwitchVarBox.SetSelectedIndex(Page.Condition.SelfSwitchChar - 'A');
+        EventGraphicBox.SetGraphic(Map, Event, Page.Graphic);
         MoveAnimationBox.SetChecked(Page.Settings.WalkAnime);
         StopAnimationBox.SetChecked(Page.Settings.StepAnime);
         DirectionFixBox.SetChecked(Page.Settings.DirectionFix);

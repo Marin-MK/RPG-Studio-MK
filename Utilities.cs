@@ -774,7 +774,8 @@ public enum BinaryData
 {
     MAP_SELECTION,
     MAP,
-    TILESET
+    TILESET,
+    EVENT
 }
 
 public class Fonts
