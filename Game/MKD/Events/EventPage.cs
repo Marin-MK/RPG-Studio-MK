@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace RPGStudioMK.Game;
 
 [Serializable]
-public class EventPage : ICloneable
+public class EventPage : ICloneable, ISerializable
 {
     public string Name;
     public List<EventCommand> Commands = new List<EventCommand>();
@@ -21,6 +23,9 @@ public class EventPage : ICloneable
         this.TriggerMode = TriggerMode.Action;
         this.MoveRoute = new MoveRoute();
         this.Settings = new EventSettings();
+        this.Condition = new EventCondition();
+        this.Commands = new List<EventCommand>();
+        this.Commands.Add(new EventCommand(CommandCode.Blank, 0, new List<object>()));
     }
 
     public EventPage(IntPtr data)
@@ -85,5 +90,24 @@ public class EventPage : ICloneable
         p.Commands = new List<EventCommand>();
         this.Commands.ForEach(c => p.Commands.Add((EventCommand)c.Clone()));
         return p;
+    }
+
+    public string Serialize()
+    {
+        BinaryFormatter formatter = new BinaryFormatter();
+        MemoryStream stream = new MemoryStream();
+        formatter.Serialize(stream, this);
+        string data = Convert.ToBase64String(stream.ToArray());
+        stream.Close();
+        return data;
+    }
+
+    public static EventPage Deserialize(string data)
+    {
+        BinaryFormatter formatter = new BinaryFormatter();
+        MemoryStream stream = new MemoryStream(Convert.FromBase64String(data));
+        EventPage result = (EventPage) formatter.Deserialize(stream);
+        stream.Close();
+        return result;
     }
 }

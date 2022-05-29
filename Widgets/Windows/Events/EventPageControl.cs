@@ -7,11 +7,11 @@ namespace RPGStudioMK.Widgets;
 public class EventPageControl : Widget
 {
     CheckBox Switch1Box;
-    BrowserBox Switch1VarBox;
+    SwitchPickerBox Switch1VarBox;
     CheckBox Switch2Box;
-    BrowserBox Switch2VarBox;
+    SwitchPickerBox Switch2VarBox;
     CheckBox VarBox;
-    BrowserBox VarPickBox;
+    VariablePickerBox VarPickBox;
     NumericBox VarValueBox;
     CheckBox SelfSwitchBox;
     DropdownBox SelfSwitchVarBox;
@@ -30,6 +30,11 @@ public class EventPageControl : Widget
     DropdownBox AutoMoveSpeedBox;
     DropdownBox AutoMoveFrequencyBox;
     Button EditRouteButton;
+    MultilineLabel CommandsBox;
+
+    Map Map;
+    Event Event;
+    EventPage Page;
 
     public EventPageControl(IContainer Parent) : base(Parent)
     {
@@ -58,12 +63,14 @@ public class EventPageControl : Widget
         {
             Switch1VarBox.SetEnabled(Switch1Box.Checked);
             Switch1Label.SetEnabled(Switch1Box.Checked);
+            Page.Condition.Switch1Valid = Switch1Box.Checked;
         };
-        Switch1VarBox = new BrowserBox(ConditionsBox);
+        Switch1VarBox = new SwitchPickerBox(ConditionsBox);
         Switch1VarBox.SetFont(SmallFont);
         Switch1VarBox.SetPosition(102, 3);
         Switch1VarBox.SetSize(118, 25);
         Switch1VarBox.SetEnabled(false);
+        Switch1VarBox.OnSwitchChanged += _ => Page.Condition.Switch1ID = Switch1VarBox.SwitchID;
         Switch1Label = new Label(ConditionsBox);
         Switch1Label.SetFont(SmallFont);
         Switch1Label.SetPosition(224, 7);
@@ -77,12 +84,14 @@ public class EventPageControl : Widget
         {
             Switch2VarBox.SetEnabled(Switch2Box.Checked);
             Switch2Label.SetEnabled(Switch2Box.Checked);
+            Page.Condition.Switch2Valid = Switch2Box.Checked;
         };
-        Switch2VarBox = new BrowserBox(ConditionsBox);
+        Switch2VarBox = new SwitchPickerBox(ConditionsBox);
         Switch2VarBox.SetFont(SmallFont);
         Switch2VarBox.SetPosition(102, 3 + 32);
         Switch2VarBox.SetSize(118, 25);
         Switch2VarBox.SetEnabled(false);
+        Switch2VarBox.OnSwitchChanged += _ => Page.Condition.Switch2ID = Switch2VarBox.SwitchID;
         Switch2Label = new Label(ConditionsBox);
         Switch2Label.SetFont(SmallFont);
         Switch2Label.SetPosition(224, 7 + 32);
@@ -91,19 +100,21 @@ public class EventPageControl : Widget
         VarBox = new CheckBox(ConditionsBox);
         VarBox.SetFont(SmallFont);
         VarBox.SetPosition(7, 7 + 32 * 2);
-        VarBox.SetText("Switch");
+        VarBox.SetText("Variable");
         VarBox.OnCheckChanged += _ =>
         {
             VarPickBox.SetEnabled(VarBox.Checked);
             VarLabel1.SetEnabled(VarBox.Checked);
             VarValueBox.SetEnabled(VarBox.Checked);
             VarLabel2.SetEnabled(VarBox.Checked);
+            Page.Condition.VariableValid = VarBox.Checked;
         };
-        VarPickBox = new BrowserBox(ConditionsBox);
+        VarPickBox = new VariablePickerBox(ConditionsBox);
         VarPickBox.SetFont(SmallFont);
         VarPickBox.SetPosition(102, 3 + 32 * 2);
         VarPickBox.SetSize(118, 25);
         VarPickBox.SetEnabled(false);
+        VarPickBox.OnVariableChanged += _ => Page.Condition.VariableID = VarPickBox.VariableID;
         VarLabel1 = new Label(ConditionsBox);
         VarLabel1.SetFont(SmallFont);
         VarLabel1.SetPosition(224, 7 + 32 * 2);
@@ -113,6 +124,7 @@ public class EventPageControl : Widget
         VarValueBox.SetPosition(102, 3 + 32 * 2 + 27);
         VarValueBox.SetSize(55, 27);
         VarValueBox.SetEnabled(false);
+        VarValueBox.OnValueChanged += _ => Page.Condition.VariableValue = VarValueBox.Value;
         VarLabel2 = new Label(ConditionsBox);
         VarLabel2.SetFont(SmallFont);
         VarLabel2.SetPosition(160, 7 + 32 * 2 + 27);
@@ -126,6 +138,7 @@ public class EventPageControl : Widget
         {
             SelfSwitchVarBox.SetEnabled(SelfSwitchBox.Checked);
             SelfSwitchLabel.SetEnabled(SelfSwitchBox.Checked);
+            Page.Condition.SelfSwitchValid = SelfSwitchBox.Checked;
         };
         SelfSwitchVarBox = new DropdownBox(ConditionsBox);
         SelfSwitchVarBox.SetFont(SmallFont);
@@ -137,6 +150,7 @@ public class EventPageControl : Widget
             new ListItem("D"), new ListItem("E"), new ListItem("F")
         });
         SelfSwitchVarBox.SetEnabled(false);
+        SelfSwitchVarBox.OnSelectionChanged += _ => Page.Condition.SelfSwitchChar = (char) ('A' + SelfSwitchVarBox.SelectedIndex);
         SelfSwitchLabel = new Label(ConditionsBox);
         SelfSwitchLabel.SetFont(SmallFont);
         SelfSwitchLabel.SetPosition(160, 5 + 32 * 4);
@@ -153,6 +167,15 @@ public class EventPageControl : Widget
         EventGraphicBox = new EventGraphicBox(GraphicBox);
         EventGraphicBox.SetDocked(true);
         EventGraphicBox.SetMargins(2);
+        EventGraphicBox.OnDoubleLeftMouseDownInside += _ =>
+        {
+            ChooseGraphic cg = new ChooseGraphic(Map, Event, Page, Page.Graphic);
+            cg.OnClosed += _ =>
+            {
+                if (!cg.Apply) return;
+                EventGraphicBox.SetGraphic(Map, Event, Page.Graphic);
+            };
+        };
 
         Label AutoMoveLabel = new Label(this);
         AutoMoveLabel.SetFont(HeaderFont);
@@ -219,22 +242,27 @@ public class EventPageControl : Widget
         MoveAnimationBox.SetPosition(5, 5);
         MoveAnimationBox.SetFont(TinyFont);
         MoveAnimationBox.SetText("Move Animation");
+        MoveAnimationBox.OnCheckChanged += _ => Page.Settings.WalkAnime = MoveAnimationBox.Checked;
         StopAnimationBox = new CheckBox(OptionsBox);
         StopAnimationBox.SetPosition(5, 25);
         StopAnimationBox.SetFont(TinyFont);
         StopAnimationBox.SetText("Idle Animation");
+        StopAnimationBox.OnCheckChanged += _ => Page.Settings.StepAnime = StopAnimationBox.Checked;
         DirectionFixBox = new CheckBox(OptionsBox);
         DirectionFixBox.SetPosition(5, 45);
         DirectionFixBox.SetFont(TinyFont);
         DirectionFixBox.SetText("Direction Fix");
+        DirectionFixBox.OnCheckChanged += _ => Page.Settings.DirectionFix = DirectionFixBox.Checked;
         ThroughBox = new CheckBox(OptionsBox);
         ThroughBox.SetPosition(5, 65);
         ThroughBox.SetFont(TinyFont);
         ThroughBox.SetText("Through");
+        ThroughBox.OnCheckChanged += _ => Page.Settings.Through = ThroughBox.Checked;
         AlwaysOnTopBox = new CheckBox(OptionsBox);
         AlwaysOnTopBox.SetPosition(5, 85);
         AlwaysOnTopBox.SetFont(TinyFont);
         AlwaysOnTopBox.SetText("Always on Top");
+        AlwaysOnTopBox.OnCheckChanged += _ => Page.Settings.AlwaysOnTop = AlwaysOnTopBox.Checked;
 
         Label TriggerLabel = new Label(this);
         TriggerLabel.SetFont(HeaderFont);
@@ -247,22 +275,32 @@ public class EventPageControl : Widget
         ActionBox.SetPosition(5, 5);
         ActionBox.SetFont(TinyFont);
         ActionBox.SetText("Action Button");
+        ActionBox.OnCheckChanged += _ => { if (ActionBox.Checked) Page.TriggerMode = TriggerMode.Action; };
         PlayerBox = new RadioBox(TriggerBox);
         PlayerBox.SetPosition(5, 25);
         PlayerBox.SetFont(TinyFont);
         PlayerBox.SetText("Player Touch");
+        PlayerBox.OnCheckChanged += _ => { if (PlayerBox.Checked) Page.TriggerMode = TriggerMode.PlayerTouch; };
         EventBox = new RadioBox(TriggerBox);
         EventBox.SetPosition(5, 45);
         EventBox.SetFont(TinyFont);
         EventBox.SetText("Event Touch");
+        EventBox.OnCheckChanged += _ => { if (EventBox.Checked) Page.TriggerMode = TriggerMode.EventTouch; };
         AutorunBox = new RadioBox(TriggerBox);
         AutorunBox.SetPosition(5, 65);
         AutorunBox.SetFont(TinyFont);
         AutorunBox.SetText("Autorun");
+        AutorunBox.OnCheckChanged += _ => { if (AutorunBox.Checked) Page.TriggerMode = TriggerMode.Autorun; };
         ParallelBox = new RadioBox(TriggerBox);
         ParallelBox.SetPosition(5, 85);
         ParallelBox.SetFont(TinyFont);
         ParallelBox.SetText("Parallel Process");
+        ParallelBox.OnCheckChanged += _ => { if (ParallelBox.Checked) Page.TriggerMode = TriggerMode.ParallelProcess; };
+
+        CommandsBox = new MultilineLabel(this);
+        CommandsBox.SetDocked(true);
+        CommandsBox.SetMargins(279, 22, 7, 0);
+        CommandsBox.SetFont(SmallFont);
     }
 
     public void RedrawGraphic()
@@ -272,12 +310,15 @@ public class EventPageControl : Widget
 
     public void SetEventPage(Map Map, Event Event, EventPage Page)
     {
+        this.Map = Map;
+        this.Event = Event;
+        this.Page = Page;
         Switch1Box.SetChecked(Page.Condition.Switch1Valid);
-        Switch1VarBox.SetText($"[{Utilities.Digits(Page.Condition.Switch1ID, 3)}]: {Data.System.Switches[Page.Condition.Switch1ID]}");
+        Switch1VarBox.SetSwitchID(Page.Condition.Switch1ID);
         Switch2Box.SetChecked(Page.Condition.Switch2Valid);
-        Switch2VarBox.SetText($"[{Utilities.Digits(Page.Condition.Switch2ID, 3)}]: {Data.System.Switches[Page.Condition.Switch2ID]}");
+        Switch2VarBox.SetSwitchID(Page.Condition.Switch2ID);
         VarBox.SetChecked(Page.Condition.VariableValid);
-        VarPickBox.SetText($"[{Utilities.Digits(Page.Condition.VariableID, 3)}]: {Data.System.Variables[Page.Condition.VariableID]})");
+        VarPickBox.SetVariableID(Page.Condition.VariableID);
         VarValueBox.SetValue(Page.Condition.VariableValue);
         SelfSwitchBox.SetChecked(Page.Condition.SelfSwitchValid);
         SelfSwitchVarBox.SetSelectedIndex(Page.Condition.SelfSwitchChar - 'A');
@@ -310,5 +351,16 @@ public class EventPageControl : Widget
         AutoMoveTypeBox.SetSelectedIndex(Page.MoveRoute.Type);
         AutoMoveSpeedBox.SetSelectedIndex(Page.MoveRoute.Speed - 1);
         AutoMoveFrequencyBox.SetSelectedIndex(Page.MoveRoute.Frequency - 1);
+        string str = "";
+        for (int i = 0; i < Page.Commands.Count; i++)
+        {
+            EventCommand cmd = Page.Commands[i];
+            for (int j = 0; j < cmd.Indent; j++) str += "    ";
+            string parameters = "";
+            cmd.Parameters.ForEach(o => parameters += o.ToString() + ", ");
+            if (parameters.Length > 2) parameters = parameters.Substring(0, parameters.Length - 2);
+            str += $"{cmd.Code}: {parameters}\n";
+        }
+        CommandsBox.SetText(str);
     }
 }

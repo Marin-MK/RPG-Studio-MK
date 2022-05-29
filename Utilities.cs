@@ -104,13 +104,13 @@ public static class Utilities
     public static object CloneUnknown(object o)
     {
         if (o is int || o is long || o is string || o is true || o is false || o is null) return o;
-        else if (o is ICloneable) return ((ICloneable)o).Clone();
+        else if (o is ICloneable) return ((ICloneable) o).Clone();
         else if (o is List<object>)
         {
             List<object> list = new List<object>();
-            for (int i = 0; i < ((List<object>)o).Count; i++)
+            for (int i = 0; i < ((List<object>) o).Count; i++)
             {
-                list.Add(CloneUnknown(((List<object>)o)[i]));
+                list.Add(CloneUnknown(((List<object>) o)[i]));
             }
             return list;
         }
@@ -397,6 +397,11 @@ public static class Utilities
         {
             throw new Exception($"Could not convert Ruby's '{Ruby.GetClassName(obj)}' class to a native class.");
         }
+    }
+
+    public static Color RandomColor(byte Alpha = 255)
+    {
+        return new Color((byte) Random(0, 255), (byte) Random(0, 255), (byte) Random(0, 255), Alpha);
     }
 
     public static IntPtr NativeToRuby(object obj)
@@ -775,7 +780,8 @@ public enum BinaryData
     MAP_SELECTION,
     MAP,
     TILESET,
-    EVENT
+    EVENT,
+    EVENT_PAGE
 }
 
 public class Fonts

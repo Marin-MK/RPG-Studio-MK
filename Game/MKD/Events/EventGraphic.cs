@@ -40,6 +40,7 @@ public class EventGraphic : ICloneable
         this.Pattern = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@pattern"));
         this.Opacity = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@opacity"));
         this.CharacterName = Ruby.String.FromPtr(Ruby.GetIVar(data, "@character_name"));
+        if (TileID >= 384) NumDirections = NumFrames = 1;
     }
 
     public IntPtr Save()

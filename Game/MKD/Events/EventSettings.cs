@@ -12,25 +12,29 @@ public class EventSettings : ICloneable
     //public bool DirectionLock;
     //public bool Passable;
     //public bool SavePosition;
-    public bool DirectionFix;
-    public bool StepAnime;
-    public bool AlwaysOnTop;
     public bool WalkAnime;
+    public bool StepAnime;
+    public bool DirectionFix;
     public bool Through;
+    public bool AlwaysOnTop;
 
     public EventSettings()
     {
-
+        this.WalkAnime = true;
+        this.StepAnime = false;
+        this.DirectionFix = false;
+        this.Through = false;
+        this.AlwaysOnTop = false;
     }
 
     public object Clone()
     {
         EventSettings s = new EventSettings();
-        s.DirectionFix = this.DirectionFix;
-        s.StepAnime = this.StepAnime;
-        s.AlwaysOnTop = this.AlwaysOnTop;
         s.WalkAnime = this.WalkAnime;
+        s.StepAnime = this.StepAnime;
+        s.DirectionFix = this.DirectionFix;
         s.Through = this.Through;
+        s.AlwaysOnTop = this.AlwaysOnTop;
         return s;
     }
 }

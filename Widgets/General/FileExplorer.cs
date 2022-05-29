@@ -13,9 +13,10 @@ public class FileExplorer : Widget
 
     public DirectoryViewMode ViewMode { get; protected set; } = DirectoryViewMode.LargeThumbnails;
 
-    public string SelectedFilename { get { return SelectedFEW?.Filename; } }
-    public bool SelectedIsFolder { get { return SelectedFEW == null ? false : SelectedFEW.IsFolder; } }
-    public bool SelectedIsFile { get { return SelectedFEW == null ? false : SelectedFEW.IsFile; } }
+    FileEntryWidget? SelectedFEW => (FileEntryWidget) DirGrid.Widgets.Find(w => ((FileEntryWidget) w).Selected);
+    public string SelectedFilename => SelectedFEW?.Filename;
+    public bool SelectedIsFolder => SelectedFEW?.IsFolder ?? false;
+    public bool SelectedIsFile => SelectedFEW?.IsFile ?? false;
 
     public BaseEvent OnFileSelected;
     public BaseEvent OnFileDoubleClicked;
@@ -36,11 +37,13 @@ public class FileExplorer : Widget
         PathContainer.SetPosition(60, 11);
 
         GridContainer = new Container(this);
-        GridContainer.VAutoScroll = true;
         VScrollBar vs = new VScrollBar(this);
         GridContainer.SetVScrollBar(vs);
+        GridContainer.VAutoScroll = true;
         GridContainer.SetPosition(18, 53);
         DirGrid = new Grid(GridContainer);
+        DirGrid.SetDocked(false);
+        DirGrid.SetHDocked(true);
 
         SetSize(478, 325);
     }
@@ -68,21 +71,24 @@ public class FileExplorer : Widget
 
     public void SetSelectedFile(string Filename)
     {
-        bool changed = false;
-        foreach (FileEntryWidget few in DirGrid.Widgets)
+        if (string.IsNullOrEmpty(Filename))
         {
-            if (few.Filename.EndsWith(Filename))
-            {
-                SelectedFEW = few;
-                few.SetSelected(true);
-                OnFileSelected?.Invoke(new BaseEventArgs());
-                changed = true;
-                break;
-            }
+            DirGrid.Widgets.ForEach(w => ((FileEntryWidget) w).SetSelected(false));
         }
-        if (!changed)
+        else
         {
-            throw new Exception("File not found.");
+            bool found = false;
+            foreach (FileEntryWidget few in DirGrid.Widgets)
+            {
+                if (few.Filename.EndsWith(Filename))
+                {
+                    few.SetSelected(true);
+                    OnFileSelected?.Invoke(new BaseEventArgs());
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) throw new Exception("File not found to select.");
         }
     }
 
@@ -122,6 +128,21 @@ public class FileExplorer : Widget
                 x += 18;
             }
             MaxPathX = x + 10;
+            dir.OnHoverChanged += _ =>
+            {
+                dir.SetBackgroundColor(dir.Mouse.Inside ? new Color(40, 62, 84) : Color.ALPHA);
+            };
+            dir.OnLeftMouseDownInside += _ =>
+            {
+                int idx = PathLabels.IndexOf(dir);
+                string path = "";
+                for (int i = 1; i <= idx; i++)
+                {
+                    path += PathLabels[i].Text;
+                    if (i != idx) path += "/";
+                }
+                this.SetDirectory(path);
+            };
         }
         if (MaxPathX > PathContainer.Size.Width) PathContainer.ScrolledX = MaxPathX - PathContainer.Size.Width;
         else PathContainer.ScrolledX = 0;
@@ -135,8 +156,6 @@ public class FileExplorer : Widget
         EmptyLabel?.Dispose();
         EmptyLabel = null;
         DirGrid.Rows.Clear();
-        HoveringFEW = null;
-        SelectedFEW = null;
         bool Empty = true;
         foreach (string directory in System.IO.Directory.GetDirectories(this.BaseDirectory + "/" + this.Directory))
         {
@@ -193,14 +212,13 @@ public class FileExplorer : Widget
         }
         FileEntryWidget few = new FileEntryWidget(DirGrid);
         few.SetGrid(ItemRow, ItemColumn);
-        few.SetMargins((int) Math.Floor(ColumnMargin), 4, 0, 0);
         if (!IsFolder) few.SetFile(Filename);
         else few.SetFolder(Filename);
         few.OnSelectionChanged += delegate (BaseEventArgs e)
         {
             if (few.Selected) OnFileSelected?.Invoke(new BaseEventArgs());
         };
-        few.OnDoubleClick += delegate (BaseEventArgs e)
+        few.OnDoubleLeftMouseDownInside += _ =>
         {
             if (few.IsFolder)
             {
@@ -274,72 +292,6 @@ public class FileExplorer : Widget
         GridContainer.VScrollBar.SetSize(10, Size.Height - GridContainer.VScrollBar.Position.Y - 3);
         EmptyLabel?.SetPosition(GridContainer.Size.Width / 2 - EmptyLabel.Size.Width / 2 - 20, GridContainer.Size.Height / 2 - EmptyLabel.Size.Height / 2 - 50);
     }
-
-    Label HoveringLabel;
-
-    FileEntryWidget HoveringFEW;
-    FileEntryWidget SelectedFEW;
-
-    public override void MouseMoving(MouseEventArgs e)
-    {
-        base.MouseMoving(e);
-        if (!Mouse.Inside) return;
-        HoveringFEW?.SetHovering(false);
-        HoveringFEW = GetHoveringFile(e);
-        HoveringFEW?.SetHovering(true);
-
-        HoveringLabel?.SetBackgroundColor(Color.ALPHA);
-        int rx = e.X - PathContainer.Viewport.X + PathLabels[0].Position.X - PathLabels[0].ScrolledPosition.X;
-        int ry = e.Y - PathContainer.Viewport.Y;
-        if (ry < 0 || ry >= PathContainer.Size.Height) return;
-        for (int i = 0; i < PathLabels.Count; i++)
-        {
-            if (rx >= PathLabels[i].Position.X && rx < PathLabels[i].Position.X + PathLabels[i].Size.Width)
-            {
-                HoveringLabel = PathLabels[i];
-                HoveringLabel.SetBackgroundColor(40, 62, 84);
-            }
-        }
-    }
-
-    public override void LeftMouseDownInside(MouseEventArgs e)
-    {
-        base.LeftMouseDownInside(e);
-        if (HoveringLabel != null)
-        {
-            int idx = PathLabels.IndexOf(HoveringLabel);
-            string path = "";
-            for (int i = 1; i <= idx; i++)
-            {
-                path += PathLabels[i].Text;
-                if (i != idx) path += "/";
-            }
-            HoveringLabel = null;
-            this.SetDirectory(path);
-        }
-
-        FileEntryWidget few = GetHoveringFile(e);
-        if (few == null || few != SelectedFEW) SelectedFEW?.SetSelected(false);
-        SelectedFEW = few;
-        SelectedFEW?.SetSelected(true);
-    }
-
-    FileEntryWidget GetHoveringFile(MouseEventArgs e)
-    {
-        int rx = e.X - DirGrid.Viewport.X;
-        int ry = e.Y - DirGrid.Viewport.Y + DirGrid.Position.Y - DirGrid.ScrolledPosition.Y;
-        if (rx < 0 || ry < 0 || rx >= DirGrid.Size.Width || ry >= DirGrid.Size.Height) return null;
-        int marginx = (int)Math.Floor(ColumnMargin);
-        int column = (int)Math.Floor((double)(rx - marginx) / (106 + marginx));
-        if ((rx - marginx) % (106 + marginx) > 106) return null;
-        if ((ry - 4) % 102 > 98) return null;
-        int row = (int)Math.Floor((ry - 4) / 102d);
-        foreach (FileEntryWidget w in DirGrid.Widgets)
-        {
-            if (w.GridColumnStart == column && w.GridRowStart == row) return w;
-        }
-        return null;
-    }
 }
 
 public class FileEntryWidget : Widget
@@ -354,7 +306,6 @@ public class FileEntryWidget : Widget
     public bool TwoLines = false;
 
     public BaseEvent OnSelectionChanged;
-    public BaseEvent OnDoubleClick;
 
     public FileEntryWidget(IContainer Parent) : base(Parent)
     {
@@ -373,26 +324,6 @@ public class FileEntryWidget : Widget
 
     public void SetSelected(bool Selected)
     {
-        if (!this.Selected && Selected)
-        {
-            SetTimer("double", 300);
-        }
-        else if (this.Selected && Selected)
-        {
-            if (TimerExists("double") && !TimerPassed("double"))
-            {
-                OnDoubleClick?.Invoke(new BaseEventArgs());
-                DestroyTimer("double");
-            }
-            else if (TimerExists("double") && TimerPassed("double"))
-            {
-                ResetTimer("double");
-            }
-            else if (!TimerExists("double"))
-            {
-                SetTimer("double", 300);
-            }
-        }
         if (this.Selected != Selected)
         {
             this.Selected = Selected;
@@ -405,14 +336,21 @@ public class FileEntryWidget : Widget
             }
             Sprites["outline"].Visible = this.Selected;
             Sprites["box"].Visible = this.Selected;
-            Sprites["hover"].Visible = Hovering && !this.Selected;
+            Sprites["hover"].Visible = Mouse.Inside && !this.Selected;
             this.OnSelectionChanged?.Invoke(new BaseEventArgs());
         }
     }
 
-    public void SetHovering(bool Hovering)
+    public override void HoverChanged(MouseEventArgs e)
     {
-        Sprites["hover"].Visible = Hovering && !this.Selected;
+        base.HoverChanged(e);
+        Sprites["hover"].Visible = Mouse.Inside && !this.Selected;
+    }
+
+    public override void LeftMouseDownInside(MouseEventArgs e)
+    {
+        base.LeftMouseDownInside(e);
+        this.SetSelected(true);
     }
 
     public void SetFile(string Filename)
@@ -489,7 +427,7 @@ public class FileEntryWidget : Widget
         if (Size.Width == 50) return;
         RedrawGraphic();
         RedrawName();
-        Sprites["text"].Y = Size.Height - 30;
+        Sprites["text"].Y = Size.Height - 32;
         (Sprites["hover"].Bitmap as SolidBitmap).SetSize(Size.Width, 2);
         Sprites["hover"].Y = Size.Height - (TwoLines ? 2 : 8);
 

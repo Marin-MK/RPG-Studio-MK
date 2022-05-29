@@ -6,19 +6,21 @@ namespace RPGStudioMK.Game;
 [Serializable]
 public class EventCommand : ICloneable
 {
-    public int Indent;
     public CommandCode Code;
+    public int Indent;
     public List<object> Parameters = new List<object>();
 
-    public EventCommand()
+    public EventCommand(CommandCode Code, int Indent, List<object> Parameters)
     {
-
+        this.Code = Code;
+        this.Indent = Indent;
+        this.Parameters = Parameters;
     }
 
     public EventCommand(IntPtr data)
     {
-        this.Indent = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@indent"));
         this.Code = (CommandCode)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@code"));
+        this.Indent = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@indent"));
         IntPtr parameters = Ruby.GetIVar(data, "@parameters");
         for (int i = 0; i < Ruby.Array.Length(parameters); i++)
         {
@@ -32,8 +34,8 @@ public class EventCommand : ICloneable
     {
         IntPtr cmd = Ruby.Funcall(Compatibility.RMXP.EventCommand.Class, "new");
         Ruby.Pin(cmd);
-        Ruby.SetIVar(cmd, "@indent", Ruby.Integer.ToPtr(this.Indent));
         Ruby.SetIVar(cmd, "@code", Ruby.Integer.ToPtr((int)this.Code));
+        Ruby.SetIVar(cmd, "@indent", Ruby.Integer.ToPtr(this.Indent));
         IntPtr parameters = Ruby.Array.Create();
         Ruby.SetIVar(cmd, "@parameters", parameters);
         for (int i = 0; i < this.Parameters.Count; i++)
@@ -52,10 +54,8 @@ public class EventCommand : ICloneable
 
     public object Clone()
     {
-        EventCommand c = new EventCommand();
-        c.Indent = this.Indent;
-        c.Code = this.Code;
-        c.Parameters = (List<object>)Utilities.CloneUnknown(this.Parameters);
+        EventCommand c = new EventCommand(this.Code, this.Indent, null);
+        c.Parameters = (List<object>) Utilities.CloneUnknown(this.Parameters);
         return c;
     }
 }

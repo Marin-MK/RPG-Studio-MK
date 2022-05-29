@@ -6,7 +6,7 @@ namespace RPGStudioMK.Widgets;
 public class SubmodeView : Widget
 {
     public List<TabContainer> Tabs = new List<TabContainer>();
-    private List<string> Names = new List<string>();
+    public List<string> Names = new List<string>();
     public int SelectedIndex { get; protected set; } = -1;
     private int HoveringIndex = -1;
     public int HeaderWidth { get; protected set; } = 78;
@@ -186,6 +186,26 @@ public class SubmodeView : Widget
         this.Tabs.Add(tc);
         this.Names.Add(Name);
         return tc;
+    }
+
+    public TabContainer InsertTab(int Index, string Name)
+    {
+        TabContainer tc = new TabContainer(this);
+        tc.SetPosition(0, HeaderHeight);
+        tc.SetVisible(false);
+        tc.SetSize(this.Size.Width, this.Size.Height - HeaderHeight);
+        this.Tabs.Insert(Index, tc);
+        this.Names.Insert(Index, Name);
+        return tc;
+    }
+
+    public void RemoveTab(int Index)
+    {
+        this.Tabs[Index].Dispose();
+        this.Tabs.RemoveAt(Index);
+        this.Names.RemoveAt(Index);
+        if (this.SelectedIndex > 0 && this.SelectedIndex == this.Tabs.Count) this.SelectTab(Index - 1);
+        else this.SelectTab(this.SelectedIndex);
     }
 
     public override void SizeChanged(BaseEventArgs e)

@@ -66,7 +66,7 @@ public partial class MapViewer : Widget
         GridLayout = new Grid(this);
         GridLayout.SetColumns(
             new GridSize(1),
-            new GridSize(11, Unit.Pixels),
+            new GridSize(10, Unit.Pixels),
             new GridSize(288, Unit.Pixels)
         );
         GridLayout.SetRows(
@@ -98,7 +98,7 @@ public partial class MapViewer : Widget
         VScrollBar.SetZIndex(1);
         VScrollBar.SetValue(0.5);
         VScrollBar.SetVDocked(true);
-        VScrollBar.SetMargins(1, 1, 0, 1);
+        VScrollBar.SetMargins(2, 1, 0, 1);
         VScrollBar.OnValueChanged += delegate (BaseEventArgs e)
         {
             if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetVerticalScroll(VScrollBar.Value);
@@ -135,11 +135,12 @@ public partial class MapViewer : Widget
             new Shortcut(this, new Key(Keycode.Y, Keycode.SHIFT), SetDrawModeSelection, false, e => e.Value = Mode == MapMode.Tiles),
 
             /* Events mode */
-            new Shortcut(this, new Key(Keycode.ENTER), _ => OpenEventCursorIsOver(), false, e => e.Value = Mode == MapMode.Events),
+            new Shortcut(this, new Key(Keycode.ENTER), _ => OpenOrCreateEventCursorIsOver(), false, e => e.Value = Mode == MapMode.Events),
             new Shortcut(this, new Key(Keycode.LEFT), _ => MoveCursorLeft(), false, e => e.Value = Mode == MapMode.Events),
             new Shortcut(this, new Key(Keycode.RIGHT), _ => MoveCursorRight(), false, e => e.Value = Mode == MapMode.Events),
             new Shortcut(this, new Key(Keycode.UP), _ => MoveCursorUp(), false, e => e.Value = Mode == MapMode.Events),
             new Shortcut(this, new Key(Keycode.DOWN), _ => MoveCursorDown(), false, e => e.Value = Mode == MapMode.Events),
+            new Shortcut(this, new Key(Keycode.DELETE), _ => DeleteEventCursorIsOver(), false, e => e.Value = Mode == MapMode.Events)
         });
     }
 

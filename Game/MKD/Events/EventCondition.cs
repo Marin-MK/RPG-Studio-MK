@@ -19,7 +19,15 @@ public class EventCondition : ICloneable
 
     public EventCondition()
     {
-
+        this.Switch1Valid = false;
+        this.Switch1ID = 1;
+        this.Switch2Valid = false;
+        this.Switch2ID = 1;
+        this.VariableValid = false;
+        this.VariableID = 1;
+        this.VariableValue = 0;
+        this.SelfSwitchValid = false;
+        this.SelfSwitchChar = 'A';
     }
 
     public EventCondition(IntPtr data)

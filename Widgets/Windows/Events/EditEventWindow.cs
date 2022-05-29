@@ -5,6 +5,12 @@ namespace RPGStudioMK.Widgets;
 
 public class EditEventWindow : PopupWindow
 {
+    Button DeletePageButton;
+    Button ClearPageButton;
+    Button PastePageButton;
+    Button CopyPageButton;
+    Button NewPageButton;
+    SubmodeView PageControl;
     EventPageControl EventPageControl;
 
     public Map Map;
@@ -22,22 +28,23 @@ public class EditEventWindow : PopupWindow
         SetSize(MaximumSize);
         Center();
 
-        Font f = Fonts.ProductSansMedium.Use(14);
+        Font HeaderFont = Fonts.UbuntuBold.Use(16);
+        Font SmallFont = Fonts.ProductSansMedium.Use(14);
 
         Label NameLabel = new Label(this);
-        NameLabel.SetFont(f);
+        NameLabel.SetFont(SmallFont);
         NameLabel.SetPosition(23, 35);
         NameLabel.SetText("Name:");
 
         TextBox NameBox = new TextBox(this);
         NameBox.SetPosition(21, 52);
-        NameBox.SetFont(f);
+        NameBox.SetFont(SmallFont);
         NameBox.SetSize(161, 27);
         NameBox.SetText(this.Event.Name);
         NameBox.OnTextChanged += _ => this.Event.Name = NameBox.Text;
 
         Label SizeLabel = new Label(this);
-        SizeLabel.SetFont(f);
+        SizeLabel.SetFont(SmallFont);
         SizeLabel.SetPosition(NameBox.Position.X + NameBox.Size.Width + 12, 35);
         SizeLabel.SetText("Size:");
 
@@ -53,7 +60,7 @@ public class EditEventWindow : PopupWindow
         };
 
         Label SizeXLabel = new Label(this);
-        SizeXLabel.SetFont(f);
+        SizeXLabel.SetFont(SmallFont);
         SizeXLabel.SetPosition(WidthBox.Position.X + WidthBox.Size.Width + 4, 56);
         SizeXLabel.SetText("x");
 
@@ -68,7 +75,43 @@ public class EditEventWindow : PopupWindow
             EventPageControl.RedrawGraphic();
         };
 
-        SubmodeView PageControl = new SubmodeView(this);
+        DeletePageButton = new Button(this);
+        DeletePageButton.SetFont(HeaderFont);
+        DeletePageButton.SetSize(72, 60);
+        DeletePageButton.SetPosition(Size.Width - DeletePageButton.Size.Width - 14, 21);
+        DeletePageButton.SetText("Delete\nPage");
+        DeletePageButton.SetEnabled(Event.Pages.Count > 1);
+        DeletePageButton.OnClicked += _ => DeletePage();
+
+        ClearPageButton = new Button(this);
+        ClearPageButton.SetFont(HeaderFont);
+        ClearPageButton.SetSize(72, 60);
+        ClearPageButton.SetPosition(DeletePageButton.Position.X - ClearPageButton.Size.Width, 21);
+        ClearPageButton.SetText("Clear\nPage");
+        ClearPageButton.OnClicked += _ => ClearPage();
+
+        PastePageButton = new Button(this);
+        PastePageButton.SetFont(HeaderFont);
+        PastePageButton.SetSize(72, 60);
+        PastePageButton.SetPosition(ClearPageButton.Position.X - PastePageButton.Size.Width, 21);
+        PastePageButton.SetText("Paste\nPage");
+        PastePageButton.OnClicked += _ => PastePage();
+
+        CopyPageButton = new Button(this);
+        CopyPageButton.SetFont(HeaderFont);
+        CopyPageButton.SetSize(72, 60);
+        CopyPageButton.SetPosition(PastePageButton.Position.X - CopyPageButton.Size.Width, 21);
+        CopyPageButton.SetText("Copy\nPage");
+        CopyPageButton.OnClicked += _ => CopyPage();
+
+        NewPageButton = new Button(this);
+        NewPageButton.SetFont(HeaderFont);
+        NewPageButton.SetSize(72, 60);
+        NewPageButton.SetPosition(CopyPageButton.Position.X - NewPageButton.Size.Width, 21);
+        NewPageButton.SetText("New\nPage");
+        NewPageButton.OnClicked += _ => NewPage();
+
+        PageControl = new SubmodeView(this);
         PageControl.SetPosition(8, 89);
         PageControl.SetSize(Size.Width - 16, 25);
         PageControl.SetHeaderHeight(29);
@@ -97,6 +140,55 @@ public class EditEventWindow : PopupWindow
 
         CreateButton("Cancel", Cancel);
         CreateButton("OK", OK);
+    }
+
+    private void NewPage()
+    {
+        InsertPage(PageControl.SelectedIndex + 1, new EventPage());
+    }
+
+    private void InsertPage(int Index, EventPage Page)
+    {
+        Event.Pages.Insert(Index, Page);
+        for (int i = Index; i < PageControl.Tabs.Count; i++)
+        {
+            PageControl.Names[i] = (i + 2).ToString();
+        }
+        PageControl.InsertTab(Index, (Index + 1).ToString());
+        PageControl.Redraw();
+        PageControl.SelectTab(Index);
+        DeletePageButton.SetEnabled(true);
+    }
+
+    private void CopyPage()
+    {
+        EventPage Page = Event.Pages[PageControl.SelectedIndex];
+        Utilities.SetClipboard(Page, BinaryData.EVENT_PAGE);
+    }
+
+    private void PastePage()
+    {
+        if (!Utilities.IsClipboardValidBinary(BinaryData.EVENT_PAGE)) return;
+        EventPage Page = Utilities.GetClipboard<EventPage>();
+        InsertPage(PageControl.SelectedIndex + 1, Page);
+    }
+
+    private void ClearPage()
+    {
+        Event.Pages[PageControl.SelectedIndex] = new EventPage();
+        EventPageControl.SetEventPage(Map, Event, Event.Pages[PageControl.SelectedIndex]);
+    }
+
+    private void DeletePage()
+    {
+        Event.Pages.RemoveAt(PageControl.SelectedIndex);
+        PageControl.RemoveTab(PageControl.SelectedIndex);
+        for (int i = PageControl.SelectedIndex; i < PageControl.Tabs.Count; i++)
+        {
+            PageControl.Names[i] = (i + 1).ToString();
+        }
+        PageControl.Redraw();
+        DeletePageButton.SetEnabled(Event.Pages.Count > 1);
     }
 
     private void OK(BaseEventArgs e)

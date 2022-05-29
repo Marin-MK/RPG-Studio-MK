@@ -16,8 +16,8 @@ public class MoveRoute : ICloneable
     public MoveRoute()
     {
         this.Type = 0;
-        this.Frequency = 0;
-        this.Speed = 0;
+        this.Frequency = 3;
+        this.Speed = 3;
         this.Skippable = false;
         this.Repeat = true;
     }

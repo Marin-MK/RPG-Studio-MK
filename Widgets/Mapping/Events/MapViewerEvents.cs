@@ -19,7 +19,7 @@ public partial class MapViewer
         SidebarWidgetEvents = EventsPanel;
         MainContainer.OnDoubleLeftMouseDownInside += _ =>
         {
-            if (!MovedSinceLastClick) OpenEventCursorIsOver();
+            if (!MovedSinceLastClick) OpenOrCreateEventCursorIsOver();
         };
     }
 
@@ -94,20 +94,58 @@ public partial class MapViewer
         return box;
     }
 
-    public void OpenEventCursorIsOver()
+    public void OpenOrCreateEventCursorIsOver()
     {
+        bool found = false;
         foreach (EventBox eb in EventBoxes)
         {
             if (eb.Event.X == MapTileX && eb.Event.Y == MapTileY)
             {
                 OpenEvent(eb.Event);
+                found = true;
                 break;
             }
         }
+        if (!found)
+        {
+            Event ev = new Event(Editor.GetFreeEventID(Map));
+            ev.X = MapTileX;
+            ev.Y = MapTileY;
+            Map.Events[ev.ID] = ev;
+            CreateEventBox(ev);
+            EventsPanel.RedrawEvents();
+            EventsPanel.SelectEventInList(ev);
+            OpenEvent(ev, true);
+        }
     }
 
-    public void OpenEvent(Event Event)
+    public void DeleteEventCursorIsOver()
     {
+        EventBox box = null;
+        foreach (EventBox eb in EventBoxes)
+        {
+            if (eb.Event.X == MapTileX && eb.Event.Y == MapTileY)
+            {
+                box = eb;
+                break;
+            }
+        }
+        if (box != null)
+        {
+            Map.Events.Remove(box.Event.ID);
+            box.Dispose();
+            EventBoxes.Remove(box);
+            CursorWidth = 0;
+            CursorHeight = 0;
+            UpdateCursorPosition();
+            EventsPanel.RedrawEvents();
+            SelectEventBoxCursorIsOver();
+        }
+    }
+
+    public void OpenEvent(Event Event, bool DeleteIfCancelled = false)
+    {
+        string OldName = Event.Name;
         int OldWidth = Event.Width;
         int OldHeight = Event.Height;
         EventBox box = null;
@@ -123,13 +161,21 @@ public partial class MapViewer
         EditEventWindow win = new EditEventWindow(Map, Event);
         win.OnClosed += _ =>
         {
-            if (!win.Apply) return;
+            if (!win.Apply)
+            {
+                if (DeleteIfCancelled) DeleteEventCursorIsOver();
+                return;
+            }
+            box.SetEvent(Map, win.Event);
+            box.RepositionSprites(MapWidget, win.Event.X, win.Event.Y);
+            EventsPanel.RedrawEvents();
+            EventsPanel.SelectEventInList(win.Event);
             if (win.Event.Width != OldWidth || win.Event.Height != OldHeight || win.UpdateGraphic)
             {
-                box.SetEvent(Map, win.Event);
-                box.RepositionSprites(MapWidget, win.Event.X, win.Event.Y);
                 SelectEventBoxCursorIsOver();
             }
+            MainContainer.UpdateAutoScroll();
+            Window.UI.SetSelectedWidget(this);
         };
     }
 
@@ -263,16 +309,7 @@ public partial class MapViewer
         {
             Event ev = box.Event;
             Utilities.SetClipboard(ev, BinaryData.EVENT);
-            if (Cut)
-            {
-                Map.Events.Remove(ev.ID);
-                box.Dispose();
-                EventBoxes.Remove(box);
-                CursorWidth = 0;
-                CursorHeight = 0;
-                UpdateCursorPosition();
-                EventsPanel.RedrawEvents();
-            }
+            if (Cut) DeleteEventCursorIsOver();
         }
     }
 

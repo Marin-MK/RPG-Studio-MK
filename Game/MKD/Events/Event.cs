@@ -20,7 +20,7 @@ public class Event : ICloneable, ISerializable
     public Event(int ID)
     {
         this.ID = ID;
-        this.Name = "Untitled Event";
+        this.Name = $"Event {Utilities.Digits(ID, 3)}";
         this.Width = 1;
         this.Height = 1;
         this.Pages = new List<EventPage>();

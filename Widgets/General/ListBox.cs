@@ -58,6 +58,11 @@ public class ListBox : Widget
         }
     }
 
+    public void SetFont(Font Font)
+    {
+        ListDrawer.SetFont(Font);
+    }
+
     public void SetButtonText(string Text)
     {
         ListDrawer.SetButton(true, Text);

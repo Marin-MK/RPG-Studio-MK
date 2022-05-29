@@ -469,23 +469,3 @@ public class MapPropertiesWindow : PopupWindow
         Close();
     }
 }
-
-public class GroupBox : Widget
-{
-    public GroupBox(IContainer Parent) : base(Parent)
-    {
-        Sprites["bg"] = new Sprite(this.Viewport);
-    }
-
-    public override void SizeChanged(BaseEventArgs e)
-    {
-        base.SizeChanged(e);
-        if (Sprites["bg"].Bitmap != null) Sprites["bg"].Bitmap.Dispose();
-        Sprites["bg"].Bitmap = new Bitmap(Size);
-        Sprites["bg"].Bitmap.Unlock();
-        Sprites["bg"].Bitmap.DrawRect(Size, 59, 91, 124);
-        Sprites["bg"].Bitmap.DrawRect(1, 1, Size.Width - 2, Size.Height - 2, 17, 27, 38);
-        Sprites["bg"].Bitmap.FillRect(2, 2, Size.Width - 4, Size.Height - 4, 24, 38, 53);
-        Sprites["bg"].Bitmap.Lock();
-    }
-}

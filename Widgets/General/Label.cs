@@ -64,7 +64,8 @@ public class Label : Widget
 
     public virtual void RedrawText()
     {
-        if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
+        base.Draw();
+        Sprites["text"].Bitmap?.Dispose();
         if (string.IsNullOrEmpty(this.Text)) return;
         Size s = this.Font.TextSize(this.Text, this.DrawOptions);
         this.SetSize(s);
@@ -73,7 +74,6 @@ public class Label : Widget
         Sprites["text"].Bitmap.Font = this.Font;
         Sprites["text"].Bitmap.DrawText(this.Text, this.Enabled ? this.TextColor : new Color(160, 160, 160), this.DrawOptions);
         Sprites["text"].Bitmap.Lock();
-        base.Draw();
     }
 
     public override object GetValue(string Identifier)
@@ -100,9 +100,9 @@ public class MultilineLabel : Label
 
     public override void RedrawText()
     {
+        Sprites["text"].Bitmap?.Dispose();
         if (string.IsNullOrEmpty(Text)) return;
         List<string> Lines = Utilities.FormatString(this.Font, Text, Size.Width);
-        if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
         SetSize(Size.Width, (Font.Size + 4) * Lines.Count);
         Sprites["text"].Bitmap = new Bitmap(Size);
         Sprites["text"].Bitmap.Unlock();

@@ -7,8 +7,6 @@ public class System
 {
     public List<string> Variables = new List<string>();
     public List<string> Switches = new List<string>();
-    public List<ListItem> VariablesListItems = new List<ListItem>();
-    public List<ListItem> SwitchesListItems = new List<ListItem>();
 
     public int MagicNumber;
     public int _;
@@ -95,7 +93,6 @@ public class System
             {
                 string name = Ruby.String.FromPtr(e);
                 this.Variables.Add(name);
-                this.VariablesListItems.Add(new ListItem(name));
             }
         }
 
@@ -107,7 +104,6 @@ public class System
             {
                 string name = Ruby.String.FromPtr(e);
                 this.Switches.Add(name);
-                this.SwitchesListItems.Add(new ListItem(name));
             }
         }
     }
