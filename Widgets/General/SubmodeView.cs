@@ -15,16 +15,19 @@ public class SubmodeView : Widget
     public int TextY { get; protected set; } = 3;
     public Font Font { get; protected set; } = Fonts.UbuntuBold.Use(16);
     public bool Centered { get; protected set; } = false;
-    public Color HeaderColor { get; protected set; } = Color.ALPHA;
+    public Color HeaderBackgroundColor { get; protected set; } = Color.ALPHA;
+    public Color HeaderSelBackgroundColor { get; protected set; } = Color.ALPHA;
 
     public BaseEvent OnSelectionChanged;
 
     public SubmodeView(IContainer Parent) : base(Parent)
     {
-        Sprites["header"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, HeaderColor));
-        Sprites["text"] = new Sprite(this.Viewport);
+        Sprites["header"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, HeaderBackgroundColor));
         Sprites["sel"] = new Sprite(this.Viewport, new SolidBitmap(HeaderWidth, 2, new Color(55, 187, 255)));
         Sprites["sel"].Y = HeaderHeight - HeaderSelHeight - 2;
+        Sprites["selbg"] = new Sprite(this.Viewport, new SolidBitmap(HeaderWidth, HeaderHeight, HeaderSelBackgroundColor));
+        Sprites["selbg"].Visible = false;
+        Sprites["text"] = new Sprite(this.Viewport);
     }
 
     public void SelectTab(int Index)
@@ -34,14 +37,19 @@ public class SubmodeView : Widget
             if (SelectedIndex != -1 && SelectedIndex < Tabs.Count)
             {
                 Tabs[SelectedIndex].SetVisible(false);
+                Sprites["selbg"].Visible = false;
             }
             if (Index != -1 && Index < Tabs.Count)
             {
                 Tabs[Index].SetVisible(true);
                 this.SelectedIndex = Index;
                 this.OnSelectionChanged?.Invoke(new BaseEventArgs());
+                Sprites["selbg"].X = Index * HeaderWidth;
+                Sprites["selbg"].Visible = true;
             }
+            else Sprites["selbg"].Visible = false;
         }
+        else Sprites["selbg"].Visible = false;
         Redraw();
     }
 
@@ -68,6 +76,7 @@ public class SubmodeView : Widget
             this.HeaderHeight = Height;
             Sprites["sel"].Y = HeaderHeight - HeaderSelHeight - 2;
             ((SolidBitmap) Sprites["header"].Bitmap).SetSize(Size.Width, HeaderHeight);
+            ((SolidBitmap) Sprites["selbg"].Bitmap).SetSize(HeaderWidth, HeaderHeight);
         }
     }
 
@@ -114,17 +123,31 @@ public class SubmodeView : Widget
         }
     }
 
-    public void SetHeaderColor(byte R, byte G, byte B, byte A = 255)
+    public void SetHeaderBackgroundColor(byte R, byte G, byte B, byte A = 255)
     {
-        SetHeaderColor(new Color(R, G, B, A));
+        SetHeaderBackgroundColor(new Color(R, G, B, A));
     }
 
-    public void SetHeaderColor(Color HeaderColor)
+    public void SetHeaderBackgroundColor(Color HeaderBackgroundColor)
     {
-        if (this.HeaderColor != HeaderColor)
+        if (this.HeaderBackgroundColor != HeaderBackgroundColor)
         {
-            this.HeaderColor = HeaderColor;
-            ((SolidBitmap) Sprites["header"].Bitmap).SetColor(HeaderColor);
+            this.HeaderBackgroundColor = HeaderBackgroundColor;
+            ((SolidBitmap) Sprites["header"].Bitmap).SetColor(HeaderBackgroundColor);
+        }
+    }
+
+    public void SetHeaderSelBackgroundColor(byte R, byte G, byte B, byte A = 255)
+    {
+        SetHeaderSelBackgroundColor(new Color(R, G, B, A));
+    }
+
+    public void SetHeaderSelBackgroundColor(Color HeaderSelBackgroundColor)
+    {
+        if (this.HeaderSelBackgroundColor != HeaderSelBackgroundColor)
+        {
+            this.HeaderSelBackgroundColor = HeaderSelBackgroundColor;
+            ((SolidBitmap) Sprites["selbg"].Bitmap).SetColor(HeaderSelBackgroundColor);
         }
     }
 
@@ -174,6 +197,7 @@ public class SubmodeView : Widget
             tc.Widgets.ForEach(w => w.SetSize(tc.Size));
         }
         (Sprites["header"].Bitmap as SolidBitmap).SetSize(Size.Width, HeaderHeight);
+        Sprites["sel"].Y = HeaderHeight - HeaderSelHeight - 2;
     }
 
     public override void MouseMoving(MouseEventArgs e)

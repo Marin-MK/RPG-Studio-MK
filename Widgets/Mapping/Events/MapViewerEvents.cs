@@ -127,6 +127,7 @@ public partial class MapViewer
     public void OpenEvent(Event Event)
     {
         Console.WriteLine($"Open event {Event.ID}: {Event.Name}");
+        EditEventWindow win = new EditEventWindow(Event);
     }
 
     public void MoveCursorLeft()

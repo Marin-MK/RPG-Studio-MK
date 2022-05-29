@@ -9,6 +9,7 @@ public class DropdownBox : amethyst.DropdownBox
         TextArea.SetPosition(6, 4);
         TextArea.SetFont(Fonts.ProductSansMedium.Use(14));
         TextArea.SetCaretColor(Color.WHITE);
+        TextArea.SetReadOnly(true);
     }
 
     protected override void Draw()

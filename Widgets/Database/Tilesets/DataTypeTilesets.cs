@@ -90,7 +90,7 @@ public class DataTypeTilesets : Widget
         Tabs.SetGrid(0, 1, 1, 2);
         Tabs.SetFont(Fonts.UbuntuBold.Use(16));
         Tabs.SetCentered(true);
-        Tabs.SetHeaderColor(10, 23, 37);
+        Tabs.SetHeaderBackgroundColor(10, 23, 37);
         Tabs.OnSelectionChanged += _ => SelectedTabChanged();
 
         MainBox = new Container(Grid);
@@ -99,12 +99,12 @@ public class DataTypeTilesets : Widget
         Fade = new VignetteFade(Grid);
         Fade.SetGrid(1, 1);
 
-        Container Passage = Tabs.CreateTab("Passage");
-        Container Directions = Tabs.CreateTab("4-Dir");
-        Container Priority = Tabs.CreateTab("Priority");
-        Container BushFlag = Tabs.CreateTab("Bush Flag");
-        Container CounterFlag = Tabs.CreateTab("Counter Flag");
-        Container TerrainTag = Tabs.CreateTab("Terrain Tag");
+        Tabs.CreateTab("Passage");
+        Tabs.CreateTab("4-Dir");
+        Tabs.CreateTab("Priority");
+        Tabs.CreateTab("Bush Flag");
+        Tabs.CreateTab("Counter Flag");
+        Tabs.CreateTab("Terrain Tag");
 
         Font Font = Fonts.ProductSansMedium.Use(16);
 

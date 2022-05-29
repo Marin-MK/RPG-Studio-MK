@@ -30,7 +30,7 @@ public class NumericDataSlider : Widget
         TextArea.SetText(Value.ToString());
         TextArea.SetNumericOnly(true);
         TextArea.SetZIndex(1);
-        TextArea.OnTextChanged += delegate (BaseEventArgs e)
+        TextArea.OnTextChanged += delegate (TextEventArgs e)
         {
             if (TextArea.Text.Length == 0) TextArea.SetTextX(12);
             else if (TextArea.Text.Length == 1) TextArea.SetTextX(9);

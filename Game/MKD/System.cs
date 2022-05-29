@@ -7,6 +7,8 @@ public class System
 {
     public List<string> Variables = new List<string>();
     public List<string> Switches = new List<string>();
+    public List<ListItem> VariablesListItems = new List<ListItem>();
+    public List<ListItem> SwitchesListItems = new List<ListItem>();
 
     public int MagicNumber;
     public int _;
@@ -89,14 +91,24 @@ public class System
         for (int i = 0; i < Ruby.Array.Length(variables); i++)
         {
             IntPtr e = Ruby.Array.Get(variables, i);
-            if (e != Ruby.Nil) this.Variables.Add(Ruby.String.FromPtr(e));
+            if (e != Ruby.Nil)
+            {
+                string name = Ruby.String.FromPtr(e);
+                this.Variables.Add(name);
+                this.VariablesListItems.Add(new ListItem(name));
+            }
         }
 
         IntPtr switches = Ruby.GetIVar(data, "@switches");
         for (int i = 0; i < Ruby.Array.Length(switches); i++)
         {
             IntPtr e = Ruby.Array.Get(switches, i);
-            if (e != Ruby.Nil) this.Switches.Add(Ruby.String.FromPtr(e));
+            if (e != Ruby.Nil)
+            {
+                string name = Ruby.String.FromPtr(e);
+                this.Switches.Add(name);
+                this.SwitchesListItems.Add(new ListItem(name));
+            }
         }
     }
 

@@ -9,18 +9,19 @@ public class BrowserBox : Widget
     public bool ReadOnly { get { return TextArea.ReadOnly; } }
     public bool Enabled { get; protected set; } = true;
 
-    public TextArea TextArea;
+    public amethyst.TextArea TextArea;
 
-    public BaseEvent OnTextChanged { get { return TextArea.OnTextChanged; } set { TextArea.OnTextChanged = value; } }
+    public TextEvent OnTextChanged { get { return TextArea.OnTextChanged; } set { TextArea.OnTextChanged = value; } }
     public BaseEvent OnDropDownClicked;
 
     public BrowserBox(IContainer Parent) : base(Parent)
     {
         Sprites["bg"] = new Sprite(this.Viewport);
-        TextArea = new TextArea(this);
+        TextArea = new amethyst.TextArea(this);
         TextArea.SetPosition(3, 3);
         TextArea.SetCaretHeight(13);
         TextArea.SetZIndex(1);
+        TextArea.SetReadOnly(true);
         SetSize(100, 21);
     }
 
