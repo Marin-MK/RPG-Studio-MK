@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace RPGStudioMK.Widgets;
 
@@ -30,18 +31,23 @@ public class GenericNumberPicker : PopupWindow
         TextLabel.SetText(Label);
         TextLabel.SetPosition(NumberBox.Position.X - TextLabel.Size.Width - 8, 34);
 
-        CreateButton("Cancel", Cancel);
-        CreateButton("OK", OK);
+        CreateButton("Cancel", _ => Cancel());
+        CreateButton("OK", _ => OK());
+
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
+        });
     }
 
-    private void OK(BaseEventArgs e)
+    private void OK()
     {
         Apply = true;
         this.Value = NumberBox.Value;
         Close();
     }
 
-    private void Cancel(BaseEventArgs e)
+    private void Cancel()
     {
         Close();
     }

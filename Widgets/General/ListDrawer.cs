@@ -149,7 +149,6 @@ public class ListDrawer : Widget
             }
         }
         if (HoveringIndex != oldhover || DraggingIndex != olddrag) Redraw();
-        Console.WriteLine($"({HoveringIndex},{DraggingIndex})");
     }
 
     public override void HoverChanged(MouseEventArgs e)

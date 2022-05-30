@@ -241,7 +241,7 @@ public class ChooseGraphic : PopupWindow
         TileGraphicPicker.SetPosition(8, 35);
         TileGraphicPicker.SetSize(522, 430);
         TileGraphicPicker.SetVisible(false);
-        TileGraphicPicker.OnTileDoubleClicked += _ => OK(new BaseEventArgs());
+        TileGraphicPicker.OnTileDoubleClicked += _ => OK();
 
         Label HueLabel = new Label(this);
         HueLabel.SetBottomDocked(true);
@@ -333,23 +333,28 @@ public class ChooseGraphic : PopupWindow
             FileExplorer.SetSelectedFile(null);
         };
 
-        CreateButton("Cancel", Cancel);
+        CreateButton("Cancel", _ => Cancel());
         Buttons[0].SetPosition(Size.Width - 99, Buttons[0].Position.Y);
-        CreateButton("OK", OK);
+        CreateButton("OK", _ => OK());
         Buttons[1].SetPosition(Size.Width - 188, Buttons[1].Position.Y);
 
         if (!string.IsNullOrEmpty(Graphic.CharacterName)) FileExplorer.SetSelectedFile(Graphic.CharacterName + ".png");
 
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
+        });
+
         RedrawGraphic();
     }
 
-    public void Cancel(BaseEventArgs e)
+    public void Cancel()
     {
         this.Graphic = OldGraphic;
         Close();
     }
 
-    public void OK(BaseEventArgs e)
+    public void OK()
     {
         Apply = true;
         Close();
@@ -461,7 +466,7 @@ public class ChooseGraphic : PopupWindow
 
         if (FrameBoxValue != OldFrameBoxValue || DirectionBoxValue != OldDirectionBoxValue) return;
         
-        OK(new BaseEventArgs());
+        OK();
         e.Handled = true;
     }
 }

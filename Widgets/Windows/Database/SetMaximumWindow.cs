@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace RPGStudioMK.Widgets;
 
@@ -27,17 +28,22 @@ public class SetMaximumWindow : PopupWindow
         maxBox.MaxValue = 9999;
         maxBox.OnValueChanged += _ => Maximum = maxBox.Value;
 
-        CreateButton("OK", OK);
-        CreateButton("Cancel", Cancel);
+        CreateButton("OK", _ => OK());
+        CreateButton("Cancel", _ => Cancel());
+
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
+        });
     }
 
-    void OK(BaseEventArgs e)
+    void OK()
     {
         PressedOK = true;
         Close();
     }
 
-    void Cancel(BaseEventArgs e)
+    void Cancel()
     {
         Close();
     }

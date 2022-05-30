@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
@@ -138,8 +139,13 @@ public class EditEventWindow : PopupWindow
 
         PageControl.SelectTab(0);
 
-        CreateButton("Cancel", Cancel);
-        CreateButton("OK", OK);
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
+        });
+
+        CreateButton("Cancel", _ => Cancel());
+        CreateButton("OK", _ => OK());
     }
 
     private void NewPage()
@@ -191,14 +197,14 @@ public class EditEventWindow : PopupWindow
         DeletePageButton.SetEnabled(Event.Pages.Count > 1);
     }
 
-    private void OK(BaseEventArgs e)
+    private void OK()
     {
         this.Map.Events[Event.ID] = this.Event;
         Apply = true;
         Close();
     }
 
-    private void Cancel(BaseEventArgs e)
+    private void Cancel()
     {
         Close();
     }

@@ -74,8 +74,13 @@ public class MapPicker : PopupWindow
         MapBox = new PictureBox(PreviewContainer);
         MapBox.ResizeBox = false;
 
-        CreateButton("Cancel", Cancel);
-        CreateButton("OK", OK);
+        CreateButton("Cancel", _ => Cancel());
+        CreateButton("OK", _ => OK());
+
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
+        });
 
         if (Maps.Items.Count > 0) Maps.SetSelectedIndex(0);
     }
@@ -100,7 +105,7 @@ public class MapPicker : PopupWindow
         MapBox.SetSize(fullw, fullh);
     }
 
-    public void OK(BaseEventArgs e)
+    public void OK()
     {
         if (Maps.SelectedIndex >= 0)
         {
@@ -114,7 +119,7 @@ public class MapPicker : PopupWindow
         Close();
     }
 
-    public void Cancel(BaseEventArgs e)
+    public void Cancel()
     {
         this.ChosenMap = null;
         Close();

@@ -67,10 +67,10 @@ public class PanoramaFilePicker : AbstractFilePicker
         image.Sprite.Bitmap = HueBox.Value == 0 ? CurrentBitmap : CurrentBitmap.ApplyHue(HueBox.Value);
     }
 
-    public override void OK(BaseEventArgs e)
+    public override void OK()
     {
         ChosenPanoramaName = List.SelectedItem.Object == null ? "" : List.SelectedItem.Name;
         ChosenPanoramaHue = HueBox.Value;
-        base.OK(e);
+        base.OK();
     }
 }

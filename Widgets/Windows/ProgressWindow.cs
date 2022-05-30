@@ -1,4 +1,6 @@
-﻿namespace RPGStudioMK.Widgets;
+﻿using System.Collections.Generic;
+
+namespace RPGStudioMK.Widgets;
 
 public class ProgressWindow : PopupWindow
 {
@@ -29,9 +31,18 @@ public class ProgressWindow : PopupWindow
 
         if (!CloseWhenDone)
         {
-            CreateButton("OK", delegate (BaseEventArgs e) { Close(); });
+            CreateButton("OK", _ => OK());
             Buttons[0].SetEnabled(false);
+            RegisterShortcuts(new List<Shortcut>()
+            {
+                new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true, e => e.Value = Buttons[0].Enabled)
+            });
         }
+    }
+
+    private void OK()
+    {
+        Close();
     }
 
     public void SetMessage(string Message)

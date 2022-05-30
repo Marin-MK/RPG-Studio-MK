@@ -78,8 +78,13 @@ public class SwitchPicker : PopupWindow
         GroupListBox.SetSelectedIndex(groupidx);
         SwitchListBox.SetSelectedIndex(switchidx);
 
-        CreateButton("Cancel", Cancel);
-        CreateButton("OK", OK);
+        CreateButton("Cancel", _ => Cancel());
+        CreateButton("OK", _ => OK());
+
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
+        });
     }
 
     private void RedrawGroupList()
@@ -124,14 +129,14 @@ public class SwitchPicker : PopupWindow
         RedrawSwitchList();
     }
 
-    private void OK(BaseEventArgs e)
+    private void OK()
     {
         SwitchID = GroupListBox.SelectedIndex * SwitchesPerGroup + SwitchListBox.SelectedIndex + 1;
         Apply = true;
         Close();
     }
 
-    private void Cancel(BaseEventArgs e)
+    private void Cancel()
     {
         Close();
     }

@@ -65,14 +65,14 @@ public class AudioPicker : PopupWindow
         PlayButton.SetText("Play");
         PlayButton.SetPosition(192, 51);
         PlayButton.SetSize(99, 28);
-        PlayButton.OnClicked += PlaySound;
+        PlayButton.OnClicked += _ => PlaySound();
         PlayButton.SetEnabled(FileList.SelectedIndex != 0);
 
         StopButton = new Button(this);
         StopButton.SetText("Stop");
         StopButton.SetPosition(192, 77);
         StopButton.SetSize(99, 28);
-        StopButton.OnClicked += StopSound;
+        StopButton.OnClicked += _ => StopSound();
 
         Label VolumeGroupLabel = new Label(this);
         VolumeGroupLabel.SetText("Volume");
@@ -136,34 +136,39 @@ public class AudioPicker : PopupWindow
             if (ActiveSound != null && ActiveSound.Alive) ActiveSound.SampleRate = (int)Math.Round(this.Pitch / 100d * ActiveSound.OriginalSampleRate);
         };
 
-        CreateButton("Cancel", Cancel);
-        CreateButton("OK", OK);
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
+        });
+
+        CreateButton("Cancel", _ => Cancel());
+        CreateButton("OK", _ => OK());
     }
 
-    void PlaySound(BaseEventArgs e)
+    void PlaySound()
     {
         if (FileList.SelectedItem.Object == null) return;
-        StopSound(e);
+        StopSound();
         ActiveSound = new Sound((string)FileList.SelectedItem.Object, this.Volume);
         ActiveSound.SampleRate = (int)Math.Round(this.Pitch / 100d * ActiveSound.OriginalSampleRate);
         Audio.BGMPlay(ActiveSound);
     }
 
-    void StopSound(BaseEventArgs e)
+    void StopSound()
     {
         if (ActiveSound != null && ActiveSound.Alive) ActiveSound.Stop();
     }
 
-    public void OK(BaseEventArgs e)
+    public void OK()
     {
-        StopSound(e);
+        StopSound();
         this.Result = (FileList.SelectedItem.Object == null ? "" : FileList.SelectedItem.Name, this.Volume, this.Pitch);
         Close();
     }
 
-    public void Cancel(BaseEventArgs e)
+    public void Cancel()
     {
-        StopSound(e);
+        StopSound();
         this.Result = null;
         Close();
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace RPGStudioMK.Widgets;
 
@@ -45,11 +46,16 @@ public class GenericDoubleNumberPicker : PopupWindow
         Text2Label.SetText(Label2);
         Text2Label.SetPosition(Number2Box.Position.X - Text2Label.Size.Width - 8, 34);
 
-        CreateButton("Cancel", Cancel);
-        CreateButton("OK", OK);
+        CreateButton("Cancel", _ => Cancel());
+        CreateButton("OK", _ => OK());
+
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
+        });
     }
 
-    private void OK(BaseEventArgs e)
+    private void OK()
     {
         Apply = true;
         this.Value1 = Number1Box.Value;
@@ -57,7 +63,7 @@ public class GenericDoubleNumberPicker : PopupWindow
         Close();
     }
 
-    private void Cancel(BaseEventArgs e)
+    private void Cancel()
     {
         Close();
     }

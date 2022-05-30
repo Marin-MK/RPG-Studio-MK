@@ -190,8 +190,13 @@ public class MapPropertiesWindow : PopupWindow
         //autotileslabel.SetFont(f);
         //autotileslabel.SetPosition(313, 6);
 
-        CreateButton("Cancel", Cancel);
-        CreateButton("OK", OK);
+        CreateButton("Cancel", _ => Cancel());
+        CreateButton("OK", _ => OK());
+
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
+        });
     }
 
     public void AddTileset()
@@ -265,7 +270,7 @@ public class MapPropertiesWindow : PopupWindow
         };
     }*/
 
-    public void OK(BaseEventArgs e)
+    public void OK()
     {
         this.UpdateMapViewer = true;
         List<Undo.BaseUndoAction> AllChanges = new List<Undo.BaseUndoAction>();
@@ -471,7 +476,7 @@ public class MapPropertiesWindow : PopupWindow
         if (!tilesetschanged) Continue();
     }
 
-    public void Cancel(BaseEventArgs e)
+    public void Cancel()
     {
         Close();
     }

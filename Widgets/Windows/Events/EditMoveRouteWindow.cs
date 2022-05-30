@@ -142,11 +142,15 @@ public class EditMoveRouteWindow : PopupWindow
             btn.SetText(Text);
             btn.OnClicked += _ =>
             {
-                OnClickEvent(MoveCode, null, cmd => InsertCommand(MoveBox.SelectedIndex, cmd));
+                OnClickEvent(MoveCode, null, cmd =>
+                {
+                    InsertCommand(MoveBox.SelectedIndex, cmd);
+                    Window.UI.SetSelectedWidget(this);
+                });
             };
             CommandEditFunctions.Add(MoveCode, OnClickEvent);
         };
-
+        
         AddButton("Move Down", 0, MoveCode.Down);
         AddButton("Move Left", 0, MoveCode.Left);
         AddButton("Move Right", 0, MoveCode.Right);
@@ -296,8 +300,8 @@ public class EditMoveRouteWindow : PopupWindow
 
         RedrawMoves();
 
-        CreateButton("Cancel", Cancel);
-        CreateButton("OK", OK);
+        CreateButton("Cancel", _ => Cancel());
+        CreateButton("OK", _ => OK());
 
         RegisterShortcuts(new List<Shortcut>()
         {
@@ -307,7 +311,8 @@ public class EditMoveRouteWindow : PopupWindow
             new Shortcut(this, new Key(Keycode.C, Keycode.CTRL), _ => CopyCommand()),
             new Shortcut(this, new Key(Keycode.V, Keycode.CTRL), _ => PasteCommand()),
             new Shortcut(this, new Key(Keycode.DOWN), _ => MoveBox.MoveDown()),
-            new Shortcut(this, new Key(Keycode.UP), _ => MoveBox.MoveUp())
+            new Shortcut(this, new Key(Keycode.UP), _ => MoveBox.MoveUp()),
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
         });
 
         this.Window.UI.SetSelectedWidget(this);
@@ -366,6 +371,7 @@ public class EditMoveRouteWindow : PopupWindow
             MoveRoute.Commands[idx] = newcmd;
             MoveBox.Items[idx] = new ListItem(newcmd.ToString(), newcmd);
             MoveBox.Redraw();
+            Window.UI.SetSelectedWidget(this);
         });
     }
 
@@ -390,13 +396,13 @@ public class EditMoveRouteWindow : PopupWindow
         InsertCommand(MoveBox.SelectedIndex, cmd);
     }
 
-    private void OK(BaseEventArgs e)
+    private void OK()
     {
         Apply = true;
         Close();
     }
 
-    private void Cancel(BaseEventArgs e)
+    private void Cancel()
     {
         this.MoveRoute = this.OldMoveRoute;
         Close();

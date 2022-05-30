@@ -120,6 +120,16 @@ public class MessageBox : PopupWindow
 
         MinimumSize = MaximumSize = new Size(300, 150);
         SetSize(MaximumSize);
+
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ =>
+            {
+                Result = 0;
+                this.OnButtonPressed?.Invoke(new BaseEventArgs());
+                Close();
+            }, true)
+        });
     }
 
     public MessageBox(string Title, string Message, List<string> Buttons, IconType IconType = IconType.None)

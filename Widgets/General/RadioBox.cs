@@ -184,17 +184,4 @@ public class RadioBox : Widget
         Selecting = false;
         this.Redraw();
     }
-
-    public override object GetValue(string Identifier)
-    {
-        return this.Checked;
-    }
-
-    public override void SetValue(string Identifier, object Value)
-    {
-        if (Identifier == "enabled")
-            this.SetEnabled((string)Value == "true");
-        else if (string.IsNullOrEmpty(Identifier)) SetChecked((string)Value == "true");
-        else base.SetValue(Identifier, Value);
-    }
 }

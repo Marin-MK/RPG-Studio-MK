@@ -50,6 +50,25 @@ public class AutotilePickerMap : PopupWindow
         Cursor = new CursorWidget(this);
         Cursor.SetPosition(Sprites["tiles"].X - 7, Sprites["tiles"].Y - 7);
         Cursor.SetSize(32 + 14, 32 + 14);
+
+        CreateButton("Cancel", _ => Cancel());
+        CreateButton("OK", _ => OK());
+
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
+        });
+    }
+
+    private void Cancel()
+    {
+        SelectedTileID = -1;
+        Close();
+    }
+
+    private void OK()
+    {
+        Close();
     }
 
     public void SetAutotile(Autotile Autotile)

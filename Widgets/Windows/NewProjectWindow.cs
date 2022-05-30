@@ -73,11 +73,16 @@ public class NewProjectWindow : PopupWindow
             }
         };
 
-        CreateButton("OK", OK);
-        CreateButton("Cancel", Cancel);
+        CreateButton("OK", _ => OK());
+        CreateButton("Cancel", _ => Cancel());
+
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
+        });
     }
 
-    void OK(BaseEventArgs e)
+    void OK()
     {
         if (string.IsNullOrEmpty(namebox.Text))
         {
@@ -97,7 +102,7 @@ public class NewProjectWindow : PopupWindow
         Close();
     }
 
-    void Cancel(BaseEventArgs e)
+    void Cancel()
     {
         Close();
     }

@@ -78,8 +78,13 @@ public class VariablePicker : PopupWindow
         GroupListBox.SetSelectedIndex(groupidx);
         VariableListBox.SetSelectedIndex(varidx);
 
-        CreateButton("Cancel", Cancel);
-        CreateButton("OK", OK);
+        CreateButton("Cancel", _ => Cancel());
+        CreateButton("OK", _ => OK());
+
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
+        });
     }
 
     private void RedrawGroupList()
@@ -124,14 +129,14 @@ public class VariablePicker : PopupWindow
         RedrawVariableList();
     }
 
-    private void OK(BaseEventArgs e)
+    private void OK()
     {
         VariableID = GroupListBox.SelectedIndex * VariablesPerGroup + VariableListBox.SelectedIndex + 1;
         Apply = true;
         Close();
     }
 
-    private void Cancel(BaseEventArgs e)
+    private void Cancel()
     {
         Close();
     }

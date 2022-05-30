@@ -145,7 +145,7 @@ public class FogFilePicker : AbstractFilePicker
         image.Sprite.Bitmap = HueBox.Value == 0 ? CurrentBitmap : CurrentBitmap.ApplyHue(HueBox.Value);
     }
 
-    public override void OK(BaseEventArgs e)
+    public override void OK()
     {
         ChosenFogName = List.SelectedItem.Object == null ? "" : List.SelectedItem.Name;
         ChosenFogHue = HueBox.Value;
@@ -154,6 +154,6 @@ public class FogFilePicker : AbstractFilePicker
         ChosenFogZoom = ZoomBox.Value;
         ChosenFogSX = SXBox.Value;
         ChosenFogSY = SYBox.Value;
-        base.OK(e);
+        base.OK();
     }
 }

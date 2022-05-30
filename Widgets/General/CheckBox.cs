@@ -165,14 +165,4 @@ public class CheckBox : Widget
         Selecting = false;
         this.Redraw();
     }
-
-    public override object GetValue(string Identifier)
-    {
-        return this.Checked;
-    }
-
-    public override void SetValue(string Identifier, object Value)
-    {
-        SetChecked((string)Value == "true");
-    }
 }

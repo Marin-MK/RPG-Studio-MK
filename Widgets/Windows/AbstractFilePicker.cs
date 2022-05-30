@@ -59,8 +59,13 @@ public abstract class AbstractFilePicker : PopupWindow
 
         image = new PictureBox(scroll);
 
-        CreateButton("Cancel", Cancel);
-        CreateButton("OK", OK);
+        CreateButton("Cancel", _ => Cancel());
+        CreateButton("OK", _ => OK());
+
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
+        });
 
         if (!string.IsNullOrEmpty(InitialFilename))
         {
@@ -90,14 +95,14 @@ public abstract class AbstractFilePicker : PopupWindow
         scroll.HScrollBar.SetValue(0);
     }
 
-    public virtual void OK(BaseEventArgs e)
+    public virtual void OK()
     {
         this.PressedOK = true;
         this.ChosenFilename = List.SelectedItem.Object == null ? "" : List.SelectedItem.Name;
         Close();
     }
 
-    public virtual void Cancel(BaseEventArgs e)
+    public virtual void Cancel()
     {
         this.PressedOK = false;
         this.ChosenFilename = null;

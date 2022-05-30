@@ -214,14 +214,4 @@ public class NumericBox : Widget
         if (Value < MinValue) SetValue(MinValue);
         else if (Value > MaxValue) SetValue(MaxValue);
     }
-
-    public override object GetValue(string Identifier)
-    {
-        return this.Value;
-    }
-
-    public override void SetValue(string Identifier, object Value)
-    {
-        if (!string.IsNullOrEmpty(Value.ToString())) this.SetValue(Convert.ToInt32(Value));
-    }
 }

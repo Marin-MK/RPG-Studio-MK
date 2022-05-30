@@ -75,20 +75,6 @@ public class Label : Widget
         Sprites["text"].Bitmap.DrawText(this.Text, this.Enabled ? this.TextColor : new Color(160, 160, 160), this.DrawOptions);
         Sprites["text"].Bitmap.Lock();
     }
-
-    public override object GetValue(string Identifier)
-    {
-        if (Identifier == "enabled") return this.Enabled;
-        else if (string.IsNullOrEmpty(Identifier)) return this.Text;
-        return base.GetValue(Identifier);
-    }
-
-    public override void SetValue(string Identifier, object Value)
-    {
-        if (Identifier == "enabled") this.SetEnabled((string)Value == "true");
-        else if (string.IsNullOrEmpty(Identifier)) this.SetText((string)Value);
-        else base.SetValue(Identifier, Value);
-    }
 }
 
 public class MultilineLabel : Label

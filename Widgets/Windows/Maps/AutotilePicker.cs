@@ -143,22 +143,6 @@ public class AutotilePicker : PopupWindow
         Available.SetItems(AvailableList);
         InUse.SetItems(InUseList);
 
-        CreateButton("Cancel", delegate (BaseEventArgs e)
-        {
-            ResultIDs = OldIDs;
-            Close();
-        });
-
-        CreateButton("OK", delegate (BaseEventArgs e)
-        {
-            ResultIDs = new List<int>();
-            for (int i = 0; i < InUse.Items.Count; i++)
-            {
-                ResultIDs.Add(Data.Autotiles.IndexOf((InUse.Items[i].Object as Autotile)));
-            }
-            Close();
-        });
-
         if (Available.Items.Count > 0)
         {
             Available.SetSelectedIndex(0);
@@ -171,6 +155,30 @@ public class AutotilePicker : PopupWindow
         }
 
         SetTimer("frame", (long)Math.Round(1000 / 60d));
+
+        CreateButton("Cancel", _ => Cancel());
+        CreateButton("OK", _ => OK());
+
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
+        });
+    }
+
+    private void Cancel()
+    {
+        ResultIDs = OldIDs;
+        Close();
+    }
+
+    private void OK()
+    {
+        ResultIDs = new List<int>();
+        for (int i = 0; i < InUse.Items.Count; i++)
+        {
+            ResultIDs.Add(Data.Autotiles.IndexOf((InUse.Items[i].Object as Autotile)));
+        }
+        Close();
     }
 
     public void SelectionChanged(BaseEventArgs e)
