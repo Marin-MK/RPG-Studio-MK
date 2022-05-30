@@ -157,11 +157,17 @@ public static class Utilities
     public static Bitmap IconSheet;
 
     /// <summary>
+    /// The bitmap of the folder icon of the file explorer.
+    /// </summary>
+    public static Bitmap FolderIcon;
+
+    /// <summary>
     /// Initializes the IconSheet bitmap.
     /// </summary>
     public static void Initialize()
     {
         IconSheet = new Bitmap("assets/img/icons.png");
+        FolderIcon = new Bitmap("assets/img/file_explorer_large_folder.png");
         int seconds = Editor.GeneralSettings.SecondsUsed % 60;
         int minutes = Editor.GeneralSettings.SecondsUsed / 60 % 60;
         int hours = Editor.GeneralSettings.SecondsUsed / 60 / 60 % 24;

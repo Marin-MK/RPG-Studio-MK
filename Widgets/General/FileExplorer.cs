@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace RPGStudioMK.Widgets;
 
@@ -29,6 +30,9 @@ public class FileExplorer : Widget
     int MaxPathX = 0;
     int ColumnCount;
     double ColumnMargin = 0;
+
+    Thread LoaderThread;
+    List<FileEntryWidget> LoadPool = new List<FileEntryWidget>();
 
     public FileExplorer(IContainer Parent) : base(Parent)
     {
@@ -210,7 +214,8 @@ public class FileExplorer : Widget
             ItemColumn = 0;
             ItemRow = DirGrid.Rows.Count - 1;
         }
-        FileEntryWidget few = new FileEntryWidget(DirGrid);
+        if (LoaderThread == null) SpawnLoaderThread();
+        FileEntryWidget few = new FileEntryWidget(this, DirGrid);
         few.SetGrid(ItemRow, ItemColumn);
         if (!IsFolder) few.SetFile(Filename);
         else few.SetFolder(Filename);
@@ -292,6 +297,39 @@ public class FileExplorer : Widget
         GridContainer.VScrollBar.SetSize(10, Size.Height - GridContainer.VScrollBar.Position.Y - 3);
         EmptyLabel?.SetPosition(GridContainer.Size.Width / 2 - EmptyLabel.Size.Width / 2 - 20, GridContainer.Size.Height / 2 - EmptyLabel.Size.Height / 2 - 50);
     }
+
+    public void AddToLoadPool(FileEntryWidget few)
+    {
+        LoadPool.Add(few);
+    }
+
+    private void SpawnLoaderThread()
+    {
+        if (LoaderThread != null) return;
+        LoaderThread = new Thread(LoadImages);
+        LoaderThread.Start();
+    }
+
+    private void LoadImages()
+    {
+        Thread.Sleep(100);
+        while (LoadPool.Count > 0)
+        {
+            FileEntryWidget few = LoadPool[0];
+            if (this.Disposed || Window.IsClosed) break;
+            if (few.Disposed)
+            {
+                LoadPool.RemoveAt(0);
+                continue;
+            }
+            (byte[] Bytes, int Width, int Height) result = decodl.PNGDecoder.Decode(few.Filename);
+            few.BitmapPendingCreation = result.Bytes;
+            few.BitmapWidth = result.Width;
+            few.BitmapHeight = result.Height;
+            LoadPool.RemoveAt(0);
+        }
+        LoaderThread = null;
+    }
 }
 
 public class FileEntryWidget : Widget
@@ -307,8 +345,15 @@ public class FileEntryWidget : Widget
 
     public BaseEvent OnSelectionChanged;
 
-    public FileEntryWidget(IContainer Parent) : base(Parent)
+    FileExplorer FileExplorer;
+    
+    public byte[] BitmapPendingCreation;
+    public int BitmapWidth;
+    public int BitmapHeight;
+
+    public FileEntryWidget(FileExplorer FileExplorer, IContainer Parent) : base(Parent)
     {
+        this.FileExplorer = FileExplorer;
         Sprites["box"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(17, 34, 52)));
         Sprites["box"].X = 1;
         Sprites["box"].Y = 1;
@@ -356,12 +401,17 @@ public class FileEntryWidget : Widget
     public void SetFile(string Filename)
     {
         this.Filename = Filename;
+        if (this.Filename.EndsWith(".png") && File.Exists(this.Filename))
+        {
+            FileExplorer.AddToLoadPool(this);
+        }
     }
 
     public void SetFolder(string Filename)
     {
         this.Filename = Filename;
         this.IsFolder = true;
+        RedrawGraphic();
     }
 
     public void RedrawGraphic(bool ReopenFile = false)
@@ -369,16 +419,17 @@ public class FileEntryWidget : Widget
         if (Sprites["gfx"].Bitmap == null) ReopenFile = true;
         if (!this.IsFolder && ReopenFile)
         {
-            Sprites["gfx"].Bitmap?.Dispose();
-            if (this.Filename.EndsWith(".png") && File.Exists(this.Filename))
+            if (BitmapPendingCreation != null)
             {
-                Sprites["gfx"].Bitmap = new Bitmap(this.Filename);
+                Sprites["gfx"].Bitmap?.Dispose();
+                Sprites["gfx"].Bitmap = new Bitmap(BitmapPendingCreation, BitmapWidth, BitmapHeight);
+                Sprites["gfx"].DestroyBitmap = true;
             }
         }
         else if (this.IsFolder && ReopenFile)
         {
-            Sprites["gfx"].Bitmap?.Dispose();
-            Sprites["gfx"].Bitmap = new Bitmap("assets/img/file_explorer_large_folder");
+            Sprites["gfx"].Bitmap = Utilities.FolderIcon;
+            Sprites["gfx"].DestroyBitmap = false;
         }
         if (Sprites["gfx"].Bitmap != null)
         {
@@ -387,8 +438,18 @@ public class FileEntryWidget : Widget
             double perc = percx > percy ? percy : percx;
             Sprites["gfx"].ZoomX = perc;
             Sprites["gfx"].ZoomY = perc;
-            Sprites["gfx"].X = Size.Width / 2 - (int)Math.Round(Sprites["gfx"].Bitmap.Width * Sprites["gfx"].ZoomX / 2d);
-            Sprites["gfx"].Y = 32 - (int)Math.Round(Sprites["gfx"].Bitmap.Height * Sprites["gfx"].ZoomY / 2d);
+            Sprites["gfx"].X = Size.Width / 2 - (int) Math.Round(Sprites["gfx"].Bitmap.Width * Sprites["gfx"].ZoomX / 2d);
+            Sprites["gfx"].Y = 32 - (int) Math.Round(Sprites["gfx"].Bitmap.Height * Sprites["gfx"].ZoomY / 2d);
+        }
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        if (BitmapPendingCreation != null)
+        {
+            RedrawGraphic();
+            BitmapPendingCreation = null;
         }
     }
 
@@ -425,6 +486,7 @@ public class FileEntryWidget : Widget
     {
         base.SizeChanged(e);
         if (Size.Width == 50) return;
+
         RedrawGraphic();
         RedrawName();
         Sprites["text"].Y = Size.Height - 32;
