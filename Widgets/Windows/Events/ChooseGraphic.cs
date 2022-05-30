@@ -21,8 +21,11 @@ public class ChooseGraphic : PopupWindow
     CursorWidget Cursor;
     Label TypeLabel;
     DropdownBox DirectionBox;
+    NumericBox FrameBox;
     DropdownBox NumDirectionsBox;
     NumericBox NumFramesBox;
+    NumericBox OpacityBox;
+    NumericSlider HueBox;
 
     public ChooseGraphic(Map Map, Event Event, EventPage Page, EventGraphic gr)
     {
@@ -32,13 +35,13 @@ public class ChooseGraphic : PopupWindow
         this.Graphic = (EventGraphic) gr.Clone();
         
         SetTitle("Choose Graphic");
-        MinimumSize = MaximumSize = new Size(735, 454);
+        MinimumSize = MaximumSize = new Size(735, 504);
         SetSize(MaximumSize);
         Center();
 
         GroupBox GraphicGroupBox = new GroupBox(this);
         GraphicGroupBox.SetPosition(529, 35);
-        GraphicGroupBox.SetSize(198, 410);
+        GraphicGroupBox.SetSize(198, 460);
         GraphicGroupBox.SetInnerColor(new Color(28, 50, 73));
 
         Label GraphicLabel = new Label(this);
@@ -127,13 +130,31 @@ public class ChooseGraphic : PopupWindow
             RedrawGraphic();
         };
 
+        Label FrameLabel = new Label(this);
+        FrameLabel.SetFont(f);
+        FrameLabel.SetText("Frame:");
+        FrameLabel.SetPosition(547, 330);
+        FrameLabel.SetEnabled(Graphic.TileID < 384 && !string.IsNullOrEmpty(Graphic.CharacterName));
+        FrameBox = new NumericBox(this);
+        FrameBox.SetPosition(669, 325);
+        FrameBox.SetSize(50, 27);
+        FrameBox.MinValue = 1;
+        FrameBox.MaxValue = Graphic.NumFrames;
+        FrameBox.SetValue(Graphic.Pattern + 1);
+        FrameBox.SetEnabled(Graphic.TileID < 384 && !string.IsNullOrEmpty(Graphic.CharacterName));
+        FrameBox.OnValueChanged += delegate (BaseEventArgs e)
+        {
+            Graphic.Pattern = FrameBox.Value - 1;
+            RedrawGraphic();
+        };
+
         Label NumDirectionsLabel = new Label(this);
         NumDirectionsLabel.SetFont(f);
         NumDirectionsLabel.SetText("Number of Directions:");
-        NumDirectionsLabel.SetPosition(547, 340);
+        NumDirectionsLabel.SetPosition(547, 360);
         NumDirectionsLabel.SetEnabled(false);
         NumDirectionsBox = new DropdownBox(this);
-        NumDirectionsBox.SetPosition(679, 336);
+        NumDirectionsBox.SetPosition(679, 356);
         NumDirectionsBox.SetSize(40, 25);
         NumDirectionsBox.SetItems(new List<ListItem>()
         {
@@ -152,10 +173,10 @@ public class ChooseGraphic : PopupWindow
         Label NumFramesLabel = new Label(this);
         NumFramesLabel.SetFont(f);
         NumFramesLabel.SetText("Number of Frames:");
-        NumFramesLabel.SetPosition(547, 380);
+        NumFramesLabel.SetPosition(547, 390);
         NumFramesLabel.SetEnabled(false);
         NumFramesBox = new NumericBox(this);
-        NumFramesBox.SetPosition(669, 375);
+        NumFramesBox.SetPosition(669, 385);
         NumFramesBox.SetSize(50, 27);
         NumFramesBox.MinValue = 1;
         NumFramesBox.MaxValue = 999;
@@ -164,7 +185,25 @@ public class ChooseGraphic : PopupWindow
         NumFramesBox.OnValueChanged += delegate (BaseEventArgs e)
         {
             Graphic.NumFrames = NumFramesBox.Value;
+            FrameBox.MaxValue = Graphic.NumFrames;
+            if (FrameBox.Value > FrameBox.MaxValue) FrameBox.SetValue(FrameBox.MaxValue);
             RedrawGraphic();
+        };
+
+        Label OpacityLabel = new Label(this);
+        OpacityLabel.SetFont(f);
+        OpacityLabel.SetText("Opacity:");
+        OpacityLabel.SetPosition(547, 420);
+        OpacityBox = new NumericBox(this);
+        OpacityBox.SetPosition(669, 416);
+        OpacityBox.SetSize(50, 27);
+        OpacityBox.MinValue = 0;
+        OpacityBox.MaxValue = 255;
+        OpacityBox.SetValue(Graphic.Opacity);
+        OpacityBox.OnValueChanged += delegate (BaseEventArgs e)
+        {
+            Graphic.Opacity = OpacityBox.Value;
+            GraphicBox.Sprite.Opacity = (byte) Graphic.Opacity;
         };
 
         SubmodeView GraphicTypePicker = new SubmodeView(this);
@@ -189,7 +228,7 @@ public class ChooseGraphic : PopupWindow
 
         FileExplorer = new FileExplorer(this);
         FileExplorer.SetPosition(8, 35);
-        FileExplorer.SetSize(522, 410);
+        FileExplorer.SetSize(522, 430);
         FileExplorer.SetBaseDirectory(Data.ProjectPath);
         FileExplorer.SetFileExtensions("png");
         FileExplorer.SetDirectory("Graphics/Characters");
@@ -208,6 +247,8 @@ public class ChooseGraphic : PopupWindow
                 DirectionBox.SetSelectedIndex(0);
                 NumDirectionsBox.SetSelectedIndex(1);
                 NumFramesBox.SetValue(4);
+                FrameLabel.SetEnabled(true);
+                FrameBox.SetEnabled(true);
                 RedrawGraphic();
                 TileGraphicPicker.HideCursor();
             }
@@ -215,7 +256,7 @@ public class ChooseGraphic : PopupWindow
 
         TileGraphicPicker = new TileGraphicPicker(new Size(Event.Width, Event.Height), Map, Graphic, this);
         TileGraphicPicker.SetPosition(8, 35);
-        TileGraphicPicker.SetSize(522, 410);
+        TileGraphicPicker.SetSize(522, 430);
         TileGraphicPicker.SetVisible(false);
         TileGraphicPicker.OnTileSelected += _ =>
         {
@@ -229,6 +270,8 @@ public class ChooseGraphic : PopupWindow
             DirectionBox.SetEnabled(false);
             NumDirectionsBox.SetSelectedIndex(0);
             NumFramesBox.SetValue(1);
+            FrameLabel.SetEnabled(false);
+            FrameBox.SetEnabled(false);
             RedrawGraphic();
             FileExplorer.SetSelectedFile(null);
         };
@@ -241,10 +284,33 @@ public class ChooseGraphic : PopupWindow
             TypeLabel.SetText("Type: None");
             DirectionLabel.SetEnabled(false);
             DirectionBox.SetEnabled(false);
+            FrameLabel.SetEnabled(false);
+            FrameBox.SetEnabled(false);
             RedrawGraphic();
             TileGraphicPicker.HideCursor();
             FileExplorer.SetSelectedFile(null);
         };
+
+        Label HueLabel = new Label(this);
+        HueLabel.SetBottomDocked(true);
+        HueLabel.SetMargins(20, 0, 0, -17);
+        HueLabel.SetHeight(24);
+        HueLabel.SetFont(f);
+        HueLabel.SetText("Hue: ");
+        HueBox = new NumericSlider(this);
+        HueBox.SetMinimumValue(0);
+        HueBox.SetMaximumValue(359);
+        HueBox.SetSnapValues(0, 59, 119, 179, 239, 299, 359);
+        HueBox.SetPixelSnapDifference(16);
+        HueBox.SetHDocked(true);
+        HueBox.SetBottomDocked(true);
+        HueBox.SetMargins(50, 0, 214, 16);
+        HueBox.OnValueChanged += _ =>
+        {
+            Graphic.CharacterHue = HueBox.Value;
+            RedrawGraphic();
+        };
+        HueBox.SetValue(Graphic.CharacterHue);
 
         CreateButton("Cancel", Cancel);
         Buttons[0].SetPosition(Size.Width - 99, Buttons[0].Position.Y);
@@ -271,44 +337,58 @@ public class ChooseGraphic : PopupWindow
     public void RedrawGraphic()
     {
         if (FileExplorer.SelectedIsFolder) return;
-        if (GraphicBox.Sprite.DestroyBitmap) GraphicBox.Sprite.Bitmap?.Dispose();
-        else GraphicBox.Sprite.Bitmap = null;
+        GraphicBox.Sprite.Bitmap?.Dispose();
         GraphicBox.Sprite.Y = 0;
         if (Graphic.TileID >= 384)
         {
             Tileset Tileset = Data.Tilesets[Map.TilesetIDs[0]];
             if (Tileset.TilesetBitmap != null)
             {
-                GraphicBox.Sprite.Bitmap = Tileset.TilesetBitmap;
-                GraphicBox.Sprite.DestroyBitmap = false;
+                Bitmap SourceBitmap = Tileset.TilesetBitmap;
                 int tx = (Graphic.TileID - 384) % 8;
                 int ty = (Graphic.TileID - 384) / 8;
-                GraphicBox.Sprite.SrcRect.X = tx * 32;
-                GraphicBox.Sprite.SrcRect.Y = ty * 32 - (Event.Height - 1) * 32;
-                GraphicBox.Sprite.SrcRect.Width = Event.Width * 32;
-                GraphicBox.Sprite.SrcRect.Height = Event.Height * 32;
-                if (GraphicBox.Sprite.SrcRect.Y < 0)
+                int srcx = tx * 32;
+                int srcy = ty * 32 - (Event.Height - 1) * 32;
+                int srcw = Event.Width * 32;
+                int srch = Event.Height * 32;
+                if (srcy < 0)
                 {
-                    GraphicBox.Sprite.SrcRect.Height += GraphicBox.Sprite.SrcRect.Y;
-                    GraphicBox.Sprite.Y = -GraphicBox.Sprite.SrcRect.Y;
-                    GraphicBox.Sprite.SrcRect.Y = 0;
+                    srch += srcy;
+                    GraphicBox.Sprite.Y = -srcy;
+                    srcy = 0;
                 }
-                if (GraphicBox.Sprite.SrcRect.X + GraphicBox.Sprite.SrcRect.Width >= GraphicBox.Sprite.Bitmap.Width)
+                if (srcx + srcw >= SourceBitmap.Width)
                 {
-                    GraphicBox.Sprite.SrcRect.Width = GraphicBox.Sprite.Bitmap.Width - GraphicBox.Sprite.SrcRect.X;
+                    srcw = SourceBitmap.Width - srcx;
+                }
+                Bitmap SmallBmp = new Bitmap(srcw, srch);
+                SmallBmp.Unlock();
+                SmallBmp.Build(0, 0, SourceBitmap, new Rect(srcx, srcy, srcw, srch));
+                SmallBmp.Lock();
+                GraphicBox.Sprite.Bitmap = SmallBmp;
+                if (Graphic.CharacterHue != 0)
+                {
+                    GraphicBox.Sprite.Bitmap = SmallBmp.ApplyHue(Graphic.CharacterHue);
+                    SmallBmp.Dispose();
                 }
             }
         }
         else if (!string.IsNullOrEmpty(Graphic.CharacterName))
         {
-            GraphicBox.Sprite.Bitmap = new Bitmap(Path.Combine(Data.ProjectPath, "Graphics/Characters", Graphic.CharacterName));
-            GraphicBox.Sprite.DestroyBitmap = true;
+            Bitmap SourceBitmap = new Bitmap(Path.Combine(Data.ProjectPath, "Graphics/Characters", Graphic.CharacterName));
+            GraphicBox.Sprite.Bitmap = SourceBitmap;
+            if (Graphic.CharacterHue != 0)
+            {
+                GraphicBox.Sprite.Bitmap = GraphicBox.Sprite.Bitmap.ApplyHue(Graphic.CharacterHue);
+                SourceBitmap.Dispose();
+            }
         }
         else
         {
             Cursor.SetVisible(false);
             return;
         }
+        GraphicBox.Sprite.Opacity = (byte) Graphic.Opacity;
         int x = 0;
         int y = 0;
         int sw = GraphicBox.Sprite.SrcRect.Width;
@@ -322,26 +402,44 @@ public class ChooseGraphic : PopupWindow
         int h = sh / Graphic.NumDirections;
         if (Graphic.NumDirections == 4) y = h * (Graphic.Direction / 2 - 1);
         if (Graphic.NumDirections == 8) y = h * (Graphic.Direction - 1);
+        x = w * Graphic.Pattern;
         Cursor.SetPosition(x - 7, y - 7);
         Cursor.SetSize(w + 14, h + 14);
         Cursor.SetVisible(true);
     }
 
+    int OldFrameBoxValue;
+    int OldDirectionBoxValue;
+
     private void LeftDownInsideGraphicBox(MouseEventArgs e)
     {
         if (e.Handled) return;
         if (Graphic.TileID < 384 && string.IsNullOrEmpty(Graphic.CharacterName)) return;
+
         int rx = e.X - GraphicContainer.Viewport.X + GraphicBox.LeftCutOff;
         int ry = e.Y - GraphicContainer.Viewport.Y + GraphicBox.TopCutOff;
         int Frame = Math.Clamp((int) Math.Floor((double) rx / GraphicBox.Sprite.Bitmap.Width * Graphic.NumFrames), 0, Graphic.NumFrames - 1);
+        FrameBox.SetValue(Frame + 1);
         int mindir = Graphic.NumDirections == 8 ? 1 : 2;
         int maxdir = Graphic.NumDirections * 2;
         int Direction = Math.Clamp(((int) Math.Floor((double) ry / GraphicBox.Sprite.Bitmap.Height * Graphic.NumDirections) + 1) * 2, mindir, maxdir);
         DirectionBox.SetSelectedIndex(Direction / 2 - 1);
+        OldFrameBoxValue = FrameBox.Value;
+        OldDirectionBoxValue = DirectionBox.SelectedIndex;
     }
 
     private void DoubleLeftDownInsideGraphicBox(MouseEventArgs e)
     {
+        int rx = e.X - GraphicContainer.Viewport.X + GraphicBox.LeftCutOff;
+        int ry = e.Y - GraphicContainer.Viewport.Y + GraphicBox.TopCutOff;
+        int FrameBoxValue = Math.Clamp((int) Math.Floor((double) rx / GraphicBox.Sprite.Bitmap.Width * Graphic.NumFrames), 0, Graphic.NumFrames - 1) + 1;
+
+        int mindir = Graphic.NumDirections == 8 ? 1 : 2;
+        int maxdir = Graphic.NumDirections * 2;
+        int DirectionBoxValue = Math.Clamp(((int) Math.Floor((double) ry / GraphicBox.Sprite.Bitmap.Height * Graphic.NumDirections) + 1) * 2, mindir, maxdir) / 2 - 1;
+
+        if (FrameBoxValue != OldFrameBoxValue || DirectionBoxValue != OldDirectionBoxValue) return;
+        
         OK(new BaseEventArgs());
         e.Handled = true;
     }

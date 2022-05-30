@@ -14,6 +14,8 @@ public class Button : Widget
     public BaseEvent OnClicked;
     int MaxWidth;
 
+    private bool Inside = false;
+
     public Button(IContainer Parent) : base(Parent)
     {
         this.Font = Fonts.UbuntuBold.Use(14);
@@ -170,7 +172,7 @@ public class Button : Widget
         Sprites["text"].Bitmap = new Bitmap(MaxWidth, Size.Height);
         Sprites["text"].Bitmap.Unlock();
         Sprites["text"].Bitmap.Font = this.Font;
-        Color c = this.Enabled ? Mouse.Inside ? new Color(48, 48, 48) : this.TextColor : new Color(160, 160, 160);
+        Color c = this.Enabled ? this.Inside ? new Color(48, 48, 48) : this.TextColor : new Color(160, 160, 160);
         for (int i = 0; i < Lines.Count; i++)
         {
             Sprites["text"].Bitmap.DrawText(Lines[i], MaxWidth / 2, i * 18, c, DrawOptions.CenterAlign);
@@ -185,7 +187,7 @@ public class Button : Widget
         if (Sprites["filler"].Bitmap != null) Sprites["filler"].Bitmap.Dispose();
         Sprites["filler"].Bitmap = new Bitmap(Size.Width - 12, Size.Height - 12);
         Sprites["filler"].Bitmap.Unlock();
-        Color filler = this.Enabled ? Mouse.Inside ? new Color(55, 187, 255) : new Color(64, 104, 146) : new Color(72, 72, 72);
+        Color filler = this.Enabled ? this.Inside ? new Color(55, 187, 255) : new Color(64, 104, 146) : new Color(72, 72, 72);
         Sprites["filler"].Bitmap.FillRect(0, 0, Size.Width - 12, Size.Height - 12, filler);
         Sprites["filler"].Bitmap.SetPixel(0, 0, Color.ALPHA);
         Sprites["filler"].Bitmap.SetPixel(Size.Width - 13, 0, Color.ALPHA);
@@ -220,16 +222,33 @@ public class Button : Widget
         }
     }
 
-    public override void HoverChanged(MouseEventArgs e)
+    public override void MouseMoving(MouseEventArgs e)
     {
-        base.HoverChanged(e);
-        RedrawFiller();
+        base.MouseMoving(e);
+        bool OldInside = this.Inside;
+        if (!Mouse.Inside) this.Inside = false;
+        else
+        {
+            int rx = e.X - Viewport.X;
+            int ry = e.Y - Viewport.Y;
+            this.Inside = rx >= 6 && rx < Size.Width - 6 && ry >= 6 && ry < Size.Height - 6;
+        }
+        if (this.Inside != OldInside)
+        {
+            RedrawFiller();
+            RedrawText();
+        }
     }
 
-    public override void LeftMouseDownInside(MouseEventArgs e)
+    public override void LeftMouseDown(MouseEventArgs e)
     {
-        base.LeftMouseDownInside(e);
-        if (!this.Enabled) return;
+        base.LeftMouseDown(e);
+        if (!this.Enabled || !Inside) return;
         this.OnClicked?.Invoke(new BaseEventArgs());
+        if (!Mouse.Accessible && !Disposed)
+        {
+            RedrawFiller();
+            RedrawText();
+        }
     }
 }

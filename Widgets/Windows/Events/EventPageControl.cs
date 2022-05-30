@@ -197,13 +197,21 @@ public class EventPageControl : Widget
             new ListItem("Fixed"), new ListItem("Random"),
             new ListItem("Approach"), new ListItem("Custom")
         });
-        AutoMoveTypeBox.OnSelectionChanged += _ => EditRouteButton.SetEnabled(AutoMoveTypeBox.SelectedIndex == 3);
+        AutoMoveTypeBox.OnSelectionChanged += _ =>
+        {
+            EditRouteButton.SetEnabled(AutoMoveTypeBox.SelectedIndex == 3);
+            Page.MoveRoute.Type = AutoMoveTypeBox.SelectedIndex;
+        };
         EditRouteButton = new Button(AutoMoveBox);
         EditRouteButton.SetPosition(43, 31);
         EditRouteButton.SetSize(92, 29);
         EditRouteButton.SetFont(SmallFont);
         EditRouteButton.SetText("Edit Route");
         EditRouteButton.SetEnabled(false);
+        EditRouteButton.OnClicked += _ =>
+        {
+            EditMoveRouteWindow win = new EditMoveRouteWindow(Map, Event, Page.MoveRoute);
+        };
         Label AutoMoveSpeedLabel = new Label(AutoMoveBox);
         AutoMoveSpeedLabel.SetPosition(4, 65);
         AutoMoveSpeedLabel.SetFont(TinyFont);
@@ -217,6 +225,10 @@ public class EventPageControl : Widget
             new ListItem("1: Slowest"), new ListItem("2: Slower"), new ListItem("3: Slow"),
             new ListItem("4: Fast"), new ListItem("5: Faster"), new ListItem("6: Fastest")
         });
+        AutoMoveSpeedBox.OnSelectionChanged += _ =>
+        {
+            Page.MoveRoute.Speed = AutoMoveSpeedBox.SelectedIndex + 1;
+        };
         Label AutoMoveFrequencyLabel = new Label(AutoMoveBox);
         AutoMoveFrequencyLabel.SetPosition(4, 95);
         AutoMoveFrequencyLabel.SetFont(TinyFont);
@@ -230,6 +242,10 @@ public class EventPageControl : Widget
             new ListItem("1: Lowest"), new ListItem("2: Lower"), new ListItem("3: Low"),
             new ListItem("4: High"), new ListItem("5: Higher"), new ListItem("6: Highest")
         });
+        AutoMoveFrequencyBox.OnSelectionChanged += _ =>
+        {
+            Page.MoveRoute.Frequency = AutoMoveFrequencyBox.SelectedIndex + 1;
+        };
 
         Label OptionsLabel = new Label(this);
         OptionsLabel.SetFont(HeaderFont);

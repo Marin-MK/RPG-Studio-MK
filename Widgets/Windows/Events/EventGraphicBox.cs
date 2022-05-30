@@ -26,8 +26,7 @@ public class EventGraphicBox : Widget
 
     public void RedrawGraphic()
     {
-        if (Sprites["gfx"].DestroyBitmap) Sprites["gfx"].Bitmap?.Dispose();
-        else Sprites["gfx"].Bitmap = null;
+        Sprites["gfx"].Bitmap?.Dispose();
         Sprites["bg"].Bitmap?.Dispose();
         if (Graphic is null) return;
         if (!string.IsNullOrEmpty(Graphic.CharacterName))
@@ -35,11 +34,22 @@ public class EventGraphicBox : Widget
             string filename = Bitmap.FindRealFilename(Data.ProjectPath + "/Graphics/Characters/" + Graphic.CharacterName);
             if (!string.IsNullOrEmpty(filename))
             {
-                Sprites["gfx"].Bitmap = new Bitmap(filename);
-                Sprites["gfx"].SrcRect.Width = Sprites["gfx"].Bitmap.Width / Graphic.NumFrames;
-                Sprites["gfx"].SrcRect.Height = Sprites["gfx"].Bitmap.Height / Graphic.NumDirections;
-                Sprites["gfx"].SrcRect.Y = Sprites["gfx"].SrcRect.Height * (Graphic.Direction / 2 - 1);
-                Sprites["gfx"].DestroyBitmap = true;
+                Bitmap SourceBitmap = new Bitmap(filename);
+                int sw = SourceBitmap.Width / Graphic.NumFrames;
+                int sh = SourceBitmap.Height / Graphic.NumDirections;
+                int sx = sw * Graphic.Pattern;
+                int sy = sh * (Graphic.Direction / 2 - 1);
+                Bitmap SmallBitmap = new Bitmap(sw, sh);
+                SmallBitmap.Unlock();
+                SmallBitmap.Build(0, 0, SourceBitmap, new Rect(sx, sy, sw, sh));
+                SmallBitmap.Lock();
+                SourceBitmap.Dispose();
+                Sprites["gfx"].Bitmap = SmallBitmap;
+                if (Graphic.CharacterHue != 0)
+                {
+                    Sprites["gfx"].Bitmap = SmallBitmap.ApplyHue(Graphic.CharacterHue);
+                    SmallBitmap.Dispose();
+                }
             }
         }
         else if (Graphic.TileID >= 384)
@@ -47,25 +57,35 @@ public class EventGraphicBox : Widget
             Tileset tileset = Data.Tilesets[Map.TilesetIDs[0]];
             if (tileset.TilesetBitmap != null)
             {
-                Sprites["gfx"].Bitmap = tileset.TilesetBitmap;
-                Sprites["gfx"].DestroyBitmap = false;
+                Bitmap SourceBitmap = tileset.TilesetBitmap;
                 int tx = (Graphic.TileID - 384) % 8;
                 int ty = (Graphic.TileID - 384) / 8;
-                Sprites["gfx"].SrcRect.X = tx * 32;
-                Sprites["gfx"].SrcRect.Y = ty * 32 - (Event.Height - 1) * 32;
-                Sprites["gfx"].SrcRect.Width = Event.Width * 32;
-                Sprites["gfx"].SrcRect.Height = Event.Height * 32;
-                if (Sprites["gfx"].SrcRect.X + Sprites["gfx"].SrcRect.Width >= tileset.TilesetBitmap.Width)
-                    Sprites["gfx"].SrcRect.Width = tileset.TilesetBitmap.Width - Sprites["gfx"].SrcRect.X;
-                if (Sprites["gfx"].SrcRect.Y < 0)
+                int sx = tx * 32;
+                int sy = ty * 32 - (Event.Height - 1) * 32;
+                int sw = Event.Width * 32;
+                int sh = Event.Height * 32;
+                if (sx + sw >= SourceBitmap.Width)
+                    sw = SourceBitmap.Width - sx;
+                if (sy < 0)
                 {
-                    Sprites["gfx"].SrcRect.Height += Sprites["gfx"].SrcRect.Y;
-                    Sprites["gfx"].SrcRect.Y = 0;
+                    sh += sy;
+                    sy = 0;
+                }
+                Bitmap SmallBitmap = new Bitmap(sw, sh);
+                SmallBitmap.Unlock();
+                SmallBitmap.Build(0, 0, SourceBitmap, new Rect(sx, sy, sw, sh));
+                SmallBitmap.Lock();
+                Sprites["gfx"].Bitmap = SmallBitmap;
+                if (Graphic.CharacterHue != 0)
+                {
+                    Sprites["gfx"].Bitmap = SmallBitmap.ApplyHue(Graphic.CharacterHue);
+                    SmallBitmap.Dispose();
                 }
             }
         }
         Sprites["gfx"].X = Size.Width / 2 - Sprites["gfx"].SrcRect.Width / 2;
         Sprites["gfx"].Y = Size.Height / 2 - Sprites["gfx"].SrcRect.Height + Event.Height * 16;
+        Sprites["gfx"].Opacity = (byte) Graphic.Opacity;
         Sprites["bg"].Bitmap = new Bitmap(Size);
         Sprites["bg"].Bitmap.Unlock();
         int xoffset = 0;
