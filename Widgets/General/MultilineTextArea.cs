@@ -866,7 +866,7 @@ public class MultilineTextArea : Widget
                 Sprites[$"sel{line}"].Bitmap = bmp;
                 Sprites[$"sel{line}"].X = x;
                 Sprites[$"sel{line}"].Y = (Font.Size + 4) * line;
-                SelectionFillers.Add((Sprite)Sprites[$"sel{line}"]);
+                SelectionFillers.Add(Sprites[$"sel{line}"]);
             }
         }
     }

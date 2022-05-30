@@ -302,7 +302,7 @@ public class MapImageWidget : Widget
 
     public void SetLayerLocked(int LayerIndex, bool Locked)
     {
-        ISprite s = this.Sprites[LayerIndex.ToString()];
+        Sprite s = this.Sprites[LayerIndex.ToString()];
         if (Locked) s.Bitmap.Lock();
         else s.Bitmap.Unlock();
     }

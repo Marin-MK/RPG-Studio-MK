@@ -16,8 +16,7 @@ public class PopupWindow : Widget, IPopupWindow
     {
         Window.SetOverlayOpacity(96);
         Sprites["shadow"] = new Sprite(this.Viewport);
-        Sprites["window"] = new RectSprite(this.Viewport, new Size(this.Size.Width - WindowEdges * 2, this.Size.Height - WindowEdges * 2),
-            new Color(59, 227, 255), new Color(40, 62, 84));
+        Sprites["window"] = new Sprite(this.Viewport);
         Sprites["window"].X = WindowEdges;
         Sprites["window"].Y = WindowEdges;
         Sprites["title"] = new Sprite(this.Viewport);
@@ -53,7 +52,13 @@ public class PopupWindow : Widget, IPopupWindow
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-        (Sprites["window"] as RectSprite).SetSize(this.Size.Width - WindowEdges * 2, this.Size.Height - WindowEdges * 2);
+        Sprites["window"].Bitmap?.Dispose();
+        Sprites["window"].Bitmap = new Bitmap(Size.Width - WindowEdges * 2, Size.Height - WindowEdges * 2);
+        Sprites["window"].Bitmap.Unlock();
+        Sprites["window"].Bitmap.DrawRect(0, 0, Sprites["window"].Bitmap.Width, Sprites["window"].Bitmap.Height, new Color(59, 227, 255));
+        Sprites["window"].Bitmap.FillRect(1, 1, Sprites["window"].Bitmap.Width - 2, Sprites["window"].Bitmap.Height - 2, new Color(40, 62, 84));
+        Sprites["window"].Bitmap.Lock();
+        
         Sprites["shadow"].Bitmap?.Dispose();
         Sprites["shadow"].Bitmap = new Bitmap(Size);
         Sprites["shadow"].Bitmap.Unlock();

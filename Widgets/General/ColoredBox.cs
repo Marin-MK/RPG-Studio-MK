@@ -8,7 +8,7 @@ public class ColoredBox : Widget
 
     public ColoredBox(IContainer Parent) : base(Parent)
     {
-        Sprites["box"] = new RectSprite(this.Viewport);
+        Sprites["box"] = new Sprite(this.Viewport);
     }
 
     public void SetInnerColor(byte R, byte G, byte B, byte A = 255)
@@ -39,10 +39,11 @@ public class ColoredBox : Widget
 
     protected override void Draw()
     {
-        RectSprite box = Sprites["box"] as RectSprite;
-        box.SetInnerColor(InnerColor);
-        box.SetOuterColor(OuterColor);
-        box.SetSize(this.Size, Thickness);
         base.Draw();
+        Sprites["box"].Bitmap = new Bitmap(this.Size);
+        Sprites["box"].Bitmap.Unlock();
+        Sprites["box"].Bitmap.DrawRect(0, 0, Size.Width - Thickness, Size.Height - Thickness, OuterColor);
+        Sprites["box"].Bitmap.FillRect(Thickness, Thickness, Size.Width - Thickness * 2, Size.Height - Thickness * 2, InnerColor);
+        Sprites["box"].Bitmap.Lock();
     }
 }

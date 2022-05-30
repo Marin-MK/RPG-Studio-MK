@@ -18,30 +18,19 @@ public class AutotilePickerMap : PopupWindow
         SetSize(MaximumSize);
         Center();
 
-        RectSprite bg1 = new RectSprite(this.Viewport);
-        bg1.SetOuterColor(59, 91, 124);
-        bg1.SetSize(278, 210);
-        bg1.X = 19;
-        bg1.Y = 34;
-        Sprites["bg1"] = bg1;
-        RectSprite bg2 = new RectSprite(this.Viewport);
-        bg2.SetSize(276, 208);
-        bg2.X = 20;
-        bg2.Y = 35;
-        bg2.SetOuterColor(17, 27, 38);
-        bg2.SetInnerColor(24, 38, 53);
-        Sprites["bg2"] = bg2;
+        ColoredBox box1 = new ColoredBox(this);
+        box1.SetOuterColor(59, 91, 124);
+        box1.SetSize(278, 210);
+        box1.SetPosition(19, 34);
 
-        CreateButton("Cancel", delegate (BaseEventArgs e)
-        {
-            SelectedTileID = -1;
-            Close();
-        });
+        ColoredBox box2 = new ColoredBox(this);
+        box2.SetOuterColor(17, 27, 38);
+        box2.SetInnerColor(24, 38, 53);
+        box2.SetSize(276, 208);
+        box2.SetPosition(20, 35);
 
-        CreateButton("OK", delegate (BaseEventArgs e)
-        {
-            Close();
-        });
+        CreateButton("Cancel", _ => Cancel());
+        CreateButton("OK", _ => OK());
 
         Sprites["tiles"] = new Sprite(this.Viewport);
         Sprites["tiles"].X = 23;

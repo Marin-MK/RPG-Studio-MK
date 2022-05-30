@@ -27,19 +27,16 @@ public class AutotilePicker : PopupWindow
 
         OldIDs = new List<int>(Map.AutotileIDs);
 
-        RectSprite bg1 = new RectSprite(this.Viewport);
-        bg1.SetOuterColor(59, 91, 124);
-        bg1.SetSize(280, 409);
-        bg1.X = 200;
-        bg1.Y = 44;
-        Sprites["bg1"] = bg1;
-        RectSprite bg2 = new RectSprite(this.Viewport);
-        bg2.SetSize(278, 407);
-        bg2.X = 201;
-        bg2.Y = 45;
-        bg2.SetOuterColor(17, 27, 38);
-        bg2.SetInnerColor(24, 38, 53);
-        Sprites["bg2"] = bg2;
+        ColoredBox box1 = new ColoredBox(this);
+        box1.SetOuterColor(59, 91, 124);
+        box1.SetSize(280, 409);
+        box1.SetPosition(200, 44);
+
+        ColoredBox box2 = new ColoredBox(this);
+        box2.SetOuterColor(17, 27, 38);
+        box2.SetInnerColor(24, 38, 53);
+        box2.SetSize(278, 407);
+        box2.SetPosition(201, 45);
 
         Sprites["preview"] = new Sprite(this.Viewport);
 
