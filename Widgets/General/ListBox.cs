@@ -63,11 +63,6 @@ public class ListBox : Widget
         ListDrawer.SetFont(Font);
     }
 
-    public void SetButtonText(string Text)
-    {
-        ListDrawer.SetButton(true, Text);
-    }
-
     public void SetItems(List<ListItem> Items)
     {
         ListDrawer.SetItems(Items);
@@ -76,6 +71,40 @@ public class ListBox : Widget
     public void SetSelectedItemColor(Color SelectedItemColor)
     {
         ListDrawer.SetSelectedItemColor(SelectedItemColor);
+    }
+
+    public override void SetContextMenuList(List<IMenuItem> Items)
+    {
+        base.SetContextMenuList(Items);
+        ListDrawer.CountRightMouseClicks = true;
+    }
+
+    public void MoveDown()
+    {
+        if (ListDrawer.SelectedIndex < ListDrawer.Items.Count - 1)
+        {
+            ListDrawer.SetSelectedIndex(ListDrawer.SelectedIndex + 1);
+            int newy = (ListDrawer.SelectedIndex + 1) * ListDrawer.LineHeight - MainContainer.ScrolledY;
+            if (newy >= MainContainer.Size.Height)
+            {
+                MainContainer.ScrolledY += newy - MainContainer.Size.Height;
+                MainContainer.UpdateAutoScroll();
+            }
+        }
+    }
+
+    public void MoveUp()
+    {
+        if (ListDrawer.SelectedIndex > 0)
+        {
+            ListDrawer.SetSelectedIndex(ListDrawer.SelectedIndex - 1);
+            int newy = ListDrawer.SelectedIndex * ListDrawer.LineHeight - MainContainer.ScrolledY;
+            if (newy < 0)
+            {
+                MainContainer.ScrolledY += newy;
+                MainContainer.UpdateAutoScroll();
+            }
+        }
     }
 
     public void RedrawBox()
@@ -117,5 +146,18 @@ public class ListBox : Widget
     {
         base.Redraw();
         ListDrawer.Redraw();
+    }
+
+    public override void MouseDown(MouseEventArgs e)
+    {
+        base.MouseDown(e);
+        if (Mouse.Inside && (Mouse.LeftMouseTriggered || Mouse.RightMouseTriggered))
+        {
+            int ry = e.Y - Viewport.Y;
+            if (!ListDrawer.Mouse.Inside && ry >= MainContainer.Position.Y + ListDrawer.Size.Height)
+            {
+                ListDrawer.SetSelectedIndex(ListDrawer.Items.Count - 1);
+            }
+        }
     }
 }

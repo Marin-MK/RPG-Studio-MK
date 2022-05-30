@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
@@ -11,20 +12,25 @@ public class EditMoveRouteWindow : PopupWindow
 
     Map Map;
     Event Event;
+    EventPage Page;
     MoveRoute OldMoveRoute;
 
     DropdownBox TargetBox;
     ListBox MoveBox;
 
-    public EditMoveRouteWindow(Map Map, Event Event, MoveRoute mr)
+    Dictionary<MoveCode, Action<MoveCode, MoveCommand?, Action<MoveCommand>>> CommandEditFunctions =
+        new Dictionary<MoveCode, Action<MoveCode, MoveCommand?, Action<MoveCommand>>>();
+
+    public EditMoveRouteWindow(Map Map, Event Event, EventPage Page, MoveRoute mr, bool ThisEventOnly)
     {
         this.Map = Map;
         this.Event = Event;
+        this.Page = Page;
         this.OldMoveRoute = mr;
         this.MoveRoute = (MoveRoute) mr.Clone();
 
         SetTitle("Edit Move Route");
-        MinimumSize = MaximumSize = new Size(680, 500);
+        MinimumSize = MaximumSize = new Size(700, 500);
         SetSize(MaximumSize);
         Center();
         this.OnWidgetSelected += WidgetSelected;
@@ -33,11 +39,69 @@ public class EditMoveRouteWindow : PopupWindow
         TargetBox.SetPosition(15, 35);
         TargetBox.SetSize(180, 25);
         TargetBox.SetText("This event");
+        TargetBox.SetEnabled(!ThisEventOnly);
+
+        List<ListItem> Items = new List<ListItem>();
+        Items.Add(new ListItem("This event"));
+        Items.Add(new ListItem("Player"));
+        List<int> keys = Map.Events.Keys.ToList();
+        keys.Sort();
+        for (int i = 0; i < keys.Count; i++)
+        {
+            Items.Add(new ListItem($"{Utilities.Digits(keys[i], 3)}: {Map.Events[keys[i]].Name}"));
+        }
+        TargetBox.SetItems(Items);
 
         MoveBox = new ListBox(this);
         MoveBox.SetVDocked(true);
         MoveBox.SetMargins(15, 64, 0, 64);
         MoveBox.SetWidth(180);
+        MoveBox.SetContextMenuList(new List<IMenuItem>()
+        {
+            new MenuItem("Edit")
+            {
+                IsClickable = e => e.Value = IsCommandEditable((MoveCommand) MoveBox.SelectedItem.Object),
+                OnLeftClick = _ => EditCommand()
+            },
+            new MenuSeparator(),
+            new MenuItem("Cut")
+            {
+                IsClickable = e => e.Value = IsRealCommand(),
+                OnLeftClick = _ => CutCommand()
+            },
+            new MenuItem("Copy")
+            {
+                IsClickable = e => e.Value = IsRealCommand(),
+                OnLeftClick = _ => CopyCommand()
+            },
+            new MenuItem("Paste")
+            {
+                IsClickable = e => e.Value = Utilities.IsClipboardValidBinary(BinaryData.MOVE_COMMAND),
+                OnLeftClick = _ => PasteCommand()
+            },
+            new MenuSeparator(),
+            new MenuItem("Delete")
+            {
+                IsClickable = e => e.Value = IsRealCommand(),
+                OnLeftClick = _ => DeleteCommand()
+            }
+        });
+
+        CheckBox RepeatBox = new CheckBox(this);
+        RepeatBox.SetBottomDocked(true);
+        RepeatBox.SetMargins(20, 0, 0, 42);
+        RepeatBox.SetFont(Fonts.ProductSansMedium.Use(14));
+        RepeatBox.SetText("Repeat");
+        RepeatBox.SetChecked(MoveRoute.Repeat);
+        RepeatBox.OnCheckChanged += _ => MoveRoute.Repeat = RepeatBox.Checked;
+
+        CheckBox SkippableBox = new CheckBox(this);
+        SkippableBox.SetBottomDocked(true);
+        SkippableBox.SetMargins(20, 0, 0, 22);
+        SkippableBox.SetFont(Fonts.ProductSansMedium.Use(14));
+        SkippableBox.SetText("Skippable");
+        SkippableBox.SetChecked(MoveRoute.Skippable);
+        SkippableBox.OnCheckChanged += _ => MoveRoute.Skippable = SkippableBox.Checked;
 
         Grid ButtonGrid = new Grid(this);
         ButtonGrid.SetColumns(
@@ -55,7 +119,7 @@ public class EditMoveRouteWindow : PopupWindow
         Column3.SetGridColumn(2);
         VStackPanel[] Columns = new VStackPanel[] { Column1, Column2, Column3 };
 
-        Action<string, int, MoveCode> AddButton = delegate (string Text, int Column, MoveCode MoveCode)
+        void AddButton(string Text, int Column, MoveCode MoveCode)
         {
             Button btn = new Button(Columns[Column]);
             btn.SetFont(Fonts.ProductSansMedium.Use(14));
@@ -69,14 +133,18 @@ public class EditMoveRouteWindow : PopupWindow
             };
         };
 
-        Action<string, int, MoveCode, Action<MoveCode>> AddButtonElaborate = delegate (string Text, int Column, MoveCode MoveCode, Action<MoveCode> OnClickEvent)
+        void AddButtonElaborate(string Text, int Column, MoveCode MoveCode, Action<MoveCode, MoveCommand?, Action<MoveCommand>> OnClickEvent)
         {
             Button btn = new Button(Columns[Column]);
             btn.SetFont(Fonts.ProductSansMedium.Use(14));
             if (Columns[Column].Widgets.Count > 1)
                 btn.SetMargins(0, -3);
             btn.SetText(Text);
-            btn.OnClicked += _ => OnClickEvent(MoveCode);
+            btn.OnClicked += _ =>
+            {
+                OnClickEvent(MoveCode, null, cmd => InsertCommand(MoveBox.SelectedIndex, cmd));
+            };
+            CommandEditFunctions.Add(MoveCode, OnClickEvent);
         };
 
         AddButton("Move Down", 0, MoveCode.Down);
@@ -92,24 +160,22 @@ public class EditMoveRouteWindow : PopupWindow
         AddButton("Move away from Player", 0, MoveCode.AwayFromPlayer);
         AddButton("Move Forward", 0, MoveCode.Forward);
         AddButton("Move Backward", 0, MoveCode.Backward);
-        AddButtonElaborate("Jump...", 0, MoveCode.Jump, code =>
+        AddButtonElaborate("Jump...", 0, MoveCode.Jump, (code, cmd, Add) =>
         {
-            GenericDoubleNumberPicker win = new GenericDoubleNumberPicker("Jump", "X:", 0, null, null, "Y:", 0, null, null);
+            GenericDoubleNumberPicker win = new GenericDoubleNumberPicker("Jump", "X:", (int) (long) (cmd?.Parameters[0] ?? 0L), null, null, "Y:", (int) (long) (cmd?.Parameters[1] ?? 0L), null, null);
             win.OnClosed += _ =>
             {
                 if (!win.Apply) return;
-                MoveCommand cmd = new MoveCommand(code, new List<object>() { (long) win.Value1, (long) win.Value2 });
-                InsertCommand(MoveBox.SelectedIndex, cmd);
+                Add(new MoveCommand(code, new List<object>() { (long) win.Value1, (long) win.Value2 }));
             };
         });
-        AddButtonElaborate("Wait...", 0, MoveCode.Wait, code =>
+        AddButtonElaborate("Wait...", 0, MoveCode.Wait, (code, cmd, Add) =>
         {
-            GenericNumberPicker win = new GenericNumberPicker("Wait", "Wait time:", 4, 1, null);
+            GenericNumberPicker win = new GenericNumberPicker("Wait", "Wait time:", (int) (long) (cmd?.Parameters[0] ?? 4L), 1, null);
             win.OnClosed += _ =>
             {
                 if (!win.Apply) return;
-                MoveCommand cmd = new MoveCommand(code, new List<object>() { (long) win.Value });
-                InsertCommand(MoveBox.SelectedIndex, cmd);
+                Add(new MoveCommand(code, new List<object>() { (long) win.Value }));
             };
         });
 
@@ -124,44 +190,40 @@ public class EditMoveRouteWindow : PopupWindow
         AddButton("Turn at Random", 1, MoveCode.TurnRandom);
         AddButton("Turn toward Player", 1, MoveCode.TurnTowardPlayer);
         AddButton("Turn away from Player", 1, MoveCode.TurnAwayFromPlayer);
-        AddButtonElaborate("Switch ON...", 1, MoveCode.SwitchOn, code =>
+        AddButtonElaborate("Switch ON...", 1, MoveCode.SwitchOn, (code, cmd, Add) =>
         {
-            SwitchPicker win = new SwitchPicker(1);
+            SwitchPicker win = new SwitchPicker((int) (long) (cmd?.Parameters[0] ?? 1L));
             win.OnClosed += _ =>
             {
                 if (!win.Apply) return;
-                MoveCommand cmd = new MoveCommand(code, new List<object>() { (long) win.SwitchID });
-                InsertCommand(MoveBox.SelectedIndex, cmd);
+                Add(new MoveCommand(code, new List<object>() { (long) win.SwitchID }));
             };
         });
-        AddButtonElaborate("Switch OFF...", 1, MoveCode.SwitchOff, code =>
+        AddButtonElaborate("Switch OFF...", 1, MoveCode.SwitchOff, (code, cmd, Add) =>
         {
-            SwitchPicker win = new SwitchPicker(1);
+            SwitchPicker win = new SwitchPicker((int) (long) (cmd?.Parameters[0] ?? 1L));
             win.OnClosed += _ =>
             {
                 if (!win.Apply) return;
-                MoveCommand cmd = new MoveCommand(code, new List<object>() { (long)win.SwitchID });
-                InsertCommand(MoveBox.SelectedIndex, cmd);
+                Add(new MoveCommand(code, new List<object>() { (long)win.SwitchID }));
             };
         });
-        AddButtonElaborate("Change Speed...", 1, MoveCode.ChangeSpeed, code =>
+        AddButtonElaborate("Change Speed...", 1, MoveCode.ChangeSpeed, (code, cmd, Add) =>
         {
-            GenericDropdownPicker win = new GenericDropdownPicker("Change Speed", "Speed:", 2, new List<string>() { "1: Slowest", "2: Slower", "3: Slow", "4: Fast", "5: Faster", "6: Fastest" });
+            GenericDropdownPicker win = new GenericDropdownPicker("Change Speed", "Speed:", (int) (long) (cmd?.Parameters[0] ?? 3L) - 1, new List<string>() { "1: Slowest", "2: Slower", "3: Slow", "4: Fast", "5: Faster", "6: Fastest" });
             win.OnClosed += _ =>
             {
                 if (!win.Apply) return;
-                MoveCommand cmd = new MoveCommand(code, new List<object>() { (long) win.Value + 1 });
-                InsertCommand(MoveBox.SelectedIndex, cmd);
+                Add(new MoveCommand(code, new List<object>() { (long) win.Value + 1 }));
             };
         });
-        AddButtonElaborate("Change Freq...", 1, MoveCode.ChangeFreq, code =>
+        AddButtonElaborate("Change Freq...", 1, MoveCode.ChangeFreq, (code, cmd, Add) =>
         {
-            GenericDropdownPicker win = new GenericDropdownPicker("Change Freq", "Freq:", 2, new List<string>() { "1: Lowest", "2: Lower", "3: Low", "4: High", "5: Higher", "6: Highest" });
+            GenericDropdownPicker win = new GenericDropdownPicker("Change Freq", "Freq:", (int) (long) (cmd?.Parameters[0] ?? 3L) - 1, new List<string>() { "1: Lowest", "2: Lower", "3: Low", "4: High", "5: Higher", "6: Highest" });
             win.OnClosed += _ =>
             {
                 if (!win.Apply) return;
-                MoveCommand cmd = new MoveCommand(code, new List<object>() { (long) win.Value + 1 });
-                InsertCommand(MoveBox.SelectedIndex, cmd);
+                Add(new MoveCommand(code, new List<object>() { (long) win.Value + 1 }));
             };
         });
 
@@ -175,14 +237,62 @@ public class EditMoveRouteWindow : PopupWindow
         AddButton("Through OFF", 2, MoveCode.ThroughOff);
         AddButton("Always on Top ON", 2, MoveCode.AlwaysOnTopOn);
         AddButton("Always on Top OFF", 2, MoveCode.AlwaysOnTopOff);
-        AddButtonElaborate("Change Graphic...", 2, MoveCode.Graphic, code =>
+        AddButtonElaborate("Change Graphic...", 2, MoveCode.Graphic, (code, cmd, Add) =>
         {
-            // Name, hue, direction, pattern
+            EventGraphic gr = new EventGraphic();
+            if (cmd != null)
+            {
+                gr.CharacterName = (string) cmd.Parameters[0];
+                gr.CharacterHue = (int) (long) cmd.Parameters[1];
+                gr.Direction = (int) (long) cmd.Parameters[2];
+                gr.Pattern = (int) (long) cmd.Parameters[3];
+            }
+            ChooseGraphic win = new ChooseGraphic(Map, Event, Page, gr, true);
+            win.OnClosed += _ =>
+            {
+                if (!win.Apply) return;
+                Add(new MoveCommand(code, new List<object>() { win.Graphic.CharacterName, (long) win.Graphic.CharacterHue, (long) win.Graphic.Direction, (long) win.Graphic.Pattern }));
+            };
         });
-        // Change Opacity...
-        // Change Blending...
-        // Play SE...
-        // Script...
+        AddButtonElaborate("Change Opacity...", 2, MoveCode.Opacity, (code, cmd, Add) =>
+        {
+            GenericNumberPicker win = new GenericNumberPicker("Opacity", "Opacity:", (int) (long) (cmd?.Parameters[0] ?? 255L), 0, 255);
+            win.OnClosed += _ =>
+            {
+                if (!win.Apply) return;
+                Add(new MoveCommand(code, new List<object>() { (long) win.Value }));
+            };
+        });
+        AddButtonElaborate("Change Blending...", 2, MoveCode.Blending, (code, cmd, Add) =>
+        {
+            GenericDropdownPicker win = new GenericDropdownPicker("Blending", "Mode:", (int) (long) (cmd?.Parameters[0] ?? 0L), new List<string>() { "Normal", "Add", "Sub" });
+            win.OnClosed += _ =>
+            {
+                if (!win.Apply) return;
+                Add(new MoveCommand(code, new List<object>() { (long) win.Value }));
+            };
+        });
+        AddButtonElaborate("Play SE...", 2, MoveCode.PlaySE, (code, cmd, Add) =>
+        {
+            AudioFile? af = (AudioFile) cmd?.Parameters[0] ?? null;
+            AudioPicker win = new AudioPicker("Audio/SE", af?.Name ?? "", af?.Volume ?? 80, af?.Pitch ?? 100);
+            win.OnClosed += _ =>
+            {
+                if (win.Result != null)
+                {
+                    Add(new MoveCommand(code, new List<object>() { new AudioFile(win.Result?.Filename, (int) win.Result?.Volume, (int) win.Result?.Pitch) }));
+                }
+            };
+        });
+        AddButtonElaborate("Script...", 2, MoveCode.Script, (code, cmd, Add) =>
+        {
+            GenericTextBoxWindow win = new GenericTextBoxWindow("Script", "Code:", (string) (cmd?.Parameters[0] ?? ""));
+            win.OnClosed += _ =>
+            {
+                if (!win.Apply) return;
+                Add(new MoveCommand(code, new List<object>() { win.Value }));
+            };
+        });
 
         RedrawMoves();
 
@@ -191,7 +301,13 @@ public class EditMoveRouteWindow : PopupWindow
 
         RegisterShortcuts(new List<Shortcut>()
         {
-            new Shortcut(this, new Key(Keycode.DELETE), _ => DeleteCommand())
+            new Shortcut(this, new Key(Keycode.DELETE), _ => DeleteCommand()),
+            new Shortcut(this, new Key(Keycode.SPACE), _ => EditCommand()),
+            new Shortcut(this, new Key(Keycode.X, Keycode.CTRL), _ => CutCommand()),
+            new Shortcut(this, new Key(Keycode.C, Keycode.CTRL), _ => CopyCommand()),
+            new Shortcut(this, new Key(Keycode.V, Keycode.CTRL), _ => PasteCommand()),
+            new Shortcut(this, new Key(Keycode.DOWN), _ => MoveBox.MoveDown()),
+            new Shortcut(this, new Key(Keycode.UP), _ => MoveBox.MoveUp())
         });
 
         this.Window.UI.SetSelectedWidget(this);
@@ -209,9 +325,19 @@ public class EditMoveRouteWindow : PopupWindow
         if (MoveBox.SelectedIndex == -1) MoveBox.SetSelectedIndex(0);
     }
 
+    private bool IsRealCommand()
+    {
+        return ((MoveCommand) MoveBox.SelectedItem.Object).Code != MoveCode.None;
+    }
+
+    private bool IsCommandEditable(MoveCommand Command)
+    {
+        return CommandEditFunctions.ContainsKey(Command.Code);
+    }
+
     private void DeleteCommand()
     {
-        if (this.MoveRoute.Commands[MoveBox.SelectedIndex].Code == MoveCode.None) return;
+        if (!IsRealCommand()) return;
         this.MoveRoute.Commands.RemoveAt(MoveBox.SelectedIndex);
         this.MoveBox.Items.RemoveAt(MoveBox.SelectedIndex);
         if (MoveBox.SelectedIndex == MoveBox.Items.Count) MoveBox.SetSelectedIndex(MoveBox.Items.Count - 1);
@@ -224,6 +350,44 @@ public class EditMoveRouteWindow : PopupWindow
         ListItem Item = new ListItem(Command.ToString(), Command);
         MoveBox.Items.Insert(Index, Item);
         MoveBox.SetSelectedIndex(Index + 1);
+        // Ensure the box scrolls with the new commands
+        MoveBox.MoveUp();
+        MoveBox.MoveDown();
+    }
+
+    private void EditCommand()
+    {
+        if (!IsCommandEditable((MoveCommand) MoveBox.SelectedItem.Object) || !IsRealCommand()) return;
+        MoveCommand cmd = (MoveCommand) MoveBox.SelectedItem.Object;
+        Action<MoveCode, MoveCommand, Action<MoveCommand>> edit = CommandEditFunctions[cmd.Code];
+        edit(cmd.Code, cmd, newcmd =>
+        {
+            int idx = MoveRoute.Commands.IndexOf(cmd);
+            MoveRoute.Commands[idx] = newcmd;
+            MoveBox.Items[idx] = new ListItem(newcmd.ToString(), newcmd);
+            MoveBox.Redraw();
+        });
+    }
+
+    private void CutCommand()
+    {
+        if (!IsRealCommand()) return;
+        CopyCommand();
+        DeleteCommand();
+    }
+
+    private void CopyCommand()
+    {
+        if (!IsRealCommand()) return;
+        MoveCommand cmd = (MoveCommand) MoveBox.Items[MoveBox.SelectedIndex].Object;
+        Utilities.SetClipboard(cmd, BinaryData.MOVE_COMMAND);
+    }
+
+    private void PasteCommand()
+    {
+        if (!Utilities.IsClipboardValidBinary(BinaryData.MOVE_COMMAND)) return;
+        MoveCommand cmd = Utilities.GetClipboard<MoveCommand>();
+        InsertCommand(MoveBox.SelectedIndex, cmd);
     }
 
     private void OK(BaseEventArgs e)

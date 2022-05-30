@@ -5,13 +5,15 @@ namespace RPGStudioMK.Game;
 [Serializable]
 public class AudioFile : ICloneable
 {
-    public string Name = "";
-    public int Volume = 100;
-    public int Pitch = 100;
+    public string Name;
+    public int Volume;
+    public int Pitch;
 
-    public AudioFile()
+    public AudioFile(string Name = "", int Volume = 80, int Pitch = 100)
     {
-
+        this.Name = Name;
+        this.Volume = Volume;
+        this.Pitch = Pitch;
     }
 
     public AudioFile(IntPtr data)
@@ -23,11 +25,7 @@ public class AudioFile : ICloneable
 
     public object Clone()
     {
-        AudioFile f = new AudioFile();
-        f.Name = this.Name;
-        f.Volume = this.Volume;
-        f.Pitch = this.Pitch;
-        return f;
+        return new AudioFile(this.Name, this.Volume, this.Pitch);
     }
 
     public override bool Equals(object obj)

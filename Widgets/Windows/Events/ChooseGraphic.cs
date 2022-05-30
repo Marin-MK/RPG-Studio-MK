@@ -8,11 +8,12 @@ namespace RPGStudioMK.Widgets;
 public class ChooseGraphic : PopupWindow
 {
     public bool Apply = false;
+    public EventGraphic Graphic;
 
     Map Map;
     Event Event;
     EventPage Page;
-    EventGraphic Graphic;
+    EventGraphic OldGraphic;
 
     Container GraphicContainer;
     FileExplorer FileExplorer;
@@ -27,11 +28,12 @@ public class ChooseGraphic : PopupWindow
     NumericBox OpacityBox;
     NumericSlider HueBox;
 
-    public ChooseGraphic(Map Map, Event Event, EventPage Page, EventGraphic gr)
+    public ChooseGraphic(Map Map, Event Event, EventPage Page, EventGraphic gr, bool FromMoveRouteEditor)
     {
         this.Map = Map;
         this.Event = Event;
         this.Page = Page;
+        this.OldGraphic = gr;
         this.Graphic = (EventGraphic) gr.Clone();
         
         SetTitle("Choose Graphic");
@@ -194,12 +196,14 @@ public class ChooseGraphic : PopupWindow
         OpacityLabel.SetFont(f);
         OpacityLabel.SetText("Opacity:");
         OpacityLabel.SetPosition(547, 420);
+        OpacityLabel.SetEnabled(!FromMoveRouteEditor);
         OpacityBox = new NumericBox(this);
         OpacityBox.SetPosition(669, 416);
         OpacityBox.SetSize(50, 27);
         OpacityBox.MinValue = 0;
         OpacityBox.MaxValue = 255;
         OpacityBox.SetValue(Graphic.Opacity);
+        OpacityBox.SetEnabled(!FromMoveRouteEditor);
         OpacityBox.OnValueChanged += delegate (BaseEventArgs e)
         {
             Graphic.Opacity = OpacityBox.Value;
@@ -213,7 +217,7 @@ public class ChooseGraphic : PopupWindow
         GraphicTypePicker.SetHeaderHeight(28);
         GraphicTypePicker.SetHeight(25);
         GraphicTypePicker.CreateTab("File");
-        GraphicTypePicker.CreateTab("Tiles");
+        if (!FromMoveRouteEditor) GraphicTypePicker.CreateTab("Tiles");
         GraphicTypePicker.OnSelectionChanged += _ =>
         {
             FileExplorer.SetVisible(GraphicTypePicker.SelectedIndex == 0);
@@ -232,64 +236,12 @@ public class ChooseGraphic : PopupWindow
         FileExplorer.SetBaseDirectory(Data.ProjectPath);
         FileExplorer.SetFileExtensions("png");
         FileExplorer.SetDirectory("Graphics/Characters");
-        FileExplorer.OnFileSelected += _ =>
-        {
-            string charname = FileExplorer.SelectedFilename.Replace(Data.ProjectPath + "/Graphics/Characters/", "").Replace(".png", "");
-            if (this.Graphic.CharacterName != charname)
-            {
-                this.Graphic.CharacterName = charname;
-                this.Graphic.TileID = 0;
-                this.Graphic.NumFrames = 4;
-                this.Graphic.NumDirections = 4;
-                TypeLabel.SetText("Type: Character");
-                DirectionLabel.SetEnabled(true);
-                DirectionBox.SetEnabled(true);
-                DirectionBox.SetSelectedIndex(0);
-                NumDirectionsBox.SetSelectedIndex(1);
-                NumFramesBox.SetValue(4);
-                FrameLabel.SetEnabled(true);
-                FrameBox.SetEnabled(true);
-                RedrawGraphic();
-                TileGraphicPicker.HideCursor();
-            }
-        };
 
         TileGraphicPicker = new TileGraphicPicker(new Size(Event.Width, Event.Height), Map, Graphic, this);
         TileGraphicPicker.SetPosition(8, 35);
         TileGraphicPicker.SetSize(522, 430);
         TileGraphicPicker.SetVisible(false);
-        TileGraphicPicker.OnTileSelected += _ =>
-        {
-            this.Graphic.CharacterName = "";
-            this.Graphic.TileID = TileGraphicPicker.TileID;
-            this.Graphic.NumFrames = 1;
-            this.Graphic.NumDirections = 1;
-            this.Graphic.Direction = 2;
-            TypeLabel.SetText("Type: Tile");
-            DirectionLabel.SetEnabled(false);
-            DirectionBox.SetEnabled(false);
-            NumDirectionsBox.SetSelectedIndex(0);
-            NumFramesBox.SetValue(1);
-            FrameLabel.SetEnabled(false);
-            FrameBox.SetEnabled(false);
-            RedrawGraphic();
-            FileExplorer.SetSelectedFile(null);
-        };
         TileGraphicPicker.OnTileDoubleClicked += _ => OK(new BaseEventArgs());
-
-        ClearGraphicButton.OnClicked += _ =>
-        {
-            this.Graphic.CharacterName = "";
-            this.Graphic.TileID = 0;
-            TypeLabel.SetText("Type: None");
-            DirectionLabel.SetEnabled(false);
-            DirectionBox.SetEnabled(false);
-            FrameLabel.SetEnabled(false);
-            FrameBox.SetEnabled(false);
-            RedrawGraphic();
-            TileGraphicPicker.HideCursor();
-            FileExplorer.SetSelectedFile(null);
-        };
 
         Label HueLabel = new Label(this);
         HueLabel.SetBottomDocked(true);
@@ -312,6 +264,75 @@ public class ChooseGraphic : PopupWindow
         };
         HueBox.SetValue(Graphic.CharacterHue);
 
+        FileExplorer.OnFileSelected += _ =>
+        {
+            string charname = FileExplorer.SelectedFilename.Replace(Data.ProjectPath + "/Graphics/Characters/", "").Replace(".png", "");
+            if (this.Graphic.CharacterName != charname)
+            {
+                this.Graphic.CharacterName = charname;
+                this.Graphic.TileID = 0;
+                this.Graphic.NumFrames = 4;
+                this.Graphic.NumDirections = 4;
+                TypeLabel.SetText("Type: Character");
+                DirectionLabel.SetEnabled(true);
+                DirectionBox.SetEnabled(true);
+                DirectionBox.SetSelectedIndex(0);
+                NumDirectionsBox.SetSelectedIndex(1);
+                NumFramesBox.SetValue(4);
+                FrameLabel.SetEnabled(true);
+                FrameBox.SetEnabled(true);
+                OpacityLabel.SetEnabled(!FromMoveRouteEditor);
+                OpacityBox.SetEnabled(!FromMoveRouteEditor);
+                HueLabel.SetEnabled(true);
+                HueBox.SetEnabled(true);
+                RedrawGraphic();
+                TileGraphicPicker.HideCursor();
+            }
+        };
+
+        TileGraphicPicker.OnTileSelected += _ =>
+        {
+            this.Graphic.CharacterName = "";
+            this.Graphic.TileID = TileGraphicPicker.TileID;
+            this.Graphic.NumFrames = 1;
+            this.Graphic.NumDirections = 1;
+            DirectionBox.SetSelectedIndex(0);
+            TypeLabel.SetText("Type: Tile");
+            DirectionLabel.SetEnabled(false);
+            DirectionBox.SetEnabled(false);
+            NumDirectionsBox.SetSelectedIndex(0);
+            NumFramesBox.SetValue(1);
+            FrameLabel.SetEnabled(false);
+            FrameBox.SetEnabled(false);
+            OpacityLabel.SetEnabled(!FromMoveRouteEditor);
+            OpacityBox.SetEnabled(!FromMoveRouteEditor);
+            HueLabel.SetEnabled(true);
+            HueBox.SetEnabled(true);
+            RedrawGraphic();
+            FileExplorer.SetSelectedFile(null);
+        };
+
+        ClearGraphicButton.OnClicked += _ =>
+        {
+            this.Graphic.CharacterName = "";
+            this.Graphic.TileID = 0;
+            DirectionBox.SetSelectedIndex(0);
+            FrameBox.SetValue(0);
+            HueBox.SetValue(0);
+            TypeLabel.SetText("Type: None");
+            DirectionLabel.SetEnabled(false);
+            DirectionBox.SetEnabled(false);
+            FrameLabel.SetEnabled(false);
+            FrameBox.SetEnabled(false);
+            OpacityLabel.SetEnabled(false);
+            OpacityBox.SetEnabled(false);
+            HueLabel.SetEnabled(false);
+            HueBox.SetEnabled(false);
+            RedrawGraphic();
+            TileGraphicPicker.HideCursor();
+            FileExplorer.SetSelectedFile(null);
+        };
+
         CreateButton("Cancel", Cancel);
         Buttons[0].SetPosition(Size.Width - 99, Buttons[0].Position.Y);
         CreateButton("OK", OK);
@@ -324,12 +345,12 @@ public class ChooseGraphic : PopupWindow
 
     public void Cancel(BaseEventArgs e)
     {
+        this.Graphic = OldGraphic;
         Close();
     }
 
     public void OK(BaseEventArgs e)
     {
-        Page.Graphic = this.Graphic;
         Apply = true;
         Close();
     }

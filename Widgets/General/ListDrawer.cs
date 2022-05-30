@@ -5,22 +5,21 @@ namespace RPGStudioMK.Widgets;
 
 public class ListDrawer : Widget
 {
-    public BaseEvent OnButtonClicked;
     public BaseEvent OnSelectionChanged;
     public BaseEvent OnDoubleClicked;
 
-    public bool Button { get; protected set; } = false;
-    public string ButtonText { get; protected set; }
     public Font Font { get; protected set; }
     public int LineHeight { get; protected set; } = 20;
     public List<ListItem> Items { get; protected set; } = new List<ListItem>();
-    private bool HoveringButton = false;
     public bool Enabled { get; protected set; } = true;
     public int SelectedIndex { get; protected set; } = -1;
     public int HoveringIndex { get; protected set; } = -1;
     public ListItem SelectedItem { get { return SelectedIndex == -1 ? null : Items[SelectedIndex]; } }
     public ListItem HoveringItem { get { return HoveringIndex == -1 ? null : Items[HoveringIndex]; } }
     public Color SelectedItemColor { get; protected set; } = new Color(55, 187, 255);
+
+    public bool CountRightMouseClicks = false;
+    int DraggingIndex = -1;
 
     public ListDrawer(IContainer Parent) : base(Parent)
     {
@@ -30,8 +29,6 @@ public class ListDrawer : Widget
         Sprites["text"] = new Sprite(this.Viewport);
         Sprites["hover"] = new Sprite(this.Viewport, new SolidBitmap(2, 20, new Color(59, 227, 255)));
         Sprites["hover"].Visible = false;
-        Sprites["btn"] = new Sprite(this.Viewport);
-        Sprites["btn"].X = 7;
     }
 
     public void SetEnabled(bool Enabled)
@@ -68,21 +65,6 @@ public class ListDrawer : Widget
             ((SolidBitmap)Sprites["hover"].Bitmap).SetSize(2, LineHeight);
             Redraw();
         }
-    }
-
-    public void SetButton(bool Exist, string ButtonText = "")
-    {
-        if (!Exist)
-        {
-            this.Button = false;
-            this.ButtonText = null;
-        }
-        else
-        {
-            this.Button = true;
-            this.ButtonText = ButtonText;
-        }
-        RedrawButton();
     }
 
     public void SetSelectedItemColor(Color SelectedItemColor)
@@ -125,39 +107,21 @@ public class ListDrawer : Widget
         MouseMoving(Graphics.LastMouseEvent);
     }
 
-    public void RedrawButton()
-    {
-        if (Sprites["btn"].Bitmap != null) Sprites["btn"].Bitmap.Dispose();
-        if (!Button) return;
-        Sprites["btn"].Bitmap = new Bitmap(92, 16);
-        Sprites["btn"].Bitmap.Unlock();
-        Sprites["btn"].Bitmap.FillRect(0, 0, 92, 16, HoveringButton ? new Color(59, 227, 255) : new Color(86, 108, 134));
-        Sprites["btn"].Bitmap.SetPixel(0, 0, Color.ALPHA);
-        Sprites["btn"].Bitmap.SetPixel(91, 0, Color.ALPHA);
-        Sprites["btn"].Bitmap.SetPixel(0, 15, Color.ALPHA);
-        Sprites["btn"].Bitmap.SetPixel(91, 15, Color.ALPHA);
-        Sprites["btn"].Bitmap.DrawLine(5, 7, 9, 7, HoveringButton ? Color.BLACK : Color.WHITE);
-        Sprites["btn"].Bitmap.DrawLine(7, 5, 7, 9, HoveringButton ? Color.BLACK : Color.WHITE);
-        Font f = Fonts.UbuntuBold.Use(12);
-        Sprites["btn"].Bitmap.Font = f;
-        Sprites["btn"].Bitmap.DrawText(this.ButtonText, 15, 0, HoveringButton ? Color.BLACK : Color.WHITE);
-        Sprites["btn"].Bitmap.Lock();
-    }
-
     protected override void Draw()
     {
         if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
-        SetSize(Size.Width, LineHeight * (Items.Count + (Button ? 1 : 0)));
+        SetSize(Size.Width, LineHeight * Items.Count);
         Sprites["text"].Bitmap = new Bitmap(Size);
         Sprites["text"].Bitmap.Font = this.Font;
         Sprites["text"].Bitmap.Unlock();
         for (int i = 0; i < this.Items.Count; i++)
         {
-            Color c = this.Enabled ? (i == SelectedIndex ? this.SelectedItemColor : Color.WHITE) : new Color(72, 72, 72);
+            bool sel = i == SelectedIndex;
+            if (DraggingIndex != -1) sel = i == DraggingIndex;
+            Color c = this.Enabled ? (sel ? this.SelectedItemColor : Color.WHITE) : new Color(72, 72, 72);
             Sprites["text"].Bitmap.DrawText(this.Items[i].ToString(), 10, LineHeight * i + LineHeight / 2 - 10, c);
         }
         Sprites["text"].Bitmap.Lock();
-        Sprites["btn"].Y = LineHeight * this.Items.Count;
         base.Draw();
     }
 
@@ -166,24 +130,26 @@ public class ListDrawer : Widget
         base.MouseMoving(e);
         int rx = e.X - Viewport.X;
         int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
-        int index = (int)Math.Floor(ry / (double)LineHeight);
+        int index = (int) Math.Floor(ry / (double)LineHeight);
+        int oldhover = HoveringIndex;
         HoveringIndex = -1;
-        if (!Button && index == this.Items.Count) return;
         Sprites["hover"].Visible = false;
-        bool OldHover = HoveringButton;
-        HoveringButton = false;
-        if (!Mouse.Inside) { }
-        else if (index == this.Items.Count) // Hovering over button
-        {
-            if (rx >= 7 && rx < 7 + Sprites["btn"].Bitmap.Width) HoveringButton = true;
-        }
-        else // Hovering over item
+        if (ry < 0 || index >= this.Items.Count) return;
+        int olddrag = DraggingIndex;
+        if (Mouse.Inside)
         {
             Sprites["hover"].Visible = true;
             Sprites["hover"].Y = index * LineHeight;
             HoveringIndex = index;
+            if (Mouse.LeftMousePressed || CountRightMouseClicks && Mouse.RightMousePressed)
+            {
+                Sprites["selection"].Y = Sprites["hover"].Y;
+                Sprites["selection"].Visible = true;
+                DraggingIndex = HoveringIndex;
+            }
         }
-        if (OldHover != HoveringButton) RedrawButton();
+        if (HoveringIndex != oldhover || DraggingIndex != olddrag) Redraw();
+        Console.WriteLine($"({HoveringIndex},{DraggingIndex})");
     }
 
     public override void HoverChanged(MouseEventArgs e)
@@ -195,44 +161,23 @@ public class ListDrawer : Widget
     public override void MouseDown(MouseEventArgs e)
     {
         base.MouseDown(e);
-        if (!Mouse.Inside || e.LeftButton == e.OldLeftButton || !e.LeftButton) return;
-        if (HoveringButton)
+        MouseMoving(e);
+    }
+
+    public override void DoubleLeftMouseDownInside(MouseEventArgs e)
+    {
+        base.DoubleLeftMouseDownInside(e);
+        this.OnDoubleClicked?.Invoke(new BaseEventArgs());
+    }
+
+    public override void MouseUp(MouseEventArgs e)
+    {
+        base.MouseUp(e);
+        if (DraggingIndex != -1 && (Mouse.LeftStartedInside && Mouse.LeftMouseReleased || Mouse.RightStartedInside && Mouse.RightMouseReleased && CountRightMouseClicks))
         {
-            Sprites["selection"].Visible = false;
-            this.SetSelectedIndex(-1);
-            this.OnButtonClicked?.Invoke(e);
-            this.OnSelectionChanged?.Invoke(new BaseEventArgs());
-            if (TimerExists("double")) DestroyTimer("double");
+            int idx = DraggingIndex;
+            DraggingIndex = -1;
+            this.SetSelectedIndex(idx);
         }
-        else if (Sprites["hover"].Visible)
-        {
-            Sprites["selection"].Y = Sprites["hover"].Y;
-            Sprites["selection"].Visible = true;
-            int oldidx = this.SelectedIndex;
-            this.SetSelectedIndex(HoveringIndex);
-            if (oldidx != this.SelectedIndex)
-            {
-                this.OnSelectionChanged?.Invoke(new BaseEventArgs());
-                if (TimerExists("double")) DestroyTimer("double");
-                SetTimer("double", 300);
-            }
-            else
-            {
-                if (TimerExists("double") && !TimerPassed("double"))
-                {
-                    this.OnDoubleClicked?.Invoke(new BaseEventArgs());
-                    DestroyTimer("double");
-                }
-                else if (TimerExists("double") && TimerPassed("double"))
-                {
-                    ResetTimer("double");
-                }
-                else if (!TimerExists("double"))
-                {
-                    SetTimer("double", 300);
-                }
-            }
-        }
-        else if (TimerExists("double")) DestroyTimer("double");
     }
 }

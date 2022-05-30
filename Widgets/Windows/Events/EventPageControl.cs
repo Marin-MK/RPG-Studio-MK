@@ -169,10 +169,11 @@ public class EventPageControl : Widget
         EventGraphicBox.SetMargins(2);
         EventGraphicBox.OnDoubleLeftMouseDownInside += _ =>
         {
-            ChooseGraphic cg = new ChooseGraphic(Map, Event, Page, Page.Graphic);
+            ChooseGraphic cg = new ChooseGraphic(Map, Event, Page, Page.Graphic, false);
             cg.OnClosed += _ =>
             {
                 if (!cg.Apply) return;
+                Page.Graphic = cg.Graphic;
                 EventGraphicBox.SetGraphic(Map, Event, Page.Graphic);
             };
         };
@@ -210,7 +211,12 @@ public class EventPageControl : Widget
         EditRouteButton.SetEnabled(false);
         EditRouteButton.OnClicked += _ =>
         {
-            EditMoveRouteWindow win = new EditMoveRouteWindow(Map, Event, Page.MoveRoute);
+            EditMoveRouteWindow win = new EditMoveRouteWindow(Map, Event, Page, Page.MoveRoute, true);
+            win.OnClosed += _ =>
+            {
+                if (!win.Apply) return;
+                Page.MoveRoute = win.MoveRoute;
+            };
         };
         Label AutoMoveSpeedLabel = new Label(AutoMoveBox);
         AutoMoveSpeedLabel.SetPosition(4, 65);

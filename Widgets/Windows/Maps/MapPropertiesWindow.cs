@@ -18,6 +18,7 @@ public class MapPropertiesWindow : PopupWindow
     DropdownBox BGM;
     DropdownBox BGS;
     ListBox Tilesets;
+    Button EditTilesetsButton;
     //ListBox Autotiles;
 
     public MapPropertiesWindow(Map OldMap)
@@ -156,9 +157,15 @@ public class MapPropertiesWindow : PopupWindow
             Tileset tileset = Data.Tilesets[id];
             tilesetitems.Add(new ListItem(tileset));
         }
+        Tilesets.SetSize(132, 150);
         Tilesets.SetItems(tilesetitems);
-        Tilesets.SetButtonText("Set Tileset");
-        Tilesets.ListDrawer.OnButtonClicked += AddTileset;
+
+        EditTilesetsButton = new Button(box1);
+        EditTilesetsButton.SetPosition(156, 176);
+        EditTilesetsButton.SetSize(144, 32);
+        EditTilesetsButton.SetFont(Fonts.UbuntuBold.Use(14));
+        EditTilesetsButton.SetText("Edit Tileset");
+        EditTilesetsButton.OnClicked += _ => AddTileset();
 
         /*Autotiles = new ListBox(box1);
         Autotiles.SetPosition(312, 22);
@@ -187,7 +194,7 @@ public class MapPropertiesWindow : PopupWindow
         CreateButton("OK", OK);
     }
 
-    public void AddTileset(BaseEventArgs e)
+    public void AddTileset()
     {
         TilesetPicker picker = new TilesetPicker(Map);
         picker.OnClosed += delegate (BaseEventArgs e2)

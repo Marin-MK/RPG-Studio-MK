@@ -16,6 +16,7 @@
     <Copyright>Marijn Herrebout</Copyright>
     <RepositoryUrl>https://github.com/Marin-MK/RPGStudioMK</RepositoryUrl>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

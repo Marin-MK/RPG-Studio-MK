@@ -781,7 +781,8 @@ public enum BinaryData
     MAP,
     TILESET,
     EVENT,
-    EVENT_PAGE
+    EVENT_PAGE,
+    MOVE_COMMAND
 }
 
 public class Fonts

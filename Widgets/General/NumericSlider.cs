@@ -10,6 +10,7 @@ public class NumericSlider : Widget
     public int MaxValue { get; protected set; } = 100;
     public List<(int Value, double Factor, int X)> SnapValues { get; protected set; } = new List<(int, double, int)>();
     public int PixelSnapDifference { get; protected set; } = 4;
+    public bool Enabled { get; protected set; } = true;
 
     public BaseEvent OnValueChanged;
 
@@ -100,17 +101,30 @@ public class NumericSlider : Widget
         base.Draw();
         int MaxX = Size.Width - 8;
         double factor = Math.Clamp((Value - MinValue) / (double)(MaxValue - MinValue), 0, 1);
-        Sprites["slider"].X = (int)Math.Round(factor * MaxX);
+        Sprites["slider"].X = (int) Math.Round(factor * MaxX);
+        Sprites["slider"].Visible = Enabled;
+
+        Color PreColor = new Color(55, 171, 206);
+        Color PostColor = new Color(73, 89, 109);
+
+        if (!Enabled) PreColor = PostColor;
 
         Sprites["bars"].Bitmap?.Dispose();
         Sprites["bars"].Bitmap = new Bitmap(Size.Width - 8, Size.Height);
         Sprites["bars"].Bitmap.Unlock();
-        Sprites["bars"].Bitmap.FillRect(2, 7, Sprites["slider"].X - 8, 3, new Color(55, 171, 206));
-        if (Sprites["slider"].X < Size.Width - 14)
-            Sprites["bars"].Bitmap.FillRect(Sprites["slider"].X + 6, 7, Size.Width - 14 - Sprites["slider"].X, 3, new Color(73, 89, 109));
+        if (Enabled)
+        {
+            Sprites["bars"].Bitmap.FillRect(2, 7, Sprites["slider"].X - 8, 3, PreColor);
+            if (Sprites["slider"].X < Size.Width - 14)
+                Sprites["bars"].Bitmap.FillRect(Sprites["slider"].X + 6, 7, Size.Width - 14 - Sprites["slider"].X, 3, PostColor);
+        }
+        else
+        {
+            Sprites["bars"].Bitmap.FillRect(2, 7, Size.Width - 14, 3, PreColor);
+        }
         foreach ((int Value, double Factor, int X) Snap in SnapValues)
         {
-            Color c = Snap.Factor > factor ? new Color(73, 89, 109) : new Color(55, 171, 206);
+            Color c = Snap.Factor > factor ? PostColor : PreColor;
             Sprites["bars"].Bitmap.DrawLine(Snap.X, 1, Snap.X, Size.Height - 2, c);
             if (Snap.X > 0) Sprites["bars"].Bitmap.DrawLine(Snap.X - 1, 1, Snap.X - 1, Size.Height - 2, Color.ALPHA);
             if (Snap.X < Size.Width - 9) Sprites["bars"].Bitmap.DrawLine(Snap.X + 1, 1, Snap.X + 1, Size.Height - 2, Color.ALPHA);
@@ -121,6 +135,7 @@ public class NumericSlider : Widget
     public override void LeftMouseDownInside(MouseEventArgs e)
     {
         base.LeftMouseDownInside(e);
+        if (!Enabled) return;
         DraggingSlider = true;
         MouseMoving(e);
     }
@@ -153,6 +168,15 @@ public class NumericSlider : Widget
     public override void MouseUp(MouseEventArgs e)
     {
         base.MouseUp(e);
-        if (e.LeftButton != e.OldLeftButton && !e.LeftButton) DraggingSlider = false;
+        if (Mouse.LeftMouseReleased) DraggingSlider = false;
+    }
+
+    public void SetEnabled(bool Enabled)
+    {
+        if (this.Enabled != Enabled)
+        {
+            this.Enabled = Enabled;
+            Redraw();
+        }
     }
 }
