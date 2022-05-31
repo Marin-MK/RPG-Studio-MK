@@ -177,7 +177,7 @@ public class NumericDataSlider : Widget
 
     public void PressingDown(BaseEventArgs e)
     {
-        if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT))
+        if (Input.Press(Keycode.SHIFT))
         {
             SetValue(Value - 10);
         }
@@ -189,7 +189,7 @@ public class NumericDataSlider : Widget
 
     public void PressingUp(BaseEventArgs e)
     {
-        if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT))
+        if (Input.Press(Keycode.SHIFT))
         {
             SetValue(Value + 10);
         }

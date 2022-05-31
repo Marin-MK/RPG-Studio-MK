@@ -10,6 +10,8 @@ public class SetMaximumWindow : PopupWindow
 
     public SetMaximumWindow(int InitialMaximum)
     {
+        this.Maximum = InitialMaximum;
+
         SetTitle("Set Maximum");
         MinimumSize = MaximumSize = new Size(200, 134);
         SetSize(MaximumSize);

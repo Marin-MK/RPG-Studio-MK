@@ -449,6 +449,7 @@ public class DataTypeTilesets : Widget
             TilesetItems.Add(item);
         }
         TilesetList.SetItems(TilesetItems);
+        if (TilesetList.SelectedIndex == -1) TilesetList.SetSelectedIndex(0);
     }
 
     public void SetSelectedIndex(int SelectedIndex)

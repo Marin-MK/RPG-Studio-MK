@@ -149,7 +149,7 @@ public class NumericSlider : Widget
             if (rx < 4) return;
             double factor = 0;
             bool Snapping = false;
-            if (!Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LALT) && !Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RALT))
+            if (!Input.Press(Keycode.ALT))
             {
                 foreach ((int Value, double Factor, int X) Snap in SnapValues)
                 {

@@ -208,11 +208,11 @@ public class LayerPanel : Widget
     {
         if (this.SelectedWidget)
         {
-            if (SelectedLayer > 0 && Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_DOWN))
+            if (SelectedLayer > 0 && Input.Trigger(Keycode.DOWN))
             {
                 layerwidget.SetSelectedLayer(SelectedLayer - 1);
             }
-            if (SelectedLayer < this.Map.Layers.Count - 1 && Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_UP))
+            if (SelectedLayer < this.Map.Layers.Count - 1 && Input.Trigger(Keycode.UP))
             {
                 layerwidget.SetSelectedLayer(SelectedLayer + 1);
             }

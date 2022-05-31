@@ -347,7 +347,7 @@ public class MultilineTextArea : Widget
         bool homeeffect = false;
         bool endeffect = false;
 
-        if (Input.Trigger(SDL_Keycode.SDLK_LEFT) || TimerPassed("left"))
+        if (Input.Trigger(Keycode.LEFT) || TimerPassed("left"))
         {
             Caret.EndOfLine = true;
             SelectionEndIndex.EndOfLine = true;
@@ -355,12 +355,12 @@ public class MultilineTextArea : Widget
             if (Caret.CharacterIndex > 0)
             {
                 int Count = 1;
-                if (Input.Press(SDL_Keycode.SDLK_LCTRL) || Input.Press(SDL_Keycode.SDLK_RCTRL))
+                if (Input.Press(Keycode.CTRL))
                 {
                     Count = Caret.CharacterIndex - FindNextCtrlIndex(true);
                 }
 
-                if (Input.Press(SDL_Keycode.SDLK_LSHIFT) || Input.Press(SDL_Keycode.SDLK_RSHIFT))
+                if (Input.Press(Keycode.SHIFT))
                 {
                     if (SelectionStartIndex.CharacterIndex == -1)
                     {
@@ -396,12 +396,12 @@ public class MultilineTextArea : Widget
                 }
                 VerticalIndex = Caret.LineIndex;
             }
-            else if (SelectionStartIndex.CharacterIndex != -1 && !(Input.Press(SDL_Keycode.SDLK_LSHIFT) || Input.Press(SDL_Keycode.SDLK_RSHIFT)))
+            else if (SelectionStartIndex.CharacterIndex != -1 && !Input.Press(Keycode.SHIFT))
             {
                 CancelSelectionLeft();
             }
         }
-        if (Input.Trigger(SDL_Keycode.SDLK_RIGHT) || TimerPassed("right"))
+        if (Input.Trigger(Keycode.RIGHT) || TimerPassed("right"))
         {
             Caret.EndOfLine = true;
             SelectionEndIndex.EndOfLine = true;
@@ -409,12 +409,12 @@ public class MultilineTextArea : Widget
             if (Caret.CharacterIndex < this.Text.Length)
             {
                 int Count = 1;
-                if (Input.Press(SDL_Keycode.SDLK_LCTRL) || Input.Press(SDL_Keycode.SDLK_RCTRL))
+                if (Input.Press(Keycode.CTRL))
                 {
                     Count = FindNextCtrlIndex(false) - Caret.CharacterIndex;
                 }
 
-                if (Input.Press(SDL_Keycode.SDLK_LSHIFT) || Input.Press(SDL_Keycode.SDLK_RSHIFT))
+                if (Input.Press(Keycode.SHIFT))
                 {
                     if (SelectionStartIndex.CharacterIndex == -1)
                     {
@@ -438,17 +438,17 @@ public class MultilineTextArea : Widget
                 }
                 VerticalIndex = Caret.LineIndex;
             }
-            else if (SelectionStartIndex.CharacterIndex != -1 && !(Input.Press(SDL_Keycode.SDLK_LSHIFT) || Input.Press(SDL_Keycode.SDLK_RSHIFT)))
+            else if (SelectionStartIndex.CharacterIndex != -1 && !Input.Press(Keycode.SHIFT))
             {
                 CancelSelectionRight();
             }
         }
-        if (Input.Trigger(SDL_Keycode.SDLK_UP) || TimerPassed("up"))
+        if (Input.Trigger(Keycode.UP) || TimerPassed("up"))
         {
             if (TimerPassed("up")) ResetTimer("up");
             if (Caret.Line > 0)
             {
-                if (Input.Press(SDL_Keycode.SDLK_LSHIFT) || Input.Press(SDL_Keycode.SDLK_RSHIFT))
+                if (Input.Press(Keycode.SHIFT))
                 {
                     if (SelectionStartIndex.CharacterIndex == -1) SelectionStartIndex.CharacterIndex = Caret.CharacterIndex;
                     if (SelectionEndIndex.CharacterIndex == -1) SelectionEndIndex.CharacterIndex = Caret.CharacterIndex;
@@ -486,13 +486,13 @@ public class MultilineTextArea : Widget
                 homeeffect = true;
             }
         }
-        if (Input.Trigger(SDL_Keycode.SDLK_DOWN) || TimerPassed("down"))
+        if (Input.Trigger(Keycode.DOWN) || TimerPassed("down"))
         {
             bool AtLeftSide = Caret.LineIndex == 0;
             if (TimerPassed("down")) ResetTimer("down");
             if (Caret.Line < Caret.Lines.Count - 1)
             {
-                if (Input.Press(SDL_Keycode.SDLK_LSHIFT) || Input.Press(SDL_Keycode.SDLK_RSHIFT))
+                if (Input.Press(Keycode.SHIFT))
                 {
                     if (SelectionStartIndex.CharacterIndex == -1) SelectionStartIndex.CharacterIndex = Caret.CharacterIndex;
                     if (SelectionEndIndex.CharacterIndex == -1) SelectionEndIndex.CharacterIndex = Caret.CharacterIndex;
@@ -537,12 +537,12 @@ public class MultilineTextArea : Widget
                 endeffect = true;
             }
         }
-        if (Input.Trigger(SDL_Keycode.SDLK_HOME) || homeeffect)
+        if (Input.Trigger(Keycode.HOME) || homeeffect)
         {
             if (Caret.LineIndex > 0)
             {
                 bool CancelledSelection = false;
-                if (Input.Press(SDL_Keycode.SDLK_LSHIFT) || Input.Press(SDL_Keycode.SDLK_RSHIFT))
+                if (Input.Press(Keycode.SHIFT))
                 {
                     if (SelectionStartIndex.CharacterIndex == -1) SelectionStartIndex.CharacterIndex = Caret.CharacterIndex;
                     SelectionEndIndex.CharacterIndex = Caret.LineToCharIndex(Caret.Line, 0);
@@ -567,13 +567,13 @@ public class MultilineTextArea : Widget
                 }
                 RepositionSprites();
             }
-            else if (SelectionStartIndex.CharacterIndex != -1 && !Input.Press(SDL_Keycode.SDLK_LSHIFT) && !Input.Press(SDL_Keycode.SDLK_RSHIFT))
+            else if (SelectionStartIndex.CharacterIndex != -1 && !Input.Press(Keycode.SHIFT))
             {
                 CancelSelectionLeft();
                 RepositionSprites();
             }
         }
-        if (Input.Trigger(SDL_Keycode.SDLK_END) || endeffect)
+        if (Input.Trigger(Keycode.END) || endeffect)
         {
             if (Caret.LineIndex < Caret.Lines[Caret.Line].Length)
             {
@@ -585,7 +585,7 @@ public class MultilineTextArea : Widget
                     Caret.EndOfLine = false;
                     SelectionEndIndex.EndOfLine = false;
                 }
-                if (Input.Press(SDL_Keycode.SDLK_LSHIFT) || Input.Press(SDL_Keycode.SDLK_RSHIFT))
+                if (Input.Press(Keycode.SHIFT))
                 {
                     if (SelectionStartIndex.CharacterIndex == -1) SelectionStartIndex.CharacterIndex = Caret.CharacterIndex;
                     if (Caret.Lines[Caret.Line].EndsWith('\n'))
@@ -611,34 +611,34 @@ public class MultilineTextArea : Widget
                 }
                 RepositionSprites();
             }
-            else if (SelectionStartIndex.CharacterIndex != -1 && !Input.Press(SDL_Keycode.SDLK_LSHIFT) && !Input.Press(SDL_Keycode.SDLK_RSHIFT))
+            else if (SelectionStartIndex.CharacterIndex != -1 && !Input.Press(Keycode.SHIFT))
             {
                 CancelSelectionRight();
                 RepositionSprites();
             }
         }
-        if (Input.Press(SDL_Keycode.SDLK_LCTRL) || Input.Press(SDL_Keycode.SDLK_RCTRL))
+        if (Input.Press(Keycode.CTRL))
         {
-            if (Input.Trigger(SDL_Keycode.SDLK_a))
+            if (Input.Trigger(Keycode.A))
             {
                 SelectAll();
             }
-            if (Input.Trigger(SDL_Keycode.SDLK_x))
+            if (Input.Trigger(Keycode.X))
             {
                 CutSelection();
             }
-            if (Input.Trigger(SDL_Keycode.SDLK_c))
+            if (Input.Trigger(Keycode.C))
             {
                 CopySelection();
             }
-            if (Input.Trigger(SDL_Keycode.SDLK_v) || TimerPassed("paste"))
+            if (Input.Trigger(Keycode.V) || TimerPassed("paste"))
             {
                 PasteText();
             }
         }
 
         // Timers for repeated input
-        if (Input.Press(SDL_Keycode.SDLK_LEFT))
+        if (Input.Press(Keycode.LEFT))
         {
             if (!TimerExists("left_initial") && !TimerExists("left"))
             {
@@ -655,7 +655,7 @@ public class MultilineTextArea : Widget
             if (TimerExists("left")) DestroyTimer("left");
             if (TimerExists("left_initial")) DestroyTimer("left_initial");
         }
-        if (Input.Press(SDL_Keycode.SDLK_RIGHT))
+        if (Input.Press(Keycode.RIGHT))
         {
             if (!TimerExists("right_initial") && !TimerExists("right"))
             {
@@ -672,7 +672,7 @@ public class MultilineTextArea : Widget
             if (TimerExists("right")) DestroyTimer("right");
             if (TimerExists("right_initial")) DestroyTimer("right_initial");
         }
-        if (Input.Press(SDL_Keycode.SDLK_UP))
+        if (Input.Press(Keycode.UP))
         {
             if (!TimerExists("up_initial") && !TimerExists("up"))
             {
@@ -689,7 +689,7 @@ public class MultilineTextArea : Widget
             if (TimerExists("up")) DestroyTimer("up");
             if (TimerExists("up_initial")) DestroyTimer("up_initial");
         }
-        if (Input.Press(SDL_Keycode.SDLK_DOWN))
+        if (Input.Press(Keycode.DOWN))
         {
             if (!TimerExists("down_initial") && !TimerExists("down"))
             {
@@ -706,7 +706,7 @@ public class MultilineTextArea : Widget
             if (TimerExists("down")) DestroyTimer("down");
             if (TimerExists("down_initial")) DestroyTimer("down_initial");
         }
-        if ((Input.Press(SDL_Keycode.SDLK_LCTRL) || Input.Press(SDL_Keycode.SDLK_RCTRL)) && Input.Press(SDL_Keycode.SDLK_v))
+        if (Input.Press(Keycode.CTRL) && Input.Press(Keycode.V))
         {
             if (!TimerExists("paste_initial") && !TimerExists("paste"))
             {
@@ -894,7 +894,7 @@ public class MultilineTextArea : Widget
                     if (Caret.CharacterIndex < this.Text.Length)
                     {
                         int Count = 1;
-                        if (Input.Press(SDL_Keycode.SDLK_LCTRL) || Input.Press(SDL_Keycode.SDLK_RCTRL))
+                        if (Input.Press(Keycode.CTRL))
                             Count = FindNextCtrlIndex(false) - Caret.CharacterIndex;
                         MoveCaretRight(Count);
                         RemoveText(this.Caret.CharacterIndex - Count, Count);
@@ -903,7 +903,7 @@ public class MultilineTextArea : Widget
                 else
                 {
                     int Count = 1;
-                    if (Input.Press(SDL_Keycode.SDLK_LCTRL) || Input.Press(SDL_Keycode.SDLK_RCTRL))
+                    if (Input.Press(Keycode.CTRL))
                         Count = Caret.CharacterIndex - FindNextCtrlIndex(true);
                     RemoveText(this.Caret.CharacterIndex - Count, Count);
                 }

@@ -368,7 +368,7 @@ public partial class MapViewer : Widget
     public override void MouseWheel(MouseEventArgs e)
     {
         base.MouseWheel(e);
-        if (!Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LCTRL) && !Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RCTRL)) return;
+        if (!Input.Press(Keycode.CTRL)) return;
         if (e.WheelY > 0) Editor.MainWindow.StatusBar.ZoomControl.IncreaseZoom();
         else Editor.MainWindow.StatusBar.ZoomControl.DecreaseZoom();
     }
@@ -379,17 +379,17 @@ public partial class MapViewer : Widget
     {
         base.Update();
         if (!SelectedWidget) return;
-        if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LCTRL) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RCTRL))
+        if (Input.Press(Keycode.CTRL))
         {
-            if (Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_c)) // Copy
+            if (Input.Trigger(Keycode.C)) // Copy
             {
                 Copy();
             }
-            else if (Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_x)) // Cut
+            else if (Input.Trigger(Keycode.X)) // Cut
             {
                 Cut();
             }
-            else if (Input.Trigger(odl.SDL2.SDL.SDL_Keycode.SDLK_v)) // Paste
+            else if (Input.Trigger(Keycode.V)) // Paste
             {
                 Paste();
             }

@@ -428,7 +428,7 @@ public class MapImageWidget : Widget
         int y1 = MapViewer.OriginPoint.Y * 32;
         int x2 = newx;
         int y2 = newy;
-        if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT))
+        if (Input.Press(Keycode.SHIFT))
         {
             if (x1 < x2)
             {
@@ -517,7 +517,7 @@ public class MapImageWidget : Widget
         int y1 = MapViewer.OriginPoint.Y * 32;
         int x2 = newx;
         int y2 = newy;
-        if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT))
+        if (Input.Press(Keycode.SHIFT))
         {
             if (x1 < x2)
             {
@@ -599,7 +599,7 @@ public class MapImageWidget : Widget
         int y1 = MapViewer.OriginPoint.Y;
         int x2 = (int)Math.Floor(newx / 32d);
         int y2 = (int)Math.Floor(newy / 32d);
-        if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT))
+        if (Input.Press(Keycode.SHIFT))
         {
             if (x1 < x2)
             {
@@ -643,7 +643,7 @@ public class MapImageWidget : Widget
         int y1 = MapViewer.OriginPoint.Y;
         int x2 = (int)Math.Floor(newx / 32d);
         int y2 = (int)Math.Floor(newy / 32d);
-        if (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT))
+        if (Input.Press(Keycode.SHIFT))
         {
             if (x1 < x2)
             {
@@ -770,8 +770,7 @@ public class MapImageWidget : Widget
                     Undo.TileGroupUndoAction.Create(MapID);
                 }
                 Undo.TileGroupUndoAction.AddToLatest(MapPosition, layer, NewTile, OldTile);
-                DrawTile(MapTileX, MapTileY, layer, NewTile, OldTile,
-                    !Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) && !Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT));
+                DrawTile(MapTileX, MapTileY, layer, NewTile, OldTile, !Input.Press(Keycode.SHIFT));
             }
         }
         SetLayerLocked(layer, true);

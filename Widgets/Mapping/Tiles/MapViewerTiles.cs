@@ -803,7 +803,7 @@ public partial class MapViewer
     {
         if (Mode == MapMode.Tiles)
         {
-            if (MainContainer.Mouse.Inside && LastDrawnPoint != null && (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT)))
+            if (MainContainer.Mouse.Inside && LastDrawnPoint != null && Input.Press(Keycode.SHIFT))
             {
                 if (MapTileX != LastDrawnPoint.X || MapTileY != LastDrawnPoint.Y)
                 {
