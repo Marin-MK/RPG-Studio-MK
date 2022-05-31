@@ -36,6 +36,12 @@ public partial class MapViewer
     Point SelectionTileOrigin;
     MapSelection SelectionTiles;
 
+    CursorWidget LineDrawCursor;
+    LineDrawWidget LineDrawWidget;
+    Point LastDrawnPoint;
+    Location LastDrawnOrigin;
+    bool DrawingLine = false;
+
     public SelectionBackground SelectionBackground;
 
     private partial void ConstructorTiles()
@@ -72,6 +78,16 @@ public partial class MapViewer
 
         SelectionBackground = new SelectionBackground(MainContainer);
         SelectionBackground.SetZIndex(7);
+
+        LineDrawWidget = new LineDrawWidget(MainContainer);
+        LineDrawWidget.ConsiderInAutoScrollCalculation = false;
+        LineDrawWidget.SetZIndex(8);
+        LineDrawWidget.SetVisible(false);
+
+        LineDrawCursor = new CursorWidget(MainContainer);
+        LineDrawCursor.ConsiderInAutoScrollCalculation = false;
+        LineDrawCursor.SetZIndex(8);
+        LineDrawCursor.SetVisible(false);
 
         Editor.OnUndoing += delegate (BaseEventArgs e)
         {
@@ -311,6 +327,15 @@ public partial class MapViewer
                         throw new Exception($"The tile data list is empty, but the eraser tool is not selected.\nCan't find tiles to draw with.");
                     }
                 }
+                if (DrawingLine)
+                {
+                    // Act as if the last mouse press was at the line origin point
+                    // Draw the line between the centers of the two points
+                    oldx = LastDrawnPoint.X * 32 + 16;
+                    oldy = LastDrawnPoint.Y * 32 + 16;
+                    newx += 16;
+                    newy += 16;
+                }
                 List<Point> points = MapWidget.GetTilesFromMouse(oldx, oldy, newx, newy, Layer);
                 if (points.Count > 0)
                 {
@@ -374,6 +399,11 @@ public partial class MapViewer
                         }
                     }
                     MapWidget.DrawTiles(points, Layer);
+                    if (!DrawingLine)
+                    {
+                        LastDrawnPoint = new Point((int)Math.Floor(newx / 32d), (int)Math.Floor(newy / 32d));
+                        LastDrawnOrigin = CursorOrigin;
+                    }
                 }
             }
         }
@@ -399,6 +429,13 @@ public partial class MapViewer
                 OriginDiffY = -OriginDiffY;
                 if (CursorOrigin == Location.BottomLeft) CursorOrigin = Location.TopLeft;
                 else CursorOrigin = Location.TopRight;
+            }
+            if (!DrawingLine)
+            {
+                // The origin can change when we make a selection, so make sure we update that
+                // Additionally, that means the origin point also changes
+                LastDrawnPoint = new Point((int)Math.Floor(newx / 32d), (int)Math.Floor(newy / 32d));
+                LastDrawnOrigin = CursorOrigin;
             }
             CursorWidth = OriginDiffX;
             CursorHeight = OriginDiffY;
@@ -759,6 +796,69 @@ public partial class MapViewer
                 IgnoreLeftButton = false;
                 IgnoreRightButton = false;
             }
+        }
+    }
+
+    private partial void UpdateTiles()
+    {
+        if (Mode == MapMode.Tiles)
+        {
+            if (MainContainer.Mouse.Inside && LastDrawnPoint != null && (Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_LSHIFT) || Input.Press(odl.SDL2.SDL.SDL_Keycode.SDLK_RSHIFT)))
+            {
+                if (MapTileX != LastDrawnPoint.X || MapTileY != LastDrawnPoint.Y)
+                {
+                    int cx = LastDrawnPoint.X;
+                    int cy = LastDrawnPoint.Y;
+                    int x1s = 1;
+                    int y1s = 1;
+                    int x2s = 1;
+                    int y2s = 1;
+                    if (LastDrawnOrigin == Location.TopRight || LastDrawnOrigin == Location.BottomRight)
+                    {
+                        cx -= CursorWidth;
+                        x1s = -1;
+                    }
+                    if (LastDrawnOrigin == Location.BottomLeft || LastDrawnOrigin == Location.BottomRight)
+                    {
+                        cy -= CursorHeight;
+                        y1s = -1;
+                    }
+                    if (CursorOrigin == Location.TopRight || CursorOrigin == Location.BottomRight) x2s = -1;
+                    if (CursorOrigin == Location.BottomLeft || CursorOrigin == Location.BottomRight) y2s = -1;
+                    int x1 = (int) Math.Round((LastDrawnPoint.X * 32 + CursorWidth * x1s * 16 + 16) * ZoomFactor);
+                    int y1 = (int) Math.Round((LastDrawnPoint.Y * 32 + CursorHeight * y1s * 16 + 16) * ZoomFactor);
+                    int x2 = (int) Math.Round((MapTileX * 32 + CursorWidth * x2s * 16 + 16) * ZoomFactor);
+                    int y2 = (int) Math.Round((MapTileY * 32 + CursorHeight * y2s * 16 + 16) * ZoomFactor);
+                    Point p1 = new Point(MapWidget.Position.X + x1, MapWidget.Position.Y + y1);
+                    Point p2 = new Point(MapWidget.Position.X + x2, MapWidget.Position.Y + y2);
+                    LineDrawWidget.DrawLine(p1, p2, Color.WHITE, Color.BLACK);
+                    LineDrawWidget.SetVisible(true);
+                    cx = (int) Math.Round(cx * 32 * ZoomFactor);
+                    cy = (int) Math.Round(cy * 32 * ZoomFactor);
+                    LineDrawCursor.SetPosition(MapWidget.Position.X + cx - 7, MapWidget.Position.Y + cy - 7);
+                    LineDrawCursor.SetSize(Cursor.Size);
+                    LineDrawCursor.SetVisible(true);
+                    DrawingLine = true;
+                }
+                else
+                {
+                    LineDrawWidget.SetVisible(false);
+                    LineDrawCursor.SetVisible(false);
+                }
+            }
+            else
+            {
+                DrawingLine = false;
+                LineDrawWidget.SetVisible(false);
+                LineDrawCursor.SetVisible(false);
+            }
+        }
+        else
+        {
+            LastDrawnPoint = null;
+            DrawingLine = false;
+            LineDrawWidget.SetVisible(false);
+            LineDrawCursor.SetVisible(false);
         }
     }
 }
