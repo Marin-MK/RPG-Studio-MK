@@ -154,7 +154,8 @@ public partial class MapViewer : Widget
         Editor.ProjectSettings.LastMappingSubmode = this.Mode;
         SidebarWidgetTiles.SetVisible(this.Mode == MapMode.Tiles);
         SidebarWidgetEvents.SetVisible(this.Mode == MapMode.Events);
-        EventBoxes.ForEach(eb => eb.SetVisible(this.Mode == MapMode.Events));
+        if (this.Mode == MapMode.Events || this.Mode == MapMode.Tiles && Editor.ProjectSettings.ShowEventBoxesInTilesSubmode) ShowEventBoxes();
+        else HideEventBoxes();
         if (this.Mode == MapMode.Tiles) CursorWidth = CursorHeight = 0;
         Editor.MainWindow.MapWidget.SubmodePicker.SelectTab((int) Mode);
     }
@@ -372,6 +373,8 @@ public partial class MapViewer : Widget
         else Editor.MainWindow.StatusBar.ZoomControl.DecreaseZoom();
     }
 
+    private partial void UpdateTiles();
+
     public override void Update()
     {
         base.Update();
@@ -391,6 +394,7 @@ public partial class MapViewer : Widget
                 Paste();
             }
         }
+        UpdateTiles();
     }
 
     private partial void CopyTiles(bool Cut);

@@ -320,17 +320,17 @@ public class DataTypeTilesets : Widget
         {
             new MenuItem("Copy")
             {
-                OnLeftClick = CopyTileset
+                OnClicked = CopyTileset
             },
             new MenuItem("Paste")
             {
-                OnLeftClick = PasteTileset,
+                OnClicked = PasteTileset,
                 IsClickable = e => e.Value = Utilities.IsClipboardValidBinary(BinaryData.TILESET)
             },
             new MenuSeparator(),
             new MenuItem("Delete")
             {
-                OnLeftClick = DeleteTileset
+                OnClicked = DeleteTileset
             }
         });
     }

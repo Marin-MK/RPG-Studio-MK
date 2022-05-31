@@ -20,9 +20,64 @@ public class EventBox : Widget
     public void RepositionSprites(MapImageWidget MapWidget, int EventX, int EventY)
     {
         this.MapWidget = MapWidget;
+        // Calculate excess for cropping
+        bool CropGraphic = false;
+        bool GraphicVisible = true;
+        bool BoxVisible = true;
+        switch (Editor.ProjectSettings.EventGraphicViewMode)
+        {
+            case EventGraphicViewMode.BoxOnly:
+                CropGraphic = false;
+                GraphicVisible = false;
+                BoxVisible = true;
+                break;
+            case EventGraphicViewMode.BoxAndCroppedGraphic:
+                CropGraphic = true;
+                GraphicVisible = true;
+                BoxVisible = true;
+                break;
+            case EventGraphicViewMode.BoxAndGraphic:
+                CropGraphic = false;
+                GraphicVisible = true;
+                BoxVisible = true;
+                break;
+            case EventGraphicViewMode.GraphicOnly:
+                CropGraphic = false;
+                GraphicVisible = true;
+                BoxVisible = false;
+                break;
+            case EventGraphicViewMode.CroppedGraphicOnly:
+                CropGraphic = true;
+                GraphicVisible = true;
+                BoxVisible = false;
+                break;
+        }
+        Sprites["gfx"].Visible = GraphicVisible;
+        Sprites["box"].Visible = BoxVisible;
+        int xexcess = 0;
+        int yexcess = 0;
+        if (Sprites["gfx"].Bitmap != null)
+        {
+            if (CropGraphic)
+            {
+                xexcess = Sprites["gfx"].Bitmap.Width - Event.Width * 32;
+                Sprites["gfx"].SrcRect.X = xexcess / 2;
+                Sprites["gfx"].SrcRect.Width = Sprites["gfx"].Bitmap.Width - xexcess;
+                yexcess = Sprites["gfx"].Bitmap.Height - Event.Height * 32;
+                Sprites["gfx"].SrcRect.Y = yexcess;
+                Sprites["gfx"].SrcRect.Height = Sprites["gfx"].Bitmap.Height - yexcess;
+            }
+            else
+            {
+                Sprites["gfx"].SrcRect = new Rect(0, 0, Sprites["gfx"].Bitmap.Width, Sprites["gfx"].Bitmap.Height);
+            }
+        }
+
+        // Positioning
         int tx = MapWidget.Position.X + (int) Math.Round(EventX * 32 * MapWidget.ZoomFactor);
         int ty = MapWidget.Position.Y + (int) Math.Round(EventY * 32 * MapWidget.ZoomFactor);
         ty -= (int) Math.Round(32 * (Event.Height - 1) * MapWidget.ZoomFactor);
+
         Sprites["box"].Bitmap?.Dispose();
         Sprites["box"].Bitmap = new Bitmap((int) Math.Round(Event.Width * 32 * MapWidget.ZoomFactor), (int) Math.Round(Event.Height * 32 * MapWidget.ZoomFactor));
         Sprites["box"].Bitmap.Unlock();
@@ -32,12 +87,18 @@ public class EventBox : Widget
         Sprites["box"].Bitmap.Lock();
         Sprites["box"].X = tx;
         Sprites["box"].Y = ty;
+
+        if (Sprites["gfx"].Bitmap == null) return;
         if (Sprites["gfx"].DestroyBitmap) // Image
             Sprites["gfx"].X = tx + (int) Math.Round((this.Event.Width * 32 - Sprites["gfx"].SrcRect.Width) * MapWidget.ZoomFactor / 2d);
         else // Tile
             Sprites["gfx"].X = tx;
         Sprites["gfx"].Y = ty + (int) Math.Round((this.Event.Height * 32 - Sprites["gfx"].SrcRect.Height) * MapWidget.ZoomFactor);
         Sprites["gfx"].ZoomX = Sprites["gfx"].ZoomY = MapWidget.ZoomFactor;
+
+        // Move graphic due to cropping
+        //Sprites["gfx"].X += xexcess / 2;
+        //Sprites["gfx"].Y += yexcess;
     }
 
     public void SetEvent(Map Map, Event Event)
@@ -108,4 +169,13 @@ public class EventBox : Widget
             }
         }
     }
+}
+
+public enum EventGraphicViewMode
+{
+    BoxOnly,
+    BoxAndGraphic,
+    BoxAndCroppedGraphic,
+    GraphicOnly,
+    CroppedGraphicOnly
 }

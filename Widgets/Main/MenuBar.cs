@@ -165,7 +165,7 @@ public class MenuBar : Widget
             if (e.LeftButton != e.OldLeftButton && !e.LeftButton)
             {
                 if (!ActiveMenu.Mouse.Inside) IgnorePress = true;
-                if (this.ActiveMenuHovered && ActiveMenu.SelectedItem != null) ActiveMenu.TryClick(e);
+                if (ActiveMenuHovered && ActiveMenu.HoveringItem != null && ActiveMenu.CanOpenHoveredItem()) ActiveMenu.OpenHoveredItem();
             }
         };
         ActiveMenu.SetInnerColor(10, 23, 37);

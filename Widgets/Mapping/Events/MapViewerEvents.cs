@@ -33,6 +33,21 @@ public partial class MapViewer
         }
     }
 
+    public void HideEventBoxes()
+    {
+        EventBoxes.ForEach(eb => eb.SetVisible(false));
+    }
+
+    public void ShowEventBoxes()
+    {
+        EventBoxes.ForEach(eb => eb.SetVisible(true));
+    }
+
+    public void UpdateEventBoxesViewMode()
+    {
+        EventBoxes.ForEach(eb => eb.RepositionSprites(MapWidget, eb.Event.X, eb.Event.Y));
+    }
+
     private void CreateEventBox(Event Event)
     {
         EventBox box = new EventBox(MainContainer);

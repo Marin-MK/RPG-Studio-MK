@@ -61,29 +61,29 @@ public class EditMoveRouteWindow : PopupWindow
             new MenuItem("Edit")
             {
                 IsClickable = e => e.Value = IsCommandEditable((MoveCommand) MoveBox.SelectedItem.Object),
-                OnLeftClick = _ => EditCommand()
+                OnClicked = _ => EditCommand()
             },
             new MenuSeparator(),
             new MenuItem("Cut")
             {
                 IsClickable = e => e.Value = IsRealCommand(),
-                OnLeftClick = _ => CutCommand()
+                OnClicked = _ => CutCommand()
             },
             new MenuItem("Copy")
             {
                 IsClickable = e => e.Value = IsRealCommand(),
-                OnLeftClick = _ => CopyCommand()
+                OnClicked = _ => CopyCommand()
             },
             new MenuItem("Paste")
             {
                 IsClickable = e => e.Value = Utilities.IsClipboardValidBinary(BinaryData.MOVE_COMMAND),
-                OnLeftClick = _ => PasteCommand()
+                OnClicked = _ => PasteCommand()
             },
             new MenuSeparator(),
             new MenuItem("Delete")
             {
                 IsClickable = e => e.Value = IsRealCommand(),
-                OnLeftClick = _ => DeleteCommand()
+                OnClicked = _ => DeleteCommand()
             }
         });
 

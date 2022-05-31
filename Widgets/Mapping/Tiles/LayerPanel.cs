@@ -49,36 +49,36 @@ public class LayerPanel : Widget
             {
                 new MenuItem("New Layer")
                 {
-                    OnLeftClick = NewLayerEvent,
+                    OnClicked = NewLayerEvent,
                     IsClickable = delegate (BoolEventArgs e) { e.Value = false; }
                 },
                 new MenuItem("Rename Layer")
                 {
                     Shortcut = "F2",
-                    OnLeftClick = RenameLayer,
+                    OnClicked = RenameLayer,
                     IsClickable = delegate (BoolEventArgs e) { e.Value = false; }
                 },
                 new MenuSeparator(),
                 new MenuItem("Toggle Visibility")
                 {
-                    OnLeftClick = ToggleVisibilityLayer,
+                    OnClicked = ToggleVisibilityLayer,
                     IsClickable = delegate (BoolEventArgs e) { e.Value = layerwidget.HoveringIndex >= 0; }
                 },
                 new MenuItem("Move Layer Up")
                 {
-                    OnLeftClick = MoveLayerUpEvent,
+                    OnClicked = MoveLayerUpEvent,
                     IsClickable = delegate (BoolEventArgs e) { e.Value = SelectedLayer < Map.Layers.Count - 1 && layerwidget.HoveringIndex >= 0; }
                 },
                 new MenuItem("Move Layer Down")
                 {
-                    OnLeftClick = MoveLayerDownEvent,
+                    OnClicked = MoveLayerDownEvent,
                     IsClickable = delegate (BoolEventArgs e) { e.Value = SelectedLayer > 0 && layerwidget.HoveringIndex >= 0; }
                 },
                 new MenuSeparator(),
                 new MenuItem("Delete Layer")
                 {
                     Shortcut = "Del",
-                    OnLeftClick = DeleteLayerEvent,
+                    OnClicked = DeleteLayerEvent,
                     IsClickable = delegate (BoolEventArgs e) { e.Value = false && Map.Layers.Count > 1 && layerwidget.HoveringIndex >= 0; },
                 }
             });

@@ -132,38 +132,38 @@ public class MainEditorWindow : UIWindow
                     new MenuItem("New")
                     {
                         HelpText = "Create a new project.",
-                        OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.NewProject); }
+                        OnClicked = _ => EnsureSaved(Editor.NewProject)
                     },
                     new MenuItem("Open")
                     {
                         HelpText = "Open an existing project.",
                         Shortcut = "Ctrl+O",
-                        OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.OpenProject); }
+                        OnClicked = _ => EnsureSaved(Editor.OpenProject)
                     },
                     new MenuItem("Save")
                     {
                         HelpText = "Save all changes in the current project.",
                         Shortcut = "Ctrl+S",
-                        OnLeftClick = delegate (MouseEventArgs e) { Editor.SaveProject(); },
-                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
+                        IsClickable = e => e.Value = Editor.InProject,
+                        OnClicked = _ => Editor.SaveProject()
                     },
                     new MenuSeparator(),
                     new MenuItem("Close Project")
                     {
                         HelpText = "Close this project and return to the welcome screen.",
-                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
-                        OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(delegate () { Editor.CloseProject(true); }); }
+                        IsClickable = e => e.Value = Editor.InProject,
+                        OnClicked = _ => EnsureSaved(() => Editor.CloseProject(true))
                     },
                     new MenuItem("Reload Project")
                     {
                         HelpText = "Closes and immediately reopens the project. Used for quickly determining if changes are saved properly, or to restore an old version.",
-                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
-                        OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.ReloadProject); }
+                        IsClickable = e => e.Value = Editor.InProject,
+                        OnClicked = _ => EnsureSaved(Editor.ReloadProject)
                     },
                     new MenuItem("Exit Editor")
                     {
                         HelpText = "Close this project and quit the program.",
-                        OnLeftClick = delegate (MouseEventArgs e) { EnsureSaved(Editor.ExitEditor); }
+                        OnClicked = _ => EnsureSaved(Editor.ExitEditor)
                     }
                 }
             },
@@ -171,17 +171,76 @@ public class MainEditorWindow : UIWindow
             {
                 Items = new List<IMenuItem>()
                 {
-                    new MenuItem("Toggle Animations")
+                    new MenuItem("Show Animations")
                     {
+                        IsCheckable = true,
+                        IsChecked = e => e.Value = Editor.GeneralSettings.ShowMapAnimations,
                         HelpText = "Toggles the animation of autotiles, fogs and panoramas.",
-                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
-                        OnLeftClick = delegate (MouseEventArgs e) { Editor.ToggleMapAnimations(); }
+                        IsClickable = e => e.Value = Editor.InProject,
+                        OnClicked = _ => Editor.ToggleMapAnimations()
                     },
-                    new MenuItem("Toggle Grid")
+                    new MenuItem("Show Grid")
                     {
+                        IsCheckable = true,
+                        IsChecked = e => e.Value = Editor.GeneralSettings.ShowGrid,
                         HelpText = "Toggles the visibility of the grid overlay while mapping.",
-                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; },
-                        OnLeftClick = delegate (MouseEventArgs e) { Editor.ToggleGrid(); }
+                        IsClickable = e => e.Value = Editor.InProject,
+                        OnClicked = _ => Editor.ToggleGrid()
+                    },
+                    new MenuItem("Event Graphics")
+                    {
+                        IsClickable = e => e.Value = Editor.InProject,
+                        Items = new List<IMenuItem>()
+                        {
+                            new MenuItem("Box only")
+                            {
+                                IsCheckable = true,
+                                IsChecked = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode == EventGraphicViewMode.BoxOnly,
+                                HelpText = "Shows only the boxes of events, no graphics.",
+                                OnClicked = _ => SetEventGraphicViewMode(EventGraphicViewMode.BoxOnly),
+                                IsClickable = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode != EventGraphicViewMode.BoxOnly
+                            },
+                            new MenuItem("Box and Graphic")
+                            {
+                                IsCheckable = true,
+                                IsChecked = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode == EventGraphicViewMode.BoxAndGraphic,
+                                HelpText = "Shows boxes of events and the full graphic.",
+                                OnClicked = _ => SetEventGraphicViewMode(EventGraphicViewMode.BoxAndGraphic),
+                                IsClickable = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode != EventGraphicViewMode.BoxAndGraphic
+                            },
+                            new MenuItem("Box and cropped Graphic")
+                            {
+                                IsCheckable = true,
+                                IsChecked = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode == EventGraphicViewMode.BoxAndCroppedGraphic,
+                                HelpText = "Shows boxes of events and the graphic cropped to fit the box.",
+                                OnClicked = _ => SetEventGraphicViewMode(EventGraphicViewMode.BoxAndCroppedGraphic),
+                                IsClickable = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode != EventGraphicViewMode.BoxAndCroppedGraphic
+                            },
+                            new MenuItem("Graphic only")
+                            {
+                                IsCheckable = true,
+                                IsChecked = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode == EventGraphicViewMode.GraphicOnly,
+                                HelpText = "Shows no boxes of events, only the full graphics.",
+                                OnClicked = _ => SetEventGraphicViewMode(EventGraphicViewMode.GraphicOnly),
+                                IsClickable = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode != EventGraphicViewMode.GraphicOnly
+                            },
+                            new MenuItem("Cropped Graphic only")
+                            {
+                                IsCheckable = true,
+                                IsChecked = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode == EventGraphicViewMode.CroppedGraphicOnly,
+                                HelpText = "Shows no boxes of events, only the graphic cropped to fit where the box would be.",
+                                OnClicked = _ => SetEventGraphicViewMode(EventGraphicViewMode.CroppedGraphicOnly),
+                                IsClickable = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode != EventGraphicViewMode.CroppedGraphicOnly
+                            },
+                            new MenuSeparator(),
+                            new MenuItem("Show in Tiles submode")
+                            {
+                                IsCheckable = true,
+                                IsChecked = e => e.Value = Editor.ProjectSettings.ShowEventBoxesInTilesSubmode,
+                                HelpText = "When enabled, will also show event boxes and graphics in the Tiles submode.",
+                                OnClicked = _ => SetEventBoxVisibilityInTiles(!Editor.ProjectSettings.ShowEventBoxesInTilesSubmode)
+                            }
+                        }
                     }
                 }
             },
@@ -193,14 +252,14 @@ public class MainEditorWindow : UIWindow
                     {
                         Shortcut = "F12",
                         HelpText = "Play the game.",
-                        OnLeftClick = delegate (MouseEventArgs e) { Editor.StartGame(); },
-                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
+                        IsClickable = e => e.Value = Editor.InProject,
+                        OnClicked = _ => Editor.StartGame()
                     },
                     new MenuItem("Open Game Folder")
                     {
                         HelpText = "Opens the file explorer and navigates to the project folder.",
-                        OnLeftClick = delegate (MouseEventArgs e) { Editor.OpenGameFolder(); },
-                        IsClickable = delegate (BoolEventArgs e ) { e.Value = Editor.InProject; }
+                        IsClickable = e => e.Value = Editor.InProject,
+                        OnClicked = _ => Editor.OpenGameFolder()
                     }
                 }
             },
@@ -212,17 +271,17 @@ public class MainEditorWindow : UIWindow
                     {
                         Shortcut = "F1",
                         HelpText = "Opens the help window.",
-                        OnLeftClick = delegate (MouseEventArgs e) { OpenHelpWindow(); }
+                        OnClicked = _ => OpenHelpWindow()
                     },
                     new MenuItem("About RPG Studio MK")
                     {
                         HelpText = "Shows information about this program.",
-                        OnLeftClick = delegate (MouseEventArgs e) { OpenAboutWindow(); }
+                        OnClicked = _ => OpenAboutWindow()
                     },
                     new MenuItem("Legal")
                     {
                         HelpText = "Shows legal information about this program.",
-                        OnLeftClick = delegate (MouseEventArgs e) { OpenLegalWindow(); }
+                        OnClicked = _ => OpenLegalWindow()
                     }
                 }
             }
@@ -360,6 +419,23 @@ public class MainEditorWindow : UIWindow
             "RPG Studio MK is licensed under the GNU General Public License v3+, referred to as GPLv3+.\n\n" +
             "You may view the details of this license from the file titled LICENSE in the program's root folder.\nIf not, please view https://www.gnu.org/licenses/gpl-3.0.html."
         );
+    }
+
+    public void SetEventGraphicViewMode(EventGraphicViewMode ViewMode)
+    {
+        Editor.ProjectSettings.EventGraphicViewMode = ViewMode;
+        if (MapWidget != null && (MapWidget.MapViewer.Mode == MapMode.Events || MapWidget.MapViewer.Mode == MapMode.Tiles && Editor.ProjectSettings.ShowEventBoxesInTilesSubmode))
+            MapWidget.MapViewer.UpdateEventBoxesViewMode();
+    }
+
+    public void SetEventBoxVisibilityInTiles(bool Visible)
+    {
+        Editor.ProjectSettings.ShowEventBoxesInTilesSubmode = Visible;
+        if (MapWidget.MapViewer.Mode == MapMode.Tiles)
+        {
+            if (Visible) MapWidget.MapViewer.ShowEventBoxes();
+            else MapWidget.MapViewer.HideEventBoxes();
+        }
     }
 
     /// <summary>

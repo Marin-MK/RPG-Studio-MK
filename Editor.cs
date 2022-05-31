@@ -696,6 +696,7 @@ public static class Editor
             try
             {
                 GeneralSettings = formatter.Deserialize(stream) as GeneralSettings;
+                GeneralSettings.Update();
             }
             catch (SerializationException)
             {
@@ -736,6 +737,7 @@ public static class Editor
             IFormatter formatter = new BinaryFormatter();
             Stream stream = new FileStream(Data.ProjectPath + "/project.mkproj", FileMode.Open, FileAccess.Read);
             ProjectSettings = formatter.Deserialize(stream) as ProjectSettings;
+            ProjectSettings.Update();
             stream.Close();
         }
         else
@@ -783,6 +785,16 @@ public class ProjectSettings
         RawData.Add("LAST_ZOOM_FACTOR", 1d);
         RawData.Add("TILESET_CAPACITY", 25);
         RawData.Add("AUTOTILE_CAPACITY", 25);
+        RawData.Add("EVENT_GRAPHIC_VIEW_MODE", EventGraphicViewMode.BoxAndGraphic);
+        RawData.Add("SHOW_EVENT_BOXES_IN_TILES", false);
+    }
+
+    /// <summary>
+    /// Perform any version upgrades or updates here.
+    /// </summary>
+    public void Update()
+    {
+        
     }
 
     /// <summary>
@@ -865,6 +877,24 @@ public class ProjectSettings
         get => (int) RawData["AUTOTILE_CAPACITY"];
         set => RawData["AUTOTILE_CAPACITY"] = value;
     }
+
+    /// <summary>
+    /// The view mode of event graphics.
+    /// </summary>
+    public EventGraphicViewMode EventGraphicViewMode
+    {
+        get => (EventGraphicViewMode) RawData["EVENT_GRAPHIC_VIEW_MODE"];
+        set => RawData["EVENT_GRAPHIC_VIEW_MODE"] = value;
+    }
+
+    /// <summary>
+    /// Whether to show event boxes in the TIles submode
+    /// </summary>
+    public bool ShowEventBoxesInTilesSubmode
+    {
+        get => (bool) RawData["SHOW_EVENT_BOXES_IN_TILES"];
+        set => RawData["SHOW_EVENT_BOXES_IN_TILES"] = value;
+    }
 }
 
 [Serializable]
@@ -887,6 +917,14 @@ public class GeneralSettings
         RawData.Add("PREFER_ELLIPSE_FILL", false);
         RawData.Add("PREFER_SELECTION_ALL", false);
         RawData.Add("SECONDS_USED", 0);
+    }
+
+    /// <summary>
+    /// Perform any version upgrades or updates here.
+    /// </summary>
+    public void Update()
+    {
+
     }
 
     /// <summary>

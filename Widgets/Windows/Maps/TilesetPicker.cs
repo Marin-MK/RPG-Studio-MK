@@ -88,7 +88,7 @@ public class TilesetPicker : PopupWindow
                     {
                         e.Value = SelectedTileset is not null;
                     },
-                    OnLeftClick = ActionButtonClicked
+                    OnClicked = ActionButtonClicked
                 }
             });
 

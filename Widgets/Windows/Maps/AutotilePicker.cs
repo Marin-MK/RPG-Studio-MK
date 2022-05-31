@@ -81,7 +81,7 @@ public class AutotilePicker : PopupWindow
                     {
                         e.Value = SelectedAutotile is not null;
                     },
-                    OnLeftClick = ActionButtonClicked
+                    OnClicked = ActionButtonClicked
                 }
             });
 
@@ -104,7 +104,7 @@ public class AutotilePicker : PopupWindow
                     {
                         e.Value = InUse.SelectedIndex > 0;
                     },
-                    OnLeftClick = MoveAutotileUp
+                    OnClicked = MoveAutotileUp
                 },
                 new MenuItem("Move Autotile Down")
                 {
@@ -112,12 +112,12 @@ public class AutotilePicker : PopupWindow
                     {
                         e.Value = InUse.SelectedIndex < InUse.Items.Count - 1;
                     },
-                    OnLeftClick = MoveAutotileDown
+                    OnClicked = MoveAutotileDown
                 },
                 new MenuSeparator(),
                 new MenuItem("Remove Autotile")
                 {
-                    OnLeftClick = ActionButtonClicked
+                    OnClicked = ActionButtonClicked
                 }
             });
 

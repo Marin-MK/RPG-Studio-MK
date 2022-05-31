@@ -70,11 +70,11 @@ public class MapSelectPanel : Widget
         {
             new MenuItem("New Map")
             {
-                OnLeftClick = NewMap
+                OnClicked = NewMap
             },
             new MenuItem("Edit Map")
             {
-                OnLeftClick = EditMap,
+                OnClicked = EditMap,
                 IsClickable = delegate (BoolEventArgs e)
                 {
                     e.Value = mapview.HoveringNode != null;
@@ -83,23 +83,23 @@ public class MapSelectPanel : Widget
             new MenuSeparator(),
             new MenuItem("Cut Map")
             {
-                OnLeftClick = CutMap,
+                OnClicked = CutMap,
                 IsClickable = delegate (BoolEventArgs e) { e.Value = mapview.HoveringNode != null && mapview.Nodes.Count > 1; }
             },
             new MenuItem("Copy Map")
             {
-                OnLeftClick = CopyMap,
+                OnClicked = CopyMap,
                 IsClickable = delegate (BoolEventArgs e) { e.Value = mapview.HoveringNode != null; }
             },
             new MenuItem("Paste Map")
             {
-                OnLeftClick = PasteMap,
+                OnClicked = PasteMap,
                 IsClickable = delegate (BoolEventArgs e) { e.Value = Utilities.IsClipboardValidBinary(BinaryData.MAP); }
             },
             new MenuSeparator(),
             new MenuItem("Delete")
             {
-                OnLeftClick = DeleteMap,
+                OnClicked = DeleteMap,
                 Shortcut = "Del",
                 IsClickable = delegate (BoolEventArgs e)
                 {
