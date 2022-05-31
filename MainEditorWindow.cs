@@ -55,16 +55,13 @@ public class MainEditorWindow : UIWindow
 
         this.OnClosing += delegate (BoolEventArgs e)
         {
-            int x, y;
-            odl.SDL2.SDL.SDL_GetWindowPosition(this.SDL_Window, out x, out y);
-            int w, h;
-            odl.SDL2.SDL.SDL_GetWindowSize(this.SDL_Window, out w, out h);
-            Editor.GeneralSettings.LastX = x;
-            Editor.GeneralSettings.LastY = y;
-            Editor.GeneralSettings.LastWidth = w;
-            Editor.GeneralSettings.LastHeight = h;
-            odl.SDL2.SDL.SDL_WindowFlags flags = (odl.SDL2.SDL.SDL_WindowFlags)odl.SDL2.SDL.SDL_GetWindowFlags(this.SDL_Window);
-            Editor.GeneralSettings.WasMaximized = (flags & odl.SDL2.SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED) == odl.SDL2.SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED;
+            Point pos = GetPosition();
+            Size size = GetSize();
+            Editor.GeneralSettings.LastX = pos.X;
+            Editor.GeneralSettings.LastY = pos.Y;
+            Editor.GeneralSettings.LastWidth = size.Width;
+            Editor.GeneralSettings.LastHeight = size.Height;
+            Editor.GeneralSettings.WasMaximized = IsMaximized();
             Editor.DumpGeneralSettings();
 
             if (Editor.InProject)

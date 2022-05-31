@@ -195,7 +195,7 @@ public static class Utilities
     /// </summary>
     public static void OpenLink(string url)
     {
-        odl.SDL2.SDL.SDL_OpenURL(url);
+        Graphics.OpenURL(url);
     }
 
     /// <summary>
