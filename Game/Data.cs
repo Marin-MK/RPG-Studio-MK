@@ -20,6 +20,8 @@ public static class Data
     public static List<Script> Scripts = new List<Script>();
     public static System System;
 
+    public static EssentialsVersion EssentialsVersion = EssentialsVersion.Unknown;
+
     public static void ClearProjectData()
     {
         ProjectPath = null;
@@ -27,7 +29,10 @@ public static class Data
         DataPath = null;
         Maps.Clear();
         Tilesets.Clear();
+        Autotiles.Clear();
+        CommonEvents.Clear();
         Species.Clear();
+        Scripts.Clear();
         System = null;
     }
 
@@ -40,23 +45,23 @@ public static class Data
     {
         Initialize();
         LoadTilesets();
+        LoadScripts();
         foreach (float f in LoadMaps())
         {
             yield return f;
         }
         LoadSystem();
         LoadCommonEvents();
-        LoadScripts();
         //LoadSpecies();
     }
 
     public static void SaveGameData()
     {
         SaveTilesets();
+        SaveScripts();
         SaveMaps();
         SaveSystem();
         SaveCommonEvents();
-        SaveScripts();
         //SaveSpecies();
     }
 
@@ -340,6 +345,37 @@ public static class Data
             if (string.IsNullOrEmpty(maincode)) Scripts.RemoveAt(Scripts.Count - 2);
             else Scripts[Scripts.Count - 2].Content = maincode;
         }
+        // Find Essentials version
+        for (int i = 0; i < Scripts.Count; i++)
+        {
+            Script s = Scripts[i];
+            Match m = Regex.Match(s.Content, "module Essentials[\t\r\n ]*VERSION[\t\r\n ]*=[\t\r\n ]*\"(.*)\"");
+            if (!string.IsNullOrEmpty(m.Groups[1].Value)) // v19, v19.1, v20, etc.
+            {
+                EssentialsVersion = m.Groups[1].Value switch
+                {
+                    "19" => EssentialsVersion.v19,
+                    "19.1" => EssentialsVersion.v19_1,
+                    "20" => EssentialsVersion.v20,
+                    _ => EssentialsVersion.Unknown
+                };
+                break;
+            }
+            m = Regex.Match(s.Content, "(ESSENTIALS_VERSION|ESSENTIALSVERSION)[\t\r\n ]*=[\t\r\n ]*\"(.*)\"");
+            if (!string.IsNullOrEmpty(m.Groups[2].Value))
+            {
+                EssentialsVersion = m.Groups[2].Value switch
+                {
+                    "17" => EssentialsVersion.v17,
+                    "17.1" => EssentialsVersion.v17_1,
+                    "17.2" => EssentialsVersion.v17_2,
+                    "18" => EssentialsVersion.v18,
+                    "18.1" => EssentialsVersion.v18_1,
+                    _ => EssentialsVersion.Unknown
+                };
+                break;
+            }
+        }
     }
 
     private static void SaveScripts()
@@ -359,4 +395,22 @@ public static class Data
         Ruby.Unpin(scripts);
         Ruby.Unpin(file);
     }
+
+    public static bool EssentialsAtLeast(EssentialsVersion Version)
+    {
+        return EssentialsVersion >= Version;
+    }
+}
+
+public enum EssentialsVersion
+{
+    Unknown = 0,
+    v17     = 1,
+    v17_1   = 2,
+    v17_2   = 3,
+    v18     = 4,
+    v18_1   = 5,
+    v19     = 6,
+    v19_1   = 7,
+    v20     = 8
 }
