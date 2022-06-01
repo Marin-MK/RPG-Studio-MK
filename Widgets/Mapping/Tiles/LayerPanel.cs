@@ -58,21 +58,10 @@ public class LayerPanel : Widget
                     OnClicked = RenameLayer,
                     IsClickable = delegate (BoolEventArgs e) { e.Value = false; }
                 },
-                new MenuSeparator(),
                 new MenuItem("Toggle Visibility")
                 {
                     OnClicked = ToggleVisibilityLayer,
                     IsClickable = delegate (BoolEventArgs e) { e.Value = layerwidget.HoveringIndex >= 0; }
-                },
-                new MenuItem("Move Layer Up")
-                {
-                    OnClicked = MoveLayerUpEvent,
-                    IsClickable = delegate (BoolEventArgs e) { e.Value = SelectedLayer < Map.Layers.Count - 1 && layerwidget.HoveringIndex >= 0; }
-                },
-                new MenuItem("Move Layer Down")
-                {
-                    OnClicked = MoveLayerDownEvent,
-                    IsClickable = delegate (BoolEventArgs e) { e.Value = SelectedLayer > 0 && layerwidget.HoveringIndex >= 0; }
                 },
                 new MenuSeparator(),
                 new MenuItem("Delete Layer")
@@ -124,36 +113,6 @@ public class LayerPanel : Widget
     public void ToggleVisibilityLayer(BaseEventArgs e)
     {
         layerwidget.SetLayerVisible(SelectedLayer, !Map.Layers[SelectedLayer].Visible);
-    }
-
-    private void MoveLayerUpEvent(BaseEventArgs e)
-    {
-        MoveLayerUp(SelectedLayer);
-    }
-
-    public void MoveLayerUp(int LayerIndex, bool IsUndoAction = false)
-    {
-        if (LayerIndex >= Map.Layers.Count - 1) return;
-        Editor.UnsavedChanges = true;
-        MapViewer.SwapLayers(LayerIndex + 1, LayerIndex);
-        CreateLayers();
-        layerwidget.SetSelectedLayer(LayerIndex + 1);
-        if (!IsUndoAction) Undo.LayerSwapUndoAction.Create(Editor.MainWindow.MapWidget.Map.ID, LayerIndex, true);
-    }
-
-    private void MoveLayerDownEvent(BaseEventArgs e)
-    {
-        MoveLayerDown(SelectedLayer);
-    }
-
-    public void MoveLayerDown(int LayerIndex, bool IsUndoAction = false)
-    {
-        if (LayerIndex <= 0) return;
-        Editor.UnsavedChanges = true;
-        MapViewer.SwapLayers(LayerIndex - 1, LayerIndex);
-        CreateLayers();
-        layerwidget.SetSelectedLayer(LayerIndex - 1);
-        if (!IsUndoAction) Undo.LayerSwapUndoAction.Create(Editor.MainWindow.MapWidget.Map.ID, LayerIndex, false);
     }
 
     private void DeleteLayerEvent(BaseEventArgs e)

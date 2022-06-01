@@ -123,7 +123,7 @@ public partial class MapViewer
                 break;
             }
         }
-        if (!found)
+        if (!found && MapTileX >= 0 && MapTileX < Map.Width && MapTileY >= 0 && MapTileY < Map.Height)
         {
             Event ev = new Event(Editor.GetFreeEventID(Map));
             ev.X = MapTileX;

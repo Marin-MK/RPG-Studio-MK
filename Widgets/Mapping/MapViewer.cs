@@ -156,8 +156,10 @@ public partial class MapViewer : Widget
         SidebarWidgetEvents.SetVisible(this.Mode == MapMode.Events);
         if (this.Mode == MapMode.Events || this.Mode == MapMode.Tiles && Editor.ProjectSettings.ShowEventBoxesInTilesSubmode) ShowEventBoxes();
         else HideEventBoxes();
-        if (this.Mode == MapMode.Tiles) CursorWidth = CursorHeight = 0;
-        if (this.Mode == MapMode.Events) Cursor.SetVisible(false);
+        MapTileX = -1;
+        MapTileY = -1;
+        CursorWidth = CursorHeight = 0;
+        Cursor.SetVisible(false);
         Editor.MainWindow.MapWidget.SubmodePicker.SelectTab((int) Mode);
     }
 
