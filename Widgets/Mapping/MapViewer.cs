@@ -372,7 +372,7 @@ public partial class MapViewer : Widget
     public override void MouseWheel(MouseEventArgs e)
     {
         base.MouseWheel(e);
-        if (!Input.Press(Keycode.CTRL)) return;
+        if (!Input.Press(Keycode.CTRL) || !MainContainer.Mouse.Inside) return;
         if (e.WheelY > 0) Editor.MainWindow.StatusBar.ZoomControl.IncreaseZoom();
         else Editor.MainWindow.StatusBar.ZoomControl.DecreaseZoom();
     }
