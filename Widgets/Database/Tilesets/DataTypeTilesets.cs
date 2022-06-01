@@ -333,6 +333,8 @@ public class DataTypeTilesets : Widget
                 OnClicked = DeleteTileset
             }
         });
+
+        TilesetList.SetSelectedIndex(0);
     }
 
     public override void SizeChanged(BaseEventArgs e)
@@ -449,7 +451,6 @@ public class DataTypeTilesets : Widget
             TilesetItems.Add(item);
         }
         TilesetList.SetItems(TilesetItems);
-        if (TilesetList.SelectedIndex == -1) TilesetList.SetSelectedIndex(0);
     }
 
     public void SetSelectedIndex(int SelectedIndex)
