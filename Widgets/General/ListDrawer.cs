@@ -128,6 +128,7 @@ public class ListDrawer : Widget
     public override void MouseMoving(MouseEventArgs e)
     {
         base.MouseMoving(e);
+        if (!Parent.Mouse.LeftStartedInside && !Parent.Mouse.RightStartedInside) return;
         int rx = e.X - Viewport.X;
         int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
         int index = (int) Math.Floor(ry / (double)LineHeight);
@@ -172,7 +173,7 @@ public class ListDrawer : Widget
     public override void MouseUp(MouseEventArgs e)
     {
         base.MouseUp(e);
-        if (DraggingIndex != -1 && (Mouse.LeftStartedInside && Mouse.LeftMouseReleased || Mouse.RightStartedInside && Mouse.RightMouseReleased && CountRightMouseClicks))
+        if (DraggingIndex != -1 && (Parent.Mouse.LeftStartedInside && Mouse.LeftMouseReleased || Parent.Mouse.RightStartedInside && Mouse.RightMouseReleased && CountRightMouseClicks))
         {
             int idx = DraggingIndex;
             DraggingIndex = -1;
