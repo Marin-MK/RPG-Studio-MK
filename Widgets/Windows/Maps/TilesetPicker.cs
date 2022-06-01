@@ -46,7 +46,7 @@ public class TilesetPicker : PopupWindow
         vs.SetSize(10, 403);
         TilesetContainer.SetVScrollBar(vs);
 
-        Font f = Fonts.UbuntuBold.Use(14);
+        Font f = Fonts.UbuntuBold.Use(11);
 
         Label labelavail = new Label(this);
         labelavail.SetText("Available");

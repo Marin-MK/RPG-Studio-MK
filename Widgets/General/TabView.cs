@@ -87,7 +87,7 @@ public class TabView : Widget
         Sprites["bg"].X = XOffset + SelectedIndex * HeaderWidth;
         if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
         Sprites["text"].Bitmap = new Bitmap(Size);
-        Font f = Fonts.UbuntuBold.Use(15);
+        Font f = Fonts.UbuntuBold.Use(12);
         Sprites["text"].Bitmap.Unlock();
         Sprites["text"].Bitmap.Font = f;
         for (int i = 0; i < this.Tabs.Count; i++)
@@ -117,7 +117,7 @@ public class TabView : Widget
         tc.SetPosition(0, HeaderHeight + 4);
         tc.SetVisible(false);
         tc.SetSize(this.Size.Width, this.Size.Height - HeaderHeight - 4);
-        Font f = Fonts.UbuntuBold.Use(15);
+        Font f = Fonts.UbuntuBold.Use(12);
         int w = f.TextSize(Name).Width + 8;
         if (w > HeaderWidth) SetHeader(w, HeaderHeight, TextY);
         this.Tabs.Add(tc);
@@ -134,7 +134,7 @@ public class TabView : Widget
 
     public void SetName(int PageIndex, string Name)
     {
-        Font f = Fonts.UbuntuBold.Use(15);
+        Font f = Fonts.UbuntuBold.Use(12);
         int w = f.TextSize(Name).Width + 8;
         if (w > HeaderWidth) SetHeader(w, HeaderHeight, TextY);
         this.Names[PageIndex] = Name;

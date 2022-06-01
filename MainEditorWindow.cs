@@ -77,8 +77,8 @@ public class MainEditorWindow : UIWindow
         };
 
         this.InitializeUI(10, 23, 37);
-        UI.RegisterShortcut(new Shortcut(null, new Key(Keycode.Z, Keycode.CTRL), delegate (BaseEventArgs e) { Editor.Undo(); }, true));
-        UI.RegisterShortcut(new Shortcut(null, new Key(Keycode.Y, Keycode.CTRL), delegate (BaseEventArgs e) { Editor.Redo(); }, true));
+        UI.RegisterShortcut(new Shortcut(null, new Key(Keycode.Z, Keycode.CTRL), _ => Editor.Undo(), true));
+        UI.RegisterShortcut(new Shortcut(null, new Key(Keycode.Y, Keycode.CTRL), _ => Editor.Redo(), true));
 
         // Widgets may now be created
 

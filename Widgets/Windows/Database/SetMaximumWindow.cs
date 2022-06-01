@@ -18,7 +18,7 @@ public class SetMaximumWindow : PopupWindow
         Center();
 
         Label MaxLabel = new Label(this);
-        MaxLabel.SetFont(Fonts.ProductSansMedium.Use(14));
+        MaxLabel.SetFont(Fonts.ProductSansMedium.Use(11));
         MaxLabel.SetText("Set maximum:");
         MaxLabel.SetPosition(Size.Width / 2 - MaxLabel.Size.Width / 2, 34);
 

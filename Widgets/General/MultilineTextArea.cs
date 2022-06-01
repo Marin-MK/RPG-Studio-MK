@@ -31,7 +31,7 @@ public class MultilineTextArea : Widget
 
     public MultilineTextArea(IContainer Parent) : base(Parent)
     {
-        this.Font = Fonts.ProductSansMedium.Use(12);
+        this.Font = Fonts.ProductSansMedium.Use(9);
         Sprites["text"] = new Sprite(this.Viewport);
         Sprites["caret"] = new Sprite(this.Viewport, new SolidBitmap(1, 16, Color.WHITE));
         Sprites["caret"].Y = 2;

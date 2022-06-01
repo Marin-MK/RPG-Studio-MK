@@ -27,7 +27,7 @@ public class CollapsibleContainer : Container
     protected override void Draw()
     {
         if (this.Sprites["header"].Bitmap != null) this.Sprites["header"].Bitmap.Dispose();
-        Font f = Fonts.ProductSansMedium.Use(14);
+        Font f = Fonts.ProductSansMedium.Use(11);
         this.Sprites["header"].Bitmap = new Bitmap(Size.Width, 22);
         this.Sprites["header"].Bitmap.Unlock();
         this.Sprites["header"].Bitmap.Font = f;

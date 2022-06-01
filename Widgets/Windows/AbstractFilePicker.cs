@@ -23,7 +23,7 @@ public abstract class AbstractFilePicker : PopupWindow
         Label pickerlabel = new Label(this);
         pickerlabel.SetText(Label);
         pickerlabel.SetPosition(25, 31);
-        pickerlabel.SetFont(Fonts.UbuntuBold.Use(14));
+        pickerlabel.SetFont(Fonts.UbuntuBold.Use(11));
         List = new ListBox(this);
         List.SetPosition(32, 51);
         List<ListItem> items = new List<ListItem>();
@@ -42,7 +42,7 @@ public abstract class AbstractFilePicker : PopupWindow
         Label previewlabel = new Label(this);
         previewlabel.SetText("Preview");
         previewlabel.SetPosition(199, 31);
-        previewlabel.SetFont(Fonts.UbuntuBold.Use(14));
+        previewlabel.SetFont(Fonts.UbuntuBold.Use(11));
         previewbox = new GroupBox(this);
         previewbox.SetPosition(207, 51);
         previewbox.Sprites["line1"] = new Sprite(previewbox.Viewport, new SolidBitmap(1, 1, new Color(40, 62, 84)));

@@ -47,12 +47,12 @@ public class ChooseGraphic : PopupWindow
         GraphicGroupBox.SetInnerColor(new Color(28, 50, 73));
 
         Label GraphicLabel = new Label(this);
-        GraphicLabel.SetFont(Fonts.UbuntuBold.Use(16));
+        GraphicLabel.SetFont(Fonts.UbuntuBold.Use(13));
         GraphicLabel.SetText("Current Graphic");
         GraphicLabel.SetPosition(559, 38);
 
         Button ClearGraphicButton = new Button(this);
-        ClearGraphicButton.SetFont(Fonts.UbuntuBold.Use(16));
+        ClearGraphicButton.SetFont(Fonts.UbuntuBold.Use(13));
         ClearGraphicButton.SetPosition(588, 58);
         ClearGraphicButton.SetSize(80, 32);
         ClearGraphicButton.SetText("Clear");
@@ -102,7 +102,7 @@ public class ChooseGraphic : PopupWindow
         Cursor = new CursorWidget(GraphicContainer);
         Cursor.ConsiderInAutoScrollCalculation = false;
 
-        Font f = Fonts.ProductSansMedium.Use(12);
+        Font f = Fonts.ProductSansMedium.Use(9);
 
         TypeLabel = new Label(this);
         TypeLabel.SetPosition(547, 276);

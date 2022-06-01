@@ -88,7 +88,7 @@ public class DataTypeTilesets : Widget
         Tabs.SetHeaderSelHeight(0);
         Tabs.SetHeaderWidth(140);
         Tabs.SetGrid(0, 1, 1, 2);
-        Tabs.SetFont(Fonts.UbuntuBold.Use(16));
+        Tabs.SetFont(Fonts.UbuntuBold.Use(13));
         Tabs.SetCentered(true);
         Tabs.SetHeaderBackgroundColor(10, 23, 37);
         Tabs.OnSelectionChanged += _ => SelectedTabChanged();
@@ -106,7 +106,7 @@ public class DataTypeTilesets : Widget
         Tabs.CreateTab("Counter Flag");
         Tabs.CreateTab("Terrain Tag");
 
-        Font Font = Fonts.ProductSansMedium.Use(16);
+        Font Font = Fonts.ProductSansMedium.Use(13);
 
         NameLabel = new Label(MainBox);
         NameLabel.SetText("Name");

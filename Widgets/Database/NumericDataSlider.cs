@@ -25,7 +25,7 @@ public class NumericDataSlider : Widget
         MaximumSize = new Size(-1, 25);
         TextArea = new TextArea(this);
         TextArea.SetPosition(9, 4);
-        TextArea.SetFont(Fonts.ProductSansMedium.Use(14));
+        TextArea.SetFont(Fonts.ProductSansMedium.Use(11));
         TextArea.SetTextX(10);
         TextArea.SetText(Value.ToString());
         TextArea.SetNumericOnly(true);

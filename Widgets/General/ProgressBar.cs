@@ -8,6 +8,8 @@ public class ProgressBar : Widget
     public float Progress { get; protected set; }
     public List<Color> Colors { get; protected set; } = new List<Color>() { new Color(87, 204, 253), new Color(50, 63, 228), new Color(129, 96, 224) };
 
+    public BaseEvent OnValueChanged;
+
     public ProgressBar(IContainer Parent) : base(Parent)
     {
         MinimumSize.Height = MaximumSize.Height = 34;
@@ -21,13 +23,14 @@ public class ProgressBar : Widget
         SetTimer("frame", 1000 / 125); // 125 frames a second
     }
 
-    public void SetProgress(float Progress)
+    public void SetValue(float Progress)
     {
         Progress = Math.Clamp(Progress, 0, 1);
         if (this.Progress != Progress)
         {
             this.Progress = Progress;
             this.Redraw();
+            this.OnValueChanged?.Invoke(new BaseEventArgs());
         }
     }
 
@@ -57,7 +60,7 @@ public class ProgressBar : Widget
         base.Draw();
         Sprites["text"].Bitmap?.Dispose();
         string text = (Math.Round(this.Progress * 1000d) / 10d).ToString() + "%";
-        Font f = Fonts.UbuntuRegular.Use(14);
+        Font f = Fonts.UbuntuRegular.Use(11);
         Size s = f.TextSize(text);
         Sprites["text"].Bitmap = new Bitmap(s);
         Sprites["text"].Bitmap.Font = f;

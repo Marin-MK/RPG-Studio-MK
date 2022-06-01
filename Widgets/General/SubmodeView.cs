@@ -13,7 +13,7 @@ public class SubmodeView : Widget
     public int HeaderHeight { get; protected set; } = 25;
     public int HeaderSelHeight { get; protected set; } = 4;
     public int TextY { get; protected set; } = 3;
-    public Font Font { get; protected set; } = Fonts.UbuntuBold.Use(16);
+    public Font Font { get; protected set; } = Fonts.UbuntuBold.Use(13);
     public bool Centered { get; protected set; } = false;
     public Color HeaderBackgroundColor { get; protected set; } = Color.ALPHA;
     public Color HeaderSelBackgroundColor { get; protected set; } = Color.ALPHA;

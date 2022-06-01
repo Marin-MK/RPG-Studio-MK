@@ -95,7 +95,7 @@ public class PopupWindow : Widget, IPopupWindow
     public void SetTitle(string Title)
     {
         this.Title = Title;
-        Font f = Fonts.UbuntuBold.Use(14);
+        Font f = Fonts.UbuntuBold.Use(11);
         Size s = f.TextSize(Title);
         if (Sprites["title"].Bitmap != null) Sprites["title"].Bitmap.Dispose();
         Sprites["title"].Bitmap = new Bitmap(s);

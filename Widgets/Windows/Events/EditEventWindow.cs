@@ -29,8 +29,8 @@ public class EditEventWindow : PopupWindow
         SetSize(MaximumSize);
         Center();
 
-        Font HeaderFont = Fonts.UbuntuBold.Use(16);
-        Font SmallFont = Fonts.ProductSansMedium.Use(14);
+        Font HeaderFont = Fonts.UbuntuBold.Use(13);
+        Font SmallFont = Fonts.ProductSansMedium.Use(11);
 
         Label NameLabel = new Label(this);
         NameLabel.SetFont(SmallFont);

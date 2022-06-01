@@ -39,7 +39,7 @@ public class StatusBar : Widget
     public void SetMap(Map Map)
     {
         if (Sprites["map"].Bitmap != null) Sprites["map"].Bitmap.Dispose();
-        Font f = Fonts.ProductSansMedium.Use(14);
+        Font f = Fonts.ProductSansMedium.Use(11);
         string text = $"{Utilities.Digits(Map.ID, 3)}: {Map.Name} ({Map.Width}x{Map.Height})";
         Size s = f.TextSize(text);
         Sprites["map"].Bitmap = new Bitmap(s);
@@ -52,7 +52,7 @@ public class StatusBar : Widget
     public void DrawText(string Text)
     {
         if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
-        Font f = Fonts.ProductSansMedium.Use(14);
+        Font f = Fonts.ProductSansMedium.Use(11);
         Size s = f.TextSize(Text);
         Sprites["text"].Bitmap = new Bitmap(s);
         Sprites["text"].Bitmap.Font = f;
@@ -78,7 +78,7 @@ public class StatusBar : Widget
     public void DrawCursor(int X, int Y, int width, int height)
     {
         if (Sprites["cursor"].Bitmap != null) Sprites["cursor"].Bitmap.Dispose();
-        Font f = Fonts.ProductSansMedium.Use(14);
+        Font f = Fonts.ProductSansMedium.Use(11);
         string text = $"{Utilities.Digits(X, 3)}x{Utilities.Digits(Y, 3)}";
         MapViewer mv = Editor.MainWindow.MapWidget.MapViewer;
         if (mv.Mode == MapMode.Tiles)

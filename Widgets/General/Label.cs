@@ -13,7 +13,7 @@ public class Label : Widget
     public Label(IContainer Parent) : base(Parent)
     {
         Sprites["text"] = new Sprite(this.Viewport);
-        this.Font = Fonts.ProductSansMedium.Use(12);
+        this.Font = Fonts.ProductSansMedium.Use(9);
     }
 
     public void SetEnabled(bool Enabled)

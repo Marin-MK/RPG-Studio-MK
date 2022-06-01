@@ -7,7 +7,7 @@ public class PickerBox : amethyst.DropdownBox
     public PickerBox(IContainer Parent) : base(Parent)
     {
         TextArea.SetPosition(6, 4);
-        TextArea.SetFont(Fonts.ProductSansMedium.Use(14));
+        TextArea.SetFont(Fonts.ProductSansMedium.Use(11));
         TextArea.SetCaretColor(Color.WHITE);
         TextArea.SetReadOnly(true);
         this.DropdownWidth = 34;

@@ -32,7 +32,7 @@ public class DataTypeSubList : Widget
         Sprites["line3"] = new Sprite(this.Viewport, new SolidBitmap(180, 1, new Color(10, 23, 37)));
         Sprites["headerbg"] = new Sprite(this.Viewport, new SolidBitmap(181, 29, new Color(17, 33, 51)));
         Sprites["header"] = new Sprite(this.Viewport);
-        Font f = Fonts.UbuntuBold.Use(18);
+        Font f = Fonts.UbuntuBold.Use(15);
         Size s = f.TextSize(HeaderText);
         Sprites["header"].Bitmap = new Bitmap(s);
         Sprites["header"].Bitmap.Font = f;
@@ -49,7 +49,7 @@ public class DataTypeSubList : Widget
         ScrollContainer.VAutoScroll = true;
         ListDrawer = new ListDrawer(ScrollContainer);
         ListDrawer.SetLineHeight(24);
-        ListDrawer.SetFont(Fonts.ProductSansMedium.Use(14));
+        ListDrawer.SetFont(Fonts.ProductSansMedium.Use(11));
         ChangeMaxBtn = new Button(this);
         ChangeMaxBtn.SetText("Change Maximum");
         ChangeMaxBtn.OnClicked += _ =>

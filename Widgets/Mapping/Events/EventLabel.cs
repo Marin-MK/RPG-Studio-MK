@@ -44,7 +44,7 @@ public class EventLabel : Widget
     protected override void Draw()
     {
         Sprites["name"].Bitmap?.Dispose();
-        Font f = Fonts.UbuntuRegular.Use(16);
+        Font f = Fonts.UbuntuRegular.Use(13);
         string Text = $"{Utilities.Digits(Event.ID, 3)}: {Event.Name}";
         Size s = f.TextSize(Text);
         Sprites["name"].Bitmap = new Bitmap(s);

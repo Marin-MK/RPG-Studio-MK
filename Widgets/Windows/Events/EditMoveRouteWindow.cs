@@ -90,7 +90,7 @@ public class EditMoveRouteWindow : PopupWindow
         CheckBox RepeatBox = new CheckBox(this);
         RepeatBox.SetBottomDocked(true);
         RepeatBox.SetMargins(20, 0, 0, 42);
-        RepeatBox.SetFont(Fonts.ProductSansMedium.Use(14));
+        RepeatBox.SetFont(Fonts.ProductSansMedium.Use(11));
         RepeatBox.SetText("Repeat");
         RepeatBox.SetChecked(MoveRoute.Repeat);
         RepeatBox.OnCheckChanged += _ => MoveRoute.Repeat = RepeatBox.Checked;
@@ -98,7 +98,7 @@ public class EditMoveRouteWindow : PopupWindow
         CheckBox SkippableBox = new CheckBox(this);
         SkippableBox.SetBottomDocked(true);
         SkippableBox.SetMargins(20, 0, 0, 22);
-        SkippableBox.SetFont(Fonts.ProductSansMedium.Use(14));
+        SkippableBox.SetFont(Fonts.ProductSansMedium.Use(11));
         SkippableBox.SetText("Skippable");
         SkippableBox.SetChecked(MoveRoute.Skippable);
         SkippableBox.OnCheckChanged += _ => MoveRoute.Skippable = SkippableBox.Checked;
@@ -122,7 +122,7 @@ public class EditMoveRouteWindow : PopupWindow
         void AddButton(string Text, int Column, MoveCode MoveCode)
         {
             Button btn = new Button(Columns[Column]);
-            btn.SetFont(Fonts.ProductSansMedium.Use(14));
+            btn.SetFont(Fonts.ProductSansMedium.Use(11));
             if (Columns[Column].Widgets.Count > 1)
                 btn.SetMargins(0, -3);
             btn.SetText(Text);
@@ -136,7 +136,7 @@ public class EditMoveRouteWindow : PopupWindow
         void AddButtonElaborate(string Text, int Column, MoveCode MoveCode, Action<MoveCode, MoveCommand?, Action<MoveCommand>> OnClickEvent)
         {
             Button btn = new Button(Columns[Column]);
-            btn.SetFont(Fonts.ProductSansMedium.Use(14));
+            btn.SetFont(Fonts.ProductSansMedium.Use(11));
             if (Columns[Column].Widgets.Count > 1)
                 btn.SetMargins(0, -3);
             btn.SetText(Text);

@@ -27,7 +27,7 @@ public class GenericDropdownPicker : PopupWindow
         DropdownBox.SetSelectedIndex(Value);
 
         Label TextLabel = new Label(this);
-        TextLabel.SetFont(Fonts.ProductSansMedium.Use(14));
+        TextLabel.SetFont(Fonts.ProductSansMedium.Use(11));
         TextLabel.SetText(Label);
         TextLabel.SetPosition(DropdownBox.Position.X - TextLabel.Size.Width - 8, 34);
 

@@ -13,7 +13,7 @@ public class GradientButton : Widget
 
         Sprites["bg"] = new Sprite(this.Viewport);
         Sprites["text"] = new Sprite(this.Viewport);
-        Font f = Fonts.UbuntuBold.Use(17);
+        Font f = Fonts.UbuntuBold.Use(13);
         Size s = f.TextSize(Text);
         Sprites["text"].Bitmap = new Bitmap(s);
         Sprites["text"].Bitmap.Font = f;

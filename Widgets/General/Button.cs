@@ -18,7 +18,7 @@ public class Button : Widget
 
     public Button(IContainer Parent) : base(Parent)
     {
-        this.Font = Fonts.UbuntuBold.Use(14);
+        this.Font = Fonts.UbuntuBold.Use(11);
 
         Bitmap b = new Bitmap(10, 10);
         #region Corner piece

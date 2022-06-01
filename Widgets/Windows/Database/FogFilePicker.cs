@@ -35,7 +35,7 @@ public class FogFilePicker : AbstractFilePicker
         : base("Fogs", Data.ProjectPath + "/Graphics/Fogs", FogName)
     {
         huelabel = new Label(this);
-        huelabel.SetFont(Fonts.UbuntuBold.Use(14));
+        huelabel.SetFont(Fonts.UbuntuBold.Use(11));
         huelabel.SetText("Hue");
         huelabel.SetPosition(199, Size.Height - 96);
         HueBox = new NumericSlider(this);
@@ -50,7 +50,7 @@ public class FogFilePicker : AbstractFilePicker
             UpdateHue();
         };
         HueBox.SetValue(FogHue);
-        Font f = Fonts.UbuntuBold.Use(14);
+        Font f = Fonts.UbuntuBold.Use(11);
         opacitylabel = new Label(this);
         opacitylabel.SetFont(f);
         opacitylabel.SetText("Opacity");

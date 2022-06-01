@@ -23,9 +23,9 @@ public class VariablePicker : PopupWindow
         SetSize(MaximumSize);
         Center();
 
-        Font HeaderFont = Fonts.UbuntuBold.Use(14);
-        Font ListFont = Fonts.UbuntuRegular.Use(14);
-        Font SmallFont = Fonts.ProductSansMedium.Use(14);
+        Font HeaderFont = Fonts.UbuntuBold.Use(11);
+        Font ListFont = Fonts.UbuntuRegular.Use(11);
+        Font SmallFont = Fonts.ProductSansMedium.Use(11);
 
         Label GroupLabel = new Label(this);
         GroupLabel.SetFont(HeaderFont);

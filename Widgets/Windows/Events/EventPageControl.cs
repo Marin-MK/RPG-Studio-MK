@@ -38,9 +38,9 @@ public class EventPageControl : Widget
 
     public EventPageControl(IContainer Parent) : base(Parent)
     {
-        Font HeaderFont = Fonts.ProductSansMedium.Use(16);
-        Font SmallFont = Fonts.ProductSansMedium.Use(14);
-        Font TinyFont = Fonts.ProductSansMedium.Use(12);
+        Font HeaderFont = Fonts.ProductSansMedium.Use(13);
+        Font SmallFont = Fonts.ProductSansMedium.Use(11);
+        Font TinyFont = Fonts.ProductSansMedium.Use(9);
 
         Label Switch1Label = null;
         Label Switch2Label = null;

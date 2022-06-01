@@ -93,7 +93,7 @@ public class TilesPanel : Widget
     {
         Label Header = new Label(this);
         Header.SetText("Tiles");
-        Header.SetFont(Fonts.UbuntuBold.Use(16));
+        Header.SetFont(Fonts.UbuntuBold.Use(13));
         Header.SetPosition(5, 5);
 
         Sprites["sep"] = new Sprite(this.Viewport, new SolidBitmap(288, 2, new Color(10, 23, 37)));

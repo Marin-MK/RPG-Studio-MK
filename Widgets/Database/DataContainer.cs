@@ -103,7 +103,7 @@ public class DataContainer : Widget
         {
             this.Text = Text;
             Sprites["text"].Bitmap?.Dispose();
-            Font f = Fonts.UbuntuBold.Use(16);
+            Font f = Fonts.UbuntuBold.Use(13);
             Size s = f.TextSize(this.Text);
             Sprites["text"].Bitmap = new Bitmap(s);
             Sprites["text"].Bitmap.Unlock();

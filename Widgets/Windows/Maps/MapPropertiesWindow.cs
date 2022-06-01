@@ -32,14 +32,14 @@ public class MapPropertiesWindow : PopupWindow
 
         Label settings = new Label(this);
         settings.SetText("Info");
-        settings.SetFont(Fonts.UbuntuBold.Use(14));
+        settings.SetFont(Fonts.UbuntuBold.Use(11));
         settings.SetPosition(19, 33);
 
         GroupBox box1 = new GroupBox(this);
         box1.SetPosition(19, 54);
         box1.SetSize(300, 213);
 
-        Font f = Fonts.ProductSansMedium.Use(12);
+        Font f = Fonts.ProductSansMedium.Use(9);
 
         Label namelabel = new Label(box1);
         namelabel.SetText("Map Name:");
@@ -163,7 +163,7 @@ public class MapPropertiesWindow : PopupWindow
         EditTilesetsButton = new Button(box1);
         EditTilesetsButton.SetPosition(156, 176);
         EditTilesetsButton.SetSize(144, 32);
-        EditTilesetsButton.SetFont(Fonts.UbuntuBold.Use(14));
+        EditTilesetsButton.SetFont(Fonts.UbuntuBold.Use(11));
         EditTilesetsButton.SetText("Edit Tileset");
         EditTilesetsButton.OnClicked += _ => AddTileset();
 
