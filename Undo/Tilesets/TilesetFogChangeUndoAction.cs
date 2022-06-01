@@ -60,12 +60,12 @@ public class TilesetFogChangeUndoAction : BaseUndoAction
         bool Continue = true;
         if (!InMode(EditorMode.Database))
         {
-            SetDatabaseMode(Widgets.DatabaseMode.Tilesets);
+            SetDatabaseMode(DatabaseMode.Tilesets);
             Continue = false;
         }
-        if (!InDatabaseSubmode(Widgets.DatabaseMode.Tilesets))
+        if (!InDatabaseSubmode(DatabaseMode.Tilesets))
         {
-            SetDatabaseSubmode(Widgets.DatabaseMode.Tilesets);
+            SetDatabaseSubmode(DatabaseMode.Tilesets);
             Continue = false;
         }
         Widgets.DataTypeTilesets dtt = (Widgets.DataTypeTilesets)Editor.MainWindow.DatabaseWidget.ActiveDatabaseWidget;

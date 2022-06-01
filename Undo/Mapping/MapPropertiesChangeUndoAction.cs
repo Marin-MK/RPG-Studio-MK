@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using RPGStudioMK.Game;
+using System.Collections.Generic;
 
 namespace RPGStudioMK.Undo;
 
@@ -21,18 +22,20 @@ public class MapPropertiesChangeUndoAction : BaseUndoAction
 
     public override bool Trigger(bool IsRedo)
     {
+        // Ensure we're in the Mapping mode
+        bool Continue = true;
         if (!InMode(EditorMode.Mapping))
         {
-            SetMode(EditorMode.Mapping);
-            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Game.Data.Maps[this.MapID]);
-            return false;
+            SetMappingMode(MapMode.Tiles);
+            Continue = false;
         }
-        bool ActiveMap = Editor.MainWindow.MapWidget.Map.ID == MapID;
-        if (!ActiveMap)
+        // Ensure we're on the map this action was taken on
+        if (Editor.MainWindow.MapWidget.Map.ID != MapID)
         {
-            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Game.Data.Maps[this.MapID]);
-            return false;
+            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps[this.MapID]);
+            Continue = false;
         }
+        if (!Continue) return false;
         foreach (BaseUndoAction action in Changes)
         {
             action.Trigger(IsRedo);

@@ -29,7 +29,6 @@ public class MapOrderChangeUndoAction : BaseUndoAction
         if (!InMode(EditorMode.Mapping))
         {
             SetMode(EditorMode.Mapping);
-            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Game.Data.Maps[Editor.ProjectSettings.LastMapID]);
             return false;
         }
         TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.mapview;

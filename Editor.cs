@@ -566,9 +566,14 @@ public static class Editor
     /// </summary>
     /// <param name="Mode">The mode to switch to. MAPPING, SCRIPTING or DATABASE.</param>
     /// <param name="Force">Whether or not to force a full redraw.</param>
-    public static void SetMode(EditorMode Mode, bool Force = false)
+    public static void SetMode(EditorMode Mode, bool Force = false, MapMode? MapMode = null, DatabaseMode? DatabaseMode = null)
     {
-        if (Mode == Editor.Mode && !Force) return;
+        if (!Force && Editor.Mode == Mode)
+        {
+            if (Mode == EditorMode.Mapping && MapMode != null && MainWindow.MapWidget.MapViewer.Mode != MapMode) SetMappingSubmode((MapMode)MapMode);
+            else if (Mode == EditorMode.Database && DatabaseMode != null && MainWindow.DatabaseWidget.Mode != DatabaseMode) SetDatabaseSubmode((DatabaseMode) DatabaseMode);
+            return;
+        }
 
         EditorMode OldMode = ProjectSettings.LastMode;
         ProjectSettings.LastMode = Mode;
@@ -596,7 +601,7 @@ public static class Editor
         {
             case EditorMode.Mapping:
                 // Select Mapping mode
-                SetMappingMode(ProjectSettings.LastMappingSubmode);
+                SetMappingMode(MapMode ?? ProjectSettings.LastMappingSubmode);
                 break;
             case EditorMode.Scripting:
                 // Select Scripting Mode
@@ -604,7 +609,7 @@ public static class Editor
                 break;
             case EditorMode.Database:
                 // Select Database mode
-                SetDatabaseMode(ProjectSettings.LastDatabaseSubmode);
+                SetDatabaseMode(DatabaseMode ?? ProjectSettings.LastDatabaseSubmode);
                 break;
         }
         MainWindow.MainGridLayout.UpdateLayout();
@@ -612,9 +617,10 @@ public static class Editor
         MainWindow.ToolBar.Refresh();
     }
 
-    public static void SetMappingMode(MapMode Submode)
+    private static void SetMappingMode(MapMode Submode)
     {
         MainWindow.ToolBar.MappingMode.SetSelected(true);
+        if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
 
         MainWindow.MainEditorWidget = new MappingWidget(MainWindow.MainGridLayout);
         MainWindow.MainEditorWidget.SetGridRow(3);
@@ -627,16 +633,22 @@ public static class Editor
         MainWindow.MapWidget.SetZoomFactor(ProjectSettings.LastZoomFactor);
 
         MainWindow.UI.SetSelectedWidget(MainWindow.MapWidget.MapViewer);
+        SetMappingSubmode(Submode);
+    }
+
+    public static void SetMappingSubmode(MapMode Submode)
+    {
         MainWindow.MapWidget.SetMode(Submode);
     }
 
-    public static void SetDatabaseMode(DatabaseMode Submode, bool Force = false)
+    private static void SetDatabaseMode(DatabaseMode Submode, bool Force = false)
     {
         MainWindow.ToolBar.DatabaseMode.SetSelected(true, Force);
         if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
+
         MainWindow.MainEditorWidget = new DatabaseWidget(MainWindow.MainGridLayout);
         MainWindow.MainEditorWidget.SetGridRow(3);
-        MainWindow.DatabaseWidget.SetMode(Submode);
+        SetDatabaseSubmode(Submode);
     }
 
     public static void SetDatabaseSubmode(DatabaseMode Submode)
@@ -698,7 +710,7 @@ public static class Editor
     public static void SetEventGraphicViewMode(EventGraphicViewMode ViewMode)
     {
         ProjectSettings.EventGraphicViewMode = ViewMode;
-        if (MainWindow.MapWidget != null && (MainWindow.MapWidget.MapViewer.Mode == MapMode.Events || MainWindow.MapWidget.MapViewer.Mode == MapMode.Tiles && ProjectSettings.ShowEventBoxesInTilesSubmode))
+        if (Mode == EditorMode.Mapping && (MainWindow.MapWidget.MapViewer.Mode == MapMode.Events || MainWindow.MapWidget.MapViewer.Mode == MapMode.Tiles && ProjectSettings.ShowEventBoxesInTilesSubmode))
             MainWindow.MapWidget.MapViewer.UpdateEventBoxesViewMode();
     }
 
@@ -709,7 +721,7 @@ public static class Editor
     public static void SetEventBoxVisibilityInTiles(bool Visible)
     {
         ProjectSettings.ShowEventBoxesInTilesSubmode = Visible;
-        if (MainWindow.MapWidget.MapViewer.Mode == MapMode.Tiles)
+        if (Mode == EditorMode.Mapping && MainWindow.MapWidget.MapViewer.Mode == MapMode.Tiles)
         {
             if (Visible) MainWindow.MapWidget.MapViewer.ShowEventBoxes();
             else MainWindow.MapWidget.MapViewer.HideEventBoxes();
@@ -1104,4 +1116,25 @@ public enum EditorMode
     Mapping,
     Scripting,
     Database
+}
+
+public enum MapMode
+{
+    Tiles = 0,
+    Events = 1
+}
+
+public enum DatabaseMode
+{
+    Species,
+    Moves,
+    Abilities,
+    Items,
+    TMs,
+    Tilesets,
+    Autotiles,
+    Types,
+    Trainers,
+    Animations,
+    System
 }

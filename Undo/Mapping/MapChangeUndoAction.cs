@@ -34,7 +34,6 @@ public class MapChangeUndoAction : BaseUndoAction
         if (!InMode(EditorMode.Mapping))
         {
             SetMode(EditorMode.Mapping);
-            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps[Editor.ProjectSettings.LastMapID]);
             return false;
         }
         Dictionary<int, (int Order, int Parent)> OrderParentList = null;

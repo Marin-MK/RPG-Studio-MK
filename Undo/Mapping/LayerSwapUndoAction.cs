@@ -1,4 +1,6 @@
-﻿namespace RPGStudioMK.Undo;
+﻿using RPGStudioMK.Game;
+
+namespace RPGStudioMK.Undo;
 
 public class LayerSwapUndoAction : BaseUndoAction
 {
@@ -21,18 +23,26 @@ public class LayerSwapUndoAction : BaseUndoAction
 
     public override bool Trigger(bool IsRedo)
     {
+        // Ensure we're in the Mapping mode
+        bool Continue = true;
         if (!InMode(EditorMode.Mapping))
         {
-            SetMode(EditorMode.Mapping);
-            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Game.Data.Maps[this.MapID]);
-            return false;
+            SetMappingMode(MapMode.Tiles);
+            Continue = false;
         }
-        bool ActiveMap = Editor.MainWindow.MapWidget.Map.ID == MapID;
-        if (!ActiveMap)
+        // Ensure we're in the Tiles submode
+        if (!InMappingSubmode(MapMode.Tiles))
         {
-            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Game.Data.Maps[this.MapID]);
-            return false;
+            SetMappingMode(MapMode.Tiles);
+            Continue = false;
         }
+        // Ensure we're on the map this action was taken on
+        if (Editor.MainWindow.MapWidget.Map.ID != MapID)
+        {
+            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps[this.MapID]);
+            Continue = false;
+        }
+        if (!Continue) return false;
         Widgets.LayerPanel LayerPanel = Editor.MainWindow.MapWidget.MapViewer.LayerPanel;
         bool MoveUp = this.MovedUp == IsRedo;
         if (MoveUp)

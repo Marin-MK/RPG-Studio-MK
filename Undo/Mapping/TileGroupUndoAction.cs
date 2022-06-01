@@ -48,23 +48,33 @@ public class TileGroupUndoAction : BaseUndoAction
     public override bool Trigger(bool IsRedo)
     {
         if (!Ready) throw new Exception("Attempted to undo an unfinished TileGroupUndoAction.");
+
+        // Ensure we're in the Mapping mode
+        bool Continue = true;
         if (!InMode(EditorMode.Mapping))
         {
-            SetMode(EditorMode.Mapping);
-            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps[this.MapID]);
-            return false;
+            SetMappingMode(MapMode.Tiles);
+            Continue = false;
         }
-        bool ActiveMap = Editor.MainWindow.MapWidget.Map.ID == MapID;
-        if (!ActiveMap)
+        // Ensure we're in the Tiles submode
+        if (!InMappingSubmode(MapMode.Tiles))
+        {
+            SetMappingMode(MapMode.Tiles);
+            Continue = false;
+        }
+        // Ensure we're on the map this action was taken on
+        if (Editor.MainWindow.MapWidget.Map.ID != MapID)
         {
             Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps[this.MapID]);
-            return false;
+            Continue = false;
         }
+        if (!Continue) return false;
+
         Map Map = Data.Maps[this.MapID];
         List<int> UnlockedLayers = new List<int>();
         foreach (TileChange tile in Tiles)
         {
-            if (ActiveMap && Editor.MainWindow.MapWidget.MapImageWidget.IsLayerLocked(tile.Layer))
+            if (Editor.MainWindow.MapWidget.MapImageWidget.IsLayerLocked(tile.Layer))
             {
                 Editor.MainWindow.MapWidget.MapImageWidget.SetLayerLocked(tile.Layer, false);
                 UnlockedLayers.Add(tile.Layer);
@@ -74,18 +84,15 @@ public class TileGroupUndoAction : BaseUndoAction
             TileData OldTile = Map.Layers[tile.Layer].Tiles[tile.MapPosition];
             TileData NewTile = IsRedo ? tile.NewTile : tile.OldTile;
             Map.Layers[tile.Layer].Tiles[tile.MapPosition] = NewTile;
-            if (ActiveMap)
-            {
-                Editor.MainWindow.MapWidget.MapImageWidget.DrawTile(
-                    tile.MapPosition % Map.Width,
-                    (int)Math.Floor((double)tile.MapPosition / Map.Width),
-                    tile.Layer,
-                    NewTile,
-                    OldTile,
-                    false,
-                    false
-                );
-            }
+            Editor.MainWindow.MapWidget.MapImageWidget.DrawTile(
+                tile.MapPosition % Map.Width,
+                (int)Math.Floor((double)tile.MapPosition / Map.Width),
+                tile.Layer,
+                NewTile,
+                OldTile,
+                false,
+                false
+            );
         }
         UnlockedLayers.ForEach(Layer =>
         {

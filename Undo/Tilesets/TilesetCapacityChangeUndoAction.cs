@@ -29,12 +29,12 @@ public class TilesetCapacityChangeUndoAction : BaseUndoAction
 
     public override bool Trigger(bool IsRedo)
     {
-        if (!InMode(EditorMode.Database)) return SetDatabaseMode(Widgets.DatabaseMode.Tilesets);
-        if (!InDatabaseSubmode(Widgets.DatabaseMode.Tilesets)) return SetDatabaseSubmode(Widgets.DatabaseMode.Tilesets);
+        if (!InMode(EditorMode.Database)) return SetDatabaseMode(DatabaseMode.Tilesets);
+        if (!InDatabaseSubmode(DatabaseMode.Tilesets)) return SetDatabaseSubmode(DatabaseMode.Tilesets);
         Widgets.DatabaseWidget DatabaseWidget = Editor.MainWindow.DatabaseWidget;
-        if (!InDatabaseSubmode(Widgets.DatabaseMode.Tilesets))
+        if (!InDatabaseSubmode(DatabaseMode.Tilesets))
         {
-            SetDatabaseSubmode(Widgets.DatabaseMode.Tilesets);
+            SetDatabaseSubmode(DatabaseMode.Tilesets);
             return false;
         }
         if (IsRedo)
