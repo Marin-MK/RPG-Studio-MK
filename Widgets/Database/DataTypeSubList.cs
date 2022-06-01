@@ -54,14 +54,12 @@ public class DataTypeSubList : Widget
         ChangeMaxBtn.SetText("Change Maximum");
         ChangeMaxBtn.OnClicked += _ =>
         {
-            SetMaximumWindow win = new SetMaximumWindow(ListMaximum);
+            GenericNumberPicker win = new GenericNumberPicker("Set Max", "Maximum:", ListMaximum, 1, null);
             win.OnClosed += _ =>
             {
-                if (win.PressedOK)
-                {
-                    OnMaximumChanged?.Invoke(new ObjectEventArgs(win.Maximum));
-                    ListMaximum = win.Maximum;
-                }
+                if (!win.Apply || ListMaximum == win.Value) return;
+                OnMaximumChanged?.Invoke(new ObjectEventArgs(win.Value));
+                ListMaximum = win.Value;
             };
         };
         SetWidth(181);
