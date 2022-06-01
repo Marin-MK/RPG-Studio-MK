@@ -48,6 +48,7 @@ public class EditEventWindow : PopupWindow
         SizeLabel.SetFont(SmallFont);
         SizeLabel.SetPosition(NameBox.Position.X + NameBox.Size.Width + 12, 35);
         SizeLabel.SetText("Size:");
+        SizeLabel.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
 
         NumericBox WidthBox = new NumericBox(this);
         WidthBox.SetPosition(NameBox.Position.X + NameBox.Size.Width + 12, 52);
@@ -59,11 +60,13 @@ public class EditEventWindow : PopupWindow
             this.Event.Width = WidthBox.Value;
             EventPageControl.RedrawGraphic();
         };
+        WidthBox.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
 
         Label SizeXLabel = new Label(this);
         SizeXLabel.SetFont(SmallFont);
         SizeXLabel.SetPosition(WidthBox.Position.X + WidthBox.Size.Width + 4, 56);
         SizeXLabel.SetText("x");
+        SizeXLabel.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
 
         NumericBox HeightBox = new NumericBox(this);
         HeightBox.SetPosition(WidthBox.Position.X + WidthBox.Size.Width + 16, 52);
@@ -75,6 +78,7 @@ public class EditEventWindow : PopupWindow
             this.Event.Height = HeightBox.Value;
             EventPageControl.RedrawGraphic();
         };
+        HeightBox.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
 
         DeletePageButton = new Button(this);
         DeletePageButton.SetFont(HeaderFont);
