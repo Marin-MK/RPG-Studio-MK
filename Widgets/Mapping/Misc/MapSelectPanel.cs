@@ -75,10 +75,12 @@ public class MapSelectPanel : Widget
             new MenuItem("Edit Map")
             {
                 OnClicked = EditMap,
-                IsClickable = delegate (BoolEventArgs e)
-                {
-                    e.Value = mapview.HoveringNode != null;
-                }
+                IsClickable = e => e.Value = mapview.HoveringNode != null
+            },
+            new MenuItem("Shift")
+            {
+                OnClicked = ShiftMap,
+                IsClickable = e => e.Value = mapview.HoveringNode != null
             },
             new MenuSeparator(),
             new MenuItem("Cut Map")
@@ -386,6 +388,23 @@ public class MapSelectPanel : Widget
                 Editor.UnsavedChanges = mpw.UnsavedChanges;
                 if (Editor.MainWindow.MapWidget != null && activemap) Editor.MainWindow.MapWidget.SetMap(mpw.Map);
             }
+        };
+    }
+
+    private void ShiftMap(BaseEventArgs e)
+    {
+        Map map = Data.Maps[(int) mapview.HoveringNode.Object];
+        bool activemap = Editor.MainWindow.MapWidget.Map.ID == map.ID;
+        if (!activemap) SetMap(map, false);
+        ShiftMapWindow win = new ShiftMapWindow(map);
+        win.OnClosed += _ =>
+        {
+            if (!win.Apply) return;
+            List<Layer> OldLayers = map.Layers.ConvertAll(l => (Layer) l.Clone());
+            map.Shift(win.Direction, win.Value, win.ShiftEvents);
+            Editor.MainWindow.MapWidget.SetMap(map);
+            Size s = new Size(map.Width, map.Height);
+            Undo.MapSizeChangeUndoAction.Create(map.ID, OldLayers, s, map.Layers.ConvertAll(l => (Layer) l.Clone()), s);
         };
     }
 

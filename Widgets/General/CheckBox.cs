@@ -165,4 +165,10 @@ public class CheckBox : Widget
         Selecting = false;
         this.Redraw();
     }
+
+    public override void SizeChanged(BaseEventArgs e)
+    {
+        base.SizeChanged(e);
+        Sprites["box"].X = this.Mirrored ? Size.Width - 16 : 0;
+    }
 }

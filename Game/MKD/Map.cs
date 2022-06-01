@@ -197,9 +197,90 @@ public class Map : ICloneable, ISerializable
         }
     }
 
-    public override string ToString()
+    public void Shift(Direction Direction, int Value, bool ShiftEvents)
     {
-        return this.Name;
+        if (Direction == Direction.Right) ShiftRight(Value, ShiftEvents);
+        else if (Direction == Direction.Left) ShiftLeft(Value, ShiftEvents);
+        else if (Direction == Direction.Down) ShiftDown(Value, ShiftEvents);
+        else if (Direction == Direction.Up) ShiftUp(Value, ShiftEvents);
+    }
+
+    public void ShiftRight(int Value, bool ShiftEvents)
+    {
+        for (int z = 0; z < Layers.Count; z++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                int startidx = y * Width;
+                List<TileData> tiles = Layers[z].Tiles.GetRange(startidx + Width - Value, Value);
+                Layers[z].Tiles.RemoveRange(startidx + Width - Value, Value);
+                Layers[z].Tiles.InsertRange(startidx, tiles);
+            }
+        }
+        if (ShiftEvents)
+        {
+            foreach (Event e in Events.Values) e.X = (e.X + Value) % Width;
+        }
+    }
+
+    public void ShiftLeft(int Value, bool ShiftEvents)
+    {
+        for (int z = 0; z < Layers.Count; z++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                /*
+                 * 0 1 2 3
+                 * 4 5 6 7
+                 */
+                int startidx = y * Width;
+                List<TileData> tiles = Layers[z].Tiles.GetRange(startidx, Value);
+                Layers[z].Tiles.RemoveRange(startidx, Value);
+                Layers[z].Tiles.InsertRange(startidx + Width - Value, tiles);
+            }
+        }
+        if (ShiftEvents)
+        {
+            foreach (Event e in Events.Values)
+            {
+                e.X -= Value;
+                if (e.X < 0) e.X += Width;
+            }
+        }
+    }
+
+    public void ShiftDown(int Value, bool ShiftEvents)
+    {
+        for (int z = 0; z < Layers.Count; z++)
+        {
+            int startidx = Width * Height - Width * Value;
+            List<TileData> tiles = Layers[z].Tiles.GetRange(startidx, Width * Value);
+            Layers[z].Tiles.RemoveRange(startidx, Width * Value);
+            Layers[z].Tiles.InsertRange(0, tiles);
+        }
+        if (ShiftEvents)
+        {
+            foreach (Event e in Events.Values) e.Y = (e.Y + Value) % Height;
+        }
+    }
+
+    public void ShiftUp(int Value, bool ShiftEvents)
+    {
+        for (int z = 0; z < Layers.Count; z++)
+        {
+            int startidx = Width * Height - Width * Value;
+            List<TileData> tiles = Layers[z].Tiles.GetRange(0, Width * Value);
+            Layers[z].Tiles.RemoveRange(0, Width * Value);
+            Layers[z].Tiles.AddRange(tiles);
+        }
+        if (ShiftEvents)
+        {
+            foreach (Event e in Events.Values)
+            {
+                e.Y -= Value;
+                if (e.Y < 0) e.Y += Height;
+            }
+        }
     }
 
     public void RemoveTileset(int TilesetID)
@@ -243,6 +324,11 @@ public class Map : ICloneable, ISerializable
         Map result = (Map)formatter.Deserialize(stream);
         stream.Close();
         return result;
+    }
+
+    public override string ToString()
+    {
+        return this.Name;
     }
 
     public object Clone()
