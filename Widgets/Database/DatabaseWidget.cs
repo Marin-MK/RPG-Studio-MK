@@ -37,17 +37,3 @@ public class DatabaseWidget : Widget
     }
 }
 
-public enum DatabaseMode
-{
-    Species,
-    Moves,
-    Abilities,
-    Items,
-    TMs,
-    Tilesets,
-    Autotiles,
-    Types,
-    Trainers,
-    Animations,
-    System
-}

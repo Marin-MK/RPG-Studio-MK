@@ -7,7 +7,7 @@ namespace RPGStudioMK.Widgets;
 public partial class MapViewer : Widget
 {
     public Map Map;
-    public MapMode Mode;
+    public MapMode? Mode;
 
     public Grid GridLayout;
 
@@ -151,14 +151,10 @@ public partial class MapViewer : Widget
     {
         if (this.Mode == Mode) return;
         this.Mode = Mode;
-        Editor.ProjectSettings.LastMappingSubmode = this.Mode;
+        Editor.ProjectSettings.LastMappingSubmode = (MapMode) this.Mode;
         SidebarWidgetTiles.SetVisible(this.Mode == MapMode.Tiles);
         SidebarWidgetEvents.SetVisible(this.Mode == MapMode.Events);
-        if (this.Mode == MapMode.Events || this.Mode == MapMode.Tiles && Editor.ProjectSettings.ShowEventBoxesInTilesSubmode)
-        {
-            ShowEventBoxes();
-            RepositionEvents();
-        }
+        if (this.Mode == MapMode.Events || this.Mode == MapMode.Tiles && Editor.ProjectSettings.ShowEventBoxesInTilesSubmode) ShowEventBoxes();
         else HideEventBoxes();
         if (this.Mode == MapMode.Tiles) CursorWidth = CursorHeight = 0;
         Editor.MainWindow.MapWidget.SubmodePicker.SelectTab((int) Mode);
@@ -257,6 +253,7 @@ public partial class MapViewer : Widget
         }
         EventsPanel.SetMap(Map);
         DrawEvents();
+        if (Mode != MapMode.Events && (Mode != MapMode.Tiles || !Editor.ProjectSettings.ShowEventBoxesInTilesSubmode)) HideEventBoxes();
 
         Editor.MainWindow.StatusBar.SetMap(Map);
         PositionMap();
@@ -425,10 +422,4 @@ public partial class MapViewer : Widget
         if (Mode == MapMode.Tiles) PasteTiles();
         else if (Mode == MapMode.Events) PasteEvents();
     }
-}
-
-public enum MapMode
-{
-    Tiles = 0,
-    Events = 1
 }

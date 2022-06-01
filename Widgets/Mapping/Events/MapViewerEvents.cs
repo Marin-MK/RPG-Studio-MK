@@ -31,6 +31,7 @@ public partial class MapViewer
         {
             CreateEventBox(kvp.Value);
         }
+        RepositionEvents();
     }
 
     public void HideEventBoxes()
@@ -41,6 +42,7 @@ public partial class MapViewer
     public void ShowEventBoxes()
     {
         EventBoxes.ForEach(eb => eb.SetVisible(true));
+        RepositionEvents();
     }
 
     public void UpdateEventBoxesViewMode()
@@ -101,11 +103,11 @@ public partial class MapViewer
                 CursorOrigin = Location.BottomLeft;
                 EventsPanel.SelectEventInList(ev);
                 box = eb;
+                Cursor.SetVisible(true);
                 break;
             }
         }
         UpdateCursorPosition();
-        Cursor.SetVisible(true);
         return box;
     }
 
@@ -130,7 +132,7 @@ public partial class MapViewer
             CreateEventBox(ev);
             EventsPanel.RedrawEvents();
             EventsPanel.SelectEventInList(ev);
-            OpenEvent(ev, true);
+            OpenEvent(ev, true, () => Undo.EventChangeUndoAction.Create(this.Map.ID, Map.Events[ev.ID], false));
         }
     }
 
@@ -150,15 +152,13 @@ public partial class MapViewer
             Map.Events.Remove(box.Event.ID);
             box.Dispose();
             EventBoxes.Remove(box);
-            CursorWidth = 0;
-            CursorHeight = 0;
-            UpdateCursorPosition();
             EventsPanel.RedrawEvents();
             SelectEventBoxCursorIsOver();
+            Undo.EventChangeUndoAction.Create(this.Map.ID, box.Event, true);
         }
     }
 
-    public void OpenEvent(Event Event, bool DeleteIfCancelled = false)
+    public void OpenEvent(Event Event, bool DeleteIfCancelled = false, Action OnAppliedAction = null)
     {
         string OldName = Event.Name;
         int OldWidth = Event.Width;
@@ -191,7 +191,24 @@ public partial class MapViewer
             }
             MainContainer.UpdateAutoScroll();
             Window.UI.SetSelectedWidget(this);
+            OnAppliedAction?.Invoke();
         };
+    }
+
+    public void DeleteEventFromUndo(Event Event)
+    {
+        EventBox box = EventBoxes.Find(eb => eb.Event == Event);
+        box.Dispose();
+        EventBoxes.Remove(box);
+        EventsPanel.RedrawEvents();
+        SelectEventBoxCursorIsOver();
+    }
+
+    public void CreateEventFromUndo(Event Event)
+    {
+        CreateEventBox(Event);
+        EventsPanel.RedrawEvents();
+        SelectEventBoxCursorIsOver();
     }
 
     public void MoveCursorLeft()
@@ -269,6 +286,7 @@ public partial class MapViewer
                 DraggingEvent = box;
                 OriginPoint = new Point(PreX - DraggingEvent.Event.X, PreY - DraggingEvent.Event.Y);
             }
+            Cursor.SetVisible(true);
         }
     }
 
@@ -294,6 +312,7 @@ public partial class MapViewer
             int MapY = (int) Math.Floor(ry / (32d * ZoomFactor));
             MapTileX = MapX - OriginPoint.X;
             MapTileY = MapY - OriginPoint.Y;
+            Cursor.SetVisible(true);
             UpdateCursorPosition();
             DraggingEvent.RepositionSprites(MapWidget, MapTileX, MapTileY);
         }
