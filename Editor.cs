@@ -527,6 +527,7 @@ public static class Editor
             s.Stop();
             MainWindow.StatusBar.QueueMessage($"Saved project ({s.ElapsedMilliseconds}ms)", true);
         }
+        MakeRecentProject();
     }
 
     public static void MakeGame()
@@ -640,6 +641,78 @@ public static class Editor
     public static void SetDatabaseSubmode(DatabaseMode Submode)
     {
         MainWindow.DatabaseWidget.SetMode(Submode);
+    }
+
+    /// <summary>
+    /// Opens the Help window.
+    /// </summary>
+    public static void OpenHelpWindow()
+    {
+        new MessageBox("Help",
+            "As there is no built-in wiki or documentation yet, please direct any questions to the official Discord server or Twitter account.");
+    }
+
+    /// <summary>
+    /// Open the About window.
+    /// </summary>
+    public static void OpenAboutWindow()
+    {
+        new MessageBox("About RPG Studio MK",
+            "This program is intended to be an editor for games made with the MK Starter Kit.\n" +
+            "It was created by Marin, with additional support of various other individuals.\n" +
+            "\n" +
+            "Please turn to the GitHub page for a full credits list."
+        );
+    }
+
+    /// <summary>
+    /// Open the Legal window.
+    /// </summary>
+    public static void OpenLegalWindow()
+    {
+        new MessageBox("Legal",
+            "Copyright © 2021 Marijn Herrebout\n\n" +
+            "RPG Studio MK is licensed under the GNU General Public License v3+, referred to as GPLv3+.\n\n" +
+            "You may view the details of this license from the file titled LICENSE in the program's root folder.\nIf not, please view https://www.gnu.org/licenses/gpl-3.0.html."
+        );
+    }
+
+    /// <summary>
+    /// Opens a window allowing you to rename the game.
+    /// </summary>
+    public static void RenameGame()
+    {
+        GenericTextBoxWindow win = new GenericTextBoxWindow("Title", "Title:", ProjectSettings.ProjectName, true);
+        win.OnClosed += _ =>
+        {
+            if (!win.Apply) return;
+            ProjectSettings.ProjectName = win.Value;
+        };
+    }
+
+    /// <summary>
+    /// Changes the view mode of event boxes in the map viewer.
+    /// </summary>
+    /// <param name="ViewMode">The new view mode of event boxes.</param>
+    public static void SetEventGraphicViewMode(EventGraphicViewMode ViewMode)
+    {
+        ProjectSettings.EventGraphicViewMode = ViewMode;
+        if (MainWindow.MapWidget != null && (MainWindow.MapWidget.MapViewer.Mode == MapMode.Events || MainWindow.MapWidget.MapViewer.Mode == MapMode.Tiles && ProjectSettings.ShowEventBoxesInTilesSubmode))
+            MainWindow.MapWidget.MapViewer.UpdateEventBoxesViewMode();
+    }
+
+    /// <summary>
+    /// Sets whether event boxes are visible in the Tiles submode.
+    /// </summary>
+    /// <param name="Visible">The visiblity of event boxes.</param>
+    public static void SetEventBoxVisibilityInTiles(bool Visible)
+    {
+        ProjectSettings.ShowEventBoxesInTilesSubmode = Visible;
+        if (MainWindow.MapWidget.MapViewer.Mode == MapMode.Tiles)
+        {
+            if (Visible) MainWindow.MapWidget.MapViewer.ShowEventBoxes();
+            else MainWindow.MapWidget.MapViewer.HideEventBoxes();
+        }
     }
 
     /// <summary>

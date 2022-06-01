@@ -11,18 +11,18 @@ public class GenericTextBoxWindow : PopupWindow
 
     TextBox TextBox;
 
-    public GenericTextBoxWindow(string Title, string Label, string Text)
+    public GenericTextBoxWindow(string Title, string Label, string Text, bool Wide = false)
     {
         this.Value = Text;
 
         SetTitle(Title);
-        MinimumSize = MaximumSize = new Size(200, 110);
+        MinimumSize = MaximumSize = new Size(Wide ? 300 : 200, 110);
         SetSize(MaximumSize);
         Center();
 
         TextBox = new TextBox(this);
         TextBox.SetPosition(87, 30);
-        TextBox.SetSize(96, 27);
+        TextBox.SetSize(Wide ? 196 : 96, 27);
         TextBox.SetText(Text);
 
         Label TextLabel = new Label(this);

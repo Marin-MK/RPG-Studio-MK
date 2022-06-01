@@ -194,7 +194,7 @@ public class MainEditorWindow : UIWindow
                                 IsCheckable = true,
                                 IsChecked = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode == EventGraphicViewMode.BoxOnly,
                                 HelpText = "Shows only the boxes of events, no graphics.",
-                                OnClicked = _ => SetEventGraphicViewMode(EventGraphicViewMode.BoxOnly),
+                                OnClicked = _ => Editor.SetEventGraphicViewMode(EventGraphicViewMode.BoxOnly),
                                 IsClickable = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode != EventGraphicViewMode.BoxOnly
                             },
                             new MenuItem("Box and Graphic")
@@ -202,7 +202,7 @@ public class MainEditorWindow : UIWindow
                                 IsCheckable = true,
                                 IsChecked = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode == EventGraphicViewMode.BoxAndGraphic,
                                 HelpText = "Shows boxes of events and the full graphic.",
-                                OnClicked = _ => SetEventGraphicViewMode(EventGraphicViewMode.BoxAndGraphic),
+                                OnClicked = _ => Editor.SetEventGraphicViewMode(EventGraphicViewMode.BoxAndGraphic),
                                 IsClickable = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode != EventGraphicViewMode.BoxAndGraphic
                             },
                             new MenuItem("Box and cropped Graphic")
@@ -210,7 +210,7 @@ public class MainEditorWindow : UIWindow
                                 IsCheckable = true,
                                 IsChecked = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode == EventGraphicViewMode.BoxAndCroppedGraphic,
                                 HelpText = "Shows boxes of events and the graphic cropped to fit the box.",
-                                OnClicked = _ => SetEventGraphicViewMode(EventGraphicViewMode.BoxAndCroppedGraphic),
+                                OnClicked = _ => Editor.SetEventGraphicViewMode(EventGraphicViewMode.BoxAndCroppedGraphic),
                                 IsClickable = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode != EventGraphicViewMode.BoxAndCroppedGraphic
                             },
                             new MenuItem("Graphic only")
@@ -218,7 +218,7 @@ public class MainEditorWindow : UIWindow
                                 IsCheckable = true,
                                 IsChecked = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode == EventGraphicViewMode.GraphicOnly,
                                 HelpText = "Shows no boxes of events, only the full graphics.",
-                                OnClicked = _ => SetEventGraphicViewMode(EventGraphicViewMode.GraphicOnly),
+                                OnClicked = _ => Editor.SetEventGraphicViewMode(EventGraphicViewMode.GraphicOnly),
                                 IsClickable = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode != EventGraphicViewMode.GraphicOnly
                             },
                             new MenuItem("Cropped Graphic only")
@@ -226,7 +226,7 @@ public class MainEditorWindow : UIWindow
                                 IsCheckable = true,
                                 IsChecked = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode == EventGraphicViewMode.CroppedGraphicOnly,
                                 HelpText = "Shows no boxes of events, only the graphic cropped to fit where the box would be.",
-                                OnClicked = _ => SetEventGraphicViewMode(EventGraphicViewMode.CroppedGraphicOnly),
+                                OnClicked = _ => Editor.SetEventGraphicViewMode(EventGraphicViewMode.CroppedGraphicOnly),
                                 IsClickable = e => e.Value = Editor.ProjectSettings.EventGraphicViewMode != EventGraphicViewMode.CroppedGraphicOnly
                             },
                             new MenuSeparator(),
@@ -235,7 +235,7 @@ public class MainEditorWindow : UIWindow
                                 IsCheckable = true,
                                 IsChecked = e => e.Value = Editor.ProjectSettings.ShowEventBoxesInTilesSubmode,
                                 HelpText = "When enabled, will also show event boxes and graphics in the Tiles submode.",
-                                OnClicked = _ => SetEventBoxVisibilityInTiles(!Editor.ProjectSettings.ShowEventBoxesInTilesSubmode)
+                                OnClicked = _ => Editor.SetEventBoxVisibilityInTiles(!Editor.ProjectSettings.ShowEventBoxesInTilesSubmode)
                             }
                         }
                     }
@@ -257,6 +257,12 @@ public class MainEditorWindow : UIWindow
                         HelpText = "Opens the file explorer and navigates to the project folder.",
                         IsClickable = e => e.Value = Editor.InProject,
                         OnClicked = _ => Editor.OpenGameFolder()
+                    },
+                    new MenuItem("Change Title")
+                    {
+                        HelpText = "Change the title of your game.",
+                        IsClickable = e => e.Value = Editor.InProject,
+                        OnClicked = _ => Editor.RenameGame()
                     }
                 }
             },
@@ -268,17 +274,17 @@ public class MainEditorWindow : UIWindow
                     {
                         Shortcut = "F1",
                         HelpText = "Opens the help window.",
-                        OnClicked = _ => OpenHelpWindow()
+                        OnClicked = _ => Editor.OpenHelpWindow()
                     },
                     new MenuItem("About RPG Studio MK")
                     {
                         HelpText = "Shows information about this program.",
-                        OnClicked = _ => OpenAboutWindow()
+                        OnClicked = _ => Editor.OpenAboutWindow()
                     },
                     new MenuItem("Legal")
                     {
                         HelpText = "Shows legal information about this program.",
-                        OnClicked = _ => OpenLegalWindow()
+                        OnClicked = _ => Editor.OpenLegalWindow()
                     }
                 }
             }
@@ -382,57 +388,6 @@ public class MainEditorWindow : UIWindow
 
         s.Stop();
         StatusBar.QueueMessage($"Project loaded ({s.ElapsedMilliseconds}ms)", true, 5000);
-    }
-
-    /// <summary>
-    /// Opens the Help window.
-    /// </summary>
-    public void OpenHelpWindow()
-    {
-        new MessageBox("Help",
-            "As there is no built-in wiki or documentation yet, please direct any questions to the official Discord server or Twitter account.");
-    }
-
-    /// <summary>
-    /// Open the About window.
-    /// </summary>
-    public void OpenAboutWindow()
-    {
-        new MessageBox("About RPG Studio MK",
-            "This program is intended to be an editor for games made with the MK Starter Kit.\n" +
-            "It was created by Marin, with additional support of various other individuals.\n" +
-            "\n" +
-            "Please turn to the GitHub page for a full credits list."
-        );
-    }
-
-    /// <summary>
-    /// Open the Legal window.
-    /// </summary>
-    public void OpenLegalWindow()
-    {
-        new MessageBox("Legal",
-            "Copyright © 2021 Marijn Herrebout\n\n" +
-            "RPG Studio MK is licensed under the GNU General Public License v3+, referred to as GPLv3+.\n\n" +
-            "You may view the details of this license from the file titled LICENSE in the program's root folder.\nIf not, please view https://www.gnu.org/licenses/gpl-3.0.html."
-        );
-    }
-
-    public void SetEventGraphicViewMode(EventGraphicViewMode ViewMode)
-    {
-        Editor.ProjectSettings.EventGraphicViewMode = ViewMode;
-        if (MapWidget != null && (MapWidget.MapViewer.Mode == MapMode.Events || MapWidget.MapViewer.Mode == MapMode.Tiles && Editor.ProjectSettings.ShowEventBoxesInTilesSubmode))
-            MapWidget.MapViewer.UpdateEventBoxesViewMode();
-    }
-
-    public void SetEventBoxVisibilityInTiles(bool Visible)
-    {
-        Editor.ProjectSettings.ShowEventBoxesInTilesSubmode = Visible;
-        if (MapWidget.MapViewer.Mode == MapMode.Tiles)
-        {
-            if (Visible) MapWidget.MapViewer.ShowEventBoxes();
-            else MapWidget.MapViewer.HideEventBoxes();
-        }
     }
 
     /// <summary>

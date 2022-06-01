@@ -154,7 +154,11 @@ public partial class MapViewer : Widget
         Editor.ProjectSettings.LastMappingSubmode = this.Mode;
         SidebarWidgetTiles.SetVisible(this.Mode == MapMode.Tiles);
         SidebarWidgetEvents.SetVisible(this.Mode == MapMode.Events);
-        if (this.Mode == MapMode.Events || this.Mode == MapMode.Tiles && Editor.ProjectSettings.ShowEventBoxesInTilesSubmode) ShowEventBoxes();
+        if (this.Mode == MapMode.Events || this.Mode == MapMode.Tiles && Editor.ProjectSettings.ShowEventBoxesInTilesSubmode)
+        {
+            ShowEventBoxes();
+            RepositionEvents();
+        }
         else HideEventBoxes();
         if (this.Mode == MapMode.Tiles) CursorWidth = CursorHeight = 0;
         Editor.MainWindow.MapWidget.SubmodePicker.SelectTab((int) Mode);
@@ -286,7 +290,7 @@ public partial class MapViewer : Widget
         MainContainer.UpdateAutoScroll();
 
         if (Mode == MapMode.Tiles) UpdateSelection();
-        if (Mode == MapMode.Events) RepositionEvents();
+        if (Mode == MapMode.Events || Mode == MapMode.Tiles && Editor.ProjectSettings.ShowEventBoxesInTilesSubmode) RepositionEvents();
     }
 
     private partial void MouseMovingTiles(MouseEventArgs e);

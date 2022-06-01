@@ -290,7 +290,7 @@ public class EditMoveRouteWindow : PopupWindow
         });
         AddButtonElaborate("Script...", 2, MoveCode.Script, (code, cmd, Add) =>
         {
-            GenericTextBoxWindow win = new GenericTextBoxWindow("Script", "Code:", (string) (cmd?.Parameters[0] ?? ""));
+            GenericTextBoxWindow win = new GenericTextBoxWindow("Script", "Code:", (string) (cmd?.Parameters[0] ?? ""), true);
             win.OnClosed += _ =>
             {
                 if (!win.Apply) return;

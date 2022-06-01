@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace RPGStudioMK.Game;
@@ -36,14 +37,9 @@ public static class Data
         System = null;
     }
 
-    private static void Initialize()
-    {
-        Compatibility.RMXP.Setup();
-    }
-
     public static IEnumerable<float> LoadGameData()
     {
-        Initialize();
+        Compatibility.RMXP.Setup();
         LoadTilesets();
         LoadScripts();
         foreach (float f in LoadMaps())
@@ -52,7 +48,7 @@ public static class Data
         }
         LoadSystem();
         LoadCommonEvents();
-        //LoadSpecies();
+        LoadGameINI();
     }
 
     public static void SaveGameData()
@@ -62,7 +58,7 @@ public static class Data
         SaveMaps();
         SaveSystem();
         SaveCommonEvents();
-        //SaveSpecies();
+        SaveGameINI();
     }
 
     public static void SetProjectPath(string RXProjectFilePath)
@@ -82,41 +78,6 @@ public static class Data
         Data.DataPath = path + "/Data";
         Data.ProjectFilePath = path + "/project.mkproj";
         Editor.ProjectFilePath = Data.ProjectFilePath;
-    }
-
-    private static void LoadSpecies()
-    {
-        //StreamReader sr = new StreamReader(File.OpenRead(DataPath + "/species.mkd"));
-        //string content = sr.ReadToEnd();
-        //sr.Close();
-        //Dictionary<string, object> data = JsonConvert.DeserializeObject<Dictionary<string, object>>(content);
-        //if ((string) data[":type"] != ":species")
-        //{
-        //    throw new Exception("Invalid data type for species.mkd - Expected to contain species data but found " + data[":type"] + ".");
-        //}
-        //Dictionary<string, object> AllSpecies = ((JObject) data[":data"]).ToObject<Dictionary<string, object>>();
-        //foreach (string key in AllSpecies.Keys)
-        //{
-        //    Species s = new Species(((JObject) AllSpecies[key]).ToObject<Dictionary<string, object>>()); ;
-        //    Species[s.IntName] = s;
-        //}
-    }
-
-    private static void SaveSpecies()
-    {
-        //Dictionary<string, object> Main = new Dictionary<string, object>();
-        //Main[":type"] = ":species";
-        //Dictionary<string, object> list = new Dictionary<string, object>();
-        //foreach (KeyValuePair<string, Species> kvp in Species)
-        //{
-        //    list[":" + kvp.Key] = kvp.Value.ToJSON();
-        //}
-        //Main[":data"] = list;
-        //string jsonstring = JsonConvert.SerializeObject(Main);
-        //if (File.Exists(DataPath + "/species.mkd")) File.Delete(DataPath + "/species.mkd");
-        //StreamWriter sw = new StreamWriter(File.OpenWrite(DataPath + "/species.mkd"));
-        //sw.Write(jsonstring);
-        //sw.Close();
     }
 
     private static void LoadTilesets()
@@ -350,7 +311,7 @@ public static class Data
         {
             Script s = Scripts[i];
             Match m = Regex.Match(s.Content, "module Essentials[\t\r\n ]*VERSION[\t\r\n ]*=[\t\r\n ]*\"(.*)\"");
-            if (!string.IsNullOrEmpty(m.Groups[1].Value)) // v19, v19.1, v20, etc.
+            if (m.Success && !string.IsNullOrEmpty(m.Groups[1].Value)) // v19, v19.1, v20, etc.
             {
                 EssentialsVersion = m.Groups[1].Value switch
                 {
@@ -362,7 +323,7 @@ public static class Data
                 break;
             }
             m = Regex.Match(s.Content, "(ESSENTIALS_VERSION|ESSENTIALSVERSION)[\t\r\n ]*=[\t\r\n ]*\"(.*)\"");
-            if (!string.IsNullOrEmpty(m.Groups[2].Value))
+            if (m.Success && !string.IsNullOrEmpty(m.Groups[2].Value)) // v17, v17.1, v17.2, v18, v18.1
             {
                 EssentialsVersion = m.Groups[2].Value switch
                 {
@@ -394,6 +355,30 @@ public static class Data
         Ruby.Funcall(file, "close");
         Ruby.Unpin(scripts);
         Ruby.Unpin(file);
+    }
+
+    private static Encoding win1252;
+
+    private static void LoadGameINI()
+    {
+        if (win1252 == null)
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            win1252 = Encoding.GetEncoding("windows-1252");
+        }
+        string data = File.ReadAllText(ProjectPath + "/Game.ini", win1252);
+        Match m = Regex.Match(data, @"Title=(.*)\n"); // \r will be included in the match, so we trim that out.
+        if (m.Success && !string.IsNullOrEmpty(m.Groups[1].Value.Trim()))
+        {
+            Editor.ProjectSettings.ProjectName = m.Groups[1].Value.Trim();
+        }
+    }
+
+    private static void SaveGameINI()
+    {
+        string data = File.ReadAllText(ProjectPath + "/Game.ini", win1252);
+        data = Regex.Replace(data, @"Title=.*\n", $"Title={Editor.ProjectSettings.ProjectName}{Environment.NewLine}");
+        File.WriteAllText(ProjectPath + "/Game.ini", data, win1252);
     }
 
     public static bool EssentialsAtLeast(EssentialsVersion Version)
