@@ -73,7 +73,7 @@ public class EventPageControl : Widget
         Switch1VarBox.OnSwitchChanged += _ => Page.Condition.Switch1ID = Switch1VarBox.SwitchID;
         Switch1Label = new Label(ConditionsBox);
         Switch1Label.SetFont(SmallFont);
-        Switch1Label.SetPosition(224, 7);
+        Switch1Label.SetPosition(223, 7);
         Switch1Label.SetText("is ON");
         Switch1Label.SetEnabled(false);
         Switch2Box = new CheckBox(ConditionsBox);
@@ -94,7 +94,7 @@ public class EventPageControl : Widget
         Switch2VarBox.OnSwitchChanged += _ => Page.Condition.Switch2ID = Switch2VarBox.SwitchID;
         Switch2Label = new Label(ConditionsBox);
         Switch2Label.SetFont(SmallFont);
-        Switch2Label.SetPosition(224, 7 + 32);
+        Switch2Label.SetPosition(223, 7 + 32);
         Switch2Label.SetText("is ON");
         Switch2Label.SetEnabled(false);
         VarBox = new CheckBox(ConditionsBox);
@@ -117,7 +117,7 @@ public class EventPageControl : Widget
         VarPickBox.OnVariableChanged += _ => Page.Condition.VariableID = VarPickBox.VariableID;
         VarLabel1 = new Label(ConditionsBox);
         VarLabel1.SetFont(SmallFont);
-        VarLabel1.SetPosition(224, 7 + 32 * 2);
+        VarLabel1.SetPosition(223, 7 + 32 * 2);
         VarLabel1.SetText("is");
         VarLabel1.SetEnabled(false);
         VarValueBox = new NumericBox(ConditionsBox);
