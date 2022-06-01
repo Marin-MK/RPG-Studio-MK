@@ -21,7 +21,7 @@ public class ProgressWindow : PopupWindow
         Center();
 
         MessageLabel = new Label(this);
-        MessageLabel.SetFont(Fonts.UbuntuRegular.Use(14));
+        MessageLabel.SetFont(Fonts.UbuntuRegular.Use(11));
         MessageLabel.SetText(Message);
         MessageLabel.SetPosition(Size.Width / 2 - MessageLabel.Size.Width / 2, 24);
 
@@ -37,6 +37,10 @@ public class ProgressWindow : PopupWindow
             {
                 new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true, e => e.Value = Buttons[0].Enabled)
             });
+            ProgressBar.OnValueChanged += _ =>
+            {
+                if (ProgressBar.Progress >= 1) Buttons[0].SetEnabled(true);
+            };
         }
     }
 
@@ -58,7 +62,7 @@ public class ProgressWindow : PopupWindow
     public void SetProgress(float Progress)
     {
         if (ProgressBar.Progress == Progress) return;
-        ProgressBar.SetProgress(Progress);
+        ProgressBar.SetValue(Progress);
         if (CloseWhenDone && this.ProgressBar.Progress == 1) Close();
     }
 }
