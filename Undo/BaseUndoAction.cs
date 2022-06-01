@@ -50,13 +50,28 @@ public class BaseUndoAction
         return false;
     }
 
-    public bool SetDatabaseMode(Widgets.DatabaseMode Submode)
+    public bool SetMappingMode(MapMode Submode)
     {
-        Editor.SetDatabaseMode(Submode);
+        Editor.SetMode(EditorMode.Mapping, false, Submode);
         return false;
     }
 
-    public bool InDatabaseSubmode(Widgets.DatabaseMode Submode)
+    public bool SetDatabaseMode(DatabaseMode Submode)
+    {
+        Editor.SetMode(EditorMode.Database, false, null, Submode);
+        return false;
+    }
+
+    public bool InMappingSubmode(MapMode Submode)
+    {
+        if (Editor.Mode == EditorMode.Mapping)
+        {
+            return ((Widgets.MappingWidget) Editor.MainWindow.MainEditorWidget).MapViewer.Mode == Submode;
+        }
+        return false;
+    }
+
+    public bool InDatabaseSubmode(DatabaseMode Submode)
     {
         if (Editor.Mode == EditorMode.Database)
         {
@@ -65,7 +80,7 @@ public class BaseUndoAction
         return false;
     }
 
-    public bool SetDatabaseSubmode(Widgets.DatabaseMode Submode)
+    public bool SetDatabaseSubmode(DatabaseMode Submode)
     {
         if (Editor.Mode == EditorMode.Database)
         {
