@@ -136,7 +136,7 @@ public partial class MapViewer
         }
     }
 
-    public void DeleteEventCursorIsOver()
+    public void DeleteEventCursorIsOver(bool Undoable)
     {
         EventBox box = null;
         foreach (EventBox eb in EventBoxes)
@@ -154,7 +154,7 @@ public partial class MapViewer
             EventBoxes.Remove(box);
             EventsPanel.RedrawEvents();
             SelectEventBoxCursorIsOver();
-            Undo.EventChangeUndoAction.Create(this.Map.ID, box.Event, true);
+            if (Undoable) Undo.EventChangeUndoAction.Create(this.Map.ID, box.Event, true);
         }
     }
 
@@ -178,7 +178,7 @@ public partial class MapViewer
         {
             if (!win.Apply)
             {
-                if (DeleteIfCancelled) DeleteEventCursorIsOver();
+                if (DeleteIfCancelled) DeleteEventCursorIsOver(false);
                 return;
             }
             box.SetEvent(Map, win.Event);
@@ -208,6 +208,13 @@ public partial class MapViewer
     {
         CreateEventBox(Event);
         EventsPanel.RedrawEvents();
+        SelectEventBoxCursorIsOver();
+    }
+
+    public void MoveEventFromUndo(Event Event)
+    {
+        EventBox box = EventBoxes.Find(eb => eb.Event == Event);
+        box.RepositionSprites(MapWidget, Event.X, Event.Y);
         SelectEventBoxCursorIsOver();
     }
 
@@ -285,6 +292,7 @@ public partial class MapViewer
             {
                 DraggingEvent = box;
                 OriginPoint = new Point(PreX - DraggingEvent.Event.X, PreY - DraggingEvent.Event.Y);
+                Editor.CanUndo = false;
             }
             Cursor.SetVisible(true);
         }
@@ -312,7 +320,6 @@ public partial class MapViewer
             int MapY = (int) Math.Floor(ry / (32d * ZoomFactor));
             MapTileX = MapX - OriginPoint.X;
             MapTileY = MapY - OriginPoint.Y;
-            Cursor.SetVisible(true);
             UpdateCursorPosition();
             DraggingEvent.RepositionSprites(MapWidget, MapTileX, MapTileY);
         }
@@ -322,8 +329,15 @@ public partial class MapViewer
     {
         if (Mouse.LeftMouseReleased && DraggingEvent != null)
         {
-            DraggingEvent.Event.X = MapTileX;
-            DraggingEvent.Event.Y = MapTileY;
+            Editor.CanUndo = true;
+            if (DraggingEvent.Event.X != MapTileX || DraggingEvent.Event.Y != MapTileY)
+            {
+                // It actually moved from its original location
+                Point OldPosition = new Point(DraggingEvent.Event.X, DraggingEvent.Event.Y);
+                DraggingEvent.Event.X = MapTileX;
+                DraggingEvent.Event.Y = MapTileY;
+                Undo.EventMovedUndoAction.Create(Map.ID, DraggingEvent.Event.ID, OldPosition, new Point(MapTileX, MapTileY));
+            }
             DraggingEvent = null;
         }
     }
@@ -343,7 +357,7 @@ public partial class MapViewer
         {
             Event ev = box.Event;
             Utilities.SetClipboard(ev, BinaryData.EVENT);
-            if (Cut) DeleteEventCursorIsOver();
+            if (Cut) DeleteEventCursorIsOver(true);
         }
     }
 
