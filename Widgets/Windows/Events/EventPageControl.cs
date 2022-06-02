@@ -30,7 +30,7 @@ public class EventPageControl : Widget
     DropdownBox AutoMoveSpeedBox;
     DropdownBox AutoMoveFrequencyBox;
     Button EditRouteButton;
-    MultilineLabel CommandsBox;
+    EventCommandBox CommandBox;
 
     Map Map;
     Event Event;
@@ -166,7 +166,7 @@ public class EventPageControl : Widget
         GraphicBox.SetSize(121, 121);
         EventGraphicBox = new EventGraphicBox(GraphicBox);
         EventGraphicBox.SetDocked(true);
-        EventGraphicBox.SetMargins(2);
+        EventGraphicBox.SetPadding(2);
         EventGraphicBox.OnDoubleLeftMouseDownInside += _ =>
         {
             ChooseGraphic cg = new ChooseGraphic(Map, Event, Page, Page.Graphic, false);
@@ -319,10 +319,9 @@ public class EventPageControl : Widget
         ParallelBox.SetText("Parallel Process");
         ParallelBox.OnCheckChanged += _ => { if (ParallelBox.Checked) Page.TriggerMode = TriggerMode.ParallelProcess; };
 
-        CommandsBox = new MultilineLabel(this);
-        CommandsBox.SetDocked(true);
-        CommandsBox.SetMargins(279, 22, 7, 0);
-        CommandsBox.SetFont(SmallFont);
+        CommandBox = new EventCommandBox(this);
+        CommandBox.SetDocked(true);
+        CommandBox.SetPadding(279, 22, 7, 0);
     }
 
     public void RedrawGraphic()
@@ -383,6 +382,6 @@ public class EventPageControl : Widget
             if (parameters.Length > 2) parameters = parameters.Substring(0, parameters.Length - 2);
             str += $"{cmd.Code}: {parameters}\n";
         }
-        CommandsBox.SetText(str);
+        CommandBox.SetCommands(Map, Event, Page, Page.Commands);
     }
 }

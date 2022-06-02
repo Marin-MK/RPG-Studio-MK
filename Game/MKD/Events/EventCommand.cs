@@ -65,7 +65,7 @@ public enum CommandCode
     Blank = 0,
 
     ShowText = 101,
-    ShowCoices = 102,
+    ShowChoices = 102,
     InputNumber = 103,
     ChangeTextOptions = 104,
     Wait = 106,
