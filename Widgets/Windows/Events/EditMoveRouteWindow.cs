@@ -54,7 +54,7 @@ public class EditMoveRouteWindow : PopupWindow
 
         MoveBox = new ListBox(this);
         MoveBox.SetVDocked(true);
-        MoveBox.SetMargins(15, 64, 0, 64);
+        MoveBox.SetPadding(15, 64, 0, 64);
         MoveBox.SetWidth(180);
         MoveBox.SetContextMenuList(new List<IMenuItem>()
         {
@@ -89,7 +89,7 @@ public class EditMoveRouteWindow : PopupWindow
 
         CheckBox RepeatBox = new CheckBox(this);
         RepeatBox.SetBottomDocked(true);
-        RepeatBox.SetMargins(20, 0, 0, 42);
+        RepeatBox.SetPadding(20, 0, 0, 42);
         RepeatBox.SetFont(Fonts.ProductSansMedium.Use(11));
         RepeatBox.SetText("Repeat");
         RepeatBox.SetChecked(MoveRoute.Repeat);
@@ -97,7 +97,7 @@ public class EditMoveRouteWindow : PopupWindow
 
         CheckBox SkippableBox = new CheckBox(this);
         SkippableBox.SetBottomDocked(true);
-        SkippableBox.SetMargins(20, 0, 0, 22);
+        SkippableBox.SetPadding(20, 0, 0, 22);
         SkippableBox.SetFont(Fonts.ProductSansMedium.Use(11));
         SkippableBox.SetText("Skippable");
         SkippableBox.SetChecked(MoveRoute.Skippable);
@@ -110,7 +110,7 @@ public class EditMoveRouteWindow : PopupWindow
             new GridSize(1)
         );
         ButtonGrid.SetDocked(true);
-        ButtonGrid.SetMargins(MoveBox.Margins.Left + MoveBox.Size.Width + 8, TargetBox.Position.Y, 15, 48);
+        ButtonGrid.SetPadding(MoveBox.Padding.Left + MoveBox.Size.Width + 8, TargetBox.Position.Y, 15, 48);
 
         VStackPanel Column1 = new VStackPanel(ButtonGrid);
         VStackPanel Column2 = new VStackPanel(ButtonGrid);
@@ -124,7 +124,7 @@ public class EditMoveRouteWindow : PopupWindow
             Button btn = new Button(Columns[Column]);
             btn.SetFont(Fonts.ProductSansMedium.Use(11));
             if (Columns[Column].Widgets.Count > 1)
-                btn.SetMargins(0, -3);
+                btn.SetPadding(0, -3);
             btn.SetText(Text);
             btn.OnClicked += _ =>
             {
@@ -138,7 +138,7 @@ public class EditMoveRouteWindow : PopupWindow
             Button btn = new Button(Columns[Column]);
             btn.SetFont(Fonts.ProductSansMedium.Use(11));
             if (Columns[Column].Widgets.Count > 1)
-                btn.SetMargins(0, -3);
+                btn.SetPadding(0, -3);
             btn.SetText(Text);
             btn.OnClicked += _ =>
             {

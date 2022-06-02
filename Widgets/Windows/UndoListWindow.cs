@@ -39,23 +39,23 @@ public class UndoListWindow : PopupWindow
         Label PastLabel = new Label(this);
         PastLabel.SetFont(Fonts.ProductSansMedium.Use(12));
         PastLabel.SetBottomDocked(true);
-        PastLabel.SetMargins(16, 0, 0, -18);
+        PastLabel.SetPadding(16, 0, 0, -18);
         PastLabel.SetText("Past");
 
         ListBox ListBox = new ListBox(this);
         ListBox.SetVDocked(true);
-        ListBox.SetMargins(14, 50, 0, 34);
+        ListBox.SetPadding(14, 50, 0, 34);
         ListBox.SetWidth(160);
         ListBox.SetItems(Items);
 
         Container DescContainer = new Container(this);
         DescContainer.SetDocked(true);
-        DescContainer.SetMargins(ListBox.Margins.Left + ListBox.Size.Width + 6, ListBox.Margins.Up, 20, 80);
+        DescContainer.SetPadding(ListBox.Padding.Left + ListBox.Size.Width + 6, ListBox.Padding.Up, 20, 80);
 
         VScrollBar vs = new VScrollBar(this);
         vs.SetVDocked(true);
         vs.SetRightDocked(true);
-        vs.SetMargins(0, DescContainer.Margins.Up, 9, DescContainer.Margins.Down);
+        vs.SetPadding(0, DescContainer.Padding.Up, 9, DescContainer.Padding.Down);
         DescContainer.SetVScrollBar(vs);
         DescContainer.VAutoScroll = true;
 
@@ -66,7 +66,7 @@ public class UndoListWindow : PopupWindow
         Button RevertButton = new Button(this);
         RevertButton.SetBottomDocked(true);
         RevertButton.SetRightDocked(true);
-        RevertButton.SetMargins(0, 0, 31, 40);
+        RevertButton.SetPadding(0, 0, 31, 40);
         RevertButton.SetWidth(105);
         RevertButton.SetFont(Fonts.UbuntuBold.Use(12));
         RevertButton.SetText("Revert To");

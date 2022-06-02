@@ -31,20 +31,20 @@ public class MapSelectPanel : Widget
 
         allmapcontainer = new Container(this);
         allmapcontainer.SetDocked(true);
-        allmapcontainer.SetMargins(0, 35, 11, 11);
+        allmapcontainer.SetPadding(0, 35, 11, 11);
         allmapcontainer.VAutoScroll = true;
         allmapcontainer.HAutoScroll = true;
 
         VScrollBar vs = new VScrollBar(this);
         vs.SetVDocked(true);
         vs.SetRightDocked(true);
-        vs.SetMargins(0, 33, -1, 13);
+        vs.SetPadding(0, 33, -1, 13);
         allmapcontainer.SetVScrollBar(vs);
 
         HScrollBar hs = new HScrollBar(this);
         hs.SetHDocked(true);
         hs.SetBottomDocked(true);
-        hs.SetMargins(1, 0, 13, -1);
+        hs.SetPadding(1, 0, 13, -1);
         allmapcontainer.SetHScrollBar(hs);
 
         mapview = new TreeView(allmapcontainer);

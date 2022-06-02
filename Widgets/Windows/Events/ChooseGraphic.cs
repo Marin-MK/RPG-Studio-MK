@@ -226,7 +226,7 @@ public class ChooseGraphic : PopupWindow
 
         Widget Divider = new Widget(this);
         Divider.SetHDocked(true);
-        Divider.SetMargins(8, 32, 8, 0);
+        Divider.SetPadding(8, 32, 8, 0);
         Divider.SetHeight(3);
         Divider.SetBackgroundColor(new Color(59, 91, 124));
 
@@ -245,7 +245,7 @@ public class ChooseGraphic : PopupWindow
 
         Label HueLabel = new Label(this);
         HueLabel.SetBottomDocked(true);
-        HueLabel.SetMargins(20, 0, 0, -17);
+        HueLabel.SetPadding(20, 0, 0, -17);
         HueLabel.SetHeight(24);
         HueLabel.SetFont(f);
         HueLabel.SetText("Hue: ");
@@ -256,7 +256,7 @@ public class ChooseGraphic : PopupWindow
         HueBox.SetPixelSnapDifference(16);
         HueBox.SetHDocked(true);
         HueBox.SetBottomDocked(true);
-        HueBox.SetMargins(50, 0, 214, 16);
+        HueBox.SetPadding(50, 0, 214, 16);
         HueBox.OnValueChanged += _ =>
         {
             Graphic.CharacterHue = HueBox.Value;

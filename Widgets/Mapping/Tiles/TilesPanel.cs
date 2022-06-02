@@ -107,12 +107,12 @@ public class TilesPanel : Widget
         MainContainer = new Container(this);
         MainContainer.VAutoScroll = true;
         MainContainer.SetDocked(true);
-        MainContainer.SetMargins(0, 53, 11, 1);
+        MainContainer.SetPadding(0, 53, 11, 1);
 
         VScrollBar vs = new VScrollBar(this);
         vs.SetVDocked(true);
         vs.SetRightDocked(true);
-        vs.SetMargins(0, 54, 0, 2);
+        vs.SetPadding(0, 54, 0, 2);
         MainContainer.SetVScrollBar(vs);
 
         Cursor = new CursorWidget(MainContainer);
@@ -231,7 +231,7 @@ public class TilesPanel : Widget
         {
             SingleAutotileContainer = new CollapsibleContainer(MainStackPanel);
             SingleAutotileContainer.SetText("Autotiles");// SetText("Single Autotiles");
-            SingleAutotileContainer.SetMargins(0, 0, 0, 8);
+            SingleAutotileContainer.SetPadding(0, 0, 0, 8);
             SingleAutotileContainer.OnCollapsedChanged += delegate (BaseEventArgs e) { UpdateCursor(); };
             singles = new Bitmap(263, 33 + 33 * (int)Math.Floor(SingleAutotileCount / 8d));
             singles.Unlock();
@@ -297,7 +297,7 @@ public class TilesPanel : Widget
             Tileset tileset = Data.Tilesets[tilesetid];
             CollapsibleContainer c = new CollapsibleContainer(MainStackPanel);
             c.SetText(tileset.Name);
-            c.SetMargins(0, 0, 0, 8);
+            c.SetPadding(0, 0, 0, 8);
             c.OnCollapsedChanged += delegate (BaseEventArgs e) { UpdateCursor(); };
             TilesetContainers.Add(c);
             if (tileset.TilesetListBitmap == null)

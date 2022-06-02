@@ -16,7 +16,7 @@ public class MultilineTextBox : Widget
         vs.ScrollStep = 5;
         MainContainer.SetVScrollBar(vs);
         TextArea = new MultilineTextArea(MainContainer);
-        TextArea.OnSizeChanged += delegate (BaseEventArgs e)
+        TextArea.OnSizeChanged += e =>
         {
             if (TextArea.Size.Height < MainContainer.Size.Height) TextArea.SetHeight(MainContainer.Size.Height);
         };

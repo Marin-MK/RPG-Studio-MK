@@ -34,13 +34,13 @@ public class LayerPanel : Widget
 
         layercontainer = new Container(this);
         layercontainer.SetDocked(true);
-        layercontainer.SetMargins(1, 33, 13, 0);
+        layercontainer.SetPadding(1, 33, 13, 0);
         layercontainer.VAutoScroll = true;
 
         VScrollBar vs = new VScrollBar(this);
         vs.SetVDocked(true);
         vs.SetRightDocked(true);
-        vs.SetMargins(0, 34, 0, 2);
+        vs.SetPadding(0, 34, 0, 2);
         layercontainer.SetVScrollBar(vs);
 
         layerwidget = new LayerWidget(layercontainer);

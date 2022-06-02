@@ -133,12 +133,12 @@ public class EditEventWindow : PopupWindow
         Widget PageDivider = new Widget(this);
         PageDivider.SetPosition(0, PageControl.Position.Y + PageControl.Size.Height);
         PageDivider.SetHDocked(true);
-        PageDivider.SetMargins(8, 0);
+        PageDivider.SetPadding(8, 0);
         PageDivider.SetBackgroundColor(new Color(59, 91, 124));
         PageDivider.SetHeight(4);
 
         EventPageControl = new EventPageControl(this);
-        EventPageControl.SetMargins(8, PageDivider.Position.Y + PageDivider.Size.Height, 8, 41);
+        EventPageControl.SetPadding(8, PageDivider.Position.Y + PageDivider.Size.Height, 8, 47);
         EventPageControl.SetDocked(true);
 
         PageControl.SelectTab(0);

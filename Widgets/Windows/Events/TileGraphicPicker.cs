@@ -25,7 +25,7 @@ public class TileGraphicPicker : Widget
         ScrollBar.SetWidth(3);
         ScrollBar.SetVDocked(true);
         ScrollBar.SetRightDocked(true);
-        ScrollBar.SetMargins(0, 1, 12, 1);
+        ScrollBar.SetPadding(0, 1, 12, 1);
         ScrollBar.Sprites["line"] = new Sprite(ScrollBar.Viewport);
         ScrollBar.OnSizeChanged += _ =>
         {
@@ -40,7 +40,7 @@ public class TileGraphicPicker : Widget
 
         Container ScrollContainer = new Container(GroupBox);
         ScrollContainer.SetDocked(true);
-        ScrollContainer.SetMargins(2);
+        ScrollContainer.SetPadding(2);
 
         TilesetBox = new PictureBox(ScrollContainer);
         Tileset Tileset = Data.Tilesets[Map.TilesetIDs[0]];
@@ -65,7 +65,7 @@ public class TileGraphicPicker : Widget
 
         VScrollBar vs = new VScrollBar(GroupBox);
         vs.SetVDocked(true);
-        vs.SetMargins(0, 3, 1, 3);
+        vs.SetPadding(0, 3, 1, 3);
         vs.SetRightDocked(true);
         ScrollContainer.SetVScrollBar(vs);
         ScrollContainer.VAutoScroll = true;

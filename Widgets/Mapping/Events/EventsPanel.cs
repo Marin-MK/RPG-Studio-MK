@@ -25,12 +25,12 @@ public class EventsPanel : Widget
         Sprites["slider"].Y = 33;
 
         Container ScrollContainer = new Container(this);
-        ScrollContainer.SetMargins(2, 33, 14, 1);
+        ScrollContainer.SetPadding(2, 33, 14, 1);
         ScrollContainer.SetDocked(true);
         VScrollBar vs = new VScrollBar(this);
         vs.SetVDocked(true);
         vs.SetRightDocked(true);
-        vs.SetMargins(0, 34, 0, 2);
+        vs.SetPadding(0, 34, 0, 2);
         ScrollContainer.SetVScrollBar(vs);
         ScrollContainer.VAutoScroll = true;
 

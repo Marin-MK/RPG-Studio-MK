@@ -88,7 +88,7 @@ public partial class MapViewer : Widget
         HScrollBar.SetZIndex(1);
         HScrollBar.SetValue(0.5);
         HScrollBar.SetHDocked(true);
-        HScrollBar.SetMargins(1, 2, 1, 0);
+        HScrollBar.SetPadding(1, 2, 1, 0);
         HScrollBar.OnValueChanged += delegate (BaseEventArgs e)
         {
             if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetHorizontalScroll(HScrollBar.Value);
@@ -100,7 +100,7 @@ public partial class MapViewer : Widget
         VScrollBar.SetZIndex(1);
         VScrollBar.SetValue(0.5);
         VScrollBar.SetVDocked(true);
-        VScrollBar.SetMargins(2, 1, 0, 1);
+        VScrollBar.SetPadding(2, 1, 0, 1);
         VScrollBar.OnValueChanged += delegate (BaseEventArgs e)
         {
             if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetVerticalScroll(VScrollBar.Value);
@@ -127,7 +127,7 @@ public partial class MapViewer : Widget
         HintWindow = new HintWindow(MainContainer);
         HintWindow.ConsiderInAutoScrollCalculation = HintWindow.ConsiderInAutoScrollPositioning = false;
         HintWindow.SetBottomDocked(true);
-        HintWindow.SetMargins(-3, 0, 0, -9);
+        HintWindow.SetPadding(-3, 0, 0, -9);
         HintWindow.SetZIndex(10);
         HintWindow.SetVisible(false);
 

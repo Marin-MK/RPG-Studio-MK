@@ -288,7 +288,7 @@ public class FileExplorer : Widget
         {
             DirGrid.Widgets.ForEach(w =>
             {
-                w.SetMargins((int)Math.Floor(ColumnMargin), 4, 0, 0);
+                w.SetPadding((int)Math.Floor(ColumnMargin), 4, 0, 0);
             });
         }
         DirGrid.UpdateLayout();

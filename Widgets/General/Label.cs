@@ -9,6 +9,10 @@ public class Label : Widget
     public Color TextColor { get; protected set; } = Color.WHITE;
     public DrawOptions DrawOptions { get; protected set; }
     public bool Enabled { get; protected set; } = true;
+    public int WidthLimit { get; protected set; } = -1;
+    public string LimitReplacementText { get; protected set; } = "...";
+
+    public bool ReachedWidthLimit { get; protected set; } = false;
 
     public Label(IContainer Parent) : base(Parent)
     {
@@ -31,6 +35,24 @@ public class Label : Widget
         {
             this.Text = Text;
             this.DrawOptions = DrawOptions;
+            RedrawText();
+        }
+    }
+
+    public virtual void SetWidthLimit(int WidthLimit)
+    {
+        if (this.WidthLimit != WidthLimit)
+        {
+            this.WidthLimit = WidthLimit;
+            RedrawText();
+        }
+    }
+
+    public virtual void SetLimitReplacementText(string LimitReplacementText)
+    {
+        if (this.LimitReplacementText != LimitReplacementText)
+        {
+            this.LimitReplacementText = LimitReplacementText;
             RedrawText();
         }
     }
@@ -66,13 +88,36 @@ public class Label : Widget
     {
         base.Draw();
         Sprites["text"].Bitmap?.Dispose();
+        this.ReachedWidthLimit = false;
         if (string.IsNullOrEmpty(this.Text)) return;
         Size s = this.Font.TextSize(this.Text, this.DrawOptions);
+        string text = this.Text;
+        if (WidthLimit != -1 && s.Width >= WidthLimit)
+        {
+            // Cut the string off at WidthLimit - len(replacement)
+            int maxw = WidthLimit;
+            if (!string.IsNullOrEmpty(this.LimitReplacementText))
+            {
+                Size repsize = this.Font.TextSize(this.LimitReplacementText, this.DrawOptions);
+                maxw -= repsize.Width;
+            }
+            for (int i = 1; i < this.Text.Length; i++)
+            {
+                Size cursize = this.Font.TextSize(this.Text.Substring(0, i));
+                if (cursize.Width > maxw)
+                {
+                    text = this.Text.Substring(0, i);
+                    break;
+                }
+            }
+            text += LimitReplacementText;
+            this.ReachedWidthLimit = true;
+        }
         this.SetSize(s);
         Sprites["text"].Bitmap = new Bitmap(s);
         Sprites["text"].Bitmap.Unlock();
         Sprites["text"].Bitmap.Font = this.Font;
-        Sprites["text"].Bitmap.DrawText(this.Text, this.Enabled ? this.TextColor : new Color(160, 160, 160), this.DrawOptions);
+        Sprites["text"].Bitmap.DrawText(text, this.Enabled ? this.TextColor : new Color(160, 160, 160), this.DrawOptions);
         Sprites["text"].Bitmap.Lock();
     }
 }
@@ -89,13 +134,13 @@ public class MultilineLabel : Label
         Sprites["text"].Bitmap?.Dispose();
         if (string.IsNullOrEmpty(Text)) return;
         List<string> Lines = Utilities.FormatString(this.Font, Text, Size.Width);
-        SetSize(Size.Width, (Font.Size + 4) * Lines.Count);
+        SetSize(Size.Width, (Font.Size + 5) * Lines.Count + 4);
         Sprites["text"].Bitmap = new Bitmap(Size);
         Sprites["text"].Bitmap.Unlock();
         Sprites["text"].Bitmap.Font = this.Font;
         for (int i = 0; i < Lines.Count; i++)
         {
-            Sprites["text"].Bitmap.DrawText(Lines[i], 0, (Font.Size + 2) * i, this.Enabled ? this.TextColor : new Color(160, 160, 160));
+            Sprites["text"].Bitmap.DrawText(Lines[i], 0, (Font.Size + 5) * i, this.Enabled ? this.TextColor : new Color(160, 160, 160));
         }
         Sprites["text"].Bitmap.Lock();
     }

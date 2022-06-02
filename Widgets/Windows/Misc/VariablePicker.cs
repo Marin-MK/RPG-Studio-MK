@@ -35,13 +35,13 @@ public class VariablePicker : PopupWindow
         GroupListBox = new ListBox(this);
         GroupListBox.SetFont(ListFont);
         GroupListBox.SetVDocked(true);
-        GroupListBox.SetMargins(13, 50, 0, 52);
+        GroupListBox.SetPadding(13, 50, 0, 52);
         GroupListBox.SetWidth(114);
         GroupListBox.OnSelectionChanged += _ => RedrawVariableList();
 
         ChangeMaxButton = new Button(this);
         ChangeMaxButton.SetBottomDocked(true);
-        ChangeMaxButton.SetMargins(GroupListBox.Margins.Left, 0, 0, 15);
+        ChangeMaxButton.SetPadding(GroupListBox.Padding.Left, 0, 0, 15);
         ChangeMaxButton.SetFont(HeaderFont);
         ChangeMaxButton.SetSize(GroupListBox.Size.Width, 32);
         ChangeMaxButton.SetText("Change Max");
@@ -49,25 +49,25 @@ public class VariablePicker : PopupWindow
         VariableListBox = new ListBox(this);
         VariableListBox.SetFont(ListFont);
         VariableListBox.SetDocked(true);
-        VariableListBox.SetMargins(GroupListBox.Margins.Left + GroupListBox.Size.Width + 6, 50, 16, 84);
+        VariableListBox.SetPadding(GroupListBox.Padding.Left + GroupListBox.Size.Width + 6, 50, 16, 84);
         VariableListBox.OnSelectionChanged += _ => VariableSelectionChanged();
 
         Label VariableLabel = new Label(this);
         VariableLabel.SetFont(HeaderFont);
-        VariableLabel.SetMargins(VariableListBox.Margins.Left + 2, 30, 0, 0);
+        VariableLabel.SetPadding(VariableListBox.Padding.Left + 2, 30, 0, 0);
         VariableLabel.SetText("Variables");
 
         Label NameLabel = new Label(this);
         NameLabel.SetFont(SmallFont);
         NameLabel.SetBottomDocked(true);
-        NameLabel.SetMargins(VariableListBox.Margins.Left + 8, 0, 0, 25);
+        NameLabel.SetPadding(VariableListBox.Padding.Left + 8, 0, 0, 25);
         NameLabel.SetText("Name:");
 
         NameBox = new TextBox(this);
         NameBox.SetFont(SmallFont);
         NameBox.SetHDocked(true);
         NameBox.SetBottomDocked(true);
-        NameBox.SetMargins(VariableListBox.Margins.Left + 50, 0, 16, 29);
+        NameBox.SetPadding(VariableListBox.Padding.Left + 50, 0, 16, 29);
         NameBox.SetHeight(27);
         NameBox.OnTextChanged += _ => NameChanged();
 
