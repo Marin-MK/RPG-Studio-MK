@@ -825,6 +825,7 @@ public class MapImageWidget : Widget
         Autotile autotile = Data.Autotiles[AutotileID];
         if (autotile.AutotileBitmap == null) return;
         int AnimX = 0;
+        this.Sprites[Layer.ToString()].Bitmap.FillRect(32 * X, 32 * Y, 32, 32, Color.ALPHA);
         if (autotile.Format == AutotileFormat.Single)
         {
             AnimX = (Frame * 32) % autotile.AutotileBitmap.Width;
@@ -993,15 +994,19 @@ public class MapImageWidget : Widget
                     {
                         AnimX = ((int)Math.Floor((double)AnimateCount / autotile.AnimateSpeed) * 32) % autotile.AutotileBitmap.Width;
                         if (!Editor.GeneralSettings.ShowMapAnimations) AnimX = 0;
-                        if (autotile.AutotileBitmap != null) 
+                        if (autotile.AutotileBitmap != null)
+                        {
+                            this.Sprites[Layer.ToString()].Bitmap.FillRect(32 * X, 32 * Y, 32, 32, Color.ALPHA);
                             this.Sprites[Layer.ToString()].Bitmap.Build(new Rect(32 * X, 32 * Y, 32, 32), autotile.AutotileBitmap,
                                 new Rect(AnimX, 0, 32, 32));
+                        }
                     }
                     else if (autotile.AutotileBitmap != null)
                     {
                         AnimX = ((int)Math.Floor((double)AnimateCount / autotile.AnimateSpeed) * 96) % autotile.AutotileBitmap.Width;
                         if (!Editor.GeneralSettings.ShowMapAnimations) AnimX = 0;
                         List<int> Tiles = Autotile.AutotileCombinations[autotile.Format][ID];
+                        this.Sprites[Layer.ToString()].Bitmap.FillRect(32 * X, 32 * Y, 32, 32, Color.ALPHA);
                         for (int i = 0; i < 4; i++)
                         {
                             this.Sprites[Layer.ToString()].Bitmap.Build(new Rect(32 * X + 16 * (i % 2), 32 * Y + 16 * (int)Math.Floor(i / 2d), 16, 16), autotile.AutotileBitmap,
