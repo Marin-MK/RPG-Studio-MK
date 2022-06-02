@@ -1,4 +1,6 @@
-﻿namespace RPGStudioMK.Widgets;
+﻿using System;
+
+namespace RPGStudioMK.Widgets;
 
 public class MappingWidget : Widget
 {
@@ -59,6 +61,11 @@ public class MappingWidget : Widget
 
         SetHorizontalScroll(0.5);
         SetVerticalScroll(0.5);
+    }
+
+    public void SetHint(string Text)
+    {
+        MapViewer.SetHint(Text);
     }
 
     public void SetMode(MapMode Mode)

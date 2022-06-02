@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RPGStudioMK.Game;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,9 @@ namespace RPGStudioMK.Undo;
 
 public class TilePriorityChangeUndoAction : BaseUndoAction
 {
+    public override string Title => $"Changed priority";
+    public override string Description => $"Tileset: {TilesetID}\nTile: {TileID}\nTile X: {TileX}\nTile Y: {TileY}\nOld: {OldPriority}\nNew: {NewPriority}";
+
     int TilesetID;
     int TileID;
     int TileX;
@@ -56,15 +60,13 @@ public class TilePriorityChangeUndoAction : BaseUndoAction
             Continue = false;
         }
         if (!Continue) return false;
-        if (IsRedo)
-        {
-            Game.Data.Tilesets[TilesetID].Priorities[TileID] = NewPriority;
-        }
-        else
-        {
-            Game.Data.Tilesets[TilesetID].Priorities[TileID] = OldPriority;
-        }
+        TriggerLogical(IsRedo);
         dtt.TilesetContainer.SetTilePriority(this.TileID, this.TileX, this.TileY, Game.Data.Tilesets[TilesetID].Priorities[TileID]);
         return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
+        Data.Tilesets[TilesetID].Priorities[TileID] = IsRedo ? NewPriority : OldPriority;
     }
 }

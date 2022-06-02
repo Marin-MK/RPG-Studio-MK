@@ -1,10 +1,26 @@
 ﻿using RPGStudioMK.Game;
 using System.Collections.Generic;
+using System.Text;
 
 namespace RPGStudioMK.Undo;
 
 public class MapPropertiesChangeUndoAction : BaseUndoAction
 {
+    public override string Title => $"Map properties changed";
+    public override string Description
+    {
+        get
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"Map: {(Data.Maps.ContainsKey(MapID) ? Data.Maps[MapID].Name : Utilities.Digits(MapID, 3))}\n");
+            Changes.ForEach(change =>
+            {
+                sb.AppendLine(change.Title + ": " + change.Description + "\n");
+            });
+            return sb.ToString();
+        }
+    }
+
     public int MapID;
     public List<BaseUndoAction> Changes;
 
@@ -16,6 +32,7 @@ public class MapPropertiesChangeUndoAction : BaseUndoAction
 
     public static void Create(int MapID, List<BaseUndoAction> Changes)
     {
+        if (Changes.Count == 0) return;
         var c = new MapPropertiesChangeUndoAction(MapID, Changes);
         c.Register();
     }
@@ -40,6 +57,15 @@ public class MapPropertiesChangeUndoAction : BaseUndoAction
         {
             action.Trigger(IsRedo);
         }
+        Editor.MainWindow.MapWidget.SetHint($"{(IsRedo ? "Redid" : "Undid")} property changes of map {Utilities.Digits(MapID, 3)}");
         return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
+        foreach (BaseUndoAction action in Changes)
+        {
+            action.TriggerLogical(IsRedo);
+        }
     }
 }

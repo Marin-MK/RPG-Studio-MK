@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RPGStudioMK.Game;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,23 @@ namespace RPGStudioMK.Undo;
 
 public class TilesetPanoramaChangeUndoAction : BaseUndoAction
 {
+    public override string Title => "Panorama changed";
+    public override string Description
+    {
+        get
+        {
+            string s = $"Tileset: {Utilities.Digits(TilesetID, 3)}\n\n";
+            s += $"Old Panorama\n";
+            s += $"Name: {OldPanoramaName}\n";
+            s += $"Hue: {OldPanoramaHue}\n\n";
+
+            s += $"New Panorama\n";
+            s += $"Name: {NewPanoramaName}\n";
+            s += $"Hue: {NewPanoramaHue}\n";
+            return s;
+        }
+    }
+
     int TilesetID;
     string OldPanoramaName;
     string NewPanoramaName;
@@ -49,17 +67,22 @@ public class TilesetPanoramaChangeUndoAction : BaseUndoAction
             Continue = false;
         }
         if (!Continue) return false;
+        TriggerLogical(IsRedo);
+        dtt.PanoramaBox.SetText(Game.Data.Tilesets[TilesetID].PanoramaName);
+        return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
         if (IsRedo)
         {
-            Game.Data.Tilesets[TilesetID].PanoramaName = NewPanoramaName;
-            Game.Data.Tilesets[TilesetID].PanoramaHue = NewPanoramaHue;
+            Data.Tilesets[TilesetID].PanoramaName = NewPanoramaName;
+            Data.Tilesets[TilesetID].PanoramaHue = NewPanoramaHue;
         }
         else
         {
-            Game.Data.Tilesets[TilesetID].PanoramaName = OldPanoramaName;
-            Game.Data.Tilesets[TilesetID].PanoramaHue = OldPanoramaHue;
+            Data.Tilesets[TilesetID].PanoramaName = OldPanoramaName;
+            Data.Tilesets[TilesetID].PanoramaHue = OldPanoramaHue;
         }
-        dtt.PanoramaBox.SetText(Game.Data.Tilesets[TilesetID].PanoramaName);
-        return true;
     }
 }

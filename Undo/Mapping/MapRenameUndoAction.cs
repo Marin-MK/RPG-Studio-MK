@@ -10,6 +10,9 @@ namespace RPGStudioMK.Undo;
 
 public class MapRenameUndoAction : BaseUndoAction
 {
+    public override string Title => $"Map renamed";
+    public override string Description => $"Map {Utilities.Digits(MapID, 3)}\nOld Name: {OldName}\nNew Name: {NewName}";
+
     public int MapID;
     public string OldName;
     public string NewName;
@@ -43,14 +46,7 @@ public class MapRenameUndoAction : BaseUndoAction
             Continue = false;
         }
         if (!Continue) return false;
-        if (IsRedo)
-        {
-            Data.Maps[this.MapID].Name = NewName;
-        }
-        else
-        {
-            Data.Maps[this.MapID].Name = OldName;
-        }
+        TriggerLogical(IsRedo);
         TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.mapview;
         foreach (TreeNode Node in mapview.Nodes)
         {
@@ -71,5 +67,10 @@ public class MapRenameUndoAction : BaseUndoAction
         }
         mapview.Redraw();
         return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
+        Data.Maps[this.MapID].Name = IsRedo ? NewName : OldName;
     }
 }

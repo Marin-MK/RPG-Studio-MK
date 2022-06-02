@@ -9,6 +9,9 @@ namespace RPGStudioMK.Undo;
 
 public class MapSizeChangeUndoAction : BaseUndoAction
 {
+    public override string Title => $"Map resized";
+    public override string Description => $"Map {(Data.Maps.ContainsKey(MapID) ? Data.Maps[MapID].Name : Utilities.Digits(MapID, 3))}\nOld Size: ({OldSize.Width}x{OldSize.Height})\nNew Size: ({NewSize.Width}x{NewSize.Height})";
+
     public int MapID;
     public List<Layer> OldLayers;
     public Size OldSize;
@@ -46,6 +49,13 @@ public class MapSizeChangeUndoAction : BaseUndoAction
             Continue = false;
         }
         if (!Continue) return false;
+        TriggerLogical(IsRedo);
+        Editor.MainWindow.MapWidget.SetMap(Data.Maps[this.MapID]);
+        return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
         if (IsRedo)
         {
             Data.Maps[this.MapID].Layers = NewLayers;
@@ -58,7 +68,5 @@ public class MapSizeChangeUndoAction : BaseUndoAction
             Data.Maps[this.MapID].Width = OldSize.Width;
             Data.Maps[this.MapID].Height = OldSize.Height;
         }
-        Editor.MainWindow.MapWidget.SetMap(Data.Maps[this.MapID]);
-        return true;
     }
 }

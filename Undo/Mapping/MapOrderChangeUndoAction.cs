@@ -9,6 +9,9 @@ namespace RPGStudioMK.Undo;
 
 public class MapOrderChangeUndoAction : BaseUndoAction
 {
+    public override string Title => $"Map order change";
+    public override string Description => "Describes a change in the order of the map list, e.g. a map changed its parent-child relation.";
+
     public List<TreeNode> OldNodes;
     public List<TreeNode> NewNodes;
 
@@ -33,15 +36,7 @@ public class MapOrderChangeUndoAction : BaseUndoAction
         }
         TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.mapview;
         int SelectedMapID = (int) mapview.SelectedNode.Object;
-        if (IsRedo)
-        {
-            mapview.SetNodes(NewNodes);
-        }
-        else
-        {
-            mapview.SetNodes(OldNodes);
-        }
-        Editor.UpdateOrder(mapview.Nodes);
+        TriggerLogical(IsRedo);
         TreeNode SelectedNode = null;
         for (int i = 0; i < mapview.Nodes.Count; i++)
         {
@@ -61,7 +56,13 @@ public class MapOrderChangeUndoAction : BaseUndoAction
             }
         }
         if (SelectedNode == null) throw new Exception("Could not find selected node.");
+        Editor.MainWindow.MapWidget.SetHint($"{(IsRedo ? "Redid" : "Undid")} map list order changes");
         mapview.SetSelectedNode(SelectedNode);
         return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
+        Editor.UpdateOrder(IsRedo ? NewNodes : OldNodes);
     }
 }

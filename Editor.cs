@@ -91,6 +91,7 @@ public static class Editor
     {
         if (Program.ReleaseMode) return;
         Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
+
         //ProgressWindow pw = new ProgressWindow("Testing", "Testing animation...", false);
         //pw.SetProgress(1);
     }
@@ -151,6 +152,28 @@ public static class Editor
             MainWindow.ToolBar.Redo.SetEnabled(RedoList.Count > 0);
             Redoing = false;
         }
+    }
+
+    public static void ShowUndoHistory()
+    {
+        UndoListWindow win = new UndoListWindow(UndoList, false);
+        win.OnClosed += _ =>
+        {
+            if (!win.Apply) return;
+            win.ActionToRevertTo.RevertToLogical(false);
+            SetMode(Mode, true);
+        };
+    }
+
+    public static void ShowRedoHistory()
+    {
+        UndoListWindow win = new UndoListWindow(RedoList, true);
+        win.OnClosed += _ =>
+        {
+            if (!win.Apply) return;
+            win.ActionToRevertTo.RevertToLogical(true);
+            SetMode(Mode, true);
+        };
     }
 
     /// <summary>

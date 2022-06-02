@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RPGStudioMK.Game;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,9 @@ namespace RPGStudioMK.Undo;
 
 public class TilesetNameChangeUndoAction : BaseUndoAction
 {
+    public override string Title => $"Tileset name changed";
+    public override string Description => $"Tileset: {Utilities.Digits(TilesetID, 3)}\nOld Name: {OldText}\nNew Name: {NewText}";
+
     int TilesetID;
     string OldText;
     string NewText;
@@ -45,16 +49,14 @@ public class TilesetNameChangeUndoAction : BaseUndoAction
             Continue = false;
         }
         if (!Continue) return false;
-        if (IsRedo)
-        {
-            Game.Data.Tilesets[TilesetID].Name = NewText;
-        }
-        else
-        {
-            Game.Data.Tilesets[TilesetID].Name = OldText;
-        }
+        TriggerLogical(IsRedo);
         dtt.NameBox.SetText(Game.Data.Tilesets[TilesetID].Name);
         dtt.RedrawList();
         return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
+        Data.Tilesets[TilesetID].Name = IsRedo ? NewText : OldText;
     }
 }

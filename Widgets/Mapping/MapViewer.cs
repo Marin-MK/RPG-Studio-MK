@@ -58,6 +58,8 @@ public partial class MapViewer : Widget
     public Widget SidebarWidgetEvents;
     public CursorWidget Cursor;
 
+    HintWindow HintWindow;
+
     public MapViewer(IContainer Parent) : base(Parent)
     {
         this.SetBackgroundColor(28, 50, 73);
@@ -121,6 +123,13 @@ public partial class MapViewer : Widget
         ConstructorEvents();
         SidebarWidgetTiles.SetVisible(true);
         SidebarWidgetEvents.SetVisible(false);
+
+        HintWindow = new HintWindow(MainContainer);
+        HintWindow.ConsiderInAutoScrollCalculation = HintWindow.ConsiderInAutoScrollPositioning = false;
+        HintWindow.SetBottomDocked(true);
+        HintWindow.SetMargins(-3, 0, 0, -9);
+        HintWindow.SetZIndex(10);
+        HintWindow.SetVisible(false);
 
         RegisterShortcuts(new List<Shortcut>()
         {
@@ -424,5 +433,10 @@ public partial class MapViewer : Widget
     {
         if (Mode == MapMode.Tiles) PasteTiles();
         else if (Mode == MapMode.Events) PasteEvents();
+    }
+
+    public void SetHint(string HintText)
+    {
+        HintWindow.SetText(HintText);
     }
 }

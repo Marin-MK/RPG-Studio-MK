@@ -9,6 +9,33 @@ namespace RPGStudioMK.Undo;
 
 public class MapTilesetsChangeUndoAction : BaseUndoAction
 {
+    public override string Title => $"Map tilesets changed";
+    public override string Description
+    {
+        get
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("Old Tilesets:");
+            for (int i = 0; i < OldTilesetIDs.Count; i++)
+            {
+                int id = OldTilesetIDs[i];
+                if (id >= Data.Tilesets.Count || Data.Tilesets[id] == null) sb.Append(Utilities.Digits(id, 3));
+                else sb.Append(Data.Tilesets[id].Name);
+                if (i != OldTilesetIDs.Count - 1) sb.Append(", ");
+            }
+            sb.AppendLine();
+            sb.AppendLine("New Tilesets:");
+            for (int i = 0; i < NewTilesetIDs.Count; i++)
+            {
+                int id = NewTilesetIDs[i];
+                if (id >= Data.Tilesets.Count || Data.Tilesets[id] == null) sb.Append(Utilities.Digits(id, 3));
+                else sb.Append(Data.Tilesets[id].Name);
+                if (i != NewTilesetIDs.Count - 1) sb.Append(", ");
+            }
+            return sb.ToString();
+        }
+    }
+
     public int MapID;
     public List<int> OldTilesetIDs;
     public List<int> NewTilesetIDs;
@@ -42,20 +69,18 @@ public class MapTilesetsChangeUndoAction : BaseUndoAction
             Continue = false;
         }
         if (!Continue) return false;
-        if (IsRedo)
-        {
-            Data.Maps[this.MapID].TilesetIDs = NewTilesetIDs;
-        }
-        else
-        {
-            Data.Maps[this.MapID].TilesetIDs = OldTilesetIDs;
-        }
+        TriggerLogical(IsRedo);
+        Editor.MainWindow.MapWidget.SetMap(Data.Maps[this.MapID]);
+        return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
+        Data.Maps[this.MapID].TilesetIDs = IsRedo ? NewTilesetIDs : OldTilesetIDs;
         // Update autotiles
         for (int i = 0; i < 7; i++)
         {
             Data.Maps[this.MapID].AutotileIDs[i] = Data.Maps[this.MapID].TilesetIDs[0] * 7 + i;
         }
-        Editor.MainWindow.MapWidget.SetMap(Data.Maps[this.MapID]);
-        return true;
     }
 }

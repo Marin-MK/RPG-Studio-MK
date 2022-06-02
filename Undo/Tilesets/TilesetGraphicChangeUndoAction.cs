@@ -9,6 +9,9 @@ namespace RPGStudioMK.Undo;
 
 public class TilesetGraphicChangeUndoAction : BaseUndoAction
 {
+    public override string Title => $"Tileset graphic changed";
+    public override string Description => $"Tileset: {Utilities.Digits(TilesetID, 3)}\nOld: {OldGraphicName}\nNew: {NewGraphicName}";
+
     int TilesetID;
     string OldGraphicName;
     string NewGraphicName;
@@ -80,6 +83,15 @@ public class TilesetGraphicChangeUndoAction : BaseUndoAction
             Continue = false;
         }
         if (!Continue) return false;
+        TriggerLogical(IsRedo);
+        Tileset Tileset = Data.Tilesets[TilesetID];
+        dtt.GraphicBox.SetText(Tileset.GraphicName);
+        dtt.SetTileset(Tileset, true);
+        return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
         Tileset Tileset = Data.Tilesets[TilesetID];
         if (IsRedo)
         {
@@ -100,8 +112,5 @@ public class TilesetGraphicChangeUndoAction : BaseUndoAction
             Tileset.CounterFlags = OldCounterFlags;
         }
         Tileset.CreateBitmap(true);
-        dtt.GraphicBox.SetText(Tileset.GraphicName);
-        dtt.SetTileset(Tileset, true);
-        return true;
     }
 }

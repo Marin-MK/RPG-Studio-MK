@@ -10,6 +10,20 @@ namespace RPGStudioMK.Undo;
 
 public class MapChangeUndoAction : BaseUndoAction
 {
+    public override string Title => $"Map {(Creation ? "creation" : "deletion")}";
+    public override string Description
+    {
+        get
+        {
+            StringBuilder sb = new StringBuilder();
+            Maps.ForEach(m =>
+            {
+                sb.AppendLine((Creation ? "Created" : "Deleted") + $" map {Utilities.Digits(m.ID, 3)}: {m.Name}, events: {m.Events.Count}, size: ({m.Width}x{m.Height})");
+            });
+            return sb.ToString();
+        }
+    }
+
     public List<Map> Maps;
     public Dictionary<int, (int Order, int Parent)> OldOrderParentList;
     public Dictionary<int, (int Order, int Parent)> NewOrderParentList;
@@ -47,12 +61,14 @@ public class MapChangeUndoAction : BaseUndoAction
                 // Redo Creation
                 Maps.ForEach(m => Data.Maps[m.ID] = m);
                 OrderParentList = NewOrderParentList;
+                Editor.MainWindow.MapWidget.SetHint($"Re-created map{(Maps.Count > 1 ? "s" : $" {Utilities.Digits(Maps[0].ID, 3)}")}");
             }
             else
             {
                 // Undo Creation
                 Maps.ForEach(m => Data.Maps.Remove(m.ID));
                 OrderParentList = OldOrderParentList;
+                Editor.MainWindow.MapWidget.SetHint($"Deleted map{(Maps.Count > 1 ? "s" : $" {Utilities.Digits(Maps[0].ID, 3)}")}");
             }
         }
         else
@@ -62,12 +78,14 @@ public class MapChangeUndoAction : BaseUndoAction
                 // Redo deletion
                 Maps.ForEach(m => Data.Maps.Remove(m.ID));
                 OrderParentList = NewOrderParentList;
+                Editor.MainWindow.MapWidget.SetHint($"Deleted map{(Maps.Count > 1 ? "s" : $" {Utilities.Digits(Maps[0].ID, 3)}")}");
             }
             else
             {
                 // Undo deletion
                 Maps.ForEach(m => Data.Maps[m.ID] = m);
                 OrderParentList = OldOrderParentList;
+                Editor.MainWindow.MapWidget.SetHint($"Re-created map{(Maps.Count > 1 ? "s" : $" {Utilities.Digits(Maps[0].ID, 3)}")}");
             }
         }
         foreach (KeyValuePair<int, (int Order, int Parent)> kvp in OrderParentList)
@@ -120,5 +138,52 @@ public class MapChangeUndoAction : BaseUndoAction
         if (SelectedNode == null) SelectedNode = mapview.Nodes[0];
         mapview.SetSelectedNode(SelectedNode);
         return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
+        Dictionary<int, (int Order, int Parent)> OrderParentList = null;
+        TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.mapview;
+        int SelectedMapID = (int) mapview.SelectedNode.Object;
+        int MinOrder = Maps.Min(m => m.Order);
+        if (Creation)
+        {
+            if (IsRedo)
+            {
+                // Redo Creation
+                Maps.ForEach(m => Data.Maps[m.ID] = m);
+                OrderParentList = NewOrderParentList;
+                Editor.MainWindow.MapWidget.SetHint($"Re-created map{(Maps.Count > 1 ? "s" : $" {Utilities.Digits(Maps[0].ID, 3)}")}");
+            }
+            else
+            {
+                // Undo Creation
+                Maps.ForEach(m => Data.Maps.Remove(m.ID));
+                OrderParentList = OldOrderParentList;
+                Editor.MainWindow.MapWidget.SetHint($"Deleted map{(Maps.Count > 1 ? "s" : $" {Utilities.Digits(Maps[0].ID, 3)}")}");
+            }
+        }
+        else
+        {
+            if (IsRedo)
+            {
+                // Redo deletion
+                Maps.ForEach(m => Data.Maps.Remove(m.ID));
+                OrderParentList = NewOrderParentList;
+                Editor.MainWindow.MapWidget.SetHint($"Deleted map{(Maps.Count > 1 ? "s" : $" {Utilities.Digits(Maps[0].ID, 3)}")}");
+            }
+            else
+            {
+                // Undo deletion
+                Maps.ForEach(m => Data.Maps[m.ID] = m);
+                OrderParentList = OldOrderParentList;
+                Editor.MainWindow.MapWidget.SetHint($"Re-created map{(Maps.Count > 1 ? "s" : $" {Utilities.Digits(Maps[0].ID, 3)}")}");
+            }
+        }
+        foreach (KeyValuePair<int, (int Order, int Parent)> kvp in OrderParentList)
+        {
+            Data.Maps[kvp.Key].Order = kvp.Value.Order;
+            Data.Maps[kvp.Key].ParentID = kvp.Value.Parent;
+        }
     }
 }

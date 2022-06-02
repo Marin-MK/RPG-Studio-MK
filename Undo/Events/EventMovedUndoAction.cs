@@ -6,6 +6,10 @@ namespace RPGStudioMK.Undo;
 
 public class EventMovedUndoAction : BaseUndoAction
 {
+    public override string Title => $"Moved event";
+    public override string Description => $"Map: {(Data.Maps.ContainsKey(MapID) ? Data.Maps[MapID].Name : Utilities.Digits(MapID, 3))}\nEvent: {Utilities.Digits(EventID, 3)}\n" +
+        $"Old Position: ({OldPosition.X}, {OldPosition.Y})\nNew Position: ({NewPosition.X},{NewPosition.Y})";
+
     public int MapID;
     public int EventID;
     public Point OldPosition;
@@ -48,21 +52,26 @@ public class EventMovedUndoAction : BaseUndoAction
         }
         if (!Continue) return false;
 
+        TriggerLogical(IsRedo);
+        Editor.MainWindow.MapWidget.MapViewer.MoveEventFromUndo(Data.Maps[MapID].Events[EventID]);
+        Editor.MainWindow.MapWidget.SetHint($"Moved event {Utilities.Digits(EventID, 3)} to ({Data.Maps[MapID].Events[EventID].X},{Data.Maps[MapID].Events[EventID].Y})");
+
+        return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
         if (IsRedo)
         {
             // Redo
             Data.Maps[MapID].Events[EventID].X = NewPosition.X;
             Data.Maps[MapID].Events[EventID].Y = NewPosition.Y;
-            Editor.MainWindow.MapWidget.MapViewer.MoveEventFromUndo(Data.Maps[MapID].Events[EventID]);
         }
         else
         {
             // Undo
             Data.Maps[MapID].Events[EventID].X = OldPosition.X;
             Data.Maps[MapID].Events[EventID].Y = OldPosition.Y;
-            Editor.MainWindow.MapWidget.MapViewer.MoveEventFromUndo(Data.Maps[MapID].Events[EventID]);
         }
-
-        return true;
     }
 }

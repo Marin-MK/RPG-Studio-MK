@@ -12,6 +12,8 @@ public class MapPropertiesWindow : PopupWindow
     public bool UnsavedChanges = false;
     public bool UpdateMapViewer = false;
 
+    bool MakeUndoEvent;
+
     TextBox MapName;
     NumericBox Width;
     NumericBox Height;
@@ -21,10 +23,11 @@ public class MapPropertiesWindow : PopupWindow
     Button EditTilesetsButton;
     //ListBox Autotiles;
 
-    public MapPropertiesWindow(Map OldMap)
+    public MapPropertiesWindow(Map OldMap, bool MakeUndoEvent = true)
     {
         this.OldMap = OldMap;
         this.Map = (Map) OldMap.Clone();
+        this.MakeUndoEvent = MakeUndoEvent;
         this.SetTitle($"Map Properties");
         MinimumSize = MaximumSize = new Size(337, 312);
         SetSize(MaximumSize);
@@ -276,7 +279,7 @@ public class MapPropertiesWindow : PopupWindow
         List<Undo.BaseUndoAction> AllChanges = new List<Undo.BaseUndoAction>();
         Action Finalize = delegate
         {
-            if (AllChanges.Count > 0) Undo.MapPropertiesChangeUndoAction.Create(Map.ID, AllChanges);
+            if (MakeUndoEvent && AllChanges.Count > 0) Undo.MapPropertiesChangeUndoAction.Create(Map.ID, AllChanges);
             Close();
         };
         Action Continue = delegate

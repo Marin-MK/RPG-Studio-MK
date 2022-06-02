@@ -1,11 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Undo;
 
 public class TileGroupUndoAction : BaseUndoAction
 {
+    public override string Title => $"Placed tile{(Tiles.Count > 1 ? "s" : "")}";
+    public override string Description
+    {
+        get
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"Map: {(Data.Maps.ContainsKey(MapID) ? Data.Maps[MapID].Name : Utilities.Digits(MapID, 3))}");
+            sb.AppendLine();
+            Tiles.ForEach(change =>
+            {
+                sb.AppendLine($"Pos: {change.MapPosition} Layer: {change.Layer} Old: {change.OldTile?.ID + (change.OldTile?.TileType == TileType.Autotile ? 384 : 0)} New: {change.NewTile?.ID + (change.NewTile?.TileType == TileType.Autotile ? 384 : 0)}");
+            });
+            return sb.ToString();
+        }
+    }
+
     public int MapID;
     public List<TileChange> Tiles = new List<TileChange>();
     public bool Ready = false;
@@ -99,6 +116,16 @@ public class TileGroupUndoAction : BaseUndoAction
             Editor.MainWindow.MapWidget.MapImageWidget.SetLayerLocked(Layer, true);
         });
         return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
+        Map Map = Data.Maps[this.MapID];
+        foreach (TileChange tile in Tiles)
+        {
+            TileData NewTile = IsRedo ? tile.NewTile : tile.OldTile;
+            Map.Layers[tile.Layer].Tiles[tile.MapPosition] = NewTile;
+        }
     }
 
     public class TileChange

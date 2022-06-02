@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RPGStudioMK.Game;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,9 @@ namespace RPGStudioMK.Undo;
 
 public class TilesetAutotileChangeUndoAction : BaseUndoAction
 {
+    public override string Title => $"Changed autotile";
+    public override string Description => $"Tileset: {TilesetID}\nAutotile: {AutotileID}\nOld: {OldAutotile}\nNew: {NewAutotile}";
+
     int TilesetID;
     int AutotileID;
     string OldAutotile;
@@ -47,27 +51,26 @@ public class TilesetAutotileChangeUndoAction : BaseUndoAction
             Continue = false;
         }
         if (!Continue) return false;
-        Game.Tileset Tileset = Game.Data.Tilesets[TilesetID];
+        TriggerLogical(IsRedo);
+        Tileset Tileset = Data.Tilesets[TilesetID];
+        dtt.AutotileBoxes[AutotileID].SetText(Tileset.Autotiles[AutotileID].GraphicName);
+        dtt.TilesetContainer.SetTileset(Tileset, true);
+        return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
+        Tileset Tileset = Data.Tilesets[TilesetID];
         if (Tileset.Autotiles[AutotileID] == null)
         {
-            Game.Autotile a = new Game.Autotile();
+            Autotile a = new Autotile();
             a.ID = AutotileID;
             a.Passability = Tileset.Passabilities[(AutotileID + 1) * 48];
             a.Priority = Tileset.Priorities[(AutotileID + 1) * 48];
             a.Tag = Tileset.Tags[(AutotileID + 1) * 48];
-            Game.Data.Autotiles[AutotileID] = a;
-            Tileset.Autotiles[Tileset.ID * 7 + AutotileID] = Game.Data.Autotiles[AutotileID];
+            Data.Autotiles[AutotileID] = a;
+            Tileset.Autotiles[Tileset.ID * 7 + AutotileID] = Data.Autotiles[AutotileID];
         }
-        if (IsRedo)
-        {
-            Tileset.Autotiles[AutotileID].SetGraphic(NewAutotile);
-        }
-        else
-        {
-            Tileset.Autotiles[AutotileID].SetGraphic(OldAutotile);
-        }
-        dtt.AutotileBoxes[AutotileID].SetText(Tileset.Autotiles[AutotileID].GraphicName);
-        dtt.TilesetContainer.SetTileset(Tileset, true);
-        return true;
+        Tileset.Autotiles[AutotileID].SetGraphic(IsRedo ? NewAutotile : OldAutotile);
     }
 }

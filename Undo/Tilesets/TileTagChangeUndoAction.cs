@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RPGStudioMK.Game;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,9 @@ namespace RPGStudioMK.Undo;
 
 public class TileTagChangeUndoAction : BaseUndoAction
 {
+    public override string Title => $"Changed tile tag";
+    public override string Description => $"Tileset: {TilesetID}\nTile: {TileID}\nTile X: {TileX}\nTile Y: {TileY}\nOld: {OldTag}\nNew: {NewTag}";
+
     int TilesetID;
     int TileID;
     int TileX;
@@ -56,15 +60,13 @@ public class TileTagChangeUndoAction : BaseUndoAction
             Continue = false;
         }
         if (!Continue) return false;
-        if (IsRedo)
-        {
-            Game.Data.Tilesets[TilesetID].Tags[TileID] = NewTag;
-        }
-        else
-        {
-            Game.Data.Tilesets[TilesetID].Tags[TileID] = OldTag;
-        }
-        dtt.TilesetContainer.SetTileTag(this.TileID, this.TileX, this.TileY, Game.Data.Tilesets[TilesetID].Tags[TileID]);
+        TriggerLogical(IsRedo);
+        dtt.TilesetContainer.SetTileTag(this.TileID, this.TileX, this.TileY, Data.Tilesets[TilesetID].Tags[TileID]);
         return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
+        Data.Tilesets[TilesetID].Tags[TileID] = IsRedo ? NewTag : OldTag;
     }
 }

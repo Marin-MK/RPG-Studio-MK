@@ -1,4 +1,5 @@
-﻿using RPGStudioMK.Widgets;
+﻿using RPGStudioMK.Game;
+using RPGStudioMK.Widgets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,9 @@ namespace RPGStudioMK.Undo;
 
 public class NodeCollapseChangeUndoAction : BaseUndoAction
 {
+    public override string Title => $"Map collapsed";
+    public override string Description => $"Map {(Data.Maps.ContainsKey(MapID) ? Data.Maps[MapID].Name : Utilities.Digits(MapID, 3))}\nOld Collapsed: {OldCollapsed}\nNew Collapsed: {NewCollapsed}";
+
     public int MapID;
     public bool OldCollapsed;
     public bool NewCollapsed;
@@ -55,21 +59,19 @@ public class NodeCollapseChangeUndoAction : BaseUndoAction
                 }
             }
         }
-        if (IsRedo)
-        {
-            Node.Collapsed = NewCollapsed;
-            Game.Data.Maps[(int) Node.Object].Expanded = !NewCollapsed;
-        }
-        else
-        {
-            Node.Collapsed = OldCollapsed;
-            Game.Data.Maps[(int) Node.Object].Expanded = !OldCollapsed;
-        }
+        Node.Collapsed = IsRedo ? NewCollapsed : OldCollapsed;
+        TriggerLogical(IsRedo);
         if (Node.FindNode(n => (int) n.Object == SelectedMapID) != null)
         {
             mapview.SetSelectedNode(Node);
         }
         mapview.Redraw();
+        Editor.MainWindow.MapWidget.SetHint($"{(IsRedo ? "Redid" : "Undid")} map collapsed state changes");
         return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
+        Data.Maps[MapID].Expanded = IsRedo ? !NewCollapsed : !OldCollapsed;
     }
 }

@@ -126,21 +126,6 @@ public partial class MapViewer
         TilesPanel.Erase = !TilesPanel.Erase;
     }
 
-    public void CreateNewLayer(int Index, Layer LayerData, bool IsUndoAction = false)
-    {
-        MapWidget.CreateNewLayer(Index, LayerData, IsUndoAction);
-    }
-
-    public void DeleteLayer(int Index, bool IsUndoAction = false)
-    {
-        MapWidget.DeleteLayer(Index, IsUndoAction);
-    }
-
-    public void SwapLayers(int Index1, int Index2)
-    {
-        MapWidget.SwapLayers(Index1, Index2);
-    }
-
     public void CancelSelection(BaseEventArgs e)
     {
         if (SelectionWidth != 0 || SelectionHeight != 0 || SelectionBackground.Visible)

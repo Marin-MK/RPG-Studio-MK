@@ -10,6 +10,21 @@ namespace RPGStudioMK.Undo;
 
 public class MapAudioFileChangeUndoAction : BaseUndoAction
 {
+    public override string Title => $"Changed map {(IsBGM ? "BGM" : "BGS")}";
+    public override string Description
+    {
+        get
+        {
+            string s = $"Map: {(Data.Maps.ContainsKey(MapID) ? Data.Maps[MapID].Name : Utilities.Digits(MapID, 3))}\n";
+            s += $"Old {(IsBGM ? "BGM" : "BGS")}: ";
+            s += $"(name: '{OldAudioFile.Name}', volume: {OldAudioFile.Volume}, pitch: {OldAudioFile.Pitch})\n";
+            s += $"New {(IsBGM ? "BGM" : "BGS")}: ";
+            s += $"(name: '{NewAudioFile.Name}', volume: {NewAudioFile.Volume}, pitch: {NewAudioFile.Pitch})\n\n";
+            s += $"Old Autoplay: {OldAutoplay}\nNew Autoplay: {NewAutoplay}";
+            return s;
+        }
+    }
+
     public int MapID;
     public AudioFile OldAudioFile;
     public bool OldAutoplay;
@@ -49,6 +64,12 @@ public class MapAudioFileChangeUndoAction : BaseUndoAction
             Continue = false;
         }
         if (!Continue) return false;
+        TriggerLogical(IsRedo);
+        return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
         if (IsRedo)
         {
             if (IsBGM)
@@ -75,6 +96,5 @@ public class MapAudioFileChangeUndoAction : BaseUndoAction
                 Data.Maps[this.MapID].AutoplayBGS = OldAutoplay;
             }
         }
-        return true;
     }
 }

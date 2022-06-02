@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RPGStudioMK.Game;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,33 @@ namespace RPGStudioMK.Undo;
 
 public class TilesetFogChangeUndoAction : BaseUndoAction
 {
+    public override string Title => "Fog changed";
+    public override string Description
+    {
+        get
+        {
+            string s = $"Tileset: {Utilities.Digits(TilesetID, 3)}\n\n";
+            s += $"Old Fog\n";
+            s += $"Name: {OldFogName}\n";
+            s += $"Hue: {OldFogHue}\n";
+            s += $"Blend Type: {OldFogBlendType}\n";
+            s += $"SX: {OldFogSX}\n";
+            s += $"SY: {OldFogSY}\n";
+            s += $"Zoom: {OldFogZoom}\n";
+            s += $"Opacity: {OldFogOpacity}\n\n";
+            
+            s += $"New Tileset\n";
+            s += $"Name: {NewFogName}\n";
+            s += $"Hue: {NewFogHue}\n";
+            s += $"Blend Type: {NewFogBlendType}\n";
+            s += $"SX: {NewFogSX}\n";
+            s += $"SY: {NewFogSY}\n";
+            s += $"Zoom: {NewFogZoom}\n";
+            s += $"Opacity: {NewFogOpacity}\n";
+            return s;
+        }
+    }
+
     int TilesetID;
     string OldFogName;
     string NewFogName;
@@ -75,27 +103,32 @@ public class TilesetFogChangeUndoAction : BaseUndoAction
             Continue = false;
         }
         if (!Continue) return false;
+        TriggerLogical(IsRedo);
+        dtt.FogBox.SetText(Game.Data.Tilesets[TilesetID].FogName);
+        return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
         if (IsRedo)
         {
-            Game.Data.Tilesets[TilesetID].FogName = NewFogName;
-            Game.Data.Tilesets[TilesetID].FogHue = NewFogHue;
-            Game.Data.Tilesets[TilesetID].FogOpacity = NewFogOpacity;
-            Game.Data.Tilesets[TilesetID].FogBlendType = NewFogBlendType;
-            Game.Data.Tilesets[TilesetID].FogZoom = NewFogZoom;
-            Game.Data.Tilesets[TilesetID].FogSX = NewFogSX;
-            Game.Data.Tilesets[TilesetID].FogSY = NewFogSY;
+            Data.Tilesets[TilesetID].FogName = NewFogName;
+            Data.Tilesets[TilesetID].FogHue = NewFogHue;
+            Data.Tilesets[TilesetID].FogOpacity = NewFogOpacity;
+            Data.Tilesets[TilesetID].FogBlendType = NewFogBlendType;
+            Data.Tilesets[TilesetID].FogZoom = NewFogZoom;
+            Data.Tilesets[TilesetID].FogSX = NewFogSX;
+            Data.Tilesets[TilesetID].FogSY = NewFogSY;
         }
         else
         {
-            Game.Data.Tilesets[TilesetID].FogName = OldFogName;
-            Game.Data.Tilesets[TilesetID].FogHue = OldFogHue;
-            Game.Data.Tilesets[TilesetID].FogOpacity = OldFogOpacity;
-            Game.Data.Tilesets[TilesetID].FogBlendType = OldFogBlendType;
-            Game.Data.Tilesets[TilesetID].FogZoom = OldFogZoom;
-            Game.Data.Tilesets[TilesetID].FogSX = OldFogSX;
-            Game.Data.Tilesets[TilesetID].FogSY = OldFogSY;
+            Data.Tilesets[TilesetID].FogName = OldFogName;
+            Data.Tilesets[TilesetID].FogHue = OldFogHue;
+            Data.Tilesets[TilesetID].FogOpacity = OldFogOpacity;
+            Data.Tilesets[TilesetID].FogBlendType = OldFogBlendType;
+            Data.Tilesets[TilesetID].FogZoom = OldFogZoom;
+            Data.Tilesets[TilesetID].FogSX = OldFogSX;
+            Data.Tilesets[TilesetID].FogSY = OldFogSY;
         }
-        dtt.FogBox.SetText(Game.Data.Tilesets[TilesetID].FogName);
-        return true;
     }
 }

@@ -45,39 +45,6 @@ public class LayerPanel : Widget
 
         layerwidget = new LayerWidget(layercontainer);
 
-        this.SetContextMenuList(new List<IMenuItem>()
-            {
-                new MenuItem("New Layer")
-                {
-                    OnClicked = NewLayerEvent,
-                    IsClickable = delegate (BoolEventArgs e) { e.Value = false; }
-                },
-                new MenuItem("Rename Layer")
-                {
-                    Shortcut = "F2",
-                    OnClicked = RenameLayer,
-                    IsClickable = delegate (BoolEventArgs e) { e.Value = false; }
-                },
-                new MenuItem("Toggle Visibility")
-                {
-                    OnClicked = ToggleVisibilityLayer,
-                    IsClickable = delegate (BoolEventArgs e) { e.Value = layerwidget.HoveringIndex >= 0; }
-                },
-                new MenuSeparator(),
-                new MenuItem("Delete Layer")
-                {
-                    Shortcut = "Del",
-                    OnClicked = DeleteLayerEvent,
-                    IsClickable = delegate (BoolEventArgs e) { e.Value = false && Map.Layers.Count > 1 && layerwidget.HoveringIndex >= 0; },
-                }
-            });
-
-        //RegisterShortcuts(new List<Shortcut>()
-        //{
-        //    new Shortcut(this, new Key(Keycode.DELETE), DeleteLayerEvent),
-        //    new Shortcut(this, new Key(Keycode.F2), RenameLayer)
-        //});
-
         SetSize(283, 200); // Dummy size so the sprites can be drawn properly
     }
 
@@ -86,52 +53,9 @@ public class LayerPanel : Widget
         layerwidget.SetSelectedLayer(LayerIndex);
     }
 
-    private void NewLayerEvent(BaseEventArgs e)
-    {
-        Layer layer = new Layer($"New Layer");
-        layer.Tiles = new List<TileData>(Map.Width * Map.Height);
-        for (int i = 0; i < Map.Width * Map.Height; i++) layer.Tiles.Add(null);
-        NewLayer(layerwidget.HoveringIndex, layer);
-    }
-
-    public void NewLayer(int Index, Layer LayerData, bool IsUndoAction = false)
-    {
-        Editor.UnsavedChanges = true;
-        if (Index == -1) // Add to top (highest layer) if not hovering over a layer
-            Index = -1;
-        MapViewer.CreateNewLayer(Index + 1, LayerData, IsUndoAction);
-        int oldselected = Index;
-        CreateLayers(); // Updates list to reflect new layer
-        layerwidget.SetSelectedLayer(oldselected + 1); // Update selected layer
-    }
-
-    public void RenameLayer(BaseEventArgs e)
-    {
-        layerwidget.RenameLayer(SelectedLayer);
-    }
-
     public void ToggleVisibilityLayer(BaseEventArgs e)
     {
         layerwidget.SetLayerVisible(SelectedLayer, !Map.Layers[SelectedLayer].Visible);
-    }
-
-    private void DeleteLayerEvent(BaseEventArgs e)
-    {
-        DeleteLayer(SelectedLayer);
-    }
-
-    public void DeleteLayer(int Index, bool IsUndoAction = false)
-    {
-        if (Map.Layers.Count > 1)
-        {
-            Editor.UnsavedChanges = true;
-            MapViewer.DeleteLayer(Index, IsUndoAction);
-            int oldselected = Index - 1;
-            CreateLayers();
-            if (oldselected < 0) oldselected = 0;
-            layerwidget.UpdateLayers();
-            layerwidget.SetSelectedLayer(oldselected);
-        }
     }
 
     public void FocusLayer(BaseEventArgs e)

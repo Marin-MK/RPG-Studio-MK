@@ -4,10 +4,8 @@ namespace RPGStudioMK.Undo;
 
 public class BaseUndoAction
 {
-    public BaseUndoAction()
-    {
-        
-    }
+    public virtual string Title => GetType().Name;
+    public virtual string Description => "No Description.";
 
     protected void Register()
     {
@@ -21,6 +19,8 @@ public class BaseUndoAction
     {
         return true;
     }
+
+    public virtual void TriggerLogical(bool IsRedo) { }
 
     public void RevertTo(bool IsRedo)
     {
@@ -36,6 +36,20 @@ public class BaseUndoAction
                 ListB.Add(action);
                 ListA.RemoveAt(i);
             }
+        }
+    }
+
+    public void RevertToLogical(bool IsRedo)
+    {
+        List<BaseUndoAction> ListA = IsRedo ? Editor.RedoList : Editor.UndoList;
+        List<BaseUndoAction> ListB = IsRedo ? Editor.UndoList : Editor.RedoList;
+        int Index = ListA.IndexOf(this);
+        for (int i = ListA.Count - 1; i >= Index; i--)
+        {
+            BaseUndoAction action = ListA[i];
+            action.TriggerLogical(IsRedo);
+            ListB.Add(action);
+            ListA.RemoveAt(i);
         }
     }
 

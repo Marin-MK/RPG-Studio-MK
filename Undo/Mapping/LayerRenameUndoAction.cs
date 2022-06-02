@@ -4,6 +4,9 @@ namespace RPGStudioMK.Undo;
 
 public class LayerRenameUndoAction : BaseUndoAction
 {
+    public override string Title => $"Renamed Layer";
+    public override string Description => $"Map: {(Data.Maps.ContainsKey(MapID) ? Data.Maps[MapID].Name : Utilities.Digits(MapID, 3))}\nLayer: {LayerIndex}\nOld Name: {OldName}\nNew Name: {NewName}";
+
     public int MapID;
     public int LayerIndex;
     public string OldName;
@@ -45,9 +48,13 @@ public class LayerRenameUndoAction : BaseUndoAction
             Continue = false;
         }
         if (!Continue) return false;
-        Map Map = Data.Maps[MapID];
-        Map.Layers[LayerIndex].Name = IsRedo ? NewName : OldName;
+        TriggerLogical(IsRedo);
         Editor.MainWindow.MapWidget.MapViewer.LayerPanel.layerwidget.Redraw();
         return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
+        Data.Maps[MapID].Layers[LayerIndex].Name = IsRedo ? NewName : OldName;
     }
 }

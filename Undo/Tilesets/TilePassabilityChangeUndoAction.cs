@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RPGStudioMK.Game;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,15 +9,18 @@ namespace RPGStudioMK.Undo;
 
 public class TilePassabilityChangeUndoAction : BaseUndoAction
 {
+    public override string Title => $"Changed passability";
+    public override string Description => $"Tileset: {TilesetID}\nTile: {TileID}\nTile X: {TileX}\nTile Y: {TileY}\nOld: {OldPassability}\nNew: {NewPassability}";
+
     int TilesetID;
     int TileID;
     int TileX;
     int TileY;
-    Game.Passability OldPassability;
-    Game.Passability NewPassability;
+    Passability OldPassability;
+    Passability NewPassability;
     bool Directional;
 
-    public TilePassabilityChangeUndoAction(int TilesetID, int TileID, int TileX, int TileY, Game.Passability OldPassability, Game.Passability NewPassability, bool Directional)
+    public TilePassabilityChangeUndoAction(int TilesetID, int TileID, int TileX, int TileY, Passability OldPassability, Passability NewPassability, bool Directional)
     {
         this.TilesetID = TilesetID;
         this.TileID = TileID;
@@ -27,7 +31,7 @@ public class TilePassabilityChangeUndoAction : BaseUndoAction
         this.Directional = Directional;
     }
 
-    public static void Create(int TilesetID, int TileID, int TileX, int TileY, Game.Passability OldPassability, Game.Passability NewPassability, bool Directional)
+    public static void Create(int TilesetID, int TileID, int TileX, int TileY, Passability OldPassability, Passability NewPassability, bool Directional)
     {
         var c = new TilePassabilityChangeUndoAction(TilesetID, TileID, TileX, TileY, OldPassability, NewPassability, Directional);
         c.Register();
@@ -59,15 +63,13 @@ public class TilePassabilityChangeUndoAction : BaseUndoAction
             Continue = false;
         }
         if (!Continue) return false;
-        if (IsRedo)
-        {
-            Game.Data.Tilesets[TilesetID].Passabilities[TileID] = NewPassability;
-        }
-        else
-        {
-            Game.Data.Tilesets[TilesetID].Passabilities[TileID] = OldPassability;
-        }
+        TriggerLogical(IsRedo);
         dtt.TilesetContainer.SetTilePassability(this.TileID, this.TileX, this.TileY, Game.Data.Tilesets[TilesetID].Passabilities[TileID]);
         return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
+        Data.Tilesets[TilesetID].Passabilities[TileID] = IsRedo ? NewPassability : OldPassability;
     }
 }

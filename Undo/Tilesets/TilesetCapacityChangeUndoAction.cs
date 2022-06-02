@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RPGStudioMK.Game;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,12 +9,15 @@ namespace RPGStudioMK.Undo;
 
 public class TilesetCapacityChangeUndoAction : BaseUndoAction
 {
-    List<Game.Tileset> OldTilesets;
-    List<Game.Tileset> NewTilesets;
+    public override string Title => $"Tileset capacity changed";
+    public override string Description => $"Old capacity: {OldCapacity}\nNew capacity: {NewCapacity}";
+
+    List<Tileset> OldTilesets;
+    List<Tileset> NewTilesets;
     int OldCapacity;
     int NewCapacity;
 
-    public TilesetCapacityChangeUndoAction(List<Game.Tileset> OldTilesets, List<Game.Tileset> NewTilesets, int OldCapacity, int NewCapacity)
+    public TilesetCapacityChangeUndoAction(List<Tileset> OldTilesets, List<Tileset> NewTilesets, int OldCapacity, int NewCapacity)
     {
         this.OldTilesets = OldTilesets;
         this.NewTilesets = NewTilesets;
@@ -21,7 +25,7 @@ public class TilesetCapacityChangeUndoAction : BaseUndoAction
         this.NewCapacity = NewCapacity;
     }
 
-    public static void Create(List<Game.Tileset> OldTilesets, List<Game.Tileset> NewTilesets, int OldCapacity, int NewCapacity)
+    public static void Create(List<Tileset> OldTilesets, List<Tileset> NewTilesets, int OldCapacity, int NewCapacity)
     {
         var c = new TilesetCapacityChangeUndoAction(OldTilesets, NewTilesets, OldCapacity, NewCapacity);
         c.Register();
@@ -37,18 +41,23 @@ public class TilesetCapacityChangeUndoAction : BaseUndoAction
             SetDatabaseSubmode(DatabaseMode.Tilesets);
             return false;
         }
+        TriggerLogical(IsRedo);
+        ((Widgets.DataTypeTilesets) DatabaseWidget.ActiveDatabaseWidget).RedrawList();
+        ((Widgets.DataTypeTilesets) DatabaseWidget.ActiveDatabaseWidget).TilesetList.ListMaximum = Editor.ProjectSettings.TilesetCapacity;
+        return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
         if (IsRedo)
         {
-            Game.Data.Tilesets = NewTilesets;
+            Data.Tilesets = NewTilesets;
             Editor.ProjectSettings.TilesetCapacity = NewCapacity;
         }
         else
         {
-            Game.Data.Tilesets = OldTilesets;
+            Data.Tilesets = OldTilesets;
             Editor.ProjectSettings.TilesetCapacity = OldCapacity;
         }
-        ((Widgets.DataTypeTilesets) DatabaseWidget.ActiveDatabaseWidget).RedrawList();
-        ((Widgets.DataTypeTilesets) DatabaseWidget.ActiveDatabaseWidget).TilesetList.ListMaximum = Editor.ProjectSettings.TilesetCapacity;
-        return true;
     }
 }

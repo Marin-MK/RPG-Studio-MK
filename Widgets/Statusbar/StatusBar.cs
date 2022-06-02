@@ -149,7 +149,7 @@ public class StatusBar : Widget
         if (Editor.MainWindow.MapWidget != null)
         {
             MapViewer MapViewer = Editor.MainWindow.MapWidget.MapViewer;
-            if (!MapViewer.MainContainer.Mouse.Inside)
+            if (!MapViewer.MainContainer.Mouse.Inside || !MapViewer.Cursor.Visible)
             {
                 RemoveCursorText();
             }

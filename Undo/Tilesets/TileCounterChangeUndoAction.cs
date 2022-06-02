@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RPGStudioMK.Game;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,9 @@ namespace RPGStudioMK.Undo;
 
 public class TileCounterChangeUndoAction : BaseUndoAction
 {
+    public override string Title => $"Changed counter flag";
+    public override string Description => $"Tileset: {TilesetID}\nTile: {TileID}\nTile X: {TileX}\nTile Y: {TileY}\nOld: {OldCounter}\nNew: {NewCounter}";
+
     int TilesetID;
     int TileID;
     int TileX;
@@ -56,15 +60,13 @@ public class TileCounterChangeUndoAction : BaseUndoAction
             Continue = false;
         }
         if (!Continue) return false;
-        if (IsRedo)
-        {
-            Game.Data.Tilesets[TilesetID].CounterFlags[TileID] = NewCounter;
-        }
-        else
-        {
-            Game.Data.Tilesets[TilesetID].CounterFlags[TileID] = OldCounter;
-        }
+        TriggerLogical(IsRedo);
         dtt.TilesetContainer.SetTileCounter(this.TileID, this.TileX, this.TileY, Game.Data.Tilesets[TilesetID].CounterFlags[TileID]);
         return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
+        Data.Tilesets[TilesetID].CounterFlags[TileID] = IsRedo ? NewCounter : OldCounter;
     }
 }

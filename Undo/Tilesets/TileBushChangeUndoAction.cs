@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RPGStudioMK.Game;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,9 @@ namespace RPGStudioMK.Undo;
 
 public class TileBushChangeUndoAction : BaseUndoAction
 {
+    public override string Title => $"Changed bush flag";
+    public override string Description => $"Tileset: {TilesetID}\nTile: {TileID}\nTile X: {TileX}\nTile Y: {TileY}\nOld: {OldBush}\nNew: {NewBush}";
+
     int TilesetID;
     int TileID;
     int TileX;
@@ -56,15 +60,13 @@ public class TileBushChangeUndoAction : BaseUndoAction
             Continue = false;
         }
         if (!Continue) return false;
-        if (IsRedo)
-        {
-            Game.Data.Tilesets[TilesetID].BushFlags[TileID] = NewBush;
-        }
-        else
-        {
-            Game.Data.Tilesets[TilesetID].BushFlags[TileID] = OldBush;
-        }
+        TriggerLogical(IsRedo);
         dtt.TilesetContainer.SetTileBush(this.TileID, this.TileX, this.TileY, Game.Data.Tilesets[TilesetID].BushFlags[TileID]);
         return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
+        Data.Tilesets[TilesetID].BushFlags[TileID] = IsRedo ? NewBush : OldBush;
     }
 }

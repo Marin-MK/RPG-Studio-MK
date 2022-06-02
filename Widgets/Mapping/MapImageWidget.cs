@@ -61,49 +61,6 @@ public class MapImageWidget : Widget
         Sprites[layerindex.ToString()].Visible = Visible;
     }
 
-    public void CreateNewLayer(int Index, Layer LayerData, bool IsUndoAction = false)
-    {
-        for (int i = MapData.Layers.Count - 1; i >= Index; i--)
-        {
-            Sprite s = this.Sprites[i.ToString()] as Sprite;
-            s.Z += 2;
-            this.Sprites.Remove(i.ToString());
-            this.Sprites.Add((i + 1).ToString(), s);
-        }
-        MapData.Layers.Insert(Index, LayerData);
-        string key = Index.ToString();
-        Sprites[key] = new Sprite(this.Viewport);
-        Sprites[key].Bitmap = GetLayerBitmap(Index);
-        Sprites[key].Z = Index;
-        Sprites[key].ZoomX = Sprites[key].ZoomY = this.ZoomFactor;
-        if (!IsUndoAction) Undo.LayerChangeUndoAction.Create(MapID, Index, MapData.Layers[Index], false);
-    }
-
-    public void DeleteLayer(int Index, bool IsUndoAction = false)
-    {
-        this.Sprites[Index.ToString()].Dispose();
-        this.Sprites.Remove(Index.ToString());
-        for (int y = 0; y < MapData.Height; y++)
-        {
-            for (int x = 0; x < MapData.Width; x++)
-            {
-                TileData TileData = MapData.Layers[Index].Tiles[x + y * MapData.Width];
-                if (TileData == null) continue;
-                List<int> autotile = AnimatedAutotiles.Find(a => a[0] == Index && a[1] == x && a[2] == y);
-                if (autotile != null) AnimatedAutotiles.Remove(autotile);
-            }
-        }
-        for (int i = Index + 1; i < MapData.Layers.Count; i++)
-        {
-            Sprite s = this.Sprites[i.ToString()] as Sprite;
-            s.Z -= 2;
-            this.Sprites.Remove(i.ToString());
-            this.Sprites.Add((i - 1).ToString(), s);
-        }
-        if (!IsUndoAction) Undo.LayerChangeUndoAction.Create(MapID, Index, MapData.Layers[Index], true);
-        MapData.Layers.RemoveAt(Index);
-    }
-
     public override void Update()
     {
         base.Update();

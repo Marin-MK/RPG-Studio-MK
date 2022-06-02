@@ -6,6 +6,9 @@ namespace RPGStudioMK.Undo;
 
 public class EventChangeUndoAction : BaseUndoAction
 {
+    public override string Title => $"{(Deletion ? "Deleted" : "Created")} event";
+    public override string Description => $"Map: {(Data.Maps.ContainsKey(MapID) ? Data.Maps[MapID].Name : Utilities.Digits(MapID, 3))}\nName: {Event.Name}\nSize: {Event.Width}x{Event.Height}";
+
     public int MapID;
     public Event Event;
     public bool Deletion;
@@ -51,14 +54,33 @@ public class EventChangeUndoAction : BaseUndoAction
             // Undo deletion, i.e. recreate the new event
             Data.Maps[MapID].Events[Event.ID] = Event;
             Editor.MainWindow.MapWidget.MapViewer.CreateEventFromUndo(Event);
+            Editor.MainWindow.MapWidget.SetHint($"Re-created event {Utilities.Digits(Event.ID, 3)}.");
         }
         else
         {
             // Delete the new event
             Data.Maps[MapID].Events.Remove(Event.ID);
             Editor.MainWindow.MapWidget.MapViewer.DeleteEventFromUndo(Event);
+            Editor.MainWindow.MapWidget.SetHint($"Deleted event {Utilities.Digits(Event.ID, 3)}.");
         }
 
         return true;
+    }
+
+    public override void TriggerLogical(bool IsRedo)
+    {
+        if (IsRedo != Deletion)
+        {
+            if (IsRedo != Deletion)
+            {
+                // Undo deletion, i.e. recreate the new event
+                Data.Maps[MapID].Events[Event.ID] = Event;
+            }
+            else
+            {
+                // Delete the new event
+                Data.Maps[MapID].Events.Remove(Event.ID);
+            }
+        }
     }
 }
