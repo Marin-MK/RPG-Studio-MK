@@ -190,8 +190,8 @@ public partial class MapViewer
                 SelectEventBoxCursorIsOver();
             }
             MainContainer.UpdateAutoScroll();
-            Window.UI.SetSelectedWidget(this);
             OnAppliedAction?.Invoke();
+            Window.UI.SetSelectedWidget(this);
         };
     }
 

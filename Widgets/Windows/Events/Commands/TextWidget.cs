@@ -20,6 +20,8 @@ public class TextWidget : ExpandableCommandWidget
         MultilineLabel.SetHDocked(true);
         MultilineLabel.SetHeight(1);
         MultilineLabel.SetPosition(8, 24);
+        SetExpandable(false);
+        OnHoverChanged += _ => SetExpandable(Mouse.Inside && (Commands.Count > 1 && Command.Code == CommandCode.Script || SingleLabel.ReachedWidthLimit));
     }
 
     public override void LoadCommand()
@@ -44,7 +46,7 @@ public class TextWidget : ExpandableCommandWidget
         }
 
         SingleLabel.SetText(text);
-        SetExpandable(Commands.Count > 1 && Command.Code == CommandCode.Script || SingleLabel.ReachedWidthLimit);
+        SetExpandable(Mouse.Inside && (Commands.Count > 1 && Command.Code == CommandCode.Script || SingleLabel.ReachedWidthLimit));
 
         if (Expanded)
         {
