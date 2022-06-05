@@ -18,15 +18,15 @@ public class GenericMultilineTextBoxWindow : PopupWindow
         this.Text = Text;
 
         SetTitle(Title);
-        MinimumSize = MaximumSize = new Size(400, 200);
+        MinimumSize = MaximumSize = new Size(1300, 900);
         SetSize(MaximumSize);
         Center();
 
         TextBox = new NewMultilineTextBox(this);
         TextBox.SetFont(Fonts.CabinMedium.Use(9));
         TextBox.SetDocked(true);
-        //TextBox.SetText(Text);
         TextBox.SetPadding(20, 30, 20, 50);
+        TextBox.SetFont(Font.Get("assets/fonts/FiraCode-Medium", 9));
 
         CreateButton("Cancel", _ => Cancel());
         CreateButton("OK", _ => OK());
