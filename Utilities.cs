@@ -274,7 +274,6 @@ public static class Utilities
 
     public static List<string> FormatString(Font f, string Text, int Width)
     {
-
         List<string> Lines = new List<string>();
         int startidx = 0;
         int lastsplittableindex = -1;
@@ -415,8 +414,9 @@ public static class Utilities
         if (obj == null) return Ruby.Nil;
         else if (obj is true) return Ruby.True;
         else if (obj is false) return Ruby.False;
-        else if (obj is long) return Ruby.Integer.ToPtr((long)obj);
-        else if (obj is string) return Ruby.String.ToPtr((string)obj);
+        else if (obj is int) return Ruby.Integer.ToPtr((int) obj);
+        else if (obj is long) return Ruby.Integer.ToPtr((long) obj);
+        else if (obj is string) return Ruby.String.ToPtr((string) obj);
         else if (obj is List<object>)
         {
             IntPtr array = Ruby.Array.Create();
@@ -793,16 +793,15 @@ public enum BinaryData
 
 public class Fonts
 {
-    public static Fonts UbuntuRegular = new Fonts("assets/fonts/Ubuntu-R");
     public static Fonts UbuntuBold = new Fonts("assets/fonts/Ubuntu-B");
-    public static Fonts ProductSansMedium = new Fonts("assets/fonts/ProductSans-M");
+    public static Fonts CabinMedium = new Fonts("assets/fonts/Cabin-Medium");
 
     public string Filename;
 
     public Fonts(string Filename) { this.Filename = Filename; }
 
-    public odl.Font Use(int Size)
+    public Font Use(int Size)
     {
-        return odl.Font.Get(this.Filename, Size);
+        return Font.Get(this.Filename, Size);
     }
 }

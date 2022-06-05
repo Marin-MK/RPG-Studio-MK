@@ -91,7 +91,7 @@ public class HomeScreen : Widget
         NoProjects.SetSize(320, 100);
         NoProjects.SetPosition(40, 170);
         NoProjects.SetText("You haven't opened any projects recently.\nGet started by creating or opening a project!");
-        NoProjects.SetFont(Fonts.UbuntuRegular.Use(12));
+        NoProjects.SetFont(Fonts.CabinMedium.Use(12));
 
         VignetteFade = new VignetteFade(this);
         VignetteFade.SetDocked(true);
@@ -137,7 +137,7 @@ public class HomeScreen : Widget
         Sprites["files"].Bitmap = new Bitmap(314, 48 * RecentCapacity);
         Sprites["files"].Bitmap.Unlock();
         Font boldfont = Fonts.UbuntuBold.Use(13);
-        Font regularfont = Fonts.ProductSansMedium.Use(11);
+        Font regularfont = Fonts.CabinMedium.Use(11);
         int count = Editor.GeneralSettings.RecentFiles.Count;
         for (int i = 0; i < count; i++)
         {

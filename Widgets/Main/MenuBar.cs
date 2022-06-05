@@ -38,7 +38,7 @@ public class MenuBar : Widget
     {
         if (Sprites["header"].Bitmap != null) Sprites["header"].Bitmap.Dispose();
         int TotalWidth = 0;
-        Font f = Fonts.ProductSansMedium.Use(11);
+        Font f = Fonts.CabinMedium.Use(11);
         foreach (MenuItem mi in Items)
         {
             TotalWidth += f.TextSize(mi.Text).Width + 12;

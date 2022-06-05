@@ -16,7 +16,7 @@ public class CheckBox : Widget
 
     public CheckBox(IContainer Parent) : base(Parent)
     {
-        this.Font = Fonts.ProductSansMedium.Use(11);
+        this.Font = Fonts.CabinMedium.Use(11);
         Sprites["box"] = new Sprite(this.Viewport, new Bitmap(16, 16));
         RedrawBox(true);
         Sprites["text"] = new Sprite(this.Viewport);

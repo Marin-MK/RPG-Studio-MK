@@ -104,7 +104,7 @@ public class FileExplorer : Widget
         path.AddRange(this.Directory.Split('/'));
         GridContainer.VScrollBar.SetValue(0);
         int x = 6;
-        Font f = Fonts.ProductSansMedium.Use(11);
+        Font f = Fonts.CabinMedium.Use(11);
         Color arrowcolor = new Color(86, 108, 134);
         Color arrowshadow = new Color(36, 34, 36);
         for (int i = 0; i < path.Count; i++)
@@ -183,7 +183,7 @@ public class FileExplorer : Widget
         if (Empty)
         {
             EmptyLabel = new Label(GridContainer);
-            EmptyLabel.SetFont(Fonts.UbuntuRegular.Use(11));
+            EmptyLabel.SetFont(Fonts.CabinMedium.Use(11));
             EmptyLabel.SetText("This directory does not contain any (relevant) files.");
             EmptyLabel.SetPosition(GridContainer.Size.Width / 2 - EmptyLabel.Size.Width / 2 - 20, GridContainer.Size.Height / 2 - EmptyLabel.Size.Height / 2 - 50);
         }
@@ -456,11 +456,11 @@ public class FileEntryWidget : Widget
     public void RedrawName()
     {
         Sprites["text"].Bitmap?.Dispose();
-        Font f = Fonts.UbuntuRegular.Use(11);
+        Font f = Fonts.CabinMedium.Use(11);
         List<string> Lines = Utilities.FormatString(f, this.Name, Size.Width - 4);
         if (Lines.Count > 1)
         {
-            f = Fonts.ProductSansMedium.Use(9);
+            f = Fonts.CabinMedium.Use(9);
             Lines = Utilities.FormatString(f, this.Name, Size.Width - 4);
         }
         TwoLines = false;

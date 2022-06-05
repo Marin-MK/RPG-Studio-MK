@@ -22,7 +22,7 @@ public class NewProjectWindow : PopupWindow
         SetSize(MaximumSize);
         Center();
 
-        Font f = Fonts.ProductSansMedium.Use(11);
+        Font f = Fonts.CabinMedium.Use(11);
 
         Label namelabel = new Label(this);
         namelabel.SetPosition(16, 42);

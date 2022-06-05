@@ -7,6 +7,7 @@ namespace RPGStudioMK.Widgets.CommandWidgets;
 
 public class ConditionalWidget : BaseCommandWidget
 {
+    Label ConditionLabel;
     Label ElseLabel;
     Label EndLabel;
     VStackPanel VStackPanel1;
@@ -16,12 +17,16 @@ public class ConditionalWidget : BaseCommandWidget
 
     public ConditionalWidget(IContainer Parent) : base(Parent, new Color(128, 128, 255))
     {
+        ConditionLabel = new Label(this);
+        ConditionLabel.SetPosition(24, 2);
+        ConditionLabel.SetFont(Fonts.CabinMedium.Use(10));
+        ConditionLabel.SetTextColor(HeaderLabel.TextColor);
         ElseLabel = new Label(this);
-        ElseLabel.SetFont(Fonts.ProductSansMedium.Use(9));
+        ElseLabel.SetFont(Fonts.CabinMedium.Use(9));
         ElseLabel.SetText("Else");
         ElseLabel.SetTextColor(HeaderLabel.TextColor);
         EndLabel = new Label(this);
-        EndLabel.SetFont(Fonts.ProductSansMedium.Use(9));
+        EndLabel.SetFont(Fonts.CabinMedium.Use(9));
         EndLabel.SetText("End");
         EndLabel.SetTextColor(HeaderLabel.TextColor);
         ExpandIfArrow = new ExpandArrow(this);
@@ -40,10 +45,11 @@ public class ConditionalWidget : BaseCommandWidget
         };
         OnSizeChanged += _ =>
         {
-            ExpandIfArrow.SetPosition(Size.Width - 16, 8);
+            ConditionLabel.SetWidthLimit(Size.Width - ConditionLabel.Position.X - 22);
+            ExpandIfArrow.SetPosition(Size.Width - 16, 6);
             ExpandElseArrow.SetPosition(Size.Width - 16, ElseLabel.Position.Y);
         };
-        //DrawEndLabels = false;
+        DrawEndLabels = false;
     }
 
     private void UpdateLabels()
@@ -80,7 +86,8 @@ public class ConditionalWidget : BaseCommandWidget
     public override void LoadCommand()
     {
         // Draw conditional
-        HeaderLabel.SetText(CommandHelper.GetText(Map, Event));
+        HeaderLabel.SetText("If: ");
+        ConditionLabel.SetText(CommandHelper.GetText(Map, Event));
 
         VStackPanel1?.Dispose();
         VStackPanel2?.Dispose();
@@ -142,5 +149,17 @@ public class ConditionalWidget : BaseCommandWidget
             ExpandElseArrow.SetVisible(!ExpandIfArrow.Visible);
         }
         else ExpandIfArrow.SetVisible(true);
+    }
+
+    public override void LeftMouseDownInside(MouseEventArgs e)
+    {
+        base.LeftMouseDownInside(e);
+        int ry = e.Y - Viewport.Y + TopCutOff;
+        if (this.Indentation == -1 || InsideChild() || ExpandIfArrow.Mouse.Inside || ExpandElseArrow.Mouse.Inside)
+        {
+            CancelDoubleClick();
+            return;
+        }
+        if (ry < StandardHeight || ry >= ElseLabel.Position.Y && ry < ElseLabel.Position.Y + StandardHeight) SetSelected(true);
     }
 }

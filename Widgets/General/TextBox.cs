@@ -7,7 +7,7 @@ public class TextBox : amethyst.TextBox
     public TextBox(IContainer Parent) : base(Parent)
     {
         TextArea.SetPosition(6, 4);
-        TextArea.SetFont(Fonts.ProductSansMedium.Use(11));
+        TextArea.SetFont(Fonts.CabinMedium.Use(11));
         TextArea.SetCaretColor(Color.WHITE);
     }
 

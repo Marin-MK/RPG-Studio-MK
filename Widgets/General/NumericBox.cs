@@ -86,7 +86,7 @@ public class NumericBox : Widget
         string text = "";
         if (Value < 0) text += "-";
         text += Math.Abs(Value).ToString();
-        Font f = Fonts.ProductSansMedium.Use(11);
+        Font f = Fonts.CabinMedium.Use(11);
         Size s = f.TextSize(text);
         Sprites["text"].Bitmap = new Bitmap(s);
         Sprites["text"].Bitmap.Unlock();

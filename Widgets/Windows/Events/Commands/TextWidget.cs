@@ -13,15 +13,31 @@ public class TextWidget : ExpandableCommandWidget
     public TextWidget(IContainer Parent) : base(Parent)
     {
         SingleLabel = new Label(this);
-        SingleLabel.SetFont(Fonts.ProductSansMedium.Use(9));
+        SingleLabel.SetFont(Fonts.CabinMedium.Use(9));
         SingleLabel.SetDocked(true);
         MultilineLabel = new MultilineLabel(this);
-        MultilineLabel.SetFont(Fonts.ProductSansMedium.Use(9));
+        MultilineLabel.SetFont(Fonts.CabinMedium.Use(9));
         MultilineLabel.SetHDocked(true);
         MultilineLabel.SetHeight(1);
-        MultilineLabel.SetPosition(8, 24);
+        MultilineLabel.SetPosition(8, StandardHeight);
         SetExpandable(false);
         OnHoverChanged += _ => SetExpandable(Mouse.Inside && (Commands.Count > 1 && Command.Code == CommandCode.Script || SingleLabel.ReachedWidthLimit));
+        OnDoubleLeftMouseDownInside += _ =>
+        {
+            string text = "";
+            for (int i = 0; i < Commands.Count; i++)
+            {
+                EventCommand cmd = Commands[i];
+                text += (string) cmd.Parameters[0];
+                if (i != Commands.Count - 1 && Command.Code == CommandCode.Script) text += "\n";
+            }
+            GenericMultilineTextBoxWindow win = new GenericMultilineTextBoxWindow("Show Text", text);
+            win.OnClosed += _ =>
+            {
+                if (!win.Apply) return;
+                // Set text
+            };
+        };
     }
 
     public override void LoadCommand()
@@ -33,7 +49,7 @@ public class TextWidget : ExpandableCommandWidget
             CommandCode.Comment => "Comment",
             _ => HeaderLabel.Text
         });
-        SingleLabel.SetPosition(HeaderLabel.Position.X + HeaderLabel.Size.Width + 6, 5);
+        SingleLabel.SetPosition(HeaderLabel.Position.X + HeaderLabel.Size.Width + 6, 3);
         SingleLabel.SetWidthLimit(Size.Width - SingleLabel.Position.X - 22);
         SingleLabel.SetVisible(!Expanded);
         MultilineLabel.SetVisible(Expanded);

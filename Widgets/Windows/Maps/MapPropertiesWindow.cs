@@ -42,7 +42,7 @@ public class MapPropertiesWindow : PopupWindow
         box1.SetPosition(19, 54);
         box1.SetSize(300, 213);
 
-        Font f = Fonts.ProductSansMedium.Use(9);
+        Font f = Fonts.CabinMedium.Use(9);
 
         Label namelabel = new Label(box1);
         namelabel.SetText("Map Name:");

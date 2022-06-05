@@ -106,7 +106,7 @@ public class DataTypeTilesets : Widget
         Tabs.CreateTab("Counter Flag");
         Tabs.CreateTab("Terrain Tag");
 
-        Font Font = Fonts.ProductSansMedium.Use(13);
+        Font Font = Fonts.CabinMedium.Use(13);
 
         NameLabel = new Label(MainBox);
         NameLabel.SetText("Name");

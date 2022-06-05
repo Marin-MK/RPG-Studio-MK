@@ -33,4 +33,15 @@ public class ExpandableCommandWidget : BaseCommandWidget
             ExpandArrow.SetVisible(Expandable);
         }
     }
+
+    public override void LeftMouseDownInside(MouseEventArgs e)
+    {
+        base.LeftMouseDownInside(e);
+        if (this.Indentation == -1 || InsideChild() || ExpandArrow.Mouse.Inside)
+        {
+            CancelDoubleClick();
+            return;
+        }
+        SetSelected(true);
+    }
 }

@@ -7,7 +7,7 @@ public class DropdownBox : amethyst.DropdownBox
     public DropdownBox(IContainer Parent) : base(Parent)
     {
         TextArea.SetPosition(6, 4);
-        TextArea.SetFont(Fonts.ProductSansMedium.Use(11));
+        TextArea.SetFont(Fonts.CabinMedium.Use(11));
         TextArea.SetCaretColor(Color.WHITE);
         TextArea.SetReadOnly(true);
     }

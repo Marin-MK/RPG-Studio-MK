@@ -11,13 +11,12 @@ public class ChoiceWidget : BaseCommandWidget
     List<Label> BranchLabels = new List<Label>();
     List<VStackPanel> StackPanels = new List<VStackPanel>();
     List<ExpandArrow> ExpandArrows = new List<ExpandArrow>();
-    List<bool> OldVisibleStates = new List<bool>();
     ExpandArrow ExpandAllArrow;
 
     public ChoiceWidget(IContainer Parent) : base(Parent, new Color(128, 128, 255))
     {
         EndLabel = new Label(this);
-        EndLabel.SetFont(Fonts.ProductSansMedium.Use(9));
+        EndLabel.SetFont(Fonts.CabinMedium.Use(9));
         EndLabel.SetText("End");
         EndLabel.SetTextColor(HeaderLabel.TextColor);
         ExpandAllArrow = new ExpandArrow(this);
@@ -42,10 +41,10 @@ public class ChoiceWidget : BaseCommandWidget
         };
         OnSizeChanged += _ =>
         {
-            ExpandAllArrow.SetPosition(Size.Width - 16, 8);
+            ExpandAllArrow.SetPosition(Size.Width - 16, 6);
             ExpandArrows.ForEach(e => e.SetPosition(Size.Width - 16, e.Position.Y));
         };
-        //DrawEndLabels = false;
+        DrawEndLabels = false;
     }
 
     private void UpdateLabels()
@@ -55,25 +54,25 @@ public class ChoiceWidget : BaseCommandWidget
         {
             if (DrawEndLabels)
             {
-                EndLabel.SetPosition(8, 22 + 4);
-                HeightAdd = 22;
+                EndLabel.SetPosition(8, StandardHeight + 2);
+                HeightAdd = StandardHeight;
             }
             else HeightAdd = 0;
             return;
         }
-        int y = 22;
+        int y = StandardHeight;
         for (int i = 0; i < BranchLabels.Count; i++)
         {
             BranchLabels[i].SetPosition(8, y + 4);
             ExpandArrows[i].SetPosition(Size.Width - 16, y + 4);
-            StackPanels[i].SetPosition(StackPanels[i].Position.X, y + 22);
-            y += 22 + (ExpandArrows[i].Expanded ? StackPanels[i].Size.Height : 0);
+            StackPanels[i].SetPosition(StackPanels[i].Position.X, y + StandardHeight);
+            y += StandardHeight + (ExpandArrows[i].Expanded ? StackPanels[i].Size.Height : 0);
         }
         if (DrawEndLabels)
         {
             EndLabel.SetPosition(8, y + 4);
         }
-        else y -= 22;
+        else y -= StandardHeight;
         HeightAdd = y;
     }
 
@@ -100,7 +99,7 @@ public class ChoiceWidget : BaseCommandWidget
             int BranchIdx = Commands.IndexOf(BranchCmd);
 
             Label BranchLabel = new Label(this);
-            BranchLabel.SetFont(Fonts.ProductSansMedium.Use(9));
+            BranchLabel.SetFont(Fonts.CabinMedium.Use(9));
             if (BranchCmd.Code == CommandCode.BranchWhenCancel) BranchLabel.SetText($"When cancelled:");
             else BranchLabel.SetText($"When [{Choices[i]}]:");
             BranchLabels.Add(BranchLabel);
@@ -133,7 +132,7 @@ public class ChoiceWidget : BaseCommandWidget
                 UpdateHeight();
             };
         }
-        if (DrawEndLabels) HeightAdd = 22;
+        if (DrawEndLabels) HeightAdd = StandardHeight;
         UpdateLabels();
     }
 
@@ -149,9 +148,34 @@ public class ChoiceWidget : BaseCommandWidget
         {
             if (ry >= BranchLabels[i].Position.Y) idx = i;
         }
-        if (idx > -1 && (ry < Size.Height - 22 || !DrawEndLabels))
+        if (idx > -1 && (ry < Size.Height - StandardHeight || !DrawEndLabels))
         {
             ExpandArrows[idx].SetVisible(true);
         }
+    }
+
+    public override void LeftMouseDownInside(MouseEventArgs e)
+    {
+        base.LeftMouseDownInside(e);
+        int ry = e.Y - Viewport.Y + TopCutOff;
+        if (this.Indentation == -1 || InsideChild())
+        {
+            CancelDoubleClick();
+            return;
+        }
+        bool sel = ry < StandardHeight || !ExpandAllArrow.Expanded;
+        if (!sel)
+        {
+            for (int i = 0; i < BranchLabels.Count; i++)
+            {
+                if (ry >= BranchLabels[i].Position.Y && ry < BranchLabels[i].Position.Y + StandardHeight)
+                {
+                    sel = true;
+                    break;
+                }
+            }
+        }
+        if (sel) SetSelected(true);
+        else CancelDoubleClick();
     }
 }

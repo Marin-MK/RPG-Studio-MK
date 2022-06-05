@@ -38,9 +38,9 @@ public class EventPageControl : Widget
 
     public EventPageControl(IContainer Parent) : base(Parent)
     {
-        Font HeaderFont = Fonts.ProductSansMedium.Use(13);
-        Font SmallFont = Fonts.ProductSansMedium.Use(11);
-        Font TinyFont = Fonts.ProductSansMedium.Use(9);
+        Font HeaderFont = Fonts.UbuntuBold.Use(11);
+        Font SmallFont = Fonts.CabinMedium.Use(11);
+        Font TinyFont = Fonts.CabinMedium.Use(9);
 
         Label Switch1Label = null;
         Label Switch2Label = null;
@@ -50,7 +50,7 @@ public class EventPageControl : Widget
 
         Label ConditionsLabel = new Label(this);
         ConditionsLabel.SetFont(HeaderFont);
-        ConditionsLabel.SetPosition(7, 2);
+        ConditionsLabel.SetPosition(7, 3);
         ConditionsLabel.SetText("Conditions");
         GroupBox ConditionsBox = new GroupBox(this);
         ConditionsBox.SetPosition(7, 22);
@@ -159,7 +159,7 @@ public class EventPageControl : Widget
 
         Label GraphicLabel = new Label(this);
         GraphicLabel.SetFont(HeaderFont);
-        GraphicLabel.SetPosition(7, 181);
+        GraphicLabel.SetPosition(7, 182);
         GraphicLabel.SetText("Graphic");
         GroupBox GraphicBox = new GroupBox(this);
         GraphicBox.SetPosition(7, 201);
@@ -180,7 +180,7 @@ public class EventPageControl : Widget
 
         Label AutoMoveLabel = new Label(this);
         AutoMoveLabel.SetFont(HeaderFont);
-        AutoMoveLabel.SetPosition(136, 181);
+        AutoMoveLabel.SetPosition(136, 182);
         AutoMoveLabel.SetText("Auto-Moveroute");
         GroupBox AutoMoveBox = new GroupBox(this);
         AutoMoveBox.SetPosition(136, 201);
@@ -255,7 +255,7 @@ public class EventPageControl : Widget
 
         Label OptionsLabel = new Label(this);
         OptionsLabel.SetFont(HeaderFont);
-        OptionsLabel.SetPosition(7, 323);
+        OptionsLabel.SetPosition(7, 324);
         OptionsLabel.SetText("Options");
         GroupBox OptionsBox = new GroupBox(this);
         OptionsBox.SetPosition(7, 343);
@@ -288,7 +288,7 @@ public class EventPageControl : Widget
 
         Label TriggerLabel = new Label(this);
         TriggerLabel.SetFont(HeaderFont);
-        TriggerLabel.SetPosition(136, 323);
+        TriggerLabel.SetPosition(136, 324);
         TriggerLabel.SetText("Trigger");
         GroupBox TriggerBox = new GroupBox(this);
         TriggerBox.SetPosition(136, 343);

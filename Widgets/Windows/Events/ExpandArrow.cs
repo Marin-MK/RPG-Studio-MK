@@ -56,10 +56,10 @@ public class ExpandArrow : Widget
         Sprites["dropdown"].Bitmap.Lock();
     }
 
-    public override void MouseDown(MouseEventArgs e)
+    public override void LeftMouseDownInside(MouseEventArgs e)
     {
-        base.MouseDown(e);
-        if (!Mouse.Inside || !Visible) return;
+        base.LeftMouseDownInside(e);
+        if (!Visible) return;
         SetExpanded(!Expanded);
     }
 }

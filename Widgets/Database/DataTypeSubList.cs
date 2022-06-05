@@ -49,7 +49,7 @@ public class DataTypeSubList : Widget
         ScrollContainer.VAutoScroll = true;
         ListDrawer = new ListDrawer(ScrollContainer);
         ListDrawer.SetLineHeight(24);
-        ListDrawer.SetFont(Fonts.ProductSansMedium.Use(11));
+        ListDrawer.SetFont(Fonts.CabinMedium.Use(11));
         ChangeMaxBtn = new Button(this);
         ChangeMaxBtn.SetText("Change Maximum");
         ChangeMaxBtn.OnClicked += _ =>

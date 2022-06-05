@@ -24,8 +24,8 @@ public class SwitchPicker : PopupWindow
         Center();
 
         Font HeaderFont = Fonts.UbuntuBold.Use(11);
-        Font ListFont = Fonts.UbuntuRegular.Use(11);
-        Font SmallFont = Fonts.ProductSansMedium.Use(11);
+        Font ListFont = Fonts.CabinMedium.Use(11);
+        Font SmallFont = Fonts.CabinMedium.Use(11);
 
         Label GroupLabel = new Label(this);
         GroupLabel.SetFont(HeaderFont);

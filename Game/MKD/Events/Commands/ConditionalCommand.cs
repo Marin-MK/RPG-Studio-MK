@@ -19,8 +19,7 @@ public class ConditionalCommand : BaseCommand
     {
         this.m = m;
         this.ev = ev;
-        string s = $"If: ";
-        s += ConditionType switch
+        return ConditionType switch
         {
             ConditionType.Switch => $"{Switch(Int(1))} is {OnOff(Int(2))}",
             ConditionType.Variable => $"{Variable(Int(1))} {Operator(Int(4))} {(Int(2) == 0 ? Int(3) : Variable(Int(3)))}",
@@ -37,7 +36,6 @@ public class ConditionalCommand : BaseCommand
             ConditionType.Script => String(1),
             _ => "Unknown condition"
         };
-        return s;
     }
 }
 

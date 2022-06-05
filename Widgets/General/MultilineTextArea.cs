@@ -1,9 +1,10 @@
-﻿using System;
+﻿using odl;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using static odl.SDL2.SDL;
 
-namespace RPGStudioMK.Widgets;
+namespace amethyst;
 
 public class MultilineTextArea : Widget
 {
@@ -31,7 +32,6 @@ public class MultilineTextArea : Widget
 
     public MultilineTextArea(IContainer Parent) : base(Parent)
     {
-        this.Font = Fonts.ProductSansMedium.Use(9);
         Sprites["text"] = new Sprite(this.Viewport);
         Sprites["caret"] = new Sprite(this.Viewport, new SolidBitmap(1, 16, Color.WHITE));
         Sprites["caret"].Y = 2;
@@ -212,7 +212,7 @@ public class MultilineTextArea : Widget
 
     /// <summary>
     /// Deletes the content inside the selection.
-    /// </summary>
+    /// </summary>f
     public void DeleteSelection()
     {
         if (this.ReadOnly) return;
@@ -524,7 +524,7 @@ public class MultilineTextArea : Widget
                 }
                 Caret.EndOfLine = true;
                 SelectionEndIndex.EndOfLine = true;
-                if (AtLeftSide && Caret.LineIndex == Caret.Lines[Caret.Line].Length && Caret.Lines[Caret.Line].Last() != '\n' && Caret.Line < Caret.Lines.Count - 1)
+                if (AtLeftSide && Caret.LineIndex == Caret.Lines[Caret.Line].Length && (Caret.Lines[Caret.Line].Length == 0 || Caret.Lines[Caret.Line].Last() != '\n' && Caret.Line < Caret.Lines.Count - 1))
                 {
                     Caret.EndOfLine = false;
                     SelectionEndIndex.EndOfLine = false;
@@ -828,11 +828,8 @@ public class MultilineTextArea : Widget
         if (Caret.Lines.Count == 0 || Caret.CharacterWidths.Count == 0) return;
         Sprites["caret"].X = Caret.LineIndex == 0 ? 0 : Caret.CharacterWidths[Caret.Line][Caret.LineIndex - 1];
         Sprites["caret"].Y = (Font.Size + 4) * Caret.Line;
-        while (SelectionFillers.Count > 0)
-        {
-            SelectionFillers[0].Dispose();
-            SelectionFillers.RemoveAt(0);
-        }
+        SelectionFillers.ForEach(s => s.Dispose());
+        SelectionFillers.Clear();
         if (SelectionStartIndex.CharacterIndex != -1 && SelectionEndIndex.CharacterIndex != -1)
         {
             bool reverse = SelectionStartIndex.CharacterIndex > SelectionEndIndex.CharacterIndex;
@@ -868,6 +865,7 @@ public class MultilineTextArea : Widget
                 Sprites[$"sel{line}"].Y = (Font.Size + 4) * line;
                 SelectionFillers.Add(Sprites[$"sel{line}"]);
             }
+            UpdateBounds();
         }
     }
 
@@ -918,8 +916,8 @@ public class MultilineTextArea : Widget
 
     public int GetHoveringIndex(MouseEventArgs e)
     {
-        int rx = e.X - Viewport.X;
-        int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
+        int rx = e.X - Viewport.X + LeftCutOff;
+        int ry = e.Y - Viewport.Y + TopCutOff;
         int Line = ry / (Font.Size + 4);
         if (Line < 0) Line = 0;
         if (Line >= Caret.Lines.Count)
@@ -996,6 +994,7 @@ public class MultilineTextArea : Widget
             DoubleClick();
             DestroyTimer("double");
         }
+        e.Handled = true;
     }
 
     public void DoubleClick()

@@ -90,7 +90,9 @@ public static class Editor
     public static void Test()
     {
         if (Program.ReleaseMode) return;
-        Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
+
+        if (MainWindow.ActiveWidget != MainWindow.UI) Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
+        else new GenericMultilineTextBoxWindow("Debug", "");
 
         //ProgressWindow pw = new ProgressWindow("Testing", "Testing animation...", false);
         //pw.SetProgress(1);

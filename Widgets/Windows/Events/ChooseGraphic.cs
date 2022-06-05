@@ -102,7 +102,7 @@ public class ChooseGraphic : PopupWindow
         Cursor = new CursorWidget(GraphicContainer);
         Cursor.ConsiderInAutoScrollCalculation = false;
 
-        Font f = Fonts.ProductSansMedium.Use(9);
+        Font f = Fonts.CabinMedium.Use(9);
 
         TypeLabel = new Label(this);
         TypeLabel.SetPosition(547, 276);

@@ -30,7 +30,7 @@ public class EditEventWindow : PopupWindow
         Center();
 
         Font HeaderFont = Fonts.UbuntuBold.Use(13);
-        Font SmallFont = Fonts.ProductSansMedium.Use(11);
+        Font SmallFont = Fonts.CabinMedium.Use(11);
 
         Label NameLabel = new Label(this);
         NameLabel.SetFont(SmallFont);

@@ -41,26 +41,29 @@ public class BaseCommandWidget : Widget
     protected List<EventCommand> Commands;
     protected int Indentation;
     protected int HeightAdd = 0;
-    protected int MarginBetweenWidgets = 3;
+    protected int MarginBetweenWidgets = 2;
     protected int ChildIndent = 20;
     protected bool DrawEndLabels = true;
     protected bool Ready;
+    protected bool Selected = false;
+    protected int StandardHeight = 20;
 
     protected Label HeaderLabel;
     protected VStackPanel VStackPanel;
+    protected BaseCommandWidget MainCommandWidget;
 
     List<BaseCommandWidget> SubcommandWidgets = new List<BaseCommandWidget>();
 
     public BaseCommandWidget(IContainer Parent, Color BarColor = null) : base(Parent)
     {
         HeaderLabel = new Label(this);
-        HeaderLabel.SetPosition(8, 4);
+        HeaderLabel.SetPosition(8, 2);
         HeaderLabel.SetFont(Fonts.UbuntuBold.Use(10));
         if (BarColor != null) HeaderLabel.SetTextColor(BarColor);
         VStackPanel = new VStackPanel(this);
         VStackPanel.SetHDocked(true);
         VStackPanel.OnSizeChanged += _ => UpdateHeight();
-        Sprites["bar"] = new Sprite(this.Viewport, new SolidBitmap(4, 32, BarColor ?? new Color(63, 210, 101)));
+        Sprites["bar"] = new Sprite(this.Viewport, new SolidBitmap(4, StandardHeight, BarColor ?? new Color(63, 210, 101)));
         OnSizeChanged += _ => ((SolidBitmap) Sprites["bar"].Bitmap).SetSize(4, Size.Height);
     }
 
@@ -78,9 +81,9 @@ public class BaseCommandWidget : Widget
         this.Command = Command;
         this.Commands = Commands;
         this.Indentation = Indentation;
+        if (this.Indentation == -1) MainCommandWidget = this;
         SubcommandWidgets.ForEach(w => w.Dispose());
         SubcommandWidgets.Clear();
-        //if (this.Indentation == 0) SetBackgroundColor(28, 50, 73);
         if (Command != null)
         {
             if (CommandWidgetLookup.ContainsKey(Command.Code))
@@ -91,7 +94,7 @@ public class BaseCommandWidget : Widget
             else CommandHelper = new BaseCommand(Command);
             HeaderLabel.SetText(Command.Code.ToString());
             HeaderLabel.SetVisible(true);
-            VStackPanel.SetPadding(ChildIndent, 24, 0, 0);
+            VStackPanel.SetPadding(ChildIndent, StandardHeight, 0, 0);
             LoadCommand();
         }
         else
@@ -114,7 +117,7 @@ public class BaseCommandWidget : Widget
             // Remove the one excess pixel we'd get
             vh = 0;
         }
-        SetHeight(24 + vh + HeightAdd);
+        SetHeight(StandardHeight + vh + HeightAdd);
     }
 
     public virtual void LoadCommand()
@@ -131,6 +134,7 @@ public class BaseCommandWidget : Widget
             w = (BaseCommandWidget) Activator.CreateInstance(type, new object?[] { Parent ?? VStackPanel });
         }
         else w = new BaseCommandWidget(Parent ?? VStackPanel);
+        w.MainCommandWidget = this.MainCommandWidget;
         w.SetHDocked(true);
         w.SetMargins(0, MarginBetweenWidgets);
         w.SetCommand(Map, Event, Page, Command, Commands.GetRange(Commands.IndexOf(Command), Count), this.Indentation + 1);
@@ -188,6 +192,48 @@ public class BaseCommandWidget : Widget
                 BranchCmd = null;
                 BranchCmdIdx = -1;
             }
+        }
+    }
+
+    public void DeselectAll(BaseCommandWidget Exception = null)
+    {
+        SubcommandWidgets.ForEach(s =>
+        {
+            if (s != Exception) s.SetSelected(false);
+            s.DeselectAll(Exception);
+        });
+    }
+
+    public bool InsideChild()
+    {
+        return SubcommandWidgets.Exists(s => s.Mouse.Inside || s.InsideChild());
+    }
+
+    public void SetSelected(bool Selected)
+    {
+        if (this.Selected != Selected)
+        {
+            this.Selected = Selected;
+            if (this.Selected) MainCommandWidget.DeselectAll(this);
+            if (Selected) SetBackgroundColor(28, 50, 73);
+            else SetBackgroundColor(Color.ALPHA);
+        }
+    }
+
+    public override void LeftMouseDownInside(MouseEventArgs e)
+    {
+        base.LeftMouseDownInside(e);
+        // Only perform this mouse input for BaseCommandWidgets; derived classes will include these cases
+        // But since we must call Widget.LeftMouseDownInside for the double click event to count, they must
+        // still all call this method.
+        if (this.GetType() == typeof(BaseCommandWidget))
+        {
+            if (this.Indentation == -1 || InsideChild())
+            {
+                CancelDoubleClick();
+                return;
+            }
+            SetSelected(true);
         }
     }
 }
