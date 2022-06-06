@@ -12,7 +12,6 @@ public class EventCommandBox : Widget
     List<EventCommand> Commands;
 
     Container ScrollContainer;
-    VStackPanel VStackPanel;
     public BaseCommandWidget MainCommandWidget;
 
     public EventCommandBox(IContainer Parent) : base(Parent)
@@ -29,7 +28,7 @@ public class EventCommandBox : Widget
         ScrollContainer.SetVScrollBar(vs);
         ScrollContainer.VAutoScroll = true;
 
-        MainCommandWidget = new BaseCommandWidget(ScrollContainer);
+        MainCommandWidget = new BaseCommandWidget(ScrollContainer, -1);
         MainCommandWidget.SetHDocked(true);
     }
 
@@ -40,7 +39,7 @@ public class EventCommandBox : Widget
         this.Page = Page;
         this.Commands = Commands;
         MainCommandWidget.SetReady(false);
-        MainCommandWidget.SetCommand(Map, Event, Page, null, Commands, -1);
+        MainCommandWidget.SetCommand(Map, Event, Page, null, Commands, -1, -1);
         MainCommandWidget.SetReady(true);
     }
 

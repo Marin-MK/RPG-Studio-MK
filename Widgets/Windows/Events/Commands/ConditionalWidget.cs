@@ -15,7 +15,7 @@ public class ConditionalWidget : BaseCommandWidget
     ExpandArrow ExpandIfArrow;
     ExpandArrow ExpandElseArrow;
 
-    public ConditionalWidget(IContainer Parent) : base(Parent, new Color(128, 128, 255))
+    public ConditionalWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex, new Color(128, 128, 255))
     {
         ConditionLabel = new Label(this);
         ConditionLabel.SetPosition(24, 2);
@@ -49,7 +49,7 @@ public class ConditionalWidget : BaseCommandWidget
             ExpandIfArrow.SetPosition(Size.Width - 16, 6);
             ExpandElseArrow.SetPosition(Size.Width - 16, ElseLabel.Position.Y);
         };
-        DrawEndLabels = false;
+        //DrawEndLabels = false;
     }
 
     private void UpdateLabels()
@@ -87,6 +87,16 @@ public class ConditionalWidget : BaseCommandWidget
     {
         // Draw conditional
         HeaderLabel.SetText("If: ");
+        if (((Game.EventCommands.ConditionalCommand)CommandHelper).IsScriptCondition())
+        {
+            ConditionLabel.SetFont(Fonts.FiraCode.Use(9));
+            ConditionLabel.SetPosition(ConditionLabel.Position.X, 3);
+        }
+        else
+        {
+            ConditionLabel.SetFont(Fonts.CabinMedium.Use(9));
+            ConditionLabel.SetPosition(ConditionLabel.Position.X, 2);
+        }
         ConditionLabel.SetText(CommandHelper.GetText(Map, Event));
 
         VStackPanel1?.Dispose();
@@ -104,11 +114,13 @@ public class ConditionalWidget : BaseCommandWidget
         if (ElseCmd != null)
         {
             // Draw true commands
-            ParseCommands(Commands.GetRange(1, ElseCmdIdx - 1), VStackPanel1);
+            int gidx = this.GlobalCommandIndex + 1;
+            ParseCommands(Commands.GetRange(1, ElseCmdIdx - 1), VStackPanel1, gidx);
+            gidx += ElseCmdIdx; // + 1 for the BranchElse command
             VStackPanel1.UpdateLayout();
 
             // Draw false commands
-            ParseCommands(Commands.GetRange(ElseCmdIdx + 1, Commands.Count - ElseCmdIdx - 2), VStackPanel2);
+            ParseCommands(Commands.GetRange(ElseCmdIdx + 1, Commands.Count - ElseCmdIdx - 2), VStackPanel2, gidx);
             VStackPanel2.UpdateLayout();
             ExpandElseArrow.SetVisible(true);
             VStackPanel2.SetVisible(true);
@@ -116,7 +128,7 @@ public class ConditionalWidget : BaseCommandWidget
         else
         {
             // Draw true commands
-            ParseCommands(Commands.GetRange(1, Commands.Count - 2), VStackPanel1);
+            ParseCommands(Commands.GetRange(1, Commands.Count - 2), VStackPanel1, this.GlobalCommandIndex + 1);
             VStackPanel1.UpdateLayout();
             ElseLabel.SetVisible(false);
             ExpandElseArrow.SetVisible(false);
@@ -155,7 +167,7 @@ public class ConditionalWidget : BaseCommandWidget
     {
         base.LeftMouseDownInside(e);
         int ry = e.Y - Viewport.Y + TopCutOff;
-        if (this.Indentation == -1 || InsideChild() || ExpandIfArrow.Mouse.Inside || ExpandElseArrow.Mouse.Inside)
+        if (e.Handled || this.Indentation == -1 || InsideChild() || ExpandIfArrow.Mouse.Inside || ExpandElseArrow.Mouse.Inside)
         {
             CancelDoubleClick();
             return;

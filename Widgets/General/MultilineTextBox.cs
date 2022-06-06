@@ -2,66 +2,152 @@
 
 public class MultilineTextBox : Widget
 {
-    public MultilineTextArea TextArea;
-    public string Text { get { return TextArea.Text; } }
+    public string Text => TextArea.Text;
+    public Font Font => TextArea.Font;
+    public Color TextColor => TextArea.TextColor;
+    public int LineHeight => TextArea.LineHeight;
+    public Color TextColorSelected => TextArea.TextColorSelected;
+    public bool OverlaySelectedText => TextArea.OverlaySelectedText;
+    public Color SelectionBackgroundColor => TextArea.SelectionBackgroundColor;
+    public bool LineWrapping => TextArea.LineWrapping;
 
-    Container MainContainer;
+    public BaseEvent OnTextChanged { get => TextArea.OnTextChanged; set => TextArea.OnTextChanged = value; }
+    public BoolEvent OnCopy { get => TextArea.OnCopy; set => TextArea.OnCopy = value; }
+    public BoolEvent OnPaste { get => TextArea.OnPaste; set => TextArea.OnPaste = value; }
+
+    Container ScrollContainer;
+    MultilineTextArea TextArea;
 
     public MultilineTextBox(IContainer Parent) : base(Parent)
     {
-        MainContainer = new Container(this);
-        MainContainer.SetPosition(5, 5);
-        MainContainer.VAutoScroll = true;
+        Sprites["bg"] = new Sprite(this.Viewport);
+
+        ScrollContainer = new Container(this);
+        ScrollContainer.SetDocked(true);
+        ScrollContainer.SetPadding(3, 3, 14, 3);
+        ScrollContainer.OnHoverChanged += _ => Input.SetCursor(ScrollContainer.Mouse.Inside ? odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_IBEAM : odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
+
+        TextArea = new MultilineTextArea(ScrollContainer);
+        TextArea.SetHDocked(true);
+
         VScrollBar vs = new VScrollBar(this);
-        vs.ScrollStep = 5;
-        MainContainer.SetVScrollBar(vs);
-        TextArea = new MultilineTextArea(MainContainer);
-        TextArea.OnSizeChanged += e =>
-        {
-            if (TextArea.Size.Height < MainContainer.Size.Height) TextArea.SetHeight(MainContainer.Size.Height);
-        };
-        Sprites["box"] = new Sprite(this.Viewport);
+        vs.SetVDocked(true);
+        vs.SetRightDocked(true);
+        vs.SetPadding(0, 3, 0, 3);
+        ScrollContainer.SetVScrollBar(vs);
+        ScrollContainer.VAutoScroll = true;
+
+        HScrollBar hs = new HScrollBar(this);
+        hs.SetHDocked(true);
+        hs.SetBottomDocked(true);
+        hs.SetPadding(3, 0, 13, 0);
+        ScrollContainer.SetHScrollBar(hs);
+        ScrollContainer.HAutoScroll = true;
+
+        TextArea.Update();
     }
 
-    public void SetText(string Text)
+    private void UpdateScrollBar()
     {
-        TextArea.SetText(Text);
+        ScrollContainer.VScrollBar.MinScrollStep = TextArea.LineHeight + TextArea.LineMargins;
+        ScrollContainer.VScrollBar.ScrollStep = (float) ScrollContainer.VScrollBar.MinScrollStep / 3f;
+    }
+
+    public void SetText(string Text, bool SetCaretToEnd = false)
+    {
+        TextArea.SetText(Text, SetCaretToEnd);
     }
 
     public void SetFont(Font Font)
     {
         TextArea.SetFont(Font);
+        UpdateScrollBar();
     }
 
-    public void SetCaretIndex(int Index)
+    public void SetTextColor(Color Color)
     {
-        TextArea.SetCaretIndex(Index);
+        TextArea.SetTextColor(Color);
+    }
+    
+    public void SetLineHeight(int LineHeight)
+    {
+        TextArea.SetLineHeight(LineHeight);
+        UpdateScrollBar();
+    }
+    
+    public void SetTextColorSelected(Color Color)
+    {
+        TextArea.SetTextColorSelected(Color);
+    }
+    
+    public void SetOverlaySelectedText(bool OverlaySelectedText)
+    {
+        TextArea.SetOverlaySelectedText(OverlaySelectedText);
+    }
+    
+    public void SetSelectionBackgroundColor(Color Color)
+    {
+        TextArea.SetSelectionBackgroundColor(Color);
     }
 
-    public override void SizeChanged(BaseEventArgs e)
+    public void SetLineMargins(int LineMargins)
     {
-        base.SizeChanged(e);
-        Sprites["box"].Bitmap?.Dispose();
-        Sprites["box"].Bitmap = new Bitmap(this.Size);
-        Sprites["box"].Bitmap.Unlock();
-        Color light = new Color(86, 108, 134);
-        Color dark = new Color(10, 23, 37);
-        Sprites["box"].Bitmap.FillRect(Size, light);
-        Sprites["box"].Bitmap.SetPixel(0, 0, Color.ALPHA);
-        Sprites["box"].Bitmap.SetPixel(Size.Width - 1, 0, Color.ALPHA);
-        Sprites["box"].Bitmap.SetPixel(0, Size.Height - 1, Color.ALPHA);
-        Sprites["box"].Bitmap.SetPixel(Size.Width - 1, Size.Height - 1, Color.ALPHA);
-        Sprites["box"].Bitmap.DrawLine(2, 1, Size.Width - 13, 1, dark);
-        Sprites["box"].Bitmap.DrawLine(1, 2, 1, Size.Height - 3, dark);
-        Sprites["box"].Bitmap.DrawLine(2, Size.Height - 2, Size.Width - 13, Size.Height - 2, dark);
-        Sprites["box"].Bitmap.DrawLine(Size.Width - 13, 2, Size.Width - 13, Size.Height - 3, dark);
-        Sprites["box"].Bitmap.FillRect(Size.Width - 11, 1, 9, Size.Height - 2, dark);
-        Sprites["box"].Bitmap.DrawLine(Size.Width - 2, 2, Size.Width - 2, Size.Height - 3, dark);
-        Sprites["box"].Bitmap.Lock();
-        MainContainer.SetSize(Size.Width - 18, Size.Height - 7);
-        MainContainer.VScrollBar.SetPosition(Size.Width - 10, 3);
-        MainContainer.VScrollBar.SetSize(10, Size.Height - 6);
-        TextArea.SetWidth(MainContainer.Size.Width);
-        if (TextArea.Size.Height < MainContainer.Size.Height) TextArea.SetHeight(MainContainer.Size.Height);
+        TextArea.SetLineMargins(LineMargins);
+    }
+
+    public void SetLineWrapping(bool LineWrapping)
+    {
+        if (LineWrapping)
+        {
+            TextArea.SetHDocked(true);
+            ScrollContainer.SetPadding(3, 3, 14, 3);
+            ScrollContainer.VScrollBar.SetPadding(0, 3, 0, 3);
+            ScrollContainer.HScrollBar.SetVisible(false);
+            ScrollContainer.HAutoScroll = false;
+        }
+        else
+        {
+            TextArea.SetHDocked(false);
+            ScrollContainer.SetPadding(3, 3, 14, 14);
+            ScrollContainer.VScrollBar.SetPadding(0, 3, 0, 13);
+            ScrollContainer.HAutoScroll = true;
+        }
+        this.Redraw();
+        TextArea.SetLineWrapping(LineWrapping);
+    }
+
+    public void Activate()
+    {
+        TextArea.OnWidgetSelected.Invoke(new BaseEventArgs());
+    }
+
+    protected override void Draw()
+    {
+        base.Draw();
+        Sprites["bg"].Bitmap?.Dispose();
+        Sprites["bg"].Bitmap = new Bitmap(Size);
+        Sprites["bg"].Bitmap.Unlock();
+        Sprites["bg"].Bitmap.DrawRect(Size, new Color(86, 108, 134));
+        Sprites["bg"].Bitmap.FillRect(1, 1, Size.Width - 2, Size.Height - 2, new Color(10, 23, 37));
+        if (!LineWrapping) Sprites["bg"].Bitmap.FillRect(Size.Width - 12, Size.Height - 12, 11, 11, new Color(64, 104, 146));
+        Sprites["bg"].Bitmap.SetPixel(0, 0, Color.ALPHA);
+        Sprites["bg"].Bitmap.SetPixel(Size.Width - 1, 0, Color.ALPHA);
+        Sprites["bg"].Bitmap.SetPixel(0, Size.Height - 1, Color.ALPHA);
+        Sprites["bg"].Bitmap.SetPixel(Size.Width - 1, Size.Height - 1, Color.ALPHA);
+        Color DarkOutline = new Color(40, 62, 84);
+        Sprites["bg"].Bitmap.SetPixel(1, 1, DarkOutline);
+        Sprites["bg"].Bitmap.SetPixel(Size.Width - 2, 1, DarkOutline);
+        Sprites["bg"].Bitmap.SetPixel(1, Size.Height - 2, DarkOutline);
+        if (LineWrapping) Sprites["bg"].Bitmap.SetPixel(Size.Width - 2, Size.Height - 2, DarkOutline);
+        Sprites["bg"].Bitmap.DrawLine(Size.Width - 12, 1, Size.Width - 12, Size.Height - 2, DarkOutline);
+        if (!LineWrapping) Sprites["bg"].Bitmap.DrawLine(1, Size.Height - 12, Size.Width - 2, Size.Height - 12, DarkOutline);
+        Sprites["bg"].Bitmap.Lock();
+    }
+
+    public override void LeftMouseDown(MouseEventArgs e)
+    {
+        base.LeftMouseDownInside(e);
+        if (ScrollContainer.Mouse.Inside) TextArea.OnWidgetSelected.Invoke(new BaseEventArgs());
+        else Window.UI.SetSelectedWidget(null);
     }
 }

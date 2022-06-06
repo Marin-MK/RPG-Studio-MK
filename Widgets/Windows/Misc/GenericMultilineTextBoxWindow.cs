@@ -11,25 +11,26 @@ public class GenericMultilineTextBoxWindow : PopupWindow
     public string Text;
     public bool Apply = false;
 
-    NewMultilineTextBox TextBox;
+    MultilineTextBox TextBox;
 
-    public GenericMultilineTextBoxWindow(string Title, string Text)
+    public GenericMultilineTextBoxWindow(string Title, string Text, bool Monospace = false)
     {
         this.Text = Text;
 
         SetTitle(Title);
-        MinimumSize = MaximumSize = new Size(1300, 900);
+        MinimumSize = MaximumSize = new Size(680, 560);
         SetSize(MaximumSize);
         Center();
 
-        TextBox = new NewMultilineTextBox(this);
-        TextBox.SetFont(Fonts.CabinMedium.Use(9));
+        TextBox = new MultilineTextBox(this);
+        TextBox.SetFont(Monospace ? Fonts.FiraCode.Use(9) : Fonts.CabinMedium.Use(9));
         TextBox.SetDocked(true);
         TextBox.SetPadding(20, 30, 20, 50);
-        TextBox.SetFont(Font.Get("assets/fonts/FiraCode-Medium", 9));
 
         CreateButton("Cancel", _ => Cancel());
         CreateButton("OK", _ => OK());
+
+        TextBox.Activate();
     }
 
     private void OK()

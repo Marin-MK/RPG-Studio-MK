@@ -11,18 +11,30 @@ public class ExpandableCommandWidget : BaseCommandWidget
     public bool Expanded => ExpandArrow.Expanded;
     public bool Expandable { get; protected set; } = true;
 
+    bool SilenceEvent = false;
     ExpandArrow ExpandArrow;
 
-    public ExpandableCommandWidget(IContainer Parent) : base(Parent)
+    public ExpandableCommandWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex)
     {
         ExpandArrow = new ExpandArrow(this);
         ExpandArrow.OnStateChanged += _ =>
         {
+            if (SilenceEvent) return;
             LoadCommand();
             UpdateHeight();
             ((VStackPanel) Parent).UpdateLayout();
         };
         OnSizeChanged += _ => ExpandArrow.SetPosition(Size.Width - 16, 8);
+    }
+
+    public void SetExpanded(bool Expanded, bool SilenceEvent = false)
+    {
+        if (this.Expanded != Expanded)
+        {
+            this.SilenceEvent = SilenceEvent;
+            ExpandArrow.SetExpanded(Expanded);
+            this.SilenceEvent = false;
+        }
     }
 
     public void SetExpandable(bool Expandable)
@@ -34,10 +46,16 @@ public class ExpandableCommandWidget : BaseCommandWidget
         }
     }
 
+    public override void WidgetSelected(BaseEventArgs e)
+    {
+        if (ExpandArrow.Mouse.Inside) return;
+        base.WidgetSelected(e);
+    }
+
     public override void LeftMouseDownInside(MouseEventArgs e)
     {
         base.LeftMouseDownInside(e);
-        if (this.Indentation == -1 || InsideChild() || ExpandArrow.Mouse.Inside)
+        if (e.Handled || this.Indentation == -1 || InsideChild() || ExpandArrow.Mouse.Inside)
         {
             CancelDoubleClick();
             return;

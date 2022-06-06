@@ -166,7 +166,7 @@ public class Program
 
     private static void PrintPlatformInfo()
     {
-        OperatingSystem os = Editor.GetOperatingSystem();
+        OperatingSystem os = Environment.OSVersion;
         string Framework = "";
         string fw = Assembly.GetEntryAssembly().GetCustomAttribute<TargetFrameworkAttribute>().FrameworkName;
         if (fw.Contains(".NETCoreApp,Version"))

@@ -37,6 +37,11 @@ public class ConditionalCommand : BaseCommand
             _ => "Unknown condition"
         };
     }
+
+    public bool IsScriptCondition()
+    {
+        return ConditionType == ConditionType.Script;
+    }
 }
 
 public enum ConditionType

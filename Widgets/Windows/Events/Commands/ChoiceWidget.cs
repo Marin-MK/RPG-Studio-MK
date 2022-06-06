@@ -13,7 +13,7 @@ public class ChoiceWidget : BaseCommandWidget
     List<ExpandArrow> ExpandArrows = new List<ExpandArrow>();
     ExpandArrow ExpandAllArrow;
 
-    public ChoiceWidget(IContainer Parent) : base(Parent, new Color(128, 128, 255))
+    public ChoiceWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex, new Color(128, 128, 255))
     {
         EndLabel = new Label(this);
         EndLabel.SetFont(Fonts.CabinMedium.Use(9));
@@ -87,12 +87,13 @@ public class ChoiceWidget : BaseCommandWidget
         ExpandArrows.ForEach(e => e.Dispose());
         ExpandArrows.Clear();
 
-        HeaderLabel.SetText("Show Choices");
+        HeaderLabel.SetText(this.GlobalCommandIndex.ToString() + ": Show Choices");
 
         List<object> Choices = (List<object>) Command.Parameters[0];
 
         List<EventCommand> BranchCommands = Commands.FindAll(c => (c.Code == CommandCode.BranchWhenXXX || c.Code == CommandCode.BranchWhenCancel) && c.Indent == Command.Indent);
-        
+
+        int gidx = this.GlobalCommandIndex + 2; // + 0 = Show Choices, + 1 = BranchWhenXXX nr. 1, + 2 = First command
         for (int i = 0; i < BranchCommands.Count; i++)
         {
             EventCommand BranchCmd = BranchCommands[i];
@@ -117,9 +118,10 @@ public class ChoiceWidget : BaseCommandWidget
             {
                 // There's another branch after this
                 int NextBranchIdx = Commands.IndexOf(BranchCommands[i + 1]);
-                ParseCommands(Commands.GetRange(BranchIdx + 1, NextBranchIdx - BranchIdx - 1), StackPanel);
+                ParseCommands(Commands.GetRange(BranchIdx + 1, NextBranchIdx - BranchIdx - 1), StackPanel, gidx);
+                gidx += NextBranchIdx - BranchIdx; // + 1 for the BranchWhenXXX command
             }
-            else ParseCommands(Commands.GetRange(BranchIdx + 1, Commands.Count - BranchIdx - 2), StackPanel);
+            else ParseCommands(Commands.GetRange(BranchIdx + 1, Commands.Count - BranchIdx - 2), StackPanel, gidx);
             StackPanel.OnSizeChanged += _ =>
             {
                 UpdateLabels();
@@ -158,7 +160,7 @@ public class ChoiceWidget : BaseCommandWidget
     {
         base.LeftMouseDownInside(e);
         int ry = e.Y - Viewport.Y + TopCutOff;
-        if (this.Indentation == -1 || InsideChild())
+        if (e.Handled || this.Indentation == -1 || InsideChild())
         {
             CancelDoubleClick();
             return;

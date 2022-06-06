@@ -113,19 +113,6 @@ public static class Editor
     }
 
     /// <summary>
-    /// Returns the OperatingSystem object that corresponds with the in-use OS.
-    /// </summary>
-    public static OperatingSystem GetOperatingSystem()
-    {
-        return Environment.OSVersion;
-    }
-
-    public static void WIP()
-    {
-        new MessageBox("WIP", "WIP", ButtonType.OK, IconType.Error);
-    }
-
-    /// <summary>
     /// Undoes the latest change you made.
     /// </summary>
     public static void Undo(bool Internal = false)
