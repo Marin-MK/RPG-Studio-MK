@@ -287,6 +287,7 @@ public static class Utilities
                 Lines.Add(Text.Substring(startidx, i - startidx));
                 startidx = i + 1;
                 if (i == Text.Length - 1) Lines.Add("");
+                lastsplittableindex = -1;
             }
             else if (s.Width >= Width)
             {
@@ -788,20 +789,6 @@ public enum BinaryData
     TILESET,
     EVENT,
     EVENT_PAGE,
+    EVENT_COMMANDS,
     MOVE_COMMAND
-}
-
-public class Fonts
-{
-    public static Fonts UbuntuBold = new Fonts("assets/fonts/Ubuntu-B");
-    public static Fonts CabinMedium = new Fonts("assets/fonts/Cabin-Medium");
-
-    public string Filename;
-
-    public Fonts(string Filename) { this.Filename = Filename; }
-
-    public Font Use(int Size)
-    {
-        return Font.Get(this.Filename, Size);
-    }
 }
