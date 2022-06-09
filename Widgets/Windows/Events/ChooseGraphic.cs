@@ -18,7 +18,7 @@ public class ChooseGraphic : PopupWindow
     Container GraphicContainer;
     FileExplorer FileExplorer;
     TileGraphicPicker TileGraphicPicker;
-    PictureBox GraphicBox;
+    ImageBox GraphicBox;
     CursorWidget Cursor;
     Label TypeLabel;
     DropdownBox DirectionBox;
@@ -27,6 +27,8 @@ public class ChooseGraphic : PopupWindow
     NumericBox NumFramesBox;
     NumericBox OpacityBox;
     NumericSlider HueBox;
+
+    bool CursorOnly = false;
 
     public ChooseGraphic(Map Map, Event Event, EventPage Page, EventGraphic gr, bool FromMoveRouteEditor)
     {
@@ -97,7 +99,7 @@ public class ChooseGraphic : PopupWindow
         hs.SetSize(158, 10);
         GraphicContainer.SetHScrollBar(hs);
 
-        GraphicBox = new PictureBox(GraphicContainer);
+        GraphicBox = new ImageBox(GraphicContainer);
 
         Cursor = new CursorWidget(GraphicContainer);
         Cursor.ConsiderInAutoScrollCalculation = false;
@@ -207,7 +209,7 @@ public class ChooseGraphic : PopupWindow
         OpacityBox.OnValueChanged += delegate (BaseEventArgs e)
         {
             Graphic.Opacity = OpacityBox.Value;
-            GraphicBox.Sprite.Opacity = (byte) Graphic.Opacity;
+            GraphicBox.SetOpacity((byte) Graphic.Opacity);
         };
 
         SubmodeView GraphicTypePicker = new SubmodeView(this);
@@ -363,62 +365,65 @@ public class ChooseGraphic : PopupWindow
     public void RedrawGraphic()
     {
         if (FileExplorer.SelectedIsFolder) return;
-        GraphicBox.Sprite.Bitmap?.Dispose();
-        GraphicBox.Sprite.Y = 0;
-        if (Graphic.TileID >= 384)
+        if (!CursorOnly)
         {
-            Tileset Tileset = Data.Tilesets[Map.TilesetIDs[0]];
-            if (Tileset.TilesetBitmap != null)
+            GraphicBox.DisposeBitmap();
+            GraphicBox.SetY(0);
+            if (Graphic.TileID >= 384)
             {
-                Bitmap SourceBitmap = Tileset.TilesetBitmap;
-                int tx = (Graphic.TileID - 384) % 8;
-                int ty = (Graphic.TileID - 384) / 8;
-                int srcx = tx * 32;
-                int srcy = ty * 32 - (Event.Height - 1) * 32;
-                int srcw = Event.Width * 32;
-                int srch = Event.Height * 32;
-                if (srcy < 0)
+                Tileset Tileset = Data.Tilesets[Map.TilesetIDs[0]];
+                if (Tileset.TilesetBitmap != null)
                 {
-                    srch += srcy;
-                    GraphicBox.Sprite.Y = -srcy;
-                    srcy = 0;
+                    Bitmap SourceBitmap = Tileset.TilesetBitmap;
+                    int tx = (Graphic.TileID - 384) % 8;
+                    int ty = (Graphic.TileID - 384) / 8;
+                    int srcx = tx * 32;
+                    int srcy = ty * 32 - (Event.Height - 1) * 32;
+                    int srcw = Event.Width * 32;
+                    int srch = Event.Height * 32;
+                    if (srcy < 0)
+                    {
+                        srch += srcy;
+                        GraphicBox.SetY(-srcy);
+                        srcy = 0;
+                    }
+                    if (srcx + srcw >= SourceBitmap.Width)
+                    {
+                        srcw = SourceBitmap.Width - srcx;
+                    }
+                    Bitmap SmallBmp = new Bitmap(srcw, srch);
+                    SmallBmp.Unlock();
+                    SmallBmp.Build(0, 0, SourceBitmap, new Rect(srcx, srcy, srcw, srch));
+                    SmallBmp.Lock();
+                    GraphicBox.SetBitmap(SmallBmp);
+                    if (Graphic.CharacterHue != 0)
+                    {
+                        GraphicBox.SetBitmap(SmallBmp.ApplyHue(Graphic.CharacterHue));
+                        SmallBmp.Dispose();
+                    }
                 }
-                if (srcx + srcw >= SourceBitmap.Width)
-                {
-                    srcw = SourceBitmap.Width - srcx;
-                }
-                Bitmap SmallBmp = new Bitmap(srcw, srch);
-                SmallBmp.Unlock();
-                SmallBmp.Build(0, 0, SourceBitmap, new Rect(srcx, srcy, srcw, srch));
-                SmallBmp.Lock();
-                GraphicBox.Sprite.Bitmap = SmallBmp;
+            }
+            else if (!string.IsNullOrEmpty(Graphic.CharacterName))
+            {
+                Bitmap SourceBitmap = new Bitmap(Path.Combine(Data.ProjectPath, "Graphics/Characters", Graphic.CharacterName));
+                GraphicBox.SetBitmap(SourceBitmap);
                 if (Graphic.CharacterHue != 0)
                 {
-                    GraphicBox.Sprite.Bitmap = SmallBmp.ApplyHue(Graphic.CharacterHue);
-                    SmallBmp.Dispose();
+                    GraphicBox.SetBitmap(GraphicBox.Bitmap.ApplyHue(Graphic.CharacterHue));
+                    SourceBitmap.Dispose();
                 }
             }
-        }
-        else if (!string.IsNullOrEmpty(Graphic.CharacterName))
-        {
-            Bitmap SourceBitmap = new Bitmap(Path.Combine(Data.ProjectPath, "Graphics/Characters", Graphic.CharacterName));
-            GraphicBox.Sprite.Bitmap = SourceBitmap;
-            if (Graphic.CharacterHue != 0)
+            else
             {
-                GraphicBox.Sprite.Bitmap = GraphicBox.Sprite.Bitmap.ApplyHue(Graphic.CharacterHue);
-                SourceBitmap.Dispose();
+                Cursor.SetVisible(false);
+                return;
             }
+            GraphicBox.SetOpacity((byte) Graphic.Opacity);
         }
-        else
-        {
-            Cursor.SetVisible(false);
-            return;
-        }
-        GraphicBox.Sprite.Opacity = (byte) Graphic.Opacity;
         int x = 0;
         int y = 0;
-        int sw = GraphicBox.Sprite.SrcRect.Width;
-        int sh = GraphicBox.Sprite.SrcRect.Height;
+        int sw = GraphicBox.SrcRect.Width;
+        int sh = GraphicBox.SrcRect.Height;
         if (Graphic.TileID >= 384)
         {
             sw = Event.Width * 32;
@@ -432,6 +437,7 @@ public class ChooseGraphic : PopupWindow
         Cursor.SetPosition(x - 7, y - 7);
         Cursor.SetSize(w + 14, h + 14);
         Cursor.SetVisible(true);
+        CursorOnly = false;
     }
 
     int OldFrameBoxValue;
@@ -444,11 +450,13 @@ public class ChooseGraphic : PopupWindow
 
         int rx = e.X - GraphicContainer.Viewport.X + GraphicBox.LeftCutOff;
         int ry = e.Y - GraphicContainer.Viewport.Y + GraphicBox.TopCutOff;
-        int Frame = Math.Clamp((int) Math.Floor((double) rx / GraphicBox.Sprite.Bitmap.Width * Graphic.NumFrames), 0, Graphic.NumFrames - 1);
+        int Frame = Math.Clamp((int) Math.Floor((double) rx / GraphicBox.Bitmap.Width * Graphic.NumFrames), 0, Graphic.NumFrames - 1);
+        CursorOnly = true;
         FrameBox.SetValue(Frame + 1);
         int mindir = Graphic.NumDirections == 8 ? 1 : 2;
         int maxdir = Graphic.NumDirections * 2;
-        int Direction = Math.Clamp(((int) Math.Floor((double) ry / GraphicBox.Sprite.Bitmap.Height * Graphic.NumDirections) + 1) * 2, mindir, maxdir);
+        int Direction = Math.Clamp(((int) Math.Floor((double) ry / GraphicBox.Bitmap.Height * Graphic.NumDirections) + 1) * 2, mindir, maxdir);
+        CursorOnly = true;
         DirectionBox.SetSelectedIndex(Direction / 2 - 1);
         OldFrameBoxValue = FrameBox.Value;
         OldDirectionBoxValue = DirectionBox.SelectedIndex;
@@ -458,11 +466,11 @@ public class ChooseGraphic : PopupWindow
     {
         int rx = e.X - GraphicContainer.Viewport.X + GraphicBox.LeftCutOff;
         int ry = e.Y - GraphicContainer.Viewport.Y + GraphicBox.TopCutOff;
-        int FrameBoxValue = Math.Clamp((int) Math.Floor((double) rx / GraphicBox.Sprite.Bitmap.Width * Graphic.NumFrames), 0, Graphic.NumFrames - 1) + 1;
+        int FrameBoxValue = Math.Clamp((int) Math.Floor((double) rx / GraphicBox.Bitmap.Width * Graphic.NumFrames), 0, Graphic.NumFrames - 1) + 1;
 
         int mindir = Graphic.NumDirections == 8 ? 1 : 2;
         int maxdir = Graphic.NumDirections * 2;
-        int DirectionBoxValue = Math.Clamp(((int) Math.Floor((double) ry / GraphicBox.Sprite.Bitmap.Height * Graphic.NumDirections) + 1) * 2, mindir, maxdir) / 2 - 1;
+        int DirectionBoxValue = Math.Clamp(((int) Math.Floor((double) ry / GraphicBox.Bitmap.Height * Graphic.NumDirections) + 1) * 2, mindir, maxdir) / 2 - 1;
 
         if (FrameBoxValue != OldFrameBoxValue || DirectionBoxValue != OldDirectionBoxValue) return;
         

@@ -10,7 +10,7 @@ public class MapPicker : PopupWindow
 
     ListBox Maps;
     Container PreviewContainer;
-    PictureBox MapBox;
+    ImageBox MapBox;
 
     public List<Map> MapList;
 
@@ -71,8 +71,8 @@ public class MapPicker : PopupWindow
         PreviewContainer.SetPosition(196, 46);
         PreviewContainer.SetSize(376, 376);
 
-        MapBox = new PictureBox(PreviewContainer);
-        MapBox.ResizeBox = false;
+        MapBox = new ImageBox(PreviewContainer);
+        MapBox.SetFillMode(FillMode.FillMaintainAspectAndCenter);
 
         CreateButton("Cancel", _ => Cancel());
         CreateButton("OK", _ => OK());
@@ -91,18 +91,8 @@ public class MapPicker : PopupWindow
         if (Maps.SelectedIndex >= 0) data = Maps.Items[Maps.SelectedIndex].Object as Map;
         MapBox.SetSize(1, 1);
         if (data == null) return;
-        if (MapBox.Sprite.Bitmap != null) MapBox.Sprite.Bitmap.Dispose();
-        MapBox.Sprite.Bitmap = Utilities.CreateMapPreview(data);
-        double MultX = (double)PreviewContainer.Size.Width / MapBox.Sprite.Bitmap.Width;
-        double MultY = (double)PreviewContainer.Size.Height / MapBox.Sprite.Bitmap.Height;
-        double FinalMult = MultX > MultY ? MultY : MultX;
-        MapBox.Sprite.ZoomX = MapBox.Sprite.ZoomY = FinalMult;
-        int fullw = (int)Math.Round(MapBox.Sprite.Bitmap.Width * FinalMult);
-        int fullh = (int)Math.Round(MapBox.Sprite.Bitmap.Height * FinalMult);
-        int x = PreviewContainer.Size.Width / 2 - fullw / 2;
-        int y = PreviewContainer.Size.Height / 2 - fullh / 2;
-        MapBox.SetPosition(x, y);
-        MapBox.SetSize(fullw, fullh);
+        MapBox.DisposeBitmap();
+        MapBox.SetBitmap(Utilities.CreateMapPreview(data));
     }
 
     public void OK()

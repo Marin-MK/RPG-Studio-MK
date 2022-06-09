@@ -13,7 +13,7 @@ public class MessageBox : PopupWindow
     protected Button Button1;
     protected Button Button2;
     protected Button Button3;
-    protected PictureBox Icon;
+    protected ImageBox Icon;
 
     public ButtonType ButtonType;
     public new List<string> Buttons;
@@ -32,10 +32,9 @@ public class MessageBox : PopupWindow
 
         if (IconType != IconType.None)
         {
-            Icon = new PictureBox(this);
-            Icon.Sprite.Bitmap = new Bitmap("assets/img/mbox_icons");
-            Icon.Sprite.SrcRect.Width = 32;
-            Icon.Sprite.SrcRect.X = 32 * ((int)IconType - 1);
+            Icon = new ImageBox(this);
+            Icon.SetBitmap("assets/img/mbox_icons");
+            Icon.SetSrcRect(new Rect(32 * ((int) IconType - 1), 0, 32, 32));
         }
 
         label = new MultilineLabel(this);

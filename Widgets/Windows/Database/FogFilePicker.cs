@@ -141,8 +141,8 @@ public class FogFilePicker : AbstractFilePicker
     void UpdateHue()
     {
         if (CurrentBitmap == null || HueBox == null) return;
-        if (image.Sprite.Bitmap != CurrentBitmap) image.Sprite.Bitmap?.Dispose();
-        image.Sprite.Bitmap = HueBox.Value == 0 ? CurrentBitmap : CurrentBitmap.ApplyHue(HueBox.Value);
+        if (image.Bitmap != CurrentBitmap) image.DisposeBitmap();
+        image.SetBitmap(HueBox.Value == 0 ? CurrentBitmap : CurrentBitmap.ApplyHue(HueBox.Value));
     }
 
     public override void OK()

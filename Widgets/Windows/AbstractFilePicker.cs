@@ -11,7 +11,7 @@ public abstract class AbstractFilePicker : PopupWindow
 
     protected ListBox List;
     protected GroupBox previewbox;
-    protected PictureBox image;
+    protected ImageBox image;
     protected Container scroll;
 
     protected Bitmap CurrentBitmap;
@@ -57,7 +57,7 @@ public abstract class AbstractFilePicker : PopupWindow
         scroll.SetHScrollBar(new HScrollBar(previewbox));
         scroll.HAutoScroll = true;
 
-        image = new PictureBox(scroll);
+        image = new ImageBox(scroll);
 
         CreateButton("Cancel", _ => Cancel());
         CreateButton("OK", _ => OK());
@@ -82,15 +82,13 @@ public abstract class AbstractFilePicker : PopupWindow
     public virtual void UpdatePreview()
     {
         string filename = (string)List.SelectedItem.Object;
-        image.Sprite.Bitmap?.Dispose();
-        image.Sprite.Bitmap = null;
+        image.DisposeBitmap();
         image.SetSize(1, 1);
         CurrentBitmap?.Dispose();
         CurrentBitmap = null;
         if (string.IsNullOrEmpty(filename) || !Bitmap.FileExistsCaseSensitive(filename)) return;
         CurrentBitmap = new Bitmap(filename);
-        image.Sprite.Bitmap = CurrentBitmap;
-        image.SetSize(image.Sprite.Bitmap.Width, image.Sprite.Bitmap.Height);
+        image.SetBitmap(CurrentBitmap);
         scroll.VScrollBar.SetValue(0);
         scroll.HScrollBar.SetValue(0);
     }

@@ -7,7 +7,7 @@ public class TileGraphicPicker : Widget
 {
     Size SelectionSize;
     CursorWidget Cursor;
-    PictureBox TilesetBox;
+    ImageBox TilesetBox;
 
     public int TileID = 0;
 
@@ -42,12 +42,12 @@ public class TileGraphicPicker : Widget
         ScrollContainer.SetDocked(true);
         ScrollContainer.SetPadding(2);
 
-        TilesetBox = new PictureBox(ScrollContainer);
+        TilesetBox = new ImageBox(ScrollContainer);
         Tileset Tileset = Data.Tilesets[Map.TilesetIDs[0]];
         if (Tileset.TilesetBitmap != null)
         {
-            TilesetBox.Sprite.Bitmap = Tileset.TilesetBitmap;
-            TilesetBox.Sprite.DestroyBitmap = false;
+            TilesetBox.SetBitmap(Tileset.TilesetBitmap);
+            TilesetBox.SetDestroyBitmap(false);
         }
         TilesetBox.OnDoubleLeftMouseDownInside += _ => OnTileDoubleClicked?.Invoke(new BaseEventArgs());
 
@@ -74,7 +74,7 @@ public class TileGraphicPicker : Widget
         {
             int xadd = Cursor.Position.X - TilesetBox.Position.X;
             int yadd = Cursor.Position.Y - TilesetBox.Position.Y;
-            TilesetBox.SetPosition(ScrollContainer.Size.Width / 2 - TilesetBox.Sprite.Bitmap.Width / 2, 0);
+            TilesetBox.SetPosition(ScrollContainer.Size.Width / 2 - TilesetBox.Bitmap.Width / 2, 0);
             Cursor.SetPosition(TilesetBox.Position.X + xadd, TilesetBox.Position.Y + yadd);
         };
         TilesetBox.OnMouseDown += MouseDownInsideTilesetBox;

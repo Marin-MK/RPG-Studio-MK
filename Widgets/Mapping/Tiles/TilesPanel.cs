@@ -236,10 +236,9 @@ public class TilesPanel : Widget
             singles = new Bitmap(263, 33 + 33 * (int)Math.Floor(SingleAutotileCount / 8d));
             singles.Unlock();
             SingleAutotileContainer.SetSize(MainContainer.Size.Width - 13, singles.Height + 23);
-            PictureBox image = new PictureBox(SingleAutotileContainer);
+            ImageBox image = new ImageBox(SingleAutotileContainer);
             image.SetPosition(0, 23);
-            image.Sprite.Bitmap = singles;
-            image.SetSize(image.Sprite.Bitmap.Width, image.Sprite.Bitmap.Height);
+            image.SetBitmap(singles);
         }
         int SingleIndex = 0;
         for (int i = 0; i < MapData.AutotileIDs.Count; i++)
@@ -309,22 +308,21 @@ public class TilesPanel : Widget
                 c.SetSize(MainContainer.Size.Width - 13, tileset.TilesetListBitmap.Height + 23);
                 if (!tileset.TilesetListBitmap.IsChunky)
                 {
-                    PictureBox image = new PictureBox(c);
+                    ImageBox image = new ImageBox(c);
                     image.SetPosition(0, 23);
-                    image.Sprite.Bitmap = tileset.TilesetListBitmap;
-                    image.Sprite.DestroyBitmap = false;
-                    image.SetSize(image.Sprite.Bitmap.Width, image.Sprite.Bitmap.Height);
+                    image.SetBitmap(tileset.TilesetListBitmap);
+                    image.SetDestroyBitmap(false);
                 }
                 else
                 {
                     int y = 23;
                     foreach (Bitmap b in tileset.TilesetListBitmap.InternalBitmaps)
                     {
-                        PictureBox img = new PictureBox(c);
+                        ImageBox img = new ImageBox(c);
                         img.SetPosition(0, y);
-                        img.Sprite.Bitmap = b;
+                        img.SetBitmap(b);
                         if (!b.Locked) b.Lock();
-                        img.Sprite.DestroyBitmap = false;
+                        img.SetDestroyBitmap(false);
                         img.SetSize(b.Width, b.Height);
                         y += b.Height;
                     }
@@ -337,8 +335,8 @@ public class TilesPanel : Widget
     {
         int autotileid = MapData.AutotileIDs[AutotileIndex];
         Autotile autotile = Data.Autotiles[autotileid];
-        bool locked = ((AutotileContainers[AutotileIndex] as CollapsibleContainer).Widgets[0] as PictureBox).Sprite.Bitmap.Locked;
-        if (locked) ((AutotileContainers[AutotileIndex] as CollapsibleContainer).Widgets[0] as PictureBox).Sprite.Bitmap.Unlock();
+        bool locked = ((AutotileContainers[AutotileIndex] as CollapsibleContainer).Widgets[0] as ImageBox).Bitmap.Locked;
+        if (locked) ((AutotileContainers[AutotileIndex] as CollapsibleContainer).Widgets[0] as ImageBox).Bitmap.Unlock();
         if (autotile.Format == AutotileFormat.Single) throw new Exception("Can't draw quick autotiles for autotiles with a format of 'Single'");
         for (int i = 0; i < autotile.QuickIDs.Count; i++)
         {
@@ -364,10 +362,10 @@ public class TilesPanel : Widget
                 }
             }
             bmp.Lock();
-            ((AutotileContainers[AutotileIndex] as CollapsibleContainer).Widgets[0] as PictureBox).Sprite.Bitmap.Build(x, y, bmp);
+            ((AutotileContainers[AutotileIndex] as CollapsibleContainer).Widgets[0] as ImageBox).Bitmap.Build(x, y, bmp);
             bmp.Dispose();
         }
-        if (locked) ((AutotileContainers[AutotileIndex] as CollapsibleContainer).Widgets[0] as PictureBox).Sprite.Bitmap.Lock();
+        if (locked) ((AutotileContainers[AutotileIndex] as CollapsibleContainer).Widgets[0] as ImageBox).Bitmap.Lock();
     }
 
     public void SelectTile(int ContainerIndex, int TileX, int TileY)

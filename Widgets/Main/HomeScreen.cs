@@ -16,16 +16,22 @@ public class HomeScreen : Widget
 
     VignetteFade VignetteFade;
 
-    PictureBox YoutubeButton;
-    PictureBox TwitterButton;
+    ImageBox YoutubeButton;
+    ImageBox TwitterButton;
 
     MultilineLabel NoProjects;
 
     public HomeScreen(IContainer Parent) : base(Parent)
     {
-        SetBackgroundColor(28, 50, 73);
-        Sprites["map"] = new Sprite(this.Viewport);
-        if (System.IO.File.Exists("assets/img/home_map.png")) Sprites["map"].Bitmap = new Bitmap("assets/img/home_map.png");
+        if (System.IO.File.Exists("assets/img/home_map.png"))
+        {
+            ImageBox npb = new ImageBox(this);
+            npb.SetBitmap("assets/img/home_map.png");
+            npb.SetFillMode(FillMode.FillMaintainAspectAndCenter);
+            npb.SetZIndex(-1);
+        }
+        else SetBackgroundColor(28, 50, 73);
+
         Sprites["sidebar"] = new Sprite(this.Viewport, "assets/img/home_side.png");
         Sprites["logo"] = new Sprite(this.Viewport, "assets/img/home_logo.png");
         Sprites["logo"].X = 33;
@@ -65,26 +71,26 @@ public class HomeScreen : Widget
         TutorialsButton.SetIcon("assets/img/home_icon_tutorials");
         TutorialsButton.OnLeftMouseDownInside += _ => ShowTutorials();
 
-        YoutubeButton = new PictureBox(this);
-        YoutubeButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_youtube.png");
+        YoutubeButton = new ImageBox(this);
+        YoutubeButton.SetBitmap("assets/img/home_icon_youtube.png");
         YoutubeButton.SetHelpText("Visit RPG Studio MK's YouTube account.");
         YoutubeButton.OnLeftMouseDownInside += _ => new MessageBox("Oops!", "MK does not have a YouTube channel yet!", IconType.Error);
         YoutubeButton.OnHoverChanged += _ =>
         {
-            YoutubeButton.Sprite.Bitmap.Dispose();
-            if (YoutubeButton.Mouse.Inside) YoutubeButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_youtube_hover.png");
-            else YoutubeButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_youtube.png");
+            YoutubeButton.DisposeBitmap();
+            if (YoutubeButton.Mouse.Inside) YoutubeButton.SetBitmap("assets/img/home_icon_youtube_hover.png");
+            else YoutubeButton.SetBitmap("assets/img/home_icon_youtube.png");
         };
 
-        TwitterButton = new PictureBox(this);
-        TwitterButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_twitter.png");
+        TwitterButton = new ImageBox(this);
+        TwitterButton.SetBitmap("assets/img/home_icon_twitter.png");
         TwitterButton.SetHelpText("Visit MK's Twitter account.");
         TwitterButton.OnLeftMouseDownInside += _ => Utilities.OpenLink("http://twitter.com/RPGStudioMK");
         TwitterButton.OnHoverChanged += _ =>
         {
-            TwitterButton.Sprite.Bitmap.Dispose();
-            if (TwitterButton.Mouse.Inside) TwitterButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_twitter_hover.png");
-            else TwitterButton.Sprite.Bitmap = new Bitmap("assets/img/home_icon_twitter.png");
+            TwitterButton.DisposeBitmap();
+            if (TwitterButton.Mouse.Inside) TwitterButton.SetBitmap("assets/img/home_icon_twitter_hover.png");
+            else TwitterButton.SetBitmap("assets/img/home_icon_twitter.png");
         };
 
         NoProjects = new MultilineLabel(this);
@@ -108,24 +114,6 @@ public class HomeScreen : Widget
         {
             double factor = Size.Height / (double)Sprites["sidebar"].Bitmap.Height;
             Sprites["sidebar"].ZoomY = factor;
-        }
-        #endregion
-
-        #region Map
-        if (Sprites["map"].Bitmap != null)
-        {
-            int dx = Size.Width - Sprites["map"].Bitmap.Width;
-            int dy = Size.Height - Sprites["map"].Bitmap.Height;
-            double px = dx / (double)Sprites["map"].Bitmap.Width;
-            double py = dy / (double)Sprites["map"].Bitmap.Height;
-            if (dx != 0 || dy != 0)
-            {
-                // Zooms the sprite (maintaining aspect ratio) and centers it
-                if (px > py) Sprites["map"].ZoomX = Sprites["map"].ZoomY = 1 + px;
-                else Sprites["map"].ZoomX = Sprites["map"].ZoomY = 1 + py;
-                Sprites["map"].X = Size.Width / 2 - (int)Math.Round(Sprites["map"].Bitmap.Width * Sprites["map"].ZoomX / 2d);
-                Sprites["map"].Y = Size.Height / 2 - (int)Math.Round(Sprites["map"].Bitmap.Height * Sprites["map"].ZoomY / 2d);
-            }
         }
         #endregion
 

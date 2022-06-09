@@ -196,7 +196,7 @@ public class TilesetPicker : PopupWindow
             ActionButton.SetEnabled(false);
         }
         Tileset tileset = SelectedTileset;
-        TilesetContainer.Widgets.FindAll(w => w is PictureBox).ForEach(w => w.Dispose());
+        TilesetContainer.Widgets.FindAll(w => w is ImageBox).ForEach(w => w.Dispose());
         if (tileset is null || tileset.TilesetListBitmap is null)
         {
             ActionButton.SetEnabled(false);
@@ -206,21 +206,20 @@ public class TilesetPicker : PopupWindow
             int y = 0;
             foreach (Bitmap b in tileset.TilesetListBitmap.InternalBitmaps)
             {
-                PictureBox img = new PictureBox(TilesetContainer);
+                ImageBox img = new ImageBox(TilesetContainer);
                 img.SetPosition(0, y);
-                img.Sprite.Bitmap = b;
+                img.SetBitmap(b);
                 if (!b.Locked) b.Lock();
-                img.Sprite.DestroyBitmap = false;
+                img.SetDestroyBitmap(false);
                 img.SetSize(b.Width, b.Height);
                 y += b.Height;
             }
         }
         else
         {
-            PictureBox img = new PictureBox(TilesetContainer);
-            img.Sprite.Bitmap = tileset.TilesetListBitmap;
-            img.Sprite.DestroyBitmap = false;
-            img.SetSize(img.Sprite.Bitmap.Width, img.Sprite.Bitmap.Height);
+            ImageBox img = new ImageBox(TilesetContainer);
+            img.SetBitmap(tileset.TilesetListBitmap);
+            img.SetDestroyBitmap(false);
         }
     }
 
