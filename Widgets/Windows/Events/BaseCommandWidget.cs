@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using RPGStudioMK.Game;
 using RPGStudioMK.Game.EventCommands;
@@ -37,6 +38,8 @@ public class BaseCommandWidget : Widget
 
     protected delegate void EditEvent(bool Applied = true, bool ResetCommand = false, int GlobalIndexToCountFrom = -1);
 
+    protected List<CommandUndoAction> UndoList = new List<CommandUndoAction>();
+    protected List<CommandUndoAction> RedoList = new List<CommandUndoAction>();
     protected Map Map;
     protected Event Event;
     protected EventPage Page;
@@ -48,7 +51,6 @@ public class BaseCommandWidget : Widget
     protected int MarginBetweenWidgets = 2;
     protected int ChildIndent = 20;
     protected bool DrawEndLabels = true;
-    protected bool Ready;
     protected bool Selected = false;
     protected int StandardHeight = 20;
     protected int GlobalCommandIndex = -1;
@@ -56,6 +58,9 @@ public class BaseCommandWidget : Widget
     protected bool InitialUpKey = true;
     protected bool InitialPageDownKey = true;
     protected bool InitialPageUpKey = true;
+    protected bool InitialDeleteKey = true;
+    protected bool InitialUndoKey = true;
+    protected bool InitialRedoKey = true;
 
     protected Label HeaderLabel;
     protected VStackPanel VStackPanel;
@@ -83,7 +88,6 @@ public class BaseCommandWidget : Widget
         {
             if (this.Indentation != -1 && !InsideChild())
             {
-                Console.WriteLine($"Opening for {GlobalCommandIndex}");
                 e.Value = true;
                 SetSelected(true);
             }
@@ -100,7 +104,9 @@ public class BaseCommandWidget : Widget
             new Shortcut(this, new Key(Keycode.DOWN), _ => SelectNextCommand()),
             new Shortcut(this, new Key(Keycode.UP), _ => SelectPreviousCommand()),
             new Shortcut(this, new Key(Keycode.PAGEDOWN), _ => SelectPageDown()),
-            new Shortcut(this, new Key(Keycode.PAGEUP), _ => SelectPageUp())
+            new Shortcut(this, new Key(Keycode.PAGEUP), _ => SelectPageUp()),
+            new Shortcut(this, new Key(Keycode.Z, Keycode.CTRL), _ => MainCommandWidget.Undo()),
+            new Shortcut(this, new Key(Keycode.Y, Keycode.CTRL), _ => MainCommandWidget.Redo())
         });
         SetContextMenuList(new List<IMenuItem>()
         {
@@ -144,12 +150,6 @@ public class BaseCommandWidget : Widget
         });
     }
 
-    public void SetReady(bool Ready)
-    {
-        this.Ready = Ready;
-        SubcommandWidgets.ForEach(w => w.SetReady(Ready));
-    }
-
     public void SetCommand(Map Map, Event Event, EventPage Page, EventCommand? Command, List<EventCommand> Commands, int Indentation, int GlobalCommandIndex)
     {
         this.Map = Map;
@@ -177,6 +177,8 @@ public class BaseCommandWidget : Widget
         }
         else
         {
+            UndoList.Clear();
+            RedoList.Clear();
             ChildIndent = 0;
             HeaderLabel.SetVisible(false);
             Sprites["bar"].Visible = false;
@@ -184,6 +186,17 @@ public class BaseCommandWidget : Widget
             ParseCommands(Commands, VStackPanel, this.GlobalCommandIndex + 1);
         }
         UpdateHeight();
+    }
+
+    public (List<CommandUndoAction> UndoList, List<CommandUndoAction> RedoList) GetUndoRedoLists()
+    {
+        return (new List<CommandUndoAction>(UndoList), new List<CommandUndoAction>(RedoList));
+    }
+
+    public void SetUndoRedoLists(List<CommandUndoAction> UndoList, List<CommandUndoAction> RedoList)
+    {
+        this.UndoList = UndoList;
+        this.RedoList = RedoList;
     }
 
     protected virtual void UpdateHeight()
@@ -195,7 +208,8 @@ public class BaseCommandWidget : Widget
             // Remove the one excess pixel we'd get
             vh = 0;
         }
-        SetHeight(StandardHeight + vh + HeightAdd);
+        if (this.Indentation == -1) SetHeight(Math.Max(vh + HeightAdd, Parent.Size.Height));
+        else SetHeight(StandardHeight + vh + HeightAdd);
     }
 
     public virtual void LoadCommand()
@@ -305,8 +319,13 @@ public class BaseCommandWidget : Widget
                 SetBackgroundColor(28, 50, 73);
                 WidgetSelected(new BaseEventArgs());
             }
-            else SetBackgroundColor(Color.ALPHA);
+            else
+            {
+                SetBackgroundColor(Color.ALPHA);
+                if (SelectedWidget) Window.UI.SetSelectedWidget(null);
+            }
         }
+        else if (Selected && !SelectedWidget) WidgetSelected(new BaseEventArgs());
     }
 
     protected List<BaseCommandWidget> GetParentCommandWidgets()
@@ -365,12 +384,16 @@ public class BaseCommandWidget : Widget
         // still all call this method.
         if (this.GetType() == typeof(BaseCommandWidget))
         {
-            if (e.Handled || this.Indentation == -1 || InsideChild())
+            if (e.Handled || InsideChild())
             {
                 CancelDoubleClick();
                 return;
             }
-            SetSelected(true);
+            if (this.Indentation == -1)
+            {
+                if (!VStackPanel.Mouse.Inside) SubcommandWidgets[^1].SetSelected(true);
+            }
+            else SetSelected(true);
         }
     }
 
@@ -379,9 +402,48 @@ public class BaseCommandWidget : Widget
         return this is not BlankWidget;
     }
 
-    protected void InsertCommands(List<EventCommand> Commands)
+    protected void RegisterUndoAction(CommandUndoAction UndoAction)
     {
-        if (this.Indentation == -1) return;
+        UndoList.Add(UndoAction);
+        RedoList.Clear();
+    }
+
+    protected void Undo()
+    {
+        if (UndoList.Count > 0)
+        {
+            CommandUndoAction Action = UndoList.Last();
+            Action.Trigger(false);
+            UndoList.Remove(Action);
+            RedoList.Add(Action);
+        }
+    }
+
+    protected void Redo()
+    {
+        if (RedoList.Count > 0)
+        {
+            CommandUndoAction Action = RedoList.Last();
+            Action.Trigger(true);
+            RedoList.Remove(Action);
+            UndoList.Add(Action);
+        }
+    }
+
+    protected BaseCommandWidget GetCommandAtGlobalIndex(int GlobalCommandIndex)
+    {
+        if (this.GlobalCommandIndex == GlobalCommandIndex) return this;
+        for (int i = 0; i < SubcommandWidgets.Count; i++)
+        {
+            BaseCommandWidget bcw = SubcommandWidgets[i].GetCommandAtGlobalIndex(GlobalCommandIndex);
+            if (bcw != null) return bcw;
+        }
+        return null;
+    }
+
+    protected BaseCommandWidget InsertCommands(List<EventCommand> Commands, bool Undoable = true)
+    {
+        if (this.Indentation == -1) return null;
         // Get the global index for our new commands
         int GlobalIndex = this.GlobalCommandIndex;
         // Deselect this widget
@@ -416,18 +478,27 @@ public class BaseCommandWidget : Widget
         BaseCommandWidget NewWidget = ParentCommandWidget.CreateWidget(Commands[0], Commands.Count, ((VStackPanel) Parent), GlobalIndex, LocalWidgetIndex);
         // Select our new widget
         NewWidget.SetSelected(true);
+        if (Undoable) MainCommandWidget.RegisterUndoAction(new CommandChangeUndoAction(MainCommandWidget, GlobalIndex, Commands, true));
+        // Scroll to newly selected command
+        NewWidget.ScrollToThisCommand();
+        return NewWidget;
     }
 
     protected void Insert()
     {
-        if (this.Indentation == -1 || !Viewport.Visible) return;
-        List<EventCommand> cmds = new List<EventCommand>()
+        if (!Viewport.Visible) return;
+        if (this.Indentation == -1 && !InsideChild())
         {
-            new EventCommand(CommandCode.ShowText, 0, new List<object>() { "Line 1" }),
-            new EventCommand(CommandCode.MoreText, 0, new List<object>() { "Line 2" }),
-            new EventCommand(CommandCode.MoreText, 0, new List<object>() { "Line 3" })
+            // Call Insert as if we we had selected the last command widget
+            if (!VStackPanel.Mouse.Inside) SubcommandWidgets[^1].Insert();
+            return;
+        }
+        NewEventCommandWindow win = new NewEventCommandWindow(Map, Event, Page);
+        win.OnClosed += _ =>
+        {
+            if (!win.Apply) return;
+            InsertCommands(win.Commands);
         };
-        InsertCommands(cmds);
     }
 
     protected void BaseEdit()
@@ -440,7 +511,6 @@ public class BaseCommandWidget : Widget
         // Call the method that edits the command and creates new command objects.
         Edit((Applied, ResetCommand, GlobalIndexToCountFrom) =>
         {
-            Console.WriteLine(Window.UI.SelectedWidget);
             bool sel = this.SelectedWidget;
             // Ensure focus is back on our command widget
             WidgetSelected(new BaseEventArgs());
@@ -475,6 +545,7 @@ public class BaseCommandWidget : Widget
             }
             if (ResetCommand) SetCommand(this.Map, this.Event, this.Page, this.Commands[0], this.Commands, this.Indentation, this.GlobalCommandIndex);
             else LoadCommand();
+            UpdateHeight();
         });
     }
 
@@ -504,9 +575,9 @@ public class BaseCommandWidget : Widget
         InsertCommands(data.Commands);
     }
 
-    protected void Delete()
+    protected BaseCommandWidget Delete(bool Undoable = true)
     {
-        if (this.Indentation == -1 || this is BlankWidget || !Viewport.Visible) return;
+        if (this.Indentation == -1 || this is BlankWidget || !Viewport.Visible) return null;
         // Get the global index for our main command
         int GlobalIndex = this.GlobalCommandIndex;
         // The number of commands to remove
@@ -534,8 +605,16 @@ public class BaseCommandWidget : Widget
         BaseCommandWidget NewSelectedWidget = (BaseCommandWidget) this.Parent.Widgets[LocalWidgetIndex];
         // Now we select that widget
         NewSelectedWidget.SetSelected(true);
+        // Shortcut timing
+        Shortcut s = NewSelectedWidget.Shortcuts.Find(s => s.Key.MainKey == Keycode.DELETE);
+        if (MainCommandWidget.InitialDeleteKey) NewSelectedWidget.SetTimer($"key_{s.Key.ID}_initial", 300);
+        else NewSelectedWidget.SetTimer($"key_{s.Key.ID}", 50);
         // Update positionings
         ((VStackPanel) this.Parent).UpdateLayout();
+        if (Undoable) MainCommandWidget.RegisterUndoAction(new CommandChangeUndoAction(MainCommandWidget, GlobalIndex, Commands, false));
+        // Scroll to newly selected command
+        NewSelectedWidget.ScrollToThisCommand();
+        return NewSelectedWidget;
     }
 
     protected BaseCommandWidget GetNextCommand(int StartIndex = 0)
@@ -606,6 +685,45 @@ public class BaseCommandWidget : Widget
             }
         }
         else InitialPageUpKey = true;
+        if (Input.Press(Keycode.DELETE))
+        {
+            if (TimerPassed("delete_initial"))
+            {
+                InitialDeleteKey = false;
+                DestroyTimer("delete_initial");
+            }
+            else if (!TimerExists("delete_initial"))
+            {
+                SetTimer("delete_initial", 300);
+            }
+        }
+        else InitialDeleteKey = true;
+        if (Input.Press(Keycode.Z) && Input.Press(Keycode.CTRL))
+        {
+            if (TimerPassed("undo_initial"))
+            {
+                InitialUndoKey = false;
+                DestroyTimer("undo_initial");
+            }
+            else if (!TimerExists("undo_initial"))
+            {
+                SetTimer("undo_initial", 300);
+            }
+        }
+        else InitialUndoKey = true;
+        if (Input.Press(Keycode.Y) && Input.Press(Keycode.CTRL))
+        {
+            if (TimerPassed("redo_initial"))
+            {
+                InitialRedoKey = false;
+                DestroyTimer("redo_initial");
+            }
+            else if (!TimerExists("redo_initial"))
+            {
+                SetTimer("redo_initial", 300);
+            }
+        }
+        else InitialRedoKey = true;
     }
 
     protected int GetDisplayY()
@@ -736,5 +854,64 @@ public class BaseCommandWidget : Widget
         if (MainCommandWidget.InitialPageUpKey) NewCommand.SetTimer($"key_{s.Key.ID}_initial", 300);
         else NewCommand.SetTimer($"key_{s.Key.ID}", 50);
         NewCommand.ScrollToThisCommand();
+    }
+
+    public class CommandUndoAction
+    {
+        protected BaseCommandWidget MainCommandWidget;
+
+        public CommandUndoAction(BaseCommandWidget MainCommandWidget)
+        {
+            this.MainCommandWidget = MainCommandWidget;
+        }
+
+        public virtual void Trigger(bool IsRedo)
+        {
+
+        }
+    }
+
+    public class CommandChangeUndoAction : CommandUndoAction
+    {
+        int GlobalCommandIndex;
+        List<EventCommand> Commands;
+        bool Creation;
+
+        public CommandChangeUndoAction(BaseCommandWidget MainCommandWidget, int GlobalCommandIndex, List<EventCommand> Commands, bool Creation) : base(MainCommandWidget)
+        {
+            this.GlobalCommandIndex = GlobalCommandIndex;
+            this.Commands = new List<EventCommand>();
+            Commands.ForEach(c => this.Commands.Add((EventCommand) c.Clone()));
+            this.Creation = Creation;
+        }
+
+        public override void Trigger(bool IsRedo)
+        {
+            BaseCommandWidget NewWidget;
+            if (IsRedo != Creation)
+            {
+                // Undo creation + redo deletion
+                BaseCommandWidget DeletionWidget = MainCommandWidget.GetCommandAtGlobalIndex(this.GlobalCommandIndex);
+                NewWidget = DeletionWidget.Delete(false);
+            }
+            else
+            {
+                // Redo creation + undo deletion
+                BaseCommandWidget InsertionWidget = MainCommandWidget.GetCommandAtGlobalIndex(this.GlobalCommandIndex);
+                NewWidget = InsertionWidget.InsertCommands(Commands, false);
+            }
+            if (IsRedo)
+            {
+                Shortcut s = NewWidget.Shortcuts.Find(s => s.Key.MainKey == Keycode.Y);
+                if (MainCommandWidget.InitialRedoKey) NewWidget.SetTimer($"key_{s.Key.ID}_initial", 300);
+                else NewWidget.SetTimer($"key_{s.Key.ID}", 50);
+            }
+            else
+            {
+                Shortcut s = NewWidget.Shortcuts.Find(s => s.Key.MainKey == Keycode.Z);
+                if (MainCommandWidget.InitialUndoKey) NewWidget.SetTimer($"key_{s.Key.ID}_initial", 300);
+                else NewWidget.SetTimer($"key_{s.Key.ID}", 50);
+            }
+        }
     }
 }

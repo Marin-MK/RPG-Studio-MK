@@ -211,7 +211,7 @@ public class EventPageControl : Widget
         EditRouteButton.SetEnabled(false);
         EditRouteButton.OnClicked += _ =>
         {
-            EditMoveRouteWindow win = new EditMoveRouteWindow(Map, Event, Page, Page.MoveRoute, true);
+            EditMoveRouteWindow win = new EditMoveRouteWindow(Map, Event, Page, Page.MoveRoute, -1, true);
             win.OnClosed += _ =>
             {
                 if (!win.Apply) return;

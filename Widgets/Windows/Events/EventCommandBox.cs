@@ -11,6 +11,9 @@ public class EventCommandBox : Widget
     EventPage Page;
     List<EventCommand> Commands;
 
+    Dictionary<EventPage, (List<BaseCommandWidget.CommandUndoAction>, List<BaseCommandWidget.CommandUndoAction>)> UndoRedoLists =
+        new Dictionary<EventPage, (List<BaseCommandWidget.CommandUndoAction>, List<BaseCommandWidget.CommandUndoAction>)>();
+
     Container ScrollContainer;
     public BaseCommandWidget MainCommandWidget;
 
@@ -30,7 +33,7 @@ public class EventCommandBox : Widget
         vs.OnValueChanged += _ =>
         {
             // Ensure we set the selected widget back to being active after dragging the slider
-            MainCommandWidget.GetSelectedWidget().WidgetSelected(new BaseEventArgs());
+            MainCommandWidget.GetSelectedWidget()?.WidgetSelected(new BaseEventArgs());
         };
 
         MainCommandWidget = new BaseCommandWidget(ScrollContainer, -1);
@@ -39,13 +42,22 @@ public class EventCommandBox : Widget
 
     public void SetCommands(Map Map, Event Event, EventPage Page, List<EventCommand> Commands)
     {
+        EventPage OldPage = this.Page;
         this.Map = Map;
         this.Event = Event;
         this.Page = Page;
         this.Commands = Commands;
-        MainCommandWidget.SetReady(false);
+        if (OldPage != null)
+        {
+            (List<BaseCommandWidget.CommandUndoAction>, List<BaseCommandWidget.CommandUndoAction>) lists = MainCommandWidget.GetUndoRedoLists();
+            if (UndoRedoLists.ContainsKey(OldPage)) UndoRedoLists.Remove(OldPage);
+            UndoRedoLists.Add(OldPage, lists);
+        }
         MainCommandWidget.SetCommand(Map, Event, Page, null, Commands, -1, -1);
-        MainCommandWidget.SetReady(true);
+        if (UndoRedoLists.ContainsKey(Page))
+        {
+            MainCommandWidget.SetUndoRedoLists(UndoRedoLists[Page].Item1, UndoRedoLists[Page].Item2);
+        }
     }
 
     protected override void Draw()
@@ -73,5 +85,14 @@ public class EventCommandBox : Widget
     {
         base.SizeChanged(e);
         Redraw();
+    }
+
+    public override void MouseDown(MouseEventArgs e)
+    {
+        base.MouseDown(e);
+        if (!Mouse.Inside)
+        {
+            MainCommandWidget.DeselectAll();
+        }
     }
 }

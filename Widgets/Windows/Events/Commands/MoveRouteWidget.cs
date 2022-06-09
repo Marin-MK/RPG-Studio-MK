@@ -19,6 +19,26 @@ public class MoveRouteWidget : BaseCommandWidget
         CommandLabel.SetTextColor(HeaderLabel.TextColor);
     }
 
+    protected override void Edit(EditEvent Continue)
+    {
+        EditMoveRouteWindow win = new EditMoveRouteWindow(Map, Event, Page, (MoveRoute) Command.Parameters[1], (int) (long) Command.Parameters[0], false);
+        win.OnClosed += _ =>
+        {
+            if (!win.Apply)
+            {
+                Continue(false);
+                return;
+            }
+            Commands = new List<EventCommand>();
+            Commands.Add(new EventCommand(CommandCode.SetMoveRoute, 0, new List<object>() { (long) win.EventID, win.MoveRoute }));
+            for (int i = 0; i < win.MoveRoute.Commands.Count; i++)
+            {
+                Commands.Add(new EventCommand(CommandCode.MoreMoveRoute, 0, new List<object>() { win.MoveRoute.Commands[i] }));
+            }
+            Continue(true);
+        };
+    }
+
     public override void LoadCommand()
     {
         int EventID = (int) (long) this.Command.Parameters[0];
