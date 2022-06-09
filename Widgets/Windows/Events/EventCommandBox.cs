@@ -27,6 +27,11 @@ public class EventCommandBox : Widget
         vs.SetPadding(0, 3);
         ScrollContainer.SetVScrollBar(vs);
         ScrollContainer.VAutoScroll = true;
+        vs.OnValueChanged += _ =>
+        {
+            // Ensure we set the selected widget back to being active after dragging the slider
+            MainCommandWidget.GetSelectedWidget().WidgetSelected(new BaseEventArgs());
+        };
 
         MainCommandWidget = new BaseCommandWidget(ScrollContainer, -1);
         MainCommandWidget.SetHDocked(true);

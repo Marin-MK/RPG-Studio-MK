@@ -36,6 +36,7 @@ public class MultilineTextBox : Widget
         vs.SetPadding(0, 3, 0, 3);
         ScrollContainer.SetVScrollBar(vs);
         ScrollContainer.VAutoScroll = true;
+        vs.OnValueChanged += _ => TextArea.WidgetSelected(new BaseEventArgs());
 
         HScrollBar hs = new HScrollBar(this);
         hs.SetHDocked(true);
@@ -43,6 +44,7 @@ public class MultilineTextBox : Widget
         hs.SetPadding(3, 0, 13, 0);
         ScrollContainer.SetHScrollBar(hs);
         ScrollContainer.HAutoScroll = true;
+        hs.OnValueChanged += _ => TextArea.WidgetSelected(new BaseEventArgs());
 
         TextArea.Update();
     }

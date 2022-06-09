@@ -329,7 +329,7 @@ public class BaseCommandWidget : Widget
         return GetParentCommandWidget(CurrentWidget.Parent);
     }
 
-    protected BaseCommandWidget GetSelectedWidget()
+    public BaseCommandWidget GetSelectedWidget()
     {
         for (int i = 0; i < SubcommandWidgets.Count; i++)
         {
