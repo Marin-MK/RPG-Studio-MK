@@ -65,6 +65,7 @@ public class SubmodeView : Widget
             this.HeaderWidth = Width;
             Sprites["sel"].X = HoveringIndex * HeaderWidth;
             (Sprites["sel"].Bitmap as SolidBitmap).SetSize(HeaderWidth, 2);
+            ((SolidBitmap) Sprites["selbg"].Bitmap).SetSize(HeaderWidth, HeaderHeight);
             Redraw();
         }
     }

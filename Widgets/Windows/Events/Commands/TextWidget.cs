@@ -35,27 +35,33 @@ public class TextWidget : ExpandableCommandWidget
                 Continue(false);
                 return;
             }
-            Commands = new List<EventCommand>();
-            List<string> Lines = SplitText(win.Text);
-            Lines.ForEach(l =>
-            {
-                CommandCode code = Command.Code switch
-                {
-                    CommandCode.ShowText => Commands.Count == 0 ? CommandCode.ShowText : CommandCode.MoreText,
-                    CommandCode.Comment => Commands.Count == 0 ? CommandCode.Comment : CommandCode.MoreComment,
-                    CommandCode.Script => Commands.Count == 0 ? CommandCode.Script : CommandCode.MoreScript,
-                    _ => throw new Exception("Invalid command code")
-                };
-                Commands.Add(new EventCommand(code, 0, new List<object>() { l }));
-            });
+            Commands = TextToCommands(Command.Code, win.Text);
             Continue();
             SetExpanded(true);
         };
     }
 
-    private List<string> SplitText(string Text)
+    public static List<EventCommand> TextToCommands(CommandCode Code, string Text)
     {
-        if (Command.Code == CommandCode.Script)
+        List<EventCommand> Commands = new List<EventCommand>();
+        List<string> Lines = SplitText(Code, Text);
+        Lines.ForEach(l =>
+        {
+            CommandCode code = Code switch
+            {
+                CommandCode.ShowText => Commands.Count == 0 ? CommandCode.ShowText : CommandCode.MoreText,
+                CommandCode.Comment => Commands.Count == 0 ? CommandCode.Comment : CommandCode.MoreComment,
+                CommandCode.Script => Commands.Count == 0 ? CommandCode.Script : CommandCode.MoreScript,
+                _ => throw new Exception("Invalid command code")
+            };
+            Commands.Add(new EventCommand(code, 0, new List<object>() { l }));
+        });
+        return Commands;
+    }
+
+    private static List<string> SplitText(CommandCode Code, string Text)
+    {
+        if (Code == CommandCode.Script)
         {
             return Text.Split('\n').ToList();
         }

@@ -8,6 +8,7 @@ namespace RPGStudioMK.Widgets;
 public class EditMoveRouteWindow : PopupWindow
 {
     public bool Apply = false;
+    public int EventID = 0;
     public MoveRoute MoveRoute;
 
     Map Map;
@@ -21,7 +22,7 @@ public class EditMoveRouteWindow : PopupWindow
     Dictionary<MoveCode, Action<MoveCode, MoveCommand?, Action<MoveCommand>>> CommandEditFunctions =
         new Dictionary<MoveCode, Action<MoveCode, MoveCommand?, Action<MoveCommand>>>();
 
-    public EditMoveRouteWindow(Map Map, Event Event, EventPage Page, MoveRoute mr, bool ThisEventOnly)
+    public EditMoveRouteWindow(Map Map, Event Event, EventPage Page, MoveRoute mr, int EventID, bool ThisEventOnly)
     {
         this.Map = Map;
         this.Event = Event;
@@ -48,9 +49,15 @@ public class EditMoveRouteWindow : PopupWindow
         keys.Sort();
         for (int i = 0; i < keys.Count; i++)
         {
-            Items.Add(new ListItem($"{Utilities.Digits(keys[i], 3)}: {Map.Events[keys[i]].Name}"));
+            Items.Add(new ListItem($"{Utilities.Digits(keys[i], 3)}: {Map.Events[keys[i]].Name}", keys[i]));
         }
         TargetBox.SetItems(Items);
+        if (!ThisEventOnly)
+        {
+            if (EventID == -1) TargetBox.SetSelectedIndex(1);
+            else if (EventID == 0) TargetBox.SetSelectedIndex(0);
+            else TargetBox.SetSelectedIndex(TargetBox.Items.FindIndex(i => i.Object is int && (int) i.Object == EventID));
+        }
 
         MoveBox = new ListBox(this);
         MoveBox.SetVDocked(true);
@@ -399,6 +406,12 @@ public class EditMoveRouteWindow : PopupWindow
     private void OK()
     {
         Apply = true;
+        if (TargetBox.Enabled)
+        {
+            if (TargetBox.SelectedIndex == 0) this.EventID = 0;
+            else if (TargetBox.SelectedIndex == 1) this.EventID = -1;
+            else this.EventID = (int) TargetBox.Items[TargetBox.SelectedIndex].Object;
+        }
         Close();
     }
 
