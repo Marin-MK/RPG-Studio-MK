@@ -348,7 +348,7 @@ public partial class MapViewer : Widget
             if (Mouse.RightMouseTriggered) UsingRight = true;
             if (Mouse.MiddleMouseTriggered)
             {
-                Input.SetCursor(odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_SIZEALL);
+                Input.SetCursor(CursorType.SizeAll);
                 this.MiddleMouseScrolling = true;
                 LastMouseX = e.X;
                 LastMouseY = e.Y;
@@ -370,7 +370,7 @@ public partial class MapViewer : Widget
         if (Mouse.RightMouseReleased) UsingRight = false;
         if (Mouse.MiddleMouseReleased)
         {
-            Input.SetCursor(odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
+            Input.SetCursor(CursorType.Arrow);
             this.MiddleMouseScrolling = false;
             Input.ReleaseMouse();
         }

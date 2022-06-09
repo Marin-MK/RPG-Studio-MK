@@ -159,8 +159,8 @@ public partial class MapViewer
     private void SetCursorInActiveSelection(bool Value)
     {
         this.CursorInActiveSelection = Value;
-        if (Value) Input.SetCursor(odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_SIZEALL);
-        else Input.SetCursor(odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
+        if (Value) Input.SetCursor(CursorType.SizeAll);
+        else Input.SetCursor(CursorType.Arrow);
     }
 
     public void UpdateSelection()

@@ -25,7 +25,7 @@ public class MultilineTextBox : Widget
         ScrollContainer = new Container(this);
         ScrollContainer.SetDocked(true);
         ScrollContainer.SetPadding(3, 3, 14, 3);
-        ScrollContainer.OnHoverChanged += _ => Input.SetCursor(ScrollContainer.Mouse.Inside ? odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_IBEAM : odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
+        ScrollContainer.OnHoverChanged += _ => Input.SetCursor(ScrollContainer.Mouse.Inside ? CursorType.IBeam : CursorType.Arrow);
 
         TextArea = new MultilineTextArea(ScrollContainer);
         TextArea.SetHDocked(true);

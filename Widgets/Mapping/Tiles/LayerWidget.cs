@@ -66,7 +66,7 @@ public class LayerWidget : Widget
             }
             RenameBox.Dispose();
             RenameBox = null;
-            Input.SetCursor(odl.SDL2.SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW);
+            Input.SetCursor(CursorType.Arrow);
             Window.UI.SetSelectedWidget((Parent.Parent as LayerPanel));
         };
         RenameBox.TextArea.OnWidgetSelected(new BaseEventArgs());

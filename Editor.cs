@@ -91,8 +91,7 @@ public static class Editor
     {
         if (Program.ReleaseMode) return;
 
-        if (MainWindow.ActiveWidget != MainWindow.UI) Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
-        else new GenericMultilineTextBoxWindow("Debug", "");
+        //Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
 
         //ProgressWindow pw = new ProgressWindow("Testing", "Testing animation...", false);
         //pw.SetProgress(1);
@@ -528,7 +527,7 @@ public static class Editor
         if (MainWindow != null)
         {
             MainWindow.StatusBar.QueueMessage("Saving project...");
-            Graphics.UpdateGraphics(); // Overrides default Logic/Visual update loop by immediately updating just the graphics.
+            Graphics.Update();
         }
         Stopwatch s = new Stopwatch();
         s.Start();
