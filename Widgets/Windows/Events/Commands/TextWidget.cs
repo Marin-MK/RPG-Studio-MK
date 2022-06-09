@@ -9,6 +9,7 @@ public class TextWidget : ExpandableCommandWidget
 {
     Label SingleLabel;
     MultilineLabel MultilineLabel;
+    //int CharactersPerCommand = 25;
 
     public TextWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex)
     {
@@ -22,33 +23,66 @@ public class TextWidget : ExpandableCommandWidget
         MultilineLabel.SetPosition(8, StandardHeight);
         SetExpandable(false);
         OnHoverChanged += _ => SetExpandable(Mouse.Inside && (Commands.Count > 1 && Command.Code == CommandCode.Script || SingleLabel.ReachedWidthLimit));
-        //OnDoubleLeftMouseDownInside += _ =>
-        //{
-        //    string text = "";
-        //    for (int i = 0; i < Commands.Count; i++)
-        //    {
-        //        EventCommand cmd = Commands[i];
-        //        text += (string) cmd.Parameters[0];
-        //        if (i != Commands.Count - 1 && Command.Code == CommandCode.Script) text += "\n";
-        //    }
-        //    GenericMultilineTextBoxWindow win = new GenericMultilineTextBoxWindow("Show Text", text);
-        //    win.OnClosed += _ =>
-        //    {
-        //        if (!win.Apply) return;
-        //        // Set text
-        //    };
-        //};
     }
 
-    protected override (bool Applied, bool ResetCommand, int GlobalIndexToCountFrom) Edit()
+    protected override void Edit(EditEvent Continue)
     {
-        Commands = new List<EventCommand>()
+        GenericMultilineTextBoxWindow win = new GenericMultilineTextBoxWindow(HeaderLabel.Text, GetFullText(), Command.Code == CommandCode.Script);
+        win.OnClosed += _ =>
         {
-            new EventCommand(CommandCode.ShowText, 0, new List<object>() { "Line 1\n" }),
-            new EventCommand(CommandCode.MoreText, 0, new List<object>() { "Line 2\n" }),
-            new EventCommand(CommandCode.MoreText, 0, new List<object>() { "Line 3" })
+            if (!win.Apply)
+            {
+                Continue(false);
+                return;
+            }
+            Commands = new List<EventCommand>();
+            List<string> Lines = SplitText(win.Text);
+            Lines.ForEach(l =>
+            {
+                CommandCode code = Command.Code switch
+                {
+                    CommandCode.ShowText => Commands.Count == 0 ? CommandCode.ShowText : CommandCode.MoreText,
+                    CommandCode.Comment => Commands.Count == 0 ? CommandCode.Comment : CommandCode.MoreComment,
+                    CommandCode.Script => Commands.Count == 0 ? CommandCode.Script : CommandCode.MoreScript,
+                    _ => throw new Exception("Invalid command code")
+                };
+                Commands.Add(new EventCommand(code, 0, new List<object>() { l }));
+            });
+            Continue();
+            SetExpanded(true);
         };
-        return (true, false, -1);
+    }
+
+    private List<string> SplitText(string Text)
+    {
+        if (Command.Code == CommandCode.Script)
+        {
+            return Text.Split('\n').ToList();
+        }
+        else
+        {
+            return Utilities.FormatString(Fonts.CabinMedium.Use(9), Text, 300);
+            //List<string> Lines = new List<string>();
+            //int LineCount = (int) Math.Ceiling((double) Text.Length / CharactersPerCommand);
+            //for (int i = 0; i < LineCount; i++)
+            //{
+            //    if (i == LineCount - 1) Lines.Add(Text.Substring(i * CharactersPerCommand, Text.Length - i * CharactersPerCommand));
+            //    else Lines.Add(Text.Substring(i * CharactersPerCommand, CharactersPerCommand));
+            //}
+            //return Lines;
+        }
+    }
+
+    private string GetFullText()
+    {
+        string text = "";
+        for (int i = 0; i < Commands.Count; i++)
+        {
+            EventCommand cmd = Commands[i];
+            text += (string) cmd.Parameters[0];
+            if (i != Commands.Count - 1) text += "\n";
+        }
+        return text;
     }
 
     private string MergeText()
@@ -58,7 +92,7 @@ public class TextWidget : ExpandableCommandWidget
         {
             EventCommand cmd = Commands[i];
             text += (string) cmd.Parameters[0];
-            if (i != Commands.Count - 1 && Command.Code == CommandCode.Script) text += Expanded ? "\n" : " ";
+            if (i != Commands.Count - 1) text += Expanded ? "\n" : " ";
         }
         return text;
     }
@@ -79,19 +113,19 @@ public class TextWidget : ExpandableCommandWidget
         string text = MergeText();
         SingleLabel.SetText(text);
 
-        SetExpandable(Mouse.Inside && (Commands.Count > 1 && Command.Code == CommandCode.Script || SingleLabel.ReachedWidthLimit));
+        bool CanExpand = Commands.Count > 1 && Command.Code == CommandCode.Script || SingleLabel.ReachedWidthLimit;
 
-        bool updateparent = false;
-        if (!Expandable && Expanded)
+        if (!CanExpand && Expanded)
         {
             SetExpanded(false, true);
-            updateparent = true;
             text = MergeText();
             SingleLabel.SetText(text);
         }
 
         SingleLabel.SetVisible(!Expanded);
         MultilineLabel.SetVisible(Expanded);
+
+        SetExpandable(CanExpand && Mouse.Inside);
 
         if (Expanded)
         {
@@ -103,10 +137,8 @@ public class TextWidget : ExpandableCommandWidget
         {
             HeightAdd = 0;
         }
-        if (updateparent)
-        {
-            UpdateHeight();
-            ((Widget) Parent).UpdateLayout();
-        }
+
+        UpdateHeight();
+        ((Widget) Parent).UpdateLayout();
     }
 }

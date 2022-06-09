@@ -18,7 +18,7 @@ public class GenericMultilineTextBoxWindow : PopupWindow
         this.Text = Text;
 
         SetTitle(Title);
-        MinimumSize = MaximumSize = new Size(680, 560);
+        MinimumSize = MaximumSize = new Size(400, 300);
         SetSize(MaximumSize);
         Center();
 
@@ -26,11 +26,17 @@ public class GenericMultilineTextBoxWindow : PopupWindow
         TextBox.SetFont(Monospace ? Fonts.FiraCode.Use(9) : Fonts.CabinMedium.Use(9));
         TextBox.SetDocked(true);
         TextBox.SetPadding(20, 30, 20, 50);
+        TextBox.SetText(Text);
 
         CreateButton("Cancel", _ => Cancel());
         CreateButton("OK", _ => OK());
 
         TextBox.Activate();
+
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
+        });
     }
 
     private void OK()

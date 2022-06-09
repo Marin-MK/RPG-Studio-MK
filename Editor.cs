@@ -91,10 +91,7 @@ public static class Editor
     {
         if (Program.ReleaseMode) return;
 
-        //Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
-
-        //ProgressWindow pw = new ProgressWindow("Testing", "Testing animation...", false);
-        //pw.SetProgress(1);
+        Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
     }
 
     /// <summary>
@@ -527,7 +524,7 @@ public static class Editor
         if (MainWindow != null)
         {
             MainWindow.StatusBar.QueueMessage("Saving project...");
-            Graphics.Update();
+            Graphics.UpdateGraphics();
         }
         Stopwatch s = new Stopwatch();
         s.Start();

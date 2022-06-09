@@ -87,7 +87,7 @@ public class ChoiceWidget : BaseCommandWidget
         ExpandArrows.ForEach(e => e.Dispose());
         ExpandArrows.Clear();
 
-        HeaderLabel.SetText(this.GlobalCommandIndex.ToString() + ": Show Choices");
+        HeaderLabel.SetText("Show Choices");
 
         List<object> Choices = (List<object>) Command.Parameters[0];
 

@@ -5,19 +5,19 @@ using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets.CommandWidgets;
 
-public class BlankWidget : BaseCommandWidget
+public class WaitForMoveCompletionWidget : BaseCommandWidget
 {
-    public BlankWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex) { }
+    public WaitForMoveCompletionWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex) { }
 
     public override void LoadCommand()
     {
-        HeaderLabel.SetVisible(false);
+        HeaderLabel.SetText("Wait for Move's Completion");
     }
 
     public override void LeftMouseDownInside(MouseEventArgs e)
     {
         base.LeftMouseDownInside(e);
-        if (e.Handled || this.Indentation == -1 || InsideChild())
+        if (e.Handled || this.Indentation == -1)
         {
             CancelDoubleClick();
             return;

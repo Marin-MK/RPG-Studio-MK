@@ -124,9 +124,21 @@ public class Label : Widget
 
 public class MultilineLabel : Label
 {
+    private int? _LineHeight;
+    public int LineHeight { get => _LineHeight ?? Font.Size + 5; set => _LineHeight = value; }
+
     public MultilineLabel(IContainer Parent) : base(Parent)
     {
 
+    }
+
+    public void SetLineHeight(int LineHeight)
+    {
+        if (this.LineHeight != LineHeight)
+        {
+            this.LineHeight = LineHeight;
+            this.Redraw();
+        }
     }
 
     public override void RedrawText()
@@ -134,13 +146,13 @@ public class MultilineLabel : Label
         Sprites["text"].Bitmap?.Dispose();
         if (string.IsNullOrEmpty(Text)) return;
         List<string> Lines = Utilities.FormatString(this.Font, Text, Size.Width);
-        SetSize(Size.Width, (Font.Size + 5) * Lines.Count + 4);
+        SetSize(Size.Width, LineHeight * Lines.Count + 4);
         Sprites["text"].Bitmap = new Bitmap(Size);
         Sprites["text"].Bitmap.Unlock();
         Sprites["text"].Bitmap.Font = this.Font;
         for (int i = 0; i < Lines.Count; i++)
         {
-            Sprites["text"].Bitmap.DrawText(Lines[i], 0, (Font.Size + 5) * i, this.Enabled ? this.TextColor : new Color(160, 160, 160));
+            Sprites["text"].Bitmap.DrawText(Lines[i], 0, LineHeight * i, this.Enabled ? this.TextColor : new Color(160, 160, 160));
         }
         Sprites["text"].Bitmap.Lock();
     }

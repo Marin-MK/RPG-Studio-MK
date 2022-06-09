@@ -30,8 +30,12 @@ public class BaseCommandWidget : Widget
         { CommandCode.ShowChoices, (typeof(ChoiceWidget), typeof(BaseCommand)) },
         { CommandCode.Comment, (typeof(CommandWidgets.TextWidget), typeof(BaseCommand)) },
         { CommandCode.Script, (typeof(CommandWidgets.TextWidget), typeof(BaseCommand)) },
-        { CommandCode.ShowText, (typeof(CommandWidgets.TextWidget), typeof(BaseCommand)) }
+        { CommandCode.ShowText, (typeof(CommandWidgets.TextWidget), typeof(BaseCommand)) },
+        { CommandCode.SetMoveRoute, (typeof(MoveRouteWidget), typeof(BaseCommand)) },
+        { CommandCode.WaitForMoveCompletion, (typeof(WaitForMoveCompletionWidget), typeof(BaseCommand)) }
     };
+
+    protected delegate void EditEvent(bool Applied = true, bool ResetCommand = false, int GlobalIndexToCountFrom = -1);
 
     protected Map Map;
     protected Event Event;
@@ -48,6 +52,10 @@ public class BaseCommandWidget : Widget
     protected bool Selected = false;
     protected int StandardHeight = 20;
     protected int GlobalCommandIndex = -1;
+    protected bool InitialDownKey = true;
+    protected bool InitialUpKey = true;
+    protected bool InitialPageDownKey = true;
+    protected bool InitialPageUpKey = true;
 
     protected Label HeaderLabel;
     protected VStackPanel VStackPanel;
@@ -84,11 +92,15 @@ public class BaseCommandWidget : Widget
         RegisterShortcuts(new List<Shortcut>()
         {
             new Shortcut(this, new Key(Keycode.ENTER), _ => Insert(), false),
-            new Shortcut(this, new Key(Keycode.SPACE), _ => BaseEdit(), false, e => e.Value = this is not BlankWidget),
+            new Shortcut(this, new Key(Keycode.SPACE), _ => BaseEdit(), false, e => e.Value = IsEditable()),
             new Shortcut(this, new Key(Keycode.X, Keycode.CTRL), _ => Cut(), false, e => e.Value = this is not BlankWidget),
             new Shortcut(this, new Key(Keycode.C, Keycode.CTRL), _ => Copy(), false, e => e.Value = this is not BlankWidget),
             new Shortcut(this, new Key(Keycode.V, Keycode.CTRL), _ => Paste(), false, e => e.Value = Utilities.IsClipboardValidBinary(BinaryData.EVENT_COMMANDS)),
-            new Shortcut(this, new Key(Keycode.DELETE), _ => Delete(), false, e => e.Value = this is not BlankWidget)
+            new Shortcut(this, new Key(Keycode.DELETE), _ => Delete(), false, e => e.Value = this is not BlankWidget),
+            new Shortcut(this, new Key(Keycode.DOWN), _ => SelectNextCommand()),
+            new Shortcut(this, new Key(Keycode.UP), _ => SelectPreviousCommand()),
+            new Shortcut(this, new Key(Keycode.PAGEDOWN), _ => SelectPageDown()),
+            new Shortcut(this, new Key(Keycode.PAGEUP), _ => SelectPageUp())
         });
         SetContextMenuList(new List<IMenuItem>()
         {
@@ -99,7 +111,7 @@ public class BaseCommandWidget : Widget
             },
             new MenuItem("Edit")
             {
-                IsClickable = e => e.Value = this is not BlankWidget,
+                IsClickable = e => e.Value = IsEditable(),
                 OnClicked = _ => BaseEdit(),
                 Shortcut = "Space"
             },
@@ -155,7 +167,7 @@ public class BaseCommandWidget : Widget
             if (CommandWidgetLookup.ContainsKey(Command.Code))
             {
                 System.Type CommandClass = CommandWidgetLookup[Command.Code].CommandClass;
-                CommandHelper = (BaseCommand)Activator.CreateInstance(CommandClass, new object?[] { Command });
+                CommandHelper = (BaseCommand) Activator.CreateInstance(CommandClass, new object?[] { Command });
             }
             else CommandHelper = new BaseCommand(Command);
             HeaderLabel.SetText(Command.Code.ToString());
@@ -362,6 +374,11 @@ public class BaseCommandWidget : Widget
         }
     }
 
+    protected virtual bool IsEditable()
+    {
+        return this is not BlankWidget;
+    }
+
     protected void InsertCommands(List<EventCommand> Commands)
     {
         if (this.Indentation == -1) return;
@@ -415,49 +432,55 @@ public class BaseCommandWidget : Widget
 
     protected void BaseEdit()
     {
-        if (this.Indentation == -1 || this is BlankWidget || !Viewport.Visible) return;
+        if (this.Indentation == -1 || !IsEditable() || !Viewport.Visible) return;
         // Record the current first command.
         EventCommand OldMainCommand = this.Command;
         // Record the old number of commands.
         int OldCommandCount = Commands.Count;
         // Call the method that edits the command and creates new command objects.
-        (bool Applied, bool ResetCommand, int GlobalIndexToCountFrom) = Edit();
-        // If nothing changed, we can just stop right here.
-        if (!Applied) return;
-        // Re-set the "main" command
-        this.Command = Commands[0];
-        // Record the new number of commands
-        int NewCommandCount = Commands.Count;
-        // Get our parent command widgets
-        List<BaseCommandWidget> ParentCommandWidgets = GetParentCommandWidgets();
-        // For each parent command widget, we update its Commands list to include the proper commands, in case it gets redrawn.
-        // We do this even if the size didn't change, because the command references may no longer be the same
-        // if new objects were created during editing.
-        ParentCommandWidgets.ForEach(p =>
+        Edit((Applied, ResetCommand, GlobalIndexToCountFrom) =>
         {
-            int LocalIndex = p.Commands.IndexOf(OldMainCommand);
-            p.Commands.RemoveRange(LocalIndex, OldCommandCount);
-            p.Commands.InsertRange(LocalIndex, Commands);
+            Console.WriteLine(Window.UI.SelectedWidget);
+            bool sel = this.SelectedWidget;
+            // Ensure focus is back on our command widget
+            WidgetSelected(new BaseEventArgs());
+            // If nothing changed, we can just stop right here.
+            if (!Applied) return;
+            // Re-set the "main" command
+            this.Command = Commands[0];
+            // Record the new number of commands
+            int NewCommandCount = Commands.Count;
+            // Get our parent command widgets
+            List<BaseCommandWidget> ParentCommandWidgets = GetParentCommandWidgets();
+            // For each parent command widget, we update its Commands list to include the proper commands, in case it gets redrawn.
+            // We do this even if the size didn't change, because the command references may no longer be the same
+            // if new objects were created during editing.
+            ParentCommandWidgets.ForEach(p =>
+            {
+                int LocalIndex = p.Commands.IndexOf(OldMainCommand);
+                p.Commands.RemoveRange(LocalIndex, OldCommandCount);
+                p.Commands.InsertRange(LocalIndex, Commands);
+            });
+            // If we created or removed commands, then we need to update the global indexes of other command widgets
+            if (OldCommandCount != NewCommandCount)
+            {
+                // Positive => more commands, negative => less commands
+                int Diff = NewCommandCount - OldCommandCount;
+                // If no index was set from which point to update the global command indexes, we assume we start at the end of our command.
+                // However, if we inserted one single command somewhere, and we want the capability of only inserting that command
+                // rather than redrawing the whole command and all of its subcommands, then we can simply start the increment there.
+                if (GlobalIndexToCountFrom == -1) GlobalIndexToCountFrom = this.GlobalCommandIndex + OldCommandCount;
+                // Now update all global indexes for the widgets below this one
+                MainCommandWidget.UpdateGlobalIndexes(GlobalIndexToCountFrom, Diff);
+            }
+            if (ResetCommand) SetCommand(this.Map, this.Event, this.Page, this.Commands[0], this.Commands, this.Indentation, this.GlobalCommandIndex);
+            else LoadCommand();
         });
-        // If we created or removed commands, then we need to update the global indexes of other command widgets
-        if (OldCommandCount != NewCommandCount)
-        {
-            // Positive => more commands, negative => less commands
-            int Diff = NewCommandCount - OldCommandCount;
-            // If no index was set from which point to update the global command indexes, we assume we start at the end of our command.
-            // However, if we inserted one single command somewhere, and we want the capability of only inserting that command
-            // rather than redrawing the whole command and all of its subcommands, then we can simply start the increment there.
-            if (GlobalIndexToCountFrom == -1) GlobalIndexToCountFrom = this.GlobalCommandIndex + OldCommandCount;
-            // Now update all global indexes for the widgets below this one
-            MainCommandWidget.UpdateGlobalIndexes(GlobalIndexToCountFrom, Diff);
-        }
-        if (ResetCommand) SetCommand(this.Map, this.Event, this.Page, this.Commands[0], this.Commands, this.Indentation, this.GlobalCommandIndex);
-        else LoadCommand();
     }
 
-    protected virtual (bool Applied, bool ResetCommand, int GlobalIndexToCountFrom) Edit()
+    protected virtual void Edit(EditEvent Continue)
     {
-        return (false, false, -1);
+
     }
 
     protected void Cut()
@@ -513,5 +536,205 @@ public class BaseCommandWidget : Widget
         NewSelectedWidget.SetSelected(true);
         // Update positionings
         ((VStackPanel) this.Parent).UpdateLayout();
+    }
+
+    protected BaseCommandWidget GetNextCommand(int StartIndex = 0)
+    {
+        if (StartIndex < SubcommandWidgets.Count) return SubcommandWidgets[StartIndex];
+        else if (this == MainCommandWidget) return null;
+        else
+        {
+            BaseCommandWidget ParentCommandWidget = GetParentCommandWidget(Parent);
+            if (ParentCommandWidget is null) return null;
+            return ParentCommandWidget.GetNextCommand(ParentCommandWidget.SubcommandWidgets.IndexOf(this) + 1);
+        }
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        if (this.Indentation != -1) return;
+        if (Input.Press(Keycode.DOWN))
+        {
+            if (TimerPassed("down_initial"))
+            {
+                InitialDownKey = false;
+                DestroyTimer("down_initial");
+            }
+            else if (!TimerExists("down_initial"))
+            {
+                SetTimer("down_initial", 300);
+            }
+        }
+        else InitialDownKey = true;
+        if (Input.Press(Keycode.UP))
+        {
+            if (TimerPassed("up_initial"))
+            {
+                InitialUpKey = false;
+                DestroyTimer("up_initial");
+            }
+            else if (!TimerExists("up_initial"))
+            {
+                SetTimer("up_initial", 300);
+            }
+        }
+        else InitialUpKey = true;
+        if (Input.Press(Keycode.PAGEDOWN))
+        {
+            if (TimerPassed("page_down_initial"))
+            {
+                InitialPageDownKey = false;
+                DestroyTimer("page_down_initial");
+            }
+            else if (!TimerExists("page_down_initial"))
+            {
+                SetTimer("page_down_initial", 300);
+            }
+        }
+        else InitialPageDownKey = true;
+        if (Input.Press(Keycode.PAGEUP))
+        {
+            if (TimerPassed("page_up_initial"))
+            {
+                InitialPageUpKey = false;
+                DestroyTimer("page_up_initial");
+            }
+            else if (!TimerExists("page_up_initial"))
+            {
+                SetTimer("page_up_initial", 300);
+            }
+        }
+        else InitialPageUpKey = true;
+    }
+
+    protected int GetDisplayY()
+    {
+        return Viewport.Y - MainCommandWidget.VStackPanel.Viewport.Y - TopCutOff + MainCommandWidget.TopCutOff;
+    }
+
+    protected void ScrollToThisCommand()
+    {
+        int DisplayY = GetDisplayY();
+        if (DisplayY < MainCommandWidget.Parent.ScrolledY)
+        {
+            MainCommandWidget.Parent.ScrolledY -= MainCommandWidget.Parent.ScrolledY - DisplayY + MarginBetweenWidgets;
+            ((Widget) MainCommandWidget.Parent).UpdateAutoScroll();
+        }
+        else if (DisplayY + StandardHeight > MainCommandWidget.Parent.Size.Height + MainCommandWidget.Parent.ScrolledY)
+        {
+            MainCommandWidget.Parent.ScrolledY += DisplayY + StandardHeight - (MainCommandWidget.Parent.Size.Height + MainCommandWidget.Parent.ScrolledY) + MarginBetweenWidgets;
+            ((Widget) MainCommandWidget.Parent).UpdateAutoScroll();
+        }
+    }
+
+    protected void SelectNextCommand()
+    {
+        BaseCommandWidget NextCommand = GetNextCommand();
+        if (NextCommand is not null)
+        {
+            NextCommand.SetSelected(true);
+            Shortcut s = NextCommand.Shortcuts.Find(s => s.Key.MainKey == Keycode.DOWN);
+            if (MainCommandWidget.InitialDownKey) NextCommand.SetTimer($"key_{s.Key.ID}_initial", 300);
+            else NextCommand.SetTimer($"key_{s.Key.ID}", 50);
+            NextCommand.ScrollToThisCommand();
+        }
+    }
+
+    protected BaseCommandWidget GetPreviousCommand()
+    {
+        BaseCommandWidget ParentCommandWidget = GetParentCommandWidget(Parent);
+        if (ParentCommandWidget is null) return null;
+        int Index = ParentCommandWidget.SubcommandWidgets.IndexOf(this);
+        if (Index > 0) return ParentCommandWidget.SubcommandWidgets[Index - 1].GetLastCommand();
+        else if (ParentCommandWidget != MainCommandWidget) return ParentCommandWidget;
+        else return null;
+    }
+
+    protected BaseCommandWidget GetLastCommand()
+    {
+        if (SubcommandWidgets.Count > 0) return SubcommandWidgets[^1].GetLastCommand();
+        else return this;
+    }
+
+    protected void SelectPreviousCommand()
+    {
+        BaseCommandWidget PreviousCommand = GetPreviousCommand();
+        if (PreviousCommand is not null)
+        {
+            PreviousCommand.SetSelected(true);
+            Shortcut s = PreviousCommand.Shortcuts.Find(s => s.Key.MainKey == Keycode.UP);
+            if (MainCommandWidget.InitialUpKey) PreviousCommand.SetTimer($"key_{s.Key.ID}_initial", 300);
+            else PreviousCommand.SetTimer($"key_{s.Key.ID}", 50);
+            PreviousCommand.ScrollToThisCommand();
+        }
+    }
+
+    BaseCommandWidget GetCommandWidgetBelow(int MinTargetDisplayY)
+    {
+        int DisplayY = GetDisplayY();
+        if (DisplayY >= MinTargetDisplayY) return this;
+        for (int i = 0; i < SubcommandWidgets.Count; i++)
+        {
+            BaseCommandWidget bcw = SubcommandWidgets[i].GetCommandWidgetBelow(MinTargetDisplayY);
+            if (bcw != null) return bcw;
+        }
+        return null;
+    }
+
+    BaseCommandWidget GetCommandWidgetAbove(int MaxTargetDisplayY)
+    {
+        int DisplayY = GetDisplayY();
+        for (int i = SubcommandWidgets.Count - 1; i >= 0; i--)
+        {
+            BaseCommandWidget bcw = SubcommandWidgets[i].GetCommandWidgetAbove(MaxTargetDisplayY);
+            if (bcw != null) return bcw;
+        }
+        if (this != MainCommandWidget && DisplayY < MaxTargetDisplayY) return this;
+        return null;
+    }
+
+    protected void SelectPageDown()
+    {
+        int TargetDisplayY = MainCommandWidget.Parent.ScrolledY + MainCommandWidget.Parent.Size.Height - StandardHeight * 2;
+        BaseCommandWidget NewCommand = MainCommandWidget.GetCommandWidgetBelow(TargetDisplayY);
+        if (NewCommand is null) NewCommand = MainCommandWidget.GetLastCommand();
+        if (NewCommand.Selected)
+        {
+            if (NewCommand.GlobalCommandIndex == MainCommandWidget.Commands.Count - 1 ||
+                MainCommandWidget.SubcommandWidgets.IndexOf(this) == MainCommandWidget.SubcommandWidgets.Count - 1 &&
+                SubcommandWidgets.Count == 0) return;
+            TargetDisplayY += MainCommandWidget.Parent.Size.Height - StandardHeight;
+            NewCommand = MainCommandWidget.GetCommandWidgetBelow(TargetDisplayY);
+            if (NewCommand is null) NewCommand = MainCommandWidget.GetLastCommand();
+        }
+        if (NewCommand.Selected) return;
+        NewCommand.SetSelected(true);
+        Shortcut s = NewCommand.Shortcuts.Find(s => s.Key.MainKey == Keycode.PAGEDOWN);
+        if (MainCommandWidget.InitialPageDownKey) NewCommand.SetTimer($"key_{s.Key.ID}_initial", 300);
+        else NewCommand.SetTimer($"key_{s.Key.ID}", 50);
+        NewCommand.ScrollToThisCommand();
+    }
+
+    protected void SelectPageUp()
+    {
+        int CurDisplayY = GetDisplayY();
+        int TargetDisplayY = MainCommandWidget.Parent.ScrolledY + StandardHeight;
+        BaseCommandWidget NewCommand = MainCommandWidget.GetCommandWidgetAbove(TargetDisplayY);
+        if (NewCommand is null) NewCommand = MainCommandWidget.SubcommandWidgets[0];
+        int SelDisplayY = NewCommand.GetDisplayY();
+        if (NewCommand.Selected)
+        {
+            if (NewCommand.GlobalCommandIndex == 0) return;
+            TargetDisplayY -= MainCommandWidget.Parent.Size.Height - StandardHeight;
+            NewCommand = MainCommandWidget.GetCommandWidgetAbove(TargetDisplayY);
+            if (NewCommand is null) NewCommand = MainCommandWidget.SubcommandWidgets[0];
+        }
+        if (NewCommand.Selected) return;
+        NewCommand.SetSelected(true);
+        Shortcut s = NewCommand.Shortcuts.Find(s => s.Key.MainKey == Keycode.PAGEUP);
+        if (MainCommandWidget.InitialPageUpKey) NewCommand.SetTimer($"key_{s.Key.ID}_initial", 300);
+        else NewCommand.SetTimer($"key_{s.Key.ID}", 50);
+        NewCommand.ScrollToThisCommand();
     }
 }

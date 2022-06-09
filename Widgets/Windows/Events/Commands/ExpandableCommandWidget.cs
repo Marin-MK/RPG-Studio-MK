@@ -55,7 +55,7 @@ public class ExpandableCommandWidget : BaseCommandWidget
     public override void LeftMouseDownInside(MouseEventArgs e)
     {
         base.LeftMouseDownInside(e);
-        if (e.Handled || this.Indentation == -1 || InsideChild() || ExpandArrow.Mouse.Inside)
+        if (e.Handled || this.Indentation == -1 || ExpandArrow.Mouse.Inside)
         {
             CancelDoubleClick();
             return;

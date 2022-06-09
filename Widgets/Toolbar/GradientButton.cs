@@ -44,6 +44,7 @@ public class GradientButton : Widget
     {
         base.HoverChanged(e);
         Sprites["bg"].SrcRect.Y = Enabled ? (Mouse.Inside ? 30 : 0) : 60;
+        Sprites["bg"].Update();
     }
 
     public enum Colors
