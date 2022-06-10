@@ -116,7 +116,15 @@ public class NewEventCommandWindow : PopupWindow
             };
         });
 
-        Add("Set Switch", 1, null);
+        Add("Set Switch", 1, Insert =>
+        {
+            //SwitchPicker win = new SwitchPicker(1);
+            //win.OnClosed += _ =>
+            //{
+            //    if (!win.Apply) return;
+            //    Insert(new List<EventCommand>() { new EventCommand(CommandCode.ControlSwitches, 0, new List<object>() { (long) win.SwitchID }) });
+            //};
+        });
         Add("Conditional Branch", 1, null);
         Add("Set Variable", 1, null);
         Add("Loop", 1, null);

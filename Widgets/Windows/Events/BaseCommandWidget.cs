@@ -33,7 +33,9 @@ public class BaseCommandWidget : Widget
         { CommandCode.ShowText, typeof(CommandWidgets.TextWidget) },
         { CommandCode.SetMoveRoute, typeof(MoveRouteWidget) },
         { CommandCode.WaitForMoveCompletion, typeof(WaitForMoveCompletionWidget) },
-        { CommandCode.Wait, typeof(WaitWidget) }
+        { CommandCode.Wait, typeof(WaitWidget) },
+        { CommandCode.ControlSwitches, typeof(SetSwitchWidget) },
+        { CommandCode.ControlVariables, typeof(SetVariableWidget) }
     };
 
     protected delegate void EditEvent(bool Applied = true, bool ResetCommand = false, int GlobalIndexToCountFrom = -1);
