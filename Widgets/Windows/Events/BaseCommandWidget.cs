@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using RPGStudioMK.Game;
-using RPGStudioMK.Game.EventCommands;
 using RPGStudioMK.Widgets.CommandWidgets;
 
 namespace RPGStudioMK.Widgets;
@@ -24,16 +23,17 @@ public class BaseCommandWidget : Widget
         { CommandCode.SetMoveRoute, CommandCode.MoreMoveRoute }
     };
 
-    static Dictionary<CommandCode, (System.Type WidgetClass, System.Type CommandClass)> CommandWidgetLookup = new Dictionary<CommandCode, (System.Type, System.Type)>()
+    static Dictionary<CommandCode, System.Type> CommandWidgetLookup = new Dictionary<CommandCode, System.Type>()
     {
-        { CommandCode.Blank, (typeof(BlankWidget), typeof(BaseCommand)) },
-        { CommandCode.ConditionalBranch, (typeof(ConditionalWidget), typeof(ConditionalCommand)) },
-        { CommandCode.ShowChoices, (typeof(ChoiceWidget), typeof(BaseCommand)) },
-        { CommandCode.Comment, (typeof(CommandWidgets.TextWidget), typeof(BaseCommand)) },
-        { CommandCode.Script, (typeof(CommandWidgets.TextWidget), typeof(BaseCommand)) },
-        { CommandCode.ShowText, (typeof(CommandWidgets.TextWidget), typeof(BaseCommand)) },
-        { CommandCode.SetMoveRoute, (typeof(MoveRouteWidget), typeof(BaseCommand)) },
-        { CommandCode.WaitForMoveCompletion, (typeof(WaitForMoveCompletionWidget), typeof(BaseCommand)) }
+        { CommandCode.Blank, typeof(BlankWidget) },
+        { CommandCode.ConditionalBranch, typeof(ConditionalWidget) },
+        { CommandCode.ShowChoices, typeof(ChoiceWidget) },
+        { CommandCode.Comment, typeof(CommandWidgets.TextWidget) },
+        { CommandCode.Script, typeof(CommandWidgets.TextWidget) },
+        { CommandCode.ShowText, typeof(CommandWidgets.TextWidget) },
+        { CommandCode.SetMoveRoute, typeof(MoveRouteWidget) },
+        { CommandCode.WaitForMoveCompletion, typeof(WaitForMoveCompletionWidget) },
+        { CommandCode.Wait, typeof(WaitWidget) }
     };
 
     protected delegate void EditEvent(bool Applied = true, bool ResetCommand = false, int GlobalIndexToCountFrom = -1);
@@ -44,7 +44,6 @@ public class BaseCommandWidget : Widget
     protected Event Event;
     protected EventPage Page;
     protected EventCommand? Command;
-    protected BaseCommand CommandHelper;
     protected List<EventCommand> Commands;
     protected int Indentation;
     protected int HeightAdd = 0;
@@ -164,12 +163,6 @@ public class BaseCommandWidget : Widget
         SubcommandWidgets.Clear();
         if (Command != null)
         {
-            if (CommandWidgetLookup.ContainsKey(Command.Code))
-            {
-                System.Type CommandClass = CommandWidgetLookup[Command.Code].CommandClass;
-                CommandHelper = (BaseCommand) Activator.CreateInstance(CommandClass, new object?[] { Command });
-            }
-            else CommandHelper = new BaseCommand(Command);
             HeaderLabel.SetText(Command.Code.ToString());
             HeaderLabel.SetVisible(true);
             VStackPanel.SetPadding(ChildIndent, StandardHeight, 0, 0);
@@ -223,7 +216,7 @@ public class BaseCommandWidget : Widget
         IContainer ParentContainer = Parent ?? VStackPanel;
         if (CommandWidgetLookup.ContainsKey(Command.Code))
         {
-            System.Type type = CommandWidgetLookup[Command.Code].WidgetClass;
+            System.Type type = CommandWidgetLookup[Command.Code];
             w = (BaseCommandWidget) Activator.CreateInstance(type, new object?[] { ParentContainer, ParentWidgetIndex });
         }
         else w = new BaseCommandWidget(ParentContainer, ParentWidgetIndex);
