@@ -106,7 +106,15 @@ public class NewEventCommandWindow : PopupWindow
                 Insert(CommandWidgets.TextWidget.TextToCommands(CommandCode.Comment, win.Text));
             };
         });
-        Add("Wait", 0, null);
+        Add("Wait", 0, Insert =>
+        {
+            GenericNumberPicker win = new GenericNumberPicker("Wait", "Frames", 4, 1, null);
+            win.OnClosed += _ =>
+            {
+                if (!win.Apply) return;
+                Insert(new List<EventCommand>() { new EventCommand(CommandCode.Wait, 0, new List<object>() { (long) win.Value }) });
+            };
+        });
 
         Add("Set Switch", 1, null);
         Add("Conditional Branch", 1, null);
