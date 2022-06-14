@@ -84,7 +84,16 @@ public class NewEventCommandWindow : PopupWindow
         Add("Change Text Options", 0, null);
         Add("Show Choices", 0, null);
         Add("Change Windowskin", 0, null);
-        Add("Set Move Route", 0, null);
+        Add("Set Move Route", 0, Insert =>
+        {
+            MoveRoute mr = new MoveRoute();
+            EditMoveRouteWindow win = new EditMoveRouteWindow(Map, Event, Page, mr, -1, false);
+            win.OnClosed += _ =>
+            {
+                if (!win.Apply) return;
+                Insert(win.NewCommands);
+            };
+        });
         Add("Input Number", 0, null);
         Add("Wait for Move Completion", 0, null);
         Add("Script", 0, Insert =>

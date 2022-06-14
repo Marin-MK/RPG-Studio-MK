@@ -29,12 +29,7 @@ public class MoveRouteWidget : BaseCommandWidget
                 Continue(false);
                 return;
             }
-            Commands = new List<EventCommand>();
-            Commands.Add(new EventCommand(CommandCode.SetMoveRoute, 0, new List<object>() { (long) win.EventID, win.MoveRoute }));
-            for (int i = 0; i < win.MoveRoute.Commands.Count; i++)
-            {
-                Commands.Add(new EventCommand(CommandCode.MoreMoveRoute, 0, new List<object>() { win.MoveRoute.Commands[i] }));
-            }
+            Commands = win.NewCommands;
             Continue(true);
         };
     }

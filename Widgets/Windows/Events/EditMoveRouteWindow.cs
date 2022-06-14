@@ -10,6 +10,7 @@ public class EditMoveRouteWindow : PopupWindow
     public bool Apply = false;
     public int EventID = 0;
     public MoveRoute MoveRoute;
+    public List<EventCommand> NewCommands;
 
     Map Map;
     Event Event;
@@ -31,7 +32,7 @@ public class EditMoveRouteWindow : PopupWindow
         this.MoveRoute = (MoveRoute) mr.Clone();
 
         SetTitle("Edit Move Route");
-        MinimumSize = MaximumSize = new Size(735, 500);
+        MinimumSize = MaximumSize = new Size(735, 510);
         SetSize(MaximumSize);
         Center();
         this.OnWidgetSelected += WidgetSelected;
@@ -411,6 +412,12 @@ public class EditMoveRouteWindow : PopupWindow
             if (TargetBox.SelectedIndex == 0) this.EventID = 0;
             else if (TargetBox.SelectedIndex == 1) this.EventID = -1;
             else this.EventID = (int) TargetBox.Items[TargetBox.SelectedIndex].Object;
+        }
+        NewCommands = new List<EventCommand>();
+        NewCommands.Add(new EventCommand(CommandCode.SetMoveRoute, 0, new List<object>() { (long) EventID, MoveRoute }));
+        for (int i = 0; i < MoveRoute.Commands.Count; i++)
+        {
+            NewCommands.Add(new EventCommand(CommandCode.MoreMoveRoute, 0, new List<object>() { MoveRoute.Commands[i] }));
         }
         Close();
     }

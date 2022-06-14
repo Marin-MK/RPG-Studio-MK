@@ -20,7 +20,7 @@ public class EditSelfSwitchCommandWindow : PopupWindow
     public EditSelfSwitchCommandWindow(Map Map, Event Event, EventCommand Command)
     {
         SetTitle("Set Self Switch");
-        MinimumSize = MaximumSize = new Size(300, 190);
+        MinimumSize = MaximumSize = new Size(276, 190);
         SetSize(MaximumSize);
         Center();
 

@@ -11,7 +11,7 @@ public class MoveRoute : ICloneable
     public int Speed;
     public bool Skippable;
     public bool Repeat;
-    public List<MoveCommand> Commands = new List<MoveCommand>();
+    public List<MoveCommand> Commands;
 
     public MoveRoute()
     {
@@ -19,7 +19,8 @@ public class MoveRoute : ICloneable
         this.Frequency = 3;
         this.Speed = 3;
         this.Skippable = false;
-        this.Repeat = true;
+        this.Repeat = false;
+        this.Commands = new List<MoveCommand>() { new MoveCommand(MoveCode.None, new List<object>()) };
     }
 
     public MoveRoute(IntPtr data)
@@ -27,6 +28,7 @@ public class MoveRoute : ICloneable
         this.Skippable = Ruby.GetIVar(data, "@skippable") == Ruby.True;
         this.Repeat = Ruby.GetIVar(data, "@repeat") == Ruby.True;
         IntPtr list = Ruby.GetIVar(data, "@list");
+        this.Commands = new List<MoveCommand>();
         for (int i = 0; i < Ruby.Array.Length(list); i++)
         {
             IntPtr cmd = Ruby.Array.Get(list, i);
