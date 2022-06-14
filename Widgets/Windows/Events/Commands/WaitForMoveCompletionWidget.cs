@@ -7,7 +7,7 @@ namespace RPGStudioMK.Widgets.CommandWidgets;
 
 public class WaitForMoveCompletionWidget : BaseCommandWidget
 {
-    public WaitForMoveCompletionWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex) { }
+    public WaitForMoveCompletionWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex, new Color(255, 128, 128)) { }
 
     public override void LoadCommand()
     {

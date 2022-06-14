@@ -7,7 +7,7 @@ namespace RPGStudioMK.Widgets.CommandWidgets;
 
 public class SetSwitchWidget : BaseCommandWidget
 {
-    public SetSwitchWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex) { }
+    public SetSwitchWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex, new Color(255, 255, 128)) { }
 
     public override void LoadCommand()
     {
