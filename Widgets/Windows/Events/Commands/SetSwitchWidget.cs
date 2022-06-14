@@ -26,17 +26,17 @@ public class SetSwitchWidget : BaseCommandWidget
 
     protected override void Edit(EditEvent Continue)
     {
-        //SwitchPicker win = new SwitchPicker((int) (long) Command.Parameters[0]);
-        //win.OnClosed += _ =>
-        //{
-        //    if (!win.Apply)
-        //    {
-        //        Continue(false);
-        //        return;
-        //    }
-        //    Commands = new List<EventCommand>() { new EventCommand(CommandCode.ControlSwitches, 0, new List<object>() { (long) win.SwitchID }) };
-        //    Continue();
-        //};
+        EditSwitchCommandWindow win = new EditSwitchCommandWindow(Command);
+        win.OnClosed += _ =>
+        {
+            if (!win.Apply)
+            {
+                Continue(false);
+                return;
+            }
+            Commands = new List<EventCommand>() { win.NewCommand };
+            Continue();
+        };
     }
 
     public override void LeftMouseDownInside(MouseEventArgs e)
