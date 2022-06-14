@@ -131,6 +131,12 @@ public partial class MapViewer : Widget
         HintWindow.SetZIndex(10);
         HintWindow.SetVisible(false);
 
+        MapWidget = new MapImageWidget(MainContainer);
+        MapWidget.MapViewer = this;
+        MapWidget.SetZIndex(3);
+        MapWidget.SetGridVisibility(Editor.GeneralSettings.ShowGrid);
+        MapWidget.SetMapAnimations(Editor.GeneralSettings.ShowMapAnimations);
+
         RegisterShortcuts(new List<Shortcut>()
         {
             /* Tiles mode */
@@ -246,9 +252,21 @@ public partial class MapViewer : Widget
         Sprites["block"].Y = Sprites["hslider"].Y - 1;
     }
 
+    public virtual void SetMapAnimations(bool MapAnimations)
+    {
+        MapWidget.SetMapAnimations(MapAnimations);
+    }
+
+    public virtual void SetGridVisibility(bool GridVisibility)
+    {
+        MapWidget.SetGridVisibility(GridVisibility);
+    }
+
     public virtual void SetMap(Map Map)
     {
         this.Map = Map;
+
+        MapWidget.SetMap(Map);
 
         CancelSelection(new BaseEventArgs());
         LayerPanel.CreateLayers();
@@ -314,11 +332,9 @@ public partial class MapViewer : Widget
             int dy = LastMouseY - e.Y;
             MainContainer.ScrolledX += dx;
             MainContainer.ScrolledY += dy;
-            LastMouseX = e.X;
-            LastMouseY = e.Y;
 
-            MainContainer.ScrolledX = Math.Max(0, Math.Min(MainContainer.ScrolledX, MainContainer.MaxChildWidth - MainContainer.Viewport.Width));
-            MainContainer.ScrolledY = Math.Max(0, Math.Min(MainContainer.ScrolledY, MainContainer.MaxChildHeight - MainContainer.Viewport.Height));
+            MainContainer.ScrolledX = Math.Clamp(MainContainer.ScrolledX, 0, Math.Max(0, MainContainer.MaxChildWidth - MainContainer.Viewport.Width));
+            MainContainer.ScrolledY = Math.Clamp(MainContainer.ScrolledY, 0, Math.Max(0, MainContainer.MaxChildHeight - MainContainer.Viewport.Height));
 
             MainContainer.UpdateAutoScroll();
             if (Editor.MainWindow.MapWidget != null)
@@ -438,5 +454,20 @@ public partial class MapViewer : Widget
     public void SetHint(string HintText)
     {
         HintWindow.SetText(HintText);
+    }
+
+    public void DrawTile(int X, int Y, int Layer, TileData Tile, TileData OldTile, bool ForceUpdateNearbyAutotiles = false, bool MakeNeighboursUndoable = true)
+    {
+        MapWidget.DrawTile(X, Y, Layer, Tile, OldTile, ForceUpdateNearbyAutotiles, MakeNeighboursUndoable);
+    }
+
+    public bool IsLayerLocked(int Layer)
+    {
+        return MapWidget.IsLayerLocked(Layer);
+    }
+
+    public void SetLayerLocked(int Layer, bool Locked)
+    {
+        MapWidget.SetLayerLocked(Layer, Locked);
     }
 }

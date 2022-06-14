@@ -5,7 +5,6 @@ namespace RPGStudioMK.Widgets;
 public class MappingWidget : Widget
 {
     public MapSelectPanel MapSelectPanel;
-    public MapImageWidget MapImageWidget;
 
     public Game.Map Map;
 
@@ -54,11 +53,6 @@ public class MappingWidget : Widget
         MapViewer.SetGridColumn(2);
         MapViewer.SetGridRow(1);
 
-        MapImageWidget = new MapImageWidget(MapViewer.MainContainer);
-        MapImageWidget.SetZIndex(3);
-
-        MapViewer.MapWidget = MapImageWidget;
-
         SetHorizontalScroll(0.5);
         SetVerticalScroll(0.5);
     }
@@ -86,18 +80,17 @@ public class MappingWidget : Widget
     public void SetMap(Game.Map Map)
     {
         this.Map = Map;
-        MapImageWidget.LoadLayers(Map);
         MapViewer.SetMap(Map);
     }
 
     public void SetMapAnimations(bool Animations)
     {
-        MapImageWidget.SetMapAnimations(Animations);
+        MapViewer.SetMapAnimations(Animations);
     }
 
     public void SetGridVisibility(bool Visible)
     {
-        MapImageWidget.SetGridVisibility(Visible);
+        MapViewer.SetGridVisibility(Visible);
     }
 
     public void SetHorizontalScroll(double Value)

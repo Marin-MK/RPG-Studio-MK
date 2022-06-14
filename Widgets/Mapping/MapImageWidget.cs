@@ -20,13 +20,15 @@ public class MapImageWidget : Widget
 
     public double ZoomFactor = 1.0;
 
+    public bool GridVisibility { get; protected set; } = false;
+    public bool ShowMapAnimations { get; protected set; } = false;
+
     public MapImageWidget(IContainer Parent) : base(Parent)
     {
         SetBackgroundColor(73, 89, 109);
-        this.MapViewer = this.Parent.Parent.Parent as MapViewer;
         this.GridBackground = new GridBackground(this);
         this.GridBackground.SetDocked(true);
-        this.GridBackground.SetVisible(Editor.GeneralSettings.ShowGrid);
+        this.GridBackground.SetVisible(false);
         Sprites["dark"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, new Color(0, 0, 0, 0)));
         Sprites["dark"].Z = 999999;
         SetTimer("frame", (long)Math.Round(1000 / 60d)); // 60 FPS
@@ -69,7 +71,7 @@ public class MapImageWidget : Widget
         if (TimerPassed("frame"))
         {
             ResetTimer("frame");
-            if (!Editor.GeneralSettings.ShowMapAnimations) return;
+            if (!ShowMapAnimations) return;
             List<int> UpdateLayers = new List<int>();
             AnimateCount++;
             foreach (List<int> data in AnimatedAutotiles)
@@ -177,9 +179,10 @@ public class MapImageWidget : Widget
         return bmp;
     }
 
-    public void SetMapAnimations(bool Animations)
+    public void SetMapAnimations(bool ShowMapAnimations)
     {
-        if (!Animations)
+        this.ShowMapAnimations = ShowMapAnimations;
+        if (!ShowMapAnimations)
         {
             List<int> UpdateLayers = new List<int>();
             AnimateCount++;
@@ -202,9 +205,10 @@ public class MapImageWidget : Widget
         }
     }
 
-    public void SetGridVisibility(bool Visible)
+    public void SetGridVisibility(bool GridVisibility)
     {
-        GridBackground.SetVisible(Visible);
+        this.GridVisibility = GridVisibility;
+        GridBackground.SetVisible(GridVisibility);
     }
 
     public virtual void UpdateSize()
@@ -214,7 +218,7 @@ public class MapImageWidget : Widget
         this.SetSize(Width, Height);
     }
 
-    public virtual void LoadLayers(Map MapData, int RelativeX = 0, int RelativeY = 0)
+    public virtual void SetMap(Map MapData, int RelativeX = 0, int RelativeY = 0)
     {
         this.MapData = MapData;
         this.MapID = MapData.ID;
@@ -797,7 +801,7 @@ public class MapImageWidget : Widget
                 {
                     AnimatedAutotiles.Add(new List<int>() { Layer, X, Y, MapData.AutotileIDs[Tile.Index], Tile.ID });
                     Autotile a = Data.Autotiles[MapData.AutotileIDs[Tile.Index]];
-                    int frame = a != null && Editor.GeneralSettings.ShowMapAnimations ? (int)Math.Floor((double)AnimateCount / a.AnimateSpeed) : 0;
+                    int frame = a != null && ShowMapAnimations ? (int)Math.Floor((double)AnimateCount / a.AnimateSpeed) : 0;
                     DrawAutotile(Layer, X, Y, MapData.AutotileIDs[Tile.Index], Tile.ID, frame);
                 }
                 else // Draws and updates
@@ -993,7 +997,7 @@ public class MapImageWidget : Widget
                     if (autotile.Format == AutotileFormat.Single)
                     {
                         AnimX = ((int)Math.Floor((double)AnimateCount / autotile.AnimateSpeed) * 32) % autotile.AutotileBitmap.Width;
-                        if (!Editor.GeneralSettings.ShowMapAnimations) AnimX = 0;
+                        if (!ShowMapAnimations) AnimX = 0;
                         if (autotile.AutotileBitmap != null)
                         {
                             this.Sprites[Layer.ToString()].Bitmap.FillRect(32 * X, 32 * Y, 32, 32, Color.ALPHA);
@@ -1004,7 +1008,7 @@ public class MapImageWidget : Widget
                     else if (autotile.AutotileBitmap != null)
                     {
                         AnimX = ((int)Math.Floor((double)AnimateCount / autotile.AnimateSpeed) * 96) % autotile.AutotileBitmap.Width;
-                        if (!Editor.GeneralSettings.ShowMapAnimations) AnimX = 0;
+                        if (!ShowMapAnimations) AnimX = 0;
                         List<int> Tiles = Autotile.AutotileCombinations[autotile.Format][ID];
                         this.Sprites[Layer.ToString()].Bitmap.FillRect(32 * X, 32 * Y, 32, 32, Color.ALPHA);
                         for (int i = 0; i < 4; i++)

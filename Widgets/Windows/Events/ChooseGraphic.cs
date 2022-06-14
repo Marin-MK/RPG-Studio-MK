@@ -59,29 +59,9 @@ public class ChooseGraphic : PopupWindow
         ClearGraphicButton.SetSize(80, 32);
         ClearGraphicButton.SetText("Clear");
         
-        Widget GraphicContainerGroupBox = new Widget(this);
+        GroupBoxWithScrollBars GraphicContainerGroupBox = new GroupBoxWithScrollBars(this);
         GraphicContainerGroupBox.SetPosition(542, 91);
         GraphicContainerGroupBox.SetSize(177, 177);
-        GraphicContainerGroupBox.SetBackgroundColor(Color.GREEN);
-        Color outline = new Color(59, 91, 124);
-        Color inline = new Color(17, 27, 38);
-        Color filler = new Color(24, 38, 53);
-        GraphicContainerGroupBox.Sprites["gfxbox"] = new Sprite(GraphicContainerGroupBox.Viewport);
-        GraphicContainerGroupBox.Sprites["gfxbox"].Bitmap = new Bitmap(177, 177);
-        GraphicContainerGroupBox.Sprites["gfxbox"].Bitmap.Unlock();
-        GraphicContainerGroupBox.Sprites["gfxbox"].Bitmap.DrawRect(0, 0, 177, 177, outline);
-        GraphicContainerGroupBox.Sprites["gfxbox"].Bitmap.DrawRect(1, 1, 175, 175, inline);
-        GraphicContainerGroupBox.Sprites["gfxbox"].Bitmap.FillRect(2, 2, 173, 173, filler);
-        GraphicContainerGroupBox.Sprites["gfxbox"].Bitmap.FillRect(163, 163, 13, 13, outline);
-        GraphicContainerGroupBox.Sprites["gfxbox"].Bitmap.DrawLine(162, 1, 162, 162, inline);
-        GraphicContainerGroupBox.Sprites["gfxbox"].Bitmap.DrawLine(163, 1, 163, 162, outline);
-        GraphicContainerGroupBox.Sprites["gfxbox"].Bitmap.DrawLine(164, 1, 164, 162, inline);
-        GraphicContainerGroupBox.Sprites["gfxbox"].Bitmap.DrawLine(165, 162, 174, 162, inline);
-        GraphicContainerGroupBox.Sprites["gfxbox"].Bitmap.DrawLine(1, 162, 162, 162, inline);
-        GraphicContainerGroupBox.Sprites["gfxbox"].Bitmap.DrawLine(1, 163, 162, 163, outline);
-        GraphicContainerGroupBox.Sprites["gfxbox"].Bitmap.DrawLine(1, 164, 162, 164, inline);
-        GraphicContainerGroupBox.Sprites["gfxbox"].Bitmap.DrawLine(162, 165, 162, 174, inline);
-        GraphicContainerGroupBox.Sprites["gfxbox"].Bitmap.Lock();
 
         GraphicContainer = new Container(this);
         GraphicContainer.SetPosition(544, 93);

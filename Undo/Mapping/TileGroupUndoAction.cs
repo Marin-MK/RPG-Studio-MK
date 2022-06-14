@@ -91,9 +91,9 @@ public class TileGroupUndoAction : BaseUndoAction
         List<int> UnlockedLayers = new List<int>();
         foreach (TileChange tile in Tiles)
         {
-            if (Editor.MainWindow.MapWidget.MapImageWidget.IsLayerLocked(tile.Layer))
+            if (Editor.MainWindow.MapWidget.MapViewer.IsLayerLocked(tile.Layer))
             {
-                Editor.MainWindow.MapWidget.MapImageWidget.SetLayerLocked(tile.Layer, false);
+                Editor.MainWindow.MapWidget.MapViewer.SetLayerLocked(tile.Layer, false);
                 UnlockedLayers.Add(tile.Layer);
             }
             // OldTile is the tile that's currently displayed on the map - not necessarily related to this undo action,
@@ -101,7 +101,7 @@ public class TileGroupUndoAction : BaseUndoAction
             TileData OldTile = Map.Layers[tile.Layer].Tiles[tile.MapPosition];
             TileData NewTile = IsRedo ? tile.NewTile : tile.OldTile;
             Map.Layers[tile.Layer].Tiles[tile.MapPosition] = NewTile;
-            Editor.MainWindow.MapWidget.MapImageWidget.DrawTile(
+            Editor.MainWindow.MapWidget.MapViewer.DrawTile(
                 tile.MapPosition % Map.Width,
                 (int)Math.Floor((double)tile.MapPosition / Map.Width),
                 tile.Layer,
@@ -113,7 +113,7 @@ public class TileGroupUndoAction : BaseUndoAction
         }
         UnlockedLayers.ForEach(Layer =>
         {
-            Editor.MainWindow.MapWidget.MapImageWidget.SetLayerLocked(Layer, true);
+            Editor.MainWindow.MapWidget.MapViewer.SetLayerLocked(Layer, true);
         });
         return true;
     }
