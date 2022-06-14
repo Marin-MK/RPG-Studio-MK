@@ -73,6 +73,14 @@ public partial class MainEditorWindow
                     IsClickable = e => e.Value = Editor.InProject,
                     OnClicked = _ => Editor.ToggleGrid()
                 },
+                new MenuItem("Expand Event Commands")
+                {
+                    IsCheckable = true,
+                    IsChecked = e => e.Value = Editor.GeneralSettings.ExpandEventCommands,
+                    HelpText = "Whether to expand event commands by default.",
+                    IsClickable = e => e.Value = Editor.InProject,
+                    OnClicked = _ => Editor.GeneralSettings.ExpandEventCommands = !Editor.GeneralSettings.ExpandEventCommands
+                },
                 new MenuItem("Event Graphics")
                 {
                     IsClickable = e => e.Value = Editor.InProject,

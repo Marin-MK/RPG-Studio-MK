@@ -170,12 +170,3 @@ public class EventBox : Widget
         }
     }
 }
-
-public enum EventGraphicViewMode
-{
-    BoxOnly,
-    BoxAndGraphic,
-    BoxAndCroppedGraphic,
-    GraphicOnly,
-    CroppedGraphicOnly
-}

@@ -17,6 +17,7 @@ public class ExpandableCommandWidget : BaseCommandWidget
     public ExpandableCommandWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex)
     {
         ExpandArrow = new ExpandArrow(this);
+        ExpandArrow.SetExpanded(Editor.GeneralSettings.ExpandEventCommands);
         ExpandArrow.OnStateChanged += _ =>
         {
             if (SilenceEvent) return;
