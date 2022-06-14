@@ -43,25 +43,37 @@ public partial class MainEditorWindow : UIWindow
     /// </summary>
     public HomeScreen HomeScreen;
 
-    public MainEditorWindow(string ProjectFile)
+    public MainEditorWindow(string ProjectFile) : base(false, false)
     {
         this.SetMinimumSize(675, 400);
         this.SetText("RPG Studio MK");
+
         this.Initialize();
+        Windows.Add(this);
+        OnClosed += _ => Windows.Remove(this);
+
         Editor.LoadGeneralSettings();
         SetPosition(Editor.GeneralSettings.LastX, Editor.GeneralSettings.LastY);
         SetSize(Editor.GeneralSettings.LastWidth, Editor.GeneralSettings.LastHeight);
         if (Editor.GeneralSettings.WasMaximized) Maximize();
 
+        Action UpdateLastPosAndSize = () =>
+        {
+            bool Maximized = IsMaximized();
+            if (!Maximized)
+            {
+                Point pos = GetPosition();
+                Size size = GetSize();
+                Editor.GeneralSettings.LastX = pos.X;
+                Editor.GeneralSettings.LastY = pos.Y;
+                Editor.GeneralSettings.LastWidth = size.Width;
+                Editor.GeneralSettings.LastHeight = size.Height;
+            }
+            Editor.GeneralSettings.WasMaximized = Maximized;
+        };
         this.OnClosing += delegate (BoolEventArgs e)
         {
-            Point pos = GetPosition();
-            Size size = GetSize();
-            Editor.GeneralSettings.LastX = pos.X;
-            Editor.GeneralSettings.LastY = pos.Y;
-            Editor.GeneralSettings.LastWidth = size.Width;
-            Editor.GeneralSettings.LastHeight = size.Height;
-            Editor.GeneralSettings.WasMaximized = IsMaximized();
+            UpdateLastPosAndSize();
             Editor.DumpGeneralSettings();
 
             if (Editor.InProject)
@@ -75,6 +87,8 @@ public partial class MainEditorWindow : UIWindow
                 GameRunner.Stop();
             }
         };
+        OnPositionChanged += _ => UpdateLastPosAndSize();
+        OnSizeChanged += _ => UpdateLastPosAndSize();
 
         this.InitializeUI(10, 23, 37);
         UI.RegisterShortcut(new Shortcut(null, new Key(Keycode.Z, Keycode.CTRL), _ => Editor.Undo(), true));
