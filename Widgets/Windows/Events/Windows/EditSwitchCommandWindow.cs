@@ -10,8 +10,8 @@ public class EditSwitchCommandWindow : PopupWindow
     public int SwitchID1;
     public int SwitchID2;
     public bool Batch => SwitchID1 != SwitchID2;
-    public EventCommand NewCommand;
     public bool Value;
+    public EventCommand NewCommand;
 
     RadioBox SingleLabel;
     RadioBox BatchLabel;

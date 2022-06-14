@@ -35,7 +35,8 @@ public class BaseCommandWidget : Widget
         { CommandCode.WaitForMoveCompletion, typeof(WaitForMoveCompletionWidget) },
         { CommandCode.Wait, typeof(WaitWidget) },
         { CommandCode.ControlSwitches, typeof(SetSwitchWidget) },
-        { CommandCode.ControlVariables, typeof(SetVariableWidget) }
+        { CommandCode.ControlVariables, typeof(SetVariableWidget) },
+        { CommandCode.ControlSelfSwitch, typeof(SetSelfSwitchWidget) },
     };
 
     protected delegate void EditEvent(bool Applied = true, bool ResetCommand = false, int GlobalIndexToCountFrom = -1);

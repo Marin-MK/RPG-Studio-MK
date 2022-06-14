@@ -129,7 +129,16 @@ public class NewEventCommandWindow : PopupWindow
         Add("Conditional Branch", 1, null);
         Add("Set Variable", 1, null);
         Add("Loop", 1, null);
-        Add("Set Self Switch", 1, null);
+        Add("Set Self Switch", 1, Insert =>
+        {
+            EventCommand cmd = new EventCommand(CommandCode.ControlSelfSwitch, 0, new List<object>() { "A", 0L, -1L });
+            EditSelfSwitchCommandWindow win = new EditSelfSwitchCommandWindow(Map, Event, cmd);
+            win.OnClosed += _ =>
+            {
+                if (!win.Apply) return;
+                Insert(new List<EventCommand>() { win.NewCommand });
+            };
+        });
         Add("Break Loop", 1, null);
         Add("Exit Event Processing", 1, null);
         Add("Set Label", 1, null);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.RegularExpressions;
 
 namespace RPGStudioMK.Game;
 
@@ -30,10 +31,38 @@ public class EventCommand : ICloneable
             object obj = Utilities.RubyToNative(param);
             this.Parameters.Add(obj);
         }
+
+        if (this.Code == CommandCode.Script)
+        {
+            string code = (string) Parameters[0];
+            Match match = Regex.Match(code, @"^# rpg studio mk\n\$game_self_switches\[\[\$game_map\.map_id,(\d+|@event_id),'(.)'\]\]=(true|false)\n\$game_map\.need_refresh=true$");
+            if (match.Success)
+            {
+                // Convert custom ControlSelfSwitch script back to the command
+                this.Code = CommandCode.ControlSelfSwitch;
+                string c = match.Groups[2].Value;
+                long state = match.Groups[3].Value == "true" ? 0L : 1L;
+                if (match.Groups[1].Value != "@event_id")
+                {
+                    long EventID = Convert.ToInt64(match.Groups[1].Value);
+                    this.Parameters = new List<object>() { c, state, EventID };
+                }
+                else this.Parameters = new List<object>() { c, state };
+            }
+        }
     }
 
     public IntPtr Save()
     {
+        if (this.Code == CommandCode.ControlSelfSwitch && (this.Parameters.Count == 3 || ((string) this.Parameters[0])[0] > 'D'))
+        {
+            // Convert unconventional ControlSelfSwitch command to script
+            string eventid = Parameters.Count == 3 ? this.Parameters[2].ToString() : "@event_id";
+            string switchid = "'" + this.Parameters[0].ToString() + "'";
+            string value = ((long) this.Parameters[1] == 0) ? "true" : "false";
+            return new EventCommand(CommandCode.Script, this.Indent, new List<object>() { $"# rpg studio mk\n$game_self_switches[[$game_map.map_id,{eventid},{switchid}]]={value}\n$game_map.need_refresh=true" }).Save();
+        }
+
         IntPtr cmd = Ruby.Funcall(Compatibility.RMXP.EventCommand.Class, "new");
         Ruby.Pin(cmd);
         Ruby.SetIVar(cmd, "@code", Ruby.Integer.ToPtr((int)this.Code));
