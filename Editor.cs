@@ -87,7 +87,7 @@ public static class Editor
     /// <summary>
     /// Debug method for quickly testing a piece of functionality.
     /// </summary>
-    public static void Test()
+    public unsafe static void Test()
     {
         if (Program.ReleaseMode) return;
 

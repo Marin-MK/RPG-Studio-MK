@@ -36,8 +36,9 @@ public class Program
         };
         // Update all top-level widgets to make sure they're the right size.
         win.UI.Widgets.ForEach(e => e.UpdateBounds());
-        // While there's at least one window open,
-        while (Graphics.CanUpdate())
+        
+        // Amethyst's main UI loop
+        Amethyst.Run(() =>
         {
             if (ReleaseMode)
             {
@@ -67,13 +68,13 @@ public class Program
             }
             else
             {
-                // Update all renderers
+                // Updates graphics
                 Graphics.Update();
             }
-        }
-        // Stops all windows
-        Graphics.Stop();
-        Audio.Stop();
+        });
+
+        // Stops amethyst
+        Amethyst.Stop();
     }
 
     private static void InitializeProgram()
@@ -87,17 +88,11 @@ public class Program
             Console.WriteLine("===============================\nProgram launched in Debug mode.\n===============================");
         }
         PrintPlatformInfo();
-        InitializeODL();
+        InitializeAmethyst();
         InitializeRuby();
     }
 
-    private static void InitializeODL()
-    {
-        InitializeGraphics();
-        InitializeAudio();
-    }
-
-    private static void InitializeGraphics()
+    private static void InitializeAmethyst()
     {
         PathPlatformInfo windows = new PathPlatformInfo(NativeLibraryLoader.Platform.Windows);
         windows.AddPath("libsdl2", "./lib/windows/SDL2.dll");
@@ -107,6 +102,10 @@ public class Program
         if (File.Exists("lib/windows/libjpeg-9.dll")) windows.AddPath("libjpeg", "./lib/windows/libjpeg-9.dll");
         windows.AddPath("libsdl2_ttf", "./lib/windows/SDL2_ttf.dll");
         windows.AddPath("libfreetype", "./lib/windows/libfreetype-6.dll");
+        windows.AddPath("bass", "./lib/windows/bass.dll");
+        windows.AddPath("bass_fx", "./lib/windows/bass_fx.dll");
+        windows.AddPath("bass_midi", "./lib/windows/bassmidi.dll");
+        windows.AddPath("tinyfiledialogs", "./lib/windows/tinyfiledialogs64.dll");
 
         PathPlatformInfo linux = new PathPlatformInfo(NativeLibraryLoader.Platform.Linux);
         linux.AddPath("libsdl2", "./lib/linux/SDL2.so");
@@ -116,23 +115,12 @@ public class Program
         if (File.Exists("lib/linux/libjpeg-9.so")) linux.AddPath("libjpeg", "./lib/linux/libjpeg-9.so");
         linux.AddPath("libsdl2_ttf", "./lib/linux/SDL2_ttf.so");
         linux.AddPath("libfreetype", "./lib/linux/libfreetype-6.so");
-
-        Graphics.Start(PathInfo.Create(windows, linux));
-    }
-
-    private static void InitializeAudio()
-    {
-        PathPlatformInfo windows = new PathPlatformInfo(NativeLibraryLoader.Platform.Windows);
-        windows.AddPath("bass", "./lib/windows/bass.dll");
-        windows.AddPath("bass_fx", "./lib/windows/bass_fx.dll");
-        windows.AddPath("bass_midi", "./lib/windows/bassmidi.dll");
-
-        PathPlatformInfo linux = new PathPlatformInfo(NativeLibraryLoader.Platform.Linux);
         linux.AddPath("bass", "./lib/linux/libbass.so");
         linux.AddPath("bass_fx", "./lib/linux/libbass_fx.so");
         linux.AddPath("bass_midi", "./lib/linux/libbassmidi.so");
+        linux.AddPath("tinyfiledialogs", "./lib/linux/tinyfiledialogs64.so");
 
-        Audio.Start(PathInfo.Create(windows, linux));
+        Amethyst.Start(PathInfo.Create(windows, linux), true, true);
 
         int Handle = Audio.LoadSoundfont("assets/soundfont.sf2");
         if (Handle == 0) throw new Exception("Failed to load soundfont.");
