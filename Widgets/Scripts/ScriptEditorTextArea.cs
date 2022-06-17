@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+// TODO:
+// - Run tokenizer on separate thread on startup
+// - Insert to replace character (in base class, MultilineTextArea)
+// - Make Undo/Redo system of types insertion and addition and use the InsertText and RemoveText methods,
+//   that way only what needs to be redrawn/retokenized will ever be redrawn/retokenized
 
 namespace RPGStudioMK.Widgets;
 
@@ -12,7 +16,7 @@ public class ScriptEditorTextArea : MultilineTextArea
     protected List<List<Token>> LineTokens = new List<List<Token>>();
     protected List<List<(int, Color)>> LineColors = new List<List<(int, Color)>>();
     protected int OldScrolledY;
-    protected int OldTopIndex;
+    protected int OldLineCount;
     protected bool RequireScrollAdjustment = false;
 
     protected new int BottomLineIndex => base.BottomLineIndex + 1;
@@ -25,12 +29,23 @@ public class ScriptEditorTextArea : MultilineTextArea
         ConsiderInAutoScrollPositioningY = false;
     }
 
-    public override void SetText(string Text, bool SetCaretToEnd = false, bool ClearUndoStates = true)
+    public virtual void SetText(string Text, bool SetCaretToEnd = false, bool ClearUndoStates = true)
     {
         if (this.Text != Text)
         {
-            base.SetText(Text, SetCaretToEnd, ClearUndoStates);
+            if (HasSelection) CancelSelection();
+            Text = Text.Replace("\r", "");
+            Caret.AtEndOfLine = false;
+            Caret.Index = 0;
+            this.Text = Text;
+            if (HasSelection) CancelSelection();
+            if (SetCaretToEnd) Caret.Index = Text.Length;
             RecalculateLines(true);
+            if (ClearUndoStates)
+            {
+                this.UndoableStates.Clear();
+                AddUndoState();
+            }
         }
     }
 
@@ -167,7 +182,6 @@ public class ScriptEditorTextArea : MultilineTextArea
         if (OldScrolledY != Parent.ScrolledY) AdjustLinesForScroll();
         if (RequireRecalculation) RecalculateLines(true);
         if (RequireRedrawText) RedrawText(true);
-        if (RequireScrollAdjustment) AdjustLinesForScroll(true);
         if (RequireCaretRepositioning)
         {
             if (Sprites["caret"].X - Parent.ScrolledX >= Parent.Size.Width)
@@ -184,6 +198,7 @@ public class ScriptEditorTextArea : MultilineTextArea
             if (Sprites["caret"].Y >= Parent.Size.Height) ScrollDownPixels(Sprites["caret"].Y - Parent.Size.Height + LineHeight + LineMargins);
             RequireCaretRepositioning = false;
         }
+        if (RequireScrollAdjustment) AdjustLinesForScroll(true);
         if (TimerPassed("idle"))
         {
             Sprites["caret"].Visible = !Sprites["caret"].Visible;
@@ -199,7 +214,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         if (!RequireScrollAdjustment)
         {
             OldScrolledY = Parent.ScrolledY;
-            OldTopIndex = TopLineIndex;
+            OldLineCount = this.Lines.Count;
         }
     }
 
@@ -334,7 +349,8 @@ public class ScriptEditorTextArea : MultilineTextArea
     {
         Sprite sprite = new Sprite(this.Viewport);
         sprite.Y = line.LineIndex * LineHeight + line.LineIndex * LineMargins - Parent.ScrolledY;
-        sprite.Bitmap = new Bitmap(line.LineWidth, LineHeight + 2);
+        sprite.Bitmap = new Bitmap(line.LineWidth, LineHeight + 2, Graphics.MaxTextureSize);
+        if (line.LineWidth > Size.Width) SetWidth(line.LineWidth);
         sprite.Bitmap.Font = Font;
         sprite.Bitmap.Unlock();
         string text = line.Text.Replace('\n', ' ');
@@ -380,7 +396,6 @@ public class ScriptEditorTextArea : MultilineTextArea
 
     protected void RedrawLine(int LineIndex)
     {
-        if (!Sprites.ContainsKey($"line{LineIndex}")) throw new Exception("Cannot redraw non-existing line");
         DisposeLineSprite(LineIndex);
         CreateLineSprite(Lines[LineIndex]);
     }
@@ -392,61 +407,38 @@ public class ScriptEditorTextArea : MultilineTextArea
             RequireScrollAdjustment = true;
             return;
         }
-        int NewTopIndex = TopLineIndex;
-        int LinesLost = NewTopIndex - OldTopIndex;
-        int LineCount = BottomLineIndex - TopLineIndex;
-        if (LinesLost < 0)
-        {
-            // Scrolled up, remove lines at the bottom
-            LinesLost = -LinesLost;
-            for (int i = 0; i < LinesLost; i++)
-            {
-                int idx = NewTopIndex + LineCount + i;
-                DisposeLineSprite(idx);
-            }
-            // Create new lines at the top
-            for (int i = NewTopIndex; i <= OldTopIndex; i++)
-            {
-                if (i >= 0 && !Sprites.ContainsKey($"line{i}")) CreateLineSprite(Lines[i]);
-            }
-            // Fully redraw selection boxes in case a selection has now come within bounds
-            RedrawSelectionBoxes();
-        }
-        else if (LinesLost > 0)
-        {
-            // Scrolled down, remove lines at the top
-            for (int i = 0; i < LinesLost; i++)
-            {
-                int idx = OldTopIndex + i;
-                DisposeLineSprite(idx);
-            }
-            // Create new lines at the bottom
-            for (int i = BottomLineIndex - LinesLost; i <= BottomLineIndex; i++)
-            {
-                if (i < Lines.Count && !Sprites.ContainsKey($"line{i}")) CreateLineSprite(Lines[i]);
-            }
-            // Fully redraw selection boxes in case a selection has now come within bounds
-            RedrawSelectionBoxes();
-        }
         // Reposition all on-screen lines
-        for (int i = 0; i < Lines.Count; i++)
+        int count = Math.Max(OldLineCount, Lines.Count);
+        for (int i = 0; i < count; i++)
         {
-            Line line = Lines[i];
-            if (Sprites.ContainsKey($"line{line.LineIndex}"))
+            // For all existing lines within view
+            if (i >= TopLineIndex && i <= BottomLineIndex && i < Lines.Count)
             {
-                Sprite sprite = Sprites[$"line{line.LineIndex}"];
-                sprite.Y = line.LineIndex * LineHeight + line.LineIndex * LineMargins - Parent.ScrolledY;
-                Sprite boxsprite = Sprites.ContainsKey($"box{line.LineIndex}") ? Sprites[$"box{line.LineIndex}"] : null;
-                if (boxsprite != null) boxsprite.Y = sprite.Y;
+                Line line = Lines[i];
+                // Create the line sprite if it doesn't exist
+                if (!Sprites.ContainsKey($"line{line.LineIndex}"))
+                {
+                    CreateLineSprite(line);
+                }
+                else
+                {
+                    // Or update its position if it does exist
+                    Sprite sprite = Sprites[$"line{line.LineIndex}"];
+                    sprite.Y = line.LineIndex * LineHeight + line.LineIndex * LineMargins - Parent.ScrolledY;
+                    Sprite boxsprite = Sprites.ContainsKey($"box{line.LineIndex}") ? Sprites[$"box{line.LineIndex}"] : null;
+                    if (boxsprite != null) boxsprite.Y = sprite.Y;
+                }
             }
             // Ensure we have no sprites that are no longer within reach
             // Already handled by the two LinesLost cases above,
             // but a line can fall through the cracks sometimes (think very fast scrolling)
-            else DisposeLineSprite(i);
+            else if (Sprites.ContainsKey($"line{i}")) DisposeLineSprite(i);
         }
         // Reposition caret
         Sprites["caret"].Y = Caret.Line.LineIndex * LineHeight + Caret.Line.LineIndex * LineMargins - Parent.ScrolledY;
+        RedrawSelectionBoxes();
         RequireScrollAdjustment = false;
+        OldScrolledY = Parent.ScrolledY;
     }
 
     protected override void ScrollDownPixels(int px)
@@ -471,7 +463,7 @@ public class ScriptEditorTextArea : MultilineTextArea
     {
         int rx = e.X - Viewport.X + LeftCutOff;
         int ry = e.Y - Viewport.Y + Parent.ScrolledY;
-        int LineIndex = ry / (LineHeight + LineMargins);
+        int LineIndex = (int) Math.Round((double) ry / (LineHeight + LineMargins));
         if (LineIndex < 0) LineIndex = 0;
         if (LineIndex >= Lines.Count) LineIndex = Lines.Count - 1;
         Line Line = Lines[LineIndex];
@@ -505,7 +497,6 @@ public class ScriptEditorTextArea : MultilineTextArea
         this.Text = this.Text.Insert(Index, Text);
         if (Index <= Caret.Index) Caret.Index += Text.Length;
         if (Text == "\n") Caret.AtEndOfLine = false;
-        AddUndoState();
         ResetIdle();
         if (!InsertedNewlines)
         {
@@ -550,10 +541,18 @@ public class ScriptEditorTextArea : MultilineTextArea
                     line++;
                 }
             }
+            if (TextToInsertBelow.Length == 0)
+            {
+                InsertLine(line, startidx, "");
+                CreateLineSprite(Lines[line]);
+            }
             // Moves all old lines below where we inserted down to their new correct position
-            AdjustLinesForScroll();
+            AdjustLinesForScroll(true);
             UpdateCaretPosition(true);
+            UpdateHeight();
         }
+        AddUndoState();
+        VerifyLines();
     }
 
     protected override void RemoveText(int Index, int Count)
@@ -564,25 +563,69 @@ public class ScriptEditorTextArea : MultilineTextArea
         SetPreviousViewState();
         Text = Text.Remove(Index, Count);
         bool DeletedNewline = Index < Caret.Line.StartIndex || Index + Count > Caret.Line.EndIndex;
-        int LineIndex = Caret.Line.LineIndex;
-        int IndexOfLine = Index - Lines[LineIndex].StartIndex;
+        int IndexInLine = Index - Lines[Caret.Line.LineIndex].StartIndex;
+        int TopIndex = Index;
+        int TopLineIndex = (Lines.Find(l => TopIndex >= l.StartIndex && TopIndex <= l.EndIndex) ?? Lines.Last()).LineIndex;
+        int TopIndexInLine = TopIndex - Lines[TopLineIndex].StartIndex;
+        int BottomIndex = Index + Count;
+        int BottomLineIndex = (Lines.Find(l => BottomIndex >= l.StartIndex && BottomIndex <= l.EndIndex) ?? Lines.Last()).LineIndex;
+        int BottomIndexInLine = BottomIndex - Lines[BottomLineIndex].StartIndex;
+        bool CaretOnRight = Caret.Index >= Index;
         if (Index <= Caret.Index) Caret.Index = Math.Max(Index, Caret.Index - Count);
         Caret.AtEndOfLine = !Caret.Line.EndsInNewline && Caret.Index == Caret.Line.EndIndex + 1;
-        AddUndoState();
         ResetIdle();
         if (!DeletedNewline)
         {
             // Deleted a character on this line (or deleted a selection without any newlines)
-            UpdateLineText(LineIndex, Lines[LineIndex].Text.Remove(IndexOfLine, Count));
-            RetokenizeLine(LineIndex);
-            RedrawLine(LineIndex);
+            UpdateLineText(TopLineIndex, Lines[TopLineIndex].Text.Remove(IndexInLine, Count));
+            RetokenizeLine(TopLineIndex);
+            RedrawLine(TopLineIndex);
             UpdateCaretPosition(true);
         }
         else
         {
             // Deleted a newline (or deleted a selection with newlines)
-            RecalculateLines();
+            // We merge the line at the bottom of where we delete into the one at the top,
+            // and then delete the lines between (top+1) and (bottom).
+            string TopLineNewText = Lines[TopLineIndex].Text.Substring(0, TopIndexInLine) + Lines[BottomLineIndex].Text.Substring(BottomIndexInLine);
+            UpdateLineText(TopLineIndex, TopLineNewText);
+            RetokenizeLine(TopLineIndex);
+            RedrawLine(TopLineIndex);
+            // Delete from last to first, otherwise line indexes would shift and we delete the wrong lines
+            for (int i = BottomLineIndex; i > TopLineIndex; i--)
+            {
+                // Delete line
+                DeleteLine(i);
+            }
+            // If the bottom line we'd be displaying is more than the number of lines we have, then we must scroll up by the difference
+            //if (this.BottomLineIndex >= Lines.Count)
+            //{
+            //    int diff = this.BottomLineIndex - Lines.Count + 1;
+            //    ScrollUp(diff);
+            //}
+            if (CaretOnRight)
+            {
+                // Deleting a large selection with the caret being on the right means
+                // that we have to scroll up.
+                // So if the caret is on the right/bottom, we scroll up by the number of deleted lines times the line height
+                ScrollUp(BottomLineIndex - TopLineIndex);
+            }
+            // Create any new non-existing line sprites between this.TopLineIndex and this.BottomLineIndex
+            // NOTE: This is NOT the same as the local TopLineIndex/BottomLineIndex variables!
+            // These local variables are about the start line index of the deletion and the end line index of the deletion,
+            // whereas this.TopLineIndex and this.BottomLineIndex refers to the range of visible lines on-screen.
+            // AdjustLinesForScroll only repositions lines within those boundaries and dispose any outsides the boundaries,
+            // but it does not create any new line sprites. So we do that now.
+            //for (int i = this.TopLineIndex; i <= this.BottomLineIndex; i++)
+            //{
+            //    if (!Sprites.ContainsKey($"line{i}")) CreateLineSprite(Lines[i]);
+            //}
+            AdjustLinesForScroll(true);
+            UpdateCaretPosition(true);
+            UpdateHeight();
         }
+        AddUndoState();
+        VerifyLines();
     }
 
     protected void UpdateLineText(int LineIndex, string NewText)
@@ -636,12 +679,138 @@ public class ScriptEditorTextArea : MultilineTextArea
         RetokenizeLine(LineIndex);
     }
 
+    protected void DeleteLine(int LineIndex)
+    {
+        Line line = Lines[LineIndex];
+        DisposeLineSprite(LineIndex);
+        for (int i = LineIndex + 1; i < Lines.Count; i++)
+        {
+            // Decrement the start index of all lines below where we're deleting by the length of the deleted line
+            Lines[i].StartIndex -= line.Text.Length;
+            // Decrement the line index
+            Lines[i].LineIndex--;
+            if (Sprites.ContainsKey($"line{i}"))
+            {
+                Sprite s = Sprites[$"line{i}"];
+                Sprites.Remove($"line{i}");
+                Sprites.Add($"line{i - 1}", s);
+            }
+            if (Sprites.ContainsKey($"box{i}"))
+            {
+                Sprite s = Sprites[$"box{i}"];
+                Sprites.Remove($"box{i}");
+                Sprites.Add($"box{i - 1}", s);
+            }
+        }
+        Lines.RemoveAt(LineIndex);
+        LineTokens.RemoveAt(LineIndex);
+        LineColors.RemoveAt(LineIndex);
+    }
+
+    protected void VerifyLines()
+    {
+        for (int i = 0; i < Lines.Count; i++)
+        {
+            if (Lines[i].Text != this.Text.Substring(Lines[i].StartIndex, Lines[i].Length))
+            {
+                throw new Exception($"Line {i} text is not the same as in the real text string!");
+            }
+        }
+    }
+
     protected override void DeleteSelection()
     {
         int start = SelectionLeft.Index;
         int end = SelectionRight.Index;
         int count = end - start;
-        RemoveText(start, count);
         CancelSelection();
+        RemoveText(start, count);
+    }
+
+    protected override void AddUndoState()
+    {
+        this.UndoableStates.Add(new ScriptEditorState(this));
+        this.RedoableStates.Clear();
+    }
+
+    protected override void Undo()
+    {
+        if (UndoableStates.Count < 2) return;
+        ScriptEditorState PreviousState = (ScriptEditorState) UndoableStates[UndoableStates.Count - 2];
+        PreviousState.Apply();
+        RedoableStates.Add(UndoableStates[UndoableStates.Count - 1]);
+        UndoableStates.RemoveAt(UndoableStates.Count - 1);
+    }
+
+    protected override void Redo()
+    {
+        if (RedoableStates.Count < 1) return;
+        ScriptEditorState PreviousState = (ScriptEditorState) RedoableStates[RedoableStates.Count - 1];
+        PreviousState.Apply();
+        UndoableStates.Add(PreviousState);
+        RedoableStates.RemoveAt(RedoableStates.Count - 1);
+    }
+
+    protected class ScriptEditorState : TextAreaState
+    {
+        protected new ScriptEditorTextArea TextArea => (ScriptEditorTextArea) base.TextArea;
+
+        public List<Line> Lines;
+        public List<Token> Tokens;
+        public List<List<Token>> LineTokens;
+        public List<List<(int, Color)>> LineColors;
+
+        public ScriptEditorState(ScriptEditorTextArea TextArea) : base (TextArea)
+        {
+            this.Lines = CloneLineList(TextArea.Lines);
+            this.Tokens = CloneTokenList(TextArea.Tokens);
+            this.LineTokens = CloneLineTokenList(TextArea.LineTokens);
+            this.LineColors = CloneLineColorList(TextArea.LineColors);
+        }
+
+        protected static List<Line> CloneLineList(List<Line> List)
+        {
+            return List == null ? null : List.Select(line => (Line) line.Clone()).ToList();
+        }
+
+        protected static List<Token> CloneTokenList(List<Token> List)
+        {
+            return List == null ? null : List.Select(token => (Token) token.Clone()).ToList();
+        }
+
+        protected static List<List<Token>> CloneLineTokenList(List<List<Token>> List)
+        {
+            return List == null ? null : List.Select(line => line.Select(token => (Token) token.Clone()).ToList()).ToList();
+        }
+
+        protected static List<List<(int, Color)>> CloneLineColorList(List<List<(int, Color)>> List)
+        {
+            return List == null ? null : List.Select(line => line.Select(lc => (lc.Item1, (Color) lc.Item2.Clone())).ToList()).ToList();
+        }
+
+        public override void Apply()
+        {
+            List<int> ChangedLines = new List<int>();
+            this.TextArea.Caret = (CaretIndex) this.Caret.Clone();
+            this.TextArea.Parent.ScrolledX = this.ParentScrolledX;
+            this.TextArea.Parent.ScrolledY = this.ParentScrolledY;
+            ((Widget) this.TextArea.Parent).UpdateAutoScroll();
+            // We've set ScrolledX/ScrolledY, so TextArea.TopLineIndex has been updated to the old value
+            // If any lines changed between TopLineIndex and BottomLineIndex, we redraw those
+            // Note that this will redraw every line if newlines were involved!
+            for (int i = TextArea.TopLineIndex; i <= TextArea.BottomLineIndex; i++)
+            {
+                if (TextArea.Lines[i].Text != Lines[i].Text) ChangedLines.Add(i);
+            }
+            this.TextArea.Text = this.Text;
+            this.TextArea.Lines = CloneLineList(this.Lines);
+            this.TextArea.Tokens = CloneTokenList(this.Tokens);
+            this.TextArea.LineTokens = CloneLineTokenList(this.LineTokens);
+            this.TextArea.LineColors = CloneLineColorList(this.LineColors);
+            this.TextArea.AdjustLinesForScroll();
+            this.TextArea.UpdateCaretPosition(true);
+            ChangedLines.ForEach(line => TextArea.RedrawLine(line));
+            TextArea.VerifyLines();
+        }
     }
 }
