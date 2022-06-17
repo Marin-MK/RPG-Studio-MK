@@ -518,7 +518,41 @@ public class ScriptEditorTextArea : MultilineTextArea
         else
         {
             // Inserted a newline (or pasted longer text with newlines)
-            RecalculateLines();
+            // If we paste text that is "word1\nword2", then "word1" is added to the current line,
+            // and then we insert our new text.
+            int NewLineIndex = Text.IndexOf('\n') + 1;
+            // We also include the newline character in this current line's text, so + 1.
+            string NewCurrentLineText = Lines[LineIndex].Text.Substring(0, IndexOfLine) + Text.Substring(0, NewLineIndex);
+            // The text we insert below this line is the cut-off text from this line + whatever we insert
+            string TextToInsertBelow = Text.Substring(NewLineIndex) + Lines[LineIndex].Text.Substring(IndexOfLine, Lines[LineIndex].Text.Length - IndexOfLine);
+            // Update the current line
+            if (Lines[LineIndex].Text != NewCurrentLineText)
+            {
+                // Only update if the line changed, the line did not change
+                // if we insert something that starts with a newline for instance
+                UpdateLineText(LineIndex, NewCurrentLineText);
+                RetokenizeLine(LineIndex);
+                RedrawLine(LineIndex);
+            }
+            // Insert a line for each newline character we find
+            int startidx = Lines[LineIndex].StartIndex + Lines[LineIndex].Length;
+            int stridx = 0;
+            int line = LineIndex + 1;
+            for (int i = 0; i < TextToInsertBelow.Length; i++)
+            {
+                if (TextToInsertBelow[i] == '\n' || i == TextToInsertBelow.Length - 1)
+                {
+                    string linetext = TextToInsertBelow.Substring(stridx, i - stridx + 1);
+                    InsertLine(line, startidx, linetext);
+                    CreateLineSprite(Lines[line]);
+                    startidx += linetext.Length;
+                    stridx = i + 1;
+                    line++;
+                }
+            }
+            // Moves all old lines below where we inserted down to their new correct position
+            AdjustLinesForScroll();
+            UpdateCaretPosition(true);
         }
     }
 
@@ -564,6 +598,42 @@ public class ScriptEditorTextArea : MultilineTextArea
         {
             Lines[i].StartIndex += diff;
         }
+    }
+
+    protected void InsertLine(int LineIndex, int StartIndex, string LineText)
+    {
+        Line line = new Line(this.Font);
+        line.StartIndex = StartIndex;
+        line.LineIndex = LineIndex;
+        line.SetText(LineText);
+        for (int i = Lines.Count - 1; i >= LineIndex; i--)
+        {
+            // Increment the startindex of all lines below where we will insert
+            // with the length of our line
+            Lines[i].StartIndex += LineText.Length;
+            // Line index increases by 1
+            Lines[i].LineIndex++;
+            // Then increment the keys of all existing line/box sprites by 1
+            // to make place for our new line.
+            if (Sprites.ContainsKey($"line{i}"))
+            {
+                Sprite s = Sprites[$"line{i}"];
+                Sprites.Remove($"line{i}");
+                Sprites.Add($"line{i + 1}", s);
+            }
+            if (Sprites.ContainsKey($"box{i}"))
+            {
+                Sprite s = Sprites[$"box{i}"];
+                Sprites.Remove($"box{i}");
+                Sprites.Add($"box{i + 1}", s);
+            }
+        }
+        // Some line sprites will now fall below the screen too
+        // These will be removed by AdjustLinesForScroll()
+        Lines.Insert(LineIndex, line);
+        LineTokens.Insert(LineIndex, new List<Token>());
+        LineColors.Insert(LineIndex, new List<(int, Color)>());
+        RetokenizeLine(LineIndex);
     }
 
     protected override void DeleteSelection()
