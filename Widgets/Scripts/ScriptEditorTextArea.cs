@@ -144,7 +144,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         LineColors.Clear();
         Tokens = Tokenizer.Tokenize(this.Text);
         int LastLine = 0;
-        for (int i = 0; i < Tokens.Count; i++)
+        for (int i = 0; i < Lines.Count; i++)
         {
             LineTokens.Add(new List<Token>());
             LineColors.Add(new List<(int, Color)>());

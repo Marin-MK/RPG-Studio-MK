@@ -27,6 +27,10 @@ public class ScriptingWidget : Widget
         TextBox.SetFont(Font.Get("assets/fonts/FiraCode-MediumNothing", 10));
         TextBox.SetDocked(true);
         TextBox.SetPadding(192, 0, 0, 0);
+        TextBox.OnTextChanged += _ =>
+        {
+            ((Script) ListBox.SelectedItem.Object).Content = TextBox.Text;
+        };
 
         ListBox.SetSelectedIndex(0);
     }
