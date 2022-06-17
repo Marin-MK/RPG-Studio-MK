@@ -111,7 +111,7 @@ public partial class MapViewer : Widget
         MainContainer.SetVScrollBar(VScrollBar);
 
         Fade = new VignetteFade(MainContainer);
-        Fade.ConsiderInAutoScrollCalculation = Fade.ConsiderInAutoScrollPositioning = false;
+        Fade.ConsiderInAutoScrollCalculation = Fade.ConsiderInAutoScrollPositioningX = Fade.ConsiderInAutoScrollPositioningY = false;
         Fade.SetDocked(true);
         Fade.SetZIndex(9);
 
@@ -125,7 +125,7 @@ public partial class MapViewer : Widget
         SidebarWidgetEvents.SetVisible(false);
 
         HintWindow = new HintWindow(MainContainer);
-        HintWindow.ConsiderInAutoScrollCalculation = HintWindow.ConsiderInAutoScrollPositioning = false;
+        HintWindow.ConsiderInAutoScrollCalculation = HintWindow.ConsiderInAutoScrollPositioningX = HintWindow.ConsiderInAutoScrollPositioningY = false;
         HintWindow.SetBottomDocked(true);
         HintWindow.SetPadding(-3, 0, 0, -9);
         HintWindow.SetZIndex(10);

@@ -21,6 +21,10 @@ public partial class MainEditorWindow : UIWindow
     /// The DatabaseWidget object of the database mode. Null if not active.
     /// </summary>
     public DatabaseWidget DatabaseWidget { get { return MainEditorWidget as DatabaseWidget; } }
+    /// <summary>
+    /// The ScriptingWidget object of the scripting mode. Null if not active.
+    /// </summary>
+    public ScriptingWidget ScriptingWidget { get { return MainEditorWidget as ScriptingWidget; } }
 
     /// <summary>
     /// The main grid layout which divides menubar, toolbar, main area and statusbar from one another.

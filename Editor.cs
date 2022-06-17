@@ -613,7 +613,7 @@ public static class Editor
                 break;
             case EditorMode.Scripting:
                 // Select Scripting Mode
-                MainWindow.ToolBar.ScriptingMode.SetSelected(true, Force);
+                SetScriptingMode();
                 break;
             case EditorMode.Database:
                 // Select Database mode
@@ -662,6 +662,15 @@ public static class Editor
     public static void SetDatabaseSubmode(DatabaseMode Submode)
     {
         MainWindow.DatabaseWidget.SetMode(Submode);
+    }
+
+    public static void SetScriptingMode()
+    {
+        MainWindow.ToolBar.ScriptingMode.SetSelected(true);
+        if (MainWindow.MainEditorWidget != null && !MainWindow.MainEditorWidget.Disposed) MainWindow.MainEditorWidget.Dispose();
+
+        MainWindow.MainEditorWidget = new ScriptingWidget(MainWindow.MainGridLayout);
+        MainWindow.MainEditorWidget.SetGridRow(3);
     }
 
     /// <summary>
