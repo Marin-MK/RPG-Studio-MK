@@ -121,20 +121,28 @@ public class ScriptEditorTextArea : MultilineTextArea
         int pos = Token.Index - Line.StartIndex;
         Color c = Token.Type switch
         {
-            "comment" => new Color(64, 64, 64),
-            "string" => new Color(128, 255, 128),
-            "number" or "hex" or "regex" => new Color(255, 128, 128),
+            "comment" => new Color(96, 160, 96),
+            "number" or "hex" or "regex" or "string" => new Color(255, 128, 128),
             "class" or "def" or "if" or "true" or "false" or "else" or "end" or "begin" or
             "end" or "rescue" or "ensure" or "return" or "next" or "break" or "yield" or
             "alias" or "elsif" or "case" or "when" or "module" or "not" or "and" or "or"
             or "redo" or "retry" or "for" or "undef" or "unless" or "super" or "then" or
             "while" or "defined?" or "self" or "raise" or "do" => new Color(128, 128, 255),
-            "constant" or "class_definition" or "module_definition" => new Color(255, 255, 128),
-            "instance_variable" => new Color(128, 255, 128),
-            _ => new Color(255, 255, 255)
+            "assignment" or "symbol" or "empty_method" or "parenthesis_open" or "parenthesis_close" or
+            "logical_operator" or "bitwise_operator" or "relational_operator" or "arithmetic_operator" or
+            "range" or "object_access" or "line_end" or "ternary_operator" or "array_initialization" or
+            "hash_initialization" or "array_access" or "block" or "argument_list" => new Color(96, 192, 192),
+            _ => TextColor
         };
         if (LineColors[Line.LineIndex].Count == 0 || !LineColors[Line.LineIndex].Last().Item2.Equals(c))
+        {
             LineColors[Line.LineIndex].Add((pos, c));
+        }
+        if (Token.Type == "symbol")
+        {
+            // Since the symbol token matches the colon as well as the name, we reset its color ourselves after 1 character, the colon.
+            LineColors[Line.LineIndex].Add((pos + 1, TextColor));
+        }
     }
 
     protected void RetokenizeAll()
