@@ -10,6 +10,10 @@ public class ScriptEditorTextBox : Widget
     public bool OverlaySelectedText => TextArea.OverlaySelectedText;
     public Color SelectionBackgroundColor => TextArea.SelectionBackgroundColor;
     public bool LineWrapping => TextArea.LineWrapping;
+    public Color LineTextColor => TextArea.LineTextColor;
+    public Color LineTextBackgroundColor => TextArea.LineTextBackgroundColor;
+    public int LineTextWidth => TextArea.LineTextWidth;
+    public int TextXOffset => TextArea.TextXOffset;
 
     public BaseEvent OnTextChanged { get => TextArea.OnTextChanged; set => TextArea.OnTextChanged = value; }
     public BoolEvent OnCopy { get => TextArea.OnCopy; set => TextArea.OnCopy = value; }
@@ -25,7 +29,11 @@ public class ScriptEditorTextBox : Widget
         ScrollContainer = new Container(this);
         ScrollContainer.SetDocked(true);
         ScrollContainer.SetPadding(3, 3, 14, 3);
-        ScrollContainer.OnHoverChanged += _ => Input.SetCursor(ScrollContainer.Mouse.Inside ? CursorType.IBeam : CursorType.Arrow);
+        ScrollContainer.OnMouseMoving += e =>
+        {
+            bool InsideTextArea = ScrollContainer.Mouse.Inside && e.X - ScrollContainer.Viewport.X >= TextArea.TextXOffset;
+            Input.SetCursor(InsideTextArea ? CursorType.IBeam : CursorType.Arrow);
+        };
 
         TextArea = new ScriptEditorTextArea(ScrollContainer);
         TextArea.SetHDocked(true);
@@ -119,6 +127,26 @@ public class ScriptEditorTextBox : Widget
         }
         this.Redraw();
         TextArea.SetLineWrapping(LineWrapping);
+    }
+
+    public void SetLineTextColor(Color LineTextColor)
+    {
+        TextArea.SetLineTextColor(LineTextColor);
+    }
+
+    public void SetLineTextBackgroundColor(Color LineTextBackgroundColor)
+    {
+        TextArea.SetLineTextBackgroundColor(LineTextBackgroundColor);
+    }
+
+    public void SetLineTextWidth(int LineTextWidth)
+    {
+        TextArea.SetLineTextWidth(LineTextWidth);
+    }
+
+    public void SetTextXOffset(int TextXOffset)
+    {
+        TextArea.SetTextXOffset(TextXOffset);
     }
 
     public void Activate()

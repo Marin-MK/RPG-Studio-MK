@@ -12,6 +12,11 @@ namespace RPGStudioMK.Widgets;
 
 public class ScriptEditorTextArea : MultilineTextArea
 {
+    public Color LineTextColor { get; protected set; } = new Color(192, 192, 192);
+    public Color LineTextBackgroundColor { get; protected set; } = new Color(10, 23, 37);
+    public int LineTextWidth { get; protected set; } = 40;
+    public int TextXOffset { get; protected set; } = 42;
+
     protected List<Token> Tokens;
     protected List<List<Token>> LineTokens = new List<List<Token>>();
     protected List<List<(int, Color)>> LineColors = new List<List<(int, Color)>>();
@@ -27,9 +32,44 @@ public class ScriptEditorTextArea : MultilineTextArea
         this.LineWrapping = false;
         SetSelectionBackgroundColor(new Color(128, 128, 255, 64));
         ConsiderInAutoScrollPositioningY = false;
+        Sprites["nums"] = new Sprite(this.Viewport);
     }
 
-    public virtual void SetText(string Text, bool SetCaretToEnd = false, bool ClearUndoStates = true)
+    public void SetLineTextColor(Color LineTextColor)
+    {
+        if (this.LineTextColor != LineTextColor)
+        {
+            this.LineTextColor = LineTextColor;
+            RedrawLineNumbers();
+        }
+    }
+    public void SetLineTextBackgroundColor(Color LineTextBackgroundColor)
+    {
+        if (this.LineTextBackgroundColor != LineTextBackgroundColor)
+        {                
+            this.LineTextBackgroundColor = LineTextBackgroundColor;
+            RedrawLineNumbers();
+        }
+    }
+
+    public void SetLineTextWidth(int LineTextWidth)
+    {
+        if (this.LineTextWidth != LineTextWidth)
+        {        
+            this.LineTextWidth = LineTextWidth;
+            RedrawLineNumbers();
+        }
+    }
+
+    public void SetTextXOffset(int TextXOffset)
+    {
+        if (this.TextXOffset != TextXOffset)
+        {
+            this.TextXOffset = TextXOffset;
+        }
+    }
+
+    public override void SetText(string Text, bool SetCaretToEnd = false, bool ClearUndoStates = true)
     {
         if (this.Text != Text)
         {
@@ -180,6 +220,25 @@ public class ScriptEditorTextArea : MultilineTextArea
         return LineTokens[Line.LineIndex];
     }
 
+    protected void RedrawLineNumbers()
+    {
+        Sprites["nums"].Bitmap?.Dispose();
+        if (LineTextWidth < 1) return;
+        Sprites["nums"].Bitmap = new Bitmap(LineTextWidth, Parent.Size.Height);
+        Sprites["nums"].Bitmap.Unlock();
+        Sprites["nums"].Bitmap.FillRect(0, 0, LineTextWidth - 1, Parent.Size.Height, LineTextBackgroundColor);
+        Sprites["nums"].Bitmap.DrawLine(LineTextWidth - 1, 0, LineTextWidth - 1, Parent.Size.Height - 1, new Color(86, 108, 134));
+        Sprites["nums"].Bitmap.Font = this.Font;
+        int offset = Parent.ScrolledY % (LineHeight + LineMargins);
+        for (int i = TopLineIndex; i <= BottomLineIndex; i++)
+        {
+            if (i >= Lines.Count) break;
+            int y = -offset + (i - TopLineIndex) * (LineHeight + LineMargins);
+            Sprites["nums"].Bitmap.DrawText((i + 1).ToString(), LineTextWidth - 3, y, LineTextColor, DrawOptions.RightAlign);
+        }
+        Sprites["nums"].Bitmap.Lock();
+    }
+
     protected override void OwnUpdate()
     {
         if (!SelectedWidget)
@@ -197,9 +256,9 @@ public class ScriptEditorTextArea : MultilineTextArea
                 Parent.ScrolledX += (Sprites["caret"].X - Parent.ScrolledX) - Parent.Size.Width + 1;
                 ((Widget) Parent).UpdateAutoScroll();
             }
-            else if (Sprites["caret"].X - Parent.ScrolledX < 0)
+            else if (Sprites["caret"].X - Parent.ScrolledX < TextXOffset)
             {
-                Parent.ScrolledX += Sprites["caret"].X - Parent.ScrolledX - 1;
+                Parent.ScrolledX += TextXOffset + Sprites["caret"].X - Parent.ScrolledX - 1;
                 ((Widget) Parent).UpdateAutoScroll();
             }
             if (Sprites["caret"].Y < 0) ScrollUpPixels(-Sprites["caret"].Y);
@@ -247,7 +306,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         if (h >= Parent.Size.Height) h += (h - Parent.Size.Height) % LineHeight;
         if (h % LineHeight != 0) h += (LineHeight + LineMargins) - (h % (LineHeight + LineMargins));
         if (LineWrapping) SetHeight(h);
-        else SetSize(Lines.Max(l => l.LineWidth) + 3, h);
+        else SetSize(TextXOffset + Lines.Max(l => l.LineWidth) + 3, h);
         Console.WriteLine("redrawing all");
         Lines.ForEach(line =>
         {
@@ -255,6 +314,7 @@ public class ScriptEditorTextArea : MultilineTextArea
             CreateLineSprite(line);
         });
         RequireRedrawText = false;
+        RedrawLineNumbers();
         UpdateCaretPosition(false);
         UpdateBounds();
     }
@@ -300,7 +360,7 @@ public class ScriptEditorTextArea : MultilineTextArea
                     // Another failsafe for some specific kerning
                     if (x + w > line.LineWidth) w = line.LineWidth - x;
                     Sprite s = new Sprite(this.Viewport);
-                    s.X = x;
+                    s.X = TextXOffset + x;
                     s.Y = boxy;
                     s.Z = 1;
                     s.Bitmap = new SolidBitmap(w, boxheight, SelectionBackgroundColor);
@@ -313,6 +373,7 @@ public class ScriptEditorTextArea : MultilineTextArea
                     int w = SelectionRight.Line.WidthUpTo(SelectionRight.IndexInLine);
                     if (w > line.LineWidth) w = line.LineWidth;
                     Sprite s = new Sprite(this.Viewport);
+                    s.X = TextXOffset;
                     s.Y = boxy;
                     s.Z = 1;
                     s.Bitmap = new SolidBitmap(w, boxheight, SelectionBackgroundColor);
@@ -328,7 +389,7 @@ public class ScriptEditorTextArea : MultilineTextArea
                     if (w > 0)
                     {
                         Sprite s = new Sprite(this.Viewport);
-                        s.X = x;
+                        s.X = TextXOffset + x;
                         s.Y = boxy;
                         s.Z = 1;
                         s.Bitmap = new SolidBitmap(w, boxheight, SelectionBackgroundColor);
@@ -342,6 +403,7 @@ public class ScriptEditorTextArea : MultilineTextArea
                     int w = Font.TextSize(line.Text.Replace('\n', ' ')).Width;
                     if (w > line.LineWidth) w = line.LineWidth;
                     Sprite s = new Sprite(this.Viewport);
+                    s.X = TextXOffset;
                     s.Y = boxy;
                     s.Z = 1;
                     s.Bitmap = new SolidBitmap(w, LineHeight + 2, SelectionBackgroundColor);
@@ -356,9 +418,10 @@ public class ScriptEditorTextArea : MultilineTextArea
     protected Sprite CreateLineSprite(Line line)
     {
         Sprite sprite = new Sprite(this.Viewport);
+        sprite.X = TextXOffset;
         sprite.Y = line.LineIndex * LineHeight + line.LineIndex * LineMargins - Parent.ScrolledY;
         sprite.Bitmap = new Bitmap(line.LineWidth, LineHeight + 2, Graphics.MaxTextureSize);
-        if (line.LineWidth > Size.Width) SetWidth(line.LineWidth);
+        if (TextXOffset + line.LineWidth > Size.Width) SetWidth(TextXOffset + line.LineWidth);
         sprite.Bitmap.Font = Font;
         sprite.Bitmap.Unlock();
         string text = line.Text.Replace('\n', ' ');
@@ -447,6 +510,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         RedrawSelectionBoxes();
         RequireScrollAdjustment = false;
         OldScrolledY = Parent.ScrolledY;
+        RedrawLineNumbers();
     }
 
     protected override void ScrollDownPixels(int px)
@@ -463,13 +527,19 @@ public class ScriptEditorTextArea : MultilineTextArea
 
     protected override void UpdateCaretPosition(bool ResetScroll)
     {
-        base.UpdateCaretPosition(ResetScroll);
-        Sprites["caret"].Y -= Parent.ScrolledY;
+        Sprites["caret"].X = TextXOffset + Caret.Line.WidthUpTo(Caret.IndexInLine);
+        Sprites["caret"].Y = Caret.Line.LineIndex * LineHeight + Caret.Line.LineIndex * LineMargins - Parent.ScrolledY;
+        if (ResetScroll) RequireCaretRepositioning = true;
+    }
+
+    protected override bool MouseInsideTextArea(MouseEventArgs e)
+    {
+        return base.MouseInsideTextArea(e) && e.X - Viewport.X + LeftCutOff >= TextXOffset;
     }
 
     protected override CaretIndex GetHoveredIndex(MouseEventArgs e)
     {
-        int rx = e.X - Viewport.X + LeftCutOff;
+        int rx = e.X - Viewport.X + LeftCutOff - TextXOffset;
         int ry = e.Y - Viewport.Y + Parent.ScrolledY;
         int LineIndex = (int) Math.Round((double) ry / (LineHeight + LineMargins));
         if (LineIndex < 0) LineIndex = 0;
@@ -558,6 +628,7 @@ public class ScriptEditorTextArea : MultilineTextArea
             AdjustLinesForScroll(true);
             UpdateCaretPosition(true);
             UpdateHeight();
+            RedrawLineNumbers();
         }
         AddUndoState();
         VerifyLines();
@@ -606,11 +677,6 @@ public class ScriptEditorTextArea : MultilineTextArea
                 DeleteLine(i);
             }
             // If the bottom line we'd be displaying is more than the number of lines we have, then we must scroll up by the difference
-            //if (this.BottomLineIndex >= Lines.Count)
-            //{
-            //    int diff = this.BottomLineIndex - Lines.Count + 1;
-            //    ScrollUp(diff);
-            //}
             if (CaretOnRight)
             {
                 // Deleting a large selection with the caret being on the right means
@@ -619,21 +685,23 @@ public class ScriptEditorTextArea : MultilineTextArea
                 ScrollUp(BottomLineIndex - TopLineIndex);
             }
             // Create any new non-existing line sprites between this.TopLineIndex and this.BottomLineIndex
-            // NOTE: This is NOT the same as the local TopLineIndex/BottomLineIndex variables!
-            // These local variables are about the start line index of the deletion and the end line index of the deletion,
-            // whereas this.TopLineIndex and this.BottomLineIndex refers to the range of visible lines on-screen.
-            // AdjustLinesForScroll only repositions lines within those boundaries and dispose any outsides the boundaries,
-            // but it does not create any new line sprites. So we do that now.
-            //for (int i = this.TopLineIndex; i <= this.BottomLineIndex; i++)
-            //{
-            //    if (!Sprites.ContainsKey($"line{i}")) CreateLineSprite(Lines[i]);
-            //}
             AdjustLinesForScroll(true);
             UpdateCaretPosition(true);
             UpdateHeight();
+            RedrawLineNumbers();
         }
         AddUndoState();
         VerifyLines();
+    }
+
+    protected override void UpdateHeight()
+    {
+        int mc = (Lines.Count - 1) * LineMargins;
+        int h = Lines.Count * LineHeight + mc + 3;
+        if (h >= Parent.Size.Height) h += (h - Parent.Size.Height) % LineHeight;
+        if (h % LineHeight != 0) h += (LineHeight + LineMargins) - (h % (LineHeight + LineMargins));
+        if (LineWrapping) SetHeight(h);
+        else SetSize(TextXOffset + Lines.Max(l => l.LineWidth) + 3, h);
     }
 
     protected void UpdateLineText(int LineIndex, string NewText)
