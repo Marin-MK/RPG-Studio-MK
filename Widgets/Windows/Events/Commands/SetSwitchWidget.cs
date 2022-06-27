@@ -11,6 +11,7 @@ public class SetSwitchWidget : BaseCommandWidget
 
     public override void LoadCommand()
     {
+        base.LoadCommand();
         int SwitchID1 = (int) (long) Command.Parameters[0];
         int SwitchID2 = (int) (long) Command.Parameters[1];
         int State = (int) (long) Command.Parameters[2];

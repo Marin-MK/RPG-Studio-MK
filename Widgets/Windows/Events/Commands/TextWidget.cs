@@ -15,10 +15,9 @@ public class TextWidget : ExpandableCommandWidget
     {
         SingleLabel = new Label(this);
         SingleLabel.SetFont(Fonts.CabinMedium.Use(9));
-        SingleLabel.SetDocked(true);
         MultilineLabel = new MultilineLabel(this);
+        MultilineLabel.WidthLimit = false;
         MultilineLabel.SetFont(Fonts.CabinMedium.Use(9));
-        MultilineLabel.SetHDocked(true);
         MultilineLabel.SetHeight(1);
         MultilineLabel.SetPosition(8, StandardHeight);
         SetExpandable(false);
@@ -68,6 +67,7 @@ public class TextWidget : ExpandableCommandWidget
         else
         {
             return Utilities.FormatString(Fonts.CabinMedium.Use(9), Text, 300);
+            // Fixed number of characters per line
             //List<string> Lines = new List<string>();
             //int LineCount = (int) Math.Ceiling((double) Text.Length / CharactersPerCommand);
             //for (int i = 0; i < LineCount; i++)
@@ -105,6 +105,7 @@ public class TextWidget : ExpandableCommandWidget
 
     public override void LoadCommand()
     {
+        base.LoadCommand();
         HeaderLabel.SetText(Command.Code switch
         {
             CommandCode.Script => "Script",
@@ -112,9 +113,16 @@ public class TextWidget : ExpandableCommandWidget
             CommandCode.Comment => "Comment",
             _ => HeaderLabel.Text
         });
-        SingleLabel.SetPosition(HeaderLabel.Position.X + HeaderLabel.Size.Width + 6, 3);
-        SingleLabel.SetWidthLimit(Size.Width - SingleLabel.Position.X - 22);
-        SingleLabel.SetFont(Command.Code == CommandCode.Script ? Fonts.FiraCode.Use(9) : Fonts.CabinMedium.Use(9));
+        SingleLabel.SetPosition(HeaderLabel.Position.X + HeaderLabel.Size.Width + 6, 2 + ShadowSize);
+        if (Command.Code == CommandCode.Script)
+        {
+            SingleLabel.SetFont(Fonts.Monospace.Use(11));
+        }
+        else
+        {
+            SingleLabel.SetWidthLimit(Size.Width - SingleLabel.Position.X - 22);
+            SingleLabel.SetFont(Fonts.CabinMedium.Use(9));
+        }
 
         string text = MergeText();
         SingleLabel.SetText(text);
@@ -133,18 +141,27 @@ public class TextWidget : ExpandableCommandWidget
 
         SetExpandable(CanExpand && Mouse.Inside);
 
+        ScaleGradientWithSize = false;
+
         if (Expanded)
         {
-            MultilineLabel.SetFont(Command.Code == CommandCode.Script ? Fonts.FiraCode.Use(9) : Fonts.CabinMedium.Use(9));
+            MultilineLabel.SetFont(Command.Code == CommandCode.Script ? Fonts.Monospace.Use(11) : Fonts.CabinMedium.Use(9));
             MultilineLabel.SetText(text);
             HeightAdd = MultilineLabel.Size.Height;
+            SetWidth(GetStandardWidth(Indentation));
         }
         else
         {
+            if (Command.Code == CommandCode.Script)
+            {
+                SetWidth(Math.Max(GetStandardWidth(Indentation), SingleLabel.Position.X + SingleLabel.Size.Width + 8));
+                ScaleGradientWithSize = true;
+            }
+            else SetWidth(GetStandardWidth(Indentation));
             HeightAdd = 0;
         }
 
-        UpdateHeight();
+        UpdateSize();
         ((Widget) Parent).UpdateLayout();
     }
 }

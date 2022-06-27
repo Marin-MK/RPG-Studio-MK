@@ -36,6 +36,7 @@ public class MoveRouteWidget : BaseCommandWidget
 
     public override void LoadCommand()
     {
+        base.LoadCommand();
         int EventID = (int) (long) this.Command.Parameters[0];
         MoveRoute MoveRoute = (MoveRoute) this.Command.Parameters[1];
         string EventName = EventID == -1 ? "Player" : EventID == 0 ? "Self" : Map.Events[EventID].Name;

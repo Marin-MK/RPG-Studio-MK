@@ -11,6 +11,7 @@ public class WaitForMoveCompletionWidget : BaseCommandWidget
 
     public override void LoadCommand()
     {
+        base.LoadCommand();
         HeaderLabel.SetText("Wait for Move's Completion");
     }
 

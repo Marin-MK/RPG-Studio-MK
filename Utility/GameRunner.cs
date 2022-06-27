@@ -25,9 +25,9 @@ public static class GameRunner
         if (Process != null || Server != null) return;
         Process = new Process();
         string filename = "/Game.exe";
-        if (Graphics.Platform == odl.Platform.Windows) filename = "/Game.exe";
-        else if (Graphics.Platform == odl.Platform.Linux) filename = "/Game";
-        else filename = "/Game.exe";
+        if (Graphics.Platform == Platform.Windows) filename = "/Game.exe";
+        else if (Graphics.Platform == Platform.Linux) filename = "/Game";
+        else throw new PlatformNotSupportedException();
         Process.StartInfo.FileName = Data.ProjectPath + filename;
         Process.StartInfo.Arguments = "debug";
         Process.Start();

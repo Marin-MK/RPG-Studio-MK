@@ -19,15 +19,18 @@ public class EventCommandBox : Widget
 
     public EventCommandBox(IContainer Parent) : base(Parent)
     {
-        Sprites["bg"] = new Sprite(this.Viewport);
-        ScrollContainer = new Container(this);
+        GroupBoxWithScrollBars gb = new GroupBoxWithScrollBars(this);
+        gb.SetDocked(true);
+        gb.SetFillerColor(new Color(40, 62, 84));
+
+        ScrollContainer = new Container(gb);
         ScrollContainer.SetDocked(true);
-        ScrollContainer.SetPadding(3, 3, 13, 3);
+        ScrollContainer.SetPadding(3, 3, 16, 16);
 
         VScrollBar vs = new VScrollBar(this);
         vs.SetRightDocked(true);
         vs.SetVDocked(true);
-        vs.SetPadding(0, 3);
+        vs.SetPadding(0, 3, 1, 15);
         ScrollContainer.SetVScrollBar(vs);
         ScrollContainer.VAutoScroll = true;
         vs.OnValueChanged += _ =>
@@ -36,8 +39,20 @@ public class EventCommandBox : Widget
             MainCommandWidget.GetSelectedWidget()?.WidgetSelected(new BaseEventArgs());
         };
 
+        HScrollBar hs = new HScrollBar(this);
+        hs.SetBottomDocked(true);
+        hs.SetHDocked(true);
+        hs.SetPadding(3, 0, 15, 1);
+        ScrollContainer.SetHScrollBar(hs);
+        ScrollContainer.HAutoScroll = true;
+        hs.OnValueChanged += _ =>
+        {
+            // Ensure we get the selected widget back to being active after dragging the slider
+            MainCommandWidget.GetSelectedWidget()?.WidgetSelected(new BaseEventArgs());
+        };
+
         MainCommandWidget = new BaseCommandWidget(ScrollContainer, -1);
-        MainCommandWidget.SetHDocked(true);
+        MainCommandWidget.MainCommandWidget = MainCommandWidget;
     }
 
     public void SetCommands(Map Map, Event Event, EventPage Page, List<EventCommand> Commands)
@@ -58,33 +73,6 @@ public class EventCommandBox : Widget
         {
             MainCommandWidget.SetUndoRedoLists(UndoRedoLists[Page].Item1, UndoRedoLists[Page].Item2);
         }
-    }
-
-    protected override void Draw()
-    {
-        base.Draw();
-        Sprites["bg"].Bitmap?.Dispose();
-        Sprites["bg"].Bitmap = new Bitmap(Size);
-        Sprites["bg"].Bitmap.Unlock();
-        Sprites["bg"].Bitmap.DrawRect(Size, new Color(86, 108, 134));
-        Sprites["bg"].Bitmap.FillRect(1, 1, Size.Width - 2, Size.Height - 2, new Color(10, 23, 37));
-        Sprites["bg"].Bitmap.SetPixel(0, 0, Color.ALPHA);
-        Sprites["bg"].Bitmap.SetPixel(Size.Width - 1, 0, Color.ALPHA);
-        Sprites["bg"].Bitmap.SetPixel(0, Size.Height - 1, Color.ALPHA);
-        Sprites["bg"].Bitmap.SetPixel(Size.Width - 1, Size.Height - 1, Color.ALPHA);
-        Color DarkOutline = new Color(40, 62, 84);
-        Sprites["bg"].Bitmap.SetPixel(1, 1, DarkOutline);
-        Sprites["bg"].Bitmap.SetPixel(Size.Width - 2, 1, DarkOutline);
-        Sprites["bg"].Bitmap.SetPixel(1, Size.Height - 2, DarkOutline);
-        Sprites["bg"].Bitmap.SetPixel(Size.Width - 2, Size.Height - 2, DarkOutline);
-        Sprites["bg"].Bitmap.DrawLine(Size.Width - 12, 1, Size.Width - 12, Size.Height - 2, DarkOutline);
-        Sprites["bg"].Bitmap.Lock();
-    }
-
-    public override void SizeChanged(BaseEventArgs e)
-    {
-        base.SizeChanged(e);
-        Redraw();
     }
 
     public override void MouseDown(MouseEventArgs e)

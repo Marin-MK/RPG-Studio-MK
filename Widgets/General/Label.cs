@@ -126,6 +126,7 @@ public class MultilineLabel : Label
 {
     private int? _LineHeight;
     public int LineHeight { get => _LineHeight ?? Font.Size + 5; set => _LineHeight = value; }
+    public new bool WidthLimit = true;
 
     public MultilineLabel(IContainer Parent) : base(Parent)
     {
@@ -145,7 +146,7 @@ public class MultilineLabel : Label
     {
         Sprites["text"].Bitmap?.Dispose();
         if (string.IsNullOrEmpty(Text)) return;
-        List<string> Lines = Utilities.FormatString(this.Font, Text, Size.Width);
+        List<string> Lines = Utilities.FormatString(this.Font, Text, WidthLimit ? Size.Width : -1);
         SetSize(Size.Width, LineHeight * Lines.Count + 4);
         Sprites["text"].Bitmap = new Bitmap(Size);
         Sprites["text"].Bitmap.Unlock();

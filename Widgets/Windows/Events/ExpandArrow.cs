@@ -19,6 +19,7 @@ public class ExpandArrow : Widget
         Sprites["dropdown"] = new Sprite(this.Viewport);
         RedrawDropdown();
         SetSize(15, 15);
+        ConsiderInAutoScrollCalculation = false;
     }
 
     public void SetExpanded(bool Expanded)

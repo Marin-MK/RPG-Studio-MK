@@ -7,14 +7,18 @@ namespace RPGStudioMK.Widgets.CommandWidgets;
 
 public class ChoiceWidget : BaseCommandWidget
 {
+    GradientBox EndGradient;
     Label EndLabel;
     List<Label> BranchLabels = new List<Label>();
     List<VStackPanel> StackPanels = new List<VStackPanel>();
     List<ExpandArrow> ExpandArrows = new List<ExpandArrow>();
+    List<GradientBox> GradientBoxes = new List<GradientBox>();
     ExpandArrow ExpandAllArrow;
 
     public ChoiceWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex, new Color(128, 128, 255))
     {
+        EndGradient = new GradientBox(this);
+        EndGradient.SetHDocked(true);
         EndLabel = new Label(this);
         EndLabel.SetFont(Fonts.CabinMedium.Use(9));
         EndLabel.SetText("End");
@@ -37,7 +41,7 @@ public class ChoiceWidget : BaseCommandWidget
                 }
             }
             UpdateLabels();
-            UpdateHeight();
+            UpdateSize();
         };
         OnSizeChanged += _ =>
         {
@@ -64,6 +68,7 @@ public class ChoiceWidget : BaseCommandWidget
         for (int i = 0; i < BranchLabels.Count; i++)
         {
             BranchLabels[i].SetPosition(8, y + 4);
+            if (i > 0) GradientBoxes[i].SetPadding(BarWidth + ShadowSize, y);
             ExpandArrows[i].SetPosition(Size.Width - 16, y + 4);
             StackPanels[i].SetPosition(StackPanels[i].Position.X, y + StandardHeight);
             y += StandardHeight + (ExpandArrows[i].Expanded ? StackPanels[i].Size.Height : 0);
@@ -71,6 +76,7 @@ public class ChoiceWidget : BaseCommandWidget
         if (DrawEndLabels)
         {
             EndLabel.SetPosition(8, y + 4);
+            EndGradient.SetPosition(BarWidth, y);
         }
         else y -= StandardHeight;
         HeightAdd = y;
@@ -78,6 +84,7 @@ public class ChoiceWidget : BaseCommandWidget
 
     public override void LoadCommand()
     {
+        base.LoadCommand();
         BranchLabels.ForEach(l => l.Dispose());
         BranchLabels.Clear();
 
@@ -87,7 +94,17 @@ public class ChoiceWidget : BaseCommandWidget
         ExpandArrows.ForEach(e => e.Dispose());
         ExpandArrows.Clear();
 
+        GradientBoxes.ForEach(e => e.Dispose());
+        GradientBoxes.Clear();
+
         HeaderLabel.SetText("Show Choices");
+
+        GradientBox.SetDocked(false);
+        GradientBox.SetSize(GetStandardWidth(Indentation) - BarWidth - ShadowSize * 2, StandardHeight * 2);
+        ShadowWidget.SetSize(GetStandardWidth(Indentation), Size.Height);
+        ShadowWidget.ShowBottom(false);
+        ShadowWidget.ShowRight(false);
+        ShadowWidget.ShowBottomRight(false);
 
         List<object> Choices = (List<object>) Command.Parameters[0];
 
@@ -98,6 +115,17 @@ public class ChoiceWidget : BaseCommandWidget
         {
             EventCommand BranchCmd = BranchCommands[i];
             int BranchIdx = Commands.IndexOf(BranchCmd);
+
+            // The first gradient box is the Main box, covering the header and first branch label.
+            if (i > 0)
+            {
+                GradientBox GBox = new GradientBox(this);
+                GBox.SetTopLeftColor(GradientBox.TopLeftColor);
+                GBox.SetBottomRightColor(GradientBox.BottomRightColor);
+                GBox.SetSize(GetStandardWidth(Indentation) - BarWidth - ShadowSize * 2, StandardHeight);
+                GradientBoxes.Add(GBox);
+            }
+            else GradientBoxes.Add(null);
 
             Label BranchLabel = new Label(this);
             BranchLabel.SetFont(Fonts.CabinMedium.Use(9));
@@ -110,8 +138,9 @@ public class ChoiceWidget : BaseCommandWidget
             ExpandArrows.Add(Arrow);
 
             VStackPanel StackPanel = new VStackPanel(this);
-            StackPanel.SetHDocked(true);
-            StackPanel.SetPosition(ChildIndent, 0);
+            StackPanel.SetWidth(GetStandardWidth(Indentation));
+            StackPanel.SetPosition(ChildIndent + ShadowSize, 0);
+            StackPanel.HDockWidgets = false;
             StackPanels.Add(StackPanel);
 
             if (i < BranchCommands.Count - 1)
@@ -125,17 +154,29 @@ public class ChoiceWidget : BaseCommandWidget
             StackPanel.OnSizeChanged += _ =>
             {
                 UpdateLabels();
-                UpdateHeight();
+                UpdateSize();
             };
             Arrow.OnStateChanged += _ =>
             {
                 StackPanel.SetVisible(Arrow.Expanded);
                 UpdateLabels();
-                UpdateHeight();
+                UpdateSize();
             };
         }
-        if (DrawEndLabels) HeightAdd = StandardHeight;
+        EndGradient.SetVisible(DrawEndLabels);
+        if (DrawEndLabels)
+        {
+            HeightAdd = StandardHeight;
+            EndGradient.SetTopLeftColor(GradientBox.TopLeftColor);
+            EndGradient.SetBottomRightColor(GradientBox.BottomRightColor);
+            EndGradient.SetHeight(StandardHeight);
+        }
         UpdateLabels();
+    }
+
+    protected override void UpdateBackdrops()
+    {
+        
     }
 
     public override void MouseMoving(MouseEventArgs e)

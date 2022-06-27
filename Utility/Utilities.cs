@@ -289,7 +289,7 @@ public static class Utilities
                 if (i == Text.Length - 1) Lines.Add("");
                 lastsplittableindex = -1;
             }
-            else if (s.Width > Width)
+            else if (Width != -1 && s.Width > Width)
             {
                 int endidx = lastsplittableindex == -1 ? i : lastsplittableindex + 1;
                 Lines.Add(Text.Substring(startidx, endidx - startidx - 1));

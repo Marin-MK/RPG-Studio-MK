@@ -11,6 +11,7 @@ public class SetVariableWidget : BaseCommandWidget
 
     public override void LoadCommand()
     {
+        base.LoadCommand();
         int VariableID1 = Int(0);
         int VariableID2 = Int(1);
         string Operator = Int(2) switch

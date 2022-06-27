@@ -22,7 +22,7 @@ public class ExpandableCommandWidget : BaseCommandWidget
         {
             if (SilenceEvent) return;
             LoadCommand();
-            UpdateHeight();
+            UpdateSize();
             ((VStackPanel) Parent).UpdateLayout();
         };
         OnSizeChanged += _ => ExpandArrow.SetPosition(Size.Width - 16, 8);

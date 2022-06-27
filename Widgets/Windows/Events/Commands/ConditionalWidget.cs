@@ -14,11 +14,25 @@ public class ConditionalWidget : BaseCommandWidget
     VStackPanel VStackPanel2;
     ExpandArrow ExpandIfArrow;
     ExpandArrow ExpandElseArrow;
+    GradientBox ElseGradient;
+    GradientBox EndGradient;
+    ShadowWidget RightHeaderShadow;
+    ShadowWidget TrueShadow;
+    ShadowWidget ElseHeaderShadow;
+    ShadowWidget FalseShadow;
+    ShadowWidget EndHeaderShadow;
 
     public ConditionalWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex, new Color(128, 128, 255))
     {
+        ElseGradient = new GradientBox(this);
+        EndGradient = new GradientBox(this);
+        RightHeaderShadow = new ShadowWidget(this);
+        TrueShadow = new ShadowWidget(this);
+        ElseHeaderShadow = new ShadowWidget(this);
+        FalseShadow = new ShadowWidget(this);
+        EndHeaderShadow = new ShadowWidget(this);
         ConditionLabel = new Label(this);
-        ConditionLabel.SetPosition(24, 2);
+        ConditionLabel.SetPosition(30, 2);
         ConditionLabel.SetFont(Fonts.CabinMedium.Use(10));
         ConditionLabel.SetTextColor(HeaderLabel.TextColor);
         ElseLabel = new Label(this);
@@ -34,14 +48,14 @@ public class ConditionalWidget : BaseCommandWidget
         ExpandIfArrow.OnStateChanged += _ =>
         {
             VStackPanel1.SetVisible(ExpandIfArrow.Expanded);
-            UpdateHeight();
+            UpdateSize();
         };
         ExpandElseArrow = new ExpandArrow(this);
         ExpandElseArrow.SetExpanded(true);
         ExpandElseArrow.OnStateChanged += _ =>
         {
             VStackPanel2.SetVisible(ExpandElseArrow.Expanded);
-            UpdateHeight();
+            UpdateSize();
         };
         OnSizeChanged += _ =>
         {
@@ -54,13 +68,15 @@ public class ConditionalWidget : BaseCommandWidget
 
     private void UpdateLabels()
     {
+        int elsey = 0;
         int endy = 0;
         if (ElseLabel.Visible)
         {
-            int elsey = VStackPanel.Padding.Up + VStackPanel1.Size.Height;
+            elsey = VStackPanel.Padding.Up + VStackPanel1.Size.Height;
             if (!VStackPanel1.Visible) elsey = 22;
-            ElseLabel.SetPosition(8, elsey + 4);
-            endy = elsey + VStackPanel2.Margins.Up + VStackPanel2.Size.Height;
+            ElseLabel.SetPosition(12, elsey + 4);
+            ElseGradient.SetPosition(BarWidth + ShadowSize, elsey);
+            endy = elsey + VStackPanel2.Margins.Up + VStackPanel2.Size.Height + 2;
             if (!VStackPanel2.Visible) endy = ElseLabel.Visible ? elsey + 22 : 0;
         }
         else
@@ -68,7 +84,8 @@ public class ConditionalWidget : BaseCommandWidget
             endy = VStackPanel.Padding.Up + VStackPanel1.Size.Height;
             if (!VStackPanel1.Visible) endy = 22;
         }
-        EndLabel.SetPosition(8, endy + 4);
+        EndLabel.SetPosition(12, endy + 4);
+        EndGradient.SetPosition(BarWidth + ShadowSize, endy);
         EndLabel.SetVisible(DrawEndLabels);
         if (DrawEndLabels)
         {
@@ -81,33 +98,89 @@ public class ConditionalWidget : BaseCommandWidget
         {
             HeightAdd = ElseLabel.Visible ? VStackPanel2.Visible ? 0 : 22 : 0;
         }
+        RightHeaderShadow.SetPosition(GradientBox.Padding.Left + GradientBox.Size.Width, 0);
+        RightHeaderShadow.SetSize(ShadowSize, GradientBox.Size.Height + ShadowSize * 2);
+        TrueShadow.SetVisible(VStackPanel1.Visible);
+        if (VStackPanel1.Visible)
+        {
+            TrueShadow.SetPosition(GradientBox.Padding.Left, GradientBox.Padding.Up + GradientBox.Size.Height);
+            TrueShadow.SetSize(GradientBox.Size.Width + ShadowSize, VStackPanel1.Size.Height);
+        }
+        ElseHeaderShadow.SetPosition(RightHeaderShadow.Position.X, ElseGradient.Position.Y - ShadowSize);
+        ElseHeaderShadow.SetSize(RightHeaderShadow.Size);
+        FalseShadow.SetVisible(ElseLabel.Visible);
+        if (ElseLabel.Visible)
+        {
+            FalseShadow.SetPosition(ElseGradient.Position.X, ElseGradient.Position.Y + ElseGradient.Size.Height);
+            FalseShadow.SetSize(ElseGradient.Size.Width + ShadowSize, VStackPanel2.Size.Height + 4);
+        }
+        EndHeaderShadow.SetPosition(0, EndGradient.Position.Y - ShadowSize);
+        EndHeaderShadow.SetSize(EndGradient.Size.Width + BarWidth + ShadowSize * 2, EndGradient.Size.Height + ShadowSize * 2);
     }
 
     public override void LoadCommand()
     {
+        base.LoadCommand();
         // Draw conditional
         HeaderLabel.SetText("If: ");
+        ConditionLabel.SetPosition(ConditionLabel.Position.X, 2 + ShadowSize);
         if ((ConditionType) Int(0) == ConditionType.Script)
         {
-            ConditionLabel.SetFont(Fonts.FiraCode.Use(9));
-            ConditionLabel.SetPosition(ConditionLabel.Position.X, 3);
+            ConditionLabel.SetFont(Fonts.Monospace.Use(11));
         }
         else
         {
             ConditionLabel.SetFont(Fonts.CabinMedium.Use(9));
-            ConditionLabel.SetPosition(ConditionLabel.Position.X, 2);
         }
         ConditionLabel.SetText(GetConditionText());
+
+        GradientBox.SetDocked(false);
+        GradientBox.SetSize(GetStandardWidth(Indentation) - BarWidth - ShadowSize * 2, StandardHeight);
+        ShadowWidget.SetSize(GetStandardWidth(Indentation), Size.Height);
+        ShadowWidget.ShowBottom(false);
+        ShadowWidget.ShowRight(false);
+        ShadowWidget.ShowBottomRight(false);
+
+        RightHeaderShadow.ShowTop(false);
+        RightHeaderShadow.ShowBottom(false);
+        RightHeaderShadow.ShowLeft(false);
+        RightHeaderShadow.ShowTopLeft(false);
+        RightHeaderShadow.ShowTopRight(false);
+        RightHeaderShadow.ShowBottomLeft(false);
+
+        TrueShadow.ShowTopRight(false);
+        TrueShadow.ShowBottomRight(false);
+        TrueShadow.ShowRight(false);
+        TrueShadow.SetInverted(true);
+
+        ElseHeaderShadow.ShowTop(false);
+        ElseHeaderShadow.ShowTopLeft(false);
+        ElseHeaderShadow.ShowLeft(false);
+        ElseHeaderShadow.ShowBottomLeft(false);
+        ElseHeaderShadow.ShowBottom(false);
+
+        FalseShadow.ShowTopRight(false);
+        FalseShadow.ShowBottomRight(false);
+        FalseShadow.ShowRight(false);
+        FalseShadow.SetInverted(true);
+
+        EndHeaderShadow.ShowTop(false);
+        EndHeaderShadow.ShowTopLeft(false);
+        EndHeaderShadow.ShowLeft(false);
+        EndHeaderShadow.ShowBottomLeft(false);
 
         VStackPanel1?.Dispose();
         VStackPanel2?.Dispose();
 
         VStackPanel1 = new VStackPanel(VStackPanel);
-        VStackPanel1.SetHDocked(true);
+        VStackPanel1.SetWidth(GetStandardWidth(Indentation));
+        VStackPanel1.HDockWidgets = false;
 
         VStackPanel2 = new VStackPanel(VStackPanel);
+        VStackPanel2.SetWidth(GetStandardWidth(Indentation));
         VStackPanel2.SetHDocked(true);
         VStackPanel2.SetMargins(0, 22, 0, 0);
+        VStackPanel2.HDockWidgets = false;
 
         EventCommand ElseCmd = Commands.Find(c => c.Code == CommandCode.BranchElse && c.Indent == Command.Indent);
         int ElseCmdIdx = Commands.IndexOf(ElseCmd);
@@ -118,6 +191,12 @@ public class ConditionalWidget : BaseCommandWidget
             ParseCommands(Commands.GetRange(1, ElseCmdIdx - 1), VStackPanel1, gidx);
             gidx += ElseCmdIdx; // + 1 for the BranchElse command
             VStackPanel1.UpdateLayout();
+
+            // Draw else label
+            ElseGradient.SetTopLeftColor(GradientBox.TopLeftColor);
+            ElseGradient.SetBottomRightColor(GradientBox.BottomRightColor);
+            ElseGradient.SetVisible(true);
+            ElseGradient.SetSize(GetStandardWidth(Indentation) - BarWidth - ShadowSize * 2, StandardHeight);
 
             // Draw false commands
             ParseCommands(Commands.GetRange(ElseCmdIdx + 1, Commands.Count - ElseCmdIdx - 2), VStackPanel2, gidx);
@@ -133,19 +212,32 @@ public class ConditionalWidget : BaseCommandWidget
             ElseLabel.SetVisible(false);
             ExpandElseArrow.SetVisible(false);
             VStackPanel2.SetVisible(false);
+            ElseGradient.SetVisible(false);
+        }
+        EndGradient.SetVisible(DrawEndLabels);
+        if (DrawEndLabels)
+        {
+            EndGradient.SetTopLeftColor(GradientBox.TopLeftColor);
+            EndGradient.SetBottomRightColor(GradientBox.BottomRightColor);
+            EndGradient.SetSize(GetStandardWidth(Indentation) - BarWidth - ShadowSize * 2, StandardHeight);
         }
         UpdateLabels();
 
         VStackPanel1.OnSizeChanged += _ =>
         {
             UpdateLabels();
-            UpdateHeight();
+            UpdateSize();
         };
         VStackPanel2.OnSizeChanged += _ =>
         {
             UpdateLabels();
-            UpdateHeight();
+            UpdateSize();
         };
+    }
+
+    protected override void UpdateBackdrops()
+    {
+        
     }
 
     private int Int(int Index)

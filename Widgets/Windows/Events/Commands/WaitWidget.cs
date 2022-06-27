@@ -11,6 +11,7 @@ public class WaitWidget : BaseCommandWidget
 
     public override void LoadCommand()
     {
+        base.LoadCommand();
         HeaderLabel.SetText($"Wait {Command.Parameters[0]} frame{((long) Command.Parameters[0] > 1 ? "s" : "")}");
     }
 

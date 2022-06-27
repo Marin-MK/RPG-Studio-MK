@@ -161,6 +161,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         int pos = Token.Index - Line.StartIndex;
         Color c = Token.Type switch
         {
+            // class_definition, module_definition, constant, instance_variable, class_variable, global_variable
             "comment" => new Color(96, 160, 96),
             "number" or "hex" or "regex" or "string" => new Color(255, 128, 128),
             "class" or "def" or "if" or "true" or "false" or "else" or "end" or "begin" or
@@ -172,6 +173,8 @@ public class ScriptEditorTextArea : MultilineTextArea
             "logical_operator" or "bitwise_operator" or "relational_operator" or "arithmetic_operator" or
             "range" or "object_access" or "line_end" or "ternary_operator" or "array_initialization" or
             "hash_initialization" or "array_access" or "block" or "argument_list" => new Color(96, 192, 192),
+            "class_definition" or "module_definition" or "constant" or "instance_variable" or
+            "class_variable" or "global_variable" => new Color(192, 192, 96),
             _ => TextColor
         };
         if (LineColors[Line.LineIndex].Count == 0 || !LineColors[Line.LineIndex].Last().Item2.Equals(c))

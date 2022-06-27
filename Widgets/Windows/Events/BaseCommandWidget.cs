@@ -9,6 +9,51 @@ namespace RPGStudioMK.Widgets;
 
 public class BaseCommandWidget : Widget
 {
+    static Dictionary<CommandCategory, List<CommandCode>> CommandTypes = new Dictionary<CommandCategory, List<CommandCode>>()
+    {
+        { CommandCategory.General, 
+            new List<CommandCode>()
+            {
+                CommandCode.ShowText, CommandCode.ChangeTextOptions, CommandCode.ShowChoices, CommandCode.ChangeWindowskin, 
+                CommandCode.SetMoveRoute, CommandCode.InputNumber, CommandCode.WaitForMoveCompletion, CommandCode.Script, 
+                CommandCode.ChangeMoney, CommandCode.Comment, CommandCode.Wait 
+            }
+        },
+        { CommandCategory.Flow,
+            new List<CommandCode>()
+            {
+                CommandCode.ControlSwitches, CommandCode.ConditionalBranch, CommandCode.ControlVariables, CommandCode.Loop, 
+                CommandCode.ControlSelfSwitch, CommandCode.BreakLoop, CommandCode.ExitEventProcessing, CommandCode.Label, 
+                CommandCode.EraseEvent, CommandCode.JumpToLabel, CommandCode.CallCommonEvent
+            }
+        },
+        { CommandCategory.Map, 
+            new List<CommandCode>()
+            {
+                CommandCode.TransferPlayer, CommandCode.ScrollMap, CommandCode.SetEventLocation, CommandCode.ChangeMapSettings, 
+                CommandCode.ShowAnimation, CommandCode.ChangeFogColorTone, CommandCode.SetWeatherEffects, CommandCode.ChangeFogOpacity, 
+                CommandCode.ChangeTransparencyFlag, CommandCode.ChangeScreenColorTone
+            }
+        },
+        { CommandCategory.ImageSound,
+            new List<CommandCode>()
+            {
+                CommandCode.ShowPicture, CommandCode.PlayBGM, CommandCode.MovePicture, CommandCode.FadeOutBGM, CommandCode.RotatePicture, 
+                CommandCode.PlayBGS, CommandCode.ChangePictureColorTone, CommandCode.FadeOutBGS, CommandCode.ErasePicture, CommandCode.PlaySE, 
+                CommandCode.PlayME, CommandCode.StopSE, CommandCode.RestoreBGMBGS, CommandCode.MemorizeBGMBGS
+            }
+        }
+    };
+
+    static Dictionary<CommandCategory, (Color TopBarColor, Color BottomBarColor, Color GradientColor)> CategoryColors = new Dictionary<CommandCategory, (Color, Color, Color)>()
+    {
+        { CommandCategory.General, (new Color(27, 148, 119), new Color(113, 221, 59), new Color(49, 135, 97)) },
+        { CommandCategory.Flow, (new Color(161, 166, 90), new Color(228, 230, 30), new Color(123, 146, 82)) },
+        { CommandCategory.Map, (new Color(113, 75, 231), new Color(214, 173, 176), new Color(105, 97, 157)) },
+        { CommandCategory.ImageSound, (new Color(183, 30, 120), new Color(239, 117, 60), new Color(134, 73, 97)) },
+        { CommandCategory.Other, (new Color(183, 89, 90), new Color(239, 189, 30), new Color(135, 108, 82)) }
+    };
+
     static Dictionary<CommandCode, CommandCode> CommandStartEndPairs = new Dictionary<CommandCode, CommandCode>()
     {
         { CommandCode.ConditionalBranch, CommandCode.BranchConditionalEnd },
@@ -39,6 +84,8 @@ public class BaseCommandWidget : Widget
         { CommandCode.ControlSelfSwitch, typeof(SetSelfSwitchWidget) },
     };
 
+    public BaseCommandWidget MainCommandWidget;
+
     protected delegate void EditEvent(bool Applied = true, bool ResetCommand = false, int GlobalIndexToCountFrom = -1);
 
     protected List<CommandUndoAction> UndoList = new List<CommandUndoAction>();
@@ -50,12 +97,16 @@ public class BaseCommandWidget : Widget
     protected List<EventCommand> Commands;
     protected int Indentation;
     protected int HeightAdd = 0;
-    protected int MarginBetweenWidgets = 2;
+    protected int MarginBetweenWidgets = 3;
     protected int ChildIndent = 20;
-    protected bool DrawEndLabels = true;
-    protected bool Selected = false;
+    protected int BarWidth = 4;
     protected int StandardHeight = 20;
     protected int GlobalCommandIndex = -1;
+    protected int CommandOffset = 16;
+    protected int ShadowSize = 5;
+    protected bool ScaleGradientWithSize = false;
+    protected bool DrawEndLabels = true;
+    protected bool Selected = false;
     protected bool InitialDownKey = true;
     protected bool InitialUpKey = true;
     protected bool InitialPageDownKey = true;
@@ -66,21 +117,30 @@ public class BaseCommandWidget : Widget
 
     protected Label HeaderLabel;
     protected VStackPanel VStackPanel;
-    protected BaseCommandWidget MainCommandWidget;
+    protected GradientBox GradientBox;
+    protected GradientBox BarBox;
+    protected ShadowWidget ShadowWidget;
 
     List<BaseCommandWidget> SubcommandWidgets = new List<BaseCommandWidget>();
 
     public BaseCommandWidget(IContainer Parent, int ParentWidgetIndex, Color BarColor = null) : base(Parent, ParentWidgetIndex)
     {
+        ShadowWidget = new ShadowWidget(this);
+        ShadowWidget.SetVDocked(true);
+        ShadowWidget.SetThickness(ShadowSize);
+        GradientBox = new GradientBox(this);
+        GradientBox.SetPadding(BarWidth + ShadowSize, ShadowSize);
+        BarBox = new GradientBox(this);
+        BarBox.SetWidth(BarWidth);
+        BarBox.SetVDocked(true);
+        BarBox.SetPadding(ShadowSize, ShadowSize, 0, ShadowSize);
         HeaderLabel = new Label(this);
-        HeaderLabel.SetPosition(8, 2);
+        HeaderLabel.SetPosition(8 + ShadowSize, 2 + ShadowSize);
         HeaderLabel.SetFont(Fonts.UbuntuBold.Use(10));
-        if (BarColor != null) HeaderLabel.SetTextColor(BarColor);
+        //if (BarColor != null) HeaderLabel.SetTextColor(BarColor);
         VStackPanel = new VStackPanel(this);
-        VStackPanel.SetHDocked(true);
-        VStackPanel.OnSizeChanged += _ => UpdateHeight();
-        Sprites["bar"] = new Sprite(this.Viewport, new SolidBitmap(4, StandardHeight, BarColor ?? new Color(63, 210, 101)));
-        OnSizeChanged += _ => ((SolidBitmap) Sprites["bar"].Bitmap).SetSize(4, Size.Height);
+        VStackPanel.HDockWidgets = false;
+        VStackPanel.OnSizeChanged += _ => UpdateSize();
         OnDoubleLeftMouseDownInside += e =>
         {
             Insert();
@@ -161,14 +221,19 @@ public class BaseCommandWidget : Widget
         this.Commands = Commands;
         this.Indentation = Indentation;
         this.GlobalCommandIndex = GlobalCommandIndex;
-        if (this.Indentation == -1) MainCommandWidget = this;
         SubcommandWidgets.ForEach(w => w.Dispose());
         SubcommandWidgets.Clear();
         if (Command != null)
         {
             HeaderLabel.SetText(Command.Code.ToString());
             HeaderLabel.SetVisible(true);
-            VStackPanel.SetPadding(ChildIndent, StandardHeight, 0, 0);
+            VStackPanel.SetPadding(ShadowSize + ChildIndent, ShadowSize + StandardHeight, ShadowSize, ShadowSize);
+            CommandCategory cat = GetCommandCategory();
+            (Color TopBarColor, Color BottomBarColor, Color GradientColor) = CategoryColors[cat];
+            GradientBox.SetTopLeftColor(new Color(39, 81, 104));
+            GradientBox.SetBottomRightColor(GradientColor);
+            BarBox.SetTopColor(TopBarColor);
+            BarBox.SetBottomColor(BottomBarColor);
             LoadCommand();
         }
         else
@@ -177,11 +242,11 @@ public class BaseCommandWidget : Widget
             RedoList.Clear();
             ChildIndent = 0;
             HeaderLabel.SetVisible(false);
-            Sprites["bar"].Visible = false;
-            VStackPanel.SetPadding(0);
+            VStackPanel.SetPadding(CommandOffset, 0, 0, 0);
+            ShadowWidget.SetVisible(false);
             ParseCommands(Commands, VStackPanel, this.GlobalCommandIndex + 1);
         }
-        UpdateHeight();
+        UpdateSize();
     }
 
     public (List<CommandUndoAction> UndoList, List<CommandUndoAction> RedoList) GetUndoRedoLists()
@@ -195,22 +260,39 @@ public class BaseCommandWidget : Widget
         this.RedoList = RedoList;
     }
 
-    protected virtual void UpdateHeight()
+    protected virtual void UpdateSize()
     {
         VStackPanel.UpdateLayout();
+        int vw = VStackPanel.Size.Width;
         int vh = VStackPanel.Size.Height;
         if (vh == 1) // No subcommands in VStackPanel
         {
             // Remove the one excess pixel we'd get
+            vw = 0;
             vh = 0;
         }
-        if (this.Indentation == -1) SetHeight(Math.Max(vh + HeightAdd, Parent.Size.Height));
-        else SetHeight(StandardHeight + vh + HeightAdd);
+
+        if (this.Indentation == -1)
+        {
+            vw = Math.Max(Parent.Size.Width, VStackPanel.Padding.Left + vw);
+            vh = Math.Max(vh + HeightAdd, Parent.Size.Height);
+        }
+        else
+        {
+            vw = Math.Max(Size.Width, VStackPanel.Padding.Left + vw);
+            vh = StandardHeight + vh + HeightAdd + ShadowSize * 2;
+        }
+        SetSize(vw, vh);
     }
 
     public virtual void LoadCommand()
     {
         
+    }
+
+    protected int GetStandardWidth(int Indent)
+    {
+        return MainCommandWidget.Parent.Size.Width - (ChildIndent + ShadowSize) * Indent - CommandOffset;
     }
 
     protected BaseCommandWidget CreateWidget(EventCommand Command, int Count, VStackPanel Parent, int GlobalCommandIndex, int ParentWidgetIndex = -1)
@@ -224,7 +306,7 @@ public class BaseCommandWidget : Widget
         }
         else w = new BaseCommandWidget(ParentContainer, ParentWidgetIndex);
         w.MainCommandWidget = this.MainCommandWidget;
-        w.SetHDocked(true);
+        w.SetWidth(GetStandardWidth(this.Indentation + 1));
         w.SetMargins(0, MarginBetweenWidgets);
         w.SetCommand(Map, Event, Page, Command, Commands.GetRange(Commands.IndexOf(Command), Count), this.Indentation + 1, GlobalCommandIndex);
         w.OnSizeChanged += _ =>
@@ -541,7 +623,7 @@ public class BaseCommandWidget : Widget
             }
             if (ResetCommand) SetCommand(this.Map, this.Event, this.Page, this.Commands[0], this.Commands, this.Indentation, this.GlobalCommandIndex);
             else LoadCommand();
-            UpdateHeight();
+            UpdateSize();
         });
     }
 
@@ -852,6 +934,32 @@ public class BaseCommandWidget : Widget
         NewCommand.ScrollToThisCommand();
     }
 
+    protected CommandCategory GetCommandCategory()
+    {
+        CommandCode code = Command.Code;
+        foreach (KeyValuePair<CommandCategory, List<CommandCode>> kvp in CommandTypes)
+        {
+            if (kvp.Value.Contains(code))
+            {
+                return kvp.Key;
+            }
+        }
+        return CommandCategory.Other;
+    }
+
+    public override void SizeChanged(BaseEventArgs e)
+    {
+        base.SizeChanged(e);
+        UpdateBackdrops();
+    }
+
+    protected virtual void UpdateBackdrops()
+    {
+        int w = ScaleGradientWithSize ? Size.Width: GetStandardWidth(Indentation);
+        GradientBox.SetSize(w - BarWidth - ShadowSize * 2, Size.Height - GradientBox.Padding.Up - ShadowSize);
+        ShadowWidget.SetSize(w, Size.Height);
+    }
+
     public class CommandUndoAction
     {
         protected BaseCommandWidget MainCommandWidget;
@@ -910,4 +1018,13 @@ public class BaseCommandWidget : Widget
             }
         }
     }
+}
+
+public enum CommandCategory
+{
+    General,
+    Flow,
+    Map,
+    ImageSound,
+    Other
 }

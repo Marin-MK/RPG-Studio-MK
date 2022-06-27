@@ -11,6 +11,7 @@ public class SetSelfSwitchWidget : BaseCommandWidget
 
     public override void LoadCommand()
     {
+        base.LoadCommand();
         char Switch = ((string) Command.Parameters[0])[0];
         int State = (int) (long) Command.Parameters[1];
         int EventID = Command.Parameters.Count == 3 ? (int) (long) Command.Parameters[2] : -1;
