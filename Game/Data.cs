@@ -82,10 +82,10 @@ public static class Data
 
     private static void LoadTilesets()
     {
-        IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/Tilesets.rxdata"), Ruby.String.ToPtr("rb"));
-        IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", file);
+        IntPtr file = Ruby.File.Open(DataPath + "/Tilesets.rxdata", "rb");
+        IntPtr data = Ruby.Marshal.Load(file);
         Ruby.Pin(data);
-        Ruby.Funcall(file, "close");
+        Ruby.File.Close(file);
         Autotiles.AddRange(new Autotile[Ruby.Array.Length(data) * 7]);
         Tilesets.Add(null);
         for (int i = 0; i < Ruby.Array.Length(data); i++)
@@ -105,20 +105,17 @@ public static class Data
         Ruby.Pin(tilesets);
         foreach (Tileset tileset in Tilesets)
         {
-            if (tileset == null) Ruby.Funcall(tilesets, "push", Ruby.Nil);
+            if (tileset == null) Ruby.Array.Push(tilesets, Ruby.Nil);
             else
             {
                 IntPtr tilesetdata = tileset.Save();
-                Ruby.Funcall(tilesets, "push", tilesetdata);
+                Ruby.Array.Push(tilesets, tilesetdata);
             }
         }
-        IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/Tilesets.rxdata"), Ruby.String.ToPtr("wb"));
-        Ruby.Pin(file);
-        IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", tilesets);
-        Ruby.Funcall(file, "write", data);
-        Ruby.Funcall(file, "close");
+        IntPtr file = Ruby.File.Open(DataPath + "/Tilesets.rxdata", "wb");
+        Ruby.Marshal.Dump(tilesets, file);
+        Ruby.File.Close(file);
         Ruby.Unpin(tilesets);
-        Ruby.Unpin(file);
     }
 
     /// <summary>
@@ -148,25 +145,25 @@ public static class Data
 
     private static IEnumerable<float> LoadMaps()
     {
-        IntPtr mapinfofile = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/MapInfos.rxdata"), Ruby.String.ToPtr("rb"));
-        IntPtr mapinfo = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", mapinfofile);
+        IntPtr mapinfofile = Ruby.File.Open(DataPath + "/MapInfos.rxdata", "rb");
+        IntPtr mapinfo = Ruby.Marshal.Load(mapinfofile);
         Ruby.Pin(mapinfo);
-        Ruby.Funcall(mapinfofile, "close");
+        Ruby.File.Close(mapinfofile);
         List<(string, int)> Filenames = GetMapIDs(DataPath);
         int total = Filenames.Count;
         int count = 0;
         foreach ((string name, int id) tuple in Filenames)
         {
-            IntPtr mapfile = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/" + tuple.name), Ruby.String.ToPtr("rb"));
-            IntPtr mapdata = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", mapfile);
+            IntPtr mapfile = Ruby.File.Open(DataPath + "/" + tuple.name, "rb");
+            IntPtr mapdata = Ruby.Marshal.Load(mapfile);
             Ruby.Pin(mapdata);
             int id = tuple.id;
-            Ruby.Funcall(mapfile, "close");
+            Ruby.File.Close(mapfile);
             Map map = new Map(id, mapdata, Ruby.Hash.Get(mapinfo, Ruby.Integer.ToPtr(id)));
             Maps[map.ID] = map;
             Ruby.Unpin(mapdata);
             count++;
-            yield return count / (float)total;
+            yield return count / (float) total;
         }
         Ruby.Unpin(mapinfo);
     }
@@ -187,19 +184,13 @@ public static class Data
             Ruby.SetIVar(mapinfo, "@scroll_y", Ruby.Integer.ToPtr(map.ScrollY));
 
             IntPtr mapdata = map.Save();
-            IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + $"/Map{Utilities.Digits(map.ID, 3)}.rxdata"), Ruby.String.ToPtr("wb"));
-            Ruby.Pin(file);
-            IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", mapdata);
-            Ruby.Funcall(file, "write", data);
-            Ruby.Funcall(file, "close");
-            Ruby.Unpin(file);
+            IntPtr file = Ruby.File.Open(DataPath + $"/Map{Utilities.Digits(map.ID, 3)}.rxdata", "wb");
+            Ruby.Marshal.Dump(mapdata, file);
+            Ruby.File.Close(file);
         }
-        IntPtr mapinfosfile = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + $"/MapInfos.rxdata"), Ruby.String.ToPtr("wb"));
-        Ruby.Pin(mapinfosfile);
-        IntPtr mapinfosdata = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", mapinfos);
-        Ruby.Funcall(mapinfosfile, "write", mapinfosdata);
-        Ruby.Funcall(mapinfosfile, "close");
-        Ruby.Unpin(mapinfosfile);
+        IntPtr mapinfosfile = Ruby.File.Open(DataPath + $"/MapInfos.rxdata", "wb");
+        Ruby.Marshal.Dump(mapinfos, mapinfosfile);
+        Ruby.File.Close(mapinfosfile);
         Ruby.Unpin(mapinfos);
         // Delete all maps that are not part of of the data anymore
         foreach ((string filename, int id) map in GetMapIDs(DataPath))
@@ -210,10 +201,10 @@ public static class Data
 
     private static void LoadSystem()
     {
-        IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/System.rxdata"), Ruby.String.ToPtr("rb"));
-        IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", file);
+        IntPtr file = Ruby.File.Open(DataPath + "/System.rxdata", "rb");
+        IntPtr data = Ruby.Marshal.Load(file);
         Ruby.Pin(data);
-        Ruby.Funcall(file, "close");
+        Ruby.File.Close(file);
         System = new System(data);
         Ruby.Unpin(data);
     }
@@ -221,20 +212,20 @@ public static class Data
     private static void SaveSystem()
     {
         System.EditMapID = Editor.ProjectSettings.LastMapID;
-        IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/System.rxdata"), Ruby.String.ToPtr("wb"));
-        Ruby.Pin(file);
-        IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", System.Save());
-        Ruby.Funcall(file, "write", data);
-        Ruby.Funcall(file, "close");
-        Ruby.Unpin(file);
+        IntPtr data = System.Save();
+        Ruby.Pin(data);
+        IntPtr file = Ruby.File.Open(DataPath + "/System.rxdata", "wb");
+        Ruby.Marshal.Dump(data, file);
+        Ruby.File.Close(file);
+        Ruby.Unpin(data);
     }
 
     private static void LoadCommonEvents()
     {
-        IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/CommonEvents.rxdata"), Ruby.String.ToPtr("rb"));
-        IntPtr list = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", file);
+        IntPtr file = Ruby.File.Open(DataPath + "/CommonEvents.rxdata", "rb");
+        IntPtr list = Ruby.Marshal.Load(file);
         Ruby.Pin(list);
-        Ruby.Funcall(file, "close");
+        Ruby.File.Close(file);
         for (int i = 1; i < Ruby.Array.Length(list); i++)
         {
             CommonEvent ce = new CommonEvent(Ruby.Array.Get(list, i));
@@ -251,21 +242,18 @@ public static class Data
         {
             Ruby.Array.Set(list, i + 1, CommonEvents[i].Save());
         }
-        IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/CommonEvents.rxdata"), Ruby.String.ToPtr("wb"));
-        Ruby.Pin(file);
-        IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", list);
-        Ruby.Funcall(file, "write", data);
-        Ruby.Funcall(file, "close");
-        Ruby.Unpin(file);
+        IntPtr file = Ruby.File.Open(DataPath + "/CommonEvents.rxdata", "wb");
+        Ruby.Marshal.Dump(list, file);
+        Ruby.File.Close(file);
         Ruby.Unpin(list);
     }
 
     private static void LoadScripts()
     {
-        IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/Scripts.rxdata"), Ruby.String.ToPtr("rb"));
-        IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "load", file);
+        IntPtr file = Ruby.File.Open(DataPath + "/Scripts.rxdata", "rb");
+        IntPtr data = Ruby.Marshal.Load(file);
         Ruby.Pin(data);
-        Ruby.Funcall(file, "close");
+        Ruby.File.Close(file);
         for (int i = 0; i < Ruby.Array.Length(data); i++)
         {
             IntPtr script = Ruby.Array.Get(data, i);
@@ -350,15 +338,12 @@ public static class Data
         foreach (Script script in Scripts)
         {
             IntPtr scriptdata = script.Save();
-            Ruby.Funcall(scripts, "push", scriptdata);
+            Ruby.Array.Push(scripts, scriptdata);
         }
-        IntPtr file = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "File"), "open", Ruby.String.ToPtr(DataPath + "/Scripts.rxdata"), Ruby.String.ToPtr("wb"));
-        Ruby.Pin(file);
-        IntPtr data = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Marshal"), "dump", scripts);
-        Ruby.Funcall(file, "write", data);
-        Ruby.Funcall(file, "close");
+        IntPtr file = Ruby.File.Open(DataPath + "/Scripts.rxdata", "wb");
+        Ruby.Marshal.Dump(scripts, file);
+        Ruby.File.Close(file);
         Ruby.Unpin(scripts);
-        Ruby.Unpin(file);
     }
 
     private static Encoding win1252;

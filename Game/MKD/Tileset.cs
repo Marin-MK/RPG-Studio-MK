@@ -187,7 +187,7 @@ public class Tileset : ICloneable, ISerializable
         {
             if (autotile == null) continue;
             int idx = autotile.ID - this.ID * 7;
-            Ruby.Funcall(autotile_names, "[]=", Ruby.Integer.ToPtr(idx), Ruby.String.ToPtr(autotile.GraphicName));
+            Ruby.Array.Set(autotile_names, idx, Ruby.String.ToPtr(autotile.GraphicName));
         }
         IntPtr passages = Ruby.Funcall(Compatibility.RMXP.Table.Class, "new", Ruby.Integer.ToPtr(this.Passabilities.Count));
         Ruby.SetIVar(obj, "@passages", passages);

@@ -52,7 +52,7 @@ public partial class MainEditorWindow : UIWindow
         this.SetMinimumSize(675, 400);
         this.SetText("RPG Studio MK");
 
-        this.Initialize();
+        this.Initialize(true, false, false, RenderDriver.Default);
         Windows.Add(this);
         OnClosed += _ => Windows.Remove(this);
 

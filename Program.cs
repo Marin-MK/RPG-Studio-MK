@@ -133,6 +133,11 @@ public class Program
         windows.AddPath("libgmp", "./lib/windows/libgmp-10.dll");
         windows.AddPath("libssp", "./lib/windows/libssp-0.dll");
         windows.AddPath("libwinpthread", "./lib/windows/libwinpthread-1.dll");
+        //windows.AddPath("libcrypto", "./lib/windows/libcrypto-1_1-x64.dll");
+        //windows.AddPath("libgcc", "./lib/windows/libgcc_s_seh-1.dll");
+        //windows.AddPath("libffi", "./lib/windows/libffi-7.dll");
+        //windows.AddPath("libyaml", "./lib/windows/libyaml-0-2.dll");
+        windows.AddPath("libz", "./lib/windows/zlib1.dll");
 
         PathPlatformInfo linux = new PathPlatformInfo(NativeLibraryLoader.Platform.Linux);
         linux.AddPath("ruby", "./lib/linux/libruby.so");
@@ -140,14 +145,14 @@ public class Program
         Ruby.Initialize(PathInfo.Create(windows, linux));
 
         IntPtr ruby_load_path = Ruby.GetGlobal("$LOAD_PATH");
-        Ruby.Funcall(ruby_load_path, "push", Ruby.String.ToPtr("./lib/ruby/2.7.0"));
+        Ruby.Array.Push(ruby_load_path, Ruby.String.ToPtr("./lib/ruby/2.7.0"));
         if (NativeLibrary.Platform == NativeLibraryLoader.Platform.Windows)
         {
-            Ruby.Funcall(ruby_load_path, "push", Ruby.String.ToPtr("./lib/ruby/2.7.0/x64-mingw32"));
+            Ruby.Array.Push(ruby_load_path, Ruby.String.ToPtr("./lib/ruby/2.7.0/x64-mingw32"));
         }
         else if (NativeLibrary.Platform == NativeLibraryLoader.Platform.Linux)
         {
-            Ruby.Funcall(ruby_load_path, "push", Ruby.String.ToPtr("./lib/ruby/2.7.0/x86_64-linux"));
+            Ruby.Array.Push(ruby_load_path, Ruby.String.ToPtr("./lib/ruby/2.7.0/x86_64-linux"));
         }
         Ruby.Require("zlib");
     }

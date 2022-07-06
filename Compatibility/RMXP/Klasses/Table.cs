@@ -39,12 +39,12 @@ public static partial class RMXP
 
         public static IntPtr Get(IntPtr Self, int Index)
         {
-            return Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]", Ruby.Integer.ToPtr(Index + 5));
+            return Ruby.Array.Get(Ruby.GetIVar(Self, "@data"), Index + 5);
         }
 
         public static IntPtr Set(IntPtr Self, int Index, IntPtr Value)
         {
-            return Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]=", Ruby.Integer.ToPtr(Index + 5), Value);
+            return Ruby.Array.Set(Ruby.GetIVar(Self, "@data"), Index + 5, Value);
         }
 
         static IntPtr initialize(IntPtr Self, IntPtr Args)
@@ -67,18 +67,19 @@ public static partial class RMXP
             }
             int size = (int)(Ruby.Integer.FromPtr(XSize) * Ruby.Integer.FromPtr(YSize) * Ruby.Integer.FromPtr(ZSize));
             Ruby.SetIVar(Self, "@data", Ruby.Array.Create(size + 5, Ruby.Integer.ToPtr(0)));
-            Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]=", Ruby.Integer.ToPtr(0), ZSize);
-            Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]=", Ruby.Integer.ToPtr(1), XSize);
-            Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]=", Ruby.Integer.ToPtr(2), YSize);
-            Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]=", Ruby.Integer.ToPtr(3), ZSize);
-            Ruby.Funcall(Ruby.GetIVar(Self, "@data"), "[]=", Ruby.Integer.ToPtr(4), Ruby.Integer.ToPtr(size));
+            Ruby.Array.Set(Ruby.GetIVar(Self, "@data"), 0, ZSize);
+            Ruby.Array.Set(Ruby.GetIVar(Self, "@data"), 1, XSize);
+            Ruby.Array.Set(Ruby.GetIVar(Self, "@data"), 2, YSize);
+            Ruby.Array.Set(Ruby.GetIVar(Self, "@data"), 3, ZSize);
+            Ruby.Array.Set(Ruby.GetIVar(Self, "@data"), 4, Ruby.Integer.ToPtr(size));
             return Ruby.Nil;
         }
 
         static IntPtr _load(IntPtr Self, IntPtr Args)
         {
             Ruby.Array.Expect(Args, 1);
-            IntPtr unpacked = Ruby.Funcall(Ruby.Array.Get(Args, 0), "unpack", Ruby.String.ToPtr("LLLLLS*"));
+            IntPtr data = Ruby.Array.Get(Args, 0);
+            IntPtr unpacked = Ruby.Funcall(data, "unpack", Ruby.String.ToPtr("LLLLLS*"));
             IntPtr obj = Ruby.Funcall(Self, "new", Ruby.Array.Get(unpacked, 1), Ruby.Array.Get(unpacked, 2), Ruby.Array.Get(unpacked, 3));
             Ruby.SetIVar(obj, "@data", unpacked);
             return obj;
