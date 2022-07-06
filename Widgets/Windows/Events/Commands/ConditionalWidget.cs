@@ -32,7 +32,6 @@ public class ConditionalWidget : BaseCommandWidget
         FalseShadow = new ShadowWidget(this);
         EndHeaderShadow = new ShadowWidget(this);
         ConditionLabel = new Label(this);
-        ConditionLabel.SetPosition(30, 2);
         ConditionLabel.SetFont(Fonts.CabinMedium.Use(10));
         ConditionLabel.SetTextColor(HeaderLabel.TextColor);
         ElseLabel = new Label(this);
@@ -45,6 +44,7 @@ public class ConditionalWidget : BaseCommandWidget
         EndLabel.SetTextColor(HeaderLabel.TextColor);
         ExpandIfArrow = new ExpandArrow(this);
         ExpandIfArrow.SetExpanded(true);
+        ExpandIfArrow.SetVisible(false);
         ExpandIfArrow.OnStateChanged += _ =>
         {
             VStackPanel1.SetVisible(ExpandIfArrow.Expanded);
@@ -52,6 +52,7 @@ public class ConditionalWidget : BaseCommandWidget
         };
         ExpandElseArrow = new ExpandArrow(this);
         ExpandElseArrow.SetExpanded(true);
+        ExpandElseArrow.SetVisible(false);
         ExpandElseArrow.OnStateChanged += _ =>
         {
             VStackPanel2.SetVisible(ExpandElseArrow.Expanded);
@@ -73,31 +74,33 @@ public class ConditionalWidget : BaseCommandWidget
         if (ElseLabel.Visible)
         {
             elsey = VStackPanel.Padding.Up + VStackPanel1.Size.Height;
-            if (!VStackPanel1.Visible) elsey = 22;
+            if (!VStackPanel1.Visible) elsey = StandardHeight;
             ElseLabel.SetPosition(12, elsey + 4);
             ElseGradient.SetPosition(BarWidth + ShadowSize, elsey);
             endy = elsey + VStackPanel2.Margins.Up + VStackPanel2.Size.Height + 2;
-            if (!VStackPanel2.Visible) endy = ElseLabel.Visible ? elsey + 22 : 0;
+            if (!VStackPanel2.Visible) endy = ElseLabel.Visible ? elsey + StandardHeight : 0;
         }
         else
         {
             endy = VStackPanel.Padding.Up + VStackPanel1.Size.Height;
-            if (!VStackPanel1.Visible) endy = 22;
+            if (!VStackPanel1.Visible) endy = StandardHeight;
         }
+        endy += 2;
         EndLabel.SetPosition(12, endy + 4);
         EndGradient.SetPosition(BarWidth + ShadowSize, endy);
         EndLabel.SetVisible(DrawEndLabels);
         if (DrawEndLabels)
         {
-            if (VStackPanel1.Visible && VStackPanel2.Visible) HeightAdd = 22;
-            else if (VStackPanel1.Visible && !VStackPanel2.Visible) HeightAdd = ElseLabel.Visible ? 44 : 22;
-            else if (!VStackPanel1.Visible && VStackPanel2.Visible) HeightAdd = 22;
-            else HeightAdd = ElseLabel.Visible ? 44 : 22;
+            if (VStackPanel1.Visible && VStackPanel2.Visible) HeightAdd = StandardHeight;
+            else if (VStackPanel1.Visible && !VStackPanel2.Visible) HeightAdd = ElseLabel.Visible ? StandardHeight * 2 : StandardHeight;
+            else if (!VStackPanel1.Visible && VStackPanel2.Visible) HeightAdd = StandardHeight;
+            else HeightAdd = ElseLabel.Visible ? StandardHeight * 2 : StandardHeight;
         }
         else
         {
-            HeightAdd = ElseLabel.Visible ? VStackPanel2.Visible ? 0 : 22 : 0;
+            HeightAdd = ElseLabel.Visible ? VStackPanel2.Visible ? 0 : StandardHeight : 0;
         }
+        HeightAdd += 4;
         RightHeaderShadow.SetPosition(GradientBox.Padding.Left + GradientBox.Size.Width, 0);
         RightHeaderShadow.SetSize(ShadowSize, GradientBox.Size.Height + ShadowSize * 2);
         TrueShadow.SetVisible(VStackPanel1.Visible);
@@ -123,7 +126,7 @@ public class ConditionalWidget : BaseCommandWidget
         base.LoadCommand();
         // Draw conditional
         HeaderLabel.SetText("If: ");
-        ConditionLabel.SetPosition(ConditionLabel.Position.X, 2 + ShadowSize);
+        ConditionLabel.SetPosition(HeaderLabel.Position.X + HeaderLabel.Size.Width + 4, 2 + ShadowSize);
         if ((ConditionType) Int(0) == ConditionType.Script)
         {
             ConditionLabel.SetFont(Fonts.Monospace.Use(11));
@@ -179,7 +182,7 @@ public class ConditionalWidget : BaseCommandWidget
         VStackPanel2 = new VStackPanel(VStackPanel);
         VStackPanel2.SetWidth(GetStandardWidth(Indentation));
         VStackPanel2.SetHDocked(true);
-        VStackPanel2.SetMargins(0, 22, 0, 0);
+        VStackPanel2.SetMargins(0, StandardHeight, 0, 0);
         VStackPanel2.HDockWidgets = false;
 
         EventCommand ElseCmd = Commands.Find(c => c.Code == CommandCode.BranchElse && c.Indent == Command.Indent);
@@ -201,7 +204,7 @@ public class ConditionalWidget : BaseCommandWidget
             // Draw false commands
             ParseCommands(Commands.GetRange(ElseCmdIdx + 1, Commands.Count - ElseCmdIdx - 2), VStackPanel2, gidx);
             VStackPanel2.UpdateLayout();
-            ExpandElseArrow.SetVisible(true);
+            //ExpandElseArrow.SetVisible(true);
             VStackPanel2.SetVisible(true);
         }
         else
@@ -210,7 +213,7 @@ public class ConditionalWidget : BaseCommandWidget
             ParseCommands(Commands.GetRange(1, Commands.Count - 2), VStackPanel1, this.GlobalCommandIndex + 1);
             VStackPanel1.UpdateLayout();
             ElseLabel.SetVisible(false);
-            ExpandElseArrow.SetVisible(false);
+            //ExpandElseArrow.SetVisible(false);
             VStackPanel2.SetVisible(false);
             ElseGradient.SetVisible(false);
         }
@@ -345,16 +348,16 @@ public class ConditionalWidget : BaseCommandWidget
     public override void MouseMoving(MouseEventArgs e)
     {
         base.MouseMoving(e);
-        ExpandIfArrow.SetVisible(false);
-        ExpandElseArrow.SetVisible(false);
-        if (!Mouse.Inside) return;
-        if (ElseLabel.Visible)
-        {
-            int ry = e.Y - Viewport.Y + TopCutOff;
-            ExpandIfArrow.SetVisible(ry < ElseLabel.Position.Y);
-            ExpandElseArrow.SetVisible(!ExpandIfArrow.Visible);
-        }
-        else ExpandIfArrow.SetVisible(true);
+        //ExpandIfArrow.SetVisible(false);
+        //ExpandElseArrow.SetVisible(false);
+        //if (!Mouse.Inside) return;
+        //if (ElseLabel.Visible)
+        //{
+        //    int ry = e.Y - Viewport.Y + TopCutOff;
+        //    ExpandIfArrow.SetVisible(ry < ElseLabel.Position.Y);
+        //    ExpandElseArrow.SetVisible(!ExpandIfArrow.Visible);
+        //}
+        //else ExpandIfArrow.SetVisible(true);
     }
 
     public override void LeftMouseDownInside(MouseEventArgs e)

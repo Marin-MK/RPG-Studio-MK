@@ -13,18 +13,23 @@ public class ChoiceWidget : BaseCommandWidget
     List<VStackPanel> StackPanels = new List<VStackPanel>();
     List<ExpandArrow> ExpandArrows = new List<ExpandArrow>();
     List<GradientBox> GradientBoxes = new List<GradientBox>();
+    List<(ShadowWidget BranchShadow, ShadowWidget LabelShadow)> Shadows = new List<(ShadowWidget BranchShadow, ShadowWidget LabelShadow)>();
     ExpandArrow ExpandAllArrow;
+    ShadowWidget RightHeaderShadow;
+    ShadowWidget EndLabelShadow;
 
     public ChoiceWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex, new Color(128, 128, 255))
     {
+        RightHeaderShadow = new ShadowWidget(this);
         EndGradient = new GradientBox(this);
-        EndGradient.SetHDocked(true);
+        EndLabelShadow = new ShadowWidget(this);
         EndLabel = new Label(this);
         EndLabel.SetFont(Fonts.CabinMedium.Use(9));
         EndLabel.SetText("End");
         EndLabel.SetTextColor(HeaderLabel.TextColor);
         ExpandAllArrow = new ExpandArrow(this);
         ExpandAllArrow.SetExpanded(true);
+        ExpandAllArrow.SetVisible(false);
         ExpandAllArrow.OnStateChanged += _ =>
         {
             if (!ExpandAllArrow.Expanded)
@@ -36,8 +41,8 @@ public class ChoiceWidget : BaseCommandWidget
             {
                 for (int i = 0; i < StackPanels.Count; i++)
                 {
-                    StackPanels[i].SetVisible(ExpandArrows[i].Expanded);
-                    BranchLabels[i].SetVisible(true);
+                    //StackPanels[i].SetVisible(ExpandArrows[i].Expanded);
+                    //BranchLabels[i].SetVisible(true);
                 }
             }
             UpdateLabels();
@@ -48,7 +53,7 @@ public class ChoiceWidget : BaseCommandWidget
             ExpandAllArrow.SetPosition(Size.Width - 16, 6);
             ExpandArrows.ForEach(e => e.SetPosition(Size.Width - 16, e.Position.Y));
         };
-        DrawEndLabels = false;
+        //DrawEndLabels = false;
     }
 
     private void UpdateLabels()
@@ -64,22 +69,36 @@ public class ChoiceWidget : BaseCommandWidget
             else HeightAdd = 0;
             return;
         }
-        int y = StandardHeight;
+        int y = StandardHeight + ShadowSize;
         for (int i = 0; i < BranchLabels.Count; i++)
         {
-            BranchLabels[i].SetPosition(8, y + 4);
+            BranchLabels[i].SetPosition(12, y + 2);
             if (i > 0) GradientBoxes[i].SetPadding(BarWidth + ShadowSize, y);
             ExpandArrows[i].SetPosition(Size.Width - 16, y + 4);
             StackPanels[i].SetPosition(StackPanels[i].Position.X, y + StandardHeight);
+            if (StackPanels[i].Visible)
+            {
+                GradientBox GB = i > 0 ? GradientBoxes[i] : GradientBox;
+                ShadowWidget BranchShadow = Shadows[i].BranchShadow;
+                BranchShadow.SetPosition(GB.Padding.Left, GB.Padding.Up + GB.Size.Height);
+                BranchShadow.SetSize(GB.Size.Width + ShadowSize, StackPanels[i].Size.Height);
+                ShadowWidget LabelShadow = Shadows[i].LabelShadow;
+                LabelShadow.SetPosition(BranchShadow.Position.X + BranchShadow.Size.Width - ShadowSize, BranchShadow.Position.Y + BranchShadow.Size.Height - ShadowSize);
+                LabelShadow.SetSize(ShadowSize, StandardHeight + 2 * ShadowSize);
+            }
             y += StandardHeight + (ExpandArrows[i].Expanded ? StackPanels[i].Size.Height : 0);
         }
         if (DrawEndLabels)
         {
-            EndLabel.SetPosition(8, y + 4);
-            EndGradient.SetPosition(BarWidth, y);
+            EndLabel.SetPosition(12, y + 2);
+            EndGradient.SetPadding(BarWidth + ShadowSize, y);
         }
         else y -= StandardHeight;
-        HeightAdd = y;
+        HeightAdd = y - ShadowSize;
+        RightHeaderShadow.SetPosition(GradientBox.Padding.Left + GradientBox.Size.Width, 0);
+        RightHeaderShadow.SetSize(ShadowSize, GradientBox.Size.Height + ShadowSize * 2);
+        EndLabelShadow.SetPosition(0, y + StandardHeight);
+        EndLabelShadow.SetSize(EndGradient.Size.Width + BarWidth + 2 * ShadowSize, ShadowSize);
     }
 
     public override void LoadCommand()
@@ -105,6 +124,21 @@ public class ChoiceWidget : BaseCommandWidget
         ShadowWidget.ShowBottom(false);
         ShadowWidget.ShowRight(false);
         ShadowWidget.ShowBottomRight(false);
+
+        RightHeaderShadow.ShowTop(false);
+        RightHeaderShadow.ShowBottom(false);
+        RightHeaderShadow.ShowLeft(false);
+        RightHeaderShadow.ShowTopLeft(false);
+        RightHeaderShadow.ShowTopRight(false);
+        RightHeaderShadow.ShowBottomLeft(false);
+
+        EndLabelShadow.ShowBottomLeft(false);
+        EndLabelShadow.ShowLeft(false);
+        EndLabelShadow.ShowTopLeft(false);
+        EndLabelShadow.ShowTop(false);
+        EndLabelShadow.ShowTopRight(false);
+        EndLabelShadow.ShowRight(false);
+        EndLabelShadow.ShowBottomRight(false);
 
         List<object> Choices = (List<object>) Command.Parameters[0];
 
@@ -135,6 +169,7 @@ public class ChoiceWidget : BaseCommandWidget
 
             ExpandArrow Arrow = new ExpandArrow(this);
             Arrow.SetExpanded(true);
+            Arrow.SetVisible(false);
             ExpandArrows.Add(Arrow);
 
             VStackPanel StackPanel = new VStackPanel(this);
@@ -142,6 +177,22 @@ public class ChoiceWidget : BaseCommandWidget
             StackPanel.SetPosition(ChildIndent + ShadowSize, 0);
             StackPanel.HDockWidgets = false;
             StackPanels.Add(StackPanel);
+
+            ShadowWidget BranchShadow = new ShadowWidget(this);
+            BranchShadow.SetInverted(true);
+            BranchShadow.ShowTopRight(false);
+            BranchShadow.ShowRight(false);
+            BranchShadow.ShowBottomRight(false);
+
+            ShadowWidget LabelShadow = new ShadowWidget(this);
+            LabelShadow.ShowTop(false);
+            LabelShadow.ShowTopLeft(false);
+            LabelShadow.ShowLeft(false);
+            LabelShadow.ShowBottomLeft(false);
+            LabelShadow.ShowBottom(false);
+            LabelShadow.Viewport.Z = 10000;
+
+            Shadows.Add((BranchShadow, LabelShadow));
 
             if (i < BranchCommands.Count - 1)
             {
@@ -169,7 +220,7 @@ public class ChoiceWidget : BaseCommandWidget
             HeightAdd = StandardHeight;
             EndGradient.SetTopLeftColor(GradientBox.TopLeftColor);
             EndGradient.SetBottomRightColor(GradientBox.BottomRightColor);
-            EndGradient.SetHeight(StandardHeight);
+            EndGradient.SetSize(GetStandardWidth(Indentation) - BarWidth - ShadowSize * 2, StandardHeight);
         }
         UpdateLabels();
     }
@@ -183,7 +234,7 @@ public class ChoiceWidget : BaseCommandWidget
     {
         base.MouseMoving(e);
         ExpandArrows.ForEach(e => e.SetVisible(false));
-        ExpandAllArrow.SetVisible(Mouse.Inside);
+        //ExpandAllArrow.SetVisible(Mouse.Inside);
         if (!Mouse.Inside) return;
         int ry = e.Y - Viewport.Y + TopCutOff;
         int idx = -1;
@@ -193,7 +244,7 @@ public class ChoiceWidget : BaseCommandWidget
         }
         if (idx > -1 && (ry < Size.Height - StandardHeight || !DrawEndLabels))
         {
-            ExpandArrows[idx].SetVisible(true);
+            //ExpandArrows[idx].SetVisible(true);
         }
     }
 

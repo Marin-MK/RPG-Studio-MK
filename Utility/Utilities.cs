@@ -152,7 +152,7 @@ public static class Utilities
     }
 
     /// <summary>
-    /// The bitmap of sheet of icons from icons.png.
+    /// The bitmap sheet of icons from icons.png.
     /// </summary>
     public static Bitmap IconSheet;
 
@@ -162,12 +162,18 @@ public static class Utilities
     public static Bitmap FolderIcon;
 
     /// <summary>
+    /// The bitmap sheet of icons from event_command_icons.png.
+    /// </summary>
+    public static Bitmap EventCommandIconSheet;
+
+    /// <summary>
     /// Initializes the IconSheet bitmap.
     /// </summary>
     public static void Initialize()
     {
         IconSheet = new Bitmap("assets/img/icons.png");
         FolderIcon = new Bitmap("assets/img/file_explorer_large_folder.png");
+        EventCommandIconSheet = new Bitmap("assets/img/event_command_icons.png");
         int seconds = Editor.GeneralSettings.SecondsUsed % 60;
         int minutes = Editor.GeneralSettings.SecondsUsed / 60 % 60;
         int hours = Editor.GeneralSettings.SecondsUsed / 60 / 60 % 24;

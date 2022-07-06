@@ -45,13 +45,13 @@ public class BaseCommandWidget : Widget
         }
     };
 
-    static Dictionary<CommandCategory, (Color TopBarColor, Color BottomBarColor, Color GradientColor)> CategoryColors = new Dictionary<CommandCategory, (Color, Color, Color)>()
+    static Dictionary<CommandCategory, (Color TopBarColor, Color BottomBarColor)> CategoryColors = new Dictionary<CommandCategory, (Color, Color)>()
     {
-        { CommandCategory.General, (new Color(27, 148, 119), new Color(113, 221, 59), new Color(49, 135, 97)) },
-        { CommandCategory.Flow, (new Color(161, 166, 90), new Color(228, 230, 30), new Color(123, 146, 82)) },
-        { CommandCategory.Map, (new Color(113, 75, 231), new Color(214, 173, 176), new Color(105, 97, 157)) },
-        { CommandCategory.ImageSound, (new Color(183, 30, 120), new Color(239, 117, 60), new Color(134, 73, 97)) },
-        { CommandCategory.Other, (new Color(183, 89, 90), new Color(239, 189, 30), new Color(135, 108, 82)) }
+        { CommandCategory.General, (new Color(27, 148, 119), new Color(113, 221, 59)) },
+        { CommandCategory.Flow, (new Color(161, 166, 90), new Color(228, 230, 30)) },
+        { CommandCategory.Map, (new Color(113, 75, 231), new Color(214, 173, 176)) },
+        { CommandCategory.ImageSound, (new Color(183, 30, 120), new Color(239, 117, 60)) },
+        { CommandCategory.Other, (new Color(183, 89, 90), new Color(239, 189, 30)) }
     };
 
     static Dictionary<CommandCode, CommandCode> CommandStartEndPairs = new Dictionary<CommandCode, CommandCode>()
@@ -98,9 +98,9 @@ public class BaseCommandWidget : Widget
     protected int Indentation;
     protected int HeightAdd = 0;
     protected int MarginBetweenWidgets = 3;
-    protected int ChildIndent = 20;
+    protected int ChildIndent = 10;
     protected int BarWidth = 4;
-    protected int StandardHeight = 20;
+    protected int StandardHeight = 28;
     protected int GlobalCommandIndex = -1;
     protected int CommandOffset = 16;
     protected int ShadowSize = 5;
@@ -115,6 +115,7 @@ public class BaseCommandWidget : Widget
     protected bool InitialUndoKey = true;
     protected bool InitialRedoKey = true;
 
+    protected EventCommandIcon Icon;
     protected Label HeaderLabel;
     protected VStackPanel VStackPanel;
     protected GradientBox GradientBox;
@@ -134,8 +135,10 @@ public class BaseCommandWidget : Widget
         BarBox.SetWidth(BarWidth);
         BarBox.SetVDocked(true);
         BarBox.SetPadding(ShadowSize, ShadowSize, 0, ShadowSize);
+        Icon = new EventCommandIcon(this);
+        Icon.SetPosition(10, 4);
         HeaderLabel = new Label(this);
-        HeaderLabel.SetPosition(8 + ShadowSize, 2 + ShadowSize);
+        HeaderLabel.SetPosition(36, 2 + ShadowSize);
         HeaderLabel.SetFont(Fonts.UbuntuBold.Use(10));
         //if (BarColor != null) HeaderLabel.SetTextColor(BarColor);
         VStackPanel = new VStackPanel(this);
@@ -225,11 +228,15 @@ public class BaseCommandWidget : Widget
         SubcommandWidgets.Clear();
         if (Command != null)
         {
+            Icon.SetEventCommand(Command.Code);
             HeaderLabel.SetText(Command.Code.ToString());
             HeaderLabel.SetVisible(true);
             VStackPanel.SetPadding(ShadowSize + ChildIndent, ShadowSize + StandardHeight, ShadowSize, ShadowSize);
             CommandCategory cat = GetCommandCategory();
-            (Color TopBarColor, Color BottomBarColor, Color GradientColor) = CategoryColors[cat];
+            (Color TopBarColor, Color BottomBarColor) = CategoryColors[cat];
+            Color IconColor = Bitmap.Interpolate2D(TopBarColor, BottomBarColor, 0.5);
+            Icon.SetColor(IconColor);
+            Color GradientColor = new Color(IconColor.Red, IconColor.Green, IconColor.Blue, 128);
             GradientBox.SetTopLeftColor(new Color(39, 81, 104));
             GradientBox.SetBottomRightColor(GradientColor);
             BarBox.SetTopColor(TopBarColor);
@@ -238,6 +245,7 @@ public class BaseCommandWidget : Widget
         }
         else
         {
+            Icon.SetVisible(false);
             UndoList.Clear();
             RedoList.Clear();
             ChildIndent = 0;
@@ -274,12 +282,12 @@ public class BaseCommandWidget : Widget
 
         if (this.Indentation == -1)
         {
-            vw = Math.Max(Parent.Size.Width, VStackPanel.Padding.Left + vw);
+            vw = Math.Max(Parent.Size.Width, vw);
             vh = Math.Max(vh + HeightAdd, Parent.Size.Height);
         }
         else
         {
-            vw = Math.Max(Size.Width, VStackPanel.Padding.Left + vw);
+            vw = Math.Max(Size.Width, vw);
             vh = StandardHeight + vh + HeightAdd + ShadowSize * 2;
         }
         SetSize(vw, vh);

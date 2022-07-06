@@ -310,6 +310,7 @@ public static class Data
                     "19" => EssentialsVersion.v19,
                     "19.1" => EssentialsVersion.v19_1,
                     "20" => EssentialsVersion.v20,
+                    "20.1" => EssentialsVersion.v20_1,
                     _ => EssentialsVersion.Unknown
                 };
                 break;
@@ -386,5 +387,6 @@ public enum EssentialsVersion
     v18_1   = 5,
     v19     = 6,
     v19_1   = 7,
-    v20     = 8
+    v20     = 8,
+    v20_1   = 9
 }
