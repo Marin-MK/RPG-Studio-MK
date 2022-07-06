@@ -47,19 +47,35 @@ public partial class MainEditorWindow : UIWindow
     /// </summary>
     public HomeScreen HomeScreen;
 
-    public MainEditorWindow(string ProjectFile) : base(false, false)
-    {
-        this.SetMinimumSize(675, 400);
-        this.SetText("RPG Studio MK");
+    ImageBox BGWidget;
+    ImageBox MainWidget;
 
-        this.Initialize(true, false, false, RenderDriver.Default);
+    public MainEditorWindow() : base(false, false)
+    {
+        this.Initialize(true, false, true, RenderDriver.Default);
         Windows.Add(this);
         OnClosed += _ => Windows.Remove(this);
+        this.InitializeUI(Color.ALPHA);
+        BGWidget = new ImageBox(UI);
+        MainWidget = new ImageBox(UI);
+        MainWidget.SetBitmap("assets/img/home_logo.png");
+        MainWidget.SetZoomX(0.5);
+        MainWidget.SetZoomY(0.5);
+        BGWidget.SetBitmap("assets/img/gradient_button_blue.png");
+        BGWidget.SrcRect.Height = BGWidget.Bitmap.Height / 3;
+        BGWidget.SetSize(MainWidget.Size);
+        BGWidget.SetFillMode(FillMode.Fill);
+        SetSize(MainWidget.Size.Width, MainWidget.Size.Height);
+        SetPosition(Graphics.GetWidth(Screen) / 2 - Width / 2, Graphics.GetHeight(Screen) / 2 - Height / 2);
+    }
 
+    public void Load(string ProjectFile)
+    {
+        BGWidget.Dispose();
+        BGWidget = null;
+        MainWidget.Dispose();
+        MainWidget = null;
         Editor.LoadGeneralSettings();
-        SetPosition(Editor.GeneralSettings.LastX, Editor.GeneralSettings.LastY);
-        SetSize(Editor.GeneralSettings.LastWidth, Editor.GeneralSettings.LastHeight);
-        if (Editor.GeneralSettings.WasMaximized) Maximize();
 
         Action UpdateLastPosAndSize = () =>
         {
@@ -94,7 +110,8 @@ public partial class MainEditorWindow : UIWindow
         OnPositionChanged += _ => UpdateLastPosAndSize();
         OnSizeChanged += _ => UpdateLastPosAndSize();
 
-        this.InitializeUI(10, 23, 37);
+        this.UI.SetBackgroundColor(10, 23, 37);
+        this.UI.Container.SetSize(Width, Height);
         UI.RegisterShortcut(new Shortcut(null, new Key(Keycode.Z, Keycode.CTRL), _ => Editor.Undo(), true));
         UI.RegisterShortcut(new Shortcut(null, new Key(Keycode.Y, Keycode.CTRL), _ => Editor.Redo(), true));
 
@@ -201,6 +218,16 @@ public partial class MainEditorWindow : UIWindow
             Blue1pxSeparator.SetVisible(true);
             StatusBarDivider.SetVisible(true);
         }
+    }
+
+    public void Prepare()
+    {
+        this.SetBordered(true);
+        this.SetText("RPG Studio MK");
+        this.SetMinimumSize(675, 400);
+        SetPosition(Editor.GeneralSettings.LastX, Editor.GeneralSettings.LastY);
+        SetSize(Editor.GeneralSettings.LastWidth, Editor.GeneralSettings.LastHeight);
+        if (Editor.GeneralSettings.WasMaximized) Maximize();
     }
 
     /// <summary>

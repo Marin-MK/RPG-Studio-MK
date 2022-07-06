@@ -18,7 +18,6 @@ public class Program
     /// If false, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
     /// </summary>
     public static bool ReleaseMode = false;
-    public static bool Verbose = false;
     public static string ProjectFile = null;
     public static bool ThrownError = false;
 
@@ -27,8 +26,11 @@ public class Program
     {
         InitializeProgram();
         if (args.Length == 1) ProjectFile = args[0];
-        MainEditorWindow win = new MainEditorWindow(ProjectFile);
+        MainEditorWindow win = new MainEditorWindow();
         win.Show();
+        Graphics.Update();
+        win.Load(ProjectFile);
+        win.Prepare();
         Widgets.MessageBox ErrorBox = null;
         win.OnSizeChanged += delegate (BaseEventArgs e)
         {
@@ -88,62 +90,21 @@ public class Program
             Console.WriteLine("===============================\nProgram launched in Debug mode.\n===============================");
         }
         PrintPlatformInfo();
+        Config.Setup();
         InitializeAmethyst();
         InitializeRuby();
     }
 
     private static void InitializeAmethyst()
     {
-        PathPlatformInfo windows = new PathPlatformInfo(NativeLibraryLoader.Platform.Windows);
-        windows.AddPath("libsdl2", "./lib/windows/SDL2.dll");
-        windows.AddPath("libz", "./lib/windows/zlib1.dll");
-        windows.AddPath("libsdl2_image", "./lib/windows/SDL2_image.dll");
-        windows.AddPath("libpng", "./lib/windows/libpng16-16.dll");
-        if (File.Exists("lib/windows/libjpeg-9.dll")) windows.AddPath("libjpeg", "./lib/windows/libjpeg-9.dll");
-        windows.AddPath("libsdl2_ttf", "./lib/windows/SDL2_ttf.dll");
-        windows.AddPath("libfreetype", "./lib/windows/libfreetype-6.dll");
-        windows.AddPath("bass", "./lib/windows/bass.dll");
-        windows.AddPath("bass_fx", "./lib/windows/bass_fx.dll");
-        windows.AddPath("bass_midi", "./lib/windows/bassmidi.dll");
-        windows.AddPath("tinyfiledialogs", "./lib/windows/tinyfiledialogs64.dll");
-
-        PathPlatformInfo linux = new PathPlatformInfo(NativeLibraryLoader.Platform.Linux);
-        linux.AddPath("libsdl2", "./lib/linux/SDL2.so");
-        linux.AddPath("libz", "./lib/linux/libz.so");
-        linux.AddPath("libsdl2_image", "./lib/linux/SDL2_image.so");
-        linux.AddPath("libpng", "./lib/linux/libpng16-16.so");
-        if (File.Exists("lib/linux/libjpeg-9.so")) linux.AddPath("libjpeg", "./lib/linux/libjpeg-9.so");
-        linux.AddPath("libsdl2_ttf", "./lib/linux/SDL2_ttf.so");
-        linux.AddPath("libfreetype", "./lib/linux/libfreetype-6.so");
-        linux.AddPath("bass", "./lib/linux/libbass.so");
-        linux.AddPath("bass_fx", "./lib/linux/libbass_fx.so");
-        linux.AddPath("bass_midi", "./lib/linux/libbassmidi.so");
-        linux.AddPath("tinyfiledialogs", "./lib/linux/tinyfiledialogs64.so");
-
-        Amethyst.Start(PathInfo.Create(windows, linux), true, true);
-
+        Amethyst.Start(Config.PathInfo, true, true);
         int Handle = Audio.LoadSoundfont("assets/soundfont.sf2");
         if (Handle == 0) throw new Exception("Failed to load soundfont.");
     }
 
     private static void InitializeRuby()
     {
-        PathPlatformInfo windows = new PathPlatformInfo(NativeLibraryLoader.Platform.Windows);
-        windows.AddPath("ruby", "./lib/windows/x64-msvcrt-ruby270.dll");
-        windows.AddPath("libgmp", "./lib/windows/libgmp-10.dll");
-        windows.AddPath("libssp", "./lib/windows/libssp-0.dll");
-        windows.AddPath("libwinpthread", "./lib/windows/libwinpthread-1.dll");
-        //windows.AddPath("libcrypto", "./lib/windows/libcrypto-1_1-x64.dll");
-        //windows.AddPath("libgcc", "./lib/windows/libgcc_s_seh-1.dll");
-        //windows.AddPath("libffi", "./lib/windows/libffi-7.dll");
-        //windows.AddPath("libyaml", "./lib/windows/libyaml-0-2.dll");
-        windows.AddPath("libz", "./lib/windows/zlib1.dll");
-
-        PathPlatformInfo linux = new PathPlatformInfo(NativeLibraryLoader.Platform.Linux);
-        linux.AddPath("ruby", "./lib/linux/libruby.so");
-
-        Ruby.Initialize(PathInfo.Create(windows, linux));
-
+        Ruby.Initialize(Config.PathInfo);
         IntPtr ruby_load_path = Ruby.GetGlobal("$LOAD_PATH");
         Ruby.Array.Push(ruby_load_path, Ruby.String.ToPtr("./lib/ruby/2.7.0"));
         if (NativeLibrary.Platform == NativeLibraryLoader.Platform.Windows)
