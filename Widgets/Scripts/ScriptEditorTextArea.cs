@@ -212,6 +212,9 @@ public class ScriptEditorTextArea : MultilineTextArea
                     break;
                 }
             }
+            // No line was found for this token, meaning this token somehow likely has a bigger index than the full text length.
+            // Unsure why this happens, but skip it just to be safe.
+            if (Line == null) continue;
             AddTokenToLine(token, Line);
             LastLine = Line.LineIndex;
         }

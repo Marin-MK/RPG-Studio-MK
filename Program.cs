@@ -27,17 +27,19 @@ public class Program
         InitializeProgram();
         if (args.Length == 1) ProjectFile = args[0];
         MainEditorWindow win = new MainEditorWindow();
-        win.Show();
+        //win.Show();
         Graphics.Update();
         win.Load(ProjectFile);
+        //win.Hide();
         win.Prepare();
+        win.UI.Widgets.ForEach(e => e.UpdateBounds());
+        Graphics.Update();
+        win.Show();
         Widgets.MessageBox ErrorBox = null;
         win.OnSizeChanged += delegate (BaseEventArgs e)
         {
             if (ErrorBox != null && !ErrorBox.Disposed) ErrorBox.SetSize(win.Width, win.Height);
         };
-        // Update all top-level widgets to make sure they're the right size.
-        win.UI.Widgets.ForEach(e => e.UpdateBounds());
         
         // Amethyst's main UI loop
         Amethyst.Run(() =>

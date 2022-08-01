@@ -19,7 +19,7 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>False</Optimize>
   </PropertyGroup>
