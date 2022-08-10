@@ -95,6 +95,18 @@ public class GradientBox : Widget
         }
     }
 
+    public void SetColor(Color Color)
+    {
+        if (this.TopRightColor != Color || this.TopLeftColor != Color || this.BottomLeftColor != Color || this.BottomRightColor != Color)
+        {
+            this.TopLeftColor = Color;
+            this.TopRightColor = Color;
+            this.BottomRightColor = Color;
+            this.BottomLeftColor = Color;
+            this.Redraw();
+        }
+    }
+
     protected override void Draw()
     {
         base.Draw();

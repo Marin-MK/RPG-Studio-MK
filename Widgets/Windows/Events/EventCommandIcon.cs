@@ -5,6 +5,8 @@ namespace RPGStudioMK.Widgets;
 
 public class EventCommandIcon : Widget
 {
+    public Color Color => Sprites["icon"].Color;
+
     public EventCommandIcon(IContainer Parent) : base(Parent)
     {
         Sprites["shadow"] = new Sprite(this.Viewport);

@@ -42,6 +42,10 @@ public class BaseCommandWidget : Widget
                 CommandCode.PlayBGS, CommandCode.ChangePictureColorTone, CommandCode.FadeOutBGS, CommandCode.ErasePicture, CommandCode.PlaySE, 
                 CommandCode.PlayME, CommandCode.StopSE, CommandCode.RestoreBGMBGS, CommandCode.MemorizeBGMBGS
             }
+        },
+        {
+            CommandCategory.Blank,
+            new List<CommandCode>() { CommandCode.Blank }
         }
     };
 
@@ -51,7 +55,8 @@ public class BaseCommandWidget : Widget
         { CommandCategory.Flow, (new Color(161, 166, 90), new Color(228, 230, 30)) },
         { CommandCategory.Map, (new Color(113, 75, 231), new Color(214, 173, 176)) },
         { CommandCategory.ImageSound, (new Color(183, 30, 120), new Color(239, 117, 60)) },
-        { CommandCategory.Other, (new Color(183, 89, 90), new Color(239, 189, 30)) }
+        { CommandCategory.Other, (new Color(183, 89, 90), new Color(239, 189, 30)) },
+        { CommandCategory.Blank, (new Color(86, 108, 134), new Color(86, 108, 134)) }
     };
 
     static Dictionary<CommandCode, CommandCode> CommandStartEndPairs = new Dictionary<CommandCode, CommandCode>()
@@ -136,11 +141,10 @@ public class BaseCommandWidget : Widget
         BarBox.SetVDocked(true);
         BarBox.SetPadding(ShadowSize, ShadowSize, 0, ShadowSize);
         Icon = new EventCommandIcon(this);
-        Icon.SetPosition(10, 4);
+        Icon.SetPosition(10, 6);
         HeaderLabel = new Label(this);
-        HeaderLabel.SetPosition(36, 2 + ShadowSize);
+        HeaderLabel.SetPosition(36, 4 + ShadowSize);
         HeaderLabel.SetFont(Fonts.UbuntuBold.Use(10));
-        //if (BarColor != null) HeaderLabel.SetTextColor(BarColor);
         VStackPanel = new VStackPanel(this);
         VStackPanel.HDockWidgets = false;
         VStackPanel.OnSizeChanged += _ => UpdateSize();
@@ -232,15 +236,7 @@ public class BaseCommandWidget : Widget
             HeaderLabel.SetText(Command.Code.ToString());
             HeaderLabel.SetVisible(true);
             VStackPanel.SetPadding(ShadowSize + ChildIndent, ShadowSize + StandardHeight, ShadowSize, ShadowSize);
-            CommandCategory cat = GetCommandCategory();
-            (Color TopBarColor, Color BottomBarColor) = CategoryColors[cat];
-            Color IconColor = Bitmap.Interpolate2D(TopBarColor, BottomBarColor, 0.5);
-            Icon.SetColor(IconColor);
-            Color GradientColor = new Color(IconColor.Red, IconColor.Green, IconColor.Blue, 128);
-            GradientBox.SetTopLeftColor(new Color(39, 81, 104));
-            GradientBox.SetBottomRightColor(GradientColor);
-            BarBox.SetTopColor(TopBarColor);
-            BarBox.SetBottomColor(BottomBarColor);
+            SetCommandColors();
             LoadCommand();
         }
         else
@@ -255,6 +251,19 @@ public class BaseCommandWidget : Widget
             ParseCommands(Commands, VStackPanel, this.GlobalCommandIndex + 1);
         }
         UpdateSize();
+    }
+
+    private void SetCommandColors()
+    {
+        CommandCategory cat = GetCommandCategory();
+        (Color TopBarColor, Color BottomBarColor) = CategoryColors[cat];
+        Color IconColor = Bitmap.Interpolate2D(TopBarColor, BottomBarColor, 0.5);
+        Icon.SetColor(Command.Code == CommandCode.Blank ? new Color(149, 158, 181) : IconColor);
+        Color GradientColor = new Color(IconColor.Red, IconColor.Green, IconColor.Blue, 128);
+        GradientBox.SetTopLeftColor(new Color(39, 81, 104));
+        GradientBox.SetBottomRightColor(GradientColor);
+        BarBox.SetTopColor(TopBarColor);
+        BarBox.SetBottomColor(BottomBarColor);
     }
 
     public (List<CommandUndoAction> UndoList, List<CommandUndoAction> RedoList) GetUndoRedoLists()
@@ -402,13 +411,17 @@ public class BaseCommandWidget : Widget
             if (this.Selected)
             {
                 MainCommandWidget.DeselectAll(this);
-                SetBackgroundColor(28, 50, 73);
+                //SetBackgroundColor(28, 50, 73);
                 WidgetSelected(new BaseEventArgs());
+                BarBox.SetColor(GradientBox.TopLeftColor);
+                GradientBox.SetBottomRightColor(GradientBox.TopLeftColor);
+                Icon.SetColor(Color.WHITE);
             }
             else
             {
-                SetBackgroundColor(Color.ALPHA);
+                //SetBackgroundColor(Color.ALPHA);
                 if (SelectedWidget) Window.UI.SetSelectedWidget(null);
+                SetCommandColors();
             }
         }
         else if (Selected && !SelectedWidget) WidgetSelected(new BaseEventArgs());
@@ -1034,5 +1047,6 @@ public enum CommandCategory
     Flow,
     Map,
     ImageSound,
-    Other
+    Other,
+    Blank
 }

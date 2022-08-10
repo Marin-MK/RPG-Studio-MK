@@ -75,7 +75,7 @@ public class ConditionalWidget : BaseCommandWidget
         {
             elsey = VStackPanel.Padding.Up + VStackPanel1.Size.Height;
             if (!VStackPanel1.Visible) elsey = StandardHeight;
-            ElseLabel.SetPosition(12, elsey + 4);
+            ElseLabel.SetPosition(12, elsey + 6);
             ElseGradient.SetPosition(BarWidth + ShadowSize, elsey);
             endy = elsey + VStackPanel2.Margins.Up + VStackPanel2.Size.Height + 2;
             if (!VStackPanel2.Visible) endy = ElseLabel.Visible ? elsey + StandardHeight : 0;
@@ -86,7 +86,7 @@ public class ConditionalWidget : BaseCommandWidget
             if (!VStackPanel1.Visible) endy = StandardHeight;
         }
         endy += 2;
-        EndLabel.SetPosition(12, endy + 4);
+        EndLabel.SetPosition(12, endy + 6);
         EndGradient.SetPosition(BarWidth + ShadowSize, endy);
         EndLabel.SetVisible(DrawEndLabels);
         if (DrawEndLabels)
@@ -126,7 +126,7 @@ public class ConditionalWidget : BaseCommandWidget
         base.LoadCommand();
         // Draw conditional
         HeaderLabel.SetText("If: ");
-        ConditionLabel.SetPosition(HeaderLabel.Position.X + HeaderLabel.Size.Width + 4, 2 + ShadowSize);
+        ConditionLabel.SetPosition(HeaderLabel.Position.X + HeaderLabel.Size.Width + 4, HeaderLabel.Position.Y);
         if ((ConditionType) Int(0) == ConditionType.Script)
         {
             ConditionLabel.SetFont(Fonts.Monospace.Use(11));

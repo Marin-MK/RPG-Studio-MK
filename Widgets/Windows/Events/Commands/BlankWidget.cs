@@ -29,11 +29,8 @@ public class BlankWidget : BaseCommandWidget
     {
         base.LoadCommand();
         HeaderLabel.SetVisible(false);
-        GradientBox.SetBottomRightColor(GradientBox.TopLeftColor);
-        BarBox.SetTopColor(new Color(86, 108, 134));
-        BarBox.SetBottomColor(BarBox.TopLeftColor);
         ScaleGradientWithSize = true;
-        SetWidth(36);
+        SetWidth(40);
     }
 
     public override void LeftMouseDownInside(MouseEventArgs e)

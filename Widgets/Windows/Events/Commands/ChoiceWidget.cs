@@ -63,7 +63,7 @@ public class ChoiceWidget : BaseCommandWidget
         {
             if (DrawEndLabels)
             {
-                EndLabel.SetPosition(8, StandardHeight + 2);
+                EndLabel.SetPosition(8, StandardHeight + 4);
                 HeightAdd = StandardHeight;
             }
             else HeightAdd = 0;
@@ -72,7 +72,7 @@ public class ChoiceWidget : BaseCommandWidget
         int y = StandardHeight + ShadowSize;
         for (int i = 0; i < BranchLabels.Count; i++)
         {
-            BranchLabels[i].SetPosition(12, y + 2);
+            BranchLabels[i].SetPosition(12, y + 4);
             if (i > 0) GradientBoxes[i].SetPadding(BarWidth + ShadowSize, y);
             ExpandArrows[i].SetPosition(Size.Width - 16, y + 4);
             StackPanels[i].SetPosition(StackPanels[i].Position.X, y + StandardHeight);
@@ -90,7 +90,7 @@ public class ChoiceWidget : BaseCommandWidget
         }
         if (DrawEndLabels)
         {
-            EndLabel.SetPosition(12, y + 2);
+            EndLabel.SetPosition(12, y + 4);
             EndGradient.SetPadding(BarWidth + ShadowSize, y);
         }
         else y -= StandardHeight;

@@ -111,4 +111,15 @@ public class TextWidget : BaseCommandWidget
         //UpdateSize();
         //((Widget) Parent).UpdateLayout();
     }
+
+    public override void LeftMouseDownInside(MouseEventArgs e)
+    {
+        base.LeftMouseDownInside(e);
+        if (e.Handled)
+        {
+            CancelDoubleClick();
+            return;
+        }
+        SetSelected(true);
+    }
 }
