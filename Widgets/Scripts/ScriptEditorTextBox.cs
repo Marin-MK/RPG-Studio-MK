@@ -37,6 +37,7 @@ public class ScriptEditorTextBox : Widget
 
         TextArea = new ScriptEditorTextArea(ScrollContainer);
         TextArea.SetHDocked(true);
+        TextArea.MinimumSize.Height = Size.Height;
 
         VScrollBar vs = new VScrollBar(this);
         vs.SetVDocked(true);
@@ -58,6 +59,11 @@ public class ScriptEditorTextBox : Widget
         TextArea.Update();
 
         SetLineWrapping(false);
+    }
+
+    public void UpdateSize()
+    {
+        TextArea.TokenizeUntokenizedLines();
     }
 
     private void UpdateScrollBar()
@@ -182,5 +188,11 @@ public class ScriptEditorTextBox : Widget
         base.LeftMouseDownInside(e);
         if (ScrollContainer.Mouse.Inside) TextArea.OnWidgetSelected.Invoke(new BaseEventArgs());
         else Window.UI.SetSelectedWidget(null);
+    }
+
+    public override void SizeChanged(BaseEventArgs e)
+    {
+        base.SizeChanged(e);
+        TextArea.MinimumSize.Height = Size.Height;
     }
 }

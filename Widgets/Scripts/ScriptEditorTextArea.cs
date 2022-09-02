@@ -80,6 +80,9 @@ public class ScriptEditorTextArea : MultilineTextArea
             this.Text = Text;
             if (HasSelection) CancelSelection();
             if (SetCaretToEnd) Caret.Index = Text.Length;
+            this.Parent.ScrolledX = 0;
+            this.Parent.ScrolledY = 0;
+            ((Widget) this.Parent).UpdateAutoScroll();
             RecalculateLines(true);
             if (ClearUndoStates)
             {
@@ -113,50 +116,93 @@ public class ScriptEditorTextArea : MultilineTextArea
     protected void RetokenizeLine(int LineIndex)
     {
         int sidx = -1;
-        foreach (Token lineToken in LineTokens[LineIndex])
+        // If there exists an entry (a list of tokens) for the current line, then we remove those tokens
+        if (LineIndex < LineTokens.Count && LineTokens[LineIndex] != null)
         {
-            if (sidx == -1)
-            {
-                sidx = Tokens.IndexOf(lineToken);
-            }
-            Tokens.Remove(lineToken);
+            //foreach (Token lineToken in LineTokens[LineIndex])
+            //{
+            //    if (sidx == -1)
+            //    {
+            //        sidx = Tokens.IndexOf(lineToken);
+            //    }
+            //    Tokens.Remove(lineToken);
+            //}
+            LineTokens[LineIndex].Clear();
+            LineColors[LineIndex].Clear();
         }
-        if (sidx == -1)
-        {
-            // This line initially didn't have any tokens, so we don't know where to insert
-            // our tokens in the global token list.
-            // So instead, start one line above us, and find the last token on that line
-            // We go upwards until we find a token, and then we start inserting right after
-            // that token.
-            // If we don't find any, that means we start at 0.
-            // This is inefficient, but the odds of a line already having a token
-            // are very high, and the odds that the line above has at least one token is even higher, and so forth.
-            Token LastToken = null;
-            for (int i = LineIndex - 1; i >= 0; i--)
-            {
-                if (LineTokens[i].Count > 0)
-                {
-                    LastToken = LineTokens[i].Last();
-                    break;
-                }
-            }
-            sidx = LastToken == null ? 0 : Tokens.IndexOf(LastToken) + 1;
-        }
-        LineTokens[LineIndex].Clear();
-        LineColors[LineIndex].Clear();
+        //if (sidx == -1)
+        //{
+        //    // This line initially didn't have any tokens, so we don't know where to insert
+        //    // our tokens in the global token list.
+        //    // So instead, start one line above us, and find the last token on that line
+        //    // We go upwards until we find a token, and then we start inserting right after
+        //    // that token.
+        //    // If we don't find any, that means we start at 0.
+        //    // This is inefficient, but the odds of a line already having a token
+        //    // are very high, and the odds that the line above has at least one token is even higher, and so forth.
+        //    Token LastToken = null;
+        //    for (int i = LineIndex - 1; i >= 0; i--)
+        //    {
+        //        if (LineTokens[i].Count > 0)
+        //        {
+        //            LastToken = LineTokens[i].Last();
+        //            break;
+        //        }
+        //    }
+        //    sidx = LastToken == null ? 0 : Tokens.IndexOf(LastToken) + 1;
+        //}
         Line line = Lines[LineIndex];
         List<Token> NewLineTokens = Tokenizer.Tokenize(line.Text);
-        Tokens.InsertRange(sidx, NewLineTokens);
+        //Tokens.InsertRange(sidx, NewLineTokens);
         for (int i = 0; i < NewLineTokens.Count; i++)
         {
             Token t = NewLineTokens[i];
             t.Index += line.StartIndex;
             AddTokenToLine(t, line);
         }
+        // Ensures a list exist at this line so we don't retokenize this line in the future.
+        AddTokenToLine(null, line);
+    }
+
+    public void TokenizeUntokenizedLines(bool RedrawLines = true)
+    {
+        List<int> RedrawableLines = new List<int>();
+        for (int i = TopLineIndex; i <= BottomLineIndex; i++)
+        {
+            if (i < Lines.Count)
+            {
+                if (i >= LineTokens.Count || LineTokens[i] == null)
+                {
+                    RetokenizeLine(i);
+                    RedrawableLines.Add(i);
+                }
+            }
+        }
+        if (RedrawLines)
+        {
+            foreach (int line in RedrawableLines)
+            {
+                RedrawLine(line);
+            }
+        }
     }
 
     protected void AddTokenToLine(Token Token, Line Line)
     {
+        if (Line.LineIndex >= LineTokens.Count)
+        {
+            int diff = Line.LineIndex - LineTokens.Count + 1;
+            for (int i = 0; i < diff; i++) LineTokens.Add(null);
+        }
+        if (Line.LineIndex >= LineColors.Count)
+        {
+            int diff = Line.LineIndex - LineColors.Count + 1;
+            for (int i = 0; i < diff; i++) LineColors.Add(null);
+        }
+        if (LineTokens[Line.LineIndex] == null) LineTokens[Line.LineIndex] = new List<Token>();
+        if (LineColors[Line.LineIndex] == null) LineColors[Line.LineIndex] = new List<(int, Color)>();
+        // Used to ensure a list exist at this line index.
+        if (Token == null) return;
         LineTokens[Line.LineIndex].Add(Token);
         int pos = Token.Index - Line.StartIndex;
         Color c = Token.Type switch
@@ -190,9 +236,19 @@ public class ScriptEditorTextArea : MultilineTextArea
 
     protected void RetokenizeAll()
     {
-        Console.WriteLine("retokenizing all");
         LineTokens.Clear();
         LineColors.Clear();
+        for (int i = TopLineIndex; i <= BottomLineIndex; i++)
+        {
+            if (i < Lines.Count) RetokenizeLine(i);
+        }
+        /* We could fully tokenize the entire script as below, but this is horribly inefficient.
+         * Instead, we can also do it line-by-line, and on an as-needed basis, i.e. tokenize
+         * a line whenever it is about to be displayed. This is the same strategy as additions and deletions
+         * in the text; we don't retokenize the entire script, only the affected lines.
+         * That means we cannot have multi-line tokens, but those are only relevant for multi-line strings and comments
+         * and the like, which are rather uncommon in Ruby.
+         * If these are strictly necessary, workarounds can be created to work with these. I don't think it's worth the effort though.
         Tokens = Tokenizer.Tokenize(this.Text);
         int LastLine = 0;
         for (int i = 0; i < Lines.Count; i++)
@@ -217,7 +273,8 @@ public class ScriptEditorTextArea : MultilineTextArea
             if (Line == null) continue;
             AddTokenToLine(token, Line);
             LastLine = Line.LineIndex;
-        }
+        }*/
+        TokenizeUntokenizedLines(false);
         RedrawText();
     }
 
@@ -313,7 +370,6 @@ public class ScriptEditorTextArea : MultilineTextArea
         if (h % LineHeight != 0) h += (LineHeight + LineMargins) - (h % (LineHeight + LineMargins));
         if (LineWrapping) SetHeight(h);
         else SetSize(TextXOffset + Lines.Max(l => l.LineWidth) + 3, h);
-        Console.WriteLine("redrawing all");
         Lines.ForEach(line =>
         {
             if (line.LineIndex < TopLineIndex || line.LineIndex > BottomLineIndex) return;
@@ -429,28 +485,31 @@ public class ScriptEditorTextArea : MultilineTextArea
         sprite.Bitmap = new Bitmap(line.LineWidth, LineHeight + 2, Graphics.MaxTextureSize);
         if (TextXOffset + line.LineWidth > Size.Width) SetWidth(TextXOffset + line.LineWidth);
         sprite.Bitmap.Font = Font;
-        sprite.Bitmap.Unlock();
         string text = line.Text.Replace('\n', ' ');
-        List<(int pos, Color color)> colors = line.LineIndex < LineColors.Count ? LineColors[line.LineIndex] : null;
-        if (colors != null && colors.Count > 0)
+        if (Font != null && !string.IsNullOrEmpty(text))
         {
-            int x = 0;
-            void draw_text(string str, Color color)
+            sprite.Bitmap.Unlock();
+            List<(int pos, Color color)> colors = line.LineIndex < LineColors.Count ? LineColors[line.LineIndex] : null;
+            if (colors != null && colors.Count > 0)
             {
-                int w = sprite.Bitmap.TextSize(str).Width;
-                sprite.Bitmap.DrawText(str, x, 0, color);
-                x += w;
+                int x = 0;
+                void draw_text(string str, Color color)
+                {
+                    int w = sprite.Bitmap.TextSize(str).Width;
+                    sprite.Bitmap.DrawText(str, x, 0, color);
+                    x += w;
+                }
+                if (colors[0].pos > 0) draw_text(text.Substring(0, colors[0].pos), this.TextColor);
+                for (int i = 0; i < colors.Count; i++)
+                {
+                    int startidx = colors[i].pos;
+                    int len = (i == colors.Count - 1 ? text.Length : colors[i + 1].pos) - startidx;
+                    draw_text(text.Substring(startidx, len), colors[i].color);
+                }
             }
-            if (colors[0].pos > 0) draw_text(text.Substring(0, colors[0].pos), this.TextColor);
-            for (int i = 0; i < colors.Count; i++)
-            {
-                int startidx = colors[i].pos;
-                int len = (i == colors.Count - 1 ? text.Length : colors[i + 1].pos) - startidx;
-                draw_text(text.Substring(startidx, len), colors[i].color);
-            }
+            else sprite.Bitmap.DrawText(text, this.TextColor, this.DrawOptions);
+            sprite.Bitmap.Lock();
         }
-        else sprite.Bitmap.DrawText(text, this.TextColor, this.DrawOptions);
-        sprite.Bitmap.Lock();
         if (Sprites.ContainsKey($"line{line.LineIndex}")) throw new Exception("Index already in use");
         Sprites[$"line{line.LineIndex}"] = sprite;
         LineSprites.Add(sprite);
@@ -511,6 +570,7 @@ public class ScriptEditorTextArea : MultilineTextArea
             // but a line can fall through the cracks sometimes (think very fast scrolling)
             else if (Sprites.ContainsKey($"line{i}")) DisposeLineSprite(i);
         }
+        TokenizeUntokenizedLines();
         // Reposition caret
         Sprites["caret"].Y = Caret.Line.LineIndex * LineHeight + Caret.Line.LineIndex * LineMargins - Parent.ScrolledY;
         RedrawSelectionBoxes();
@@ -857,17 +917,17 @@ public class ScriptEditorTextArea : MultilineTextArea
 
         protected static List<Token> CloneTokenList(List<Token> List)
         {
-            return List == null ? null : List.Select(token => (Token) token.Clone()).ToList();
+            return List == null ? null : List.Select(token => (Token) token?.Clone()).ToList();
         }
 
         protected static List<List<Token>> CloneLineTokenList(List<List<Token>> List)
         {
-            return List == null ? null : List.Select(line => line.Select(token => (Token) token.Clone()).ToList()).ToList();
+            return List == null ? null : List.Select(line => line?.Select(token => (Token) token.Clone()).ToList()).ToList();
         }
 
         protected static List<List<(int, Color)>> CloneLineColorList(List<List<(int, Color)>> List)
         {
-            return List == null ? null : List.Select(line => line.Select(lc => (lc.Item1, (Color) lc.Item2.Clone())).ToList()).ToList();
+            return List == null ? null : List.Select(line => line?.Select(lc => (lc.Item1, (Color) lc.Item2.Clone())).ToList()).ToList();
         }
 
         public override void Apply()

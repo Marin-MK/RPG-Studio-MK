@@ -34,4 +34,11 @@ public class ScriptingWidget : Widget
 
         ListBox.SetSelectedIndex(0);
     }
+
+    public override void SizeChanged(BaseEventArgs e)
+    {
+        base.SizeChanged(e);
+        TextBox.UpdatePositionAndSizeIfDocked();
+        TextBox.UpdateSize();
+    }
 }
