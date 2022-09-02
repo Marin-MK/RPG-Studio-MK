@@ -166,6 +166,7 @@ public static class Data
             yield return count / (float) total;
         }
         Ruby.Unpin(mapinfo);
+        Editor.AssignOrderToNewMaps();
     }
 
     private static void SaveMaps()

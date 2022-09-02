@@ -39,12 +39,24 @@ public class Map : ICloneable, ISerializable
     public Map(int ID, IntPtr data, IntPtr mapinfo)
     {
         this.ID = ID;
-        this.Name = Ruby.String.FromPtr(Ruby.GetIVar(mapinfo, "@name"));
-        this.ScrollX = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(mapinfo, "@scroll_x"));
-        this.ScrollY = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(mapinfo, "@scroll_y"));
-        this.Order = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(mapinfo, "@order"));
-        this.ParentID = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(mapinfo, "@parent_id"));
-        this.Expanded = Ruby.GetIVar(mapinfo, "@expanded") == Ruby.True;
+        if (mapinfo == Ruby.Nil)
+        {
+            this.Name = "Untitled Map";
+            this.ScrollX = 0;
+            this.ScrollY = 0;
+            this.Order = -1; // Set to -1 for now; we will determine proper order values when all maps are loaded.
+            this.ParentID = 0;
+            this.Expanded = false;
+        }
+        else
+        {
+            this.Name = Ruby.String.FromPtr(Ruby.GetIVar(mapinfo, "@name"));
+            this.ScrollX = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(mapinfo, "@scroll_x"));
+            this.ScrollY = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(mapinfo, "@scroll_y"));
+            this.Order = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(mapinfo, "@order"));
+            this.ParentID = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(mapinfo, "@parent_id"));
+            this.Expanded = Ruby.GetIVar(mapinfo, "@expanded") == Ruby.True;
+        }
 
         int tilesetid = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@tileset_id"));
         this.TilesetIDs.Add(tilesetid);

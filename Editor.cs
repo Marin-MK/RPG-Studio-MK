@@ -307,6 +307,20 @@ public static class Editor
     }
 
     /// <summary>
+    /// Gets the highest order value in the whole map tree overall.
+    /// </summary>
+    /// <returns>The highest order within all existing maps, i.e. the order value of the bottom-most map.</returns>
+    public static int GetHighestMapOrder()
+    {
+        int max = 0;
+        foreach (Map map in Data.Maps.Values)
+        {
+            if (map.Order > max) max = map.Order;
+        }
+        return max;
+    }
+
+    /// <summary>
     /// Updates the map data parent/order fields based on the node structure.
     /// </summary>
     /// <param name="Nodes">The list of nodes to update the order of.</param>
@@ -332,6 +346,20 @@ public static class Editor
             }
         }
         return order;
+    }
+
+    /// <summary>
+    /// Assigns order values to externally added maps.
+    /// </summary>
+    public static void AssignOrderToNewMaps()
+    {
+        foreach (KeyValuePair<int, Map> kvp in Data.Maps)
+        {
+            if (kvp.Value.Order == -1)
+            {
+                kvp.Value.Order = GetHighestMapOrder() + 1;
+            }
+        }
     }
 
     /// <summary>
