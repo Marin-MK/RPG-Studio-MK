@@ -420,7 +420,7 @@ public class TreeView : Widget
 
     public override void MouseUp(MouseEventArgs e)
     {
-        if (e.LeftButton != e.OldLeftButton && !e.LeftButton)
+        if (Mouse.LeftMouseReleased && Mouse.LeftStartedInside)
         {
             if (DraggingNode != null && HoveringNode != null)
             {
