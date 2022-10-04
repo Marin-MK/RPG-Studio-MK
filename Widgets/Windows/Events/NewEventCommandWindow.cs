@@ -66,7 +66,7 @@ public class NewEventCommandWindow : PopupWindow
 
         Grid MainGrid = new Grid(this);
         MainGrid.SetDocked(true);
-        MainGrid.SetPadding(17, 137, 17, 50);
+        MainGrid.SetPadding(17, 130, 17, 50);
         MainGrid.SetColumns(new GridSize(1), new GridSize(1));
         Left = new VStackPanel(MainGrid);
         Right = new VStackPanel(MainGrid);

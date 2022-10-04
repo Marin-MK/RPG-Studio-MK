@@ -70,6 +70,8 @@ public class EventCategoryButton : Widget
         Sprites["icon"].SrcRect.Y = (Selected ? 0 : 1) * Sprites["icon"].SrcRect.Height;
         Sprites["icon"].X = Sprites["shadow"].X;
 		Sprites["icon"].Y = Sprites["shadow"].Y;
+		if (Selected) Sprites["icon"].Color = new Color(212, 212, 75);
+		else Sprites["icon"].Color = new Color(255, 255, 255, 0);
 		Sprites["text"].Bitmap?.Dispose();
 		string text = BaseCommandWidget.CategoryInfo[this.Category].Name;
 		Font f = Fonts.UbuntuBold.Use(10);
