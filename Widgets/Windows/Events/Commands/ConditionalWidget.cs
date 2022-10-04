@@ -73,11 +73,11 @@ public class ConditionalWidget : BaseCommandWidget
         int endy = 0;
         if (ElseLabel.Visible)
         {
-            elsey = VStackPanel.Padding.Up + VStackPanel1.Size.Height;
+            elsey = VStackPanel.Padding.Up + VStackPanel1.Size.Height + VStackPanel1.Margins.Up + VStackPanel1.Margins.Down;
             if (!VStackPanel1.Visible) elsey = StandardHeight;
             ElseLabel.SetPosition(12, elsey + 6);
             ElseGradient.SetPosition(BarWidth + ShadowSize, elsey);
-            endy = elsey + VStackPanel2.Margins.Up + VStackPanel2.Size.Height + 2;
+            endy = elsey + VStackPanel2.Margins.Up + VStackPanel2.Size.Height + VStackPanel2.Margins.Down;
             if (!VStackPanel2.Visible) endy = ElseLabel.Visible ? elsey + StandardHeight : 0;
         }
         else
@@ -85,7 +85,6 @@ public class ConditionalWidget : BaseCommandWidget
             endy = VStackPanel.Padding.Up + VStackPanel1.Size.Height;
             if (!VStackPanel1.Visible) endy = StandardHeight;
         }
-        endy += 2;
         EndLabel.SetPosition(12, endy + 6);
         EndGradient.SetPosition(BarWidth + ShadowSize, endy);
         EndLabel.SetVisible(DrawEndLabels);
@@ -100,14 +99,13 @@ public class ConditionalWidget : BaseCommandWidget
         {
             HeightAdd = ElseLabel.Visible ? VStackPanel2.Visible ? 0 : StandardHeight : 0;
         }
-        HeightAdd += 4;
         RightHeaderShadow.SetPosition(GradientBox.Padding.Left + GradientBox.Size.Width, 0);
         RightHeaderShadow.SetSize(ShadowSize, GradientBox.Size.Height + ShadowSize * 2);
         TrueShadow.SetVisible(VStackPanel1.Visible);
         if (VStackPanel1.Visible)
         {
             TrueShadow.SetPosition(GradientBox.Padding.Left, GradientBox.Padding.Up + GradientBox.Size.Height);
-            TrueShadow.SetSize(GradientBox.Size.Width + ShadowSize, VStackPanel1.Size.Height);
+            TrueShadow.SetSize(GradientBox.Size.Width + ShadowSize, VStackPanel1.Size.Height + VStackPanel1.Margins.Up + VStackPanel1.Margins.Down);
         }
         ElseHeaderShadow.SetPosition(RightHeaderShadow.Position.X, ElseGradient.Position.Y - ShadowSize);
         ElseHeaderShadow.SetSize(RightHeaderShadow.Size);
@@ -115,7 +113,7 @@ public class ConditionalWidget : BaseCommandWidget
         if (ElseLabel.Visible)
         {
             FalseShadow.SetPosition(ElseGradient.Position.X, ElseGradient.Position.Y + ElseGradient.Size.Height);
-            FalseShadow.SetSize(ElseGradient.Size.Width + ShadowSize, VStackPanel2.Size.Height + 4);
+            FalseShadow.SetSize(ElseGradient.Size.Width + ShadowSize, VStackPanel2.Size.Height + VStackPanel2.Margins.Up + VStackPanel2.Margins.Down - StandardHeight);
         }
         EndHeaderShadow.SetPosition(0, EndGradient.Position.Y - ShadowSize);
         EndHeaderShadow.SetSize(EndGradient.Size.Width + BarWidth + ShadowSize * 2, EndGradient.Size.Height + ShadowSize * 2);
@@ -177,12 +175,13 @@ public class ConditionalWidget : BaseCommandWidget
 
         VStackPanel1 = new VStackPanel(VStackPanel);
         VStackPanel1.SetWidth(GetStandardWidth(Indentation));
+        VStackPanel1.SetMargins(0, MarginBetweenWidgets + ShadowSize);
         VStackPanel1.HDockWidgets = false;
 
         VStackPanel2 = new VStackPanel(VStackPanel);
         VStackPanel2.SetWidth(GetStandardWidth(Indentation));
         VStackPanel2.SetHDocked(true);
-        VStackPanel2.SetMargins(0, StandardHeight, 0, 0);
+        VStackPanel2.SetMargins(0, StandardHeight + MarginBetweenWidgets + ShadowSize, 0, MarginBetweenWidgets + ShadowSize);
         VStackPanel2.HDockWidgets = false;
 
         EventCommand ElseCmd = Commands.Find(c => c.Code == CommandCode.BranchElse && c.Indent == Command.Indent);

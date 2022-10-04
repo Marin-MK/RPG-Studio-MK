@@ -102,7 +102,7 @@ public class BaseCommandWidget : Widget
     protected List<EventCommand> Commands;
     protected int Indentation;
     protected int HeightAdd = 0;
-    protected int MarginBetweenWidgets = 3;
+    protected int MarginBetweenWidgets = 1;
     protected int ChildIndent = 10;
     protected int BarWidth = 4;
     protected int StandardHeight = 28;
@@ -126,6 +126,7 @@ public class BaseCommandWidget : Widget
     protected GradientBox GradientBox;
     protected GradientBox BarBox;
     protected ShadowWidget ShadowWidget;
+    protected ImageBox NoCommandsBG;
 
     List<BaseCommandWidget> SubcommandWidgets = new List<BaseCommandWidget>();
 
@@ -249,8 +250,24 @@ public class BaseCommandWidget : Widget
             VStackPanel.SetPadding(CommandOffset, 0, 0, 0);
             ShadowWidget.SetVisible(false);
             ParseCommands(Commands, VStackPanel, this.GlobalCommandIndex + 1);
+            if (Page.Commands.Count == 1) CreateNoCommandsBG();
+            else RemoveNoCommandsBG();
         }
         UpdateSize();
+    }
+
+    private void CreateNoCommandsBG()
+    {
+        RemoveNoCommandsBG();
+        NoCommandsBG = new ImageBox(this);
+        NoCommandsBG.SetBitmap("assets/img/no_commands_bg");
+        NoCommandsBG.SetFillMode(FillMode.Center);
+    }
+
+    private void RemoveNoCommandsBG()
+    {
+        NoCommandsBG?.Dispose();
+        NoCommandsBG = null;
     }
 
     private void SetCommandColors()
@@ -292,7 +309,7 @@ public class BaseCommandWidget : Widget
         if (this.Indentation == -1)
         {
             vw = Math.Max(Parent.Size.Width, vw);
-            vh = Math.Max(vh + HeightAdd, Parent.Size.Height);
+            vh = Math.Max(vh + HeightAdd, Parent.Size.Height - Position.Y);
         }
         else
         {
@@ -578,6 +595,7 @@ public class BaseCommandWidget : Widget
         // Select our new widget
         NewWidget.SetSelected(true);
         if (Undoable) MainCommandWidget.RegisterUndoAction(new CommandChangeUndoAction(MainCommandWidget, GlobalIndex, Commands, true));
+        MainCommandWidget.RemoveNoCommandsBG();
         // Scroll to newly selected command
         NewWidget.ScrollToThisCommand();
         return NewWidget;
@@ -711,6 +729,7 @@ public class BaseCommandWidget : Widget
         // Update positionings
         ((VStackPanel) this.Parent).UpdateLayout();
         if (Undoable) MainCommandWidget.RegisterUndoAction(new CommandChangeUndoAction(MainCommandWidget, GlobalIndex, Commands, false));
+        if (MainCommandWidget.Commands.Count == 1) MainCommandWidget.CreateNoCommandsBG();
         // Scroll to newly selected command
         NewSelectedWidget.ScrollToThisCommand();
         return NewSelectedWidget;
@@ -1037,6 +1056,8 @@ public class BaseCommandWidget : Widget
                 if (MainCommandWidget.InitialUndoKey) NewWidget.SetTimer($"key_{s.Key.ID}_initial", 300);
                 else NewWidget.SetTimer($"key_{s.Key.ID}", 50);
             }
+            if (MainCommandWidget.Commands.Count == 1) MainCommandWidget.CreateNoCommandsBG();
+            else MainCommandWidget.RemoveNoCommandsBG();
         }
     }
 }

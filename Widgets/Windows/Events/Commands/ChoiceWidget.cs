@@ -75,18 +75,18 @@ public class ChoiceWidget : BaseCommandWidget
             BranchLabels[i].SetPosition(12, y + 4);
             if (i > 0) GradientBoxes[i].SetPadding(BarWidth + ShadowSize, y);
             ExpandArrows[i].SetPosition(Size.Width - 16, y + 4);
-            StackPanels[i].SetPosition(StackPanels[i].Position.X, y + StandardHeight);
+            StackPanels[i].SetPosition(StackPanels[i].Position.X, y + StandardHeight + MarginBetweenWidgets + ShadowSize);
             if (StackPanels[i].Visible)
             {
                 GradientBox GB = i > 0 ? GradientBoxes[i] : GradientBox;
                 ShadowWidget BranchShadow = Shadows[i].BranchShadow;
                 BranchShadow.SetPosition(GB.Padding.Left, GB.Padding.Up + GB.Size.Height);
-                BranchShadow.SetSize(GB.Size.Width + ShadowSize, StackPanels[i].Size.Height);
+                BranchShadow.SetSize(GB.Size.Width + ShadowSize, StackPanels[i].Size.Height + MarginBetweenWidgets * 2 + ShadowSize * 2);
                 ShadowWidget LabelShadow = Shadows[i].LabelShadow;
                 LabelShadow.SetPosition(BranchShadow.Position.X + BranchShadow.Size.Width - ShadowSize, BranchShadow.Position.Y + BranchShadow.Size.Height - ShadowSize);
                 LabelShadow.SetSize(ShadowSize, StandardHeight + 2 * ShadowSize);
             }
-            y += StandardHeight + (ExpandArrows[i].Expanded ? StackPanels[i].Size.Height : 0);
+            y += StandardHeight + (ExpandArrows[i].Expanded ? StackPanels[i].Size.Height : 0) + MarginBetweenWidgets * 2 + ShadowSize * 2;
         }
         if (DrawEndLabels)
         {
