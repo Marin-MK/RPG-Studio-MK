@@ -17,6 +17,25 @@ public static class Utilities
     private static Random RandomObject = new Random();
 
     /// <summary>
+    /// The bitmap sheet of icons from icons.png.
+    /// </summary>
+    public static Bitmap IconSheet;
+
+    /// <summary>
+    /// The bitmap of the folder icon of the file explorer.
+    /// </summary>
+    public static Bitmap FolderIcon;
+
+    /// <summary>
+    /// The bitmap sheet of icons from event_command_icons.png.
+    /// </summary>
+    public static Bitmap EventCommandIconSheet;
+
+    public static Bitmap ButtonCornerFade;
+    public static Bitmap ButtonHorizontalFade;
+    public static Bitmap ButtonVerticalFade;
+
+    /// <summary>
     /// Draws the collapsed or uncollapsed icon on a bitmap. Used for tileset boxes.
     /// </summary>
     /// <param name="b">The bitmap to draw the icon onto.</param>
@@ -152,21 +171,6 @@ public static class Utilities
     }
 
     /// <summary>
-    /// The bitmap sheet of icons from icons.png.
-    /// </summary>
-    public static Bitmap IconSheet;
-
-    /// <summary>
-    /// The bitmap of the folder icon of the file explorer.
-    /// </summary>
-    public static Bitmap FolderIcon;
-
-    /// <summary>
-    /// The bitmap sheet of icons from event_command_icons.png.
-    /// </summary>
-    public static Bitmap EventCommandIconSheet;
-
-    /// <summary>
     /// Initializes the IconSheet bitmap.
     /// </summary>
     public static void Initialize()
@@ -178,6 +182,22 @@ public static class Utilities
         int minutes = Editor.GeneralSettings.SecondsUsed / 60 % 60;
         int hours = Editor.GeneralSettings.SecondsUsed / 60 / 60 % 24;
         Console.WriteLine($"Time spent in the program: {hours}h:{minutes}min:{seconds}s");
+        Color black = new Color(0, 0, 0, 64);
+        Bitmap c = new Bitmap(5, 5);
+        c.Unlock();
+        c.FillGradientRect(0, 0, 5, 5, Color.ALPHA, Color.ALPHA, Color.ALPHA, black);
+        c.Lock();
+        ButtonCornerFade = c;
+        Bitmap h = new Bitmap(5, 1);
+        h.Unlock();
+        h.DrawGradientLine(0, 0, 4, 0, Color.ALPHA, black);
+        h.Lock();
+        ButtonHorizontalFade = h;
+        Bitmap v = new Bitmap(1, 5);
+        v.Unlock();
+        v.DrawGradientLine(0, 0, 0, 4, Color.ALPHA, black);
+        v.Lock();
+        ButtonVerticalFade = v;
     }
 
     /// <summary>

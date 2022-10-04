@@ -10,128 +10,59 @@ public class Button : Widget
     public Font Font { get; protected set; }
     public bool Enabled { get; protected set; } = true;
     public Color TextColor { get; protected set; } = Color.WHITE;
+    public bool Repeatable = false;
 
     public BaseEvent OnClicked;
+    
     int MaxWidth;
-
-    private bool Inside = false;
 
     public Button(IContainer Parent) : base(Parent)
     {
         this.Font = Fonts.UbuntuBold.Use(11);
 
-        Bitmap b = new Bitmap(10, 10);
-        #region Corner piece
-        b.Unlock();
-        b.DrawLine(7, 0, 9, 0, 0, 22, 44, 6);
-        b.DrawLine(4, 1, 9, 1, 0, 22, 44, 6);
-        b.DrawLine(3, 2, 5, 2, 0, 22, 44, 6);
-        b.SetPixel(3, 3, 0, 22, 44, 6);
-        b.DrawLine(2, 3, 2, 5, 0, 22, 44, 6);
-        b.DrawLine(1, 4, 1, 9, 0, 22, 44, 6);
-        b.DrawLine(0, 7, 0, 9, 0, 22, 44, 6);
-        b.SetPixel(2, 6, 9, 0, 22, 8);
-        b.SetPixel(3, 4, 9, 0, 22, 8);
-        b.SetPixel(4, 3, 9, 0, 22, 8);
-        b.SetPixel(6, 2, 9, 0, 22, 8);
-        b.DrawLine(7, 2, 9, 2, 0, 2, 4, 13);
-        b.SetPixel(5, 3, 0, 2, 4, 13);
-        b.SetPixel(4, 4, 0, 2, 4, 13);
-        b.SetPixel(3, 5, 0, 2, 4, 13);
-        b.DrawLine(2, 7, 2, 9, 0, 2, 4, 13);
-        b.SetPixel(3, 6, 0, 9, 17, 19);
-        b.SetPixel(6, 3, 0, 9, 17, 19);
-        b.SetPixel(4, 5, 4, 2, 0, 21);
-        b.SetPixel(5, 4, 4, 2, 0, 21);
-        b.SetPixel(3, 7, 4, 2, 0, 21);
-        b.SetPixel(7, 3, 4, 2, 0, 21);
-        b.SetPixel(3, 8, 0, 2, 4, 26);
-        b.SetPixel(8, 3, 0, 2, 4, 26);
-        b.SetPixel(6, 4, 1, 0, 7, 33);
-        b.SetPixel(4, 6, 1, 0, 7, 33);
-        b.SetPixel(9, 3, 0, 6, 12, 32);
-        b.SetPixel(3, 9, 0, 6, 12, 32);
-        b.SetPixel(5, 5, 0, 2, 4, 38);
-        b.SetPixel(7, 4, 0, 5, 4, 45);
-        b.SetPixel(4, 7, 0, 5, 4, 45);
-        b.SetPixel(8, 4, 0, 3, 0, 52);
-        b.SetPixel(4, 8, 0, 3, 0, 52);
-        b.SetPixel(9, 4, 0, 4, 4, 57);
-        b.SetPixel(4, 9, 0, 4, 4, 57);
-        b.SetPixel(6, 5, 0, 4, 4, 57);
-        b.SetPixel(5, 6, 0, 4, 4, 57);
-        b.SetPixel(5, 7, 0, 2, 4, 77);
-        b.SetPixel(7, 5, 0, 2, 4, 77);
-        b.SetPixel(6, 6, 0, 2, 1, 89);
-        b.SetPixel(8, 5, 0, 2, 1, 89);
-        b.SetPixel(5, 8, 0, 2, 1, 89);
-        b.SetPixel(9, 5, 1, 0, 1, 99);
-        b.SetPixel(5, 9, 1, 0, 1, 99);
-        b.Lock();
-        #endregion
+        Bitmap corner = Utilities.ButtonCornerFade;
+        Bitmap hor = Utilities.ButtonHorizontalFade;
+        Bitmap vert = Utilities.ButtonVerticalFade;
 
-        Sprites["topleft"] = new Sprite(this.Viewport, b);
+        Sprites["topleft"] = new Sprite(this.Viewport, corner);
+        Sprites["topleft"].DestroyBitmap = false;
 
-        Sprites["bottomleft"] = new Sprite(this.Viewport, b);
+        Sprites["bottomleft"] = new Sprite(this.Viewport, corner);
         Sprites["bottomleft"].MirrorY = true;
+        Sprites["bottomleft"].DestroyBitmap = false;
 
-        Sprites["topright"] = new Sprite(this.Viewport, b);
+        Sprites["topright"] = new Sprite(this.Viewport, corner);
         Sprites["topright"].MirrorX = true;
+        Sprites["topright"].DestroyBitmap = false;
 
-        Sprites["bottomright"] = new Sprite(this.Viewport, b);
+        Sprites["bottomright"] = new Sprite(this.Viewport, corner);
         Sprites["bottomright"].MirrorX = Sprites["bottomright"].MirrorY = true;
-
-        Bitmap hor = new Bitmap(6, 1);
-        #region Horizontal piece
-        hor.Unlock();
-        hor.SetPixel(0, 0, 0, 22, 44, 6);
-        hor.SetPixel(1, 0, 0, 22, 44, 6);
-        hor.SetPixel(2, 0, 0, 2, 4, 13);
-        hor.SetPixel(3, 0, 1, 0, 7, 33);
-        hor.SetPixel(4, 0, 0, 2, 4, 64);
-        hor.SetPixel(5, 0, 0, 1, 4, 108);
-        hor.Lock();
-        #endregion
-
-        Bitmap vert = new Bitmap(1, 6);
-        #region Vertical piece
-        vert.Unlock();
-        vert.SetPixel(0, 0, 0, 22, 44, 6);
-        vert.SetPixel(0, 1, 0, 22, 44, 6);
-        vert.SetPixel(0, 2, 0, 2, 4, 13);
-        vert.SetPixel(0, 3, 1, 0, 7, 33);
-        vert.SetPixel(0, 4, 0, 2, 4, 64);
-        vert.SetPixel(0, 5, 0, 1, 4, 108);
-        vert.Lock();
-        #endregion
+        Sprites["bottomright"].DestroyBitmap = false;
 
         Sprites["left"] = new Sprite(this.Viewport, hor);
-        Sprites["left"].Y = 10;
+        Sprites["left"].Y = corner.Width;
+        Sprites["left"].DestroyBitmap = false;
         Sprites["right"] = new Sprite(this.Viewport, hor);
         Sprites["right"].Y = Sprites["left"].Y;
         Sprites["right"].MirrorX = true;
+        Sprites["right"].DestroyBitmap = false;
 
         Sprites["top"] = new Sprite(this.Viewport, vert);
-        Sprites["top"].X = 10;
+        Sprites["top"].X = corner.Width;
+        Sprites["top"].DestroyBitmap = false;
         Sprites["bottom"] = new Sprite(this.Viewport, vert);
         Sprites["bottom"].X = Sprites["top"].X;
         Sprites["bottom"].MirrorY = true;
+        Sprites["bottom"].DestroyBitmap = false;
 
         Sprites["filler"] = new Sprite(this.Viewport);
-        Sprites["filler"].X = Sprites["filler"].Y = 6;
+        Sprites["filler"].X = Sprites["filler"].Y = corner.Width;
 
         Sprites["text"] = new Sprite(this.Viewport);
 
-        SetSize(85, 33);
-    }
+        OnWidgetSelected += WidgetSelected;
 
-    public void SetFont(Font f)
-    {
-        if (this.Font != f)
-        {
-            this.Font = f;
-            RedrawText();
-        }
+        SetSize(85, 33);
     }
 
     public void SetText(string Text)
@@ -172,7 +103,7 @@ public class Button : Widget
         Sprites["text"].Bitmap = new Bitmap(MaxWidth, Size.Height);
         Sprites["text"].Bitmap.Unlock();
         Sprites["text"].Bitmap.Font = this.Font;
-        Color c = this.Enabled ? this.Inside ? new Color(48, 48, 48) : this.TextColor : new Color(160, 160, 160);
+        Color c = this.Enabled ? this.TextColor : new Color(147, 158, 169);
         for (int i = 0; i < Lines.Count; i++)
         {
             Sprites["text"].Bitmap.DrawText(Lines[i], MaxWidth / 2, i * 18, c, DrawOptions.CenterAlign);
@@ -185,14 +116,19 @@ public class Button : Widget
     public void RedrawFiller()
     {
         if (Sprites["filler"].Bitmap != null) Sprites["filler"].Bitmap.Dispose();
-        Sprites["filler"].Bitmap = new Bitmap(Size.Width - 12, Size.Height - 12);
+        int w = Size.Width - Sprites["filler"].X * 2;
+        int h = Size.Height - Sprites["filler"].Y * 2;
+        Sprites["filler"].Bitmap = new Bitmap(w, h);
         Sprites["filler"].Bitmap.Unlock();
-        Color filler = this.Enabled ? this.Inside ? new Color(55, 187, 255) : new Color(64, 104, 146) : new Color(72, 72, 72);
-        Sprites["filler"].Bitmap.FillRect(0, 0, Size.Width - 12, Size.Height - 12, filler);
-        Sprites["filler"].Bitmap.SetPixel(0, 0, Color.ALPHA);
-        Sprites["filler"].Bitmap.SetPixel(Size.Width - 13, 0, Color.ALPHA);
-        Sprites["filler"].Bitmap.SetPixel(0, Size.Height - 13, Color.ALPHA);
-        Sprites["filler"].Bitmap.SetPixel(Size.Width - 13, Size.Height - 13, Color.ALPHA);
+        if (this.Enabled)
+        {
+            if (Mouse.LeftMousePressed && Mouse.LeftStartedInside && Mouse.Inside)
+                Sprites["filler"].Bitmap.FillRect(0, 0, w, h, new Color(32, 170, 221));
+            else if (Mouse.Inside || Mouse.LeftMousePressed && Mouse.LeftStartedInside)
+                Sprites["filler"].Bitmap.FillGradientRect(0, 0, w, h, new Color(51, 86, 121), new Color(51, 86, 121), new Color(32, 170, 221), new Color(32, 170, 221));
+            else Sprites["filler"].Bitmap.FillRect(0, 0, w, h, new Color(51, 86, 121));
+        }
+        else Sprites["filler"].Bitmap.FillRect(0, 0, w, h, new Color(51, 86, 121));
         Sprites["filler"].Bitmap.Lock();
         RedrawText();
     }
@@ -202,17 +138,19 @@ public class Button : Widget
         base.SizeChanged(e);
         RedrawFiller();
 
-        Sprites["bottomleft"].Y = Size.Height - 10;
-        Sprites["topright"].X = Size.Width - 10;
+        int o = Sprites["filler"].X;
+
+        Sprites["bottomleft"].Y = Size.Height - o;
+        Sprites["topright"].X = Size.Width - o;
         Sprites["bottomright"].X = Sprites["topright"].X;
         Sprites["bottomright"].Y = Sprites["bottomleft"].Y;
 
-        Sprites["right"].X = Sprites["topright"].X + 4;
-        Sprites["left"].ZoomY = Size.Height - 20;
+        Sprites["right"].X = Sprites["topright"].X;
+        Sprites["left"].ZoomY = Size.Height - 2 * o;
         Sprites["right"].ZoomY = Sprites["left"].ZoomY;
 
-        Sprites["top"].ZoomX = Size.Width - 20;
-        Sprites["bottom"].Y = Sprites["bottomleft"].Y + 4;
+        Sprites["top"].ZoomX = Size.Width - 2 * o;
+        Sprites["bottom"].Y = Sprites["bottomleft"].Y;
         Sprites["bottom"].ZoomX = Sprites["top"].ZoomX;
 
         if (!string.IsNullOrEmpty(this.Text))
@@ -222,33 +160,56 @@ public class Button : Widget
         }
     }
 
-    public override void MouseMoving(MouseEventArgs e)
+    public override void HoverChanged(MouseEventArgs e)
     {
-        base.MouseMoving(e);
-        bool OldInside = this.Inside;
-        if (!Mouse.Inside) this.Inside = false;
-        else
+        base.HoverChanged(e);
+        if (this.Enabled) RedrawFiller();
+    }
+
+    public override void LeftMousePress(MouseEventArgs e)
+    {
+        base.LeftMousePress(e);
+        if (Mouse.Inside && Repeatable && this.Enabled)
         {
-            int rx = e.X - Viewport.X;
-            int ry = e.Y - Viewport.Y;
-            this.Inside = rx >= 6 && rx < Size.Width - 6 && ry >= 6 && ry < Size.Height - 6;
-        }
-        if (this.Inside != OldInside)
-        {
-            RedrawFiller();
-            RedrawText();
+            if (TimerPassed("press"))
+            {
+                OnClicked?.Invoke(new BaseEventArgs());
+                ResetTimer("press");
+            }
+            if (TimerPassed("initial"))
+            {
+                OnClicked?.Invoke(new BaseEventArgs());
+                SetTimer("press", 50);
+                DestroyTimer("initial");
+            }
         }
     }
 
-    public override void LeftMouseDown(MouseEventArgs e)
+    public override void LeftMouseDownInside(MouseEventArgs e)
     {
-        base.LeftMouseDown(e);
-        if (!this.Enabled || !Inside) return;
-        this.OnClicked?.Invoke(new BaseEventArgs());
-        if (!Mouse.Accessible && !Disposed)
+        base.LeftMouseDownInside(e);
+        if (!this.Enabled) return;
+        if (Repeatable)
         {
-            RedrawFiller();
-            RedrawText();
+            OnClicked?.Invoke(new BaseEventArgs());
+            SetTimer("initial", 300);
         }
+        RedrawFiller();
+    }
+
+    public override void LeftMouseUp(MouseEventArgs e)
+    {
+        base.LeftMouseUp(e);
+        if (TimerExists("press")) DestroyTimer("press");
+        if (TimerExists("initial")) DestroyTimer("initial");
+        if (Mouse.LeftStartedInside && !Repeatable && this.Enabled)
+        {
+            if (Mouse.Inside)
+            {
+                this.OnClicked?.Invoke(new BaseEventArgs());
+                if (!Disposed) RedrawText();
+            }
+        }
+        if (!Disposed) RedrawFiller();
     }
 }
