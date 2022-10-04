@@ -32,8 +32,8 @@ public class ShiftMapWindow : PopupWindow
         });
         DirectionBox.OnSelectionChanged += _ =>
         {
-            if (DirectionBox.SelectedIndex == 0 || DirectionBox.SelectedIndex == 3) NumberBox.MaxValue = Map.Height - 1;
-            else NumberBox.MaxValue = Map.Width - 1;
+            if (DirectionBox.SelectedIndex == 0 || DirectionBox.SelectedIndex == 3) NumberBox.SetMaxValue(Map.Height - 1);
+            else NumberBox.SetMaxValue(Map.Width - 1);
             if (NumberBox.Value > NumberBox.MaxValue) NumberBox.SetValue(1);
         };
 
@@ -45,8 +45,8 @@ public class ShiftMapWindow : PopupWindow
         NumberBox = new NumericBox(this);
         NumberBox.SetPosition(230, 30);
         NumberBox.SetSize(64, 27);
-        NumberBox.MinValue = 1;
-        NumberBox.MaxValue = Map.Height - 1;
+        NumberBox.SetMinValue(1);
+        NumberBox.SetMaxValue(Map.Height - 1);
         NumberBox.SetValue(1);
 
         Label Text2Label = new Label(this);

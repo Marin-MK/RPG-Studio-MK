@@ -10,7 +10,7 @@ public class ShadowWidget : Widget
 {
     public int Thickness { get; protected set; } = 5;
     public bool Inverted { get; protected set; } = false;
-    public byte Darkness { get; protected set; } = 128;
+    public byte Darkness { get; protected set; } = 64;
 
     public ShadowWidget(IContainer Parent) : base(Parent)
     {

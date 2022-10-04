@@ -61,7 +61,6 @@ public class NewEventCommandWindow : PopupWindow
             Grid grid = (Grid) Containers[ContainerIndex].Widgets[0];
             int idx = grid.Widgets[1].Widgets.Count >= grid.Widgets[0].Widgets.Count ? 0 : 1;
             Button Button = new Button(grid.Widgets[idx]);
-            Button.SetFont(Fonts.CabinMedium.Use(11));
             Button.SetMargins(0, 0);
             Button.SetText(Text);
             Button.SetHeight(36);

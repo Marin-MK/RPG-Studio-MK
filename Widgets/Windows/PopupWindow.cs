@@ -65,7 +65,7 @@ public class PopupWindow : Widget, IPopupWindow
         Sprites["shadow"].Bitmap.FillGradientRectOutside(
             new Rect(Size),
             new Rect(WindowEdges, WindowEdges, Size.Width - WindowEdges * 2, Size.Height - WindowEdges * 2),
-            new Color(0, 0, 0, 200),
+            new Color(0, 0, 0, 64),
             Color.ALPHA,
             false
         );

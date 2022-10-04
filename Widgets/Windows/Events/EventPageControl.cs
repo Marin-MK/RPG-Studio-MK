@@ -21,11 +21,7 @@ public class EventPageControl : Widget
     CheckBox DirectionFixBox;
     CheckBox ThroughBox;
     CheckBox AlwaysOnTopBox;
-    RadioBox ActionBox;
-    RadioBox PlayerBox;
-    RadioBox EventBox;
-    RadioBox AutorunBox;
-    RadioBox ParallelBox;
+    DropdownBox TriggerBox;
     DropdownBox AutoMoveTypeBox;
     DropdownBox AutoMoveSpeedBox;
     DropdownBox AutoMoveFrequencyBox;
@@ -38,68 +34,75 @@ public class EventPageControl : Widget
 
     public EventPageControl(IContainer Parent) : base(Parent)
     {
-        Font HeaderFont = Fonts.UbuntuBold.Use(11);
-        Font SmallFont = Fonts.CabinMedium.Use(11);
-        Font TinyFont = Fonts.CabinMedium.Use(9);
+        SetBackgroundColor(24, 38, 53);
 
-        Label Switch1Label = null;
-        Label Switch2Label = null;
+        Font HeaderFont = Fonts.UbuntuBold.Use(12);
+        Font SmallFont = Fonts.CabinMedium.Use(11);
+
         Label VarLabel1 = null;
         Label VarLabel2 = null;
-        Label SelfSwitchLabel = null;
 
-        Label ConditionsLabel = new Label(this);
+        Container RightBox = new Container(this);
+        RightBox.SetPosition(273, 70);
+        RightBox.SetSize(217, 485);
+        RightBox.SetBackgroundColor(40, 62, 84);
+        Label ConditionsLabel = new Label(RightBox);
         ConditionsLabel.SetFont(HeaderFont);
-        ConditionsLabel.SetPosition(7, 3);
+        ConditionsLabel.SetPosition(11, 9);
         ConditionsLabel.SetText("Conditions");
-        GroupBox ConditionsBox = new GroupBox(this);
-        ConditionsBox.SetPosition(7, 22);
-        ConditionsBox.SetSize(261, 157);
-        Switch1Box = new CheckBox(ConditionsBox);
+        Switch1Box = new CheckBox(RightBox);
         Switch1Box.SetFont(SmallFont);
-        Switch1Box.SetPosition(7, 7);
-        Switch1Box.SetText("Switch");
+        Switch1Box.SetPosition(20, 34);
+        Switch1Box.SetText("Switch is ON");
         Switch1Box.OnCheckChanged += _ =>
         {
             Switch1VarBox.SetEnabled(Switch1Box.Checked);
-            Switch1Label.SetEnabled(Switch1Box.Checked);
             Page.Condition.Switch1Valid = Switch1Box.Checked;
         };
-        Switch1VarBox = new SwitchPickerBox(ConditionsBox);
+        Switch1VarBox = new SwitchPickerBox(RightBox);
         Switch1VarBox.SetFont(SmallFont);
-        Switch1VarBox.SetPosition(102, 3);
-        Switch1VarBox.SetSize(118, 25);
+        Switch1VarBox.SetPosition(20, 54);
+        Switch1VarBox.SetSize(177, 25);
         Switch1VarBox.SetEnabled(false);
         Switch1VarBox.OnSwitchChanged += _ => Page.Condition.Switch1ID = Switch1VarBox.SwitchID;
-        Switch1Label = new Label(ConditionsBox);
-        Switch1Label.SetFont(SmallFont);
-        Switch1Label.SetPosition(223, 7);
-        Switch1Label.SetText("is ON");
-        Switch1Label.SetEnabled(false);
-        Switch2Box = new CheckBox(ConditionsBox);
+        Switch2Box = new CheckBox(RightBox);
         Switch2Box.SetFont(SmallFont);
-        Switch2Box.SetPosition(7, 7 + 32);
-        Switch2Box.SetText("Switch");
+        Switch2Box.SetPosition(20, 88);
+        Switch2Box.SetText("Switch is ON");
         Switch2Box.OnCheckChanged += _ =>
         {
             Switch2VarBox.SetEnabled(Switch2Box.Checked);
-            Switch2Label.SetEnabled(Switch2Box.Checked);
             Page.Condition.Switch2Valid = Switch2Box.Checked;
         };
-        Switch2VarBox = new SwitchPickerBox(ConditionsBox);
+        Switch2VarBox = new SwitchPickerBox(RightBox);
         Switch2VarBox.SetFont(SmallFont);
-        Switch2VarBox.SetPosition(102, 3 + 32);
-        Switch2VarBox.SetSize(118, 25);
+        Switch2VarBox.SetPosition(20, 108);
+        Switch2VarBox.SetSize(177, 25);
         Switch2VarBox.SetEnabled(false);
         Switch2VarBox.OnSwitchChanged += _ => Page.Condition.Switch2ID = Switch2VarBox.SwitchID;
-        Switch2Label = new Label(ConditionsBox);
-        Switch2Label.SetFont(SmallFont);
-        Switch2Label.SetPosition(223, 7 + 32);
-        Switch2Label.SetText("is ON");
-        Switch2Label.SetEnabled(false);
-        VarBox = new CheckBox(ConditionsBox);
+        SelfSwitchBox = new CheckBox(RightBox);
+        SelfSwitchBox.SetFont(SmallFont);
+        SelfSwitchBox.SetPosition(20, 142);
+        SelfSwitchBox.SetText("Self Switch is ON");
+        SelfSwitchBox.OnCheckChanged += _ =>
+        {
+            SelfSwitchVarBox.SetEnabled(SelfSwitchBox.Checked);
+            Page.Condition.SelfSwitchValid = SelfSwitchBox.Checked;
+        };
+        SelfSwitchVarBox = new DropdownBox(RightBox);
+        SelfSwitchVarBox.SetFont(SmallFont);
+        SelfSwitchVarBox.SetPosition(20, 162);
+        SelfSwitchVarBox.SetSize(177, 25);
+        SelfSwitchVarBox.SetItems(new List<ListItem>()
+        {
+            new ListItem("A"), new ListItem("B"), new ListItem("C"),
+            new ListItem("D"), new ListItem("E"), new ListItem("F")
+        });
+        SelfSwitchVarBox.SetEnabled(false);
+        SelfSwitchVarBox.OnSelectionChanged += _ => Page.Condition.SelfSwitchChar = (char)('A' + SelfSwitchVarBox.SelectedIndex);
+        VarBox = new CheckBox(RightBox);
         VarBox.SetFont(SmallFont);
-        VarBox.SetPosition(7, 7 + 32 * 2);
+        VarBox.SetPosition(20, 196);
         VarBox.SetText("Variable");
         VarBox.OnCheckChanged += _ =>
         {
@@ -109,90 +112,113 @@ public class EventPageControl : Widget
             VarLabel2.SetEnabled(VarBox.Checked);
             Page.Condition.VariableValid = VarBox.Checked;
         };
-        VarPickBox = new VariablePickerBox(ConditionsBox);
+        VarPickBox = new VariablePickerBox(RightBox);
         VarPickBox.SetFont(SmallFont);
-        VarPickBox.SetPosition(102, 3 + 32 * 2);
-        VarPickBox.SetSize(118, 25);
+        VarPickBox.SetPosition(20, 216);
+        VarPickBox.SetSize(177, 25);
         VarPickBox.SetEnabled(false);
         VarPickBox.OnVariableChanged += _ => Page.Condition.VariableID = VarPickBox.VariableID;
-        VarLabel1 = new Label(ConditionsBox);
+        VarLabel1 = new Label(RightBox);
         VarLabel1.SetFont(SmallFont);
-        VarLabel1.SetPosition(223, 7 + 32 * 2);
+        VarLabel1.SetPosition(24, 251);
         VarLabel1.SetText("is");
         VarLabel1.SetEnabled(false);
-        VarValueBox = new NumericBox(ConditionsBox);
-        VarValueBox.SetPosition(102, 3 + 32 * 2 + 27);
-        VarValueBox.SetSize(55, 27);
+        VarValueBox = new NumericBox(RightBox);
+        VarValueBox.SetPosition(42, 248);
+        VarValueBox.SetSize(88, 27);
         VarValueBox.SetEnabled(false);
         VarValueBox.OnValueChanged += _ => Page.Condition.VariableValue = VarValueBox.Value;
-        VarLabel2 = new Label(ConditionsBox);
+        VarLabel2 = new Label(RightBox);
         VarLabel2.SetFont(SmallFont);
-        VarLabel2.SetPosition(160, 7 + 32 * 2 + 27);
+        VarLabel2.SetPosition(136, 251);
         VarLabel2.SetText("or higher");
         VarLabel2.SetEnabled(false);
-        SelfSwitchBox = new CheckBox(ConditionsBox);
-        SelfSwitchBox.SetFont(SmallFont);
-        SelfSwitchBox.SetPosition(7, 5 + 32 * 4);
-        SelfSwitchBox.SetText("Self Switch");
-        SelfSwitchBox.OnCheckChanged += _ =>
+
+        Label TriggerLabel = new Label(RightBox);
+        TriggerLabel.SetFont(HeaderFont);
+        TriggerLabel.SetPosition(10, 297);
+        TriggerLabel.SetText("Trigger");
+        TriggerBox = new DropdownBox(RightBox);
+        TriggerBox.SetPosition(21, 319);
+        TriggerBox.SetSize(147, 25);
+        TriggerBox.SetItems(new List<ListItem>()
         {
-            SelfSwitchVarBox.SetEnabled(SelfSwitchBox.Checked);
-            SelfSwitchLabel.SetEnabled(SelfSwitchBox.Checked);
-            Page.Condition.SelfSwitchValid = SelfSwitchBox.Checked;
-        };
-        SelfSwitchVarBox = new DropdownBox(ConditionsBox);
-        SelfSwitchVarBox.SetFont(SmallFont);
-        SelfSwitchVarBox.SetPosition(102, 1 + 32 * 4);
-        SelfSwitchVarBox.SetSize(55, 25);
-        SelfSwitchVarBox.SetItems(new List<ListItem>()
-        {
-            new ListItem("A"), new ListItem("B"), new ListItem("C"),
-            new ListItem("D"), new ListItem("E"), new ListItem("F")
+            new ListItem("Action Button"),
+            new ListItem("Player Touch"),
+            new ListItem("Event Touch"),
+            new ListItem("Autorun"),
+            new ListItem("Parallel Process")
         });
-        SelfSwitchVarBox.SetEnabled(false);
-        SelfSwitchVarBox.OnSelectionChanged += _ => Page.Condition.SelfSwitchChar = (char) ('A' + SelfSwitchVarBox.SelectedIndex);
-        SelfSwitchLabel = new Label(ConditionsBox);
-        SelfSwitchLabel.SetFont(SmallFont);
-        SelfSwitchLabel.SetPosition(160, 5 + 32 * 4);
-        SelfSwitchLabel.SetText("is ON");
-        SelfSwitchLabel.SetEnabled(false);
+        TriggerBox.OnSelectionChanged += _ => { Page.TriggerMode = (TriggerMode) TriggerBox.SelectedIndex; };
 
-        Label GraphicLabel = new Label(this);
+        Container LeftBox = new Container(this);
+        LeftBox.SetPosition(100, 70);
+        LeftBox.SetSize(170, 485);
+        LeftBox.SetBackgroundColor(40, 62, 84);
+        Label GraphicLabel = new Label(LeftBox);
         GraphicLabel.SetFont(HeaderFont);
-        GraphicLabel.SetPosition(7, 182);
+        GraphicLabel.SetPosition(11, 9);
         GraphicLabel.SetText("Graphic");
-        GroupBox GraphicBox = new GroupBox(this);
-        GraphicBox.SetPosition(7, 201);
-        GraphicBox.SetSize(121, 121);
-        EventGraphicBox = new EventGraphicBox(GraphicBox);
-        EventGraphicBox.SetDocked(true);
-        EventGraphicBox.SetPadding(2);
-        EventGraphicBox.OnDoubleLeftMouseDownInside += _ =>
+        EventGraphicBox = new EventGraphicBox(LeftBox);
+        EventGraphicBox.SetPosition(21, 27);
+        EventGraphicBox.SetSize(126, 126);
+        // Use OnDoubleLeftMouseDown to turn into double clicking instead of single clicking
+        EventGraphicBox.OnLeftMouseUp += _ =>
         {
-            ChooseGraphic cg = new ChooseGraphic(Map, Event, Page, Page.Graphic, false);
-            cg.OnClosed += _ =>
+            if (EventGraphicBox.Mouse.LeftStartedInside && EventGraphicBox.Mouse.Inside)
             {
-                if (!cg.Apply) return;
-                Page.Graphic = cg.Graphic;
-                EventGraphicBox.SetGraphic(Map, Event, Page.Graphic);
-            };
+                ChooseGraphic cg = new ChooseGraphic(Map, Event, Page, Page.Graphic, false);
+                cg.OnClosed += _ =>
+                {
+                    if (!cg.Apply) return;
+                    Page.Graphic = cg.Graphic;
+                    EventGraphicBox.SetGraphic(Map, Event, Page.Graphic);
+                };
+            }
         };
 
-        Label AutoMoveLabel = new Label(this);
-        AutoMoveLabel.SetFont(HeaderFont);
-        AutoMoveLabel.SetPosition(136, 182);
-        AutoMoveLabel.SetText("Auto-Moveroute");
-        GroupBox AutoMoveBox = new GroupBox(this);
-        AutoMoveBox.SetPosition(136, 201);
-        AutoMoveBox.SetSize(132, 121);
-        Label AutoMoveTypeLabel = new Label(AutoMoveBox);
-        AutoMoveTypeLabel.SetPosition(4, 9);
-        AutoMoveTypeLabel.SetFont(TinyFont);
+        Label AutoMoveSpeedLabel = new Label(LeftBox);
+        AutoMoveSpeedLabel.SetPosition(19, 285);
+        AutoMoveSpeedLabel.SetFont(SmallFont);
+        AutoMoveSpeedLabel.SetText("Speed:");
+        AutoMoveSpeedBox = new DropdownBox(LeftBox);
+        AutoMoveSpeedBox.SetPosition(19, 307);
+        AutoMoveSpeedBox.SetSize(128, 25);
+        AutoMoveSpeedBox.SetFont(SmallFont);
+        AutoMoveSpeedBox.SetItems(new List<ListItem>()
+        {
+            new ListItem("1: Slowest"), new ListItem("2: Slower"), new ListItem("3: Slow"),
+            new ListItem("4: Fast"), new ListItem("5: Faster"), new ListItem("6: Fastest")
+        });
+        AutoMoveSpeedBox.OnSelectionChanged += _ =>
+        {
+            Page.MoveRoute.Speed = AutoMoveSpeedBox.SelectedIndex + 1;
+        };
+        Label AutoMoveFrequencyLabel = new Label(LeftBox);
+        AutoMoveFrequencyLabel.SetPosition(19, 341);
+        AutoMoveFrequencyLabel.SetFont(SmallFont);
+        AutoMoveFrequencyLabel.SetText("Freq:");
+        AutoMoveFrequencyBox = new DropdownBox(LeftBox);
+        AutoMoveFrequencyBox.SetPosition(19, 363);
+        AutoMoveFrequencyBox.SetSize(128, 25);
+        AutoMoveFrequencyBox.SetFont(SmallFont);
+        AutoMoveFrequencyBox.SetItems(new List<ListItem>()
+        {
+            new ListItem("1: Lowest"), new ListItem("2: Lower"), new ListItem("3: Low"),
+            new ListItem("4: High"), new ListItem("5: Higher"), new ListItem("6: Highest")
+        });
+        AutoMoveFrequencyBox.OnSelectionChanged += _ =>
+        {
+            Page.MoveRoute.Frequency = AutoMoveFrequencyBox.SelectedIndex + 1;
+        };
+        Label AutoMoveTypeLabel = new Label(LeftBox);
+        AutoMoveTypeLabel.SetPosition(19, 397);
+        AutoMoveTypeLabel.SetFont(SmallFont);
         AutoMoveTypeLabel.SetText("Type:");
-        AutoMoveTypeBox = new DropdownBox(AutoMoveBox);
-        AutoMoveTypeBox.SetPosition(43, 5);
-        AutoMoveTypeBox.SetSize(87, 25);
-        AutoMoveTypeBox.SetFont(TinyFont);
+        AutoMoveTypeBox = new DropdownBox(LeftBox);
+        AutoMoveTypeBox.SetPosition(19, 419);
+        AutoMoveTypeBox.SetSize(128, 25);
+        AutoMoveTypeBox.SetFont(SmallFont);
         AutoMoveTypeBox.SetItems(new List<ListItem>()
         {
             new ListItem("Fixed"), new ListItem("Random"),
@@ -203,10 +229,9 @@ public class EventPageControl : Widget
             EditRouteButton.SetEnabled(AutoMoveTypeBox.SelectedIndex == 3);
             Page.MoveRoute.Type = AutoMoveTypeBox.SelectedIndex;
         };
-        EditRouteButton = new Button(AutoMoveBox);
-        EditRouteButton.SetPosition(43, 31);
+        EditRouteButton = new Button(LeftBox);
+        EditRouteButton.SetPosition(60, 445);
         EditRouteButton.SetSize(92, 29);
-        EditRouteButton.SetFont(SmallFont);
         EditRouteButton.SetText("Edit Route");
         EditRouteButton.SetEnabled(false);
         EditRouteButton.OnClicked += _ =>
@@ -218,110 +243,38 @@ public class EventPageControl : Widget
                 Page.MoveRoute = win.MoveRoute;
             };
         };
-        Label AutoMoveSpeedLabel = new Label(AutoMoveBox);
-        AutoMoveSpeedLabel.SetPosition(4, 65);
-        AutoMoveSpeedLabel.SetFont(TinyFont);
-        AutoMoveSpeedLabel.SetText("Speed:");
-        AutoMoveSpeedBox = new DropdownBox(AutoMoveBox);
-        AutoMoveSpeedBox.SetPosition(43, 61);
-        AutoMoveSpeedBox.SetSize(87, 25);
-        AutoMoveSpeedBox.SetFont(TinyFont);
-        AutoMoveSpeedBox.SetItems(new List<ListItem>()
-        {
-            new ListItem("1: Slowest"), new ListItem("2: Slower"), new ListItem("3: Slow"),
-            new ListItem("4: Fast"), new ListItem("5: Faster"), new ListItem("6: Fastest")
-        });
-        AutoMoveSpeedBox.OnSelectionChanged += _ =>
-        {
-            Page.MoveRoute.Speed = AutoMoveSpeedBox.SelectedIndex + 1;
-        };
-        Label AutoMoveFrequencyLabel = new Label(AutoMoveBox);
-        AutoMoveFrequencyLabel.SetPosition(4, 95);
-        AutoMoveFrequencyLabel.SetFont(TinyFont);
-        AutoMoveFrequencyLabel.SetText("Freq:");
-        AutoMoveFrequencyBox = new DropdownBox(AutoMoveBox);
-        AutoMoveFrequencyBox.SetPosition(43, 91);
-        AutoMoveFrequencyBox.SetSize(87, 25);
-        AutoMoveFrequencyBox.SetFont(TinyFont);
-        AutoMoveFrequencyBox.SetItems(new List<ListItem>()
-        {
-            new ListItem("1: Lowest"), new ListItem("2: Lower"), new ListItem("3: Low"),
-            new ListItem("4: High"), new ListItem("5: Higher"), new ListItem("6: Highest")
-        });
-        AutoMoveFrequencyBox.OnSelectionChanged += _ =>
-        {
-            Page.MoveRoute.Frequency = AutoMoveFrequencyBox.SelectedIndex + 1;
-        };
 
-        Label OptionsLabel = new Label(this);
-        OptionsLabel.SetFont(HeaderFont);
-        OptionsLabel.SetPosition(7, 324);
-        OptionsLabel.SetText("Options");
-        GroupBox OptionsBox = new GroupBox(this);
-        OptionsBox.SetPosition(7, 343);
+        Container OptionsBox = new Container(LeftBox);
+        OptionsBox.SetPosition(19, 166);
         OptionsBox.SetSize(119, 106);
         MoveAnimationBox = new CheckBox(OptionsBox);
-        MoveAnimationBox.SetPosition(5, 5);
-        MoveAnimationBox.SetFont(TinyFont);
+        MoveAnimationBox.SetFont(SmallFont);
         MoveAnimationBox.SetText("Move Animation");
         MoveAnimationBox.OnCheckChanged += _ => Page.Settings.WalkAnime = MoveAnimationBox.Checked;
         StopAnimationBox = new CheckBox(OptionsBox);
-        StopAnimationBox.SetPosition(5, 25);
-        StopAnimationBox.SetFont(TinyFont);
+        StopAnimationBox.SetPosition(0, 22);
+        StopAnimationBox.SetFont(SmallFont);
         StopAnimationBox.SetText("Idle Animation");
         StopAnimationBox.OnCheckChanged += _ => Page.Settings.StepAnime = StopAnimationBox.Checked;
         DirectionFixBox = new CheckBox(OptionsBox);
-        DirectionFixBox.SetPosition(5, 45);
-        DirectionFixBox.SetFont(TinyFont);
+        DirectionFixBox.SetPosition(0, 44);
+        DirectionFixBox.SetFont(SmallFont);
         DirectionFixBox.SetText("Direction Fix");
         DirectionFixBox.OnCheckChanged += _ => Page.Settings.DirectionFix = DirectionFixBox.Checked;
         ThroughBox = new CheckBox(OptionsBox);
-        ThroughBox.SetPosition(5, 65);
-        ThroughBox.SetFont(TinyFont);
+        ThroughBox.SetPosition(0, 66);
+        ThroughBox.SetFont(SmallFont);
         ThroughBox.SetText("Through");
         ThroughBox.OnCheckChanged += _ => Page.Settings.Through = ThroughBox.Checked;
         AlwaysOnTopBox = new CheckBox(OptionsBox);
-        AlwaysOnTopBox.SetPosition(5, 85);
-        AlwaysOnTopBox.SetFont(TinyFont);
+        AlwaysOnTopBox.SetPosition(0, 88);
+        AlwaysOnTopBox.SetFont(SmallFont);
         AlwaysOnTopBox.SetText("Always on Top");
         AlwaysOnTopBox.OnCheckChanged += _ => Page.Settings.AlwaysOnTop = AlwaysOnTopBox.Checked;
 
-        Label TriggerLabel = new Label(this);
-        TriggerLabel.SetFont(HeaderFont);
-        TriggerLabel.SetPosition(136, 324);
-        TriggerLabel.SetText("Trigger");
-        GroupBox TriggerBox = new GroupBox(this);
-        TriggerBox.SetPosition(136, 343);
-        TriggerBox.SetSize(132, 106);
-        ActionBox = new RadioBox(TriggerBox);
-        ActionBox.SetPosition(5, 5);
-        ActionBox.SetFont(TinyFont);
-        ActionBox.SetText("Action Button");
-        ActionBox.OnCheckChanged += _ => { if (ActionBox.Checked) Page.TriggerMode = TriggerMode.Action; };
-        PlayerBox = new RadioBox(TriggerBox);
-        PlayerBox.SetPosition(5, 25);
-        PlayerBox.SetFont(TinyFont);
-        PlayerBox.SetText("Player Touch");
-        PlayerBox.OnCheckChanged += _ => { if (PlayerBox.Checked) Page.TriggerMode = TriggerMode.PlayerTouch; };
-        EventBox = new RadioBox(TriggerBox);
-        EventBox.SetPosition(5, 45);
-        EventBox.SetFont(TinyFont);
-        EventBox.SetText("Event Touch");
-        EventBox.OnCheckChanged += _ => { if (EventBox.Checked) Page.TriggerMode = TriggerMode.EventTouch; };
-        AutorunBox = new RadioBox(TriggerBox);
-        AutorunBox.SetPosition(5, 65);
-        AutorunBox.SetFont(TinyFont);
-        AutorunBox.SetText("Autorun");
-        AutorunBox.OnCheckChanged += _ => { if (AutorunBox.Checked) Page.TriggerMode = TriggerMode.Autorun; };
-        ParallelBox = new RadioBox(TriggerBox);
-        ParallelBox.SetPosition(5, 85);
-        ParallelBox.SetFont(TinyFont);
-        ParallelBox.SetText("Parallel Process");
-        ParallelBox.OnCheckChanged += _ => { if (ParallelBox.Checked) Page.TriggerMode = TriggerMode.ParallelProcess; };
-
         CommandBox = new EventCommandBox(this);
         CommandBox.SetDocked(true);
-        CommandBox.SetPadding(279, 22, 7, 0);
+        CommandBox.SetPadding(493, 3, 2, 5);
     }
 
     public void RedrawGraphic()
@@ -349,26 +302,7 @@ public class EventPageControl : Widget
         DirectionFixBox.SetChecked(Page.Settings.DirectionFix);
         ThroughBox.SetChecked(Page.Settings.Through);
         AlwaysOnTopBox.SetChecked(Page.Settings.AlwaysOnTop);
-        switch (Page.TriggerMode)
-        {
-            case TriggerMode.Action:
-                ActionBox.SetChecked(true);
-                break;
-            case TriggerMode.PlayerTouch:
-                PlayerBox.SetChecked(true);
-                break;
-            case TriggerMode.EventTouch:
-                EventBox.SetChecked(true);
-                break;
-            case TriggerMode.Autorun:
-                AutorunBox.SetChecked(true);
-                break;
-            case TriggerMode.ParallelProcess:
-                ParallelBox.SetChecked(true);
-                break;
-            default:
-                throw new Exception("Invalid trigger mode");
-        }
+        TriggerBox.SetSelectedIndex((int) Page.TriggerMode);
         AutoMoveTypeBox.SetSelectedIndex(Page.MoveRoute.Type);
         AutoMoveSpeedBox.SetSelectedIndex(Page.MoveRoute.Speed - 1);
         AutoMoveFrequencyBox.SetSelectedIndex(Page.MoveRoute.Frequency - 1);

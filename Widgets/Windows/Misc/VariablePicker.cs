@@ -42,7 +42,6 @@ public class VariablePicker : PopupWindow
         ChangeMaxButton = new Button(this);
         ChangeMaxButton.SetBottomDocked(true);
         ChangeMaxButton.SetPadding(GroupListBox.Padding.Left, 0, 0, 15);
-        ChangeMaxButton.SetFont(HeaderFont);
         ChangeMaxButton.SetSize(GroupListBox.Size.Width, 32);
         ChangeMaxButton.SetText("Change Max");
 

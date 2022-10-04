@@ -130,7 +130,6 @@ public class EditMoveRouteWindow : PopupWindow
         void AddButton(string Text, int Column, MoveCode MoveCode)
         {
             Button btn = new Button(Columns[Column]);
-            btn.SetFont(Fonts.CabinMedium.Use(11));
             if (Columns[Column].Widgets.Count > 1)
                 btn.SetPadding(0, -3);
             btn.SetText(Text);
@@ -144,7 +143,6 @@ public class EditMoveRouteWindow : PopupWindow
         void AddButtonElaborate(string Text, int Column, MoveCode MoveCode, Action<MoveCode, MoveCommand?, Action<MoveCommand>> OnClickEvent)
         {
             Button btn = new Button(Columns[Column]);
-            btn.SetFont(Fonts.CabinMedium.Use(11));
             if (Columns[Column].Widgets.Count > 1)
                 btn.SetPadding(0, -3);
             btn.SetText(Text);

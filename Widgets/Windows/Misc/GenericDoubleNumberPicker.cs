@@ -25,8 +25,8 @@ public class GenericDoubleNumberPicker : PopupWindow
         Number1Box = new NumericBox(this);
         Number1Box.SetPosition(50, 30);
         Number1Box.SetSize(64, 27);
-        if (MinValue1 != null) Number1Box.MinValue = (int) MinValue1;
-        if (MaxValue1 != null) Number1Box.MaxValue = (int) MaxValue1;
+        if (MinValue1 != null) Number1Box.SetMinValue((int) MinValue1);
+        if (MaxValue1 != null) Number1Box.SetMaxValue((int) MaxValue1);
         Number1Box.SetValue(Value1);
 
         Label Text1Label = new Label(this);
@@ -37,8 +37,8 @@ public class GenericDoubleNumberPicker : PopupWindow
         Number2Box = new NumericBox(this);
         Number2Box.SetPosition(170, 30);
         Number2Box.SetSize(64, 27);
-        if (MinValue2 != null) Number2Box.MinValue = (int) MinValue2;
-        if (MaxValue2 != null) Number2Box.MaxValue = (int) MaxValue2;
+        if (MinValue2 != null) Number2Box.SetMinValue((int) MinValue2);
+        if (MaxValue2 != null) Number2Box.SetMaxValue((int) MaxValue2);
         Number2Box.SetValue(Value2);
 
         Label Text2Label = new Label(this);

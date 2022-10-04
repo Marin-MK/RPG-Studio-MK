@@ -107,7 +107,7 @@ public class BaseCommandWidget : Widget
     protected int BarWidth = 4;
     protected int StandardHeight = 28;
     protected int GlobalCommandIndex = -1;
-    protected int CommandOffset = 16;
+    protected int CommandOffset = 3;
     protected int ShadowSize = 5;
     protected bool ScaleGradientWithSize = false;
     protected bool DrawEndLabels = true;

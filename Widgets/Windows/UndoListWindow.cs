@@ -68,7 +68,6 @@ public class UndoListWindow : PopupWindow
         RevertButton.SetRightDocked(true);
         RevertButton.SetPadding(0, 0, 31, 40);
         RevertButton.SetWidth(105);
-        RevertButton.SetFont(Fonts.UbuntuBold.Use(12));
         RevertButton.SetText("Revert To");
         RevertButton.OnClicked += _ =>
         {

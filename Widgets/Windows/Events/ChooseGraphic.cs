@@ -54,7 +54,6 @@ public class ChooseGraphic : PopupWindow
         GraphicLabel.SetPosition(559, 38);
 
         Button ClearGraphicButton = new Button(this);
-        ClearGraphicButton.SetFont(Fonts.UbuntuBold.Use(13));
         ClearGraphicButton.SetPosition(588, 58);
         ClearGraphicButton.SetSize(80, 32);
         ClearGraphicButton.SetText("Clear");
@@ -122,8 +121,8 @@ public class ChooseGraphic : PopupWindow
         FrameBox = new NumericBox(this);
         FrameBox.SetPosition(669, 325);
         FrameBox.SetSize(50, 27);
-        FrameBox.MinValue = 1;
-        FrameBox.MaxValue = Graphic.NumFrames;
+        FrameBox.SetMinValue(1);
+        FrameBox.SetMaxValue(Graphic.NumFrames);
         FrameBox.SetValue(Graphic.Pattern + 1);
         FrameBox.SetEnabled(Graphic.TileID < 384 && !string.IsNullOrEmpty(Graphic.CharacterName));
         FrameBox.OnValueChanged += delegate (BaseEventArgs e)
@@ -162,14 +161,14 @@ public class ChooseGraphic : PopupWindow
         NumFramesBox = new NumericBox(this);
         NumFramesBox.SetPosition(669, 385);
         NumFramesBox.SetSize(50, 27);
-        NumFramesBox.MinValue = 1;
-        NumFramesBox.MaxValue = 999;
+        NumFramesBox.SetMinValue(1);
+        NumFramesBox.SetMaxValue(999);
         NumFramesBox.SetValue(Graphic.NumFrames);
         NumFramesBox.SetEnabled(false);
         NumFramesBox.OnValueChanged += delegate (BaseEventArgs e)
         {
             Graphic.NumFrames = NumFramesBox.Value;
-            FrameBox.MaxValue = Graphic.NumFrames;
+            FrameBox.SetMaxValue(Graphic.NumFrames);
             if (FrameBox.Value > FrameBox.MaxValue) FrameBox.SetValue(FrameBox.MaxValue);
             RedrawGraphic();
         };
@@ -182,8 +181,8 @@ public class ChooseGraphic : PopupWindow
         OpacityBox = new NumericBox(this);
         OpacityBox.SetPosition(669, 416);
         OpacityBox.SetSize(50, 27);
-        OpacityBox.MinValue = 0;
-        OpacityBox.MaxValue = 255;
+        OpacityBox.SetMinValue(0);
+        OpacityBox.SetMaxValue(255);
         OpacityBox.SetValue(Graphic.Opacity);
         OpacityBox.SetEnabled(!FromMoveRouteEditor);
         OpacityBox.OnValueChanged += delegate (BaseEventArgs e)

@@ -22,8 +22,8 @@ public class GenericNumberPicker : PopupWindow
         NumberBox = new NumericBox(this);
         NumberBox.SetPosition(120, 30);
         NumberBox.SetSize(64, 27);
-        if (MinValue != null) NumberBox.MinValue = (int) MinValue;
-        if (MaxValue != null) NumberBox.MaxValue = (int) MaxValue;
+        if (MinValue != null) NumberBox.SetMinValue((int) MinValue);
+        if (MaxValue != null) NumberBox.SetMaxValue((int) MaxValue);
         NumberBox.SetValue(Value);
 
         Label TextLabel = new Label(this);

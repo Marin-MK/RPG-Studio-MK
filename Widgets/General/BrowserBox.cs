@@ -14,6 +14,8 @@ public class BrowserBox : Widget
     public TextEvent OnTextChanged { get { return TextArea.OnTextChanged; } set { TextArea.OnTextChanged = value; } }
     public BaseEvent OnDropDownClicked;
 
+    bool ClickedInside = false;
+
     public BrowserBox(IContainer Parent) : base(Parent)
     {
         Sprites["bg"] = new Sprite(this.Viewport);
@@ -92,10 +94,25 @@ public class BrowserBox : Widget
         }
         int rx = e.X - Viewport.X;
         int ry = e.Y - Viewport.Y;
-        if (rx >= Size.Width - 18 && rx < Size.Width - 1 &&
-            ry >= 1 && ry < Size.Height - 1 && this.Enabled)
+        if (rx >= Size.Width - 25 && rx < Size.Width &&
+            ry >= 0 && ry < Size.Height && this.Enabled)
         {
-            this.OnDropDownClicked?.Invoke(new BaseEventArgs());
+            ClickedInside = true;
         };
+    }
+
+    public override void MouseUp(MouseEventArgs e)
+    {
+        base.MouseUp(e);
+        if (Mouse.LeftMouseReleased)
+        {
+            int rx = e.X - Viewport.X;
+            int ry = e.Y - Viewport.Y;
+            if (rx >= Size.Width - 25 && rx < Size.Width && ry >= 0 && ry < Size.Height && this.Enabled && ClickedInside)
+            {
+                this.OnDropDownClicked?.Invoke(new BaseEventArgs());
+            }
+            ClickedInside = false;
+        }
     }
 }

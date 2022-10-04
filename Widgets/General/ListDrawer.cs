@@ -14,6 +14,7 @@ public class ListDrawer : Widget
     public bool Enabled { get; protected set; } = true;
     public int SelectedIndex { get; protected set; } = -1;
     public int HoveringIndex { get; protected set; } = -1;
+    public bool ForceMouseStart = false;
     public ListItem SelectedItem { get { return SelectedIndex == -1 ? null : Items[SelectedIndex]; } }
     public ListItem HoveringItem { get { return HoveringIndex == -1 ? null : Items[HoveringIndex]; } }
     public Color SelectedItemColor { get; protected set; } = new Color(55, 187, 255);
@@ -128,7 +129,7 @@ public class ListDrawer : Widget
     public override void MouseMoving(MouseEventArgs e)
     {
         base.MouseMoving(e);
-        if (!Parent.Mouse.LeftStartedInside && !Parent.Mouse.RightStartedInside) return;
+        if (!Parent.Mouse.LeftStartedInside && !Parent.Mouse.RightStartedInside && !ForceMouseStart) return;
         int rx = e.X - Viewport.X;
         int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
         int index = (int) Math.Floor(ry / (double)LineHeight);
@@ -173,7 +174,7 @@ public class ListDrawer : Widget
     public override void MouseUp(MouseEventArgs e)
     {
         base.MouseUp(e);
-        if (DraggingIndex != -1 && (Parent.Mouse.LeftStartedInside && Mouse.LeftMouseReleased || Parent.Mouse.RightStartedInside && Mouse.RightMouseReleased && CountRightMouseClicks))
+        if (DraggingIndex != -1 && ((Parent.Mouse.LeftStartedInside || ForceMouseStart) && Mouse.LeftMouseReleased || Parent.Mouse.RightStartedInside && Mouse.RightMouseReleased && CountRightMouseClicks))
         {
             int idx = DraggingIndex;
             DraggingIndex = -1;

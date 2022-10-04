@@ -63,8 +63,8 @@ public class MapPropertiesWindow : PopupWindow
         widthlabel.SetPosition(7, 54);
         Width = new NumericBox(box1);
         Width.SetPosition(6, 70);
-        Width.MinValue = 1;
-        Width.MaxValue = 255;
+        Width.SetMinValue(1);
+        Width.SetMaxValue(255);
         Width.SetSize(66, 27);
         Width.SetValue(this.Map.Width);
         Width.OnValueChanged += delegate (BaseEventArgs e)
@@ -78,8 +78,8 @@ public class MapPropertiesWindow : PopupWindow
         heightlabel.SetPosition(78, 54);
         Height = new NumericBox(box1);
         Height.SetPosition(77, 70);
-        Height.MinValue = 1;
-        Height.MaxValue = 255;
+        Height.SetMinValue(1);
+        Height.SetMaxValue(255);
         Height.SetSize(66, 27);
         Height.SetValue(this.Map.Height);
         Height.OnValueChanged += delegate (BaseEventArgs e)
@@ -166,7 +166,6 @@ public class MapPropertiesWindow : PopupWindow
         EditTilesetsButton = new Button(box1);
         EditTilesetsButton.SetPosition(156, 176);
         EditTilesetsButton.SetSize(144, 32);
-        EditTilesetsButton.SetFont(Fonts.UbuntuBold.Use(11));
         EditTilesetsButton.SetText("Edit Tileset");
         EditTilesetsButton.OnClicked += _ => AddTileset();
 

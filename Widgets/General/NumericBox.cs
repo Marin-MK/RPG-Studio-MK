@@ -4,26 +4,81 @@ namespace RPGStudioMK.Widgets;
 
 public class NumericBox : Widget
 {
-    public bool HoveringUp = false;
-    public bool SelectedUp = false;
-    public bool HoveringDown = false;
-    public bool SelectedDown = false;
-
     public int Value { get; protected set; } = 0;
-    public int MaxValue = 999999;
-    public int MinValue = -999999;
-    public int Increment = 1;
-    public Color TextColor { get; protected set; } = Color.WHITE;
+    public int MaxValue { get; protected set; } = 999999;
+    public int MinValue { get; protected set; } = -999999;
+    public int Increment { get; protected set; } = 1;
     public bool Enabled { get; protected set; } = true;
 
     public BaseEvent OnValueChanged;
 
+    Button DownButton;
+    Button UpButton;
+    Container TextBG;
+    TextArea TextArea;
+
     public NumericBox(IContainer Parent) : base(Parent)
     {
-        Sprites["box"] = new Sprite(this.Viewport);
-        Sprites["text"] = new Sprite(this.Viewport);
+        DownButton = new Button(this);
+        DownButton.SetText("-");
+        DownButton.SetSize(30, 30);
+        DownButton.Repeatable = true;
+        DownButton.OnClicked += _ =>
+        {
+            SetValue(Value - Increment);
+        };
 
-        SetSize(66, 27);
+        UpButton = new Button(this);
+        UpButton.SetText("+");
+        UpButton.SetSize(30, 30);
+        UpButton.SetRightDocked(true);
+        UpButton.Repeatable = true;
+        UpButton.OnClicked += _ =>
+        {
+            SetValue(Value + Increment);
+        };
+
+        TextBG = new Container(this);
+        TextBG.SetDocked(true);
+        TextBG.SetPadding(28, 1);
+        TextBG.Sprites["box"] = new Sprite(TextBG.Viewport);
+        TextBG.OnHoverChanged += _ => Redraw();
+
+        TextArea = new TextArea(TextBG);
+        TextArea.SetDocked(true);
+        TextArea.SetPadding(1, 4);
+        TextArea.SetFont(Fonts.CabinMedium.Use(11));
+        TextArea.SetNumericOnly(true);
+        TextArea.SetDefaultNumericValue(0);
+        TextArea.OnWidgetSelected += _ => Redraw();
+        TextArea.OnWidgetDeselected += _ => Redraw();
+        TextArea.OnTextChanged += _ =>
+        {
+            // Force setting the value, in case 0 is written as -0 or vice-versa.
+            if (TextArea.Text != "-" && !string.IsNullOrEmpty(TextArea.Text)) SetValue(Convert.ToInt32(TextArea.Text), true);
+            else RepositionText();
+        };
+        TextArea.OnPressingUp += _ =>
+        {
+            SetValue(Value + Increment);
+        };
+        TextArea.OnPressingDown += _ =>
+        {
+            SetValue(Value - Increment);
+        };
+        TextArea.SetText(this.Value.ToString());
+
+        TextBG.OnSizeChanged += _ => RepositionText();
+
+        MinimumSize.Height = MaximumSize.Height = 30;
+        SetSize(66, 30);
+    }
+
+    void RepositionText()
+    {
+        Size s = TextArea.Font.TextSize(TextArea.Text);
+        if (s.Width >= TextBG.Size.Width) TextArea.SetTextX(0);
+        else TextArea.SetTextX(TextBG.Size.Width / 2 - s.Width / 2);
     }
 
     public void SetEnabled(bool Enabled)
@@ -31,187 +86,83 @@ public class NumericBox : Widget
         if (this.Enabled != Enabled)
         {
             this.Enabled = Enabled;
+            TextArea.SetEnabled(this.Enabled);
+            DownButton.SetEnabled(this.Enabled);
+            UpButton.SetEnabled(this.Enabled);
             this.Redraw();
         }
     }
 
-    public void SetValue(int Value)
+    public void SetValue(int Value, bool Force = false)
     {
         if (Value > MaxValue) Value = MaxValue;
         if (Value < MinValue) Value = MinValue;
-        if (this.Value != Value)
+        if (this.Value != Value || Force)
         {
             this.Value = Value;
             this.OnValueChanged?.Invoke(new BaseEventArgs());
-            Redraw();
+            TextArea.SetText(this.Value.ToString());
+            RepositionText();
         }
     }
 
-    public void SetTextColor(Color TextColor)
+    public void SetMinValue(int MinValue)
     {
-        if (this.TextColor != TextColor)
+        if (this.MinValue != MinValue)
         {
-            this.TextColor = TextColor;
-            Redraw();
+            this.MinValue = MinValue;
+            if (this.Value < this.MinValue)
+            {
+                SetValue(this.MinValue);
+            }
+            TextArea.SetAllowMinusSigns(MinValue < 0);
+        }
+    }
+
+    public void SetMaxValue(int MaxValue)
+    {
+        if (this.MaxValue != MaxValue)
+        {
+            this.MaxValue = MaxValue;
+            if (this.Value > this.MaxValue)
+            {
+                SetValue(this.MaxValue);
+            }
+        }
+    }
+
+    public void SetIncrement(int Increment)
+    {
+        if (this.Increment != Increment)
+        {
+            this.Increment = this.Increment;
         }
     }
 
     protected override void Draw()
     {
-        if (Sprites["box"].Bitmap != null) Sprites["box"].Bitmap.Dispose();
-        Sprites["box"].Bitmap = new Bitmap(this.Size);
-        Sprites["box"].Bitmap.Unlock();
-        Color light = this.Enabled ? new Color(86, 108, 134) : new Color(72, 72, 72);
-        Color dark = new Color(10, 23, 37);
-
-        Sprites["box"].Bitmap.FillRect(Size, light);
-        Sprites["box"].Bitmap.SetPixel(0, 0, Color.ALPHA);
-        Sprites["box"].Bitmap.SetPixel(Size.Width - 1, 0, Color.ALPHA);
-        Sprites["box"].Bitmap.SetPixel(0, Size.Height - 1, Color.ALPHA);
-        Sprites["box"].Bitmap.SetPixel(Size.Width - 1, Size.Height - 1, Color.ALPHA);
-        Sprites["box"].Bitmap.DrawRect(1, 1, Size.Width - 15, Size.Height - 2, dark);
-        Sprites["box"].Bitmap.SetPixel(1, 1, light);
-        Sprites["box"].Bitmap.SetPixel(1, Size.Height - 2, light);
-        Color UpColor = this.Enabled && SelectedUp ? new Color(55, 187, 255) : this.Enabled && HoveringUp ? new Color(28, 50, 73) : dark;
-        Sprites["box"].Bitmap.FillRect(Size.Width - 13, 1, 12, 12, UpColor);
-        Sprites["box"].Bitmap.SetPixel(Size.Width - 2, 1, light);
-        Sprites["box"].Bitmap.FillRect(Size.Width - 11, 6, 8, 2, light);
-        Sprites["box"].Bitmap.FillRect(Size.Width - 8, 3, 2, 8, light);
-        Color DownColor = this.Enabled && SelectedDown ? new Color(55, 187, 255) : this.Enabled && HoveringDown ? new Color(28, 50, 73) : dark;
-        Sprites["box"].Bitmap.FillRect(Size.Width - 13, 14, 12, 12, DownColor);
-        Sprites["box"].Bitmap.SetPixel(Size.Width - 2, Size.Height - 2, light);
-        Sprites["box"].Bitmap.FillRect(Size.Width - 11, 19, 8, 2, light);
-        Sprites["box"].Bitmap.Lock();
-        if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
-        string text = "";
-        if (Value < 0) text += "-";
-        text += Math.Abs(Value).ToString();
-        Font f = Fonts.CabinMedium.Use(11);
-        Size s = f.TextSize(text);
-        Sprites["text"].Bitmap = new Bitmap(s);
-        Sprites["text"].Bitmap.Unlock();
-        Sprites["text"].Bitmap.Font = f;
-        if (this.Enabled) Sprites["text"].Bitmap.DrawText(text, this.Enabled ? this.TextColor : new Color(72, 72, 72));
-        Sprites["text"].X = Size.Width - 21 - s.Width;
-        Sprites["text"].Y = 5;
-        Sprites["text"].Bitmap.Lock();
+        TextBG.Sprites["box"].Bitmap?.Dispose();
+        TextBG.Sprites["box"].Bitmap = new Bitmap(TextBG.Size);
+        TextBG.Sprites["box"].Bitmap.Unlock();
+        Color Edge = this.Enabled && TextArea.SelectedWidget ? new Color(32, 170, 221) : this.Enabled && TextBG.Mouse.Inside ? Color.WHITE : new Color(86, 108, 134);
+        Color Filler = this.Enabled ? new Color(86, 108, 134) : new Color(40, 62, 84); // or Color.ALPHA
+        int w = TextBG.Size.Width;
+        int h = TextBG.Size.Height;
+        TextBG.Sprites["box"].Bitmap.DrawLine(0, 0, w - 1, 0, Edge);
+        TextBG.Sprites["box"].Bitmap.DrawLine(0, 1, w - 1, 1, new Color(36, 34, 36));
+        TextBG.Sprites["box"].Bitmap.DrawLine(0, h - 1, w - 1, h - 1, Edge);
+        TextBG.Sprites["box"].Bitmap.DrawLine(0, h - 2, w - 1, h - 2, new Color(36, 34, 36));
+        TextBG.Sprites["box"].Bitmap.FillRect(0, 2, w, h - 4, Filler);
+        TextBG.Sprites["box"].Bitmap.Lock();
         base.Draw();
-    }
-
-    public override void MouseMoving(MouseEventArgs e)
-    {
-        base.MouseMoving(e);
-        bool oldup = HoveringUp;
-        bool olddown = HoveringDown;
-        if (!Mouse.Inside)
-        {
-            HoveringUp = false;
-            HoveringDown = false;
-            if (oldup != HoveringUp || olddown != HoveringDown) Redraw();
-            return;
-        }
-        int rx = e.X - Viewport.X + Position.X - ScrolledPosition.X;
-        int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
-        if (rx < Size.Width - 16)
-        {
-            HoveringUp = false;
-            HoveringDown = false;
-            if (oldup != HoveringUp || olddown != HoveringDown) Redraw();
-            return;
-        }
-
-        HoveringUp = ry < 14;
-        HoveringDown = ry >= 14;
-
-        if (oldup != HoveringUp || olddown != HoveringDown) Redraw();
-    }
-
-    public override void HoverChanged(MouseEventArgs e)
-    {
-        base.HoverChanged(e);
-        if (!Mouse.Inside)
-        {
-            if (HoveringUp || HoveringDown) Redraw();
-            SelectedDown = false;
-            SelectedUp = false;
-            HoveringUp = false;
-            HoveringDown = false;
-        }
     }
 
     public override void MouseDown(MouseEventArgs e)
     {
         base.MouseDown(e);
-        if (e.LeftButton == e.OldLeftButton) return;
-        if (HoveringUp && this.Enabled)
+        if (!Mouse.Inside && TextArea.SelectedWidget)
         {
-            SetValue(Value + Increment);
-            SelectedDown = false;
-            SelectedUp = true;
-            Redraw();
+            Window.UI.SetSelectedWidget(null);
         }
-        if (HoveringDown && this.Enabled)
-        {
-            SetValue(Value - Increment);
-            SelectedUp = false;
-            SelectedDown = true;
-            Redraw();
-        }
-    }
-
-    public override void MouseUp(MouseEventArgs e)
-    {
-        base.MouseUp(e);
-        if (e.LeftButton == e.OldLeftButton) return;
-        if (TimerExists("cooldown")) DestroyTimer("cooldown");
-        if (TimerExists("press")) DestroyTimer("press");
-        if (SelectedUp || SelectedDown)
-        {
-            SelectedUp = false;
-            SelectedDown = false;
-            Redraw();
-        }
-    }
-
-    public override void MousePress(MouseEventArgs e)
-    {
-        base.MousePress(e);
-        if (e.LeftButton && (HoveringUp || HoveringDown))
-        {
-            if (!TimerExists("press") && !TimerExists("cooldown"))
-            {
-                SetTimer("cooldown", 400);
-            }
-            else if (TimerPassed("cooldown"))
-            {
-                SetTimer("press", 50);
-                DestroyTimer("cooldown");
-            }
-            else if (TimerPassed("press"))
-            {
-                if (HoveringUp && this.Enabled)
-                {
-                    SetValue(Value + Increment);
-                    SelectedDown = false;
-                    SelectedUp = true;
-                    Redraw();
-                }
-                else if (HoveringDown && this.Enabled)
-                {
-                    SetValue(Value - Increment);
-                    SelectedUp = false;
-                    SelectedDown = true;
-                    Redraw();
-                }
-                ResetTimer("press");
-            }
-        }
-    }
-
-    public override void Update()
-    {
-        base.Update();
-        if (Value < MinValue) SetValue(MinValue);
-        else if (Value > MaxValue) SetValue(MaxValue);
     }
 }

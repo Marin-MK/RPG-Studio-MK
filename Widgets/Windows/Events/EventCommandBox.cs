@@ -19,9 +19,21 @@ public class EventCommandBox : Widget
 
     public EventCommandBox(IContainer Parent) : base(Parent)
     {
-        GroupBoxWithScrollBars gb = new GroupBoxWithScrollBars(this);
+        Container gb = new Container(this);
+        gb.SetBackgroundColor(40, 62, 84);
         gb.SetDocked(true);
-        gb.SetFillerColor(new Color(40, 62, 84));
+        gb.Sprites["line1"] = new Sprite(gb.Viewport, new SolidBitmap(1, gb.Size.Height, new Color(24, 38, 53)));
+        gb.Sprites["line2"] = new Sprite(gb.Viewport, new SolidBitmap(gb.Size.Width, 1, new Color(24, 38, 53)));
+        gb.Sprites["box"] = new Sprite(gb.Viewport, new SolidBitmap(10, 10, new Color(24, 38, 53)));
+        gb.OnSizeChanged += _ =>
+        {
+            ((SolidBitmap) gb.Sprites["line1"].Bitmap).SetSize(1, gb.Size.Height);
+            gb.Sprites["line1"].X = gb.Size.Width - 11;
+            ((SolidBitmap) gb.Sprites["line2"].Bitmap).SetSize(gb.Size.Width, 1);
+            gb.Sprites["line2"].Y = gb.Size.Height - 11;
+            gb.Sprites["box"].X = gb.Sprites["line1"].X + 1;
+            gb.Sprites["box"].Y = gb.Sprites["line2"].Y + 1;
+        };
 
         ScrollContainer = new Container(gb);
         ScrollContainer.SetDocked(true);
@@ -30,7 +42,7 @@ public class EventCommandBox : Widget
         VScrollBar vs = new VScrollBar(this);
         vs.SetRightDocked(true);
         vs.SetVDocked(true);
-        vs.SetPadding(0, 3, 1, 15);
+        vs.SetPadding(0, 2, -1, 12);
         ScrollContainer.SetVScrollBar(vs);
         ScrollContainer.VAutoScroll = true;
         vs.OnValueChanged += _ =>
@@ -42,7 +54,7 @@ public class EventCommandBox : Widget
         HScrollBar hs = new HScrollBar(this);
         hs.SetBottomDocked(true);
         hs.SetHDocked(true);
-        hs.SetPadding(3, 0, 15, 1);
+        hs.SetPadding(2, 0, 12, -1);
         ScrollContainer.SetHScrollBar(hs);
         ScrollContainer.HAutoScroll = true;
         hs.OnValueChanged += _ =>
@@ -51,7 +63,20 @@ public class EventCommandBox : Widget
             MainCommandWidget.GetSelectedWidget()?.WidgetSelected(new BaseEventArgs());
         };
 
+        Container HeaderContainer = new Container(ScrollContainer);
+        HeaderContainer.SetHDocked(true);
+        HeaderContainer.SetHeight(24);
+        HeaderContainer.SetPosition(0, 8);
+        Label HeaderLabel = new Label(HeaderContainer);
+        HeaderLabel.SetFont(Fonts.UbuntuBold.Use(14));
+        HeaderLabel.SetText("Commands");
+        HeaderContainer.OnSizeChanged += _ =>
+        {
+            HeaderLabel.SetPosition(HeaderContainer.Size.Width / 2 - HeaderLabel.Size.Width / 2, 0);
+        };
+
         MainCommandWidget = new BaseCommandWidget(ScrollContainer, -1);
+        MainCommandWidget.SetPosition(0, 34);
         MainCommandWidget.MainCommandWidget = MainCommandWidget;
     }
 

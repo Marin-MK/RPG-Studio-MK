@@ -11,7 +11,7 @@ public class EditEventWindow : PopupWindow
     Button PastePageButton;
     Button CopyPageButton;
     Button NewPageButton;
-    SubmodeView PageControl;
+    EventPageList EPL;
     EventPageControl EventPageControl;
 
     public Map Map;
@@ -25,35 +25,38 @@ public class EditEventWindow : PopupWindow
         this.Event = (Event) ev.Clone();
 
         SetTitle($"Edit event (ID: {Utilities.Digits(Event.ID, 3)})");
-        MinimumSize = MaximumSize = new Size(740, 614);
+        MinimumSize = MaximumSize = new Size(994, 654);
         SetSize(MaximumSize);
         Center();
 
         Font HeaderFont = Fonts.UbuntuBold.Use(13);
         Font SmallFont = Fonts.CabinMedium.Use(11);
 
+        EventPageControl = new EventPageControl(this);
+        EventPageControl.SetPadding(8, 42, 9, 52);
+        EventPageControl.SetDocked(true);
+
         Label NameLabel = new Label(this);
         NameLabel.SetFont(SmallFont);
-        NameLabel.SetPosition(23, 35);
+        NameLabel.SetPosition(27, 50);
         NameLabel.SetText("Name:");
 
         TextBox NameBox = new TextBox(this);
-        NameBox.SetPosition(21, 52);
+        NameBox.SetPosition(27, 68);
         NameBox.SetFont(SmallFont);
         NameBox.SetSize(161, 27);
         NameBox.SetText(this.Event.Name);
         NameBox.OnTextChanged += _ => this.Event.Name = NameBox.Text;
 
-        Label SizeLabel = new Label(this);
-        SizeLabel.SetFont(SmallFont);
-        SizeLabel.SetPosition(NameBox.Position.X + NameBox.Size.Width + 12, 35);
-        SizeLabel.SetText("Size:");
-        SizeLabel.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
-
+        Label WidthLabel = new Label(this);
+        WidthLabel.SetFont(SmallFont);
+        WidthLabel.SetPosition(287, 50);
+        WidthLabel.SetText("Width:");
+        WidthLabel.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
         NumericBox WidthBox = new NumericBox(this);
-        WidthBox.SetPosition(NameBox.Position.X + NameBox.Size.Width + 12, 52);
-        WidthBox.SetSize(48, 27);
-        WidthBox.MinValue = 1;
+        WidthBox.SetPosition(287, 68);
+        WidthBox.SetSize(91, 27);
+        WidthBox.SetMinValue(1);
         WidthBox.SetValue(this.Event.Width);
         WidthBox.OnValueChanged += _ =>
         {
@@ -62,16 +65,21 @@ public class EditEventWindow : PopupWindow
         };
         WidthBox.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
 
-        Label SizeXLabel = new Label(this);
-        SizeXLabel.SetFont(SmallFont);
-        SizeXLabel.SetPosition(WidthBox.Position.X + WidthBox.Size.Width + 4, 56);
-        SizeXLabel.SetText("x");
-        SizeXLabel.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
+        Label XLabel = new Label(this);
+        XLabel.SetFont(SmallFont);
+        XLabel.SetPosition(390, 71);
+        XLabel.SetText("x");
+        XLabel.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
 
+        Label HeightLabel = new Label(this);
+        HeightLabel.SetFont(SmallFont);
+        HeightLabel.SetPosition(410, 50);
+        HeightLabel.SetText("Height:");
+        HeightLabel.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
         NumericBox HeightBox = new NumericBox(this);
-        HeightBox.SetPosition(WidthBox.Position.X + WidthBox.Size.Width + 16, 52);
-        HeightBox.SetSize(48, 27);
-        HeightBox.MinValue = 1;
+        HeightBox.SetPosition(410, 68);
+        HeightBox.SetSize(91, 27);
+        HeightBox.SetMinValue(1);
         HeightBox.SetValue(this.Event.Height);
         HeightBox.OnValueChanged += _ =>
         {
@@ -80,68 +88,62 @@ public class EditEventWindow : PopupWindow
         };
         HeightBox.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
 
+        Label PagesLabel = new Label(this);
+        PagesLabel.SetFont(HeaderFont);
+        PagesLabel.SetPosition(14, 99);
+        PagesLabel.SetText("Pages");
+        Container EPLContainer = new Container(this);
+        EPLContainer.SetVDocked(true);
+        EPLContainer.SetPadding(12, 135, 0, 207);
+        EPLContainer.SetWidth(97);
+
+        // Dummy VScrollBar for scrolling functionality, remains invisible
+        VScrollBar vs = new VScrollBar(this);
+        vs.KeepInvisible = true;
+        vs.MinScrollStep = vs.ScrollStep = 26 / 3f;
+
+        EPLContainer.VAutoScroll = true;
+        EPLContainer.SetVScrollBar(vs);
+        EPL = new EventPageList(EPLContainer);
+        EPL.SetHDocked(true);
+        EPL.SetEvent(this.Event);
+        EPL.OnSelectedPageChanged += _ =>
+        {
+            EventPageControl.SetEventPage(Map, this.Event, this.Event.Pages[EPL.SelectedPage]);
+        };
+
         DeletePageButton = new Button(this);
-        DeletePageButton.SetFont(HeaderFont);
-        DeletePageButton.SetSize(72, 60);
-        DeletePageButton.SetPosition(Size.Width - DeletePageButton.Size.Width - 14, 21);
-        DeletePageButton.SetText("Delete\nPage");
+        DeletePageButton.SetPosition(19, 567);
+        DeletePageButton.SetSize(84, 32);
+        DeletePageButton.SetText("Delete");
         DeletePageButton.SetEnabled(Event.Pages.Count > 1);
         DeletePageButton.OnClicked += _ => DeletePage();
 
         ClearPageButton = new Button(this);
-        ClearPageButton.SetFont(HeaderFont);
-        ClearPageButton.SetSize(72, 60);
-        ClearPageButton.SetPosition(DeletePageButton.Position.X - ClearPageButton.Size.Width, 21);
-        ClearPageButton.SetText("Clear\nPage");
+        ClearPageButton.SetPosition(19, 539);
+        ClearPageButton.SetSize(84, 32);
+        ClearPageButton.SetText("Clear");
         ClearPageButton.OnClicked += _ => ClearPage();
 
         PastePageButton = new Button(this);
-        PastePageButton.SetFont(HeaderFont);
-        PastePageButton.SetSize(72, 60);
-        PastePageButton.SetPosition(ClearPageButton.Position.X - PastePageButton.Size.Width, 21);
-        PastePageButton.SetText("Paste\nPage");
+        PastePageButton.SetPosition(19, 511);
+        PastePageButton.SetSize(84, 32);
+        PastePageButton.SetText("Paste");
         PastePageButton.OnClicked += _ => PastePage();
 
         CopyPageButton = new Button(this);
-        CopyPageButton.SetFont(HeaderFont);
-        CopyPageButton.SetSize(72, 60);
-        CopyPageButton.SetPosition(PastePageButton.Position.X - CopyPageButton.Size.Width, 21);
-        CopyPageButton.SetText("Copy\nPage");
+        CopyPageButton.SetPosition(19, 483);
+        CopyPageButton.SetSize(84, 32);
+        CopyPageButton.SetText("Copy");
         CopyPageButton.OnClicked += _ => CopyPage();
 
         NewPageButton = new Button(this);
-        NewPageButton.SetFont(HeaderFont);
-        NewPageButton.SetSize(72, 60);
-        NewPageButton.SetPosition(CopyPageButton.Position.X - NewPageButton.Size.Width, 21);
-        NewPageButton.SetText("New\nPage");
+        NewPageButton.SetPosition(19, 455);
+        NewPageButton.SetSize(84, 32);
+        NewPageButton.SetText("New");
         NewPageButton.OnClicked += _ => NewPage();
 
-        PageControl = new SubmodeView(this);
-        PageControl.SetPosition(8, 89);
-        PageControl.SetSize(Size.Width - 16, 25);
-        PageControl.SetHeaderHeight(29);
-        PageControl.SetHeaderSelBackgroundColor(new Color(59, 91, 124));
-        for (int i = 0; i < this.Event.Pages.Count; i++)
-        {
-            PageControl.CreateTab((i + 1).ToString());
-        }
-        PageControl.OnSelectionChanged += _ =>
-        {
-            EventPageControl.SetEventPage(Map, this.Event, this.Event.Pages[PageControl.SelectedIndex]);
-        };
-
-        Widget PageDivider = new Widget(this);
-        PageDivider.SetPosition(0, PageControl.Position.Y + PageControl.Size.Height);
-        PageDivider.SetHDocked(true);
-        PageDivider.SetPadding(8, 0);
-        PageDivider.SetBackgroundColor(new Color(59, 91, 124));
-        PageDivider.SetHeight(4);
-
-        EventPageControl = new EventPageControl(this);
-        EventPageControl.SetPadding(8, PageDivider.Position.Y + PageDivider.Size.Height, 8, 47);
-        EventPageControl.SetDocked(true);
-
-        PageControl.SelectTab(0);
+        EPL.SetSelectedPage(0);
 
         RegisterShortcuts(new List<Shortcut>()
         {
@@ -154,25 +156,20 @@ public class EditEventWindow : PopupWindow
 
     private void NewPage()
     {
-        InsertPage(PageControl.SelectedIndex + 1, new EventPage());
+        InsertPage(EPL.SelectedPage + 1, new EventPage());
     }
 
     private void InsertPage(int Index, EventPage Page)
     {
         Event.Pages.Insert(Index, Page);
-        for (int i = Index; i < PageControl.Tabs.Count; i++)
-        {
-            PageControl.Names[i] = (i + 2).ToString();
-        }
-        PageControl.InsertTab(Index, (Index + 1).ToString());
-        PageControl.Redraw();
-        PageControl.SelectTab(Index);
+        EPL.SetEvent(Event);
+        EPL.SetSelectedPage(Index);
         DeletePageButton.SetEnabled(true);
     }
 
     private void CopyPage()
     {
-        EventPage Page = Event.Pages[PageControl.SelectedIndex];
+        EventPage Page = Event.Pages[EPL.SelectedPage];
         Utilities.SetClipboard(Page, BinaryData.EVENT_PAGE);
     }
 
@@ -180,24 +177,21 @@ public class EditEventWindow : PopupWindow
     {
         if (!Utilities.IsClipboardValidBinary(BinaryData.EVENT_PAGE)) return;
         EventPage Page = Utilities.GetClipboard<EventPage>();
-        InsertPage(PageControl.SelectedIndex + 1, Page);
+        InsertPage(EPL.SelectedPage + 1, Page);
     }
 
     private void ClearPage()
     {
-        Event.Pages[PageControl.SelectedIndex] = new EventPage();
-        EventPageControl.SetEventPage(Map, Event, Event.Pages[PageControl.SelectedIndex]);
+        Event.Pages[EPL.SelectedPage] = new EventPage();
+        EventPageControl.SetEventPage(Map, Event, Event.Pages[EPL.SelectedPage]);
     }
 
     private void DeletePage()
     {
-        Event.Pages.RemoveAt(PageControl.SelectedIndex);
-        PageControl.RemoveTab(PageControl.SelectedIndex);
-        for (int i = PageControl.SelectedIndex; i < PageControl.Tabs.Count; i++)
-        {
-            PageControl.Names[i] = (i + 1).ToString();
-        }
-        PageControl.Redraw();
+        Event.Pages.RemoveAt(EPL.SelectedPage);
+        EPL.SetEvent(Event);
+        if (EPL.SelectedPage >= Event.Pages.Count) EPL.SetSelectedPage(Event.Pages.Count - 1, true);
+        else EPL.SetSelectedPage(EPL.SelectedPage, true);
         DeletePageButton.SetEnabled(Event.Pages.Count > 1);
     }
 
