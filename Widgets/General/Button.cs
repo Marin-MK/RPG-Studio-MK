@@ -10,10 +10,12 @@ public class Button : Widget
     public Font Font { get; protected set; }
     public bool Enabled { get; protected set; } = true;
     public Color TextColor { get; protected set; } = Color.WHITE;
+    public bool LeftAlign { get; protected set; } = false;
+    public int TextX { get; protected set; } = 0;
     public bool Repeatable = false;
 
     public BaseEvent OnClicked;
-    
+
     int MaxWidth;
 
     public Button(IContainer Parent) : base(Parent)
@@ -93,6 +95,24 @@ public class Button : Widget
         }
     }
 
+    public void SetLeftAlign(bool LeftAlign)
+    {
+        if (this.LeftAlign != LeftAlign)
+        {
+            this.LeftAlign = LeftAlign;
+            RedrawText();
+        }
+    }
+
+    public void SetTextX(int TextX)
+    {
+        if (this.TextX != TextX)
+        {
+            this.TextX = TextX;
+            RedrawText();
+        }
+    }
+
     public void RedrawText()
     {
         if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
@@ -109,7 +129,14 @@ public class Button : Widget
             Sprites["text"].Bitmap.DrawText(Lines[i], MaxWidth / 2, i * 18, c, DrawOptions.CenterAlign);
         }
         Sprites["text"].Bitmap.Lock();
-        Sprites["text"].X = Size.Width / 2 - MaxWidth / 2;
+        if (!LeftAlign)
+        {
+            Sprites["text"].X = Size.Width / 2 - MaxWidth / 2;
+        }
+        else
+        {
+            Sprites["text"].X = 10 + TextX;
+        }
         Sprites["text"].Y = Size.Height / 2 - 9 * Lines.Count;
     }
 
@@ -155,7 +182,14 @@ public class Button : Widget
 
         if (!string.IsNullOrEmpty(this.Text))
         {
-            Sprites["text"].X = Size.Width / 2 - MaxWidth / 2;
+            if (!LeftAlign)
+            {
+                Sprites["text"].X = Size.Width / 2 - MaxWidth / 2;
+            }
+            else
+            {
+                Sprites["text"].X = 10 + TextX;
+            }
             Sprites["text"].Y = Size.Height / 2 - 9 * this.Text.Split('\n').Length;
         }
     }

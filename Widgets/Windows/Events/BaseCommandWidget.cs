@@ -9,7 +9,7 @@ namespace RPGStudioMK.Widgets;
 
 public class BaseCommandWidget : Widget
 {
-    static Dictionary<CommandCategory, List<CommandCode>> CommandTypes = new Dictionary<CommandCategory, List<CommandCode>>()
+    public static Dictionary<CommandCategory, List<CommandCode>> CommandTypes = new Dictionary<CommandCategory, List<CommandCode>>()
     {
         { CommandCategory.General, 
             new List<CommandCode>()
@@ -49,14 +49,14 @@ public class BaseCommandWidget : Widget
         }
     };
 
-    static Dictionary<CommandCategory, (Color TopBarColor, Color BottomBarColor)> CategoryColors = new Dictionary<CommandCategory, (Color, Color)>()
+    public static Dictionary<CommandCategory, (string Name, int Index, Color TopBarColor, Color BottomBarColor)> CategoryInfo = new Dictionary<CommandCategory, (string, int, Color, Color)>()
     {
-        { CommandCategory.General, (new Color(27, 148, 119), new Color(113, 221, 59)) },
-        { CommandCategory.Flow, (new Color(161, 166, 90), new Color(228, 230, 30)) },
-        { CommandCategory.Map, (new Color(113, 75, 231), new Color(214, 173, 176)) },
-        { CommandCategory.ImageSound, (new Color(183, 30, 120), new Color(239, 117, 60)) },
-        { CommandCategory.Other, (new Color(183, 89, 90), new Color(239, 189, 30)) },
-        { CommandCategory.Blank, (new Color(86, 108, 134), new Color(86, 108, 134)) }
+        { CommandCategory.General, ("General", 0, new Color(27, 148, 119), new Color(113, 221, 59)) },
+        { CommandCategory.Flow, ("Flow", 1, new Color(161, 166, 90), new Color(228, 230, 30)) },
+        { CommandCategory.Map, ("Map", 2, new Color(113, 75, 231), new Color(214, 173, 176)) },
+        { CommandCategory.ImageSound, ("Image/Sound", 3, new Color(183, 30, 120), new Color(239, 117, 60)) },
+        { CommandCategory.Other, ("Other", 4, new Color(183, 89, 90), new Color(239, 189, 30)) },
+        { CommandCategory.Blank, ("Blank", -1, new Color(86, 108, 134), new Color(86, 108, 134)) }
     };
 
     static Dictionary<CommandCode, CommandCode> CommandStartEndPairs = new Dictionary<CommandCode, CommandCode>()
@@ -273,7 +273,7 @@ public class BaseCommandWidget : Widget
     private void SetCommandColors()
     {
         CommandCategory cat = GetCommandCategory();
-        (Color TopBarColor, Color BottomBarColor) = CategoryColors[cat];
+        (_, _, Color TopBarColor, Color BottomBarColor) = CategoryInfo[cat];
         Color IconColor = Bitmap.Interpolate2D(TopBarColor, BottomBarColor, 0.5);
         Icon.SetColor(Command.Code == CommandCode.Blank ? new Color(149, 158, 181) : IconColor);
         Color GradientColor = new Color(IconColor.Red, IconColor.Green, IconColor.Blue, 128);
