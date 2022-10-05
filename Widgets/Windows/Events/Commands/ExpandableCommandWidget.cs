@@ -61,6 +61,6 @@ public class ExpandableCommandWidget : BaseCommandWidget
             CancelDoubleClick();
             return;
         }
-        SetSelected(true);
+        SelectNormally();
     }
 }

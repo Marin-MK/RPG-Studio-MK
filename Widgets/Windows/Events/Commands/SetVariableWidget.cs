@@ -103,6 +103,6 @@ public class SetVariableWidget : BaseCommandWidget
             CancelDoubleClick();
             return;
         }
-        SetSelected(true);
+        SelectNormally();
     }
 }

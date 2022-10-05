@@ -190,7 +190,7 @@ public class ConditionalWidget : BaseCommandWidget
         {
             // Draw true commands
             int gidx = this.GlobalCommandIndex + 1;
-            ParseCommands(Commands.GetRange(1, ElseCmdIdx - 1), VStackPanel1, gidx);
+            ParseCommands(Commands.GetRange(1, ElseCmdIdx - 1), VStackPanel1, gidx, CreateWidget);
             gidx += ElseCmdIdx; // + 1 for the BranchElse command
             VStackPanel1.UpdateLayout();
 
@@ -201,7 +201,7 @@ public class ConditionalWidget : BaseCommandWidget
             ElseGradient.SetSize(GetStandardWidth(Indentation) - BarWidth - ShadowSize * 2, StandardHeight);
 
             // Draw false commands
-            ParseCommands(Commands.GetRange(ElseCmdIdx + 1, Commands.Count - ElseCmdIdx - 2), VStackPanel2, gidx);
+            ParseCommands(Commands.GetRange(ElseCmdIdx + 1, Commands.Count - ElseCmdIdx - 2), VStackPanel2, gidx, CreateWidget);
             VStackPanel2.UpdateLayout();
             //ExpandElseArrow.SetVisible(true);
             VStackPanel2.SetVisible(true);
@@ -209,7 +209,7 @@ public class ConditionalWidget : BaseCommandWidget
         else
         {
             // Draw true commands
-            ParseCommands(Commands.GetRange(1, Commands.Count - 2), VStackPanel1, this.GlobalCommandIndex + 1);
+            ParseCommands(Commands.GetRange(1, Commands.Count - 2), VStackPanel1, this.GlobalCommandIndex + 1, CreateWidget);
             VStackPanel1.UpdateLayout();
             ElseLabel.SetVisible(false);
             //ExpandElseArrow.SetVisible(false);
@@ -235,6 +235,24 @@ public class ConditionalWidget : BaseCommandWidget
             UpdateLabels();
             UpdateSize();
         };
+    }
+
+    protected override void SetAsSelected()
+    {
+        base.SetAsSelected();
+        ElseGradient.SetTopLeftColor(GradientBox.TopLeftColor);
+        ElseGradient.SetBottomRightColor(GradientBox.BottomRightColor);
+        EndGradient.SetTopLeftColor(GradientBox.TopLeftColor);
+        EndGradient.SetBottomRightColor(GradientBox.BottomRightColor);
+    }
+
+    protected override void SetAsDeselected()
+    {
+        base.SetAsDeselected();
+        ElseGradient.SetTopLeftColor(GradientBox.TopLeftColor);
+        ElseGradient.SetBottomRightColor(GradientBox.BottomRightColor);
+        EndGradient.SetTopLeftColor(GradientBox.TopLeftColor);
+        EndGradient.SetBottomRightColor(GradientBox.BottomRightColor);
     }
 
     protected override void UpdateBackdrops()
@@ -368,7 +386,7 @@ public class ConditionalWidget : BaseCommandWidget
             CancelDoubleClick();
             return;
         }
-        if (ry < StandardHeight || ry >= ElseLabel.Position.Y && ry < ElseLabel.Position.Y + StandardHeight) SetSelected(true);
+        if (ry < StandardHeight || ry >= ElseLabel.Position.Y && ry < ElseLabel.Position.Y + StandardHeight) SelectNormally();
     }
 }
 

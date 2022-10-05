@@ -48,6 +48,6 @@ public class SetSwitchWidget : BaseCommandWidget
             CancelDoubleClick();
             return;
         }
-        SetSelected(true);
+        SelectNormally();
     }
 }

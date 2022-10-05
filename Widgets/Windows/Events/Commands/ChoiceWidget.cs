@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets.CommandWidgets;
@@ -198,10 +199,10 @@ public class ChoiceWidget : BaseCommandWidget
             {
                 // There's another branch after this
                 int NextBranchIdx = Commands.IndexOf(BranchCommands[i + 1]);
-                ParseCommands(Commands.GetRange(BranchIdx + 1, NextBranchIdx - BranchIdx - 1), StackPanel, gidx);
+                ParseCommands(Commands.GetRange(BranchIdx + 1, NextBranchIdx - BranchIdx - 1), StackPanel, gidx, CreateWidget);
                 gidx += NextBranchIdx - BranchIdx; // + 1 for the BranchWhenXXX command
             }
-            else ParseCommands(Commands.GetRange(BranchIdx + 1, Commands.Count - BranchIdx - 2), StackPanel, gidx);
+            else ParseCommands(Commands.GetRange(BranchIdx + 1, Commands.Count - BranchIdx - 2), StackPanel, gidx, CreateWidget);
             StackPanel.OnSizeChanged += _ =>
             {
                 UpdateLabels();
@@ -223,6 +224,32 @@ public class ChoiceWidget : BaseCommandWidget
             EndGradient.SetSize(GetStandardWidth(Indentation) - BarWidth - ShadowSize * 2, StandardHeight);
         }
         UpdateLabels();
+    }
+
+    protected override void SetAsSelected()
+    {
+        base.SetAsSelected();
+        GradientBoxes.ForEach(g =>
+        {
+            if (g == null) return;
+            g.SetTopLeftColor(GradientBox.TopLeftColor);
+            g.SetBottomRightColor(GradientBox.BottomRightColor);
+        });
+        EndGradient.SetTopLeftColor(GradientBox.TopLeftColor);
+        EndGradient.SetBottomRightColor(GradientBox.BottomRightColor);
+    }
+
+    protected override void SetAsDeselected()
+    {
+        base.SetAsDeselected();
+        GradientBoxes.ForEach(g =>
+        {
+            if (g == null) return;
+            g.SetTopLeftColor(GradientBox.TopLeftColor);
+            g.SetBottomRightColor(GradientBox.BottomRightColor);
+        });
+        EndGradient.SetTopLeftColor(GradientBox.TopLeftColor);
+        EndGradient.SetBottomRightColor(GradientBox.BottomRightColor);
     }
 
     protected override void UpdateBackdrops()
@@ -269,7 +296,7 @@ public class ChoiceWidget : BaseCommandWidget
                 }
             }
         }
-        if (sel) SetSelected(true);
+        if (sel) SelectNormally();
         else CancelDoubleClick();
     }
 }

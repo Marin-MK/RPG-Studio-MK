@@ -90,6 +90,8 @@ public class BaseCommandWidget : Widget
     };
 
     public BaseCommandWidget MainCommandWidget;
+    public BaseCommandWidget SelectionOrigin;
+    public List<BaseCommandWidget> SelectedWidgets = new List<BaseCommandWidget>();
 
     protected delegate void EditEvent(bool Applied = true, bool ResetCommand = false, int GlobalIndexToCountFrom = -1);
 
@@ -159,7 +161,7 @@ public class BaseCommandWidget : Widget
             if (this.Indentation != -1 && !InsideChild())
             {
                 e.Value = true;
-                SetSelected(true);
+                if (!Selected) SetSelected(true, false);
             }
             else e.Value = false;
         };
@@ -167,14 +169,19 @@ public class BaseCommandWidget : Widget
         {
             new Shortcut(this, new Key(Keycode.ENTER), _ => Insert(), false),
             new Shortcut(this, new Key(Keycode.SPACE), _ => BaseEdit(), false, e => e.Value = IsEditable()),
-            new Shortcut(this, new Key(Keycode.X, Keycode.CTRL), _ => Cut(), false, e => e.Value = this is not BlankWidget),
-            new Shortcut(this, new Key(Keycode.C, Keycode.CTRL), _ => Copy(), false, e => e.Value = this is not BlankWidget),
+            new Shortcut(this, new Key(Keycode.X, Keycode.CTRL), _ => Cut(), false),
+            new Shortcut(this, new Key(Keycode.C, Keycode.CTRL), _ => Copy(), false),
             new Shortcut(this, new Key(Keycode.V, Keycode.CTRL), _ => Paste(), false, e => e.Value = Utilities.IsClipboardValidBinary(BinaryData.EVENT_COMMANDS)),
-            new Shortcut(this, new Key(Keycode.DELETE), _ => Delete(), false, e => e.Value = this is not BlankWidget),
-            new Shortcut(this, new Key(Keycode.DOWN), _ => SelectNextCommand()),
-            new Shortcut(this, new Key(Keycode.UP), _ => SelectPreviousCommand()),
-            new Shortcut(this, new Key(Keycode.PAGEDOWN), _ => SelectPageDown()),
-            new Shortcut(this, new Key(Keycode.PAGEUP), _ => SelectPageUp()),
+            new Shortcut(this, new Key(Keycode.A, Keycode.CTRL), _ => SelectAll(), false),
+            new Shortcut(this, new Key(Keycode.DELETE), _ => DeleteMayBeMultiple()),
+            new Shortcut(this, new Key(Keycode.DOWN), _ => SelectNextCommand(false)),
+            new Shortcut(this, new Key(Keycode.DOWN, Keycode.SHIFT), _ => SelectNextCommand(true)),
+            new Shortcut(this, new Key(Keycode.UP), _ => SelectPreviousCommand(false)),
+            new Shortcut(this, new Key(Keycode.UP, Keycode.SHIFT), _ => SelectPreviousCommand(true)),
+            new Shortcut(this, new Key(Keycode.PAGEDOWN), _ => SelectPageDown(false)),
+            new Shortcut(this, new Key(Keycode.PAGEDOWN, Keycode.SHIFT), _ => SelectPageDown(true)),
+            new Shortcut(this, new Key(Keycode.PAGEUP), _ => SelectPageUp(false)),
+            new Shortcut(this, new Key(Keycode.PAGEUP, Keycode.SHIFT), _ => SelectPageUp(true)),
             new Shortcut(this, new Key(Keycode.Z, Keycode.CTRL), _ => MainCommandWidget.Undo()),
             new Shortcut(this, new Key(Keycode.Y, Keycode.CTRL), _ => MainCommandWidget.Redo())
         });
@@ -194,13 +201,11 @@ public class BaseCommandWidget : Widget
             new MenuSeparator(),
             new MenuItem("Cut")
             {
-                IsClickable = e => e.Value = this is not BlankWidget,
                 OnClicked = _ => Cut(),
                 Shortcut = "Ctrl+X"
             },
             new MenuItem("Copy")
             {
-                IsClickable = e => e.Value = this is not BlankWidget,
                 OnClicked = _ => Copy(),
                 Shortcut = "Ctrl+C"
             },
@@ -213,8 +218,7 @@ public class BaseCommandWidget : Widget
             new MenuSeparator(),
             new MenuItem("Delete")
             {
-                IsClickable = e => e.Value = this is not BlankWidget,
-                OnClicked = _ => Delete(),
+                OnClicked = _ => DeleteMayBeMultiple(),
                 Shortcut = "Del"
             }
         });
@@ -249,7 +253,7 @@ public class BaseCommandWidget : Widget
             HeaderLabel.SetVisible(false);
             VStackPanel.SetPadding(CommandOffset, 0, 0, 0);
             ShadowWidget.SetVisible(false);
-            ParseCommands(Commands, VStackPanel, this.GlobalCommandIndex + 1);
+            ParseCommands(Commands, VStackPanel, this.GlobalCommandIndex + 1, CreateWidget);
             if (Page.Commands.Count == 1) CreateNoCommandsBG();
             else RemoveNoCommandsBG();
         }
@@ -351,7 +355,8 @@ public class BaseCommandWidget : Widget
         return w;
     }
 
-    protected void ParseCommands(List<EventCommand> Commands, VStackPanel Parent, int GlobalCommandStartIndex)
+    protected void ParseCommands(List<EventCommand> Commands, VStackPanel Parent, int GlobalCommandStartIndex,
+        Func<EventCommand, int, VStackPanel, int, int, BaseCommandWidget> CreateCommand)
     {
         EventCommand? BranchCmd = null;
         int BranchCmdIdx = -1;
@@ -368,7 +373,7 @@ public class BaseCommandWidget : Widget
             {
                 if (i + 1 >= Commands.Count || Commands[i + 1].Code != MergeSubsequentCommandPairs[MergeCmd.Code])
                 {
-                    CreateWidget(MergeCmd, i - MergeCmdIdx + 1, Parent, gcmd);
+                    CreateCommand(MergeCmd, i - MergeCmdIdx + 1, Parent, gcmd, -1);
                     gcmd += i - MergeCmdIdx + 1;
                     MergeCmd = null;
                     MergeCmdIdx = -1;
@@ -392,13 +397,13 @@ public class BaseCommandWidget : Widget
                             continue;
                         }
                     }
-                    CreateWidget(cmd, 1, Parent, gcmd);
+                    CreateCommand(cmd, 1, Parent, gcmd, -1);
                     gcmd += 1;
                 }
             }
             else if (BranchCmd.Indent == cmd.Indent && cmd.Code == CommandStartEndPairs[BranchCmd.Code])
             {
-                CreateWidget(BranchCmd, i - BranchCmdIdx + 1, Parent, gcmd);
+                CreateCommand(BranchCmd, i - BranchCmdIdx + 1, Parent, gcmd, -1);
                 gcmd += i - BranchCmdIdx + 1;
                 BranchCmd = null;
                 BranchCmdIdx = -1;
@@ -410,7 +415,7 @@ public class BaseCommandWidget : Widget
     {
         SubcommandWidgets.ForEach(s =>
         {
-            if (s != Exception) s.SetSelected(false);
+            if (s != Exception) s.SetSelected(false, false);
             s.DeselectAll(Exception);
         });
     }
@@ -420,28 +425,170 @@ public class BaseCommandWidget : Widget
         return SubcommandWidgets.Exists(s => s.Mouse.Inside || s.InsideChild());
     }
 
-    public void SetSelected(bool Selected)
+    public void SetSelected(bool Selected, bool HoldingShift)
     {
-        if (this.Selected != Selected)
+        if (this.Selected != Selected || Selected)
         {
-            this.Selected = Selected;
-            if (this.Selected)
+            bool SkipInternal = false;
+            if (Selected)
             {
-                MainCommandWidget.DeselectAll(this);
-                //SetBackgroundColor(28, 50, 73);
-                WidgetSelected(new BaseEventArgs());
-                BarBox.SetColor(GradientBox.TopLeftColor);
-                GradientBox.SetBottomRightColor(GradientBox.TopLeftColor);
-                Icon.SetColor(Color.WHITE);
+                // We start by deselecting everything so our selection "anchors" around the origin if we have shift down,
+                // and if we don't, just to cancel all other selections.
+                MainCommandWidget.DeselectAll();
+                MainCommandWidget.SelectedWidgets.Clear();
+                if (!HoldingShift)
+                {
+                    MainCommandWidget.SelectionOrigin = this;
+                }
+                else
+                {
+                    // We now start fresh by determining which commands should all end up being selected.
+                    // There are 3 scenarios:
+                    // cmd 1
+                    // cmd 2 (selected)
+                    // branching cmd 3
+                    // - - cmd 4
+                    // - - cmd 5 (origin)
+                    // cmd 6
+                    // In this event, only cmd 2 and cmd 3 should be selected.
+                    // i.e. all selected commands must have the same indentation.
+                    // In the clause below, the roles are reversed, which leads to the same
+                    // effect, only we select the parent of the current widget, rather than
+                    // the parent of the origin widget.
+                    if (MainCommandWidget.SelectionOrigin.Indentation > this.Indentation)
+                    {
+                        List<BaseCommandWidget> Parents = MainCommandWidget.SelectionOrigin.GetParentCommandWidgets();
+                        for (int i = 0; i < Parents.Count; i++)
+                        {
+                            BaseCommandWidget prnt = Parents[i];
+                            if (prnt.Indentation == this.Indentation)
+                            {
+                                // Cancel the selection of this command and select the parent instead.
+                                MainCommandWidget.SelectionOrigin = prnt;
+                                MainCommandWidget.SelectedWidgets.Clear();
+                                prnt.SetSelectedInternal(true, false);
+                                this.SetSelected(true, true);
+                                return;
+                            }
+                        }
+                        throw new Exception("Could not find parent widget with identical indentation.");
+                    }
+                    else if (MainCommandWidget.SelectionOrigin.Indentation < this.Indentation)
+                    {
+                        List<BaseCommandWidget> Parents = GetParentCommandWidgets();
+                        for (int i = 0; i < Parents.Count; i++)
+                        {
+                            BaseCommandWidget prnt = Parents[i];
+                            if (prnt.Indentation == MainCommandWidget.SelectionOrigin.Indentation)
+                            {
+                                // Cancel the selection of this command and select the parent instead.
+                                MainCommandWidget.SelectedWidgets.Clear();
+                                prnt.SetSelected(true, true);
+                                return;
+                            }
+                        }
+                        throw new Exception("Could not find parent widget with identical indentation.");
+                    }
+                    else
+                    {
+                        // The current command and the selection origin have the same indentation.
+                        // If these two commands share the same parent, then they are in the same branch.
+                        // If not, that means there is some other branch in between. For instance, one is in
+                        // the true branch of a conditional, and one in a false.
+                        // They could also be two commands in two entirely different commands, but just with
+                        // the same indentation.
+                        // Therefore, if they don't have the same parent, no selection can be formed.
+                        // If they do, select everything in between by finding the indexes of these widgets in
+                        // the parent widget list.
+
+                        // There is another scenario that could be considered:
+                        // cmd1
+                        // - - cmd 2 (selected)
+                        // - - cmd 3
+                        // cmd 4
+                        // cmd 5
+                        // - - cmd 6 (origin)
+                        // - - cmd 7
+                        // What is the ideal scenario here? Select 1, 4, and 5? Just 5? 4 and 5?
+                        // Perhaps the best algorithm is one that moves one level up (i.e. to the selection and origin's parents)
+                        // and then sees if their parents are equal, and so forth. This would mean select 1, 4, and 5 here.
+                        IContainer OriginParent = MainCommandWidget.SelectionOrigin.Parent;
+                        BaseCommandWidget CurrentCommand = this;
+                        IContainer CurrentParent = CurrentCommand.Parent;
+                        if (OriginParent != CurrentParent)
+                        {
+                            // Not the same parent, so we can't form a valid selection.
+                            // Instead, we cancel the selection altogether; because we deselected all at the start
+                            // and did not re-select our commands here.
+                            while (MainCommandWidget.SelectionOrigin.Indentation > -1)
+                            {
+                                MainCommandWidget.SelectionOrigin = MainCommandWidget.SelectionOrigin.GetParentCommandWidget(MainCommandWidget.SelectionOrigin.Parent);
+                                OriginParent = MainCommandWidget.SelectionOrigin.Parent;
+                                CurrentCommand = CurrentCommand.GetParentCommandWidget(CurrentCommand.Parent);
+                                CurrentParent = CurrentCommand.Parent;
+                                // Parents are equal one level higher.
+                                // Now if we want this selection to be formed, we need to move our selection and origin to these widgets.
+                                if (OriginParent == CurrentParent)
+                                {
+                                    // We've already moved the selection origin, so now we just select our parent command and let
+                                    // that system form the selection.
+                                    // Notice that this algorithm goes back to the very root; we could also simply tell the program to select
+                                    // our parent and set the new origin to the old origin's parent, and go through the whole process again.
+                                    // While this is also valid, this is less recursive and just slightly more tangible.
+                                    // Not that this entire selection process is tangible, but this just made the most sense to me.
+                                    CurrentCommand.SetSelected(true, true);
+                                    return;
+                                }
+                            }
+                            return;
+                        }
+                        int idx1 = OriginParent.Widgets.IndexOf(MainCommandWidget.SelectionOrigin);
+                        int idx2 = OriginParent.Widgets.IndexOf(this);
+                        int min = Math.Min(idx1, idx2);
+                        int max = Math.Max(idx1, idx2);
+                        for (int i = min; i <= max; i++)
+                        {
+                            // i is the index of a command widget in the parent widget list.
+                            // These are all between the currently selected command and the origin,
+                            // so we select them all.
+                            BaseCommandWidget cmd = (BaseCommandWidget) OriginParent.Widgets[i];
+                            cmd.SetSelectedInternal(true, false);
+                            if (cmd == this) SkipInternal = true;
+                        }
+                    }
+                }
             }
-            else
-            {
-                //SetBackgroundColor(Color.ALPHA);
-                if (SelectedWidget) Window.UI.SetSelectedWidget(null);
-                SetCommandColors();
-            }
+            SetSelectedInternal(Selected, SkipInternal);
         }
         else if (Selected && !SelectedWidget) WidgetSelected(new BaseEventArgs());
+    }
+
+    protected void SetSelectedInternal(bool Selected, bool SkipRegistry)
+    {
+        this.Selected = Selected;
+        if (!SkipRegistry) MainCommandWidget.SelectedWidgets.Add(this);
+        SubcommandWidgets.ForEach(s => s.SetSelectedInternal(this.Selected, false));
+        if (this.Selected) SetAsSelected();
+        else SetAsDeselected();
+    }
+
+    protected virtual void SetAsSelected()
+    {
+        WidgetSelected(new BaseEventArgs());
+        BarBox.SetColor(GradientBox.TopLeftColor);
+        GradientBox.SetBottomRightColor(GradientBox.TopLeftColor);
+        Icon.SetColor(Color.WHITE);
+    }
+
+    protected virtual void SetAsDeselected()
+    {
+        if (SelectedWidget) Window.UI.SetSelectedWidget(null);
+        SetCommandColors();
+    }
+
+    protected void SelectNormally()
+    {
+        SetSelected(true, Input.Press(Keycode.SHIFT));
     }
 
     protected List<BaseCommandWidget> GetParentCommandWidgets()
@@ -505,11 +652,12 @@ public class BaseCommandWidget : Widget
                 CancelDoubleClick();
                 return;
             }
+            bool HoldingShift = Input.Press(Keycode.SHIFT);
             if (this.Indentation == -1)
             {
-                if (!VStackPanel.Mouse.Inside) SubcommandWidgets[^1].SetSelected(true);
+                if (!VStackPanel.Mouse.Inside) SubcommandWidgets[^1].SetSelected(true, HoldingShift);
             }
-            else SetSelected(true);
+            else SetSelected(true, HoldingShift);
         }
     }
 
@@ -557,13 +705,13 @@ public class BaseCommandWidget : Widget
         return null;
     }
 
-    protected BaseCommandWidget InsertCommands(List<EventCommand> Commands, bool Undoable = true)
+    protected BaseCommandWidget InsertSingle(List<EventCommand> Commands, bool Undoable = true)
     {
         if (this.Indentation == -1) return null;
         // Get the global index for our new commands
         int GlobalIndex = this.GlobalCommandIndex;
         // Deselect this widget
-        this.SetSelected(false);
+        this.SetSelected(false, false);
         // Find the starting indentation of the commands
         int StartIndent = Commands[0].Indent;
         // Find the new indentation of the commands
@@ -593,7 +741,7 @@ public class BaseCommandWidget : Widget
         // Create our new widget at the correct local index
         BaseCommandWidget NewWidget = ParentCommandWidget.CreateWidget(Commands[0], Commands.Count, ((VStackPanel) Parent), GlobalIndex, LocalWidgetIndex);
         // Select our new widget
-        NewWidget.SetSelected(true);
+        NewWidget.SetSelected(true, false);
         if (Undoable) MainCommandWidget.RegisterUndoAction(new CommandChangeUndoAction(MainCommandWidget, GlobalIndex, Commands, true));
         MainCommandWidget.RemoveNoCommandsBG();
         // Scroll to newly selected command
@@ -614,7 +762,7 @@ public class BaseCommandWidget : Widget
         win.OnClosed += _ =>
         {
             if (!win.Apply) return;
-            InsertCommands(win.Commands);
+            InsertSingle(win.Commands);
         };
     }
 
@@ -673,15 +821,42 @@ public class BaseCommandWidget : Widget
 
     protected void Cut()
     {
-        if (this.Indentation == -1 || this is BlankWidget || !Viewport.Visible) return;
+        if (this.Indentation == -1 || !Viewport.Visible) return;
         Copy();
-        Delete();
+        DeleteMayBeMultiple();
+    }
+
+    protected (List<EventCommand> EventCommands, List<BaseCommandWidget> CommandWidgets) GetListOfSelectedCommands()
+    {
+        List<EventCommand> EventCommands = new List<EventCommand>();
+        List<BaseCommandWidget> AddedWidgets = new List<BaseCommandWidget>();
+        List<BaseCommandWidget> CommandWidgets = new List<BaseCommandWidget>();
+        void RegisterWidget(BaseCommandWidget cmd)
+        {
+            AddedWidgets.AddRange(cmd.SubcommandWidgets);
+            cmd.SubcommandWidgets.ForEach(c => RegisterWidget(c));
+        }
+        MainCommandWidget.SelectedWidgets.Sort(delegate (BaseCommandWidget bcw1, BaseCommandWidget bcw2) { return bcw1.Indentation.CompareTo(bcw2.Indentation); });
+        for (int i = 0; i < MainCommandWidget.SelectedWidgets.Count; i++)
+        {
+            // Ensures we don't add commands that are part of an included parent command,
+            // because said parent command has all child commands in its command list.
+            if (AddedWidgets.Contains(MainCommandWidget.SelectedWidgets[i])) continue;
+            EventCommands.AddRange(MainCommandWidget.SelectedWidgets[i].Commands);
+            CommandWidgets.Add(MainCommandWidget.SelectedWidgets[i]);
+            AddedWidgets.Add(MainCommandWidget.SelectedWidgets[i]);
+            RegisterWidget(MainCommandWidget.SelectedWidgets[i]);
+        }
+        return (EventCommands, CommandWidgets);
     }
 
     protected void Copy()
     {
-        if (this.Indentation == -1 || this is BlankWidget || !Viewport.Visible) return;
-        EventCommandList data = new EventCommandList(this.Commands);
+        if (this.Indentation == -1 || !Viewport.Visible) return;
+        PurgeBlanksFromSelection();
+        (List<EventCommand> Commands, _) = GetListOfSelectedCommands();
+        if (Commands.Count == 0) return;
+        EventCommandList data = new EventCommandList(Commands);
         Utilities.SetClipboard(data, BinaryData.EVENT_COMMANDS);
     }
 
@@ -689,13 +864,20 @@ public class BaseCommandWidget : Widget
     {
         if (this.Indentation == -1 || !Utilities.IsClipboardValidBinary(BinaryData.EVENT_COMMANDS)) return;
         EventCommandList data = Utilities.GetClipboard<EventCommandList>();
-        InsertCommands(data.Commands);
+        InsertMayBeMultiple(data.Commands);
     }
 
-    protected BaseCommandWidget Delete(bool Undoable = true)
+    protected void SelectAll()
+    {
+        MainCommandWidget.DeselectAll();
+        MainCommandWidget.SelectionOrigin = MainCommandWidget.SubcommandWidgets[0];
+        MainCommandWidget.SubcommandWidgets[^1].SetSelected(true, true);
+    }
+
+    protected BaseCommandWidget DeleteSingleSelected(bool Undoable = true)
     {
         if (this.Indentation == -1 || this is BlankWidget || !Viewport.Visible) return null;
-        // Get the global index for our main command
+        // Get the global index for our current command
         int GlobalIndex = this.GlobalCommandIndex;
         // The number of commands to remove
         int Count = this.Commands.Count;
@@ -721,7 +903,7 @@ public class BaseCommandWidget : Widget
         // We fetch the next command now in the list, which is at the index where we just deleted this command widget.
         BaseCommandWidget NewSelectedWidget = (BaseCommandWidget) this.Parent.Widgets[LocalWidgetIndex];
         // Now we select that widget
-        NewSelectedWidget.SetSelected(true);
+        NewSelectedWidget.SetSelected(true, false);
         // Shortcut timing
         Shortcut s = NewSelectedWidget.Shortcuts.Find(s => s.Key.MainKey == Keycode.DELETE);
         if (MainCommandWidget.InitialDeleteKey) NewSelectedWidget.SetTimer($"key_{s.Key.ID}_initial", 300);
@@ -733,6 +915,94 @@ public class BaseCommandWidget : Widget
         // Scroll to newly selected command
         NewSelectedWidget.ScrollToThisCommand();
         return NewSelectedWidget;
+    }
+
+    List<List<EventCommand>> EventCommandLists = new List<List<EventCommand>>();
+    List<EventCommand> TemporaryCommands;
+
+    protected BaseCommandWidget StoreCommandBundle(EventCommand Command, int Count, VStackPanel Parent, int GlobalCommandIndex, int ParentWidgetIndex = -1)
+    {
+        List<EventCommand> ThisCommandsCommands = TemporaryCommands.GetRange(TemporaryCommands.IndexOf(Command), Count);
+        EventCommandLists.Add(ThisCommandsCommands);
+        return null;
+    }
+
+    protected void InsertMayBeMultiple(List<EventCommand> Commands, bool Undoable = true)
+    {
+        EventCommandLists.Clear();
+        TemporaryCommands = Commands;
+        int CurIdx = GlobalCommandIndex;
+        ParseCommands(Commands, null, 0, StoreCommandBundle);
+        List<BaseCommandWidget> CreatedWidgets = new List<BaseCommandWidget>();
+        for (int i = 0; i < EventCommandLists.Count; i++)
+        {
+            CreatedWidgets.Add(InsertSingle(EventCommandLists[i], false));
+        }
+        int min = int.MaxValue;
+        int max = int.MinValue;
+        BaseCommandWidget mincmd = null;
+        BaseCommandWidget maxcmd = null;
+        foreach (BaseCommandWidget cmd in CreatedWidgets)
+        {
+            if (cmd.GlobalCommandIndex < min)
+            {
+                min = cmd.GlobalCommandIndex;
+                mincmd = cmd;
+            }
+            if (cmd.GlobalCommandIndex > max)
+            {
+                max = cmd.GlobalCommandIndex;
+                maxcmd = cmd;
+            }
+        }
+        MainCommandWidget.SelectionOrigin = mincmd;
+        mincmd.SetSelected(true, false);
+        maxcmd.SetSelected(true, true);
+        if (Undoable)
+        {
+            MainCommandWidget.RegisterUndoAction(new CommandChangeUndoAction(MainCommandWidget, CurIdx, Commands, true));
+        }
+        EventCommandLists.Clear();
+        TemporaryCommands = null;
+    }
+
+    protected void DeleteMayBeMultiple(bool Undoable = true)
+    {
+        PurgeBlanksFromSelection();
+        (List<EventCommand> Commands, List<BaseCommandWidget> SelectedWidgets) = GetListOfSelectedCommands();
+        if (Commands.Count == 0) return;
+        int GlobalCommandIndex = SelectedWidgets.Min(cmd => cmd.GlobalCommandIndex);
+        // Make a copy of the old selected widgets, because once delete one of the widgets,
+        // the deletion process with select the next widget in the list, thereby clearing our list of
+        // selected widgets.
+        for (int i = 0; i < SelectedWidgets.Count; i++)
+        {
+            SelectedWidgets[i].SetSelectedInternal(true, true);
+            SelectedWidgets[i].DeleteSingleSelected(false);
+        }
+        // That is also the reason we don't need to clear the list of selected widgets ourselves; since the deletion
+        // process selects a new command when it is done deleting, that will start a new selection of itself.
+        if (Undoable)
+        {
+            MainCommandWidget.RegisterUndoAction(new CommandChangeUndoAction(MainCommandWidget, GlobalCommandIndex, Commands, false));
+        }
+    }
+
+    protected void PurgeBlanksFromSelection()
+    {
+        // Remove all preceding blanks (should not be possible)
+        while (MainCommandWidget.SelectedWidgets.Count > 0 && MainCommandWidget.SelectedWidgets[0].Command.Code == CommandCode.Blank)
+        {
+            MainCommandWidget.SelectedWidgets[0].SetSelected(false, false);
+            MainCommandWidget.SelectedWidgets.RemoveAt(0);
+        }
+        // Remove all blanks at the last position in the list with the same indentation as the first item, or remove if it's the only item
+        while (MainCommandWidget.SelectedWidgets.Count > 0 && MainCommandWidget.SelectedWidgets[^1].Command.Code == CommandCode.Blank &&
+            (MainCommandWidget.SelectedWidgets[^1].Indentation == MainCommandWidget.SelectedWidgets[0].Indentation || MainCommandWidget.SelectedWidgets.Count == 1))
+        {
+            MainCommandWidget.SelectedWidgets[^1].SetSelected(false, false);
+            MainCommandWidget.SelectedWidgets.RemoveAt(MainCommandWidget.SelectedWidgets.Count - 1);
+        }
     }
 
     protected BaseCommandWidget GetNextCommand(int StartIndex = 0)
@@ -864,12 +1134,12 @@ public class BaseCommandWidget : Widget
         }
     }
 
-    protected void SelectNextCommand()
+    protected void SelectNextCommand(bool HoldingShift)
     {
         BaseCommandWidget NextCommand = GetNextCommand();
         if (NextCommand is not null)
         {
-            NextCommand.SetSelected(true);
+            NextCommand.SetSelected(true, HoldingShift);
             Shortcut s = NextCommand.Shortcuts.Find(s => s.Key.MainKey == Keycode.DOWN);
             if (MainCommandWidget.InitialDownKey) NextCommand.SetTimer($"key_{s.Key.ID}_initial", 300);
             else NextCommand.SetTimer($"key_{s.Key.ID}", 50);
@@ -893,12 +1163,12 @@ public class BaseCommandWidget : Widget
         else return this;
     }
 
-    protected void SelectPreviousCommand()
+    protected void SelectPreviousCommand(bool HoldingShift)
     {
         BaseCommandWidget PreviousCommand = GetPreviousCommand();
         if (PreviousCommand is not null)
         {
-            PreviousCommand.SetSelected(true);
+            PreviousCommand.SetSelected(true, HoldingShift);
             Shortcut s = PreviousCommand.Shortcuts.Find(s => s.Key.MainKey == Keycode.UP);
             if (MainCommandWidget.InitialUpKey) PreviousCommand.SetTimer($"key_{s.Key.ID}_initial", 300);
             else PreviousCommand.SetTimer($"key_{s.Key.ID}", 50);
@@ -930,7 +1200,7 @@ public class BaseCommandWidget : Widget
         return null;
     }
 
-    protected void SelectPageDown()
+    protected void SelectPageDown(bool HoldingShift)
     {
         int TargetDisplayY = MainCommandWidget.Parent.ScrolledY + MainCommandWidget.Parent.Size.Height - StandardHeight * 2;
         BaseCommandWidget NewCommand = MainCommandWidget.GetCommandWidgetBelow(TargetDisplayY);
@@ -945,14 +1215,14 @@ public class BaseCommandWidget : Widget
             if (NewCommand is null) NewCommand = MainCommandWidget.GetLastCommand();
         }
         if (NewCommand.Selected) return;
-        NewCommand.SetSelected(true);
+        NewCommand.SetSelected(true, HoldingShift);
         Shortcut s = NewCommand.Shortcuts.Find(s => s.Key.MainKey == Keycode.PAGEDOWN);
         if (MainCommandWidget.InitialPageDownKey) NewCommand.SetTimer($"key_{s.Key.ID}_initial", 300);
         else NewCommand.SetTimer($"key_{s.Key.ID}", 50);
         NewCommand.ScrollToThisCommand();
     }
 
-    protected void SelectPageUp()
+    protected void SelectPageUp(bool HoldingShift)
     {
         int CurDisplayY = GetDisplayY();
         int TargetDisplayY = MainCommandWidget.Parent.ScrolledY + StandardHeight;
@@ -967,7 +1237,7 @@ public class BaseCommandWidget : Widget
             if (NewCommand is null) NewCommand = MainCommandWidget.SubcommandWidgets[0];
         }
         if (NewCommand.Selected) return;
-        NewCommand.SetSelected(true);
+        NewCommand.SetSelected(true, HoldingShift);
         Shortcut s = NewCommand.Shortcuts.Find(s => s.Key.MainKey == Keycode.PAGEUP);
         if (MainCommandWidget.InitialPageUpKey) NewCommand.SetTimer($"key_{s.Key.ID}_initial", 300);
         else NewCommand.SetTimer($"key_{s.Key.ID}", 50);
@@ -1031,19 +1301,34 @@ public class BaseCommandWidget : Widget
 
         public override void Trigger(bool IsRedo)
         {
-            BaseCommandWidget NewWidget;
             if (IsRedo != Creation)
             {
                 // Undo creation + redo deletion
+                // This is the first widget to be deleted.
                 BaseCommandWidget DeletionWidget = MainCommandWidget.GetCommandAtGlobalIndex(this.GlobalCommandIndex);
-                NewWidget = DeletionWidget.Delete(false);
+                // Select all widgets corresponding with the event commands in Commands
+                // It starts at GlobalCommandIndex up to GlobalCommandIndex + Commands.Count, so we find all BaseCommandWidgets
+                // between those two global command indexes and select them.
+                // We know we can only have selections with the same indentation and the same parent, so looking inside DeletionWidget's
+                // parent will be sufficient to get all relevant widgets. We do not need to manually select all child widgets to delete those too.
+                int max = this.GlobalCommandIndex + Commands.Count;
+                MainCommandWidget.SelectionOrigin = DeletionWidget;
+                MainCommandWidget.SelectedWidgets.Clear();
+                IContainer Parent = DeletionWidget.Parent;
+                foreach (BaseCommandWidget cmd in Parent.Widgets)
+                {
+                    if (cmd.GlobalCommandIndex >= this.GlobalCommandIndex && cmd.GlobalCommandIndex < max)
+                        MainCommandWidget.SelectedWidgets.Add(cmd);
+                }
+                DeletionWidget.DeleteMayBeMultiple(false);
             }
             else
             {
                 // Redo creation + undo deletion
                 BaseCommandWidget InsertionWidget = MainCommandWidget.GetCommandAtGlobalIndex(this.GlobalCommandIndex);
-                NewWidget = InsertionWidget.InsertCommands(Commands, false);
+                InsertionWidget.InsertMayBeMultiple(Commands, false);
             }
+            BaseCommandWidget NewWidget = (BaseCommandWidget) MainCommandWidget.Window.UI.SelectedWidget;
             if (IsRedo)
             {
                 Shortcut s = NewWidget.Shortcuts.Find(s => s.Key.MainKey == Keycode.Y);
@@ -1058,6 +1343,7 @@ public class BaseCommandWidget : Widget
             }
             if (MainCommandWidget.Commands.Count == 1) MainCommandWidget.CreateNoCommandsBG();
             else MainCommandWidget.RemoveNoCommandsBG();
+            NewWidget.SetSelectedInternal(true, true);
         }
     }
 }

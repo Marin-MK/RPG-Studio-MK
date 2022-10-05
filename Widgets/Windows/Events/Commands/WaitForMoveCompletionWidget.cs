@@ -23,7 +23,7 @@ public class WaitForMoveCompletionWidget : BaseCommandWidget
             CancelDoubleClick();
             return;
         }
-        SetSelected(true);
+        SelectNormally();
     }
 
     protected override bool IsEditable()

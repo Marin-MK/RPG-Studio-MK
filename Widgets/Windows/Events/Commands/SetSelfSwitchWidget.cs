@@ -42,6 +42,6 @@ public class SetSelfSwitchWidget : BaseCommandWidget
             CancelDoubleClick();
             return;
         }
-        SetSelected(true);
+        SelectNormally();
     }
 }

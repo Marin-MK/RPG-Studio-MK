@@ -41,7 +41,7 @@ public class BlankWidget : BaseCommandWidget
             CancelDoubleClick();
             return;
         }
-        SetSelected(true);
+        SelectNormally();
     }
 
     protected override bool IsEditable()
