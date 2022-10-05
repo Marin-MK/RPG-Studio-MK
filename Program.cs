@@ -28,6 +28,7 @@ public class Program
         if (args.Length == 1) ProjectFile = args[0];
         MainEditorWindow win = new MainEditorWindow();
         //win.Show();
+        Graphics.ShowFrames = true;
         Graphics.Update();
         win.Load(ProjectFile);
         //win.Hide();
