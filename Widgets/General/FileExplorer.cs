@@ -101,7 +101,7 @@ public class FileExplorer : Widget
         List<string> path = new List<string>() { "  ~  " };
         PathLabels.Clear();
         while (PathContainer.Widgets.Count > 0) PathContainer.Widgets[0].Dispose();
-        path.AddRange(this.Directory.Split('/'));
+        if (!string.IsNullOrEmpty(this.Directory)) path.AddRange(this.Directory.Split('/'));
         GridContainer.VScrollBar.SetValue(0);
         int x = 6;
         Font f = Fonts.CabinMedium.Use(11);
@@ -161,7 +161,9 @@ public class FileExplorer : Widget
         EmptyLabel = null;
         DirGrid.Rows.Clear();
         bool Empty = true;
-        foreach (string directory in System.IO.Directory.GetDirectories(this.BaseDirectory + "/" + this.Directory))
+        string MainDirectory = this.BaseDirectory;
+        if (!string.IsNullOrEmpty(this.Directory)) MainDirectory += "/" + this.Directory;
+        foreach (string directory in System.IO.Directory.GetDirectories(MainDirectory))
         {
             Empty = false;
             string dir = directory;
@@ -169,7 +171,7 @@ public class FileExplorer : Widget
             DrawItem(dir, true);
         }
 
-        foreach (string file in System.IO.Directory.GetFiles(this.BaseDirectory + "/" + this.Directory))
+        foreach (string file in System.IO.Directory.GetFiles(MainDirectory))
         {
             if (!Extensions.Contains(file.Split('.').ToList().Last())) continue;
             string f = file;

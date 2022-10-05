@@ -167,7 +167,7 @@ public class EventPageControl : Widget
         {
             if (EventGraphicBox.Mouse.LeftStartedInside && EventGraphicBox.Mouse.Inside)
             {
-                ChooseGraphic cg = new ChooseGraphic(Map, Event, Page, Page.Graphic, false);
+                ChooseGraphic cg = new ChooseGraphic(Map, Event, Page, Page.Graphic, false, "Graphics/Characters");
                 cg.OnClosed += _ =>
                 {
                     if (!cg.Apply) return;
@@ -246,7 +246,7 @@ public class EventPageControl : Widget
 
         Container OptionsBox = new Container(LeftBox);
         OptionsBox.SetPosition(19, 166);
-        OptionsBox.SetSize(119, 106);
+        OptionsBox.SetSize(125, 106);
         MoveAnimationBox = new CheckBox(OptionsBox);
         MoveAnimationBox.SetFont(SmallFont);
         MoveAnimationBox.SetText("Move Animation");

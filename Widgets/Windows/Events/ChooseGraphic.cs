@@ -30,7 +30,7 @@ public class ChooseGraphic : PopupWindow
 
     bool CursorOnly = false;
 
-    public ChooseGraphic(Map Map, Event Event, EventPage Page, EventGraphic gr, bool FromMoveRouteEditor)
+    public ChooseGraphic(Map Map, Event Event, EventPage Page, EventGraphic gr, bool FromMoveRouteEditor, string RelativeFolder)
     {
         this.Map = Map;
         this.Event = Event;
@@ -214,9 +214,17 @@ public class ChooseGraphic : PopupWindow
         FileExplorer = new FileExplorer(this);
         FileExplorer.SetPosition(8, 35);
         FileExplorer.SetSize(522, 430);
-        FileExplorer.SetBaseDirectory(Data.ProjectPath);
+        string path = Data.ProjectPath;
+        if (!string.IsNullOrEmpty(RelativeFolder)) path += "/" + RelativeFolder;
+        FileExplorer.SetBaseDirectory(path);
         FileExplorer.SetFileExtensions("png");
-        FileExplorer.SetDirectory("Graphics/Characters");
+        while (Graphic.CharacterName.Contains('\\')) Graphic.CharacterName = Graphic.CharacterName.Replace('\\', '/');
+        if (Graphic.CharacterName.Contains("/"))
+        {
+            string folder = Graphic.CharacterName.Substring(0, Graphic.CharacterName.LastIndexOf('/'));
+            FileExplorer.SetDirectory(folder);
+        }
+        else FileExplorer.RedrawDirectory();
 
         TileGraphicPicker = new TileGraphicPicker(new Size(Event.Width, Event.Height), Map, Graphic, this);
         TileGraphicPicker.SetPosition(8, 35);
