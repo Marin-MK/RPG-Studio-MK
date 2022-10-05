@@ -119,8 +119,8 @@ public class ChooseGraphic : PopupWindow
         FrameLabel.SetPosition(547, 330);
         FrameLabel.SetEnabled(Graphic.TileID < 384 && !string.IsNullOrEmpty(Graphic.CharacterName));
         FrameBox = new NumericBox(this);
-        FrameBox.SetPosition(669, 325);
-        FrameBox.SetSize(50, 27);
+        FrameBox.SetPosition(629, 325);
+        FrameBox.SetSize(90, 27);
         FrameBox.SetMinValue(1);
         FrameBox.SetMaxValue(Graphic.NumFrames);
         FrameBox.SetValue(Graphic.Pattern + 1);
@@ -133,7 +133,7 @@ public class ChooseGraphic : PopupWindow
 
         Label NumDirectionsLabel = new Label(this);
         NumDirectionsLabel.SetFont(f);
-        NumDirectionsLabel.SetText("Number of Directions:");
+        NumDirectionsLabel.SetText("No. Directions:");
         NumDirectionsLabel.SetPosition(547, 360);
         NumDirectionsLabel.SetEnabled(false);
         NumDirectionsBox = new DropdownBox(this);
@@ -155,12 +155,12 @@ public class ChooseGraphic : PopupWindow
 
         Label NumFramesLabel = new Label(this);
         NumFramesLabel.SetFont(f);
-        NumFramesLabel.SetText("Number of Frames:");
+        NumFramesLabel.SetText("No. Frames:");
         NumFramesLabel.SetPosition(547, 390);
         NumFramesLabel.SetEnabled(false);
         NumFramesBox = new NumericBox(this);
-        NumFramesBox.SetPosition(669, 385);
-        NumFramesBox.SetSize(50, 27);
+        NumFramesBox.SetPosition(629, 385);
+        NumFramesBox.SetSize(90, 27);
         NumFramesBox.SetMinValue(1);
         NumFramesBox.SetMaxValue(999);
         NumFramesBox.SetValue(Graphic.NumFrames);
@@ -179,8 +179,8 @@ public class ChooseGraphic : PopupWindow
         OpacityLabel.SetPosition(547, 420);
         OpacityLabel.SetEnabled(!FromMoveRouteEditor);
         OpacityBox = new NumericBox(this);
-        OpacityBox.SetPosition(669, 416);
-        OpacityBox.SetSize(50, 27);
+        OpacityBox.SetPosition(629, 416);
+        OpacityBox.SetSize(90, 27);
         OpacityBox.SetMinValue(0);
         OpacityBox.SetMaxValue(255);
         OpacityBox.SetValue(Graphic.Opacity);

@@ -32,7 +32,7 @@ public class EditMoveRouteWindow : PopupWindow
         this.MoveRoute = (MoveRoute) mr.Clone();
 
         SetTitle("Edit Move Route");
-        MinimumSize = MaximumSize = new Size(735, 510);
+        MinimumSize = MaximumSize = new Size(765, 580);
         SetSize(MaximumSize);
         Center();
         this.OnWidgetSelected += WidgetSelected;

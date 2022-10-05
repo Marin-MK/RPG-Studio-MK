@@ -15,13 +15,13 @@ public class GenericNumberPicker : PopupWindow
         this.Value = Value;
 
         SetTitle(Title);
-        MinimumSize = MaximumSize = new Size(200, 110);
+        MinimumSize = MaximumSize = new Size(210, 110);
         SetSize(MaximumSize);
         Center();
 
         NumberBox = new NumericBox(this);
-        NumberBox.SetPosition(120, 30);
-        NumberBox.SetSize(64, 27);
+        NumberBox.SetPosition(110, 30);
+        NumberBox.SetSize(90, 27);
         if (MinValue != null) NumberBox.SetMinValue((int) MinValue);
         if (MaxValue != null) NumberBox.SetMaxValue((int) MaxValue);
         NumberBox.SetValue(Value);
@@ -29,6 +29,7 @@ public class GenericNumberPicker : PopupWindow
         Label TextLabel = new Label(this);
         TextLabel.SetFont(Fonts.CabinMedium.Use(11));
         TextLabel.SetText(Label);
+        TextLabel.RedrawText(true);
         TextLabel.SetPosition(NumberBox.Position.X - TextLabel.Size.Width - 8, 34);
 
         CreateButton("Cancel", _ => Cancel());

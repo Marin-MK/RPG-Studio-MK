@@ -57,7 +57,7 @@ public class FogFilePicker : AbstractFilePicker
         OpacityBox = new NumericBox(this);
         OpacityBox.SetMinValue(0);
         OpacityBox.SetMaxValue(255);
-        OpacityBox.SetSize(60, 27);
+        OpacityBox.SetSize(90, 27);
         OpacityBox.SetValue(FogOpacity);
         blendlabel = new Label(this);
         blendlabel.SetFont(f);
@@ -77,7 +77,7 @@ public class FogFilePicker : AbstractFilePicker
         ZoomBox = new NumericBox(this);
         ZoomBox.SetMinValue(0);
         ZoomBox.SetMaxValue(99999);
-        ZoomBox.SetSize(60, 27);
+        ZoomBox.SetSize(90, 27);
         ZoomBox.SetValue(FogZoom);
         sxlabel = new Label(this);
         sxlabel.SetFont(f);
@@ -85,7 +85,7 @@ public class FogFilePicker : AbstractFilePicker
         SXBox = new NumericBox(this);
         SXBox.SetMinValue(0);
         SXBox.SetMaxValue(99999);
-        SXBox.SetSize(60, 27);
+        SXBox.SetSize(90, 27);
         SXBox.SetValue(FogSX);
         sylabel = new Label(this);
         sylabel.SetFont(f);
@@ -93,7 +93,7 @@ public class FogFilePicker : AbstractFilePicker
         SYBox = new NumericBox(this);
         SYBox.SetMinValue(0);
         SYBox.SetMaxValue(99999);
-        SYBox.SetSize(60, 27);
+        SYBox.SetSize(90, 27);
         SYBox.SetValue(FogSY);
         SetSize(700, 700);
         Center();

@@ -54,19 +54,19 @@ public class EditSwitchCommandWindow : PopupWindow
         BatchLabel.OnCheckChanged += _ => UpdateLabels();
 
         Switch1Box = new NumericBox(SwitchContainer);
-        Switch1Box.SetPosition(118, 31);
-        Switch1Box.SetSize(64, 27);
+        Switch1Box.SetPosition(64, 31);
+        Switch1Box.SetSize(90, 27);
         Switch1Box.SetValue(SwitchBox.SwitchID);
         Switch1Box.SetMinValue(1);
 
         RangeLabel = new Label(SwitchContainer);
         RangeLabel.SetFont(f);
         RangeLabel.SetText("to");
-        RangeLabel.SetPosition(186, 35);
+        RangeLabel.SetPosition(160, 35);
 
         Switch2Box = new NumericBox(SwitchContainer);
-        Switch2Box.SetPosition(200, 31);
-        Switch2Box.SetSize(64, 27);
+        Switch2Box.SetPosition(174, 31);
+        Switch2Box.SetSize(90, 27);
         Switch2Box.SetValue((int) (long) Command.Parameters[1]);
         Switch2Box.SetMinValue(1);
 

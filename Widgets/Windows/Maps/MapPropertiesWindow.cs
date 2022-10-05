@@ -29,7 +29,7 @@ public class MapPropertiesWindow : PopupWindow
         this.Map = (Map) OldMap.Clone();
         this.MakeUndoEvent = MakeUndoEvent;
         this.SetTitle($"Map Properties");
-        MinimumSize = MaximumSize = new Size(337, 312);
+        MinimumSize = MaximumSize = new Size(387, 312);
         SetSize(MaximumSize);
         this.Center();
 
@@ -40,7 +40,7 @@ public class MapPropertiesWindow : PopupWindow
 
         GroupBox box1 = new GroupBox(this);
         box1.SetPosition(19, 54);
-        box1.SetSize(300, 213);
+        box1.SetSize(350, 213);
 
         Font f = Fonts.CabinMedium.Use(9);
 
@@ -50,7 +50,7 @@ public class MapPropertiesWindow : PopupWindow
         namelabel.SetPosition(7, 6);
         MapName = new TextBox(box1);
         MapName.SetPosition(6, 22);
-        MapName.SetSize(136, 27);
+        MapName.SetSize(186, 27);
         MapName.SetText(this.Map.Name);
         MapName.OnTextChanged += _ =>
         {
@@ -65,7 +65,7 @@ public class MapPropertiesWindow : PopupWindow
         Width.SetPosition(6, 70);
         Width.SetMinValue(1);
         Width.SetMaxValue(255);
-        Width.SetSize(66, 27);
+        Width.SetSize(90, 27);
         Width.SetValue(this.Map.Width);
         Width.OnValueChanged += delegate (BaseEventArgs e)
         {
@@ -75,12 +75,12 @@ public class MapPropertiesWindow : PopupWindow
         Label heightlabel = new Label(box1);
         heightlabel.SetText("Height:");
         heightlabel.SetFont(f);
-        heightlabel.SetPosition(78, 54);
+        heightlabel.SetPosition(108, 54);
         Height = new NumericBox(box1);
-        Height.SetPosition(77, 70);
+        Height.SetPosition(107, 70);
         Height.SetMinValue(1);
         Height.SetMaxValue(255);
-        Height.SetSize(66, 27);
+        Height.SetSize(90, 27);
         Height.SetValue(this.Map.Height);
         Height.OnValueChanged += delegate (BaseEventArgs e)
         {
@@ -100,7 +100,7 @@ public class MapPropertiesWindow : PopupWindow
         };
         BGM = new DropdownBox(box1);
         BGM.SetPosition(6, 123);
-        BGM.SetSize(136, 27);
+        BGM.SetSize(186, 27);
         BGM.SetText(this.Map.AutoplayBGM ? this.Map.BGM.Name : "");
         BGM.SetEnabled(this.Map.AutoplayBGM);
         BGM.SetReadOnly(true);
@@ -132,7 +132,7 @@ public class MapPropertiesWindow : PopupWindow
         };
         BGS = new DropdownBox(box1);
         BGS.SetPosition(6, 178);
-        BGS.SetSize(136, 27);
+        BGS.SetSize(186, 27);
         BGS.SetText(this.Map.AutoplayBGS ? this.Map.BGS.Name : "");
         BGS.SetEnabled(this.Map.AutoplayBGS);
         BGS.SetReadOnly(true);
@@ -152,7 +152,7 @@ public class MapPropertiesWindow : PopupWindow
         };
 
         Tilesets = new ListBox(box1);
-        Tilesets.SetPosition(162, 22);
+        Tilesets.SetPosition(212, 22);
         List<ListItem> tilesetitems = new List<ListItem>();
         for (int i = 0; i < this.Map.TilesetIDs.Count; i++)
         {
@@ -164,7 +164,7 @@ public class MapPropertiesWindow : PopupWindow
         Tilesets.SetItems(tilesetitems);
 
         EditTilesetsButton = new Button(box1);
-        EditTilesetsButton.SetPosition(156, 176);
+        EditTilesetsButton.SetPosition(206, 176);
         EditTilesetsButton.SetSize(144, 32);
         EditTilesetsButton.SetText("Edit Tileset");
         EditTilesetsButton.OnClicked += _ => AddTileset();
@@ -185,7 +185,7 @@ public class MapPropertiesWindow : PopupWindow
         Label tilesetslabel = new Label(box1);
         tilesetslabel.SetText("Tileset:");
         tilesetslabel.SetFont(f);
-        tilesetslabel.SetPosition(163, 6);
+        tilesetslabel.SetPosition(213, 6);
 
         //Label autotileslabel = new Label(box1);
         //autotileslabel.SetText("Autotiles:");
