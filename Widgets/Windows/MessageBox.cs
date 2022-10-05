@@ -155,7 +155,7 @@ public class MessageBox : PopupWindow
             x += 50;
         }
         label.SetSize(Size.Width - 10 - x, 1);
-        label.RedrawText();
+        label.RedrawText(true);
         label.SetPosition(x, Size.Height / 2 - label.Size.Height / 2 - 2);
         if (Icon != null)
         {

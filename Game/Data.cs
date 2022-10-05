@@ -1,9 +1,11 @@
-﻿using System;
+﻿using RPGStudioMK.Widgets;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace RPGStudioMK.Game;
 
@@ -21,7 +23,11 @@ public static class Data
     public static List<Script> Scripts = new List<Script>();
     public static System System;
 
+    public static bool StopLoading = false;
+
     public static EssentialsVersion EssentialsVersion = EssentialsVersion.Unknown;
+
+    static Action<float> OnProgressUpdated;
 
     public static void ClearProjectData()
     {
@@ -35,19 +41,24 @@ public static class Data
         Species.Clear();
         Scripts.Clear();
         System = null;
+        StopLoading = false;
     }
 
-    public static IEnumerable<float> LoadGameData()
+    public static void LoadGameData(Action<float> OnProgressUpdated)
     {
+        Data.OnProgressUpdated = OnProgressUpdated;
         Compatibility.RMXP.Setup();
+        if (StopLoading) return;
         LoadTilesets();
+        if (StopLoading) return;
         LoadScripts();
-        foreach (float f in LoadMaps())
-        {
-            yield return f;
-        }
+        if (StopLoading) return;
+        LoadMaps();
+        if (StopLoading) return;
         LoadSystem();
+        if (StopLoading) return;
         LoadCommonEvents();
+        if (StopLoading) return;
         LoadGameINI();
     }
 
@@ -80,42 +91,128 @@ public static class Data
         Editor.ProjectFilePath = Data.ProjectFilePath;
     }
 
+    public static void AbortLoad()
+    {
+        StopLoading = true;
+    }
+
+    private static void LoadError(string File, string ErrorMessage)
+    {
+        string text = ErrorMessage switch
+        {
+            "Errno::EACCES" => $"RPG Studio MK was unable to load '{File}' because it was likely in use by another process.\nPlease try again.",
+            "Errno::ENOENT" => $"RPG Studio MK was unable to load '{File}' because it does not exist.",
+            "TypeError" => $"RPG Studio MK was unable to load '{File}' because it contains incorrect data. Are you sure this file has the correct name?",
+            "EOFError" => $"RPG Studio MK was unable to load '{File}' because it was empty or contained invalid data.\nIt may be corrupt or outdated.",
+            _ => $"RPG Studio MK was unable to load '{File}'.\n\n" + ErrorMessage + "\n\nPlease try again."
+        };
+        MessageBox mbox = new MessageBox("Error", text, ButtonType.OK, IconType.Error);
+        AbortLoad();
+    }
+
+    private static void SaveError(string File, string ErrorMessage)
+    {
+        string text = ErrorMessage switch
+        {
+            "Errno::EACCES" => $"RPG Studio MK was unable to save '{File}' because it was likely in use by another process.\n\n" +
+                                "All other data has been saved successfully. Please try again.",
+            _ => $"RPG Studio MK was unable to save '{File}'.\n\n{ErrorMessage}\n\nAll other data has been saved successfully. Please try again."
+        };
+        MessageBox mbox = new MessageBox("Error", text, ButtonType.OK, IconType.Error);
+        // Keep saving; prefer corrupting data if something is seriously wrong, which is doubtful, over
+        // the prospect of losing all data in memory if the issue is only something minor, in a small section of the program.
+    }
+
+    private static (bool Success, string Error) SafeLoad(string Filename, Action<IntPtr> Action)
+    {
+        (bool Success, string Error) = SafelyOpenAndCloseFile(DataPath + "/" + Filename, "rb", Action);
+        if (!Success) LoadError("Data/" + Filename, Error);
+        return (Success, Error);
+    }
+
+    private static (bool Success, string Error) SafeSave(string Filename, Action<IntPtr> Action)
+    {
+        (bool Success, string Error) = SafelyOpenAndCloseFile(DataPath + "/" + Filename, "wb", Action);
+        if (!Success) SaveError("Data/" + Filename, Error);
+        return (Success, Error);
+    }
+
+    private static (bool Success, string Error) SafelyOpenAndCloseFile(string Filename, string Mode, Action<IntPtr> Action, int Tries = 10, int DelayInMS = 40)
+    {
+        int Total = Tries;
+        while (Tries > 0)
+        {
+            if (Ruby.Protect(_ =>
+            {
+                IntPtr File = Ruby.File.Open(Filename, Mode);
+                Ruby.Pin(File);
+                Action(File);
+                Ruby.File.Close(File);
+                Ruby.Unpin(File);
+                return IntPtr.Zero;
+            }))
+            {
+                if (Tries != Total)
+                    Console.WriteLine($"{Filename.Split('/').Last()} opened after {Total - Tries + 1} attempt(s) and {DelayInMS * (Total - Tries + 1)}ms.");
+                return (true, null);
+            }
+            string ErrorType = Ruby.GetErrorType();
+            if (ErrorType != "Errno::EACCES")
+            {
+                // Other error than simultaneous access, no point in retrying.
+                return (false, ErrorType);
+            }
+            Console.WriteLine("Retrying...");
+            Thread.Sleep(DelayInMS);
+            Tries--;
+        }
+        Console.WriteLine($"{Filename.Split('/').Last()} failed to open after {Total} attempt(s) and {DelayInMS * Total}ms.");
+        return (false, "Errno::EACCES");
+    }
+
+    private static void SetLoadProgress(float Progress)
+    {
+        OnProgressUpdated?.Invoke(Progress);
+    }
+
     private static void LoadTilesets()
     {
-        IntPtr file = Ruby.File.Open(DataPath + "/Tilesets.rxdata", "rb");
-        IntPtr data = Ruby.Marshal.Load(file);
-        Ruby.Pin(data);
-        Ruby.File.Close(file);
-        Autotiles.AddRange(new Autotile[Ruby.Array.Length(data) * 7]);
-        Tilesets.Add(null);
-        for (int i = 0; i < Ruby.Array.Length(data); i++)
+        SafeLoad("Tilesets.rxdata", File =>
         {
-            IntPtr tileset = Ruby.Array.Get(data, i);
-            if (tileset != Ruby.Nil)
+            IntPtr data = Ruby.Marshal.Load(File);
+            Ruby.Pin(data);
+            Autotiles.AddRange(new Autotile[Ruby.Array.Length(data) * 7]);
+            Tilesets.Add(null);
+            for (int i = 0; i < Ruby.Array.Length(data); i++)
             {
-                Tilesets.Add(new Tileset(tileset));
+                IntPtr tileset = Ruby.Array.Get(data, i);
+                if (tileset != Ruby.Nil)
+                {
+                    Tilesets.Add(new Tileset(tileset));
+                }
             }
-        }
-        Ruby.Unpin(data);
+            Ruby.Unpin(data);
+        });
     }
 
     private static void SaveTilesets()
     {
-        IntPtr tilesets = Ruby.Array.Create();
-        Ruby.Pin(tilesets);
-        foreach (Tileset tileset in Tilesets)
+        SafeSave("Tilesets.rxdata", File =>
         {
-            if (tileset == null) Ruby.Array.Push(tilesets, Ruby.Nil);
-            else
+            IntPtr tilesets = Ruby.Array.Create();
+            Ruby.Pin(tilesets);
+            foreach (Tileset tileset in Tilesets)
             {
-                IntPtr tilesetdata = tileset.Save();
-                Ruby.Array.Push(tilesets, tilesetdata);
+                if (tileset == null) Ruby.Array.Push(tilesets, Ruby.Nil);
+                else
+                {
+                    IntPtr tilesetdata = tileset.Save();
+                    Ruby.Array.Push(tilesets, tilesetdata);
+                }
             }
-        }
-        IntPtr file = Ruby.File.Open(DataPath + "/Tilesets.rxdata", "wb");
-        Ruby.Marshal.Dump(tilesets, file);
-        Ruby.File.Close(file);
-        Ruby.Unpin(tilesets);
+            Ruby.Marshal.Dump(tilesets, File);
+            Ruby.Unpin(tilesets);
+        });
     }
 
     /// <summary>
@@ -143,209 +240,232 @@ public static class Data
         return Filenames;
     }
 
-    private static IEnumerable<float> LoadMaps()
+    private static void LoadMaps()
     {
-        IntPtr mapinfofile = Ruby.File.Open(DataPath + "/MapInfos.rxdata", "rb");
-        IntPtr mapinfo = Ruby.Marshal.Load(mapinfofile);
-        Ruby.Pin(mapinfo);
-        Ruby.File.Close(mapinfofile);
-        List<(string, int)> Filenames = GetMapIDs(DataPath);
-        int total = Filenames.Count;
-        int count = 0;
-        foreach ((string name, int id) tuple in Filenames)
+        SafeLoad("MapInfos.rxdata", InfoFile =>
         {
-            IntPtr mapfile = Ruby.File.Open(DataPath + "/" + tuple.name, "rb");
-            IntPtr mapdata = Ruby.Marshal.Load(mapfile);
-            Ruby.Pin(mapdata);
-            int id = tuple.id;
-            Ruby.File.Close(mapfile);
-            Map map = new Map(id, mapdata, Ruby.Hash.Get(mapinfo, Ruby.Integer.ToPtr(id)));
-            Maps[map.ID] = map;
-            Ruby.Unpin(mapdata);
-            count++;
-            yield return count / (float) total;
-        }
-        Ruby.Unpin(mapinfo);
-        Editor.AssignOrderToNewMaps();
+            IntPtr mapinfo = Ruby.Marshal.Load(InfoFile);
+            Ruby.Pin(mapinfo);
+            List<(string, int)> Filenames = GetMapIDs(DataPath);
+            int total = Filenames.Count;
+            int count = 0;
+            foreach ((string name, int id) tuple in Filenames)
+            {
+                SafeLoad(tuple.name, MapFile =>
+                {
+                    IntPtr mapdata = Ruby.Marshal.Load(MapFile);
+                    Ruby.Pin(mapdata);
+                    int id = tuple.id;
+                    Map map = new Map(id, mapdata, Ruby.Hash.Get(mapinfo, Ruby.Integer.ToPtr(id)));
+                    Maps[map.ID] = map;
+                    Ruby.Unpin(mapdata);
+                    count++;
+                    SetLoadProgress(count / (float) total);
+                });
+                if (StopLoading) break;
+            }
+            Ruby.Unpin(mapinfo);
+            Editor.AssignOrderToNewMaps();
+        });
     }
 
     private static void SaveMaps()
     {
-        IntPtr mapinfos = Ruby.Hash.Create();
-        Ruby.Pin(mapinfos);
-        foreach (Map map in Maps.Values)
+        (bool Success, string Error) = SafeSave("MapInfos.rxdata", InfoFile =>
         {
-            IntPtr mapinfo = Ruby.Funcall(Compatibility.RMXP.MapInfo.Class, "new");
-            Ruby.Hash.Set(mapinfos, Ruby.Integer.ToPtr(map.ID), mapinfo);
-            Ruby.SetIVar(mapinfo, "@name", Ruby.String.ToPtr(map.Name));
-            Ruby.SetIVar(mapinfo, "@parent_id", Ruby.Integer.ToPtr(map.ParentID));
-            Ruby.SetIVar(mapinfo, "@order", Ruby.Integer.ToPtr(map.Order));
-            Ruby.SetIVar(mapinfo, "@expanded", map.Expanded ? Ruby.True : Ruby.False);
-            Ruby.SetIVar(mapinfo, "@scroll_x", Ruby.Integer.ToPtr(map.ScrollX));
-            Ruby.SetIVar(mapinfo, "@scroll_y", Ruby.Integer.ToPtr(map.ScrollY));
+            IntPtr mapinfos = Ruby.Hash.Create();
+            Ruby.Pin(mapinfos);
+            foreach (Map map in Maps.Values)
+            {
+                SafeSave($"Map{Utilities.Digits(map.ID, 3)}.rxdata", MapFile =>
+                {
+                    IntPtr mapinfo = Ruby.Funcall(Compatibility.RMXP.MapInfo.Class, "new");
+                    Ruby.Hash.Set(mapinfos, Ruby.Integer.ToPtr(map.ID), mapinfo);
+                    Ruby.SetIVar(mapinfo, "@name", Ruby.String.ToPtr(map.Name));
+                    Ruby.SetIVar(mapinfo, "@parent_id", Ruby.Integer.ToPtr(map.ParentID));
+                    Ruby.SetIVar(mapinfo, "@order", Ruby.Integer.ToPtr(map.Order));
+                    Ruby.SetIVar(mapinfo, "@expanded", map.Expanded ? Ruby.True : Ruby.False);
+                    Ruby.SetIVar(mapinfo, "@scroll_x", Ruby.Integer.ToPtr(map.ScrollX));
+                    Ruby.SetIVar(mapinfo, "@scroll_y", Ruby.Integer.ToPtr(map.ScrollY));
 
-            IntPtr mapdata = map.Save();
-            IntPtr file = Ruby.File.Open(DataPath + $"/Map{Utilities.Digits(map.ID, 3)}.rxdata", "wb");
-            Ruby.Marshal.Dump(mapdata, file);
-            Ruby.File.Close(file);
-        }
-        IntPtr mapinfosfile = Ruby.File.Open(DataPath + $"/MapInfos.rxdata", "wb");
-        Ruby.Marshal.Dump(mapinfos, mapinfosfile);
-        Ruby.File.Close(mapinfosfile);
-        Ruby.Unpin(mapinfos);
-        // Delete all maps that are not part of of the data anymore
-        foreach ((string filename, int id) map in GetMapIDs(DataPath))
+                    IntPtr mapdata = map.Save();
+                    Ruby.Marshal.Dump(mapdata, MapFile);
+                });
+                if (StopLoading) break;
+            }
+            Ruby.Marshal.Dump(mapinfos, InfoFile);
+            Ruby.Unpin(mapinfos);
+        });
+        if (Success)
         {
-            if (!Maps.ContainsKey(map.id)) File.Delete(DataPath + "/" + map.filename);
+            // Delete all maps that are not part of of the data anymore
+            // At least, only if saving all the other maps and info was a success.
+            foreach ((string filename, int id) map in GetMapIDs(DataPath))
+            {
+                try
+                {
+                    if (!Maps.ContainsKey(map.id)) File.Delete(DataPath + "/" + map.filename);
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine($"Failed to delete '{DataPath}/{map.filename}'.");
+                }
+            }
         }
     }
 
     private static void LoadSystem()
     {
-        IntPtr file = Ruby.File.Open(DataPath + "/System.rxdata", "rb");
-        IntPtr data = Ruby.Marshal.Load(file);
-        Ruby.Pin(data);
-        Ruby.File.Close(file);
-        System = new System(data);
-        Ruby.Unpin(data);
+        SafeLoad("System.rxdata", File =>
+        {
+            IntPtr data = Ruby.Marshal.Load(File);
+            Ruby.Pin(data);
+            System = new System(data);
+            Ruby.Unpin(data);
+        });
     }
 
     private static void SaveSystem()
     {
         System.EditMapID = Editor.ProjectSettings.LastMapID;
-        IntPtr data = System.Save();
-        Ruby.Pin(data);
-        IntPtr file = Ruby.File.Open(DataPath + "/System.rxdata", "wb");
-        Ruby.Marshal.Dump(data, file);
-        Ruby.File.Close(file);
-        Ruby.Unpin(data);
+        SafeSave("System.rxdata", File =>
+        {
+            IntPtr data = System.Save();
+            Ruby.Pin(data);
+            Ruby.Marshal.Dump(data, File);
+            Ruby.Unpin(data);
+        });
     }
 
     private static void LoadCommonEvents()
     {
-        IntPtr file = Ruby.File.Open(DataPath + "/CommonEvents.rxdata", "rb");
-        IntPtr list = Ruby.Marshal.Load(file);
-        Ruby.Pin(list);
-        Ruby.File.Close(file);
-        for (int i = 1; i < Ruby.Array.Length(list); i++)
+        SafeLoad("CommonEvents.rxdata", File =>
         {
-            CommonEvent ce = new CommonEvent(Ruby.Array.Get(list, i));
-            CommonEvents.Add(ce);
-        }
-        Ruby.Unpin(list);
+            IntPtr list = Ruby.Marshal.Load(File);
+            Ruby.Pin(list);
+            for (int i = 1; i < Ruby.Array.Length(list); i++)
+            {
+                CommonEvent ce = new CommonEvent(Ruby.Array.Get(list, i));
+                CommonEvents.Add(ce);
+            }
+            Ruby.Unpin(list);
+        });
     }
 
     private static void SaveCommonEvents()
     {
-        IntPtr list = Ruby.Array.Create();
-        Ruby.Pin(list);
-        for (int i = 0; i < CommonEvents.Count; i++)
+        SafeSave("CommonEvents.rxdata", File =>
         {
-            Ruby.Array.Set(list, i + 1, CommonEvents[i].Save());
-        }
-        IntPtr file = Ruby.File.Open(DataPath + "/CommonEvents.rxdata", "wb");
-        Ruby.Marshal.Dump(list, file);
-        Ruby.File.Close(file);
-        Ruby.Unpin(list);
+            IntPtr list = Ruby.Array.Create();
+            Ruby.Pin(list);
+            for (int i = 0; i < CommonEvents.Count; i++)
+            {
+                Ruby.Array.Set(list, i + 1, CommonEvents[i].Save());
+            }
+            Ruby.Marshal.Dump(list, File);
+            Ruby.Unpin(list);
+        });
     }
 
     private static void LoadScripts()
     {
-        IntPtr file = Ruby.File.Open(DataPath + "/Scripts.rxdata", "rb");
-        IntPtr data = Ruby.Marshal.Load(file);
-        Ruby.Pin(data);
-        Ruby.File.Close(file);
-        for (int i = 0; i < Ruby.Array.Length(data); i++)
+        SafeLoad("Scripts.rxdata", File =>
         {
-            IntPtr script = Ruby.Array.Get(data, i);
-            Scripts.Add(new Script(script));
-        }
-        Ruby.Unpin(data);
-        bool Inject = false;
-        // Injects code at the top of the script list
-        if (Inject)
-        {
-            string startcode = Utilities.GetInjectedCodeStart();
-            if (Scripts[0].Name != "RPG Studio MK1")
+            IntPtr data = Ruby.Marshal.Load(File);
+            Ruby.Pin(data);
+            for (int i = 0; i < Ruby.Array.Length(data); i++)
             {
-                if (!string.IsNullOrEmpty(startcode))
+                IntPtr script = Ruby.Array.Get(data, i);
+                Scripts.Add(new Script(script));
+            }
+            Ruby.Unpin(data);
+            bool Inject = false;
+            // Injects code at the top of the script list
+            if (Inject)
+            {
+                string startcode = Utilities.GetInjectedCodeStart();
+                if (Scripts[0].Name != "RPG Studio MK1")
                 {
-                    Script script = new Script();
-                    script.Name = "RPG Studio MK1";
-                    script.Content = startcode;
-                    Scripts.Insert(0, script);
+                    if (!string.IsNullOrEmpty(startcode))
+                    {
+                        Script script = new Script();
+                        script.Name = "RPG Studio MK1";
+                        script.Content = startcode;
+                        Scripts.Insert(0, script);
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(startcode)) Scripts.RemoveAt(0);
+                    else Scripts[0].Content = startcode;
+                }
+                // Injects code at the bottom of the script list, above Main
+                string maincode = Utilities.GetInjectedCodeAboveMain();
+                if (Scripts.Count < 3 || Scripts[Scripts.Count - 2].Name != "RPG Studio MK2")
+                {
+                    if (!string.IsNullOrEmpty(maincode))
+                    {
+                        Script script = new Script();
+                        script.Name = "RPG Studio MK2";
+                        script.Content = maincode;
+                        Scripts.Insert(Scripts.Count - 1, script);
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(maincode)) Scripts.RemoveAt(Scripts.Count - 2);
+                    else Scripts[Scripts.Count - 2].Content = maincode;
                 }
             }
-            else
+            // Find Essentials version
+            for (int i = 0; i < Scripts.Count; i++)
             {
-                if (string.IsNullOrEmpty(startcode)) Scripts.RemoveAt(0);
-                else Scripts[0].Content = startcode;
-            }
-            // Injects code at the bottom of the script list, above Main
-            string maincode = Utilities.GetInjectedCodeAboveMain();
-            if (Scripts.Count < 3 || Scripts[Scripts.Count - 2].Name != "RPG Studio MK2")
-            {
-                if (!string.IsNullOrEmpty(maincode))
+                Script s = Scripts[i];
+                Match m = Regex.Match(s.Content, "module Essentials[\t\r\n ]*VERSION[\t\r\n ]*=[\t\r\n ]*\"(.*)\"");
+                if (m.Success && !string.IsNullOrEmpty(m.Groups[1].Value)) // v19, v19.1, v20, etc.
                 {
-                    Script script = new Script();
-                    script.Name = "RPG Studio MK2";
-                    script.Content = maincode;
-                    Scripts.Insert(Scripts.Count - 1, script);
+                    EssentialsVersion = m.Groups[1].Value switch
+                    {
+                        "19" => EssentialsVersion.v19,
+                        "19.1" => EssentialsVersion.v19_1,
+                        "20" => EssentialsVersion.v20,
+                        "20.1" => EssentialsVersion.v20_1,
+                        _ => EssentialsVersion.Unknown
+                    };
+                    break;
+                }
+                m = Regex.Match(s.Content, "(ESSENTIALS_VERSION|ESSENTIALSVERSION)[\t\r\n ]*=[\t\r\n ]*\"(.*)\"");
+                if (m.Success && !string.IsNullOrEmpty(m.Groups[2].Value)) // v17, v17.1, v17.2, v18, v18.1
+                {
+                    EssentialsVersion = m.Groups[2].Value switch
+                    {
+                        "17" => EssentialsVersion.v17,
+                        "17.1" => EssentialsVersion.v17_1,
+                        "17.2" => EssentialsVersion.v17_2,
+                        "18" => EssentialsVersion.v18,
+                        "18.1" => EssentialsVersion.v18_1,
+                        _ => EssentialsVersion.Unknown
+                    };
+                    break;
                 }
             }
-            else
-            {
-                if (string.IsNullOrEmpty(maincode)) Scripts.RemoveAt(Scripts.Count - 2);
-                else Scripts[Scripts.Count - 2].Content = maincode;
-            }
-        }
-        // Find Essentials version
-        for (int i = 0; i < Scripts.Count; i++)
-        {
-            Script s = Scripts[i];
-            Match m = Regex.Match(s.Content, "module Essentials[\t\r\n ]*VERSION[\t\r\n ]*=[\t\r\n ]*\"(.*)\"");
-            if (m.Success && !string.IsNullOrEmpty(m.Groups[1].Value)) // v19, v19.1, v20, etc.
-            {
-                EssentialsVersion = m.Groups[1].Value switch
-                {
-                    "19" => EssentialsVersion.v19,
-                    "19.1" => EssentialsVersion.v19_1,
-                    "20" => EssentialsVersion.v20,
-                    "20.1" => EssentialsVersion.v20_1,
-                    _ => EssentialsVersion.Unknown
-                };
-                break;
-            }
-            m = Regex.Match(s.Content, "(ESSENTIALS_VERSION|ESSENTIALSVERSION)[\t\r\n ]*=[\t\r\n ]*\"(.*)\"");
-            if (m.Success && !string.IsNullOrEmpty(m.Groups[2].Value)) // v17, v17.1, v17.2, v18, v18.1
-            {
-                EssentialsVersion = m.Groups[2].Value switch
-                {
-                    "17" => EssentialsVersion.v17,
-                    "17.1" => EssentialsVersion.v17_1,
-                    "17.2" => EssentialsVersion.v17_2,
-                    "18" => EssentialsVersion.v18,
-                    "18.1" => EssentialsVersion.v18_1,
-                    _ => EssentialsVersion.Unknown
-                };
-                break;
-            }
-        }
+        });
     }
 
     private static void SaveScripts()
     {
-        IntPtr scripts = Ruby.Array.Create();
-        Ruby.Pin(scripts);
-        foreach (Script script in Scripts)
+        SafeSave("Scripts.rxdata", File =>
         {
-            IntPtr scriptdata = script.Save();
-            Ruby.Array.Push(scripts, scriptdata);
-        }
-        IntPtr file = Ruby.File.Open(DataPath + "/Scripts.rxdata", "wb");
-        Ruby.Marshal.Dump(scripts, file);
-        Ruby.File.Close(file);
-        Ruby.Unpin(scripts);
+            IntPtr scripts = Ruby.Array.Create();
+            Ruby.Pin(scripts);
+            foreach (Script script in Scripts)
+            {
+                IntPtr scriptdata = script.Save();
+                Ruby.Array.Push(scripts, scriptdata);
+            }
+            Ruby.Marshal.Dump(scripts, File);
+            Ruby.Unpin(scripts);
+        });
     }
 
     private static Encoding win1252;

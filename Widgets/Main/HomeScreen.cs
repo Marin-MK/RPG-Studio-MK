@@ -361,8 +361,10 @@ public class HomeScreen : Widget
         else
         {
             Data.SetProjectPath(ProjectFilePath);
-            ((MainEditorWindow)Window).CreateEditor();
-            Editor.MakeRecentProject();
+            if (((MainEditorWindow) Window).CreateEditor())
+            {
+                Editor.MakeRecentProject();
+            }
         }
     }
 

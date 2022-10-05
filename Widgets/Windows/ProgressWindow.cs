@@ -23,6 +23,7 @@ public class ProgressWindow : PopupWindow
         MessageLabel = new Label(this);
         MessageLabel.SetFont(Fonts.CabinMedium.Use(11));
         MessageLabel.SetText(Message);
+        MessageLabel.RedrawText(true);
         MessageLabel.SetPosition(Size.Width / 2 - MessageLabel.Size.Width / 2, 24);
 
         ProgressBar = new ProgressBar(this);

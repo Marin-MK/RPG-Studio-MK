@@ -233,7 +233,7 @@ public partial class MainEditorWindow : UIWindow
     /// <summary>
     /// Initializes the editor after the home screen has been shown.
     /// </summary>
-    public void CreateEditor()
+    public bool CreateEditor()
     {
         Stopwatch s = new Stopwatch();
         s.Start();
@@ -241,14 +241,25 @@ public partial class MainEditorWindow : UIWindow
         Editor.LoadProjectSettings();
         ProgressWindow pw = new ProgressWindow("Loading", "Loading project...", true);
         Graphics.Update();
-        foreach (float f in Data.LoadGameData())
+        Data.LoadGameData(f =>
         {
             // f is percentage of maps that have been parsed
             pw.SetProgress(f);
             // Force redraw in between maps loaded
             if (Graphics.CanUpdate()) Graphics.Update();
             // Window was closed, return to main loop to finish closing program
-            else return;
+            else
+            {
+                if (!pw.Disposed) pw.Dispose();
+                Data.ClearProjectData();
+                Data.AbortLoad();
+            }
+        });
+        if (!pw.Disposed) pw.Dispose();
+        if (Data.StopLoading)
+        {
+            Data.ClearProjectData();
+            return false;
         }
 
         HomeScreen?.Dispose();
@@ -264,6 +275,7 @@ public partial class MainEditorWindow : UIWindow
 
         s.Stop();
         StatusBar.QueueMessage($"Project loaded ({s.ElapsedMilliseconds}ms)", true, 5000);
+        return true;
     }
 
     /// <summary>
