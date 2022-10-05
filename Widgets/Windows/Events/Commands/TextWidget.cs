@@ -98,16 +98,18 @@ public class TextWidget : BaseCommandWidget
             CommandCode.Comment => "Comment",
             _ => HeaderLabel.Text
         });
+        HeaderLabel.RedrawText(true);
         
         string text = MergeText();
 
         ScaleGradientWithSize = false;
 
-        MultilineLabel.SetPosition(HeaderLabel.Position.X + HeaderLabel.Size.Width + 10, 8);
+        MultilineLabel.SetPosition(HeaderLabel.Position.X + HeaderLabel.Size.Width + 8, 10);
         MultilineLabel.SetLineHeight(22);
         MultilineLabel.SetWidth(Size.Width - MultilineLabel.Position.X - 4);
         MultilineLabel.SetFont(Command.Code == CommandCode.Script ? Fonts.Monospace.Use(11) : Fonts.CabinMedium.Use(9));
         MultilineLabel.SetText(text);
+        MultilineLabel.RedrawText(true);
         HeightAdd = Math.Max(0, MultilineLabel.Size.Height - StandardHeight);
         //SetWidth(GetStandardWidth(Indentation));
         //
