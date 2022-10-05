@@ -17,6 +17,7 @@ public class Button : Widget
     public BaseEvent OnClicked;
 
     int MaxWidth;
+    bool DrawnText = false;
 
     public Button(IContainer Parent) : base(Parent)
     {
@@ -100,7 +101,14 @@ public class Button : Widget
         if (this.LeftAlign != LeftAlign)
         {
             this.LeftAlign = LeftAlign;
-            RedrawText();
+            if (!LeftAlign)
+            {
+                Sprites["text"].X = Size.Width / 2 - MaxWidth / 2;
+            }
+            else
+            {
+                Sprites["text"].X = 10 + TextX;
+            }
         }
     }
 
@@ -109,12 +117,17 @@ public class Button : Widget
         if (this.TextX != TextX)
         {
             this.TextX = TextX;
-            RedrawText();
+            if (LeftAlign) Sprites["text"].X = 10 + TextX;
         }
     }
 
-    public void RedrawText()
+    public void RedrawText(bool Now = false)
     {
+        if (!Now)
+        {
+            DrawnText = false;
+            return;
+        }
         if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
         if (string.IsNullOrEmpty(this.Text)) return;
         List<string> Lines = this.Text.Split('\n').ToList();
@@ -138,6 +151,7 @@ public class Button : Widget
             Sprites["text"].X = 10 + TextX;
         }
         Sprites["text"].Y = Size.Height / 2 - 9 * Lines.Count;
+        DrawnText = true;
     }
 
     public void RedrawFiller()
@@ -157,7 +171,12 @@ public class Button : Widget
         }
         else Sprites["filler"].Bitmap.FillRect(0, 0, w, h, new Color(51, 86, 121));
         Sprites["filler"].Bitmap.Lock();
-        RedrawText();
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        if (!DrawnText) RedrawText(true);
     }
 
     public override void SizeChanged(BaseEventArgs e)
@@ -241,7 +260,7 @@ public class Button : Widget
             if (Mouse.Inside)
             {
                 this.OnClicked?.Invoke(new BaseEventArgs());
-                if (!Disposed) RedrawText();
+                if (!Disposed && !this.Enabled) RedrawText();
             }
         }
         if (!Disposed) RedrawFiller();
