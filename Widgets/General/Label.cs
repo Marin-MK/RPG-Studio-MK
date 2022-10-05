@@ -14,6 +14,8 @@ public class Label : Widget
 
     public bool ReachedWidthLimit { get; protected set; } = false;
 
+    protected bool DrawnText = false;
+
     public Label(IContainer Parent) : base(Parent)
     {
         Sprites["text"] = new Sprite(this.Viewport);
@@ -84,9 +86,13 @@ public class Label : Widget
         }
     }
 
-    public virtual void RedrawText()
+    public virtual void RedrawText(bool Now = false)
     {
-        base.Draw();
+        if (!Now)
+        {
+            DrawnText = false;
+            return;
+        }
         Sprites["text"].Bitmap?.Dispose();
         this.ReachedWidthLimit = false;
         if (string.IsNullOrEmpty(this.Text)) return;
@@ -119,6 +125,13 @@ public class Label : Widget
         Sprites["text"].Bitmap.Font = this.Font;
         Sprites["text"].Bitmap.DrawText(text, this.Enabled ? this.TextColor : new Color(160, 160, 160), this.DrawOptions);
         Sprites["text"].Bitmap.Lock();
+        DrawnText = true;
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        if (!DrawnText) RedrawText(true);
     }
 }
 
@@ -142,8 +155,13 @@ public class MultilineLabel : Label
         }
     }
 
-    public override void RedrawText()
+    public override void RedrawText(bool Now = false)
     {
+        if (!Now)
+        {
+            DrawnText = false;
+            return;
+        }
         Sprites["text"].Bitmap?.Dispose();
         if (string.IsNullOrEmpty(Text)) return;
         List<string> Lines = Utilities.FormatString(this.Font, Text, WidthLimit ? Size.Width : -1);
@@ -156,11 +174,6 @@ public class MultilineLabel : Label
             Sprites["text"].Bitmap.DrawText(Lines[i], 0, LineHeight * i, this.Enabled ? this.TextColor : new Color(160, 160, 160));
         }
         Sprites["text"].Bitmap.Lock();
-    }
-
-    protected override void Draw()
-    {
-        this.RedrawText();
-        this.Drawn = true;
+        DrawnText = true;
     }
 }
