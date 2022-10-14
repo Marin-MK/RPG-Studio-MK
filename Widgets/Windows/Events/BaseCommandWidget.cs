@@ -132,7 +132,7 @@ public class BaseCommandWidget : Widget
 
     List<BaseCommandWidget> SubcommandWidgets = new List<BaseCommandWidget>();
 
-    public BaseCommandWidget(IContainer Parent, int ParentWidgetIndex, Color BarColor = null) : base(Parent, ParentWidgetIndex)
+    public BaseCommandWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex)
     {
         ShadowWidget = new ShadowWidget(this);
         ShadowWidget.SetVDocked(true);
@@ -239,6 +239,7 @@ public class BaseCommandWidget : Widget
         {
             Icon.SetEventCommand(Command.Code);
             HeaderLabel.SetText(Command.Code.ToString());
+            HeaderLabel.RedrawText(true);
             HeaderLabel.SetVisible(true);
             VStackPanel.SetPadding(ShadowSize + ChildIndent, ShadowSize + StandardHeight, ShadowSize, ShadowSize);
             SetCommandColors();
@@ -331,6 +332,11 @@ public class BaseCommandWidget : Widget
     protected int GetStandardWidth(int Indent)
     {
         return MainCommandWidget.Parent.Size.Width - (ChildIndent + ShadowSize) * Indent - CommandOffset;
+    }
+
+    protected Point GetStandardLabelPosition()
+    {
+        return new Point(HeaderLabel.Position.X + HeaderLabel.Size.Width + 8, 10);
     }
 
     protected BaseCommandWidget CreateWidget(EventCommand Command, int Count, VStackPanel Parent, int GlobalCommandIndex, int ParentWidgetIndex = -1)
@@ -642,28 +648,27 @@ public class BaseCommandWidget : Widget
     public override void LeftMouseDownInside(MouseEventArgs e)
     {
         base.LeftMouseDownInside(e);
-        // Only perform this mouse input for BaseCommandWidgets; derived classes will include these cases
-        // But since we must call Widget.LeftMouseDownInside for the double click event to count, they must
-        // still all call this method.
-        if (this.GetType() == typeof(BaseCommandWidget))
+        HandleStandardInput(e);
+    }
+
+    protected virtual void HandleStandardInput(MouseEventArgs e)
+    {
+        if (e.Handled || InsideChild())
         {
-            if (e.Handled || InsideChild())
-            {
-                CancelDoubleClick();
-                return;
-            }
-            bool HoldingShift = Input.Press(Keycode.SHIFT);
-            if (this.Indentation == -1)
-            {
-                if (!VStackPanel.Mouse.Inside) SubcommandWidgets[^1].SetSelected(true, HoldingShift);
-            }
-            else SetSelected(true, HoldingShift);
+            CancelDoubleClick();
+            return;
         }
+        bool HoldingShift = Input.Press(Keycode.SHIFT);
+        if (this.Indentation == -1)
+        {
+            if (!VStackPanel.Mouse.Inside) SubcommandWidgets[^1].SetSelected(true, HoldingShift);
+        }
+        else SetSelected(true, HoldingShift);
     }
 
     protected virtual bool IsEditable()
     {
-        return this is not BlankWidget;
+        return this is not BlankWidget && MainCommandWidget.SelectedWidgets.Count < 2;
     }
 
     protected void RegisterUndoAction(CommandUndoAction UndoAction)

@@ -7,12 +7,19 @@ namespace RPGStudioMK.Widgets.CommandWidgets;
 
 public class WaitWidget : BaseCommandWidget
 {
-    public WaitWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex) { }
+    Label WaitLabel;
+
+    public WaitWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex) 
+    {
+        WaitLabel = new Label(this);
+        WaitLabel.SetFont(Fonts.CabinMedium.Use(9));
+    }
 
     public override void LoadCommand()
     {
         base.LoadCommand();
-        HeaderLabel.SetText($"Wait {Command.Parameters[0]} frame{((long) Command.Parameters[0] > 1 ? "s" : "")}");
+        WaitLabel.SetPosition(GetStandardLabelPosition());
+        WaitLabel.SetText($"{Command.Parameters[0]} frame{((long) Command.Parameters[0] > 1 ? "s" : "")}");
     }
 
     protected override void Edit(EditEvent Continue)
@@ -31,16 +38,5 @@ public class WaitWidget : BaseCommandWidget
             };
             Continue();
         };
-    }
-
-    public override void LeftMouseDownInside(MouseEventArgs e)
-    {
-        base.LeftMouseDownInside(e);
-        if (e.Handled || this.Indentation == -1)
-        {
-            CancelDoubleClick();
-            return;
-        }
-        SelectNormally();
     }
 }

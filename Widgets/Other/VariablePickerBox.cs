@@ -6,7 +6,7 @@ namespace RPGStudioMK.Widgets;
 
 public class VariablePickerBox : BrowserBox
 {
-    public int VariableID { get; protected set; }
+    public int VariableID { get; protected set; } = 1;
 
     public BaseEvent OnVariableChanged;
 
@@ -15,6 +15,7 @@ public class VariablePickerBox : BrowserBox
 
     public VariablePickerBox(IContainer Parent) : base(Parent)
     {
+        SetFont(Fonts.CabinMedium.Use(11));
         OnDropDownClicked += _ =>
         {
             VariablePicker picker = new VariablePicker(this.VariableID);

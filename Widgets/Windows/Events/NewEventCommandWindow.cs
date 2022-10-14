@@ -100,7 +100,10 @@ public class NewEventCommandWindow : PopupWindow
             };
         });
         Add(CommandCode.InputNumber, "Input Number", 0, null);
-        Add(CommandCode.WaitForMoveCompletion, "Wait for Move Completion", 0, null);
+        Add(CommandCode.WaitForMoveCompletion, "Wait for Move Completion", 0, Insert =>
+        {
+            Insert(new List<EventCommand>() { new EventCommand(CommandCode.WaitForMoveCompletion, 0, new List<object>()) });
+        });
         Add(CommandCode.Script, "Script", 0, Insert =>
         {
             GenericMultilineTextBoxWindow win = new GenericMultilineTextBoxWindow("Script", "", true);

@@ -80,7 +80,7 @@ public class EventCategoryButton : Widget
 		Sprites["text"].Bitmap.Unlock();
 		Sprites["text"].Bitmap.Font = f;
 		Sprites["text"].Bitmap.DrawText(text, Color.WHITE);
-		Sprites["text"].Bitmap.Lock();
+        Sprites["text"].Bitmap.Lock();
 		Sprites["text"].X = Size.Width / 2 - s.Width / 2;
 		Sprites["text"].Y = Size.Height - 20;
         base.Draw();

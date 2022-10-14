@@ -22,7 +22,7 @@ public class ConditionalWidget : BaseCommandWidget
     ShadowWidget FalseShadow;
     ShadowWidget EndHeaderShadow;
 
-    public ConditionalWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex, new Color(128, 128, 255))
+    public ConditionalWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex)
     {
         ElseGradient = new GradientBox(this);
         EndGradient = new GradientBox(this);
@@ -33,15 +33,12 @@ public class ConditionalWidget : BaseCommandWidget
         EndHeaderShadow = new ShadowWidget(this);
         ConditionLabel = new Label(this);
         ConditionLabel.SetFont(Fonts.CabinMedium.Use(10));
-        ConditionLabel.SetTextColor(HeaderLabel.TextColor);
         ElseLabel = new Label(this);
         ElseLabel.SetFont(Fonts.CabinMedium.Use(9));
         ElseLabel.SetText("Else");
-        ElseLabel.SetTextColor(HeaderLabel.TextColor);
         EndLabel = new Label(this);
         EndLabel.SetFont(Fonts.CabinMedium.Use(9));
         EndLabel.SetText("End");
-        EndLabel.SetTextColor(HeaderLabel.TextColor);
         ExpandIfArrow = new ExpandArrow(this);
         ExpandIfArrow.SetExpanded(true);
         ExpandIfArrow.SetVisible(false);
@@ -122,9 +119,10 @@ public class ConditionalWidget : BaseCommandWidget
     public override void LoadCommand()
     {
         base.LoadCommand();
-        // Draw conditional
         HeaderLabel.SetText("If: ");
-        ConditionLabel.SetPosition(HeaderLabel.Position.X + HeaderLabel.Size.Width + 4, HeaderLabel.Position.Y);
+        HeaderLabel.RedrawText(true);
+        // Draw conditional
+        ConditionLabel.SetPosition(GetStandardLabelPosition());
         if ((ConditionType) Int(0) == ConditionType.Script)
         {
             ConditionLabel.SetFont(Fonts.Monospace.Use(11));
@@ -377,9 +375,8 @@ public class ConditionalWidget : BaseCommandWidget
         //else ExpandIfArrow.SetVisible(true);
     }
 
-    public override void LeftMouseDownInside(MouseEventArgs e)
+    protected override void HandleStandardInput(MouseEventArgs e)
     {
-        base.LeftMouseDownInside(e);
         int ry = e.Y - Viewport.Y + TopCutOff;
         if (e.Handled || this.Indentation == -1 || InsideChild() || ExpandIfArrow.Mouse.Inside || ExpandElseArrow.Mouse.Inside)
         {

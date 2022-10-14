@@ -19,6 +19,7 @@ public class EventPageList : Widget
     public EventPageList(IContainer Parent) : base(Parent)
     {
         Sprites["bg"] = new Sprite(this.Viewport);
+        Sprites["text"] = new Sprite(this.Viewport);
         Sprites["hover"] = new Sprite(this.Viewport, new SolidBitmap(2, 23, new Color(32, 170, 221)));
         Sprites["hover"].Visible = false;
     }
@@ -28,11 +29,13 @@ public class EventPageList : Widget
         if (this.SelectedPage != Page || HardRefresh)
         {
             Sprites["bg"].Bitmap.Unlock();
+            Sprites["text"].Bitmap.Unlock();
             int OldPage = this.SelectedPage;
             this.SelectedPage = Page;
             if (OldPage >= 0 && OldPage < Event.Pages.Count) RedrawPage(OldPage);
             RedrawPage(this.SelectedPage);
             Sprites["bg"].Bitmap.Lock();
+            Sprites["text"].Bitmap.Lock();
             OnSelectedPageChanged?.Invoke(new BaseEventArgs());
         }
     }
@@ -41,16 +44,20 @@ public class EventPageList : Widget
     {
         this.Event = Event;
         Sprites["bg"].Bitmap?.Dispose();
+        Sprites["text"].Bitmap?.Dispose();
         SetSize(Size.Width, Event.Pages.Count * 26 - 3);
         Sprites["bg"].Bitmap = new Bitmap(Size);
-        Font f = Fonts.CabinMedium.Use(12);
-        Sprites["bg"].Bitmap.Font = f;
         Sprites["bg"].Bitmap.Unlock();
+        Sprites["text"].Bitmap = new Bitmap(Size);
+        Font f = Fonts.CabinMedium.Use(12);
+        Sprites["text"].Bitmap.Font = f;
+        Sprites["text"].Bitmap.Unlock();
         for (int i = 0; i < Event.Pages.Count; i++)
         {
             RedrawPage(i);
         }
         Sprites["bg"].Bitmap.Lock();
+        Sprites["text"].Bitmap.Lock();
     }
 
     void RedrawPage(int Page)
@@ -59,7 +66,7 @@ public class EventPageList : Widget
         Sprites["bg"].Bitmap.FillRect(0, Page * 26, Size.Width, 23, BGColor);
         Color TextColor = this.SelectedPage == Page ? new Color(32, 170, 221) : new Color(147, 158, 169);
         string text = $"Page {Page + 1}";
-        Sprites["bg"].Bitmap.DrawText(text, Size.Width / 2, 1 + Page * 26, TextColor, DrawOptions.CenterAlign);
+        Sprites["text"].Bitmap.DrawText(text, Size.Width / 2, 1 + Page * 26, TextColor, DrawOptions.CenterAlign);
     }
 
     public override void MouseMoving(MouseEventArgs e)

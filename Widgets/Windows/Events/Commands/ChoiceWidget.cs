@@ -19,7 +19,7 @@ public class ChoiceWidget : BaseCommandWidget
     ShadowWidget RightHeaderShadow;
     ShadowWidget EndLabelShadow;
 
-    public ChoiceWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex, new Color(128, 128, 255))
+    public ChoiceWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex)
     {
         RightHeaderShadow = new ShadowWidget(this);
         EndGradient = new GradientBox(this);
@@ -275,9 +275,8 @@ public class ChoiceWidget : BaseCommandWidget
         }
     }
 
-    public override void LeftMouseDownInside(MouseEventArgs e)
+    protected override void HandleStandardInput(MouseEventArgs e)
     {
-        base.LeftMouseDownInside(e);
         int ry = e.Y - Viewport.Y + TopCutOff;
         if (e.Handled || this.Indentation == -1 || InsideChild())
         {

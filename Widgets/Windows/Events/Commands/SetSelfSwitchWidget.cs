@@ -7,7 +7,7 @@ namespace RPGStudioMK.Widgets.CommandWidgets;
 
 public class SetSelfSwitchWidget : BaseCommandWidget
 {
-    public SetSelfSwitchWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex, new Color(255, 255, 128)) { }
+    public SetSelfSwitchWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex) { }
 
     public override void LoadCommand()
     {
@@ -32,16 +32,5 @@ public class SetSelfSwitchWidget : BaseCommandWidget
             Commands = new List<EventCommand>() { win.NewCommand };
             Continue(true);
         };
-    }
-
-    public override void LeftMouseDownInside(MouseEventArgs e)
-    {
-        base.LeftMouseDownInside(e);
-        if (e.Handled || this.Indentation == -1)
-        {
-            CancelDoubleClick();
-            return;
-        }
-        SelectNormally();
     }
 }

@@ -9,10 +9,10 @@ public class MoveRouteWidget : BaseCommandWidget
 {
     MultilineLabel CommandLabel;
 
-    public MoveRouteWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex, new Color(255, 128, 128))
+    public MoveRouteWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex)
     {
         CommandLabel = new MultilineLabel(this);
-        CommandLabel.SetPosition(ChildIndent * 2, StandardHeight);
+        CommandLabel.SetPosition(ChildIndent * 2, HeaderLabel.Position.Y + StandardHeight);
         CommandLabel.SetFont(Fonts.CabinMedium.Use(9));
         CommandLabel.SetHDocked(true);
         CommandLabel.SetLineHeight(StandardHeight);
@@ -61,16 +61,5 @@ public class MoveRouteWidget : BaseCommandWidget
         }
         CommandLabel.SetText(text);
         HeightAdd = (MoveRoute.Commands.Count - 1) * StandardHeight;
-    }
-
-    public override void LeftMouseDownInside(MouseEventArgs e)
-    {
-        base.LeftMouseDownInside(e);
-        if (e.Handled || this.Indentation == -1)
-        {
-            CancelDoubleClick();
-            return;
-        }
-        SelectNormally();
     }
 }

@@ -7,7 +7,13 @@ namespace RPGStudioMK.Widgets.CommandWidgets;
 
 public class SetSwitchWidget : BaseCommandWidget
 {
-    public SetSwitchWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex, new Color(255, 255, 128)) { }
+    Label SwitchLabel;
+
+    public SetSwitchWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex) 
+    {
+        SwitchLabel = new Label(this);
+        SwitchLabel.SetFont(Fonts.CabinMedium.Use(9));
+    }
 
     public override void LoadCommand()
     {
@@ -17,12 +23,17 @@ public class SetSwitchWidget : BaseCommandWidget
         int State = (int) (long) Command.Parameters[2];
         if (SwitchID1 == SwitchID2)
         {
-            HeaderLabel.SetText($"Set Switch [{Utilities.Digits(SwitchID1, 3)}: {Data.System.Switches[SwitchID1 - 1]}] to {(State == 0 ? "ON" : "OFF")}");
+            HeaderLabel.SetText("Set Switch");
+            HeaderLabel.RedrawText(true);
+            SwitchLabel.SetText($"[{Utilities.Digits(SwitchID1, 3)}: {Data.System.Switches[SwitchID1 - 1]}] to {(State == 0 ? "ON" : "OFF")}");
         }
         else
         {
-            HeaderLabel.SetText($"Set Switches [{Utilities.Digits(SwitchID1, 3)}..{Utilities.Digits(SwitchID2, 3)}] to {(State == 0 ? "ON" : "OFF")}");
+            HeaderLabel.SetText("Set Switches");
+            HeaderLabel.RedrawText(true);
+            SwitchLabel.SetText($"[{Utilities.Digits(SwitchID1, 3)}..{Utilities.Digits(SwitchID2, 3)}] to {(State == 0 ? "ON" : "OFF")}");
         }
+        SwitchLabel.SetPosition(GetStandardLabelPosition());
     }
 
     protected override void Edit(EditEvent Continue)
@@ -38,16 +49,5 @@ public class SetSwitchWidget : BaseCommandWidget
             Commands = new List<EventCommand>() { win.NewCommand };
             Continue();
         };
-    }
-
-    public override void LeftMouseDownInside(MouseEventArgs e)
-    {
-        base.LeftMouseDownInside(e);
-        if (e.Handled || this.Indentation == -1)
-        {
-            CancelDoubleClick();
-            return;
-        }
-        SelectNormally();
     }
 }

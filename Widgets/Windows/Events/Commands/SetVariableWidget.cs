@@ -7,7 +7,7 @@ namespace RPGStudioMK.Widgets.CommandWidgets;
 
 public class SetVariableWidget : BaseCommandWidget
 {
-    public SetVariableWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex, new Color(255, 255, 128)) { }
+    public SetVariableWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex) { }
 
     public override void LoadCommand()
     {
@@ -82,27 +82,16 @@ public class SetVariableWidget : BaseCommandWidget
 
     protected override void Edit(EditEvent Continue)
     {
-        //SwitchPicker win = new SwitchPicker((int) (long) Command.Parameters[0]);
-        //win.OnClosed += _ =>
-        //{
-        //    if (!win.Apply)
-        //    {
-        //        Continue(false);
-        //        return;
-        //    }
-        //    Commands = new List<EventCommand>() { new EventCommand(CommandCode.ControlSwitches, 0, new List<object>() { (long) win.SwitchID }) };
-        //    Continue();
-        //};
-    }
-
-    public override void LeftMouseDownInside(MouseEventArgs e)
-    {
-        base.LeftMouseDownInside(e);
-        if (e.Handled || this.Indentation == -1)
+        EditVariableCommandWindow win = new EditVariableCommandWindow(this.Map, this.Command);
+        win.OnClosed += _ =>
         {
-            CancelDoubleClick();
-            return;
-        }
-        SelectNormally();
+            if (!win.Apply)
+            {
+                Continue(false);
+                return;
+            }
+            Commands = new List<EventCommand>() { win.NewCommand };
+            Continue();
+        };
     }
 }

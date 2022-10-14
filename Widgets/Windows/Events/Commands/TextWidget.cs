@@ -104,7 +104,7 @@ public class TextWidget : BaseCommandWidget
 
         ScaleGradientWithSize = false;
 
-        MultilineLabel.SetPosition(HeaderLabel.Position.X + HeaderLabel.Size.Width + 8, 10);
+        MultilineLabel.SetPosition(GetStandardLabelPosition());
         MultilineLabel.SetLineHeight(22);
         MultilineLabel.SetWidth(Size.Width - MultilineLabel.Position.X - 4);
         MultilineLabel.SetFont(Command.Code == CommandCode.Script ? Fonts.Monospace.Use(11) : Fonts.CabinMedium.Use(9));
@@ -115,16 +115,5 @@ public class TextWidget : BaseCommandWidget
         //
         //UpdateSize();
         //((Widget) Parent).UpdateLayout();
-    }
-
-    public override void LeftMouseDownInside(MouseEventArgs e)
-    {
-        base.LeftMouseDownInside(e);
-        if (e.Handled)
-        {
-            CancelDoubleClick();
-            return;
-        }
-        SelectNormally();
     }
 }

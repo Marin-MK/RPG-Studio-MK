@@ -6,7 +6,7 @@ namespace RPGStudioMK.Widgets;
 
 public class SwitchPickerBox : BrowserBox
 {
-    public int SwitchID { get; protected set; }
+    public int SwitchID { get; protected set; } = 1;
 
     public BaseEvent OnSwitchChanged;
 
@@ -15,6 +15,7 @@ public class SwitchPickerBox : BrowserBox
 
     public SwitchPickerBox(IContainer Parent) : base(Parent)
     {
+        SetFont(Fonts.CabinMedium.Use(11));
         OnDropDownClicked += _ =>
         {
             SwitchPicker picker = new SwitchPicker(this.SwitchID);

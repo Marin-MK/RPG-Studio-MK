@@ -72,7 +72,7 @@ public class EditSwitchCommandWindow : PopupWindow
 
         Container OnOffContainer = new Container(this);
         OnOffContainer.SetPosition(20, 120);
-        OnOffContainer.SetSize(140, 16);
+        OnOffContainer.SetSize(160, 16);
 
         Label SetStateLabel = new Label(OnOffContainer);
         SetStateLabel.SetFont(f);
