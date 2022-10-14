@@ -87,6 +87,7 @@ public class BaseCommandWidget : Widget
         { CommandCode.ControlSwitches, typeof(SetSwitchWidget) },
         { CommandCode.ControlVariables, typeof(SetVariableWidget) },
         { CommandCode.ControlSelfSwitch, typeof(SetSelfSwitchWidget) },
+        { CommandCode.TransferPlayer, typeof(TransferPlayerWidget) }
     };
 
     public BaseCommandWidget MainCommandWidget;

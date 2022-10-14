@@ -95,7 +95,9 @@ public class EditSelfSwitchCommandWindow : PopupWindow
     private void OK()
     {
         Apply = true;
-        EventID = (int) EventBox.Items[EventBox.SelectedIndex].Object;
+        int idx = EventBox.SelectedIndex;
+        if (idx == -1 || idx >= EventBox.Items.Count) idx = EventBox.Items.Count - 1;
+        EventID = (int) EventBox.Items[idx].Object;
         Switch = (char) ('A' + SelfSwitchBox.SelectedIndex);
         Value = OnBox.Checked;
         List<object> parameters = new List<object>() { Switch.ToString(), Value ? 0L : 1L };
