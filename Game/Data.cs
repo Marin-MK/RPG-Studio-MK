@@ -162,7 +162,6 @@ public static class Data
                 // Other error than simultaneous access, no point in retrying.
                 return (false, ErrorType);
             }
-            Console.WriteLine("Retrying...");
             Thread.Sleep(DelayInMS);
             Tries--;
         }

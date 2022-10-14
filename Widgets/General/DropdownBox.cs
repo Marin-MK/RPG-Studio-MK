@@ -23,6 +23,8 @@ public class DropdownBox : amethyst.TextBox
         TextArea.SetFont(Fonts.CabinMedium.Use(11));
         TextArea.SetCaretColor(Color.WHITE);
         TextArea.SetReadOnly(true);
+        MinimumSize.Height = MaximumSize.Height = 24;
+        SetHeight(24);
     }
 
     public void SetEnabled(bool Enabled)
