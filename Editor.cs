@@ -91,7 +91,15 @@ public static class Editor
     {
         if (Program.ReleaseMode) return;
 
-        Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
+        //Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
+
+        PopupWindow win = new PopupWindow();
+        win.SetSize(500, 500);
+        win.Center();
+
+        ColorPickerWidget cpw = new ColorPickerWidget(win);
+        cpw.SetPosition(100, 100);
+        cpw.SetSize(320, 320);
     }
 
     /// <summary>
