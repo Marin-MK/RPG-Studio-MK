@@ -63,7 +63,7 @@ public class EditVariableCommandWindow : PopupWindow
         SingleLabel.SetText("Single");
         SingleLabel.SetPosition(0, 4);
         SingleLabel.SetChecked((long) Command.Parameters[0] == (long) Command.Parameters[1]);
-        SingleLabel.OnCheckChanged += _ => UpdateVariableLabels();
+        SingleLabel.OnChecked += _ => UpdateVariableLabels();
 
         VariableBox = new VariablePickerBox(VariableContainer);
         VariableBox.SetFont(Small);
@@ -76,7 +76,7 @@ public class EditVariableCommandWindow : PopupWindow
         BatchLabel.SetText("Batch");
         BatchLabel.SetPosition(0, 36);
         BatchLabel.SetChecked(!SingleLabel.Checked);
-        BatchLabel.OnCheckChanged += _ => UpdateVariableLabels();
+        BatchLabel.OnChecked += _ => UpdateVariableLabels();
 
         Variable1Box = new NumericBox(VariableContainer);
         Variable1Box.SetPosition(64, 31);
@@ -163,7 +163,7 @@ public class EditVariableCommandWindow : PopupWindow
         ConstantRadioBox.SetFont(Small);
         ConstantRadioBox.SetPosition(0, 8);
         ConstantRadioBox.SetText("Constant");
-        ConstantRadioBox.OnCheckChanged += _ => UpdateValues();
+        ConstantRadioBox.OnChecked += _ => UpdateValues();
 
         ConstantBox = new NumericBox(ValueContainer);
         ConstantBox.SetPosition(84, 0);
@@ -173,7 +173,7 @@ public class EditVariableCommandWindow : PopupWindow
         VariableRadioBox.SetFont(Small);
         VariableRadioBox.SetPosition(0, 40);
         VariableRadioBox.SetText("Variable");
-        VariableRadioBox.OnCheckChanged += _ => UpdateValues();
+        VariableRadioBox.OnChecked += _ => UpdateValues();
 
         VariableValueBox = new VariablePickerBox(ValueContainer);
         VariableValueBox.SetPosition(84, 36);
@@ -183,7 +183,7 @@ public class EditVariableCommandWindow : PopupWindow
         RandomRadioBox.SetFont(Small);
         RandomRadioBox.SetPosition(0, 72);
         RandomRadioBox.SetText("Random");
-        RandomRadioBox.OnCheckChanged += _ => UpdateValues();
+        RandomRadioBox.OnChecked += _ => UpdateValues();
 
         RandomBox1 = new NumericBox(ValueContainer);
         RandomBox1.SetPosition(84, 64);
@@ -202,7 +202,7 @@ public class EditVariableCommandWindow : PopupWindow
         CharacterRadioBox.SetFont(Small);
         CharacterRadioBox.SetPosition(0, 104);
         CharacterRadioBox.SetText("Character");
-        CharacterRadioBox.OnCheckChanged += _ => UpdateValues();
+        CharacterRadioBox.OnChecked += _ => UpdateValues();
 
         CharacterBox = new DropdownBox(ValueContainer);
         CharacterBox.SetPosition(84, 100);
@@ -235,7 +235,7 @@ public class EditVariableCommandWindow : PopupWindow
         OtherRadioBox.SetFont(Small);
         OtherRadioBox.SetPosition(0, 136);
         OtherRadioBox.SetText("Other");
-        OtherRadioBox.OnCheckChanged += _ => UpdateValues();
+        OtherRadioBox.OnChecked += _ => UpdateValues();
 
         OtherBox = new DropdownBox(ValueContainer);
         OtherBox.SetPosition(84, 132);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using RPGStudioMK.Game;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -163,7 +164,17 @@ public class NewEventCommandWindow : PopupWindow
         Add(CommandCode.JumpToLabel, "Jump to Label", 1, null);
         Add(CommandCode.CallCommonEvent, "Call Common Event", 1, null);
 
-        Add(CommandCode.TransferPlayer, "Transfer Player", 2, null);
+        Add(CommandCode.TransferPlayer, "Transfer Player", 2, Insert =>
+        {
+            long MapID = Data.Maps.Keys.Min();
+            EventCommand cmd = new EventCommand(CommandCode.TransferPlayer, 0, new List<object>() { 0L, MapID, 0L, 0L, 0L, 0L });
+            EditTransferPlayerCommandWindow win = new EditTransferPlayerCommandWindow(cmd);
+            win.OnClosed += _ =>
+            {
+                if (!win.Apply) return;
+                Insert(new List<EventCommand>() { win.NewCommand });
+            };
+        });
         Add(CommandCode.ScrollMap, "Scroll Map", 2, null);
         Add(CommandCode.SetEventLocation, "Transfer Event", 2, null);
         Add(CommandCode.ChangeMapSettings, "Change Map Settings", 2, null);

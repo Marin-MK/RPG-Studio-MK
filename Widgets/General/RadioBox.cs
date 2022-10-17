@@ -12,6 +12,8 @@ public class RadioBox : Widget
     bool Selecting = false;
 
     public BaseEvent OnCheckChanged;
+    public BaseEvent OnChecked;
+    public BaseEvent OnUnchecked;
 
     public RadioBox(IContainer Parent) : base(Parent)
     {
@@ -69,6 +71,8 @@ public class RadioBox : Widget
             this.Checked = Checked;
             Redraw();
             OnCheckChanged?.Invoke(new BaseEventArgs());
+            if (this.Checked) OnChecked?.Invoke(new BaseEventArgs());
+            else OnUnchecked?.Invoke(new BaseEventArgs());
         }
     }
 

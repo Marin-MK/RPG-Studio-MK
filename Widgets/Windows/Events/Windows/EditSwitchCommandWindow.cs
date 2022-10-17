@@ -39,7 +39,7 @@ public class EditSwitchCommandWindow : PopupWindow
         SingleLabel.SetFont(f);
         SingleLabel.SetText("Single");
         SingleLabel.SetPosition(0, 4);
-        SingleLabel.OnCheckChanged += _ => UpdateLabels();
+        SingleLabel.OnChecked += _ => UpdateLabels();
 
         SwitchBox = new SwitchPickerBox(SwitchContainer);
         SwitchBox.SetFont(f);
@@ -51,7 +51,7 @@ public class EditSwitchCommandWindow : PopupWindow
         BatchLabel.SetFont(f);
         BatchLabel.SetText("Batch");
         BatchLabel.SetPosition(0, 36);
-        BatchLabel.OnCheckChanged += _ => UpdateLabels();
+        BatchLabel.OnChecked += _ => UpdateLabels();
 
         Switch1Box = new NumericBox(SwitchContainer);
         Switch1Box.SetPosition(64, 31);

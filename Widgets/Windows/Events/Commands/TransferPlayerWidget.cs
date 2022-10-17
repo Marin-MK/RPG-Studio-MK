@@ -36,12 +36,12 @@ public class TransferPlayerWidget : BaseCommandWidget
         if (Type == 0)
         {
             // Assigned
-            Text += $"[{Utilities.Digits(MapID, 3)}: {(Data.Maps.ContainsKey(MapID) ? Data.Maps[MapID].Name : "")}] ({X}, {Y}), ";
+            Text += $"[{Utilities.Digits(MapID, 3)}: {(Data.Maps.ContainsKey(MapID) ? Data.Maps[MapID].Name : "")}] ({X}, {Y})";
         }
         else
         {
             // Variable appointed
-            Text += $"Variable [{Utilities.Digits(MapID, 3)}] ([{Utilities.Digits(X, 3)}], [{Utilities.Digits(Y, 3)}]), ";
+            Text += $"Variable [{Utilities.Digits(MapID, 3)}] ([{Utilities.Digits(X, 3)}], [{Utilities.Digits(Y, 3)}])";
         }
         if (Dir != 0) // If we don't retain direction, then state direction
         {
@@ -53,13 +53,11 @@ public class TransferPlayerWidget : BaseCommandWidget
                 8 => "Up",
                 _ => "Unknown"
             };
-            Text += dirtext;
-            if (Fade == 1) Text += ", ";
+            Text += ", " + dirtext;
         }
-        else if (Fade == 1) Text += ", ";
         if (Fade == 1) // If we don't have a fade, state so
         {
-            Text += "No fade";
+            Text += ", No fade";
         }
         TransferLabel.SetText(Text);
         TransferLabel.SetPosition(GetStandardLabelPosition());
@@ -67,6 +65,16 @@ public class TransferPlayerWidget : BaseCommandWidget
 
     protected override void Edit(EditEvent Continue)
     {
-        
+        EditTransferPlayerCommandWindow win = new EditTransferPlayerCommandWindow(this.Command);
+        win.OnClosed += _ =>
+        {
+            if (!win.Apply)
+            {
+                Continue(false);
+                return;
+            }
+            Commands = new List<EventCommand>() { win.NewCommand };
+            Continue();
+        };
     }
 }

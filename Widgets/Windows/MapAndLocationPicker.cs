@@ -58,6 +58,7 @@ public class MapAndLocationPicker : PopupWindow
     private void OK()
     {
         Apply = true;
+        MapID = MapListBox.SelectedMap.ID;
         Location = new Point(MiniMapViewer.MapTileX, MiniMapViewer.MapTileY);
         Close();
     }
