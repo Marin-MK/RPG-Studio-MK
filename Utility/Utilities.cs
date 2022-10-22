@@ -512,22 +512,25 @@ public static class Utilities
     public static List<Point> GetIdenticalConnected(Map map, int layer, int x, int y)
     {
 
-        return GetIdenticalConnectedInternal(map, layer, x, y, new List<Point>());
+        return GetIdenticalConnectedInternal(map, layer, x, y, x, y, new List<Point>());
     }
 
-    private static List<Point> GetIdenticalConnectedInternal(Map map, int layer, int x, int y, List<Point> visited)
+    private static List<Point> GetIdenticalConnectedInternal(Map map, int layer, int x, int y, int sx, int sy, List<Point> visited)
     {
+        // TODO: Iterative algorithm, or use some other data structure to perform the algorithm more efficiently
+        // so we don't have arbitrary stack overflows
+        if (Math.Abs(sx - x) > 30 || Math.Abs(sy - y) > 30) return new List<Point>();
         if (x < 0 || x >= map.Width || y < 0 || y >= map.Height) return new List<Point>();
         if (visited.Exists(p => p.X == x && p.Y == y)) return new List<Point>();
         TileData src = map.Layers[layer].Tiles[x + y * map.Width];
-        visited.Add(new Point(x, y));
         List<Point> points = new List<Point>() { new Point(x, y) };
+        visited.Add(new Point(x, y));
         if (x > 0)
         {
             TileData tile = map.Layers[layer].Tiles[(x - 1) + y * map.Width];
             if (src is null && tile == null || src is not null && src.Equals(tile))
             {
-                points.AddRange(GetIdenticalConnectedInternal(map, layer, x - 1, y, visited));
+                points.AddRange(GetIdenticalConnectedInternal(map, layer, x - 1, y, sx, sy, visited));
             }
         }
         if (x < map.Width - 1)
@@ -535,7 +538,7 @@ public static class Utilities
             TileData tile = map.Layers[layer].Tiles[(x + 1) + y * map.Width];
             if (src is null && tile == null || src is not null && src.Equals(tile))
             {
-                points.AddRange(GetIdenticalConnectedInternal(map, layer, x + 1, y, visited));
+                points.AddRange(GetIdenticalConnectedInternal(map, layer, x + 1, y, sx, sy, visited));
             }
         }
         if (y > 0)
@@ -543,7 +546,7 @@ public static class Utilities
             TileData tile = map.Layers[layer].Tiles[x + (y - 1) * map.Width];
             if (src is null && tile == null || src is not null && src.Equals(tile))
             {
-                points.AddRange(GetIdenticalConnectedInternal(map, layer, x, y - 1, visited));
+                points.AddRange(GetIdenticalConnectedInternal(map, layer, x, y - 1, sx, sy, visited));
             }
         }
         if (y < map.Height - 1)
@@ -551,7 +554,7 @@ public static class Utilities
             TileData tile = map.Layers[layer].Tiles[x + (y + 1) * map.Width];
             if (src is null && tile == null || src is not null && src.Equals(tile))
             {
-                points.AddRange(GetIdenticalConnectedInternal(map, layer, x, y + 1, visited));
+                points.AddRange(GetIdenticalConnectedInternal(map, layer, x, y + 1, sx, sy, visited));
             }
         }
         return points;
