@@ -30,7 +30,6 @@ public class ColorPickerWidget : Widget
 	bool InsideSlider;
 	int LastCrosshairX;
 	int LastCrosshairY;
-	int LastSliderY;
 
 	public ColorPickerWidget(IContainer Parent) : base(Parent)
 	{
@@ -46,6 +45,11 @@ public class ColorPickerWidget : Widget
 		Sprites["slide"].Bitmap.Lock();
 		Sprites["slide"].Y = -1;
 		Sprites["color"] = new Sprite(this.Viewport);
+
+		RegisterShortcuts(new List<Shortcut>()
+		{
+			new Shortcut(this, new Key(Keycode.G), _ => SetColor(Utilities.RandomColor()), true)
+		});
 		this.Color = this.PrimaryColor;
 	}
 
@@ -55,22 +59,108 @@ public class ColorPickerWidget : Widget
 		{
 			this.Color = Color;
 			// TODO: Select right position in slider and gradient boxes
-			// Likely have to solve a system of linear equations
-			// to find the value of the primary color and the crosshair location
-			// If no such system exists, could also simulate the primary color and get as close as possible,
-			// then compare that simulation with various others, with cost functions and random steps in an attempt
-			// to get closer (Machine Learning). But a solveable linear solution probably exist.
-			Redraw();
+			(double Position, double Alpha, double Beta) = FindPrimaryColorAndCoordinates(Color);
+			Sprites["slide"].Y = (int) Math.Round((Position / 6d) * (Size.Height - 20)) - 1;
+			Color PC = CalculatePrimaryColor(Position);
+			LastCrosshairX = (int) Math.Round(Alpha * (Size.Width - 21));
+			LastCrosshairY = (int) Math.Round(Beta * (Size.Height - 21));
+			SetPrimaryColor(PC, false);
 		}
 	}
 
-	public void SetPrimaryColor(Color PrimaryColor)
+	private (double Position, double Alpha, double Beta) FindPrimaryColorAndCoordinates(Color Color)
+	{
+		double LowestAlpha = 0;
+		double LowestBeta = 0;
+		double LowestPosition = 0;
+		double LowestCost = double.MaxValue;
+		double Position = 0;
+		double Alpha = 0;
+		double Beta = 0;
+		double PositionStepSize = 0.05d;
+		double CoordStepSize = 0.02d;
+		bool Quit = false;
+		while (Position <= 6)
+        {
+            if (Quit) break;
+            Alpha = 0;
+			while (Alpha <= 1)
+            {
+                if (Quit) break;
+                Beta = 0;
+				while (Beta <= 1)
+				{
+					if (Quit) break;
+					double Cost = CalculateCost(Position, Alpha, Beta, Color);
+					if (Cost < LowestCost)
+					{
+						LowestPosition = Position;
+						LowestAlpha = Alpha;
+						LowestBeta = Beta;
+						LowestCost = Cost;
+						if (Cost == 0) Quit = true;
+					}
+					Beta += CoordStepSize;
+				}
+				Alpha += CoordStepSize;
+			}
+			Position += PositionStepSize;
+		}
+		if (LowestCost > 0)
+		{
+			(double FinalPos, double FinalAlpha, double FinalBeta, double FinalCost) = Utilities.GradientDescent3D(
+				LowestPosition, LowestAlpha, LowestBeta, PositionStepSize / 2, CoordStepSize / 2, CoordStepSize / 2, 20, (Pos, Alpha, Beta) =>
+			{
+				return CalculateCost(Pos, Alpha, Beta, Color);
+			});
+			if (FinalCost > 0)
+			{
+				Console.WriteLine($"{FinalCost} - {Color}");
+			}
+			return (FinalPos, FinalAlpha, FinalBeta);
+		}
+		return (LowestPosition, LowestAlpha, LowestBeta);
+	}
+
+	private double CalculateCost(double Position, double Alpha, double Beta, Color Color)
+	{
+		if (Position < 0 || Alpha < 0 || Beta < 0) return double.MaxValue;
+		if (Position > 6 || Alpha > 1 || Beta > 1) return double.MaxValue;
+		Color PC = CalculatePrimaryColor(Position);
+		return CalculateCrosshairCost(Alpha, Beta, Color, PC);
+	}
+
+	private double CalculateCrosshairCost(double Alpha, double Beta, Color Color, Color PrimaryColor)
+	{
+		Color Top = Bitmap.Interpolate2D(Color.WHITE, PrimaryColor, 1 - Alpha);
+		Color Bottom = Color.BLACK;
+		Color Int = Bitmap.Interpolate2D(Top, Bottom, 1 - Beta);
+		return CalculateColorCost(Int, Color);
+	}
+
+	private double CalculateColorCost(Color Color1, Color Color2)
+	{
+		return Math.Abs(Color2.Red - Color1.Red) + Math.Abs(Color2.Green - Color1.Green) + Math.Abs(Color2.Blue - Color1.Blue);
+	}
+
+	private Color CalculatePrimaryColor(double Position)
+	{
+        if (Position < 0 || Position > SliderColors.Count) throw new Exception("Invalid slider position");
+        int idx = (int) Math.Floor(Position);
+        double factor = 1 - (Position - idx);
+        Color c1 = SliderColors[idx];
+        Color c2 = c1;
+        if (idx < SliderColors.Count - 1) c2 = SliderColors[idx + 1];
+        return Bitmap.Interpolate2D(c1, c2, factor);
+    }
+
+	public void SetPrimaryColor(Color PrimaryColor, bool RedrawColor = true)
 	{
 		if (!this.PrimaryColor.Equals(PrimaryColor))
 		{
 			this.PrimaryColor = PrimaryColor;
 			this.Redraw();
-			DrawCrosshair(LastCrosshairX, LastCrosshairY);
+			DrawCrosshair(LastCrosshairX, LastCrosshairY, RedrawColor);
 		}
 	}
 
@@ -94,7 +184,7 @@ public class ColorPickerWidget : Widget
 			new Rect(0, 0, Size.Width - 20, Size.Height - 20),
 			Color.WHITE, PrimaryColor, Color.BLACK, Color.BLACK
 		);
-		Sprites["box"].Bitmap.Lock();
+        Sprites["box"].Bitmap.Lock();
 		base.Draw();
 
 		Sprites["slider"].Bitmap?.Dispose();
@@ -128,7 +218,7 @@ public class ColorPickerWidget : Widget
 		Sprites["color"].Bitmap.Lock();
     }
 
-	private void DrawCrosshair(int CX, int CY)
+	private void DrawCrosshair(int CX, int CY, bool RedrawColor = true)
 	{
 		LastCrosshairX = CX;
 		LastCrosshairY = CY;
@@ -145,7 +235,7 @@ public class ColorPickerWidget : Widget
 		double tft = 1 - (double) CY / (Size.Height - 21);
 		Color HC = Bitmap.Interpolate2D(Color.WHITE, this.PrimaryColor, lft);
 		Color FC = Bitmap.Interpolate2D(HC, Color.BLACK, tft);
-		DrawColor(FC);
+		if (RedrawColor) DrawColor(FC);
     }
 
 	private void DrawSlider(int SY)

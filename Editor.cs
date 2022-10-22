@@ -100,6 +100,13 @@ public static class Editor
         ColorPickerWidget cpw = new ColorPickerWidget(win);
         cpw.SetPosition(100, 100);
         cpw.SetSize(320, 320);
+
+        //GraphWidget gw = new GraphWidget(win);
+        //gw.SetPosition(100, 100);
+        //gw.SetSize(300, 300);
+        //gw.SetStepSize(1);
+        //gw.SetRange(-10, 10);
+        //gw.SetGraphFunction(X => X * X);
     }
 
     /// <summary>

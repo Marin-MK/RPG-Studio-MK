@@ -806,6 +806,176 @@ pbConnectToEditor";
     {
         return @"";
     }
+
+    /// <summary>
+    /// Gradient Descent algorithm.
+    /// </summary>
+    /// <param name="RandomStartRange">The lower bound of a random initial value. Supports 2 decimal places.</param>
+    /// <param name="RandomEndRange">The upper bound of a random initial value. Supports 2 decimal places.</param>
+    /// <param name="InitialStepSize">The initial step size of the algorithm.</param>
+    /// <param name="Trials">The maximum number of trials after which to stop the algorithm.</param>
+    /// <param name="CostFunction">The function that, given an input, produces an output representing cost.</param>
+    /// <returns>The local minimum near the initial value. Note that this may not be the global minimum.</returns>
+    public static (double Value, double Cost) GradientDescent1D(double RandomStartRange, double RandomEndRange, double InitialStepSize, double Trials, Func<double, double> CostFunction)
+    {
+    	return GradientDescent1D(Random((int) RandomStartRange * 100, (int) RandomEndRange * 100) / 100d, InitialStepSize, Trials, CostFunction);
+    }
+
+    /// <summary>
+    /// Gradient Descent algorithm.
+    /// </summary>
+    /// <param name="StartValue">The initial value to start the gradient descent algorithm at.</param>
+    /// <param name="InitialStepSize">The initial step size of the algorithm.</param>
+    /// <param name="Trials">The maximum number of trials after which to stop the algorithm.</param>
+    /// <param name="CostFunction">The function that, given an input, produces an output representing cost.</param>
+    /// <returns>The local minimum near the initial value. Note that this may not be the global minimum.</returns>
+    public static (double Value, double Cost) GradientDescent1D(double StartValue, double InitialStepSize, double Trials, Func<double, double> CostFunction)
+    {
+        double Value = StartValue;
+        double Step = InitialStepSize;
+        double Cost = CostFunction(Value);
+        for (int i = 0; i < Trials; i++)
+        {
+            double NewValue = Value + Step;
+            double NewCost = CostFunction(NewValue);
+            if (NewCost < Cost)
+            {
+                Console.WriteLine("regular");
+                Value = NewValue;
+                Cost = NewCost;
+            }
+            else
+            {
+                // If the other direction has better cost, flip the step size. If not, halve step size.
+                NewValue = Value - Step;
+                NewCost = CostFunction(NewValue);
+                if (NewCost < Cost)
+                {
+                    Console.WriteLine("flip");
+                    Value = NewValue;
+                    Cost = NewCost;
+                }
+                else
+                {
+                    // Reversing direction was not more beneficial; halve step size instead.
+                    Console.WriteLine("halve");
+                    Step /= 2d;
+                }
+            }
+        }
+        return (Value, Cost);
+    }
+
+    public static (double Value1, double Value2, double Value3, double Cost) GradientDescent3D(double StartValue1, double StartValue2, double StartValue3, double StepSize1, double StepSize2, double StepSize3, double Trials, Func<double, double, double, double> CostFunction)
+    {
+        double Value1 = StartValue1;
+        double Value2 = StartValue2;
+        double Value3 = StartValue3;
+        double Step1 = StepSize1;
+        double Step2 = StepSize2;
+        double Step3 = StepSize3;
+        double Cost = CostFunction(Value1, Value2, Value3);
+        for (int i = 0; i < Trials; i++)
+        {
+            (double, double, double, double)[] Cases = new[]
+            {
+                // 27 cases when each value can be 0, +, or -.
+                // 26 because we exclude no change to either 3.
+                (Value1 + Step1, Value2, Value3, 0d),
+                (Value1 + Step1, Value2, Value3 + Step3, 0d),
+                (Value1 + Step1, Value2, Value3 - Step3, 0d),
+                (Value1 + Step1, Value2 + Step2, Value3, 0d),
+                (Value1 + Step1, Value2 + Step2, Value3 + Step3, 0d),
+                (Value1 + Step1, Value2 + Step2, Value3 - Step3, 0d),
+                (Value1 + Step1, Value2 - Step2, Value3, 0d),
+                (Value1 + Step1, Value2 - Step2, Value3 + Step3, 0d),
+                (Value1 + Step1, Value2 - Step2, Value3 - Step3, 0d),
+
+                (Value1 - Step1, Value2, Value3, 0d),
+                (Value1 - Step1, Value2, Value3 + Step3, 0d),
+                (Value1 - Step1, Value2, Value3 - Step3, 0d),
+                (Value1 - Step1, Value2 + Step2, Value3, 0d),
+                (Value1 - Step1, Value2 + Step2, Value3 + Step3, 0d),
+                (Value1 - Step1, Value2 + Step2, Value3 - Step3, 0d),
+                (Value1 - Step1, Value2 - Step2, Value3, 0d),
+                (Value1 - Step1, Value2 - Step2, Value3 + Step3, 0d),
+                (Value1 - Step1, Value2 - Step2, Value3 - Step3, 0d),
+
+                (Value1, Value2, Value3 + Step3, 0d),
+                (Value1, Value2, Value3 - Step3, 0d),
+                (Value1, Value2 + Step2, Value3, 0d),
+                (Value1, Value2 + Step2, Value3 + Step3, 0d),
+                (Value1, Value2 + Step2, Value3 - Step3, 0d),
+                (Value1, Value2 - Step2, Value3, 0d),
+                (Value1, Value2 - Step2, Value3 + Step3, 0d),
+                (Value1, Value2 - Step2, Value3 - Step3, 0d),
+            };
+            for (int j = 0; j < Cases.Length; j++)
+            {
+                double NewValue1 = Cases[j].Item1;
+                double NewValue2 = Cases[j].Item2;
+                double NewValue3 = Cases[j].Item3;
+                double NewCost = CostFunction(NewValue1, NewValue2, NewValue3);
+                Cases[j].Item4 = NewCost;
+            }
+            List<double> CostList = Cases.Select(c => c.Item4).ToList();
+            if (Cases.All(c => c.Item4 >= Cost))
+            {
+                // All cases cost more than our current cost, i.e. each step is worse than we can do right now
+                // Halve all stepsizes.
+                Step1 /= 2;
+                Step2 /= 2;
+                Step3 /= 2;
+            }
+            else
+            {
+                // Select lowest cost.
+                double Min = double.MaxValue;
+                int idx = -1;
+                for (int j = 0; j < Cases.Length; j++)
+                {
+                    if (Cases[j].Item4 < Min)
+                    {
+                        Min = Cases[j].Item4;
+                        idx = j;
+                    }
+                }
+                Value1 = Cases[idx].Item1;
+                Value2 = Cases[idx].Item2;
+                Value3 = Cases[idx].Item3;
+                Cost = Cases[idx].Item4;
+                if (Cost == 0) break;
+            }
+        }
+        return (Value1, Value2, Value3, Cost);
+    }
+
+    public static void ForEachColor(Action<Color> Callback)
+    {
+        ForRange(0, 255, x => {
+            byte a = (byte) x;
+            Callback(new Color(a, 0, 0));
+            Callback(new Color(0, a, 0));
+            Callback(new Color(0, 0, a));
+            ForRange(0, 255, y =>
+            {
+                byte b = (byte) y;
+                Callback(new Color(a, b, 0));
+                Callback(new Color(0, a, b));
+                Callback(new Color(a, 0, b));
+                ForRange(0, 255, z =>
+                {
+                    byte c = (byte) z;
+                    Callback(new Color(a, b, c));
+                });
+            });
+        });
+    }
+
+    private static void ForRange(int Start, int End, Action<int> Callback)
+    {
+        for (int i = Start; i <= End; i++) Callback(i);
+    }
 }
 
 public enum BinaryData
