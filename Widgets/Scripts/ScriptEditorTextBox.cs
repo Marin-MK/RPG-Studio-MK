@@ -1,4 +1,6 @@
-﻿namespace RPGStudioMK.Widgets;
+﻿using System;
+
+namespace RPGStudioMK.Widgets;
 
 public class ScriptEditorTextBox : Widget
 {
@@ -33,6 +35,12 @@ public class ScriptEditorTextBox : Widget
         {
             bool InsideTextArea = ScrollContainer.Mouse.Inside && e.X - ScrollContainer.Viewport.X >= TextArea.TextXOffset;
             Input.SetCursor(InsideTextArea ? CursorType.IBeam : CursorType.Arrow);
+        };
+        ScrollContainer.OnMouseWheel += e =>
+        {
+            if (!Input.Press(Keycode.CTRL)) return;
+            int add = Math.Sign(e.WheelY);
+            TextArea.SetFont(Font.Get(Fonts.Monospace.Name, Math.Max(1, TextArea.Font.Size + add)));
         };
 
         TextArea = new ScriptEditorTextArea(ScrollContainer);
