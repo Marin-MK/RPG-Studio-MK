@@ -21,7 +21,7 @@ public class ProgressWindow : PopupWindow
         Center();
 
         MessageLabel = new Label(this);
-        MessageLabel.SetFont(Fonts.CabinMedium.Use(11));
+        MessageLabel.SetFont(Fonts.Paragraph);
         MessageLabel.SetText(Message);
         MessageLabel.RedrawText(true);
         MessageLabel.SetPosition(Size.Width / 2 - MessageLabel.Size.Width / 2, 24);

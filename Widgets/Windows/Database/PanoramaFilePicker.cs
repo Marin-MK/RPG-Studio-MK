@@ -21,7 +21,7 @@ public class PanoramaFilePicker : AbstractFilePicker
         huelabel = new Label(this);
         huelabel.SetText("Hue");
         huelabel.SetPosition(199, Size.Height - 96);
-        huelabel.SetFont(Fonts.UbuntuBold.Use(11));
+        huelabel.SetFont(Fonts.Paragraph);
         HueBox = new NumericSlider(this);
         HueBox.SetPosition(199, Size.Height - 74);
         HueBox.SetSize(previewbox.Size.Width, 17);

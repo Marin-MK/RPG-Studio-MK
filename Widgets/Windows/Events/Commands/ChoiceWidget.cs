@@ -25,7 +25,7 @@ public class ChoiceWidget : BaseCommandWidget
         EndGradient = new GradientBox(this);
         EndLabelShadow = new ShadowWidget(this);
         EndLabel = new Label(this);
-        EndLabel.SetFont(Fonts.CabinMedium.Use(9));
+        EndLabel.SetFont(Fonts.Paragraph);
         EndLabel.SetText("End");
         EndLabel.SetTextColor(HeaderLabel.TextColor);
         ExpandAllArrow = new ExpandArrow(this);
@@ -163,7 +163,7 @@ public class ChoiceWidget : BaseCommandWidget
             else GradientBoxes.Add(null);
 
             Label BranchLabel = new Label(this);
-            BranchLabel.SetFont(Fonts.CabinMedium.Use(9));
+            BranchLabel.SetFont(Fonts.Paragraph);
             if (BranchCmd.Code == CommandCode.BranchWhenCancel) BranchLabel.SetText($"When cancelled:");
             else BranchLabel.SetText($"When [{Choices[i]}]:");
             BranchLabels.Add(BranchLabel);

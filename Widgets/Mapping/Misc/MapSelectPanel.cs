@@ -16,7 +16,7 @@ public class MapSelectPanel : Widget
     {
         Label Header = new Label(this);
         Header.SetText("All Maps");
-        Header.SetFont(Fonts.UbuntuBold.Use(13));
+        Header.SetFont(Fonts.Header);
         Header.SetPosition(5, 5);
 
         Sprites["sep"] = new Sprite(this.Viewport, new SolidBitmap(288, 1, new Color(28, 50, 73)));

@@ -104,17 +104,16 @@ public class FileExplorer : Widget
         if (!string.IsNullOrEmpty(this.Directory)) path.AddRange(this.Directory.Split('/'));
         GridContainer.VScrollBar.SetValue(0);
         int x = 6;
-        Font f = Fonts.CabinMedium.Use(11);
         Color arrowcolor = new Color(86, 108, 134);
         Color arrowshadow = new Color(36, 34, 36);
         for (int i = 0; i < path.Count; i++)
         {
             Label dir = new Label(PathContainer);
-            dir.SetFont(f);
+            dir.SetFont(Fonts.Paragraph);
             dir.SetText(path[i]);
             dir.SetPosition(x, -1);
             PathLabels.Add(dir);
-            x += f.TextSize(path[i]).Width;
+            x += Fonts.Paragraph.TextSize(path[i]).Width;
             if (i != path.Count - 1)
             {
                 Widget arrow = new Widget(PathContainer);
@@ -185,7 +184,7 @@ public class FileExplorer : Widget
         if (Empty)
         {
             EmptyLabel = new Label(GridContainer);
-            EmptyLabel.SetFont(Fonts.CabinMedium.Use(11));
+            EmptyLabel.SetFont(Fonts.Paragraph);
             EmptyLabel.SetText("This directory does not contain any (relevant) files.");
             EmptyLabel.SetPosition(GridContainer.Size.Width / 2 - EmptyLabel.Size.Width / 2 - 20, GridContainer.Size.Height / 2 - EmptyLabel.Size.Height / 2 - 50);
         }
@@ -458,12 +457,10 @@ public class FileEntryWidget : Widget
     public void RedrawName()
     {
         Sprites["text"].Bitmap?.Dispose();
-        Font f = Fonts.CabinMedium.Use(11);
-        List<string> Lines = Utilities.FormatString(f, this.Name, Size.Width - 4);
+        List<string> Lines = Utilities.FormatString(Fonts.Paragraph, this.Name, Size.Width - 4);
         if (Lines.Count > 1)
         {
-            f = Fonts.CabinMedium.Use(9);
-            Lines = Utilities.FormatString(f, this.Name, Size.Width - 4);
+            Lines = Utilities.FormatString(Fonts.Paragraph, this.Name, Size.Width - 4);
         }
         TwoLines = false;
         if (Lines.Count > 2)
@@ -474,7 +471,7 @@ public class FileEntryWidget : Widget
         }
         Sprites["text"].Bitmap = new Bitmap(Size.Width - 4, 32);
         Sprites["text"].Bitmap.Unlock();
-        Sprites["text"].Bitmap.Font = f;
+        Sprites["text"].Bitmap.Font = Fonts.Paragraph;
         int y = Lines.Count > 1 ? -2 : 4;
         for (int i = 0; i < Lines.Count; i++)
         {

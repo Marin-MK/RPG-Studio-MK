@@ -8,7 +8,7 @@ public class TextBox : amethyst.TextBox
     public TextBox(IContainer Parent) : base(Parent)
     {
         TextArea.SetPosition(6, 4);
-        TextArea.SetFont(Fonts.CabinMedium.Use(11));
+        TextArea.SetFont(Fonts.Paragraph);
         TextArea.SetCaretColor(Color.WHITE);
         TextArea.OnWidgetSelected += _ => Redraw();
         TextArea.OnWidgetDeselected += _ => Redraw();

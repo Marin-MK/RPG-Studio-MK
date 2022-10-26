@@ -41,17 +41,14 @@ public class EditTransferPlayerCommandWindow : PopupWindow
         int Direction = (int) (long) Command.Parameters[4];
         bool Fading = (long) Command.Parameters[5] == 0;
 
-        Font Small = Fonts.CabinMedium.Use(9);
-        Font Big = Fonts.CabinMedium.Use(11);
-
         DirectRadioBox = new RadioBox(this);
-        DirectRadioBox.SetFont(Small);
+        DirectRadioBox.SetFont(Fonts.Paragraph);
         DirectRadioBox.SetPosition(20, 40);
         DirectRadioBox.SetText("Direct appointment");
         DirectRadioBox.OnChecked += _ => UpdateStates();
 
         DirectBox = new BrowserBox(this);
-        DirectBox.SetFont(Big);
+        DirectBox.SetFont(Fonts.Paragraph);
         DirectBox.SetPosition(40, 60);
         DirectBox.SetWidth(200);
         DirectBox.OnDropDownClicked += _ =>
@@ -70,51 +67,51 @@ public class EditTransferPlayerCommandWindow : PopupWindow
         };
 
         VariableRadioBox = new RadioBox(this);
-        VariableRadioBox.SetFont(Small);
+        VariableRadioBox.SetFont(Fonts.Paragraph);
         VariableRadioBox.SetPosition(20, 100);
         VariableRadioBox.SetText("Appoint with variables");
         VariableRadioBox.OnChecked += _ => UpdateStates();
 
         MapIDLabel = new Label(this);
-        MapIDLabel.SetFont(Small);
+        MapIDLabel.SetFont(Fonts.Paragraph);
         MapIDLabel.SetText("Map ID:");
         MapIDLabel.SetPosition(40, 124);
 
         MapIDBox = new VariablePickerBox(this);
-        MapIDBox.SetFont(Big);
+        MapIDBox.SetFont(Fonts.Paragraph);
         MapIDBox.SetPosition(100, 120);
         MapIDBox.SetWidth(180);
         if (!DirectAppointment) MapIDBox.SetVariableID(MapID);
 
         MapXLabel = new Label(this);
-        MapXLabel.SetFont(Small);
+        MapXLabel.SetFont(Fonts.Paragraph);
         MapXLabel.SetText("Map X:");
         MapXLabel.SetPosition(40, 156);
 
         MapXBox = new VariablePickerBox(this);
-        MapXBox.SetFont(Big);
+        MapXBox.SetFont(Fonts.Paragraph);
         MapXBox.SetPosition(100, 152);
         MapXBox.SetWidth(180);
         if (!DirectAppointment) MapXBox.SetVariableID(MapX);
 
         MapYLabel = new Label(this);
-        MapYLabel.SetFont(Small);
+        MapYLabel.SetFont(Fonts.Paragraph);
         MapYLabel.SetText("Map Y:");
         MapYLabel.SetPosition(40, 188);
 
         MapYBox = new VariablePickerBox(this);
-        MapYBox.SetFont(Big);
+        MapYBox.SetFont(Fonts.Paragraph);
         MapYBox.SetPosition(100, 184);
         MapYBox.SetWidth(180);
         if (!DirectAppointment) MapYBox.SetVariableID(MapY);
 
         Label DirectionLabel = new Label(this);
-        DirectionLabel.SetFont(Small);
+        DirectionLabel.SetFont(Fonts.Paragraph);
         DirectionLabel.SetText("Direction:");
         DirectionLabel.SetPosition(20, 236);
 
         DirectionBox = new DropdownBox(this);
-        DirectionBox.SetFont(Big);
+        DirectionBox.SetFont(Fonts.Paragraph);
         DirectionBox.SetItems(new List<ListItem>()
         {
             new ListItem("Retain"),
@@ -129,7 +126,7 @@ public class EditTransferPlayerCommandWindow : PopupWindow
 
         FadeBox = new CheckBox(this);
         FadeBox.SetMirrored(true);
-        FadeBox.SetFont(Small);
+        FadeBox.SetFont(Fonts.Paragraph);
         FadeBox.SetText("With Fade:");
         FadeBox.SetPosition(20, 265);
         FadeBox.SetChecked(Fading);

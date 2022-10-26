@@ -101,10 +101,9 @@ public class ZoomControl : Widget
         else if (this.Factor == 3.0) txt = "300%";
         else if (this.Factor == 4.0) txt = "400%";
         else throw new Exception("Unknown zoom factor");
-        Font f = Fonts.CabinMedium.Use(11);
-        Size s = f.TextSize(txt);
+        Size s = Fonts.Paragraph.TextSize(txt);
         Sprites["text"].Bitmap = new Bitmap(s);
-        Sprites["text"].Bitmap.Font = f;
+        Sprites["text"].Bitmap.Font = Fonts.Paragraph;
         Sprites["text"].Bitmap.Unlock();
         Sprites["text"].Bitmap.DrawText(txt, Color.WHITE);
         Sprites["text"].Bitmap.Lock();

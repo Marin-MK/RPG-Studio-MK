@@ -35,7 +35,7 @@ public class FogFilePicker : AbstractFilePicker
         : base("Fogs", Data.ProjectPath + "/Graphics/Fogs", FogName)
     {
         huelabel = new Label(this);
-        huelabel.SetFont(Fonts.UbuntuBold.Use(11));
+        huelabel.SetFont(Fonts.ParagraphBold);
         huelabel.SetText("Hue");
         huelabel.SetPosition(199, Size.Height - 96);
         HueBox = new NumericSlider(this);
@@ -50,9 +50,8 @@ public class FogFilePicker : AbstractFilePicker
             UpdateHue();
         };
         HueBox.SetValue(FogHue);
-        Font f = Fonts.UbuntuBold.Use(11);
         opacitylabel = new Label(this);
-        opacitylabel.SetFont(f);
+        opacitylabel.SetFont(Fonts.Paragraph);
         opacitylabel.SetText("Opacity");
         OpacityBox = new NumericBox(this);
         OpacityBox.SetMinValue(0);
@@ -60,7 +59,7 @@ public class FogFilePicker : AbstractFilePicker
         OpacityBox.SetSize(90, 27);
         OpacityBox.SetValue(FogOpacity);
         blendlabel = new Label(this);
-        blendlabel.SetFont(f);
+        blendlabel.SetFont(Fonts.Paragraph);
         blendlabel.SetText("Blending");
         BlendBox = new DropdownBox(this);
         BlendBox.SetItems(new List<ListItem>()
@@ -72,7 +71,7 @@ public class FogFilePicker : AbstractFilePicker
         BlendBox.SetSize(80, 27);
         BlendBox.SetSelectedIndex(FogBlendType);
         zoomlabel = new Label(this);
-        zoomlabel.SetFont(f);
+        zoomlabel.SetFont(Fonts.Paragraph);
         zoomlabel.SetText("Zoom");
         ZoomBox = new NumericBox(this);
         ZoomBox.SetMinValue(0);
@@ -80,7 +79,7 @@ public class FogFilePicker : AbstractFilePicker
         ZoomBox.SetSize(90, 27);
         ZoomBox.SetValue(FogZoom);
         sxlabel = new Label(this);
-        sxlabel.SetFont(f);
+        sxlabel.SetFont(Fonts.Paragraph);
         sxlabel.SetText("SX");
         SXBox = new NumericBox(this);
         SXBox.SetMinValue(0);
@@ -88,7 +87,7 @@ public class FogFilePicker : AbstractFilePicker
         SXBox.SetSize(90, 27);
         SXBox.SetValue(FogSX);
         sylabel = new Label(this);
-        sylabel.SetFont(f);
+        sylabel.SetFont(Fonts.Paragraph);
         sylabel.SetText("SY");
         SYBox = new NumericBox(this);
         SYBox.SetMinValue(0);

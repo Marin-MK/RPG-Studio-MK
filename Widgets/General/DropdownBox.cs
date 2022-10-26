@@ -20,7 +20,7 @@ public class DropdownBox : amethyst.TextBox
     {
         Sprites["bg"] = new Sprite(this.Viewport);
         TextArea.SetPosition(6, 2);
-        TextArea.SetFont(Fonts.CabinMedium.Use(11));
+        TextArea.SetFont(Fonts.Paragraph);
         TextArea.SetCaretColor(Color.WHITE);
         TextArea.SetReadOnly(true);
         MinimumSize.Height = MaximumSize.Height = 24;

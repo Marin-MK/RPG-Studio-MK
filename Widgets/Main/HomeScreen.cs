@@ -37,10 +37,10 @@ public class HomeScreen : Widget
         Sprites["logo"].X = 33;
         Sprites["logo"].Y = 4;
         Sprites["text"] = new Sprite(this.Viewport, new Bitmap(360, 160));
-        Sprites["text"].Bitmap.Font = Fonts.UbuntuBold.Use(15);
+        Sprites["text"].Bitmap.Font = Fonts.HomeFont;
         Sprites["text"].Bitmap.Unlock();
         Sprites["text"].Bitmap.DrawText(Editor.GetVersionString(), 348, 88, Color.WHITE, DrawOptions.RightAlign);
-        Sprites["text"].Bitmap.Font = Fonts.UbuntuBold.Use(19);
+        Sprites["text"].Bitmap.Font = Fonts.HomeTitle;
         Sprites["text"].Bitmap.DrawText("Recent Projects:", 38, 126, Color.WHITE, DrawOptions.Underlined);
         Sprites["text"].Bitmap.Lock();
         Sprites["filesel"] = new Sprite(this.Viewport, new SolidBitmap(2, 38, new Color(0, 205, 255)));
@@ -97,7 +97,7 @@ public class HomeScreen : Widget
         NoProjects.SetSize(320, 100);
         NoProjects.SetPosition(40, 170);
         NoProjects.SetText("You haven't opened any projects recently.\nGet started by creating or opening a project!");
-        NoProjects.SetFont(Fonts.CabinMedium.Use(12));
+        NoProjects.SetFont(Fonts.Paragraph);
 
         VignetteFade = new VignetteFade(this);
         VignetteFade.SetDocked(true);
@@ -124,8 +124,6 @@ public class HomeScreen : Widget
         RecentCapacity = (int)Math.Floor(height / 48d);
         Sprites["files"].Bitmap = new Bitmap(314, 48 * RecentCapacity);
         Sprites["files"].Bitmap.Unlock();
-        Font boldfont = Fonts.UbuntuBold.Use(13);
-        Font regularfont = Fonts.CabinMedium.Use(11);
         int count = Editor.GeneralSettings.RecentFiles.Count;
         for (int i = 0; i < count; i++)
         {
@@ -133,9 +131,9 @@ public class HomeScreen : Widget
             string name = Editor.GeneralSettings.RecentFiles[count - i - 1].ProjectName;
             string projectpath = Editor.GeneralSettings.RecentFiles[count - i - 1].ProjectFile;
             while (projectpath.Contains("\\")) projectpath = projectpath.Replace("\\", "/");
-            Sprites["files"].Bitmap.Font = boldfont;
-            Sprites["files"].Bitmap.DrawText(name, 0, 48 * i + 4, Color.WHITE);
-            Sprites["files"].Bitmap.Font = regularfont;
+            Sprites["files"].Bitmap.Font = Fonts.HomeFont;
+            Sprites["files"].Bitmap.DrawText(name, 0, 54 * i + 4, Color.WHITE);
+            Sprites["files"].Bitmap.Font = Fonts.Paragraph;
             List<string> folders = projectpath.Split('/').ToList();
             string path = "";
             for (int j = folders.Count - 2; j >= 0; j--)
@@ -153,7 +151,7 @@ public class HomeScreen : Widget
                     path = add + folders[j] + path;
                 }
             }
-            Sprites["files"].Bitmap.DrawText(path, 30, 48 * i + 22, Color.WHITE);
+            Sprites["files"].Bitmap.DrawText(path, 30, 54 * i + 26, Color.WHITE);
         }
         Sprites["files"].Bitmap.Lock();
         NoProjects.SetVisible(Editor.GeneralSettings.RecentFiles.Count == 0);

@@ -24,7 +24,7 @@ public class ListDrawer : Widget
 
     public ListDrawer(IContainer Parent) : base(Parent)
     {
-        this.Font = Fonts.CabinMedium.Use(10);
+        this.Font = Fonts.Paragraph;
         Sprites["selection"] = new Sprite(this.Viewport, new SolidBitmap(Size.Width, 20, new Color(28, 50, 73)));
         Sprites["selection"].Visible = false;
         Sprites["text"] = new Sprite(this.Viewport);

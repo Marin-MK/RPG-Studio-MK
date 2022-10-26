@@ -24,18 +24,16 @@ public class EditSelfSwitchCommandWindow : PopupWindow
         SetSize(MaximumSize);
         Center();
 
-        Font f = Fonts.CabinMedium.Use(9);
-
         Container MainContainer = new Container(this);
         MainContainer.AutoResize = true;
         MainContainer.SetPosition(20, 50);
 
         Label EventLabel = new Label(MainContainer);
-        EventLabel.SetFont(f);
+        EventLabel.SetFont(Fonts.Paragraph);
         EventLabel.SetText("Event:");
         EventLabel.SetPosition(0, 5);
         EventBox = new DropdownBox(MainContainer);
-        EventBox.SetFont(f);
+        EventBox.SetFont(Fonts.Paragraph);
         EventBox.SetPosition(80, 0);
         EventBox.SetSize(160, 25);
         List<ListItem> Items = new List<ListItem>();
@@ -56,12 +54,12 @@ public class EditSelfSwitchCommandWindow : PopupWindow
         else EventBox.SetSelectedIndex(0);
 
         Label SwitchLabel = new Label(MainContainer);
-        SwitchLabel.SetFont(f);
+        SwitchLabel.SetFont(Fonts.Paragraph);
         SwitchLabel.SetPosition(0, 40);
         SwitchLabel.SetText("Self Switch:");
 
         SelfSwitchBox = new DropdownBox(MainContainer);
-        SelfSwitchBox.SetFont(f);
+        SelfSwitchBox.SetFont(Fonts.Paragraph);
         SelfSwitchBox.SetPosition(80, 35);
         SelfSwitchBox.SetSize(48, 25);
         SelfSwitchBox.SetItems(new List<ListItem>()
@@ -72,18 +70,18 @@ public class EditSelfSwitchCommandWindow : PopupWindow
         SelfSwitchBox.SetSelectedIndex(((string) Command.Parameters[0])[0] - 'A');
 
         Label ValueLabel = new Label(MainContainer);
-        ValueLabel.SetFont(f);
+        ValueLabel.SetFont(Fonts.Paragraph);
         ValueLabel.SetPosition(0, 70);
         ValueLabel.SetText("Value:");
 
         OnBox = new RadioBox(MainContainer);
-        OnBox.SetFont(f);
+        OnBox.SetFont(Fonts.Paragraph);
         OnBox.SetPosition(80, 70);
         OnBox.SetText("ON");
         OnBox.SetChecked((long) Command.Parameters[1] == 0);
 
         RadioBox OffBox = new RadioBox(MainContainer);
-        OffBox.SetFont(f);
+        OffBox.SetFont(Fonts.Paragraph);
         OffBox.SetPosition(130, 70);
         OffBox.SetText("OFF");
         OffBox.SetChecked(!OnBox.Checked);

@@ -12,7 +12,7 @@ public class TransferPlayerWidget : BaseCommandWidget
     public TransferPlayerWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex) 
     {
         TransferLabel = new Label(this);
-        TransferLabel.SetFont(Fonts.CabinMedium.Use(9));
+        TransferLabel.SetFont(Fonts.Paragraph);
     }
 
     public override void LoadCommand()

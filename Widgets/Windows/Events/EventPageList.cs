@@ -49,8 +49,7 @@ public class EventPageList : Widget
         Sprites["bg"].Bitmap = new Bitmap(Size);
         Sprites["bg"].Bitmap.Unlock();
         Sprites["text"].Bitmap = new Bitmap(Size);
-        Font f = Fonts.CabinMedium.Use(12);
-        Sprites["text"].Bitmap.Font = f;
+        Sprites["text"].Bitmap.Font = Fonts.Paragraph;
         Sprites["text"].Bitmap.Unlock();
         for (int i = 0; i < Event.Pages.Count; i++)
         {

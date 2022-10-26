@@ -49,7 +49,7 @@ public class ChooseGraphic : PopupWindow
         GraphicGroupBox.SetInnerColor(new Color(28, 50, 73));
 
         Label GraphicLabel = new Label(this);
-        GraphicLabel.SetFont(Fonts.UbuntuBold.Use(13));
+        GraphicLabel.SetFont(Fonts.Header);
         GraphicLabel.SetText("Current Graphic");
         GraphicLabel.SetPosition(559, 38);
 
@@ -83,15 +83,13 @@ public class ChooseGraphic : PopupWindow
         Cursor = new CursorWidget(GraphicContainer);
         Cursor.ConsiderInAutoScrollCalculation = false;
 
-        Font f = Fonts.CabinMedium.Use(9);
-
         TypeLabel = new Label(this);
         TypeLabel.SetPosition(547, 276);
-        TypeLabel.SetFont(f);
+        TypeLabel.SetFont(Fonts.Paragraph);
         TypeLabel.SetText($"Type: {(Graphic.TileID >= 384 ? "Tile" : !string.IsNullOrEmpty(Graphic.CharacterName) ? "Character" : "None")}");
 
         Label DirectionLabel = new Label(this);
-        DirectionLabel.SetFont(f);
+        DirectionLabel.SetFont(Fonts.Paragraph);
         DirectionLabel.SetText("Direction:");
         DirectionLabel.SetPosition(547, 301);
         DirectionLabel.SetEnabled(Graphic.TileID < 384 && !string.IsNullOrEmpty(Graphic.CharacterName));
@@ -114,7 +112,7 @@ public class ChooseGraphic : PopupWindow
         };
 
         Label FrameLabel = new Label(this);
-        FrameLabel.SetFont(f);
+        FrameLabel.SetFont(Fonts.Paragraph);
         FrameLabel.SetText("Frame:");
         FrameLabel.SetPosition(547, 330);
         FrameLabel.SetEnabled(Graphic.TileID < 384 && !string.IsNullOrEmpty(Graphic.CharacterName));
@@ -132,7 +130,7 @@ public class ChooseGraphic : PopupWindow
         };
 
         Label NumDirectionsLabel = new Label(this);
-        NumDirectionsLabel.SetFont(f);
+        NumDirectionsLabel.SetFont(Fonts.Paragraph);
         NumDirectionsLabel.SetText("No. Directions:");
         NumDirectionsLabel.SetPosition(547, 360);
         NumDirectionsLabel.SetEnabled(false);
@@ -154,7 +152,7 @@ public class ChooseGraphic : PopupWindow
         };
 
         Label NumFramesLabel = new Label(this);
-        NumFramesLabel.SetFont(f);
+        NumFramesLabel.SetFont(Fonts.Paragraph);
         NumFramesLabel.SetText("No. Frames:");
         NumFramesLabel.SetPosition(547, 390);
         NumFramesLabel.SetEnabled(false);
@@ -174,7 +172,7 @@ public class ChooseGraphic : PopupWindow
         };
 
         Label OpacityLabel = new Label(this);
-        OpacityLabel.SetFont(f);
+        OpacityLabel.SetFont(Fonts.Paragraph);
         OpacityLabel.SetText("Opacity:");
         OpacityLabel.SetPosition(547, 420);
         OpacityLabel.SetEnabled(!FromMoveRouteEditor);
@@ -192,8 +190,9 @@ public class ChooseGraphic : PopupWindow
         };
 
         SubmodeView GraphicTypePicker = new SubmodeView(this);
+        GraphicTypePicker.SetFont(Fonts.TabFont);
         GraphicTypePicker.SetHDocked(true);
-        GraphicTypePicker.SetPosition(128, 8);
+        GraphicTypePicker.SetPosition(144, 8);
         GraphicTypePicker.SetHeaderSelBackgroundColor(new Color(59, 91, 124));
         GraphicTypePicker.SetHeaderHeight(28);
         GraphicTypePicker.SetHeight(25);
@@ -236,7 +235,7 @@ public class ChooseGraphic : PopupWindow
         HueLabel.SetBottomDocked(true);
         HueLabel.SetPadding(20, 0, 0, -17);
         HueLabel.SetHeight(24);
-        HueLabel.SetFont(f);
+        HueLabel.SetFont(Fonts.Paragraph);
         HueLabel.SetText("Hue: ");
         HueBox = new NumericSlider(this);
         HueBox.SetMinimumValue(0);

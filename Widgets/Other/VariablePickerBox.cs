@@ -12,7 +12,7 @@ public class VariablePickerBox : BrowserBox
 
     public VariablePickerBox(IContainer Parent) : base(Parent)
     {
-        SetFont(Fonts.CabinMedium.Use(11));
+        SetFont(Fonts.Paragraph);
         OnDropDownClicked += _ =>
         {
             VariablePicker picker = new VariablePicker(this.VariableID);

@@ -38,18 +38,17 @@ public class MenuBar : Widget
     {
         if (Sprites["header"].Bitmap != null) Sprites["header"].Bitmap.Dispose();
         int TotalWidth = 0;
-        Font f = Fonts.CabinMedium.Use(11);
         foreach (MenuItem mi in Items)
         {
-            TotalWidth += f.TextSize(mi.Text).Width + 12;
+            TotalWidth += Fonts.Paragraph.TextSize(mi.Text).Width + 12;
         }
         Sprites["header"].Bitmap = new Bitmap(TotalWidth, 32);
         Sprites["header"].Bitmap.Unlock();
-        Sprites["header"].Bitmap.Font = f;
+        Sprites["header"].Bitmap.Font = Fonts.Paragraph;
         int x = 12;
         foreach (MenuItem mi in Items)
         {
-            Size s = f.TextSize(mi.Text);
+            Size s = Fonts.Paragraph.TextSize(mi.Text);
             Sprites["header"].Bitmap.DrawText(mi.Text, x, 10, Color.WHITE);
             x += s.Width + 12;
         }

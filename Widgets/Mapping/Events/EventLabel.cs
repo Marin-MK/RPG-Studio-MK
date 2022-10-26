@@ -44,11 +44,10 @@ public class EventLabel : Widget
     protected override void Draw()
     {
         Sprites["name"].Bitmap?.Dispose();
-        Font f = Fonts.CabinMedium.Use(11);
         string Text = $"{Utilities.Digits(Event.ID, 3)}: {Event.Name}";
-        Size s = f.TextSize(Text);
+        Size s = Fonts.Paragraph.TextSize(Text);
         Sprites["name"].Bitmap = new Bitmap(s);
-        Sprites["name"].Bitmap.Font = f;
+        Sprites["name"].Bitmap.Font = Fonts.Paragraph;
         Sprites["name"].Bitmap.Unlock();
         Sprites["name"].Bitmap.DrawText(Text, this.Selected ? new Color(58, 184, 243) : Color.WHITE);
         Sprites["name"].Bitmap.Lock();

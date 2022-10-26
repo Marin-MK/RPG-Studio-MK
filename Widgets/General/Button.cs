@@ -21,7 +21,7 @@ public class Button : Widget
 
     public Button(IContainer Parent) : base(Parent)
     {
-        this.Font = Fonts.UbuntuBold.Use(11);
+        this.Font = Fonts.ParagraphBold;
 
         Bitmap corner = Utilities.ButtonCornerFade;
         Bitmap hor = Utilities.ButtonHorizontalFade;

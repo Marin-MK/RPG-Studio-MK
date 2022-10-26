@@ -17,7 +17,7 @@ public class RadioBox : Widget
 
     public RadioBox(IContainer Parent) : base(Parent)
     {
-        this.Font = Fonts.CabinMedium.Use(9);
+        this.Font = Fonts.Paragraph;
         Sprites["box"] = new Sprite(this.Viewport, new Bitmap(16, 16));
         RedrawBox(true);
         Sprites["text"] = new Sprite(this.Viewport);

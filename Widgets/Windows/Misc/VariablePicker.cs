@@ -23,17 +23,13 @@ public class VariablePicker : PopupWindow
         SetSize(MaximumSize);
         Center();
 
-        Font HeaderFont = Fonts.UbuntuBold.Use(11);
-        Font ListFont = Fonts.CabinMedium.Use(11);
-        Font SmallFont = Fonts.CabinMedium.Use(11);
-
         Label GroupLabel = new Label(this);
-        GroupLabel.SetFont(HeaderFont);
+        GroupLabel.SetFont(Fonts.ParagraphBold);
         GroupLabel.SetPosition(16, 30);
         GroupLabel.SetText("Groups");
 
         GroupListBox = new ListBox(this);
-        GroupListBox.SetFont(ListFont);
+        GroupListBox.SetFont(Fonts.Paragraph);
         GroupListBox.SetVDocked(true);
         GroupListBox.SetPadding(13, 50, 0, 52);
         GroupListBox.SetWidth(114);
@@ -46,24 +42,24 @@ public class VariablePicker : PopupWindow
         ChangeMaxButton.SetText("Change Max");
 
         VariableListBox = new ListBox(this);
-        VariableListBox.SetFont(ListFont);
+        VariableListBox.SetFont(Fonts.Paragraph);
         VariableListBox.SetDocked(true);
         VariableListBox.SetPadding(GroupListBox.Padding.Left + GroupListBox.Size.Width + 6, 50, 16, 84);
         VariableListBox.OnSelectionChanged += _ => VariableSelectionChanged();
 
         Label VariableLabel = new Label(this);
-        VariableLabel.SetFont(HeaderFont);
+        VariableLabel.SetFont(Fonts.ParagraphBold);
         VariableLabel.SetPadding(VariableListBox.Padding.Left + 2, 30, 0, 0);
         VariableLabel.SetText("Variables");
 
         Label NameLabel = new Label(this);
-        NameLabel.SetFont(SmallFont);
+        NameLabel.SetFont(Fonts.Paragraph);
         NameLabel.SetBottomDocked(true);
         NameLabel.SetPadding(VariableListBox.Padding.Left + 8, 0, 0, 25);
         NameLabel.SetText("Name:");
 
         NameBox = new TextBox(this);
-        NameBox.SetFont(SmallFont);
+        NameBox.SetFont(Fonts.Paragraph);
         NameBox.SetHDocked(true);
         NameBox.SetBottomDocked(true);
         NameBox.SetPadding(VariableListBox.Padding.Left + 50, 0, 16, 29);

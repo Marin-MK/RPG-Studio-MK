@@ -32,12 +32,12 @@ public class ConditionalWidget : BaseCommandWidget
         FalseShadow = new ShadowWidget(this);
         EndHeaderShadow = new ShadowWidget(this);
         ConditionLabel = new Label(this);
-        ConditionLabel.SetFont(Fonts.CabinMedium.Use(10));
+        ConditionLabel.SetFont(Fonts.Paragraph);
         ElseLabel = new Label(this);
-        ElseLabel.SetFont(Fonts.CabinMedium.Use(9));
+        ElseLabel.SetFont(Fonts.Paragraph);
         ElseLabel.SetText("Else");
         EndLabel = new Label(this);
-        EndLabel.SetFont(Fonts.CabinMedium.Use(9));
+        EndLabel.SetFont(Fonts.Paragraph);
         EndLabel.SetText("End");
         ExpandIfArrow = new ExpandArrow(this);
         ExpandIfArrow.SetExpanded(true);
@@ -125,11 +125,11 @@ public class ConditionalWidget : BaseCommandWidget
         ConditionLabel.SetPosition(GetStandardLabelPosition());
         if ((ConditionType) Int(0) == ConditionType.Script)
         {
-            ConditionLabel.SetFont(Fonts.Monospace.Use(11));
+            ConditionLabel.SetFont(Fonts.Monospace);
         }
         else
         {
-            ConditionLabel.SetFont(Fonts.CabinMedium.Use(9));
+            ConditionLabel.SetFont(Fonts.Paragraph);
         }
         ConditionLabel.SetText(GetConditionText());
 
@@ -343,9 +343,9 @@ public class ConditionalWidget : BaseCommandWidget
     {
         return (ConditionType) Int(0) switch
         {
-            ConditionType.Switch => $"{Switch(Int(1))} is {OnOff(Int(2))}",
+            ConditionType.Switch => $"{Switch(Int(1))} is {OnOff(2)}",
             ConditionType.Variable => $"{Variable(Int(1))} {Operator(Int(4))} {(Int(2) == 0 ? Int(3) : Variable(Int(3)))}",
-            ConditionType.SelfSwitch => $"Self Switch {String(1)} is {OnOff(Int(2))}",
+            ConditionType.SelfSwitch => $"Self Switch {String(1)} is {OnOff(2)}",
             ConditionType.Timer => $"Timer {Int(1) / 60}min {Int(1) % 60}sec or {(Int(2) == 0 ? "more" : "less")}",
             ConditionType.Actor => $"Actor condition",
             ConditionType.Enemy => $"Enemy condition",

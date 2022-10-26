@@ -32,7 +32,7 @@ public class AudioPicker : PopupWindow
         Label pickerlabel = new Label(this);
         pickerlabel.SetText("Files");
         pickerlabel.SetPosition(22, 33);
-        pickerlabel.SetFont(Fonts.CabinMedium.Use(11));
+        pickerlabel.SetFont(Fonts.Paragraph);
 
         FileList = new ListBox(this);
         FileList.SetPosition(25, 51);
@@ -59,7 +59,7 @@ public class AudioPicker : PopupWindow
         Label previewlabel = new Label(this);
         previewlabel.SetText("Preview");
         previewlabel.SetPosition(192, 33);
-        previewlabel.SetFont(Fonts.CabinMedium.Use(11));
+        previewlabel.SetFont(Fonts.Paragraph);
 
         PlayButton = new Button(this);
         PlayButton.SetText("Play");
@@ -76,22 +76,22 @@ public class AudioPicker : PopupWindow
 
         Label VolumeGroupLabel = new Label(this);
         VolumeGroupLabel.SetText("Volume");
-        VolumeGroupLabel.SetFont(Fonts.CabinMedium.Use(11));
+        VolumeGroupLabel.SetFont(Fonts.Paragraph);
         VolumeGroupLabel.SetPosition(192, 139);
         GroupBox VolumeGroup = new GroupBox(this);
         VolumeGroup.SetPosition(197, 158);
         VolumeGroup.SetSize(222, 54);
         Label MinVolumeLabel = new Label(VolumeGroup);
         MinVolumeLabel.SetText("-");
-        MinVolumeLabel.SetFont(Fonts.CabinMedium.Use(23));
+        MinVolumeLabel.SetFont(Fonts.Paragraph);
         MinVolumeLabel.SetPosition(27, 10);
         Label MaxVolumeLabel = new Label(VolumeGroup);
         MaxVolumeLabel.SetText("+");
-        MaxVolumeLabel.SetFont(Fonts.CabinMedium.Use(23));
+        MaxVolumeLabel.SetFont(Fonts.Header);
         MaxVolumeLabel.SetPosition(147, 10);
         Label VolumeLabel = new Label(VolumeGroup);
         VolumeLabel.SetText(Volume.ToString() + "%");
-        VolumeLabel.SetFont(Fonts.CabinMedium.Use(11));
+        VolumeLabel.SetFont(Fonts.Paragraph);
         VolumeLabel.SetPosition(167, 18);
         VolumeSlider = new NumericSlider(VolumeGroup);
         VolumeSlider.SetPosition(38, 18);
@@ -106,22 +106,22 @@ public class AudioPicker : PopupWindow
 
         Label PitchGroupLabel = new Label(this);
         PitchGroupLabel.SetText("Pitch");
-        PitchGroupLabel.SetFont(Fonts.CabinMedium.Use(11));
+        PitchGroupLabel.SetFont(Fonts.Paragraph);
         PitchGroupLabel.SetPosition(192, 239);
         GroupBox PitchGroup = new GroupBox(this);
         PitchGroup.SetPosition(197, 258);
         PitchGroup.SetSize(222, 54);
         Label MinPitchLabel = new Label(PitchGroup);
         MinPitchLabel.SetText("-");
-        MinPitchLabel.SetFont(Fonts.CabinMedium.Use(23));
+        MinPitchLabel.SetFont(Fonts.Header);
         MinPitchLabel.SetPosition(27, 10);
         Label MaxPitchLabel = new Label(PitchGroup);
         MaxPitchLabel.SetText("+");
-        MaxPitchLabel.SetFont(Fonts.CabinMedium.Use(23));
+        MaxPitchLabel.SetFont(Fonts.Paragraph);
         MaxPitchLabel.SetPosition(147, 10);
         Label PitchLabel = new Label(PitchGroup);
         PitchLabel.SetText(Pitch.ToString() + "%");
-        PitchLabel.SetFont(Fonts.CabinMedium.Use(11));
+        PitchLabel.SetFont(Fonts.Paragraph);
         PitchLabel.SetPosition(167, 18);
         PitchSlider = new NumericSlider(PitchGroup);
         PitchSlider.SetPosition(38, 18);

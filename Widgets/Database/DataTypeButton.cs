@@ -29,11 +29,10 @@ public class DataTypeButton : Widget
         Sprites["icon"].Bitmap = new Bitmap($"assets/img/data_type_{Icon}");
         Sprites["icon"].SrcRect.Width = Sprites["icon"].Bitmap.Width / 2;
         Sprites["text"].Bitmap?.Dispose();
-        Font f = Fonts.UbuntuBold.Use(15);
-        Size s = f.TextSize(Text);
+        Size s = Fonts.Header.TextSize(Text);
         Sprites["text"].Bitmap = new Bitmap(s);
         Sprites["text"].Bitmap.Unlock();
-        Sprites["text"].Bitmap.Font = f;
+        Sprites["text"].Bitmap.Font = Fonts.Header;
         Sprites["text"].Bitmap.DrawText(Text, Color.WHITE);
         Sprites["text"].Bitmap.Lock();
     }

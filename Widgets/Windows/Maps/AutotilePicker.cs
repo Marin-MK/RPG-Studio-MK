@@ -40,22 +40,20 @@ public class AutotilePicker : PopupWindow
 
         Sprites["preview"] = new Sprite(this.Viewport);
 
-        Font f = Fonts.UbuntuBold.Use(11);
-
         Label labelavail = new Label(this);
         labelavail.SetText("Available");
         labelavail.SetPosition(16, 24);
-        labelavail.SetFont(f);
+        labelavail.SetFont(Fonts.Paragraph);
 
         Label labelinuse = new Label(this);
         labelinuse.SetText("In-use");
         labelinuse.SetPosition(16, 250);
-        labelinuse.SetFont(f);
+        labelinuse.SetFont(Fonts.Paragraph);
 
         Label labelprev = new Label(this);
         labelprev.SetText("Preview");
         labelprev.SetPosition(192, 24);
-        labelprev.SetFont(f);
+        labelprev.SetFont(Fonts.Paragraph);
 
         ActionButton = new Button(this);
         ActionButton.SetPosition(52, 225);

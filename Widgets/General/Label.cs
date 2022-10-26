@@ -19,7 +19,7 @@ public class Label : Widget
     public Label(IContainer Parent) : base(Parent)
     {
         Sprites["text"] = new Sprite(this.Viewport);
-        this.Font = Fonts.CabinMedium.Use(9);
+        this.Font = Fonts.Paragraph;
     }
 
     public void SetEnabled(bool Enabled)

@@ -23,7 +23,7 @@ public class GenericMultilineTextBoxWindow : PopupWindow
         Center();
 
         TextBox = new MultilineTextBox(this);
-        TextBox.SetFont(Monospace ? Fonts.FiraCode.Use(9) : Fonts.CabinMedium.Use(9));
+        TextBox.SetFont(Monospace ? Fonts.Monospace : Fonts.Paragraph);
         TextBox.SetDocked(true);
         TextBox.SetPadding(20, 30, 20, 50);
         TextBox.SetText(Text);

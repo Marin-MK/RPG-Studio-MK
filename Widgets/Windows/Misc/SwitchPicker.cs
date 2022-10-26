@@ -23,17 +23,14 @@ public class SwitchPicker : PopupWindow
         SetSize(MaximumSize);
         Center();
 
-        Font HeaderFont = Fonts.UbuntuBold.Use(11);
-        Font ListFont = Fonts.CabinMedium.Use(11);
-        Font SmallFont = Fonts.CabinMedium.Use(11);
-
+        
         Label GroupLabel = new Label(this);
-        GroupLabel.SetFont(HeaderFont);
+        GroupLabel.SetFont(Fonts.ParagraphBold);
         GroupLabel.SetPosition(16, 30);
         GroupLabel.SetText("Groups");
 
         GroupListBox = new ListBox(this);
-        GroupListBox.SetFont(ListFont);
+        GroupListBox.SetFont(Fonts.Paragraph);
         GroupListBox.SetVDocked(true);
         GroupListBox.SetPadding(13, 50, 0, 52);
         GroupListBox.SetWidth(114);
@@ -46,24 +43,24 @@ public class SwitchPicker : PopupWindow
         ChangeMaxButton.SetText("Change Max");
 
         SwitchListBox = new ListBox(this);
-        SwitchListBox.SetFont(ListFont);
+        SwitchListBox.SetFont(Fonts.Paragraph);
         SwitchListBox.SetDocked(true);
         SwitchListBox.SetPadding(GroupListBox.Padding.Left + GroupListBox.Size.Width + 6, 50, 16, 84);
         SwitchListBox.OnSelectionChanged += _ => SwitchSelectionChanged();
 
         Label SwitchLabel = new Label(this);
-        SwitchLabel.SetFont(HeaderFont);
+        SwitchLabel.SetFont(Fonts.ParagraphBold);
         SwitchLabel.SetPadding(SwitchListBox.Padding.Left + 2, 30, 0, 0);
         SwitchLabel.SetText("Switches");
 
         Label NameLabel = new Label(this);
-        NameLabel.SetFont(SmallFont);
+        NameLabel.SetFont(Fonts.Paragraph);
         NameLabel.SetBottomDocked(true);
         NameLabel.SetPadding(SwitchListBox.Padding.Left + 8, 0, 0, 25);
         NameLabel.SetText("Name:");
 
         NameBox = new TextBox(this);
-        NameBox.SetFont(SmallFont);
+        NameBox.SetFont(Fonts.Paragraph);
         NameBox.SetHDocked(true);
         NameBox.SetBottomDocked(true);
         NameBox.SetPadding(SwitchListBox.Padding.Left + 50, 0, 16, 29);

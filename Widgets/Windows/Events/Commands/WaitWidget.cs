@@ -12,7 +12,7 @@ public class WaitWidget : BaseCommandWidget
     public WaitWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex) 
     {
         WaitLabel = new Label(this);
-        WaitLabel.SetFont(Fonts.CabinMedium.Use(9));
+        WaitLabel.SetFont(Fonts.Paragraph);
     }
 
     public override void LoadCommand()

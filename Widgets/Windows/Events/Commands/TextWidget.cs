@@ -15,7 +15,7 @@ public class TextWidget : BaseCommandWidget
     public TextWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex)
     {
         MultilineLabel = new MultilineLabel(this);
-        MultilineLabel.SetFont(Fonts.CabinMedium.Use(9));
+        MultilineLabel.SetFont(Fonts.Paragraph);
         MultilineLabel.SetHeight(1);
     }
 
@@ -60,7 +60,7 @@ public class TextWidget : BaseCommandWidget
         }
         else
         {
-            return Utilities.FormatString(Fonts.CabinMedium.Use(9), Text, 300);
+            return Utilities.FormatString(Fonts.Paragraph, Text, 300);
         }
     }
 
@@ -107,7 +107,7 @@ public class TextWidget : BaseCommandWidget
         MultilineLabel.SetPosition(GetStandardLabelPosition());
         MultilineLabel.SetLineHeight(22);
         MultilineLabel.SetWidth(Size.Width - MultilineLabel.Position.X - 4);
-        MultilineLabel.SetFont(Command.Code == CommandCode.Script ? Fonts.Monospace.Use(11) : Fonts.CabinMedium.Use(9));
+        MultilineLabel.SetFont(Command.Code == CommandCode.Script ? Fonts.Monospace : Fonts.Paragraph);
         MultilineLabel.SetText(text);
         MultilineLabel.RedrawText(true);
         HeightAdd = Math.Max(0, MultilineLabel.Size.Height - StandardHeight);

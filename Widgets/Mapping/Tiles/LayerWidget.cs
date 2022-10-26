@@ -79,9 +79,8 @@ public class LayerWidget : Widget
         Sprites["bg"].Bitmap.Unlock();
         Sprites["text"].Bitmap?.Dispose();
         Sprites["text"].Bitmap = new Bitmap(Size.Width, 24 * Layers.Count);
-        Font f = Fonts.CabinMedium.Use(11);
         Sprites["text"].Bitmap.Unlock();
-        Sprites["text"].Bitmap.Font = f;
+        Sprites["text"].Bitmap.Font = Fonts.Paragraph;
         for (int i = 0; i < Layers.Count; i++)
         {
             int y = 24 * (Layers.Count - i - 1);

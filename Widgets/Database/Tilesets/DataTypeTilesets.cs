@@ -88,7 +88,7 @@ public class DataTypeTilesets : Widget
         Tabs.SetHeaderSelHeight(0);
         Tabs.SetHeaderWidth(140);
         Tabs.SetGrid(0, 1, 1, 2);
-        Tabs.SetFont(Fonts.UbuntuBold.Use(13));
+        Tabs.SetFont(Fonts.TabFont);
         Tabs.SetCentered(true);
         Tabs.SetHeaderBackgroundColor(10, 23, 37);
         Tabs.OnSelectionChanged += _ => SelectedTabChanged();
@@ -106,14 +106,12 @@ public class DataTypeTilesets : Widget
         Tabs.CreateTab("Counter Flag");
         Tabs.CreateTab("Terrain Tag");
 
-        Font Font = Fonts.CabinMedium.Use(13);
-
         NameLabel = new Label(MainBox);
         NameLabel.SetText("Name");
-        NameLabel.SetFont(Font);
+        NameLabel.SetFont(Fonts.Paragraph);
         NameBox = new TextBox(MainBox);
         NameBox.SetSize(180, 25);
-        NameBox.SetFont(Font);
+        NameBox.SetFont(Fonts.Paragraph);
         NameBox.SetTextY(-2);
         NameBox.OnTextChanged += delegate (TextEventArgs e)
         {
@@ -133,10 +131,10 @@ public class DataTypeTilesets : Widget
 
         GraphicLabel = new Label(MainBox);
         GraphicLabel.SetText("Tileset Graphic");
-        GraphicLabel.SetFont(Font);
+        GraphicLabel.SetFont(Fonts.Paragraph);
         GraphicBox = new PickerBox(MainBox);
         GraphicBox.SetSize(180, 25);
-        GraphicBox.SetFont(Font);
+        GraphicBox.SetFont(Fonts.Paragraph);
         GraphicBox.SetTextY(-2);
         GraphicBox.OnDropDownClicked += _ =>
         {
@@ -168,11 +166,11 @@ public class DataTypeTilesets : Widget
         {
             Label AutotileLabel = new Label(MainBox);
             AutotileLabel.SetText($"Autotile {i + 1}");
-            AutotileLabel.SetFont(Font);
+            AutotileLabel.SetFont(Fonts.Paragraph);
             AutotileLabels.Add(AutotileLabel);
             PickerBox AutotileBox = new PickerBox(MainBox);
             AutotileBox.SetSize(162, 25);
-            AutotileBox.SetFont(Font);
+            AutotileBox.SetFont(Fonts.Paragraph);
             AutotileBox.SetTextY(-2);
             int id = i;
             AutotileBox.OnDropDownClicked += _ =>
@@ -208,10 +206,10 @@ public class DataTypeTilesets : Widget
 
         FogLabel = new Label(MainBox);
         FogLabel.SetText("Fog Graphic");
-        FogLabel.SetFont(Font);
+        FogLabel.SetFont(Fonts.Paragraph);
         FogBox = new PickerBox(MainBox);
         FogBox.SetSize(180, 25);
-        FogBox.SetFont(Font);
+        FogBox.SetFont(Fonts.Paragraph);
         FogBox.SetTextY(-2);
         FogBox.OnDropDownClicked += _ =>
         {
@@ -245,10 +243,10 @@ public class DataTypeTilesets : Widget
 
         PanoramaLabel = new Label(MainBox);
         PanoramaLabel.SetText("Panorama Graphic");
-        PanoramaLabel.SetFont(Font);
+        PanoramaLabel.SetFont(Fonts.Paragraph);
         PanoramaBox = new PickerBox(MainBox);
         PanoramaBox.SetSize(180, 25);
-        PanoramaBox.SetFont(Font);
+        PanoramaBox.SetFont(Fonts.Paragraph);
         PanoramaBox.SetTextY(-2);
         PanoramaBox.OnDropDownClicked = _ =>
         {
@@ -268,7 +266,7 @@ public class DataTypeTilesets : Widget
         };
 
         TagDetailLabel = new MultilineLabel(MainBox);
-        TagDetailLabel.SetFont(Font);
+        TagDetailLabel.SetFont(Fonts.Paragraph);
         TagDetailLabel.SetText(
 @"0 = None
 1 = Ledge

@@ -68,7 +68,7 @@ public class EventCommandBox : Widget
         HeaderContainer.SetHeight(24);
         HeaderContainer.SetPosition(0, 8);
         Label HeaderLabel = new Label(HeaderContainer);
-        HeaderLabel.SetFont(Fonts.UbuntuBold.Use(14));
+        HeaderLabel.SetFont(Fonts.Header);
         HeaderLabel.SetText("Commands");
         HeaderContainer.OnSizeChanged += _ =>
         {

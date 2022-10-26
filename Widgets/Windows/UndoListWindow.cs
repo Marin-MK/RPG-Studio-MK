@@ -32,12 +32,12 @@ public class UndoListWindow : PopupWindow
         }
 
         Label PresentLabel = new Label(this);
-        PresentLabel.SetFont(Fonts.CabinMedium.Use(12));
+        PresentLabel.SetFont(Fonts.Paragraph);
         PresentLabel.SetPosition(16, 30);
         PresentLabel.SetText("Present");
 
         Label PastLabel = new Label(this);
-        PastLabel.SetFont(Fonts.CabinMedium.Use(12));
+        PastLabel.SetFont(Fonts.Paragraph);
         PastLabel.SetBottomDocked(true);
         PastLabel.SetPadding(16, 0, 0, -18);
         PastLabel.SetText("Past");
@@ -60,7 +60,7 @@ public class UndoListWindow : PopupWindow
         DescContainer.VAutoScroll = true;
 
         MultilineLabel DescLabel = new MultilineLabel(DescContainer);
-        DescLabel.SetFont(Fonts.CabinMedium.Use(11));
+        DescLabel.SetFont(Fonts.Paragraph);
         DescLabel.SetHDocked(true);
 
         Button RevertButton = new Button(this);

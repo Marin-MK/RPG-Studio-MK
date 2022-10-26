@@ -74,11 +74,10 @@ public class EventCategoryButton : Widget
 		else Sprites["icon"].Color = new Color(255, 255, 255, 0);
 		Sprites["text"].Bitmap?.Dispose();
 		string text = BaseCommandWidget.CategoryInfo[this.Category].Name;
-		Font f = Fonts.UbuntuBold.Use(10);
-		Size s = f.TextSize(text);
+		Size s = Fonts.ParagraphBold.TextSize(text);
 		Sprites["text"].Bitmap = new Bitmap(s);
 		Sprites["text"].Bitmap.Unlock();
-		Sprites["text"].Bitmap.Font = f;
+		Sprites["text"].Bitmap.Font = Fonts.ParagraphBold;
 		Sprites["text"].Bitmap.DrawText(text, Color.WHITE);
         Sprites["text"].Bitmap.Lock();
 		Sprites["text"].X = Size.Width / 2 - s.Width / 2;

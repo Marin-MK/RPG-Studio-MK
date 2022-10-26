@@ -39,6 +39,7 @@ public class MappingWidget : Widget
         LeftSidebarDivider.SetGridRow(0, 1);
 
         SubmodePicker = new SubmodeView(layout);
+        SubmodePicker.SetFont(Fonts.TabFont);
         SubmodePicker.SetPosition(8, 0);
         SubmodePicker.SetGridColumn(2);
         SubmodePicker.SetGridRow(0);

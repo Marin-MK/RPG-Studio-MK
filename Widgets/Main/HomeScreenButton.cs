@@ -43,7 +43,7 @@ public class HomeScreenButton : Widget
             if (string.IsNullOrEmpty(Text)) return;
             Sprites["text"].Bitmap = new Bitmap(212, 47);
             Sprites["text"].Bitmap.Unlock();
-            Sprites["text"].Bitmap.Font = Fonts.UbuntuBold.Use(17);
+            Sprites["text"].Bitmap.Font = Fonts.HomeFont;
             Sprites["text"].Bitmap.DrawText(Text, 118, 12, Color.WHITE, DrawOptions.CenterAlign);
             Sprites["text"].Bitmap.Lock();
         }

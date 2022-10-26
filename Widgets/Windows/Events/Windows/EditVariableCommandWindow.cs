@@ -46,11 +46,8 @@ public class EditVariableCommandWindow : PopupWindow
         SetSize(MaximumSize);
         Center();
 
-        Font Header = Fonts.UbuntuBold.Use(10);
-        Font Small = Fonts.CabinMedium.Use(9);
-
         Label VariableLabel = new Label(this);
-        VariableLabel.SetFont(Header);
+        VariableLabel.SetFont(Fonts.ParagraphBold);
         VariableLabel.SetPosition(20, 40);
         VariableLabel.SetText("Variable");
 
@@ -59,20 +56,20 @@ public class EditVariableCommandWindow : PopupWindow
         VariableContainer.AutoResize = true;
 
         SingleLabel = new RadioBox(VariableContainer);
-        SingleLabel.SetFont(Small);
+        SingleLabel.SetFont(Fonts.Paragraph);
         SingleLabel.SetText("Single");
         SingleLabel.SetPosition(0, 4);
         SingleLabel.SetChecked((long) Command.Parameters[0] == (long) Command.Parameters[1]);
         SingleLabel.OnChecked += _ => UpdateVariableLabels();
 
         VariableBox = new VariablePickerBox(VariableContainer);
-        VariableBox.SetFont(Small);
+        VariableBox.SetFont(Fonts.Paragraph);
         VariableBox.SetPosition(64, 0);
         VariableBox.SetSize(200, 25);
         VariableBox.SetVariableID((int) (long) Command.Parameters[0]);
 
         BatchLabel = new RadioBox(VariableContainer);
-        BatchLabel.SetFont(Small);
+        BatchLabel.SetFont(Fonts.Paragraph);
         BatchLabel.SetText("Batch");
         BatchLabel.SetPosition(0, 36);
         BatchLabel.SetChecked(!SingleLabel.Checked);
@@ -85,7 +82,7 @@ public class EditVariableCommandWindow : PopupWindow
         Variable1Box.SetMinValue(1);
 
         RangeLabel = new Label(VariableContainer);
-        RangeLabel.SetFont(Small);
+        RangeLabel.SetFont(Fonts.Paragraph);
         RangeLabel.SetText("to");
         RangeLabel.SetPosition(160, 35);
 
@@ -96,7 +93,7 @@ public class EditVariableCommandWindow : PopupWindow
         Variable2Box.SetMinValue(1);
 
         Label OperatorLabel = new Label(this);
-        OperatorLabel.SetFont(Header);
+        OperatorLabel.SetFont(Fonts.ParagraphBold);
         OperatorLabel.SetPosition(20, 140);
         OperatorLabel.SetText("Operator");
 
@@ -112,36 +109,36 @@ public class EditVariableCommandWindow : PopupWindow
         int Optr = (int) (long) Command.Parameters[2];
 
         SetOperator = new RadioBox(OperatorGrid);
-        SetOperator.SetFont(Small);
+        SetOperator.SetFont(Fonts.Paragraph);
         SetOperator.SetText("Set");
         SetOperator.SetChecked(Optr == 0);
 
         AddOperator = new RadioBox(OperatorGrid);
-        AddOperator.SetFont(Small);
+        AddOperator.SetFont(Fonts.Paragraph);
         AddOperator.SetText("Add");
         AddOperator.SetGridColumn(1);
         AddOperator.SetChecked(Optr == 1);
 
         SubOperator = new RadioBox(OperatorGrid);
-        SubOperator.SetFont(Small);
+        SubOperator.SetFont(Fonts.Paragraph);
         SubOperator.SetText("Sub");
         SubOperator.SetGridColumn(2);
         SubOperator.SetChecked(Optr == 2);
 
         MulOperator = new RadioBox(OperatorGrid);
-        MulOperator.SetFont(Small);
+        MulOperator.SetFont(Fonts.Paragraph);
         MulOperator.SetText("Mul");
         MulOperator.SetGridColumn(3);
         MulOperator.SetChecked(Optr == 3);
 
         DivOperator = new RadioBox(OperatorGrid);
-        DivOperator.SetFont(Small);
+        DivOperator.SetFont(Fonts.Paragraph);
         DivOperator.SetText("Div");
         DivOperator.SetGridColumn(4);
         DivOperator.SetChecked(Optr == 4);
 
         ModOperator = new RadioBox(OperatorGrid);
-        ModOperator.SetFont(Small);
+        ModOperator.SetFont(Fonts.Paragraph);
         ModOperator.SetText("Mod");
         ModOperator.SetGridColumn(5);
         ModOperator.SetChecked(Optr == 5);
@@ -151,7 +148,7 @@ public class EditVariableCommandWindow : PopupWindow
         if (Opnd == 3 || Opnd == 4 || Opnd == 5) Val = 0;
 
         Label ValueLabel = new Label(this);
-        ValueLabel.SetFont(Header);
+        ValueLabel.SetFont(Fonts.ParagraphBold);
         ValueLabel.SetPosition(20, 216);
         ValueLabel.SetText("Value");
 
@@ -160,7 +157,7 @@ public class EditVariableCommandWindow : PopupWindow
         ValueContainer.SetSize(345, 300);
 
         ConstantRadioBox = new RadioBox(ValueContainer);
-        ConstantRadioBox.SetFont(Small);
+        ConstantRadioBox.SetFont(Fonts.Paragraph);
         ConstantRadioBox.SetPosition(0, 8);
         ConstantRadioBox.SetText("Constant");
         ConstantRadioBox.OnChecked += _ => UpdateValues();
@@ -170,7 +167,7 @@ public class EditVariableCommandWindow : PopupWindow
         ConstantBox.SetSize(100, 30);
 
         VariableRadioBox = new RadioBox(ValueContainer);
-        VariableRadioBox.SetFont(Small);
+        VariableRadioBox.SetFont(Fonts.Paragraph);
         VariableRadioBox.SetPosition(0, 40);
         VariableRadioBox.SetText("Variable");
         VariableRadioBox.OnChecked += _ => UpdateValues();
@@ -180,7 +177,7 @@ public class EditVariableCommandWindow : PopupWindow
         VariableValueBox.SetSize(150, 24);
 
         RandomRadioBox = new RadioBox(ValueContainer);
-        RandomRadioBox.SetFont(Small);
+        RandomRadioBox.SetFont(Fonts.Paragraph);
         RandomRadioBox.SetPosition(0, 72);
         RandomRadioBox.SetText("Random");
         RandomRadioBox.OnChecked += _ => UpdateValues();
@@ -190,7 +187,7 @@ public class EditVariableCommandWindow : PopupWindow
         RandomBox1.SetSize(90, 30);
 
         RandomLabel = new Label(ValueContainer);
-        RandomLabel.SetFont(Small);
+        RandomLabel.SetFont(Fonts.Paragraph);
         RandomLabel.SetPosition(176, 70);
         RandomLabel.SetText("to");
 
@@ -199,7 +196,7 @@ public class EditVariableCommandWindow : PopupWindow
         RandomBox2.SetSize(90, 30);
 
         CharacterRadioBox = new RadioBox(ValueContainer);
-        CharacterRadioBox.SetFont(Small);
+        CharacterRadioBox.SetFont(Fonts.Paragraph);
         CharacterRadioBox.SetPosition(0, 104);
         CharacterRadioBox.SetText("Character");
         CharacterRadioBox.OnChecked += _ => UpdateValues();
@@ -232,7 +229,7 @@ public class EditVariableCommandWindow : PopupWindow
         });
 
         OtherRadioBox = new RadioBox(ValueContainer);
-        OtherRadioBox.SetFont(Small);
+        OtherRadioBox.SetFont(Fonts.Paragraph);
         OtherRadioBox.SetPosition(0, 136);
         OtherRadioBox.SetText("Other");
         OtherRadioBox.OnChecked += _ => UpdateValues();

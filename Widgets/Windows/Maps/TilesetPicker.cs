@@ -46,22 +46,20 @@ public class TilesetPicker : PopupWindow
         vs.SetSize(10, 403);
         TilesetContainer.SetVScrollBar(vs);
 
-        Font f = Fonts.UbuntuBold.Use(11);
-
         Label labelavail = new Label(this);
         labelavail.SetText("Available");
         labelavail.SetPosition(16, 31);
-        labelavail.SetFont(f);
+        labelavail.SetFont(Fonts.Paragraph);
 
         Label labelinuse = new Label(this);
         labelinuse.SetText("In-use");
         labelinuse.SetPosition(16, 257);
-        labelinuse.SetFont(f);
+        labelinuse.SetFont(Fonts.Paragraph);
 
         Label labelprev = new Label(this);
         labelprev.SetText("Preview");
         labelprev.SetPosition(192, 31);
-        labelprev.SetFont(f);
+        labelprev.SetFont(Fonts.Paragraph);
 
         ActionButton = new Button(this);
         ActionButton.SetPosition(52, 232);

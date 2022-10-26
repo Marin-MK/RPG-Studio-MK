@@ -12,7 +12,7 @@ public class SwitchPickerBox : BrowserBox
 
     public SwitchPickerBox(IContainer Parent) : base(Parent)
     {
-        SetFont(Fonts.CabinMedium.Use(11));
+        SetFont(Fonts.Paragraph);
         OnDropDownClicked += _ =>
         {
             SwitchPicker picker = new SwitchPicker(this.SwitchID);

@@ -29,27 +29,24 @@ public class EditEventWindow : PopupWindow
         SetSize(MaximumSize);
         Center();
 
-        Font HeaderFont = Fonts.UbuntuBold.Use(13);
-        Font SmallFont = Fonts.CabinMedium.Use(11);
-
         EventPageControl = new EventPageControl(this);
         EventPageControl.SetPadding(8, 42, 9, 52);
         EventPageControl.SetDocked(true);
 
         Label NameLabel = new Label(this);
-        NameLabel.SetFont(SmallFont);
+        NameLabel.SetFont(Fonts.Paragraph);
         NameLabel.SetPosition(27, 50);
         NameLabel.SetText("Name:");
 
         TextBox NameBox = new TextBox(this);
         NameBox.SetPosition(27, 68);
-        NameBox.SetFont(SmallFont);
+        NameBox.SetFont(Fonts.Paragraph);
         NameBox.SetSize(161, 27);
         NameBox.SetText(this.Event.Name);
         NameBox.OnTextChanged += _ => this.Event.Name = NameBox.Text;
 
         Label WidthLabel = new Label(this);
-        WidthLabel.SetFont(SmallFont);
+        WidthLabel.SetFont(Fonts.Paragraph);
         WidthLabel.SetPosition(287, 50);
         WidthLabel.SetText("Width:");
         WidthLabel.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
@@ -66,13 +63,13 @@ public class EditEventWindow : PopupWindow
         WidthBox.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
 
         Label XLabel = new Label(this);
-        XLabel.SetFont(SmallFont);
+        XLabel.SetFont(Fonts.Paragraph);
         XLabel.SetPosition(390, 71);
         XLabel.SetText("x");
         XLabel.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
 
         Label HeightLabel = new Label(this);
-        HeightLabel.SetFont(SmallFont);
+        HeightLabel.SetFont(Fonts.Paragraph);
         HeightLabel.SetPosition(410, 50);
         HeightLabel.SetText("Height:");
         HeightLabel.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
@@ -89,8 +86,8 @@ public class EditEventWindow : PopupWindow
         HeightBox.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
 
         Label PagesLabel = new Label(this);
-        PagesLabel.SetFont(HeaderFont);
-        PagesLabel.SetPosition(14, 99);
+        PagesLabel.SetFont(Fonts.Header);
+        PagesLabel.SetPosition(20, 104);
         PagesLabel.SetText("Pages");
         Container EPLContainer = new Container(this);
         EPLContainer.SetVDocked(true);

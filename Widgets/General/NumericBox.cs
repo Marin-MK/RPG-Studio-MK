@@ -47,7 +47,7 @@ public class NumericBox : Widget
         TextArea = new TextArea(TextBG);
         TextArea.SetDocked(true);
         TextArea.SetPadding(1, 4);
-        TextArea.SetFont(Fonts.CabinMedium.Use(11));
+        TextArea.SetFont(Fonts.Paragraph);
         TextArea.SetNumericOnly(true);
         TextArea.SetDefaultNumericValue(0);
         TextArea.OnWidgetSelected += _ => Redraw();

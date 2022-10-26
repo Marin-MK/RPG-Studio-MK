@@ -87,10 +87,9 @@ public class TreeView : Widget
         bool selected = DraggingNode == null && node == SelectedNode || node == DraggingNode;
         if (selected) Sprites["selector"].Y = y;
         node.PixelsIndented = x;
-        Font f = Fonts.CabinMedium.Use(11);
-        this.Sprites["text"].Bitmap.Font = f;
+        this.Sprites["text"].Bitmap.Font = Fonts.Paragraph;
         string text = node.Name ?? node.Object.ToString();
-        Size s = f.TextSize(text);
+        Size s = Fonts.Paragraph.TextSize(text);
         Color c = selected ? new Color(55, 187, 255) : Color.WHITE;
         this.Sprites["text"].Bitmap.DrawText(text, x + 12, y + 1, c);
 
@@ -122,7 +121,7 @@ public class TreeView : Widget
         int width = 0;
         foreach (TreeNode n in Nodes)
         {
-            int textlength = Fonts.CabinMedium.Use(11).TextSize(n.Name ?? n.Object.ToString()).Width;
+            int textlength = Fonts.Paragraph.TextSize(n.Name ?? n.Object.ToString()).Width;
             int nodelength = 31 + depth * 16 + textlength;
             if (nodelength > width) width = nodelength;
             if (!n.Collapsed)

@@ -22,23 +22,21 @@ public class NewProjectWindow : PopupWindow
         SetSize(MaximumSize);
         Center();
 
-        Font f = Fonts.CabinMedium.Use(11);
-
         Label namelabel = new Label(this);
         namelabel.SetPosition(16, 42);
-        namelabel.SetFont(f);
+        namelabel.SetFont(Fonts.Paragraph);
         namelabel.SetText("Name:");
         namebox = new TextBox(this);
-        namebox.SetFont(f);
+        namebox.SetFont(Fonts.Paragraph);
         namebox.SetPosition(70, 39);
         namebox.SetSize(210, 27);
 
         Label kitlabel = new Label(this);
         kitlabel.SetPosition(16, 76);
-        kitlabel.SetFont(f);
+        kitlabel.SetFont(Fonts.Paragraph);
         kitlabel.SetText("Kit:");
         kitbox = new DropdownBox(this);
-        kitbox.SetFont(f);
+        kitbox.SetFont(Fonts.Paragraph);
         kitbox.SetPosition(70, 73);
         kitbox.SetSize(210, 27);
         List<ListItem> Items = new List<ListItem>();
@@ -54,10 +52,10 @@ public class NewProjectWindow : PopupWindow
 
         Label folderlabel = new Label(this);
         folderlabel.SetPosition(16, 110);
-        folderlabel.SetFont(f);
+        folderlabel.SetFont(Fonts.Paragraph);
         folderlabel.SetText("Folder:");
         folderbox = new BrowserBox(this);
-        folderbox.SetFont(f);
+        folderbox.SetFont(Fonts.Paragraph);
         folderbox.SetPosition(70, 107);
         folderbox.SetSize(210, 27);
         folderbox.SetText(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));

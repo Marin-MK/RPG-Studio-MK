@@ -148,7 +148,7 @@ public class BaseCommandWidget : Widget
         Icon.SetPosition(10, 6);
         HeaderLabel = new Label(this);
         HeaderLabel.SetPosition(36, 4 + ShadowSize);
-        HeaderLabel.SetFont(Fonts.UbuntuBold.Use(10));
+        HeaderLabel.SetFont(Fonts.Paragraph);
         VStackPanel = new VStackPanel(this);
         VStackPanel.HDockWidgets = false;
         VStackPanel.OnSizeChanged += _ => UpdateSize();

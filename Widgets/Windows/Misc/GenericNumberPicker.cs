@@ -27,7 +27,7 @@ public class GenericNumberPicker : PopupWindow
         NumberBox.SetValue(Value);
 
         Label TextLabel = new Label(this);
-        TextLabel.SetFont(Fonts.CabinMedium.Use(11));
+        TextLabel.SetFont(Fonts.Paragraph);
         TextLabel.SetText(Label);
         TextLabel.RedrawText(true);
         TextLabel.SetPosition(NumberBox.Position.X - TextLabel.Size.Width - 8, 34);

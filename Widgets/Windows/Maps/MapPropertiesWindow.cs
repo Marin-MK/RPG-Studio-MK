@@ -35,18 +35,16 @@ public class MapPropertiesWindow : PopupWindow
 
         Label settings = new Label(this);
         settings.SetText("Info");
-        settings.SetFont(Fonts.UbuntuBold.Use(11));
+        settings.SetFont(Fonts.ParagraphBold);
         settings.SetPosition(19, 33);
 
         GroupBox box1 = new GroupBox(this);
         box1.SetPosition(19, 54);
         box1.SetSize(350, 213);
 
-        Font f = Fonts.CabinMedium.Use(9);
-
         Label namelabel = new Label(box1);
         namelabel.SetText("Map Name:");
-        namelabel.SetFont(f);
+        namelabel.SetFont(Fonts.Paragraph);
         namelabel.SetPosition(7, 6);
         MapName = new TextBox(box1);
         MapName.SetPosition(6, 22);
@@ -59,7 +57,7 @@ public class MapPropertiesWindow : PopupWindow
 
         Label widthlabel = new Label(box1);
         widthlabel.SetText("Width:");
-        widthlabel.SetFont(f);
+        widthlabel.SetFont(Fonts.Paragraph);
         widthlabel.SetPosition(7, 54);
         Width = new NumericBox(box1);
         Width.SetPosition(6, 70);
@@ -74,7 +72,7 @@ public class MapPropertiesWindow : PopupWindow
 
         Label heightlabel = new Label(box1);
         heightlabel.SetText("Height:");
-        heightlabel.SetFont(f);
+        heightlabel.SetFont(Fonts.Paragraph);
         heightlabel.SetPosition(108, 54);
         Height = new NumericBox(box1);
         Height.SetPosition(107, 70);
@@ -90,7 +88,7 @@ public class MapPropertiesWindow : PopupWindow
         CheckBox autoplaybgm = new CheckBox(box1);
         autoplaybgm.SetPosition(7, 106);
         autoplaybgm.SetText("Autoplay BGM");
-        autoplaybgm.SetFont(f);
+        autoplaybgm.SetFont(Fonts.Paragraph);
         autoplaybgm.SetChecked(this.Map.AutoplayBGM);
         autoplaybgm.OnCheckChanged += delegate (BaseEventArgs e)
         {
@@ -122,7 +120,7 @@ public class MapPropertiesWindow : PopupWindow
         CheckBox autoplaybgs = new CheckBox(box1);
         autoplaybgs.SetPosition(7, 161);
         autoplaybgs.SetText("Autoplay BGS");
-        autoplaybgs.SetFont(f);
+        autoplaybgs.SetFont(Fonts.Paragraph);
         autoplaybgs.SetChecked(this.Map.AutoplayBGS);
         autoplaybgs.OnCheckChanged += delegate (BaseEventArgs e)
         {
@@ -184,7 +182,7 @@ public class MapPropertiesWindow : PopupWindow
 
         Label tilesetslabel = new Label(box1);
         tilesetslabel.SetText("Tileset:");
-        tilesetslabel.SetFont(f);
+        tilesetslabel.SetFont(Fonts.Paragraph);
         tilesetslabel.SetPosition(213, 6);
 
         //Label autotileslabel = new Label(box1);

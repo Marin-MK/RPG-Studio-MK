@@ -60,10 +60,9 @@ public class ProgressBar : Widget
         base.Draw();
         Sprites["text"].Bitmap?.Dispose();
         string text = (Math.Round(this.Progress * 1000d) / 10d).ToString() + "%";
-        Font f = Fonts.CabinMedium.Use(11);
-        Size s = f.TextSize(text);
+        Size s = Fonts.Paragraph.TextSize(text);
         Sprites["text"].Bitmap = new Bitmap(s);
-        Sprites["text"].Bitmap.Font = f;
+        Sprites["text"].Bitmap.Font = Fonts.Paragraph;
         Sprites["text"].Bitmap.Unlock();
         Sprites["text"].Bitmap.DrawText(text, Color.WHITE);
         Sprites["text"].X = Size.Width / 2 - s.Width / 2;

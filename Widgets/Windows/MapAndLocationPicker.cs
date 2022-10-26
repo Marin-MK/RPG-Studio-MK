@@ -37,7 +37,7 @@ public class MapAndLocationPicker : PopupWindow
 
         Label PositionLabel = new Label(this);
         PositionLabel.SetBottomDocked(true);
-        PositionLabel.SetFont(Fonts.CabinMedium.Use(11));
+        PositionLabel.SetFont(Fonts.Paragraph);
         PositionLabel.SetPadding(220, 0, 0, -5);
 
         MiniMapViewer = new MiniMapViewer(this);

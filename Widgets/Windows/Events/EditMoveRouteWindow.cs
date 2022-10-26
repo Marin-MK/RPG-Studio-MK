@@ -98,7 +98,7 @@ public class EditMoveRouteWindow : PopupWindow
         CheckBox RepeatBox = new CheckBox(this);
         RepeatBox.SetBottomDocked(true);
         RepeatBox.SetPadding(20, 0, 0, 42);
-        RepeatBox.SetFont(Fonts.CabinMedium.Use(11));
+        RepeatBox.SetFont(Fonts.Paragraph);
         RepeatBox.SetText("Repeat");
         RepeatBox.SetChecked(MoveRoute.Repeat);
         RepeatBox.OnCheckChanged += _ => MoveRoute.Repeat = RepeatBox.Checked;
@@ -106,7 +106,7 @@ public class EditMoveRouteWindow : PopupWindow
         CheckBox SkippableBox = new CheckBox(this);
         SkippableBox.SetBottomDocked(true);
         SkippableBox.SetPadding(20, 0, 0, 22);
-        SkippableBox.SetFont(Fonts.CabinMedium.Use(11));
+        SkippableBox.SetFont(Fonts.Paragraph);
         SkippableBox.SetText("Skippable");
         SkippableBox.SetChecked(MoveRoute.Skippable);
         SkippableBox.OnCheckChanged += _ => MoveRoute.Skippable = SkippableBox.Checked;

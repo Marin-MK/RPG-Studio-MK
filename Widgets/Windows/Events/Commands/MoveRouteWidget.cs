@@ -13,7 +13,7 @@ public class MoveRouteWidget : BaseCommandWidget
     {
         CommandLabel = new MultilineLabel(this);
         CommandLabel.SetPosition(ChildIndent * 2, HeaderLabel.Position.Y + StandardHeight);
-        CommandLabel.SetFont(Fonts.CabinMedium.Use(9));
+        CommandLabel.SetFont(Fonts.Paragraph);
         CommandLabel.SetHDocked(true);
         CommandLabel.SetLineHeight(StandardHeight);
         CommandLabel.SetTextColor(HeaderLabel.TextColor);

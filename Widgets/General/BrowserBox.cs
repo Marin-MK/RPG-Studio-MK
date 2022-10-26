@@ -125,7 +125,7 @@ public class BrowserBox : Widget
         base.MouseDown(e);
         if (Mouse.LeftMouseTriggered)
         {
-            if (!Mouse.Inside)
+            if (!Mouse.Inside && this.SelectedWidget)
             {
                 Window.UI.SetSelectedWidget(null);
                 return;

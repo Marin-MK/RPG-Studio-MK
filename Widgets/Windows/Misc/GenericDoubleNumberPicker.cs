@@ -30,7 +30,7 @@ public class GenericDoubleNumberPicker : PopupWindow
         Number1Box.SetValue(Value1);
 
         Label Text1Label = new Label(this);
-        Text1Label.SetFont(Fonts.CabinMedium.Use(11));
+        Text1Label.SetFont(Fonts.Paragraph);
         Text1Label.SetText(Label1);
         Text1Label.RedrawText(true);
         Text1Label.SetPosition(Number1Box.Position.X - Text1Label.Size.Width - 8, 34);
@@ -43,7 +43,7 @@ public class GenericDoubleNumberPicker : PopupWindow
         Number2Box.SetValue(Value2);
 
         Label Text2Label = new Label(this);
-        Text2Label.SetFont(Fonts.CabinMedium.Use(11));
+        Text2Label.SetFont(Fonts.Paragraph);
         Text2Label.SetText(Label2);
         Text2Label.RedrawText(true);
         Text2Label.SetPosition(Number2Box.Position.X - Text2Label.Size.Width - 8, 74);

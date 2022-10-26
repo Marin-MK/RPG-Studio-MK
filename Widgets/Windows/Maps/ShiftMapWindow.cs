@@ -38,7 +38,7 @@ public class ShiftMapWindow : PopupWindow
         };
 
         Label Text1Label = new Label(this);
-        Text1Label.SetFont(Fonts.CabinMedium.Use(11));
+        Text1Label.SetFont(Fonts.Paragraph);
         Text1Label.SetText("Direction:");
         Text1Label.RedrawText(true);
         Text1Label.SetPosition(DirectionBox.Position.X - Text1Label.Size.Width - 8, 34);
@@ -51,14 +51,14 @@ public class ShiftMapWindow : PopupWindow
         NumberBox.SetValue(1);
 
         Label Text2Label = new Label(this);
-        Text2Label.SetFont(Fonts.CabinMedium.Use(11));
+        Text2Label.SetFont(Fonts.Paragraph);
         Text2Label.SetText("Tiles:");
         Text2Label.RedrawText(true);
         Text2Label.SetPosition(NumberBox.Position.X - Text2Label.Size.Width - 8, 34);
 
         ShiftEventsBox = new CheckBox(this);
         ShiftEventsBox.SetPosition(156, 66);
-        ShiftEventsBox.SetFont(Fonts.CabinMedium.Use(11));
+        ShiftEventsBox.SetFont(Fonts.Paragraph);
         ShiftEventsBox.SetMirrored(true);
         ShiftEventsBox.SetText("Also shift events:");
         ShiftEventsBox.SetChecked(true);

@@ -12,7 +12,7 @@ public class SetSwitchWidget : BaseCommandWidget
     public SetSwitchWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex) 
     {
         SwitchLabel = new Label(this);
-        SwitchLabel.SetFont(Fonts.CabinMedium.Use(9));
+        SwitchLabel.SetFont(Fonts.Paragraph);
     }
 
     public override void LoadCommand()

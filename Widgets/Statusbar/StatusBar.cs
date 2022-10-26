@@ -39,11 +39,10 @@ public class StatusBar : Widget
     public void SetMap(Map Map)
     {
         if (Sprites["map"].Bitmap != null) Sprites["map"].Bitmap.Dispose();
-        Font f = Fonts.CabinMedium.Use(11);
         string text = $"{Utilities.Digits(Map.ID, 3)}: {Map.Name} ({Map.Width}x{Map.Height})";
-        Size s = f.TextSize(text);
+        Size s = Fonts.Paragraph.TextSize(text);
         Sprites["map"].Bitmap = new Bitmap(s);
-        Sprites["map"].Bitmap.Font = f;
+        Sprites["map"].Bitmap.Font = Fonts.Paragraph;
         Sprites["map"].Bitmap.Unlock();
         Sprites["map"].Bitmap.DrawText(text, Color.WHITE);
         Sprites["map"].Bitmap.Lock();
@@ -52,10 +51,9 @@ public class StatusBar : Widget
     public void DrawText(string Text)
     {
         if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
-        Font f = Fonts.CabinMedium.Use(11);
-        Size s = f.TextSize(Text);
+        Size s = Fonts.Paragraph.TextSize(Text);
         Sprites["text"].Bitmap = new Bitmap(s);
-        Sprites["text"].Bitmap.Font = f;
+        Sprites["text"].Bitmap.Font = Fonts.Paragraph;
         Sprites["text"].Bitmap.Unlock();
         Sprites["text"].Bitmap.DrawText(Text, Color.WHITE);
         Sprites["text"].Bitmap.Lock();
@@ -78,7 +76,7 @@ public class StatusBar : Widget
     public void DrawCursor(int X, int Y, int width, int height)
     {
         if (Sprites["cursor"].Bitmap != null) Sprites["cursor"].Bitmap.Dispose();
-        Font f = Fonts.CabinMedium.Use(11);
+        Font f = Fonts.Paragraph;
         string text = $"{Utilities.Digits(X, 3)}x{Utilities.Digits(Y, 3)}";
         MapViewer mv = Editor.MainWindow.MapWidget.MapViewer;
         if (mv.Mode == MapMode.Tiles)
