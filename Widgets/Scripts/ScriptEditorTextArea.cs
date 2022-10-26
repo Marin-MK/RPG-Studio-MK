@@ -607,7 +607,7 @@ public class ScriptEditorTextArea : MultilineTextArea
     {
         int rx = e.X - Viewport.X + LeftCutOff - TextXOffset;
         int ry = e.Y - Viewport.Y + Parent.ScrolledY;
-        int LineIndex = (int) Math.Round((double) ry / (LineHeight + LineMargins));
+        int LineIndex = (int) Math.Round((double) (ry - Font.Size / 2) / (LineHeight + LineMargins));
         if (LineIndex < 0) LineIndex = 0;
         if (LineIndex >= Lines.Count) LineIndex = Lines.Count - 1;
         Line Line = Lines[LineIndex];
