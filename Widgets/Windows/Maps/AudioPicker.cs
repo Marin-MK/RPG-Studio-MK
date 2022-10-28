@@ -83,12 +83,12 @@ public class AudioPicker : PopupWindow
         VolumeGroup.SetSize(222, 54);
         Label MinVolumeLabel = new Label(VolumeGroup);
         MinVolumeLabel.SetText("-");
-        MinVolumeLabel.SetFont(Fonts.Paragraph);
-        MinVolumeLabel.SetPosition(27, 10);
+        MinVolumeLabel.SetFont(Fonts.ParagraphBold);
+        MinVolumeLabel.SetPosition(25, 16);
         Label MaxVolumeLabel = new Label(VolumeGroup);
         MaxVolumeLabel.SetText("+");
-        MaxVolumeLabel.SetFont(Fonts.Header);
-        MaxVolumeLabel.SetPosition(147, 10);
+        MaxVolumeLabel.SetFont(Fonts.ParagraphBold);
+        MaxVolumeLabel.SetPosition(149, 16);
         Label VolumeLabel = new Label(VolumeGroup);
         VolumeLabel.SetText(Volume.ToString() + "%");
         VolumeLabel.SetFont(Fonts.Paragraph);
@@ -113,12 +113,12 @@ public class AudioPicker : PopupWindow
         PitchGroup.SetSize(222, 54);
         Label MinPitchLabel = new Label(PitchGroup);
         MinPitchLabel.SetText("-");
-        MinPitchLabel.SetFont(Fonts.Header);
-        MinPitchLabel.SetPosition(27, 10);
+        MinPitchLabel.SetFont(Fonts.ParagraphBold);
+        MinPitchLabel.SetPosition(25, 16);
         Label MaxPitchLabel = new Label(PitchGroup);
         MaxPitchLabel.SetText("+");
-        MaxPitchLabel.SetFont(Fonts.Paragraph);
-        MaxPitchLabel.SetPosition(147, 10);
+        MaxPitchLabel.SetFont(Fonts.ParagraphBold);
+        MaxPitchLabel.SetPosition(149, 16);
         Label PitchLabel = new Label(PitchGroup);
         PitchLabel.SetText(Pitch.ToString() + "%");
         PitchLabel.SetFont(Fonts.Paragraph);
@@ -149,8 +149,8 @@ public class AudioPicker : PopupWindow
     {
         if (FileList.SelectedItem.Object == null) return;
         StopSound();
-        ActiveSound = new Sound((string)FileList.SelectedItem.Object, this.Volume);
-        ActiveSound.SampleRate = (int)Math.Round(this.Pitch / 100d * ActiveSound.OriginalSampleRate);
+        ActiveSound = new Sound((string) FileList.SelectedItem.Object, this.Volume);
+        ActiveSound.SampleRate = (int) Math.Round(this.Pitch / 100d * ActiveSound.OriginalSampleRate);
         Audio.BGMPlay(ActiveSound);
     }
 
