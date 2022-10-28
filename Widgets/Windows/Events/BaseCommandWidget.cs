@@ -148,7 +148,7 @@ public class BaseCommandWidget : Widget
         Icon.SetPosition(10, 6);
         HeaderLabel = new Label(this);
         HeaderLabel.SetPosition(36, 4 + ShadowSize);
-        HeaderLabel.SetFont(Fonts.Paragraph);
+        HeaderLabel.SetFont(Fonts.ParagraphBold);
         VStackPanel = new VStackPanel(this);
         VStackPanel.HDockWidgets = false;
         VStackPanel.OnSizeChanged += _ => UpdateSize();
@@ -337,7 +337,7 @@ public class BaseCommandWidget : Widget
 
     protected Point GetStandardLabelPosition()
     {
-        return new Point(HeaderLabel.Position.X + HeaderLabel.Size.Width + 8, 10);
+        return new Point(HeaderLabel.Position.X + HeaderLabel.Size.Width + 8, 9);
     }
 
     protected BaseCommandWidget CreateWidget(EventCommand Command, int Count, VStackPanel Parent, int GlobalCommandIndex, int ParentWidgetIndex = -1)
