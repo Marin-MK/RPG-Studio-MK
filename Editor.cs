@@ -102,7 +102,7 @@ public static class Editor
         // Changed in Project Settings -> Package -> Package Version (stored in .csproj)
         Assembly assembly = Assembly.GetExecutingAssembly();
         string Version = FileVersionInfo.GetVersionInfo(assembly.Location).ProductVersion;
-        if (string.IsNullOrEmpty(Version)) Version = "0.0.0";
+        if (string.IsNullOrEmpty(Version)) Version = "Unknown";
         string VersionName = "Version";
         if (Version[0] == '0') VersionName = "Alpha";
         return VersionName + " " + Version;
@@ -895,6 +895,10 @@ public static class Editor
     public static void Update()
     {
         GameRunner.Update();
+        if (Input.Trigger(Keycode.F2))
+        {
+            Graphics.ShowFrames = !Graphics.ShowFrames;
+        }
     }
 }
 
