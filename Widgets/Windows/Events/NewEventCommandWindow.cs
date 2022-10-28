@@ -145,7 +145,16 @@ public class NewEventCommandWindow : PopupWindow
             };
         });
         Add(CommandCode.ConditionalBranch, "Conditional Branch", 1, null);
-        Add(CommandCode.ControlVariables, "Set Variable", 1, null);
+        Add(CommandCode.ControlVariables, "Set Variable", 1, Insert =>
+        {
+            EventCommand cmd = new EventCommand(CommandCode.ControlVariables, 0, new List<object>() { 1L, 1L, 0L, 0L, 0L });
+            EditVariableCommandWindow win = new EditVariableCommandWindow(Map, cmd);
+            win.OnClosed += _ =>
+            {
+                if (!win.Apply) return;
+                Insert(new List<EventCommand>() { win.NewCommand });
+            };
+        });
         Add(CommandCode.Loop, "Loop", 1, null);
         Add(CommandCode.ControlSelfSwitch, "Set Self Switch", 1, Insert =>
         {

@@ -7,7 +7,13 @@ namespace RPGStudioMK.Widgets.CommandWidgets;
 
 public class SetVariableWidget : BaseCommandWidget
 {
-    public SetVariableWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex) { }
+    Label VariableLabel;
+
+    public SetVariableWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex)
+    {
+        VariableLabel = new Label(this);
+        VariableLabel.SetFont(Fonts.Paragraph);
+    }
 
     public override void LoadCommand()
     {
@@ -57,11 +63,29 @@ public class SetVariableWidget : BaseCommandWidget
         };
         if (VariableID1 == VariableID2)
         {
-            HeaderLabel.SetText($"Set Variable {GetVariableText(VariableID1)} {Operator} {Value}");
+            HeaderLabel.SetText("Set Variable");
+            HeaderLabel.RedrawText(true);
+            VariableLabel.SetPosition(GetStandardLabelPosition());
+            VariableLabel.SetText($"{GetVariableText(VariableID1)} {Operator} {Value}");
         }
         else
         {
-            HeaderLabel.SetText($"Set Variables [{Utilities.Digits(VariableID1, 3)}..{Utilities.Digits(VariableID2, 3)}] {Operator} {Value}");
+            HeaderLabel.SetText("Set Variables");
+            HeaderLabel.RedrawText(true);
+            VariableLabel.SetPosition(GetStandardLabelPosition());
+            VariableLabel.SetText($"[{Utilities.Digits(VariableID1, 3)}..{Utilities.Digits(VariableID2, 3)}] {Operator} {Value}");
+        }
+        VariableLabel.RedrawText(true);
+        int width = GetStandardWidth(this.Indentation);
+        if (width < VariableLabel.Position.X + VariableLabel.Size.Width + 12)
+        {
+            ScaleGradientWithSize = true;
+            SetWidth(VariableLabel.Position.X + VariableLabel.Size.Width + 12);
+        }
+        else
+        {
+            SetWidth(width);
+            ScaleGradientWithSize = false;
         }
     }
 
