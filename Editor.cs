@@ -91,22 +91,7 @@ public static class Editor
     {
         if (Program.ReleaseMode) return;
 
-        //Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
-
-        PopupWindow win = new PopupWindow();
-        win.SetSize(500, 500);
-        win.Center();
-
-        ColorPickerWidget cpw = new ColorPickerWidget(win);
-        cpw.SetPosition(100, 100);
-        cpw.SetSize(320, 320);
-
-        //GraphWidget gw = new GraphWidget(win);
-        //gw.SetPosition(100, 100);
-        //gw.SetSize(300, 300);
-        //gw.SetStepSize(1);
-        //gw.SetRange(-10, 10);
-        //gw.SetGraphFunction(X => X * X);
+        Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
     }
 
     /// <summary>

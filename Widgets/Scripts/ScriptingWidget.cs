@@ -24,7 +24,6 @@ public class ScriptingWidget : Widget
         ListBox.OnSelectionChanged += _ => TextBox.SetText(((Script) ListBox.SelectedItem.Object).Content);
 
         TextBox = new ScriptEditorTextBox(this);
-        TextBox.SetFont(Fonts.Monospace);
         TextBox.SetDocked(true);
         TextBox.SetPadding(192, 0, 0, 0);
         TextBox.OnTextChanged += _ =>

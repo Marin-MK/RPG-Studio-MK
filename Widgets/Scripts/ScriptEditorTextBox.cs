@@ -46,6 +46,7 @@ public class ScriptEditorTextBox : Widget
         TextArea = new ScriptEditorTextArea(ScrollContainer);
         TextArea.SetHDocked(true);
         TextArea.MinimumSize.Height = Size.Height;
+        TextArea.SetFont(Font.Get(Fonts.Monospace.Name, 16));
 
         VScrollBar vs = new VScrollBar(this);
         vs.SetVDocked(true);
