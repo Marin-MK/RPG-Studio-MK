@@ -14,10 +14,11 @@ public class GraphPlotter : Widget
 	public double EndYValue { get; protected set; }
 	public bool ScaleYAxis { get; protected set; } = true;
 	public bool Interpolation { get; protected set; }
+	public bool InstantUpdate { get; protected set; }
 
 	bool StepSizeIsSet = false;
     double Range => EndXValue - StartXValue;
-	double PointCount => Range / StepSize;
+	int PointCount => (int) Math.Round(Range / StepSize);
     double MinValue => Values.Min(e => e.Output);
     double MaxValue => Values.Max(e => e.Output);
     double YRange => MaxValue - MinValue;
@@ -105,6 +106,14 @@ public class GraphPlotter : Widget
 		{
 			this.Interpolation = Interpolation;
 			Redraw();
+		}
+	}
+
+	public void SetInstantUpdate(bool InstantUpdate)
+	{
+		if (this.InstantUpdate != InstantUpdate)
+		{
+			this.InstantUpdate = InstantUpdate;
 		}
 	}
 
@@ -196,6 +205,12 @@ public class GraphPlotter : Widget
 				if (Math.Abs(Points[i].Y - Points[i + 1].Y) > 1) // More than 1 pixel apart
 				{
 					Sprites["plot"].Bitmap.DrawLine(Points[i].X, Points[i].Y, Points[i + 1].X, Points[i + 1].Y, Color.BLACK);
+					if (InstantUpdate)
+					{
+						Sprites["plot"].Bitmap.Lock();
+						Graphics.Update();
+						Sprites["plot"].Bitmap.Unlock();
+					}
 				}
 			}
 		}
