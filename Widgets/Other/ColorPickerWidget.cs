@@ -13,6 +13,8 @@ public class ColorPickerWidget : Widget
 	public Color PrimaryColor { get; protected set; } = new Color(255, 0, 0);
 	public Color Color { get; protected set; }
 
+	public BaseEvent OnColorChanged;
+
 	List<Color> SliderColors = new List<Color>()
 	{
 		new Color(255, 0, 0),
@@ -58,13 +60,14 @@ public class ColorPickerWidget : Widget
 		if (!this.Color.Equals(Color))
 		{
 			this.Color = Color;
-			// TODO: Select right position in slider and gradient boxes
 			(double Position, double Alpha, double Beta) = FindPrimaryColorAndCoordinates(Color);
 			Sprites["slide"].Y = (int) Math.Round((Position / 6d) * (Size.Height - 20)) - 1;
 			Color PC = CalculatePrimaryColor(Position);
 			LastCrosshairX = (int) Math.Round(Alpha * (Size.Width - 21));
 			LastCrosshairY = (int) Math.Round(Beta * (Size.Height - 21));
-			SetPrimaryColor(PC, false);
+			if (PC.Equals(this.PrimaryColor)) DrawCrosshair(LastCrosshairX, LastCrosshairY, false);
+			else SetPrimaryColor(PC, false);
+			this.OnColorChanged?.Invoke(new BaseEventArgs());
 		}
 	}
 
@@ -77,12 +80,29 @@ public class ColorPickerWidget : Widget
 		double Position = 0;
 		double Alpha = 0;
 		double Beta = 0;
-		double PositionStepSize = 0.05d;
-		double CoordStepSize = 0.02d;
+		double PositionStepSize = 0.02d;
+		double CoordStepSize = 0.05d;
+		// If one the three colors is 0, we can get an exact result from just the slider.
+		bool TestTopRightOnly = Color.Red == 0 || Color.Green == 0 || Color.Blue == 0;
 		bool Quit = false;
 		while (Position <= 6)
         {
             if (Quit) break;
+			if (TestTopRightOnly)
+			{
+				Alpha = 1;
+				Beta = 0;
+				double Cost = CalculateCost(Position, 1, 0, Color);
+				if (Cost < LowestCost)
+				{
+					LowestPosition = Position;
+					LowestAlpha = 1;
+					LowestBeta = 0;
+					if (Cost == 0) Quit = true;
+				}
+				Position += PositionStepSize;
+				continue;
+			}
             Alpha = 0;
 			while (Alpha <= 1)
             {
@@ -106,6 +126,8 @@ public class ColorPickerWidget : Widget
 			}
 			Position += PositionStepSize;
 		}
+		Color PC = CalculatePrimaryColor(LowestPosition);
+		Color FC = CalculateColor(LowestPosition, LowestAlpha, LowestBeta);
 		if (LowestCost > 0)
 		{
 			(double FinalPos, double FinalAlpha, double FinalBeta, double FinalCost) = Utilities.GradientDescent3D(
@@ -113,7 +135,9 @@ public class ColorPickerWidget : Widget
 			{
 				return CalculateCost(Pos, Alpha, Beta, Color);
 			});
-			if (FinalCost > 0)
+            PC = CalculatePrimaryColor(LowestPosition);
+            FC = CalculateColor(LowestPosition, LowestAlpha, LowestBeta);
+            if (FinalCost > 0)
 			{
 				Console.WriteLine($"{FinalCost} - {Color}");
 			}
@@ -137,6 +161,15 @@ public class ColorPickerWidget : Widget
 		Color Int = Bitmap.Interpolate2D(Top, Bottom, 1 - Beta);
 		return CalculateColorCost(Int, Color);
 	}
+
+	private Color CalculateColor(double Position, double Alpha, double Beta)
+	{
+		Color PC = CalculatePrimaryColor(Position);
+        Color Top = Bitmap.Interpolate2D(Color.WHITE, PC, 1 - Alpha);
+        Color Bottom = Color.BLACK;
+        Color Int = Bitmap.Interpolate2D(Top, Bottom, 1 - Beta);
+		return Int;
+    }
 
 	private double CalculateColorCost(Color Color1, Color Color2)
 	{
@@ -200,12 +233,15 @@ public class ColorPickerWidget : Widget
 		for (int i = 1; i < SliderColors.Count; i++)
 		{
 			Color c = SliderColors[i];
+			int leng = (int) Math.Round(LengthPerSection);
+			if ((int) y + leng >= Sprites["slider"].Bitmap.Height) leng -= ((int) y + leng) - Sprites["slider"].Bitmap.Height;
 			Sprites["slider"].Bitmap.FillGradientRect(
-				new Rect(0, (int) y, 15, (int) LengthPerSection),
+				new Rect(0, (int) y, 15, leng),
 				OldColor, OldColor, c, c
 			);
-			SectionData.Add(((int) y, (int) LengthPerSection));
-			y += LengthPerSection;
+			if (i == SliderColors.Count - 1) leng--;
+			SectionData.Add(((int) y, leng));
+			y += leng;
 			OldColor = c;
 		}
 
@@ -235,6 +271,11 @@ public class ColorPickerWidget : Widget
 		double tft = 1 - (double) CY / (Size.Height - 21);
 		Color HC = Bitmap.Interpolate2D(Color.WHITE, this.PrimaryColor, lft);
 		Color FC = Bitmap.Interpolate2D(HC, Color.BLACK, tft);
+		if (!this.Color.Equals(FC))
+		{
+			this.Color = FC;
+			this.OnColorChanged?.Invoke(new BaseEventArgs());
+		}
 		if (RedrawColor) DrawColor(FC);
     }
 
