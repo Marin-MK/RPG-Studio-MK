@@ -173,15 +173,18 @@ public static class Utilities
     /// <summary>
     /// Initializes the IconSheet bitmap.
     /// </summary>
-    public static void Initialize()
+    public static void Initialize(bool ButtonsOnly = false)
     {
-        IconSheet = new Bitmap("assets/img/icons.png");
-        FolderIcon = new Bitmap("assets/img/file_explorer_large_folder.png");
-        EventCommandIconSheet = new Bitmap("assets/img/event_command_icons.png");
-        int seconds = Editor.GeneralSettings.SecondsUsed % 60;
-        int minutes = Editor.GeneralSettings.SecondsUsed / 60 % 60;
-        int hours = Editor.GeneralSettings.SecondsUsed / 60 / 60 % 24;
-        Console.WriteLine($"Time spent in the program: {hours}h:{minutes}min:{seconds}s");
+        if (!ButtonsOnly)
+        {
+            IconSheet = new Bitmap("assets/img/icons.png");
+            FolderIcon = new Bitmap("assets/img/file_explorer_large_folder.png");
+            EventCommandIconSheet = new Bitmap("assets/img/event_command_icons.png");
+            int seconds = Editor.GeneralSettings.SecondsUsed % 60;
+            int minutes = Editor.GeneralSettings.SecondsUsed / 60 % 60;
+            int hours = Editor.GeneralSettings.SecondsUsed / 60 / 60 % 24;
+            Console.WriteLine($"Time spent in the program: {hours}h:{minutes}min:{seconds}s");
+        }
         Color black = new Color(0, 0, 0, 64);
         Bitmap c = new Bitmap(5, 5);
         c.Unlock();
@@ -298,6 +301,49 @@ public static class Utilities
         return bmp;
     }
 
+    public static Bitmap CreateSmallMapPreview(Map Map)
+    {
+        Bitmap bmp = new Bitmap(Map.Width * 16, Map.Height * 16);
+        bmp.Unlock();
+        for (int layer = 0; layer < Map.Layers.Count; layer++)
+        {
+            for (int y = 0; y < Map.Height; y++)
+            {
+                for (int x = 0; x < Map.Width; x++)
+                {
+                    TileData tile = Map.Layers[layer].Tiles[x + y * Map.Width];
+                    if (tile == null) continue;
+                    if (tile.TileType == TileType.Tileset)
+                    {
+                        Bitmap tilesetimage = Data.Tilesets[Map.TilesetIDs[tile.Index]].TilesetBitmap;
+                        int tilesetx = tile.ID % 8;
+                        int tilesety = (int)Math.Floor(tile.ID / 8d);
+                        bmp.Build(new Rect(x * 16, y * 16, 16, 16), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
+                    }
+                    else if (tile.TileType == TileType.Autotile)
+                    {
+                        Autotile autotile = Data.Autotiles[Map.AutotileIDs[tile.Index]];
+                        if (autotile.Format == AutotileFormat.Single)
+                        {
+                            bmp.Build(new Rect(x * 16, y * 16, 16, 16), autotile.AutotileBitmap, new Rect(0, 0, 32, 32));
+                        }
+                        else
+                        {
+                            List<int> Tiles = Autotile.AutotileCombinations[autotile.Format][tile.ID];
+                            for (int i = 0; i < 4; i++)
+                            {
+                                bmp.Build(new Rect(x * 16 + 8 * (i % 2), y * 16 + 8 * (int)Math.Floor(i / 2d), 8, 8), autotile.AutotileBitmap,
+                                    new Rect(16 * (Tiles[i] % 6), 16 * (int)Math.Floor(Tiles[i] / 6d), 16, 16));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        bmp.Lock();
+        return bmp;
+    }
+
     public static List<string> FormatString(Font f, string Text, int Width)
     {
         List<string> Lines = new List<string>();
@@ -354,7 +400,11 @@ public static class Utilities
         for (int i = 0; i < s.Length; i++)
         {
             char c = s[i];
-            if (c == '-' && i == 0) continue;
+            if (c == '-' && i == 0)
+            {
+                if (s.Length == 1) return false;
+                continue;
+            }
             if (!IsNumeric(c)) return false;
         }
         return true;

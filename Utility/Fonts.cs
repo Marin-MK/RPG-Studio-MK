@@ -1,14 +1,18 @@
-﻿namespace RPGStudioMK;
+﻿using System.Collections.Generic;
+
+namespace RPGStudioMK;
 
 public class Fonts
 {
-    public static Font HomeTitle = new Fonts("Ubuntu-B", 22).Use();
-    public static Font HomeFont = new Fonts("Ubuntu-B", 15).Use();
-    public static Font Header = new Fonts("Ubuntu-B", 11).Use();
-    public static Font TabFont = new Fonts("Ubuntu-B", 12).Use();
-    public static Font Paragraph = new Fonts("Cabin-Medium", 9).Use();
-    public static Font ParagraphBold = new Fonts("Ubuntu-B", 9).Use();
-    public static Font Monospace = new Fonts("UbuntuMono", 11).Use();
+    public static List<(string Alias, Font Font)> AllFonts = new List<(string, Font)>();
+
+    public static Font HomeTitle = new Fonts("Ubuntu-B", 22).Use("Home Title");
+    public static Font HomeFont = new Fonts("Ubuntu-B", 15).Use("Home Font");
+    public static Font Header = new Fonts("Ubuntu-B", 11).Use("Header");
+    public static Font TabFont = new Fonts("Ubuntu-B", 12).Use("Tab Font");
+    public static Font Paragraph = new Fonts("Cabin-Medium", 9).Use("Paragraph");
+    public static Font ParagraphBold = new Fonts("Ubuntu-B", 9).Use("Paragraph Bold");
+    public static Font Monospace = new Fonts("UbuntuMono", 11).Use("Monospace");
 
     public string Filename;
     public int Size;
@@ -19,9 +23,10 @@ public class Fonts
         this.Size = Size;
     }
 
-
-    public Font Use()
+    public Font Use(string Alias)
     {
-        return Font.Get(this.Filename, this.Size);
+        Font f = Font.Get(this.Filename, this.Size);
+        AllFonts.Add((Alias, f));
+        return f;
     }
 }

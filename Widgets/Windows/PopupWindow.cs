@@ -12,7 +12,7 @@ public class PopupWindow : Widget, IPopupWindow
 
     public int WindowEdges = 7;
 
-    public PopupWindow() : base(((MainEditorWindow)Graphics.Windows[0]).UI)
+    public PopupWindow() : base(((UIWindow) Graphics.Windows[0]).UI)
     {
         Window.SetOverlayOpacity(96);
         Sprites["shadow"] = new Sprite(this.Viewport);

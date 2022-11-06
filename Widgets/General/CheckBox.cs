@@ -90,7 +90,7 @@ public class CheckBox : Widget
         if (Lock) Sprites["box"].Bitmap.Unlock();
         Sprites["box"].Bitmap.Clear();
         Color Edges = null;
-        Color DarkOutline = Mouse.Inside ? Color.WHITE : new Color(36, 34, 36);
+        Color DarkOutline = Mouse.Inside && Enabled ? Color.WHITE : new Color(36, 34, 36);
         Color Filler = null;
         if (this.Enabled)
         {
@@ -142,13 +142,13 @@ public class CheckBox : Widget
     public override void HoverChanged(MouseEventArgs e)
     {
         base.HoverChanged(e);
-        Redraw();
+        if (Enabled) Redraw();
     }
 
     public override void LeftMouseDown(MouseEventArgs e)
     {
         base.LeftMouseDown(e);
-        if (Mouse.Inside)
+        if (Mouse.Inside && Enabled)
         {
             SetChecked(!Checked);
             Redraw();

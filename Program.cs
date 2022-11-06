@@ -27,6 +27,7 @@ public class Program
         InitializeProgram();
         if (args.Length == 1) ProjectFile = args[0];
         MainEditorWindow win = new MainEditorWindow();
+        Widget.DefaultContextMenuFont = Fonts.Paragraph;
         //win.Show();
         Graphics.Update();
         win.Load(ProjectFile);

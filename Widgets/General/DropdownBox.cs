@@ -14,7 +14,7 @@ public class DropdownBox : amethyst.TextBox
     public BaseEvent OnDropDownClicked;
     public BaseEvent OnSelectionChanged;
 
-    DropdownWidget DropdownWidget;
+    protected DropdownWidget DropdownWidget;
 
     public DropdownBox(IContainer Parent) : base(Parent)
     {

@@ -150,7 +150,7 @@ public class Button : Widget
         {
             Sprites["text"].X = 10 + TextX;
         }
-        Sprites["text"].Y = Size.Height / 2 - 9 * Lines.Count;
+        Sprites["text"].Y = Size.Height / 2 - 9 * Lines.Count - Font.Size / 2 + 4;
         DrawnText = true;
     }
 
@@ -209,7 +209,7 @@ public class Button : Widget
             {
                 Sprites["text"].X = 10 + TextX;
             }
-            Sprites["text"].Y = Size.Height / 2 - 9 * this.Text.Split('\n').Length;
+            Sprites["text"].Y = Size.Height / 2 - 9 * this.Text.Split('\n').Length - Font.Size / 2 + 4;
         }
     }
 

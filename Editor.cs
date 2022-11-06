@@ -91,7 +91,11 @@ public static class Editor
     {
         if (Program.ReleaseMode) return;
 
-        Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
+        //Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
+
+        Map Map = MainWindow.MapWidget?.Map;
+        if (Map == null) return;
+        MapAfterEffectsWindow maew = new MapAfterEffectsWindow(Map);
     }
 
     /// <summary>
