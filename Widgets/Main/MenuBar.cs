@@ -148,6 +148,7 @@ public class MenuBar : Widget
         }
         this.MouseAlwaysActive = true;
         ActiveMenu = new ContextMenu(Window.UI);
+        ActiveMenu.SetFont(Fonts.Paragraph);
         ActiveMenu.OnDisposed += delegate (BaseEventArgs e)
         {
             this.MouseAlwaysActive = false;

@@ -9,6 +9,7 @@ using System.Linq;
 using System.IO.Compression;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace RPGStudioMK;
 
@@ -735,65 +736,57 @@ public static class Utilities
         return File.Exists(Filename);
     }
 
-    public static void CopyKit(string KitName, string DestinationFolder, ObjectEvent OnProgress)
+    public static async Task CopyKit(string KitName, string DestinationFolder, CancellationTokenSource Source, Action<float> OnProgress)
     {
-        float Progress = 0;
-        Thread CopyThread = new Thread(_ =>
+        string Filename = Path.Combine("Kits", KitName + ".zip");
+        Archive archive = new Archive(Filename);
+        string MainFolder = null;
+        if (!Directory.Exists(DestinationFolder)) Directory.CreateDirectory(DestinationFolder);
+        foreach (ArchiveEntry entry in archive.Files)
         {
-            string Filename = Path.Combine("Kits", KitName + ".zip");
-            Archive archive = new Archive(Filename);
-            string MainFolder = null;
-            if (!Directory.Exists(DestinationFolder)) Directory.CreateDirectory(DestinationFolder);
+            if (entry.Filename.Contains('\\') || entry.Filename.Contains('/')) continue;
+            if (MainFolder != null)
+            {
+                MainFolder = null;
+                break;
+            }
+            MainFolder = entry.Filename;
+        }
+        // if MainFolder is null, then there either are no entries,
+        // or there is more than one file/folder in the main archive,
+        // meaning we extract it as-is.
+        if (MainFolder == null)
+        {
+            float total = archive.Files.Count;
+            float count = 0;
             foreach (ArchiveEntry entry in archive.Files)
             {
-                if (entry.Filename.Contains('\\') || entry.Filename.Contains('/')) continue;
-                if (MainFolder != null)
-                {
-                    MainFolder = null;
-                    break;
-                }
-                MainFolder = entry.Filename;
+                await entry.ExtractAsync(DestinationFolder);
+                Source.Token.ThrowIfCancellationRequested();
+                count++;
+                OnProgress(count / total);
             }
-            // if MainFolder is null, then there either are no entries,
-            // or there is more than one file/folder in the main archive,
-            // meaning we extract it as-is.
-            if (MainFolder == null)
-            {
-                float total = archive.Files.Count;
-                float count = 0;
-                foreach (ArchiveEntry entry in archive.Files)
-                {
-                    entry.Extract(DestinationFolder);
-                    count++;
-                    Progress = count / total;
-                }
-                Progress = 1;
-            }
-            else
-            {
-                // If MainFolder is not null, that means the archive has one single folder at its root.
-                // We want to ignore this folder as we've already created our own folder in which we want
-                // all the files to reside, thus we purge this part of the path for all the other entries.
-                float total = archive.Files.Count - 1;
-                float count = 0;
-                foreach (ArchiveEntry entry in archive.Files)
-                {
-                    if (entry.Filename == MainFolder) continue;
-                    if (entry.Filename.Contains(MainFolder)) entry.Rename(entry.Filename.Substring(MainFolder.Length + 1));
-                    entry.Extract(DestinationFolder);
-                    count++;
-                    Progress = count / total;
-                }
-                Progress = 1;
-            }
-            archive.Dispose();
-        });
-        CopyThread.Start();
-        while (CopyThread.IsAlive)
-        {
-            Graphics.Update();
-            OnProgress?.Invoke(new ObjectEventArgs(Progress));
+            if (count != total) OnProgress(1);
         }
+        else
+        {
+            // If MainFolder is not null, that means the archive has one single folder at its root.
+            // We want to ignore this folder as we've already created our own folder in which we want
+            // all the files to reside, thus we purge this part of the path for all the other entries.
+            float total = archive.Files.Count - 1;
+            float count = 0;
+            foreach (ArchiveEntry entry in archive.Files)
+            {
+                if (entry.Filename == MainFolder) continue;
+                if (entry.Filename.Contains(MainFolder)) entry.Rename(entry.Filename.Substring(MainFolder.Length + 1));
+                await entry.ExtractAsync(DestinationFolder);
+                Source.Token.ThrowIfCancellationRequested();
+                count++;
+                OnProgress(count / total);
+            }
+            if (count != total) OnProgress(1);
+        }
+        archive.Dispose();
     }
 
     public static string LegalizeFilename(string Filename)

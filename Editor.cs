@@ -9,6 +9,8 @@ using System.Reflection;
 using RPGStudioMK.Game;
 using RPGStudioMK.Widgets;
 using System.IO.Compression;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace RPGStudioMK;
 
@@ -87,7 +89,7 @@ public static class Editor
     /// <summary>
     /// Debug method for quickly testing a piece of functionality.
     /// </summary>
-    public unsafe static void Test()
+    public static async Task Test()
     {
         if (Program.ReleaseMode) return;
 
@@ -466,47 +468,72 @@ public static class Editor
         Directory.SetCurrentDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
 
         // Create the folder that was specified if it did not already exist
-        Folder = Path.Combine(Folder, Utilities.LegalizeFilename(ProjectName)); 
+        Folder = Path.Combine(Folder, Utilities.LegalizeFilename(ProjectName));
 
-        if (!Directory.Exists(Folder)) Directory.CreateDirectory(Folder);
-        // Turn the (potentially) local folder name to an absolute one for further use
-        Folder = Path.GetFullPath(Folder);
-        // Restore current directory to what it was before
-        Directory.SetCurrentDirectory(OldCurrentDirectory);
-
-        // The kit we've chosen has been downloaded in the past, so we can copy that to our game folder.
-        if (Utilities.KitExists(Kit.Name))
+        if (Directory.Exists(Folder))
         {
-            CopyStep();
+            // Restore current directory to what it was before to load the message box icons
+            Directory.SetCurrentDirectory(OldCurrentDirectory);
+            MessageBox win = new MessageBox("Warning", $"The folder you are trying to create a new project in, '{Folder}' already exists. Are you sure you want to continue creating a project here? This may overwrite other files.", ButtonType.YesNoCancel, IconType.Warning);
+            win.OnClosed += _ =>
+            {
+                if (win.Result != 0) return;
+                // Set the directory back to the new project folder
+                Directory.SetCurrentDirectory(Folder);
+                ContinueAfterCreatingFolder();
+            };
         }
         else
         {
-            // The kit has not been downloaded before, so we download it now.
-            string Filename = Path.Combine("Kits", Kit.Name + ".zip");
-            if (!Directory.Exists("Kits")) Directory.CreateDirectory("Kits");
-            FileDownloaderWindow window = new FileDownloaderWindow(Kit.Download, Filename, "Downloading kit...");
-            window.OnFinished += _ => 
-            {
-                CopyStep();
-            };
+            Directory.CreateDirectory(Folder);
+            ContinueAfterCreatingFolder();
         }
 
-        void CopyStep()
+        void ContinueAfterCreatingFolder()
+        {
+            // Turn the (potentially) local folder name to an absolute one for further use
+            Folder = Path.GetFullPath(Folder);
+            // Restore current directory to what it was before to load the message box icons
+            Directory.SetCurrentDirectory(OldCurrentDirectory);
+
+            // The kit we've chosen has been downloaded in the past, so we can copy that to our game folder.
+            if (Utilities.KitExists(Kit.Name))
+            {
+                CopyStep();
+            }
+            else
+            {
+                // The kit has not been downloaded before, so we download it now.
+                string Filename = Path.Combine("Kits", Kit.Name + ".zip");
+                if (!Directory.Exists("Kits")) Directory.CreateDirectory("Kits");
+                FileDownloaderWindow window = new FileDownloaderWindow(Kit.Download, Filename, "Downloading kit...");
+                window.OnFinished += () =>
+                {
+                    CopyStep();
+                };
+            }
+        }
+
+        async Task CopyStep()
         {
             ProgressWindow window = new ProgressWindow("Copying", "Copying files...");
-            Graphics.Update();
-            Utilities.CopyKit(Kit.Name, Folder, delegate (ObjectEventArgs e)
+            CancellationTokenSource src = new CancellationTokenSource();
+            window.OnCancelled += () =>
             {
-                if (Graphics.CanUpdate()) Graphics.Update();
-                else return;
-                window.SetProgress((float) e.Object);
-                if ((float) e.Object == 1)
-                {
-                    CloseProject(false);
-                    Data.SetProjectPath(Path.Combine(Folder, "Game.rxproj"));
-                    MainWindow.CreateEditor();
-                    MakeRecentProject();
-                }
+                src.Cancel();
+            };
+            window.OnFinished += () => Graphics.Schedule(() =>
+            {
+                CloseProject(false);
+                Data.SetProjectPath(Path.Combine(Folder, "Game.rxproj"));
+                MainWindow.CreateEditor();
+                MakeRecentProject();
+            });
+            await Utilities.CopyKit(Kit.Name, Folder, src, e =>
+            {
+                Graphics.Schedule(() => {
+                    if (!src.IsCancellationRequested) window.SetProgress(e);
+                });
             });
         }
     }

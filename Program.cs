@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Runtime.Versioning;
 using NativeLibraryLoader;
+using System.Threading;
 
 namespace RPGStudioMK;
 

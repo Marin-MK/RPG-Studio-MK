@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Threading.Tasks;
 
 namespace RPGStudioMK;
 
@@ -194,8 +195,23 @@ public class ArchiveEntry
         if (this.IsDirectory) System.IO.Directory.CreateDirectory(Path.Combine(Directory, this.Filename));
         else
         {
-            string path = Path.Combine(Directory, this.Filename);
+            string path = Path.Combine(Directory, this.Filename).Replace('\\', '/');
             if (File.Exists(path) && Overwrite || !File.Exists(path)) ZipArchiveEntry.ExtractToFile(path, Overwrite);
+        }
+    }
+
+    /// <summary>
+    /// Extracts this file or directory within the given directory.
+    /// </summary>
+    /// <param name="Directory">The directory in which to extract the file or directory.</param>
+    public async Task ExtractAsync(string Directory, bool Overwrite = false)
+    {
+        if (!System.IO.Directory.Exists(Directory)) System.IO.Directory.CreateDirectory(Directory);
+        if (this.IsDirectory) System.IO.Directory.CreateDirectory(Path.Combine(Directory, this.Filename));
+        else
+        {
+            string path = Path.Combine(Directory, this.Filename).Replace('\\', '/');
+            if (File.Exists(path) && Overwrite || !File.Exists(path)) await Task.Run(() => ZipArchiveEntry.ExtractToFile(path, Overwrite));
         }
     }
 
