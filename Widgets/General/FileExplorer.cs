@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace RPGStudioMK.Widgets;
 
@@ -30,9 +32,6 @@ public class FileExplorer : Widget
     int MaxPathX = 0;
     int ColumnCount;
     double ColumnMargin = 0;
-
-    Thread LoaderThread;
-    List<FileEntryWidget> LoadPool = new List<FileEntryWidget>();
 
     public FileExplorer(IContainer Parent) : base(Parent)
     {
@@ -178,6 +177,7 @@ public class FileExplorer : Widget
             DrawItem(f, false);
             Empty = false;
         }
+
         DirGrid.UpdateContainers();
         DirGrid.UpdateLayout();
 
@@ -215,7 +215,6 @@ public class FileExplorer : Widget
             ItemColumn = 0;
             ItemRow = DirGrid.Rows.Count - 1;
         }
-        if (LoaderThread == null) SpawnLoaderThread();
         FileEntryWidget few = new FileEntryWidget(this, DirGrid);
         few.SetGrid(ItemRow, ItemColumn);
         if (!IsFolder) few.SetFile(Filename);
@@ -298,39 +297,6 @@ public class FileExplorer : Widget
         GridContainer.VScrollBar.SetSize(10, Size.Height - GridContainer.VScrollBar.Position.Y - 3);
         EmptyLabel?.SetPosition(GridContainer.Size.Width / 2 - EmptyLabel.Size.Width / 2 - 20, GridContainer.Size.Height / 2 - EmptyLabel.Size.Height / 2 - 50);
     }
-
-    public void AddToLoadPool(FileEntryWidget few)
-    {
-        LoadPool.Add(few);
-    }
-
-    private void SpawnLoaderThread()
-    {
-        if (LoaderThread != null) return;
-        LoaderThread = new Thread(LoadImages);
-        LoaderThread.Start();
-    }
-
-    private void LoadImages()
-    {
-        Thread.Sleep(100);
-        while (LoadPool.Count > 0)
-        {
-            FileEntryWidget few = LoadPool[0];
-            if (this.Disposed || Window.IsClosed) break;
-            if (few.Disposed)
-            {
-                LoadPool.RemoveAt(0);
-                continue;
-            }
-            (byte[] Bytes, int Width, int Height) result = decodl.PNGDecoder.Decode(few.Filename);
-            few.BitmapPendingCreation = result.Bytes;
-            few.BitmapWidth = result.Width;
-            few.BitmapHeight = result.Height;
-            LoadPool.RemoveAt(0);
-        }
-        LoaderThread = null;
-    }
 }
 
 public class FileEntryWidget : Widget
@@ -399,12 +365,15 @@ public class FileEntryWidget : Widget
         this.SetSelected(true);
     }
 
-    public void SetFile(string Filename)
+    public async Task SetFile(string Filename)
     {
         this.Filename = Filename;
         if (this.Filename.EndsWith(".png") && File.Exists(this.Filename))
         {
-            FileExplorer.AddToLoadPool(this);
+            (byte[] Bytes, int Width, int Height) result = await Task.Run(() => decodl.PNGDecoder.Decode(this.Filename));
+            this.BitmapPendingCreation = result.Bytes;
+            this.BitmapWidth = result.Width;
+            this.BitmapHeight = result.Height;
         }
     }
 

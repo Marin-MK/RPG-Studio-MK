@@ -6,7 +6,7 @@ namespace RPGStudioMK.Widgets;
 
 public class DropdownBox : amethyst.TextBox
 {
-    public bool ReadOnly { get { return TextArea.ReadOnly; } }
+    public bool ReadOnly => TextArea.ReadOnly;
     public int SelectedIndex { get; protected set; } = 0;
     public List<ListItem> Items { get; protected set; } = new List<ListItem>();
     public bool Enabled { get; protected set; } = true;
