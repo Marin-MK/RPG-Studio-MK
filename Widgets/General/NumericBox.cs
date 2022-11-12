@@ -22,7 +22,7 @@ public class NumericBox : Widget
         DownButton = new Button(this);
         DownButton.SetText("-");
         DownButton.SetSize(30, 30);
-        DownButton.Repeatable = true;
+        DownButton.SetRepeatable(true);
         DownButton.OnClicked += _ =>
         {
             SetValue(Value - Increment);
@@ -32,7 +32,7 @@ public class NumericBox : Widget
         UpButton.SetText("+");
         UpButton.SetSize(30, 30);
         UpButton.SetRightDocked(true);
-        UpButton.Repeatable = true;
+        UpButton.SetRepeatable(true);
         UpButton.OnClicked += _ =>
         {
             SetValue(Value + Increment);

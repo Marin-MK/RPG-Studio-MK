@@ -12,7 +12,7 @@ public class Button : Widget
     public Color TextColor { get; protected set; } = Color.WHITE;
     public bool LeftAlign { get; protected set; } = false;
     public int TextX { get; protected set; } = 0;
-    public bool Repeatable = false;
+    public bool Repeatable { get; protected set; } = false;
 
     public BaseEvent OnClicked;
 
@@ -118,6 +118,14 @@ public class Button : Widget
         {
             this.TextX = TextX;
             if (LeftAlign) Sprites["text"].X = 10 + TextX;
+        }
+    }
+
+    public void SetRepeatable(bool Repeatable)
+    {
+        if (this.Repeatable != Repeatable)
+        {
+            this.Repeatable = Repeatable;
         }
     }
 
