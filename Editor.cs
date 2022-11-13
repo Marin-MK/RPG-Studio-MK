@@ -11,6 +11,7 @@ using RPGStudioMK.Widgets;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using System.Threading;
+using amethyst.Animations;
 
 namespace RPGStudioMK;
 
@@ -93,11 +94,52 @@ public static class Editor
     {
         if (Program.ReleaseMode) return;
 
+        PopupWindow win = new PopupWindow();
+        win.SetSize(400, 400);
+        win.Center();
+
+        Label TestLabel = new Label(win);
+        TestLabel.SetText("Hello world!");
+        TestLabel.RedrawText(true);
+        TestLabel.SetPosition(win.Size.Width / 2 - TestLabel.Size.Width / 2, win.Size.Height / 2 - TestLabel.Size.Height / 2 - 40);
+
+        Button Start = new Button(win);
+        Start.SetSize(100, 33);
+        Start.SetText("Start!");
+        Start.SetPosition(win.Size.Width / 2 - Start.Size.Width / 2, win.Size.Height / 2 - Start.Size.Height / 2);
+        Start.OnClicked += _ =>
+        {
+            IAnimation anim = new LinearAnimation("fade", 5000, f =>
+            {
+                TestLabel.Viewport.Opacity = (byte)(int)Math.Abs(Math.Round((1 - f * 2) * 255));
+                TestLabel.Viewport.Update();
+            });
+            TestLabel.StartAnimation(anim);
+        };
+
+        Button Stop = new Button(win);
+        Stop.SetSize(100, 33);
+        Stop.SetText("Pause!");
+        Stop.SetPosition(win.Size.Width / 2 - Stop.Size.Width / 2, win.Size.Height / 2 - Stop.Size.Height / 2 + 40);
+        Stop.OnClicked += _ =>
+        {
+            if (Stop.Text == "Pause!")
+            {
+                TestLabel.PauseAnimation("fade");
+                Stop.SetText("Resume!");
+            }
+            else
+            {
+                TestLabel.ResumeAnimation("fade");
+                Stop.SetText("Pause!");
+            }
+        };
+
         //Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
 
-        Map Map = MainWindow.MapWidget?.Map;
-        if (Map == null) return;
-        MapAfterEffectsWindow maew = new MapAfterEffectsWindow(Map);
+        //Map Map = MainWindow.MapWidget?.Map;
+        //if (Map == null) return;
+        //MapAfterEffectsWindow maew = new MapAfterEffectsWindow(Map);
     }
 
     /// <summary>
