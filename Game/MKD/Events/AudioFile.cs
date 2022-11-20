@@ -2,12 +2,16 @@
 
 namespace RPGStudioMK.Game;
 
-[Serializable]
 public class AudioFile : ICloneable
 {
     public string Name;
     public int Volume;
     public int Pitch;
+
+    public AudioFile()
+    {
+
+    }
 
     public AudioFile(string Name = "", int Volume = 80, int Pitch = 100)
     {

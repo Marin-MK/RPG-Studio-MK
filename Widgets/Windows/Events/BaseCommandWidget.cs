@@ -862,15 +862,15 @@ public class BaseCommandWidget : Widget
         PurgeBlanksFromSelection();
         (List<EventCommand> Commands, _) = GetListOfSelectedCommands();
         if (Commands.Count == 0) return;
-        EventCommandList data = new EventCommandList(Commands);
+        List<EventCommand> data = new List<EventCommand>(Commands);
         Utilities.SetClipboard(data, BinaryData.EVENT_COMMANDS);
     }
 
     protected void Paste()
     {
         if (this.Indentation == -1 || !Utilities.IsClipboardValidBinary(BinaryData.EVENT_COMMANDS)) return;
-        EventCommandList data = Utilities.GetClipboard<EventCommandList>();
-        InsertMayBeMultiple(data.Commands);
+        List<EventCommand> data = Utilities.GetClipboard<List<EventCommand>>();
+        InsertMayBeMultiple(data);
     }
 
     protected void SelectAll()

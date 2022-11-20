@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace RPGStudioMK.Game;
 
-[Serializable]
-public class MapSelection : ISerializable
+public class MapSelection
 {
     public Dictionary<int, TileGroup> LayerSelections = new Dictionary<int, TileGroup>();
     public int Width;
@@ -34,24 +31,5 @@ public class MapSelection : ISerializable
         this.LayerSelections.Clear();
         this.Width = 0;
         this.Height = 0;
-    }
-
-    public string Serialize()
-    {
-        BinaryFormatter formatter = new BinaryFormatter();
-        MemoryStream stream = new MemoryStream();
-        formatter.Serialize(stream, this);
-        string data = Convert.ToBase64String(stream.ToArray());
-        stream.Close();
-        return data;
-    }
-
-    public static MapSelection Deserialize(string data)
-    {
-        BinaryFormatter formatter = new BinaryFormatter();
-        MemoryStream stream = new MemoryStream(Convert.FromBase64String(data));
-        MapSelection result = (MapSelection)formatter.Deserialize(stream);
-        stream.Close();
-        return result;
     }
 }

@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
 
 namespace RPGStudioMK.Game;
 
-[Serializable]
 public class EventCommand : ICloneable
 {
     public CommandCode Code;
     public int Indent;
     public List<object> Parameters = new List<object>();
+
+    public EventCommand()
+    {
+
+    }
 
     public EventCommand(CommandCode Code, int Indent, List<object> Parameters)
     {

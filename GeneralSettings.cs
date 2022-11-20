@@ -19,7 +19,7 @@ public class GeneralSettings
         RawData.Add("LAST_HEIGHT", 600);
         RawData.Add("LAST_X", 50);
         RawData.Add("LAST_Y", 50);
-        RawData.Add("RECENT_FILES", new List<(string, string)>());
+        RawData.Add("RECENT_FILES", new List<List<string>>());
         RawData.Add("SHOW_MAP_ANIMATIONS", true);
         RawData.Add("SHOW_GRID", true);
         RawData.Add("EXPAND_EVENT_COMMANDS", true);
@@ -80,9 +80,9 @@ public class GeneralSettings
     /// <summary>
     /// The list of recently opened projects. May contain old/invalid paths.
     /// </summary>
-    public List<(string ProjectName, string ProjectFile)> RecentFiles
+    public List<List<string>> RecentFiles
     {
-        get => (List<(string, string)>) RawData["RECENT_FILES"];
+        get => ((List<List<string>>) RawData["RECENT_FILES"]);
         set => RawData["RECENT_FILES"] = value;
     }
     /// <summary>

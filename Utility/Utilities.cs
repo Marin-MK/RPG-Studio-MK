@@ -10,6 +10,7 @@ using System.IO.Compression;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace RPGStudioMK;
 
@@ -611,33 +612,6 @@ public static class Utilities
         return points;
     }
 
-    public static string SerializeList<T>(IEnumerable<T> list) where T : ISerializable
-    {
-        BinaryFormatter formatter = new BinaryFormatter();
-        MemoryStream stream = new MemoryStream();
-        formatter.Serialize(stream, list.Select(e => e.Serialize()).ToArray());
-        string data = Convert.ToBase64String(stream.ToArray());
-        stream.Close();
-        return data;
-    }
-
-    public static List<T> DeserializeList<T>(string data) where T : ISerializable
-    {
-        BinaryFormatter formatter = new BinaryFormatter();
-        MemoryStream stream = new MemoryStream(Convert.FromBase64String(data));
-        object o = formatter.Deserialize(stream);
-        if (!(o is string[])) throw new Exception("Deserialization error.");
-        stream.Close();
-        List<T> list = new List<T>();
-        foreach (string s in ((string[])o))
-        {
-            MethodInfo method = typeof(T).GetMethod("Deserialize", BindingFlags.Public | BindingFlags.Static);
-            T obj = (T)method.Invoke(null, new object[1] { s });
-            list.Add(obj);
-        }
-        return list;
-    }
-
     public static void SetClipboard(string s)
     {
         Input.SetClipboard(s);
@@ -645,11 +619,8 @@ public static class Utilities
 
     public static void SetClipboard(object o, BinaryData Type)
     {
-        string data = null;
-        if (o is ISerializable) data = ((ISerializable)o).Serialize();
-        else if (o.GetType().GetGenericTypeDefinition() == typeof(List<>)) data = SerializeList((IEnumerable<ISerializable>)o);
-        else throw new Exception($"Could not serialize object.");
-        Input.SetClipboard($"RSMKDATA.{Type}:{Compress(data)}");
+        string data = Convert.ToBase64String(SerializeAndCompress(o));
+        Input.SetClipboard($"RSMKDATA.{Type}:{data}");
     }
 
     public static string GetClipboardString()
@@ -657,21 +628,13 @@ public static class Utilities
         return Input.GetClipboard();
     }
 
-    public static T GetClipboard<T>() where T : ISerializable
+    public static T GetClipboard<T>()
     {
         string data = GetClipboardString();
         if (data.StartsWith("RSMKDATA.")) data = data.Substring(data.IndexOf(':') + 1);
         else throw new Exception("Attempted to parse non-RSMK data.");
-        MethodInfo method = typeof(T).GetMethod("Deserialize", BindingFlags.Public | BindingFlags.Static);
-        return (T)method.Invoke(null, new object[1] { Decompress(data) });
-    }
-
-    public static List<T> GetClipboardList<T>() where T : ISerializable
-    {
-        string data = GetClipboardString();
-        if (data.StartsWith("RSMKDATA.")) data = data.Substring(data.IndexOf(':') + 1);
-        else throw new Exception("Attempted to parse non-RSMK data.");
-        return DeserializeList<T>(Decompress(data));
+        T obj = DeserializeAndDecompress<T>(Convert.FromBase64String(data));
+        return obj;
     }
 
     public static bool IsClipboardValidBinary(BinaryData Type)
@@ -679,55 +642,102 @@ public static class Utilities
         return GetClipboardString().StartsWith($"RSMKDATA.{Type}:");
     }
 
-    public static string Decompress(string String)
+    public static string Serialize<T>(T Object)
     {
-        MemoryStream inputstream = new MemoryStream();
-        inputstream.Write(Convert.FromBase64String(String));
-        inputstream.Seek(0, SeekOrigin.Begin);
+        return JsonSerializer.Serialize<T>(Object, new JsonSerializerOptions() { IncludeFields = true });
+    }
+
+    public static T Deserialize<T>(string String)
+    {
+        return JsonSerializer.Deserialize<T>(String, new JsonSerializerOptions() { IncludeFields = true });
+    }
+
+    public static string SerializeAndCompressStr<T>(T Object)
+    {
+        return CompressGZipStr(Serialize<T>(Object));
+    }
+
+    public static byte[] SerializeAndCompress<T>(T Object)
+    {
+        return CompressGZip(Serialize<T>(Object));
+    }
+
+    public static T DeserializeAndDecompress<T>(string String)
+    {
+        return Deserialize<T>(DecompressGZipStr(String));
+    }
+
+    public static T DeserializeAndDecompress<T>(byte[] Bytes)
+    {
+        string json = DecompressGZip(Bytes);
+        return Deserialize<T>(json);
+    }
+
+    public static string DecompressGZip(byte[] Bytes)
+    {
+        MemoryStream input = new MemoryStream(Bytes);
         MemoryStream output = new MemoryStream();
-        using (DeflateStream deflate = new DeflateStream(inputstream, CompressionMode.Decompress))
-        {
-            deflate.CopyTo(output);
-            deflate.Close();
-        }
-        byte[] data = output.ToArray();
-        inputstream.Dispose();
-        output.Dispose();
-        return Encoding.UTF8.GetString(data);
+        GZipStream zip = new GZipStream(input, CompressionMode.Decompress);
+        zip.CopyTo(output);
+        zip.Dispose();
+        string String = Encoding.UTF8.GetString(output.ToArray());
+        input.Dispose();
+        return String;
     }
 
-    public static string Compress(string String)
+    public static string DecompressGZipStr(string String)
     {
-        MemoryStream cstream = new MemoryStream();
-        // Optimal compression
-        DeflateStream deflate = new DeflateStream(cstream, CompressionLevel.SmallestSize, true);
-        // Write to cstream
-        byte[] inputbytes = Encoding.UTF8.GetBytes(String);
-        deflate.Write(inputbytes);
-        deflate.Close();
-        // Calculate adler checksum over uncompressed data
-        uint adler = CalculateAdler(inputbytes);
-        // Write checksum to compressed datastream
-        byte[] adlerbytes = BitConverter.GetBytes(adler);
-        if (BitConverter.IsLittleEndian) Array.Reverse(adlerbytes);
-        cstream.Write(adlerbytes, 0, 4);
-        deflate.Dispose();
-        cstream.Seek(0, SeekOrigin.Begin);
-        byte[] outbytes = cstream.ToArray();
-        cstream.Dispose();
-        return Convert.ToBase64String(outbytes);
+        return DecompressGZip(Encoding.UTF8.GetBytes(String));
     }
 
-    static uint CalculateAdler(byte[] Data)
+    public static byte[] CompressGZip(string String)
     {
-        const int mod = 65521;
-        uint a = 1, b = 0;
-        foreach (byte x in Data)
+        MemoryStream input = new MemoryStream(Encoding.UTF8.GetBytes(String));
+        MemoryStream output = new MemoryStream();
+        GZipStream zip = new GZipStream(output, CompressionLevel.Optimal);
+        input.CopyTo(zip);
+        zip.Dispose();
+        byte[] Bytes = output.ToArray();
+        input.Dispose();
+        return Bytes;
+    }
+
+    public static string CompressGZipStr(string String)
+    {
+        return Encoding.UTF8.GetString(CompressGZip(String));
+    }
+
+    public static byte[] ReadStream(Stream Stream)
+    {
+        long LengthLeft = Stream.Length - Stream.Position;
+        byte[] Bytes = new byte[LengthLeft];
+        int count = 0;
+        while (count != LengthLeft)
         {
-            a = (a + (byte)x) % mod;
-            b = (b + a) % mod;
+            count += Stream.Read(Bytes, count, (int) Math.Min(8192, LengthLeft - count));
         }
-        return (b << 16) | a;
+        return Bytes;
+    }
+
+    public static T DeserializeStream<T>(Stream Stream)
+    {
+        return JsonSerializer.Deserialize<T>(DecompressGZip(ReadStream(Stream)));
+    }
+
+    public static void SerializeStream<T>(Stream Stream, T Object)
+    {
+        Stream.Write(CompressGZip(JsonSerializer.Serialize<T>(Object)));
+    }
+
+    public static void ReadSerializationID(Stream Stream, byte ID)
+    {
+        byte ReadID = (byte) Stream.ReadByte();
+        if (ReadID != ID) throw new Exception($"Serialization IDs do not match. Got {ReadID}, expected {ID}.");
+    }
+
+    public static void WriteSerializationID(Stream Stream, byte ID)
+    {
+        Stream.WriteByte(ID);
     }
 
     public static bool KitExists(string KitName)
@@ -886,7 +896,6 @@ pbConnectToEditor";
             double NewCost = CostFunction(NewValue);
             if (NewCost < Cost)
             {
-                Console.WriteLine("regular");
                 Value = NewValue;
                 Cost = NewCost;
             }

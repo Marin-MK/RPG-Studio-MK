@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace RPGStudioMK.Game;
 
-[Serializable]
-public class MoveCommand : ICloneable, ISerializable
+public class MoveCommand : ICloneable
 {
     public MoveCode Code;
     public List<object> Parameters = new List<object>();
+
+    public MoveCommand()
+    {
+
+    }
 
     public MoveCommand(MoveCode Code, List<object> Parameters)
     {
@@ -105,25 +108,6 @@ public class MoveCommand : ICloneable, ISerializable
             MoveCode.ScriptAsync => $"Script: {Parameters[0]}",
             _ => throw new Exception($"Invalid Move Command Code: {this.Code}")
         };
-    }
-
-    public string Serialize()
-    {
-        BinaryFormatter formatter = new BinaryFormatter();
-        MemoryStream stream = new MemoryStream();
-        formatter.Serialize(stream, this);
-        string data = Convert.ToBase64String(stream.ToArray());
-        stream.Close();
-        return data;
-    }
-
-    public static MoveCommand Deserialize(string data)
-    {
-        BinaryFormatter formatter = new BinaryFormatter();
-        MemoryStream stream = new MemoryStream(Convert.FromBase64String(data));
-        MoveCommand result = (MoveCommand) formatter.Deserialize(stream);
-        stream.Close();
-        return result;
     }
 }
 

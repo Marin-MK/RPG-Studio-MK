@@ -2,7 +2,6 @@
 
 namespace RPGStudioMK.Game;
 
-[Serializable]
 public class EventGraphic : ICloneable
 {
     public int Direction;
@@ -15,6 +14,11 @@ public class EventGraphic : ICloneable
 
     public int NumDirections;
     public int NumFrames;
+
+    public EventGraphic()
+    {
+
+    }
 
     public EventGraphic(string CharacterName = "")
     {

@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace RPGStudioMK.Game;
 
-[Serializable]
-public class Map : ICloneable, ISerializable
+public class Map : ICloneable
 {
     public int ID;
     public string Name = "";
@@ -317,25 +315,6 @@ public class Map : ICloneable, ISerializable
                 if (tile.TileType == TileType.Tileset && tile.Index > idx) Layers[i].Tiles[j].Index -= 1;
             }
         }
-    }
-
-    public string Serialize()
-    {
-        BinaryFormatter formatter = new BinaryFormatter();
-        MemoryStream stream = new MemoryStream();
-        formatter.Serialize(stream, this);
-        string data = Convert.ToBase64String(stream.ToArray());
-        stream.Close();
-        return data;
-    }
-
-    public static Map Deserialize(string data)
-    {
-        BinaryFormatter formatter = new BinaryFormatter();
-        MemoryStream stream = new MemoryStream(Convert.FromBase64String(data));
-        Map result = (Map)formatter.Deserialize(stream);
-        stream.Close();
-        return result;
     }
 
     public override string ToString()

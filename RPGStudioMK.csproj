@@ -10,7 +10,7 @@
     <Version>0.9.0</Version>
     <Platforms>x64</Platforms>
     <AssemblyName>RPG Studio MK</AssemblyName>
-    <Configurations>Debug</Configurations>
+    <Configurations>Debug;Release</Configurations>
     <RootNamespace>RPGStudioMK</RootNamespace>
     <SignAssembly>False</SignAssembly>
     <Copyright>Marijn Herrebout</Copyright>

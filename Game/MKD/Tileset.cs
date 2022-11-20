@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.Json.Serialization;
 
 namespace RPGStudioMK.Game;
 
-[Serializable]
-public class Tileset : ICloneable, ISerializable
+public class Tileset : ICloneable
 {
     public int ID;
     public string Name;
@@ -36,8 +35,9 @@ public class Tileset : ICloneable, ISerializable
     /// </summary>
     public List<List<int>> AutotileOverlapPermissions = new List<List<int>>();
 
-    [NonSerialized]
+    [JsonIgnore]
     private Bitmap _tb;
+    [JsonIgnore]
     public Bitmap TilesetBitmap
     {
         get
@@ -56,8 +56,9 @@ public class Tileset : ICloneable, ISerializable
             _tb = value;
         }
     }
-    [NonSerialized]
+    [JsonIgnore]
     private Bitmap _tlb;
+    [JsonIgnore]
     public Bitmap TilesetListBitmap
     {
         get
@@ -370,24 +371,5 @@ public class Tileset : ICloneable, ISerializable
         t.TilesetBitmap = this.TilesetBitmap;
         t.TilesetListBitmap = this.TilesetListBitmap;
         return t;
-    }
-
-    public string Serialize()
-    {
-        BinaryFormatter formatter = new BinaryFormatter();
-        MemoryStream stream = new MemoryStream();
-        formatter.Serialize(stream, this);
-        string data = Convert.ToBase64String(stream.ToArray());
-        stream.Close();
-        return data;
-    }
-
-    public static Tileset Deserialize(string data)
-    {
-        BinaryFormatter formatter = new BinaryFormatter();
-        MemoryStream stream = new MemoryStream(Convert.FromBase64String(data));
-        Tileset result = (Tileset) formatter.Deserialize(stream);
-        stream.Close();
-        return result;
     }
 }

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace RPGStudioMK.Game;
 
-[Serializable]
-public class TileData : ICloneable, ISerializable
+public class TileData : ICloneable
 {
     /// <summary>
     /// Regular tile or autotile
@@ -52,24 +50,5 @@ public class TileData : ICloneable, ISerializable
     public override int GetHashCode()
     {
         return base.GetHashCode();
-    }
-
-    public string Serialize()
-    {
-        BinaryFormatter formatter = new BinaryFormatter();
-        MemoryStream stream = new MemoryStream();
-        formatter.Serialize(stream, this);
-        string data = Convert.ToBase64String(stream.ToArray());
-        stream.Close();
-        return data;
-    }
-
-    public static TileData Deserialize(string data)
-    {
-        BinaryFormatter formatter = new BinaryFormatter();
-        MemoryStream stream = new MemoryStream(Convert.FromBase64String(data));
-        TileData result = (TileData)formatter.Deserialize(stream);
-        stream.Close();
-        return result;
     }
 }

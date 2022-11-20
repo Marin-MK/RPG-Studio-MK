@@ -4,12 +4,16 @@ using System.Linq;
 
 namespace RPGStudioMK.Game;
 
-[Serializable]
 public class Layer : ICloneable
 {
     public string Name = "Unnamed Layer";
     public List<TileData> Tiles = new List<TileData>();
     public bool Visible = true;
+
+    public Layer()
+    {
+
+    }
 
     public Layer(string Name)
     {

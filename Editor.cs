@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Reflection;
 using RPGStudioMK.Game;
 using RPGStudioMK.Widgets;
-using System.IO.Compression;
 using System.Threading.Tasks;
 using System.Threading;
 using amethyst.Animations;
@@ -90,52 +87,11 @@ public static class Editor
     /// <summary>
     /// Debug method for quickly testing a piece of functionality.
     /// </summary>
-    public static async Task Test()
+    public static void Test()
     {
         if (Program.ReleaseMode) return;
 
-        PopupWindow win = new PopupWindow();
-        win.SetSize(400, 400);
-        win.Center();
-
-        Label TestLabel = new Label(win);
-        TestLabel.SetText("Hello world!");
-        TestLabel.RedrawText(true);
-        TestLabel.SetPosition(win.Size.Width / 2 - TestLabel.Size.Width / 2, win.Size.Height / 2 - TestLabel.Size.Height / 2 - 40);
-
-        Button Start = new Button(win);
-        Start.SetSize(100, 33);
-        Start.SetText("Start!");
-        Start.SetPosition(win.Size.Width / 2 - Start.Size.Width / 2, win.Size.Height / 2 - Start.Size.Height / 2);
-        Start.OnClicked += _ =>
-        {
-            IAnimation anim = new LinearAnimation("fade", 5000, f =>
-            {
-                TestLabel.Viewport.Opacity = (byte)(int)Math.Abs(Math.Round((1 - f * 2) * 255));
-                TestLabel.Viewport.Update();
-            });
-            TestLabel.StartAnimation(anim);
-        };
-
-        Button Stop = new Button(win);
-        Stop.SetSize(100, 33);
-        Stop.SetText("Pause!");
-        Stop.SetPosition(win.Size.Width / 2 - Stop.Size.Width / 2, win.Size.Height / 2 - Stop.Size.Height / 2 + 40);
-        Stop.OnClicked += _ =>
-        {
-            if (Stop.Text == "Pause!")
-            {
-                TestLabel.PauseAnimation("fade");
-                Stop.SetText("Resume!");
-            }
-            else
-            {
-                TestLabel.ResumeAnimation("fade");
-                Stop.SetText("Pause!");
-            }
-        };
-
-        //Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
+        Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
 
         //Map Map = MainWindow.MapWidget?.Map;
         //if (Map == null) return;
@@ -590,7 +546,7 @@ public static class Editor
         string lastfolder = "";
         if (GeneralSettings.RecentFiles.Count > 0)
         {
-            string path = GeneralSettings.RecentFiles[0].ProjectFile;
+            string path = GeneralSettings.RecentFiles[0][1]; // Project file
             while (path.Contains("/")) path = path.Replace("/", "\\");
             List<string> folders = path.Split('\\').ToList();
             for (int i = 0; i < folders.Count - 1; i++)
@@ -867,13 +823,13 @@ public static class Editor
         while (path.Contains('\\')) path = path.Replace('\\', '/');
         for (int i = 0; i < GeneralSettings.RecentFiles.Count; i++)
         {
-            if (GeneralSettings.RecentFiles[i].ProjectFile == path) // Project file paths match - same project
+            if (GeneralSettings.RecentFiles[i][1] == path) // Project file paths match - same project
             {
                 // Remove and still add to update the ordering in the list
                 GeneralSettings.RecentFiles.RemoveAt(i);
             }
         }
-        GeneralSettings.RecentFiles.Add((ProjectSettings.ProjectName, path));
+        GeneralSettings.RecentFiles.Add(new List<string>() { ProjectSettings.ProjectName, path }); // [name, file]
     }
 
     /// <summary>
@@ -881,10 +837,10 @@ public static class Editor
     /// </summary>
     public static void DumpGeneralSettings()
     {
-        IFormatter formatter = new BinaryFormatter();
         GeneralSettings.SecondsUsed += (int)Math.Floor((DateTime.Now - TimeOpened).TotalSeconds);
         Stream stream = new FileStream("editor.mkd", FileMode.Create, FileAccess.Write);
-        formatter.Serialize(stream, GeneralSettings);
+        Utilities.WriteSerializationID(stream, 0);
+        Utilities.SerializeStream(stream, GeneralSettings);
         stream.Close();
     }
 
@@ -895,17 +851,9 @@ public static class Editor
     {
         if (File.Exists("editor.mkd"))
         {
-            IFormatter formatter = new BinaryFormatter();
             Stream stream = new FileStream("editor.mkd", FileMode.Open, FileAccess.Read);
-            try
-            {
-                GeneralSettings = formatter.Deserialize(stream) as GeneralSettings;
-                GeneralSettings.Update();
-            }
-            catch (SerializationException)
-            {
-                GeneralSettings = new GeneralSettings();
-            }
+            Utilities.ReadSerializationID(stream, 0);
+            GeneralSettings = Utilities.DeserializeStream<GeneralSettings>(stream);
             stream.Close();
         }
         else
@@ -925,9 +873,9 @@ public static class Editor
     {
         // Saves the assembly version into the project file.
         ProjectSettings.SavedVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
-        IFormatter formatter = new BinaryFormatter();
         Stream stream = new FileStream(Data.ProjectPath + "/project.mkproj", FileMode.Create, FileAccess.Write);
-        formatter.Serialize(stream, ProjectSettings);
+        Utilities.WriteSerializationID(stream, 0);
+        Utilities.SerializeStream(stream, ProjectSettings);
         stream.Close();
     }
 
@@ -938,9 +886,9 @@ public static class Editor
     {
         if (File.Exists(Data.ProjectPath + "/project.mkproj"))
         {
-            IFormatter formatter = new BinaryFormatter();
             Stream stream = new FileStream(Data.ProjectPath + "/project.mkproj", FileMode.Open, FileAccess.Read);
-            ProjectSettings = formatter.Deserialize(stream) as ProjectSettings;
+            Utilities.ReadSerializationID(stream, 0);
+            ProjectSettings = Utilities.DeserializeStream<ProjectSettings>(stream);
             ProjectSettings.Update();
             stream.Close();
         }

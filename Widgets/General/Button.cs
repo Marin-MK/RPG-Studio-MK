@@ -77,6 +77,15 @@ public class Button : Widget
         }
     }
 
+    public void SetFont(Font Font)
+    {
+        if (!this.Font.Equals(Font))
+        {
+            this.Font = Font;
+            RedrawText();
+        }
+    }
+
     public void SetTextColor(Color TextColor)
     {
         if (this.TextColor != TextColor)

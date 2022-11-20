@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
 
 namespace RPGStudioMK.Game;
 
-[Serializable]
-public class Event : ICloneable, ISerializable
+public class Event : ICloneable
 {
     public int ID;
     public string Name;
@@ -16,6 +14,11 @@ public class Event : ICloneable, ISerializable
     public int Width;
     public int Height;
     public List<EventPage> Pages = new List<EventPage>();
+
+    public Event()
+    {
+
+    }
 
     public Event(int ID)
     {
@@ -87,25 +90,6 @@ public class Event : ICloneable, ISerializable
         e.Pages = new List<EventPage>();
         this.Pages.ForEach(p => e.Pages.Add((EventPage)p.Clone()));
         return e;
-    }
-
-    public string Serialize()
-    {
-        BinaryFormatter formatter = new BinaryFormatter();
-        MemoryStream stream = new MemoryStream();
-        formatter.Serialize(stream, this);
-        string data = Convert.ToBase64String(stream.ToArray());
-        stream.Close();
-        return data;
-    }
-
-    public static Event Deserialize(string data)
-    {
-        BinaryFormatter formatter = new BinaryFormatter();
-        MemoryStream stream = new MemoryStream(Convert.FromBase64String(data));
-        Event result = (Event) formatter.Deserialize(stream);
-        stream.Close();
-        return result;
     }
 }
 
