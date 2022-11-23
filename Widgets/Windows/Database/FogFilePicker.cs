@@ -44,7 +44,7 @@ public class FogFilePicker : AbstractFilePicker
         HueBox.SetMinimumValue(0);
         HueBox.SetMaximumValue(359);
         HueBox.SetSnapValues(0, 59, 119, 179, 239, 299, 359);
-        HueBox.SetPixelSnapDifference(16);
+        HueBox.SetSnapStrength(16);
         HueBox.OnValueChanged += _ =>
         {
             UpdateHue();

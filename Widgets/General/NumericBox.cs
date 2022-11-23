@@ -11,6 +11,7 @@ public class NumericBox : Widget
     public bool Enabled { get; protected set; } = true;
 
     public BaseEvent OnValueChanged;
+    public BaseEvent OnEnterPressed { get => TextArea.OnEnterPressed; set => TextArea.OnEnterPressed = value; }
 
     Button DownButton;
     Button UpButton;
@@ -50,6 +51,7 @@ public class NumericBox : Widget
         TextArea.SetFont(Fonts.Paragraph);
         TextArea.SetNumericOnly(true);
         TextArea.SetDefaultNumericValue(0);
+        TextArea.SetDeselectOnEnterPress(false);
         TextArea.OnWidgetSelected += _ => Redraw();
         TextArea.OnWidgetDeselected += _ => Redraw();
         TextArea.OnTextChanged += _ =>

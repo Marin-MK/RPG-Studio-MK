@@ -241,7 +241,7 @@ public class ChooseGraphic : PopupWindow
         HueBox.SetMinimumValue(0);
         HueBox.SetMaximumValue(359);
         HueBox.SetSnapValues(0, 59, 119, 179, 239, 299, 359);
-        HueBox.SetPixelSnapDifference(16);
+        HueBox.SetSnapStrength(16);
         HueBox.SetHDocked(true);
         HueBox.SetBottomDocked(true);
         HueBox.SetPadding(50, 0, 214, 16);

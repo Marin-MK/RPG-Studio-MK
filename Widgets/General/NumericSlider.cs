@@ -9,7 +9,7 @@ public class NumericSlider : Widget
     public int MinValue { get; protected set; } = 0;
     public int MaxValue { get; protected set; } = 100;
     public List<(int Value, double Factor, int X)> SnapValues { get; protected set; } = new List<(int, double, int)>();
-    public int PixelSnapDifference { get; protected set; } = 4;
+    public int SnapStrength { get; protected set; } = 4;
     public bool Enabled { get; protected set; } = true;
 
     public BaseEvent OnValueChanged;
@@ -30,6 +30,8 @@ public class NumericSlider : Widget
         Sprites["slider"].Bitmap.SetPixel(0, 16, Color.ALPHA);
         Sprites["slider"].Bitmap.SetPixel(7, 16, Color.ALPHA);
         Sprites["slider"].Bitmap.Lock();
+        MinimumSize.Height = 17;
+        MaximumSize.Height = MinimumSize.Height;
         SetSize(107, 17);
     }
 
@@ -63,6 +65,11 @@ public class NumericSlider : Widget
         }
     }
 
+    public void SetSnapValues(List<int> SnapValues)
+    {
+        SetSnapValues(SnapValues.ToArray());
+    }
+
     public void SetSnapValues(params int[] Values)
     {
         this.SnapValues.Clear();
@@ -75,9 +82,9 @@ public class NumericSlider : Widget
         this.Redraw();
     }
 
-    public void SetPixelSnapDifference(int PixelSnapDifference)
+    public void SetSnapStrength(int PixelSnapDifference)
     {
-        this.PixelSnapDifference = PixelSnapDifference;
+        this.SnapStrength = PixelSnapDifference;
     }
 
     public override void SizeChanged(BaseEventArgs e)
@@ -153,7 +160,7 @@ public class NumericSlider : Widget
             {
                 foreach ((int Value, double Factor, int X) Snap in SnapValues)
                 {
-                    if (Math.Abs((rx - 4) - Snap.X) <= this.PixelSnapDifference)
+                    if (Math.Abs((rx - 4) - Snap.X) <= this.SnapStrength)
                     {
                         factor = Snap.Factor;
                         Snapping = true;

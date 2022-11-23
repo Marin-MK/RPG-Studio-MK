@@ -11,10 +11,11 @@ public class GenericListWindow : PopupWindow
 
     ListBox ListBox;
     TextBox NameBox;
+    NumericBox NumberBox;
     Button AddButton;
     Button DeleteButton;
 
-    public GenericListWindow(string Title, List<string> Items)
+    public GenericListWindow(string Title, List<string> Items, bool NumericAndOrdered = false)
     {
         SetTitle(Title);
         MinimumSize = MaximumSize = new Size(199, 400);
@@ -26,17 +27,34 @@ public class GenericListWindow : PopupWindow
         ListBox.SetPadding(16, 36, 16, 160);
         ListBox.SetItems(Items.Select(i => new ListItem(i)).ToList());
 
-        NameBox = new TextBox(this);
-        NameBox.SetHDocked(true);
-        NameBox.SetBottomDocked(true);
-        NameBox.SetHeight(27);
-        NameBox.SetPadding(16, 0, 16, 124);
-        NameBox.SetDeselectOnEnterPressed(false);
-        NameBox.OnEnterPressed += _ =>
+        if (NumericAndOrdered)
         {
-            AddButton.OnClicked.Invoke(new BaseEventArgs());
-            NameBox.SetText("");
-        };
+            NumberBox = new NumericBox(this);
+            NumberBox.SetHDocked(true);
+            NumberBox.SetBottomDocked(true);
+            NumberBox.SetHeight(30);
+            NumberBox.SetPadding(16, 0, 16, 126);
+            NumberBox.OnEnterPressed += _ =>
+            {
+                AddButton.OnClicked.Invoke(new BaseEventArgs());
+                NumberBox.SetValue(0);
+            };
+            ListBox.SetPadding(ListBox.Padding.Left, ListBox.Padding.Up, ListBox.Padding.Right, ListBox.Padding.Down + 4);
+        }
+        else
+        {
+            NameBox = new TextBox(this);
+            NameBox.SetHDocked(true);
+            NameBox.SetBottomDocked(true);
+            NameBox.SetHeight(27);
+            NameBox.SetPadding(16, 0, 16, 124);
+            NameBox.SetDeselectOnEnterPressed(false);
+            NameBox.OnEnterPressed += _ =>
+            {
+                AddButton.OnClicked.Invoke(new BaseEventArgs());
+                NameBox.SetText("");
+            };
+        }
 
         AddButton = new Button(this);
         AddButton.SetHDocked(true);
@@ -46,8 +64,18 @@ public class GenericListWindow : PopupWindow
         AddButton.OnClicked += _ =>
         {
             int Idx = ListBox.SelectedIndex;
-            if (Idx >= 0) ListBox.Items.Insert(Idx, new ListItem(NameBox.Text));
-            else ListBox.Items.Add(new ListItem(NameBox.Text));
+            ListItem Item = new ListItem(NumericAndOrdered ? NumberBox.Value.ToString() : NameBox.Text);
+            if (NumericAndOrdered)
+            {
+                ListBox.Items.Add(Item);
+                ListBox.Items.Sort((ListItem a, ListItem B) => Convert.ToInt32(a.Name).CompareTo(Convert.ToInt32(B.Name)));
+                Idx = ListBox.Items.IndexOf(Item);
+            }
+            else
+            {
+                if (Idx >= 0) ListBox.Items.Insert(Idx, Item);
+                else ListBox.Items.Add(Item);
+            }
             ListBox.SetItems(ListBox.Items);
             ListBox.SetSelectedIndex(Idx);
             DeleteButton.SetEnabled(true);

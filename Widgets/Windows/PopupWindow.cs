@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using amethyst.Animations;
+using System;
+using System.Collections.Generic;
 
 namespace RPGStudioMK.Widgets;
 
@@ -11,6 +13,8 @@ public class PopupWindow : Widget, IPopupWindow
     public List<Button> Buttons = new List<Button>();
 
     public int WindowEdges = 7;
+
+    bool HasAnimated = false;
 
     public PopupWindow() : base(((UIWindow) Graphics.Windows[0]).UI)
     {
@@ -29,15 +33,32 @@ public class PopupWindow : Widget, IPopupWindow
         Editor.CanUndo = false;
     }
 
-    public void CreateButton(string Text, BaseEvent OnClicked)
+    public override void Update()
+    {
+        if (!HasAnimated)
+        {
+            // Do this in the update method rather than the constructor, because some window constructors
+            StartAnimation(new LinearAnimation("zoom_in", 60, x =>
+            {
+                SetGlobalZoom((byte) Math.Round(255 * x));
+                SetGlobalZoom((float) x);
+                Center();
+            }));
+            HasAnimated = true;
+        }
+        base.Update();
+    }
+
+    public Button CreateButton(string Text, BaseEvent? OnClicked = null)
     {
         Button b = new Button(this);
         int x = Buttons.Count > 0 ? Buttons[Buttons.Count - 1].Position.X - b.Size.Width : Size.Width - b.Size.Width - 4;
         int y = Size.Height - b.Size.Height - 4;
         b.SetPosition(x - WindowEdges, y - WindowEdges);
         b.SetText(Text);
-        b.OnClicked = OnClicked;
+        if (OnClicked != null) b.OnClicked = OnClicked;
         Buttons.Add(b);
+        return b;
     }
 
     public void MakePriorityWindow()
@@ -89,7 +110,10 @@ public class PopupWindow : Widget, IPopupWindow
     {
         int width = Window.Width;
         int height = Window.Height;
-        this.SetPosition(width / 2 - (this.Size.Width) / 2, height / 2 - (this.Size.Height) / 2);
+        this.SetPosition(
+            (int) Math.Round(width / 2 - (this.Size.Width * Viewport.ZoomX) / 2),
+            (int) Math.Round(height / 2 - (this.Size.Height * Viewport.ZoomY) / 2)
+        );
     }
 
     public void SetTitle(string Title)
