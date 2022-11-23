@@ -13,6 +13,7 @@ public static class Data
 {
     public static string ProjectPath;
     public static string ProjectFilePath;
+    public static string ProjectRMXPGamePath;
     public static string DataPath;
 
     public static Dictionary<int, Map> Maps = new Dictionary<int, Map>();
@@ -33,6 +34,7 @@ public static class Data
     {
         ProjectPath = null;
         ProjectFilePath = null;
+        ProjectRMXPGamePath = null;
         DataPath = null;
         Maps.Clear();
         Tilesets.Clear();
@@ -88,7 +90,7 @@ public static class Data
         Data.ProjectPath = path;
         Data.DataPath = path + "/Data";
         Data.ProjectFilePath = path + "/project.mkproj";
-        Editor.ProjectFilePath = Data.ProjectFilePath;
+        Data.ProjectRMXPGamePath = path + "/Game.rxproj";
     }
 
     public static void AbortLoad()

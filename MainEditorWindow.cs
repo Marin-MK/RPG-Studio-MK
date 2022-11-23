@@ -304,4 +304,14 @@ public partial class MainEditorWindow : UIWindow
             }
         };
     }
+
+    public void DangerousAction(string Message, Action Function)
+    {
+        DangerousMessageBox mbox = new DangerousMessageBox("Warning!", Message);
+        mbox.OnClosed += _ =>
+        {
+            if (!mbox.Yes) return;
+            Function();
+        };
+    }
 }

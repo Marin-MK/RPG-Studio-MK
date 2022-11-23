@@ -32,12 +32,7 @@ public static class Editor
     /// <summary>
     /// Whether the user is currently has a project open.
     /// </summary>
-    public static bool InProject { get { return !string.IsNullOrEmpty(ProjectFilePath); } }
-
-    /// <summary>
-    /// The path to the current project's project file.
-    /// </summary>
-    public static string ProjectFilePath;
+    public static bool InProject { get { return !string.IsNullOrEmpty(Data.ProjectFilePath); } }
 
     /// <summary>
     /// Settings specific to the currently opened project.
@@ -91,7 +86,22 @@ public static class Editor
     {
         if (Program.ReleaseMode) return;
 
-        Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
+        PopupWindow win = new PopupWindow();
+        win.SetSize(400, 400);
+        win.Center();
+
+        Button btn = new Button(win);
+        btn.SetPosition(200 - btn.Size.Width / 2, 200 - btn.Size.Height / 2);
+        btn.SetText("Zoom");
+
+        win.StartAnimation(new LinearAnimation("zoom_in", 50, x =>
+        {
+            win.SetGlobalZoom((byte) Math.Round(255 * x));
+            win.SetGlobalZoom((float) x);
+            win.Center();
+        }));
+
+        //Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
 
         //Map Map = MainWindow.MapWidget?.Map;
         //if (Map == null) return;
@@ -457,6 +467,22 @@ public static class Editor
                 CreateNewProject(window.Name, window.Kit, window.Folder);
             }
         };
+    }
+
+    public static void DeleteProject()
+    {
+        string ProjectPath = Data.ProjectPath;
+        string ProjectRMXPGamePath = Data.ProjectRMXPGamePath;
+        GeneralSettings.RecentFiles.RemoveAll(rf => rf[1] == ProjectRMXPGamePath);
+        CloseProject();
+        try
+        {
+            Directory.Delete(ProjectPath, true);
+        }
+        catch (Exception ex)
+        {
+            new MessageBox("Error", $"Something went wrong while trying to delete the project.\n\n{ex.Message}\n{ex.StackTrace}", ButtonType.OK, IconType.Error);
+        }
     }
 
     public static void CreateNewProject(string ProjectName, (string Name, string Download) Kit, string Folder)
@@ -903,7 +929,6 @@ public static class Editor
     /// </summary>
     public static void ClearProjectData()
     {
-        ProjectFilePath = null;
         ProjectSettings = null;
         UndoList.Clear();
         RedoList.Clear();
