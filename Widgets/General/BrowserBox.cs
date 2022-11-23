@@ -4,9 +4,10 @@ namespace RPGStudioMK.Widgets;
 
 public class BrowserBox : Widget
 {
-    public string Text { get { return TextArea.Text; } }
-    public Color TextColor { get { return TextArea.TextColor; } }
-    public bool ReadOnly { get { return TextArea.ReadOnly; } }
+    public string Text => TextArea.Text;
+    public Font Font => TextArea.Font;
+    public Color TextColor => TextArea.TextColor;
+    public bool ReadOnly => TextArea.ReadOnly;
     public bool Enabled { get; protected set; } = true;
 
     public TextArea TextArea;
@@ -26,6 +27,7 @@ public class BrowserBox : Widget
         TextArea.SetZIndex(1);
         TextArea.SetReadOnly(true);
         MinimumSize.Height = MaximumSize.Height = 25;
+        SetFont(Fonts.Paragraph);
     }
 
     public override void SizeChanged(BaseEventArgs e)
@@ -97,8 +99,6 @@ public class BrowserBox : Widget
         Sprites["bg"].Bitmap.SetPixel(x + 8, y + 5, ArrowColor);
 
         Sprites["bg"].Bitmap.Lock();
-        Color TextColor = this.Enabled ? Color.WHITE : new Color(147, 158, 169);
-        TextArea.SetTextColor(TextColor);
 
         base.Draw();
     }
