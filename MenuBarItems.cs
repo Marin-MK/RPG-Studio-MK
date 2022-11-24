@@ -38,7 +38,7 @@ public partial class MainEditorWindow
                 {
                     HelpText = "Deletes this project and all associated files.",
                     IsClickable = e => e.Value = Editor.InProject,
-                    OnClicked = _ => DangerousAction("You are about to delete your entire project, and every single file located in the project folder. This is irreverisble! " + 
+                    OnClicked = _ => DangerousAction("You are about to delete your entire project, and every single file located in the project folder. This is irreversible! " + 
                                                      "Are you sure you want to continue?\n\nHold the \"Yes\" button for 5 seconds to confirm your choice.",
                                             () => Editor.DeleteProject())
                 },

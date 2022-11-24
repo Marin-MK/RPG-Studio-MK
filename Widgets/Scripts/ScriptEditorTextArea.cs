@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 
 // TODO:
 // - Run tokenizer on separate thread on startup
@@ -17,7 +18,6 @@ public class ScriptEditorTextArea : MultilineTextArea
     public int LineTextWidth { get; protected set; } = 40;
     public int TextXOffset { get; protected set; } = 42;
 
-    protected List<Token> Tokens;
     protected List<List<Token>> LineTokens = new List<List<Token>>();
     protected List<List<(int, Color)>> LineColors = new List<List<(int, Color)>>();
     protected int OldScrolledY;
@@ -164,6 +164,17 @@ public class ScriptEditorTextArea : MultilineTextArea
         AddTokenToLine(null, line);
     }
 
+    protected void ShiftTokens(int StartIndex, int Offset)
+    {
+        foreach (List<Token> Line in LineTokens)
+        {
+            foreach (Token Token in Line)
+            {
+                if (Token.Index >= StartIndex) Token.Index += Offset;
+            }
+        }
+    }
+
     public void TokenizeUntokenizedLines(bool RedrawLines = true)
     {
         List<int> RedrawableLines = new List<int>();
@@ -214,7 +225,7 @@ public class ScriptEditorTextArea : MultilineTextArea
             "end" or "rescue" or "ensure" or "return" or "next" or "break" or "yield" or
             "alias" or "elsif" or "case" or "when" or "module" or "not" or "and" or "or"
             or "redo" or "retry" or "for" or "undef" or "unless" or "super" or "then" or
-            "while" or "defined?" or "self" or "raise" or "do" => new Color(128, 128, 255),
+            "while" or "until" or "defined?" or "self" or "raise" or "do" => new Color(128, 128, 255),
             "assignment" or "symbol" or "empty_method" or "parenthesis_open" or "parenthesis_close" or
             "logical_operator" or "bitwise_operator" or "relational_operator" or "arithmetic_operator" or
             "range" or "object_access" or "line_end" or "ternary_operator" or "array_initialization" or
@@ -276,6 +287,152 @@ public class ScriptEditorTextArea : MultilineTextArea
         }*/
         TokenizeUntokenizedLines(false);
         RedrawText();
+    }
+
+    (string Indentation, bool SmartSplit) GetIndentation()
+    {
+        int Count = 0;
+        int LineIndex = 0;
+        Token? NextToken = null;
+        bool OpenedAccessThisLine = false;
+        bool ClosedAccessThisLine = false;
+        bool InRegex = false;
+        foreach (List<Token> Line in LineTokens)
+        {
+            OpenedAccessThisLine = false;
+            ClosedAccessThisLine = false;
+            int TokenIndex = 0;
+            if (NextToken != null) break;
+            foreach (Token Token in Line)
+            {
+                if (LineIndex > Caret.Line.LineIndex || Token.Index >= Caret.Index)
+                {
+                    NextToken = Token;
+                    break;
+                }
+                if (Token.Type == "if" || Token.Type == "rescue" || Token.Type == "unless")
+                {
+                    if (TokenIndex != 0)
+                    {
+                        // Line does not start with an if/rescue/unless.
+                        // This may mean it is an inline statement, in which case we don't increase the indentation count,
+                        // or it could mean it's simply one very long line, in which case we handle it as usual.
+                        // So to detect if this is an inline statement, we need to determine if there is an expression or method call preceding
+                        // this token. If we find a semi-colon, we know it's not an inline statement, because then it's just some code all on one line.
+                        Token PriorToken = Line[TokenIndex - 1];
+                        // In these cases: "do if", "; if", "{ if", we know that this can't be an inline statement, so the count must be increased.
+                        // If none of these cases apply, we have an inline statement, and we should decrease the count to counteract the increment below.
+                        if (!(PriorToken.Type == "do" || PriorToken.Type == "line_end" || PriorToken.Type == "block" && PriorToken.Value == "{"))
+                        {
+                            // rescue does not increase the count because begin does that, so only decrease the count if the token is not an inline rescue.
+                            if (Token.Type != "rescue") Count--;
+                        }
+                    }
+                }
+                /*  "comment" => new Color(96, 160, 96),
+                    "number" or "hex" or "regex" or "string" => new Color(255, 128, 128),
+                    "class" or "def" or "if" or "true" or "false" or "else" or "end" or "begin" or
+                    "end" or "rescue" or "ensure" or "return" or "next" or "break" or "yield" or
+                    "alias" or "elsif" or "case" or "when" or "module" or "not" or "and" or "or"
+                    or "redo" or "retry" or "for" or "undef" or "unless" or "super" or "then" or
+                    "while" or "defined?" or "self" or "raise" or "do" => new Color(128, 128, 255),
+                    "assignment" or "symbol" or "empty_method" or "parenthesis_open" or "parenthesis_close" or
+                    "logical_operator" or "bitwise_operator" or "relational_operator" or "arithmetic_operator" or
+                    "range" or "object_access" or "line_end" or "ternary_operator" or "array_initialization" or
+                    "hash_initialization" or "array_access" or "block" or "argument_list" => new Color(96, 192, 192),
+                    "class_definition" or "module_definition" or "constant" or "instance_variable" or
+                    "class_variable" or "global_variable" => new Color(192, 192, 96),*/
+                if (Token.Type == "class" || Token.Type == "module" || Token.Type == "def" || Token.Type == "if" || Token.Type == "do" || Token.Type == "unless" ||
+                    Token.Type == "begin" || Token.Type == "for" || Token.Type == "while" || Token.Type == "until" || Token.Type == "case" ||
+                    !OpenedAccessThisLine && (Token.Type == "block" && Token.Value == "{" || Token.Type == "array_access" && Token.Value == "["))
+                {
+                    Count++;
+                }
+                else if (Token.Type == "end" || !ClosedAccessThisLine && (Token.Type == "block" && Token.Value == "}" || Token.Type == "array_access" && Token.Value == "]"))
+                {
+                    Count--;
+                }
+                if (Token.Type == "block" && Token.Value == "{" || Token.Type == "array_access" && Token.Value == "[")
+                {
+                    OpenedAccessThisLine = true;
+                    ClosedAccessThisLine = false;
+                }
+                if (Token.Type == "block" && Token.Value == "}" || Token.Type == "array_access" && Token.Value == "]")
+                {
+                    ClosedAccessThisLine = true;
+                    OpenedAccessThisLine = false;
+                }
+                TokenIndex++;
+            }
+            // Since we haven't found an end on the same line as a do, we reset the doline variable and treat the next end as a regular end.
+            LineIndex++;
+        }
+        bool SmartSplit = false;
+        if (NextToken != null && Caret.Line.StartIndex <= NextToken.Index && NextToken.Index < Caret.Line.EndIndex) // We are on the same line as the next token
+        {
+            if (NextToken.Type == "else" || NextToken.Type == "when" || NextToken.Type == "rescue" || NextToken.Type == "retry" || NextToken.Type == "elsif") SmartSplit = true;
+        }
+        string str = "";
+        if (SmartSplit) Count--;
+        for (int i = 0; i < Count; i++) str += "  ";
+        return (str, SmartSplit);
+    }
+
+    public override void TextInput(TextEventArgs e)
+    {
+        string text = this.Text;
+        if (!string.IsNullOrEmpty(e.Text))
+        {
+            if (e.Text == "\n" && Input.Press(Keycode.CTRL)) return;
+            string NewText = e.Text;
+            if (e.Text == "\n")
+            {
+                int linestart = 0;
+                foreach (char c in Caret.Line.Text)
+                {
+                    if (c == '\n' && linestart != Caret.Line.Text.Length - 1 || c == ' ') linestart++;
+                    else break;
+                }
+                (string indentation, bool SmartSplit) = GetIndentation();
+                int cdiff = Math.Min(indentation.Length, linestart - Caret.IndexInLine);
+                NewText = "";
+                if (SmartSplit) NewText += "  ";
+                if (cdiff <= 0)
+                {
+                    NewText += e.Text + indentation;
+                }
+                else
+                {
+                    if (cdiff > 0) NewText += indentation.Substring(0, cdiff);
+                    NewText += e.Text;
+                    if (indentation.Length - cdiff > 0) NewText += indentation.Substring(0, indentation.Length - cdiff);
+                }
+            }
+            InsertText(Caret.Index, NewText);
+        }
+        else if (e.Backspace || e.Delete)
+        {
+            if (HasSelection) DeleteSelection();
+            else
+            {
+                if (e.Delete)
+                {
+                    if (Caret.Index < this.Text.Length)
+                    {
+                        int Count = 1;
+                        if (Input.Press(Keycode.CTRL)) Count = TextArea.FindNextCtrlIndex(this.Text, this.Caret.Index, false) - Caret.Index;
+                        RemoveText(this.Caret.Index, Count);
+                    }
+                }
+                else
+                {
+                    int Count = 1;
+                    if (Input.Press(Keycode.CTRL)) Count = Caret.Index - TextArea.FindNextCtrlIndex(this.Text, this.Caret.Index, true);
+                    RemoveText(this.Caret.Index - Count, Count);
+                }
+            }
+        }
+        if (this.Text != text) OnTextChanged?.Invoke(new BaseEventArgs());
     }
 
     protected List<Token> GetTokens(Line Line)
@@ -533,7 +690,7 @@ public class ScriptEditorTextArea : MultilineTextArea
     protected void RedrawLine(int LineIndex)
     {
         DisposeLineSprite(LineIndex);
-        CreateLineSprite(Lines[LineIndex]);
+        if (LineIndex < Lines.Count) CreateLineSprite(Lines[LineIndex]);
     }
 
     protected void AdjustLinesForScroll(bool Now = false)
@@ -593,6 +750,7 @@ public class ScriptEditorTextArea : MultilineTextArea
 
     protected override void UpdateCaretPosition(bool ResetScroll)
     {
+        Console.WriteLine(Caret.Index);
         Sprites["caret"].X = TextXOffset + Caret.Line.WidthUpTo(Caret.IndexInLine);
         Sprites["caret"].Y = Caret.Line.LineIndex * LineHeight + Caret.Line.LineIndex * LineMargins - Parent.ScrolledY;
         if (ResetScroll) RequireCaretRepositioning = true;
@@ -638,10 +796,13 @@ public class ScriptEditorTextArea : MultilineTextArea
         bool InsertedNewlines = Text.Contains('\n');
         int IndexOfLine = Caret.IndexInLine;
         int LineIndex = Caret.Line.LineIndex;
+        int StartIndex = Caret.Index;
         this.Text = this.Text.Insert(Index, Text);
         if (Index <= Caret.Index) Caret.Index += Text.Length;
         if (Text == "\n") Caret.AtEndOfLine = false;
+        int EndIndex = Caret.Index;
         ResetIdle();
+        ShiftTokens(StartIndex, EndIndex - StartIndex);
         if (!InsertedNewlines)
         {
             // Inserted a character on this line (or pasted text without any newlines)
@@ -706,6 +867,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         Count = Math.Min(Text.Length - Index, Count);
         if (Count < 1) return;
         SetPreviousViewState();
+        int StartIndex = Caret.Index;
         Text = Text.Remove(Index, Count);
         bool DeletedNewline = Index < Caret.Line.StartIndex || Index + Count > Caret.Line.EndIndex;
         int IndexInLine = Index - Lines[Caret.Line.LineIndex].StartIndex;
@@ -718,6 +880,8 @@ public class ScriptEditorTextArea : MultilineTextArea
         bool CaretOnRight = Caret.Index >= Index;
         if (Index <= Caret.Index) Caret.Index = Math.Max(Index, Caret.Index - Count);
         Caret.AtEndOfLine = !Caret.Line.EndsInNewline && Caret.Index == Caret.Line.EndIndex + 1;
+        int EndIndex = Caret.Index;
+        ShiftTokens(StartIndex, -Count);
         ResetIdle();
         if (!DeletedNewline)
         {
@@ -905,7 +1069,6 @@ public class ScriptEditorTextArea : MultilineTextArea
         public ScriptEditorState(ScriptEditorTextArea TextArea) : base (TextArea)
         {
             this.Lines = CloneLineList(TextArea.Lines);
-            this.Tokens = CloneTokenList(TextArea.Tokens);
             this.LineTokens = CloneLineTokenList(TextArea.LineTokens);
             this.LineColors = CloneLineColorList(TextArea.LineColors);
         }
@@ -942,11 +1105,10 @@ public class ScriptEditorTextArea : MultilineTextArea
             // Note that this will redraw every line if newlines were involved!
             for (int i = TextArea.TopLineIndex; i <= TextArea.BottomLineIndex; i++)
             {
-                if (TextArea.Lines[i].Text != Lines[i].Text) ChangedLines.Add(i);
+                if (TextArea.Lines.Count != Lines.Count || TextArea.Lines[i].Text != Lines[i].Text) ChangedLines.Add(i);
             }
             this.TextArea.Text = this.Text;
             this.TextArea.Lines = CloneLineList(this.Lines);
-            this.TextArea.Tokens = CloneTokenList(this.Tokens);
             this.TextArea.LineTokens = CloneLineTokenList(this.LineTokens);
             this.TextArea.LineColors = CloneLineColorList(this.LineColors);
             this.TextArea.AdjustLinesForScroll();
