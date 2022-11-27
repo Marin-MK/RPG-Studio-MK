@@ -97,7 +97,8 @@ public class EditEventWindow : PopupWindow
         // Dummy VScrollBar for scrolling functionality, remains invisible
         VScrollBar vs = new VScrollBar(this);
         vs.KeepInvisible = true;
-        vs.MinScrollStep = vs.ScrollStep = 26 / 3f;
+        vs.SetScrollStep(26 / 3f);
+        vs.SetMinScrollStep(vs.ScrollStep);
 
         EPLContainer.VAutoScroll = true;
         EPLContainer.SetVScrollBar(vs);

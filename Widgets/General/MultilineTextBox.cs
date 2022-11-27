@@ -51,8 +51,8 @@ public class MultilineTextBox : Widget
 
     private void UpdateScrollBar()
     {
-        ScrollContainer.VScrollBar.MinScrollStep = TextArea.LineHeight + TextArea.LineMargins;
-        ScrollContainer.VScrollBar.ScrollStep = (float) ScrollContainer.VScrollBar.MinScrollStep / 3f;
+        ScrollContainer.VScrollBar.SetMinScrollStep(TextArea.LineHeight + TextArea.LineMargins);
+        ScrollContainer.VScrollBar.SetScrollStep((float) ScrollContainer.VScrollBar.MinScrollStep / 3f);
     }
 
     public void SetText(string Text, bool SetCaretToEnd = false)

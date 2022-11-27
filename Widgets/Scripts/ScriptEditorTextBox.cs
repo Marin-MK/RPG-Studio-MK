@@ -68,6 +68,7 @@ public class ScriptEditorTextBox : Widget
         TextArea.Update();
 
         SetLineWrapping(false);
+        UpdateScrollBar();
     }
 
     public void UpdateSize()
@@ -77,8 +78,7 @@ public class ScriptEditorTextBox : Widget
 
     private void UpdateScrollBar()
     {
-        //ScrollContainer.VScrollBar.MinScrollStep = (TextArea.LineHeight + TextArea.LineMargins) / 1f;
-        //ScrollContainer.VScrollBar.ScrollStep = (float) ScrollContainer.VScrollBar.MinScrollStep / 3f;
+        ScrollContainer.VScrollBar.SetScrollStep(TextArea.LineHeight + TextArea.LineMargins);
     }
 
     public void SetText(string Text, bool SetCaretToEnd = false)

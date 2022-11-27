@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 
 // TODO:
 // - Run tokenizer on separate thread on startup
@@ -115,45 +114,14 @@ public class ScriptEditorTextArea : MultilineTextArea
 
     protected void RetokenizeLine(int LineIndex)
     {
-        int sidx = -1;
         // If there exists an entry (a list of tokens) for the current line, then we remove those tokens
         if (LineIndex < LineTokens.Count && LineTokens[LineIndex] != null)
         {
-            //foreach (Token lineToken in LineTokens[LineIndex])
-            //{
-            //    if (sidx == -1)
-            //    {
-            //        sidx = Tokens.IndexOf(lineToken);
-            //    }
-            //    Tokens.Remove(lineToken);
-            //}
             LineTokens[LineIndex].Clear();
             LineColors[LineIndex].Clear();
         }
-        //if (sidx == -1)
-        //{
-        //    // This line initially didn't have any tokens, so we don't know where to insert
-        //    // our tokens in the global token list.
-        //    // So instead, start one line above us, and find the last token on that line
-        //    // We go upwards until we find a token, and then we start inserting right after
-        //    // that token.
-        //    // If we don't find any, that means we start at 0.
-        //    // This is inefficient, but the odds of a line already having a token
-        //    // are very high, and the odds that the line above has at least one token is even higher, and so forth.
-        //    Token LastToken = null;
-        //    for (int i = LineIndex - 1; i >= 0; i--)
-        //    {
-        //        if (LineTokens[i].Count > 0)
-        //        {
-        //            LastToken = LineTokens[i].Last();
-        //            break;
-        //        }
-        //    }
-        //    sidx = LastToken == null ? 0 : Tokens.IndexOf(LastToken) + 1;
-        //}
         Line line = Lines[LineIndex];
         List<Token> NewLineTokens = Tokenizer.Tokenize(line.Text);
-        //Tokens.InsertRange(sidx, NewLineTokens);
         for (int i = 0; i < NewLineTokens.Count; i++)
         {
             Token t = NewLineTokens[i];
@@ -218,21 +186,15 @@ public class ScriptEditorTextArea : MultilineTextArea
         int pos = Token.Index - Line.StartIndex;
         Color c = Token.Type switch
         {
-            // class_definition, module_definition, constant, instance_variable, class_variable, global_variable
             "comment" => new Color(96, 160, 96),
             "number" or "hex" or "regex" or "string" => new Color(255, 128, 128),
-            "class" or "def" or "if" or "true" or "false" or "else" or "end" or "begin" or
-            "end" or "rescue" or "ensure" or "return" or "next" or "break" or "yield" or
-            "alias" or "elsif" or "case" or "when" or "module" or "not" or "and" or "or"
-            or "redo" or "retry" or "for" or "undef" or "unless" or "super" or "then" or
-            "while" or "until" or "defined?" or "self" or "raise" or "do" => new Color(128, 128, 255),
             "assignment" or "symbol" or "empty_method" or "parenthesis_open" or "parenthesis_close" or
             "logical_operator" or "bitwise_operator" or "relational_operator" or "arithmetic_operator" or
             "range" or "object_access" or "line_end" or "ternary_operator" or "array_initialization" or
-            "hash_initialization" or "array_access" or "block" or "argument_list" => new Color(96, 192, 192),
+            "hash_initialization" or "array_access" or "block" or "argument_list" or "constant_access" => new Color(96, 192, 192),
             "class_definition" or "module_definition" or "constant" or "instance_variable" or
             "class_variable" or "global_variable" => new Color(192, 192, 96),
-            _ => TextColor
+            _ => Token.IsKeyword ? new Color(128, 128, 255) : TextColor
         };
         if (LineColors[Line.LineIndex].Count == 0 || !LineColors[Line.LineIndex].Last().Item2.Equals(c))
         {
@@ -259,123 +221,96 @@ public class ScriptEditorTextArea : MultilineTextArea
          * in the text; we don't retokenize the entire script, only the affected lines.
          * That means we cannot have multi-line tokens, but those are only relevant for multi-line strings and comments
          * and the like, which are rather uncommon in Ruby.
-         * If these are strictly necessary, workarounds can be created to work with these. I don't think it's worth the effort though.
-        Tokens = Tokenizer.Tokenize(this.Text);
-        int LastLine = 0;
-        for (int i = 0; i < Lines.Count; i++)
-        {
-            LineTokens.Add(new List<Token>());
-            LineColors.Add(new List<(int, Color)>());
-        }
-        for (int i = 0; i < Tokens.Count; i++)
-        {
-            Token token = Tokens[i];
-            Line Line = null;
-            for (int j = LastLine; j < Lines.Count; j++)
-            {
-                if (token.Index < Lines[j].EndIndex)
-                {
-                    Line = Lines[j];
-                    break;
-                }
-            }
-            // No line was found for this token, meaning this token somehow likely has a bigger index than the full text length.
-            // Unsure why this happens, but skip it just to be safe.
-            if (Line == null) continue;
-            AddTokenToLine(token, Line);
-            LastLine = Line.LineIndex;
-        }*/
+         * If these are strictly necessary, workarounds can be created to work with these. I don't think it's worth the effort though.*/
         TokenizeUntokenizedLines(false);
         RedrawText();
     }
 
-    (string Indentation, bool SmartSplit) GetIndentation()
+    (int Indentation, bool IsBlank) GetLineIndentation(int LineIndex)
+    {
+        if (LineIndex < 0) throw new Exception("Line Index is less than 0.");
+        if (LineIndex >= Lines.Count) throw new Exception("Line Index is more than the number of lines.");
+        int Count = Lines[LineIndex].Text.Length - 1;
+        bool IsBlank = true;
+        for (int i = 0; i < Lines[LineIndex].Text.Length; i++)
+        {
+            char c = Lines[LineIndex].Text[i];
+            if (c != ' ' && c != '\n')
+            {
+                Count = i;
+                IsBlank = false;
+                break;
+            }
+        }
+        return (Count, IsBlank);
+    }
+
+    (string Indentation, int SplitIndex) GetIndentation()
     {
         int Count = 0;
-        int LineIndex = 0;
-        Token? NextToken = null;
-        bool OpenedAccessThisLine = false;
-        bool ClosedAccessThisLine = false;
-        bool InRegex = false;
-        foreach (List<Token> Line in LineTokens)
+        if (Caret.Line.LineIndex > 0)
         {
-            OpenedAccessThisLine = false;
-            ClosedAccessThisLine = false;
-            int TokenIndex = 0;
-            if (NextToken != null) break;
-            foreach (Token Token in Line)
+            int LineIndex = Caret.Line.LineIndex;
+            while (LineIndex >= 0)
             {
-                if (LineIndex > Caret.Line.LineIndex || Token.Index >= Caret.Index)
+                (int Indt, bool IsBlank) = GetLineIndentation(LineIndex);
+                if (!IsBlank)
                 {
-                    NextToken = Token;
+                    Count = Indt;
                     break;
                 }
-                if (Token.Type == "if" || Token.Type == "rescue" || Token.Type == "unless")
-                {
-                    if (TokenIndex != 0)
-                    {
-                        // Line does not start with an if/rescue/unless.
-                        // This may mean it is an inline statement, in which case we don't increase the indentation count,
-                        // or it could mean it's simply one very long line, in which case we handle it as usual.
-                        // So to detect if this is an inline statement, we need to determine if there is an expression or method call preceding
-                        // this token. If we find a semi-colon, we know it's not an inline statement, because then it's just some code all on one line.
-                        Token PriorToken = Line[TokenIndex - 1];
-                        // In these cases: "do if", "; if", "{ if", we know that this can't be an inline statement, so the count must be increased.
-                        // If none of these cases apply, we have an inline statement, and we should decrease the count to counteract the increment below.
-                        if (!(PriorToken.Type == "do" || PriorToken.Type == "line_end" || PriorToken.Type == "block" && PriorToken.Value == "{"))
-                        {
-                            // rescue does not increase the count because begin does that, so only decrease the count if the token is not an inline rescue.
-                            if (Token.Type != "rescue") Count--;
-                        }
-                    }
-                }
-                /*  "comment" => new Color(96, 160, 96),
-                    "number" or "hex" or "regex" or "string" => new Color(255, 128, 128),
-                    "class" or "def" or "if" or "true" or "false" or "else" or "end" or "begin" or
-                    "end" or "rescue" or "ensure" or "return" or "next" or "break" or "yield" or
-                    "alias" or "elsif" or "case" or "when" or "module" or "not" or "and" or "or"
-                    or "redo" or "retry" or "for" or "undef" or "unless" or "super" or "then" or
-                    "while" or "defined?" or "self" or "raise" or "do" => new Color(128, 128, 255),
-                    "assignment" or "symbol" or "empty_method" or "parenthesis_open" or "parenthesis_close" or
-                    "logical_operator" or "bitwise_operator" or "relational_operator" or "arithmetic_operator" or
-                    "range" or "object_access" or "line_end" or "ternary_operator" or "array_initialization" or
-                    "hash_initialization" or "array_access" or "block" or "argument_list" => new Color(96, 192, 192),
-                    "class_definition" or "module_definition" or "constant" or "instance_variable" or
-                    "class_variable" or "global_variable" => new Color(192, 192, 96),*/
-                if (Token.Type == "class" || Token.Type == "module" || Token.Type == "def" || Token.Type == "if" || Token.Type == "do" || Token.Type == "unless" ||
-                    Token.Type == "begin" || Token.Type == "for" || Token.Type == "while" || Token.Type == "until" || Token.Type == "case" ||
-                    !OpenedAccessThisLine && (Token.Type == "block" && Token.Value == "{" || Token.Type == "array_access" && Token.Value == "["))
-                {
-                    Count++;
-                }
-                else if (Token.Type == "end" || !ClosedAccessThisLine && (Token.Type == "block" && Token.Value == "}" || Token.Type == "array_access" && Token.Value == "]"))
-                {
-                    Count--;
-                }
-                if (Token.Type == "block" && Token.Value == "{" || Token.Type == "array_access" && Token.Value == "[")
-                {
-                    OpenedAccessThisLine = true;
-                    ClosedAccessThisLine = false;
-                }
-                if (Token.Type == "block" && Token.Value == "}" || Token.Type == "array_access" && Token.Value == "]")
-                {
-                    ClosedAccessThisLine = true;
-                    OpenedAccessThisLine = false;
-                }
-                TokenIndex++;
+                LineIndex--;
             }
-            // Since we haven't found an end on the same line as a do, we reset the doline variable and treat the next end as a regular end.
-            LineIndex++;
         }
-        bool SmartSplit = false;
-        if (NextToken != null && Caret.Line.StartIndex <= NextToken.Index && NextToken.Index < Caret.Line.EndIndex) // We are on the same line as the next token
+        int OriginalCount = Count;
+        List<Token> Line = LineTokens[Caret.Line.LineIndex].FindAll(t => t.Index + t.Length <= Caret.Index);
+        Token? FirstToken = Line.Count > 0 ? Line[0] : null;
+        Token? FirstKeyword = Line.Find(t => t.IsKeyword);
+        Token? LastToken = Line.Count > 0 ? Line[^1] : null;
+        Token? NextToken = Caret.Line.LineIndex < LineTokens.Count - 1 && LineTokens[Caret.Line.LineIndex + 1].Count > 0 ? LineTokens[Caret.Line.LineIndex + 1][0] : null;
+        if (Line.Any(t => t.Type == "class" || t.Type == "module" || t.Type == "def" || t.Type == "begin" || t.Type == "for" ||
+                     t.Type == "while" || t.Type == "until" || t.Type == "when" || t.Type == "else" || t.Type == "elsif" ||
+                     t.Type == "retry" || t.Type == "ensure"))
         {
-            if (NextToken.Type == "else" || NextToken.Type == "when" || NextToken.Type == "rescue" || NextToken.Type == "retry" || NextToken.Type == "elsif") SmartSplit = true;
+            Count += 2;
         }
+        else if (FirstToken != null && (FirstToken.Type == "if" || FirstToken.Type == "unless" || FirstToken.Type == "rescue"))
+        {
+            Count += 2;
+        }
+        else if (Line.Any(t => t.Type == "do") && !Line.Any(t => t.Type == "end"))
+        {
+            Count += 2;
+        }
+        // Now determine the split index of the indentation, i.e. if no characters exist on the left of our caret on this line,
+        // then the indentation will be split based on how many spaces are in between the line start and the caret to smoothly make it drop down a line while maintaining the same caret positioning on the x axis.
+        int SplitIndex = 0;
+        foreach (char c in Caret.Line.Text)
+        {
+            if (c == ' ') SplitIndex++;
+            else break;
+        }
+        if (SplitIndex > Count) Count = SplitIndex;
+        SplitIndex -= Caret.IndexInLine;
+        /*  "comment" => new Color(96, 160, 96),
+            "number" or "hex" or "regex" or "string" => new Color(255, 128, 128),
+            "class" or "def" or "if" or "true" or "false" or "else" or "end" or "begin" or
+            "end" or "rescue" or "ensure" or "return" or "next" or "break" or "yield" or
+            "alias" or "elsif" or "case" or "when" or "module" or "not" or "and" or "or"
+            or "redo" or "retry" or "for" or "undef" or "unless" or "super" or "then" or
+            "while" or "defined?" or "self" or "raise" or "do" => new Color(128, 128, 255),
+            "assignment" or "symbol" or "empty_method" or "parenthesis_open" or "parenthesis_close" or
+            "logical_operator" or "bitwise_operator" or "relational_operator" or "arithmetic_operator" or
+            "range" or "object_access" or "line_end" or "ternary_operator" or "array_initialization" or
+            "hash_initialization" or "array_access" or "block" or "argument_list" => new Color(96, 192, 192),
+            "class_definition" or "module_definition" or "constant" or "instance_variable" or
+            "class_variable" or "global_variable" => new Color(192, 192, 96),*/
+        //if (Token.Type == "class" || Token.Type == "module" || Token.Type == "def" || Token.Type == "if" || Token.Type == "do" || Token.Type == "unless" ||
+        //    Token.Type == "begin" || Token.Type == "for" || Token.Type == "while" || Token.Type == "until" || Token.Type == "case" ||
+        //    !OpenedAccessThisLine && (Token.Type == "block" && Token.Value == "{" || Token.Type == "array_access" && Token.Value == "["))
         string str = "";
-        if (SmartSplit) Count--;
-        for (int i = 0; i < Count; i++) str += "  ";
-        return (str, SmartSplit);
+        for (int i = 0; i < Count; i++) str += " ";
+        return (str, SplitIndex);
     }
 
     public override void TextInput(TextEventArgs e)
@@ -387,25 +322,17 @@ public class ScriptEditorTextArea : MultilineTextArea
             string NewText = e.Text;
             if (e.Text == "\n")
             {
-                int linestart = 0;
-                foreach (char c in Caret.Line.Text)
-                {
-                    if (c == '\n' && linestart != Caret.Line.Text.Length - 1 || c == ' ') linestart++;
-                    else break;
-                }
-                (string indentation, bool SmartSplit) = GetIndentation();
-                int cdiff = Math.Min(indentation.Length, linestart - Caret.IndexInLine);
+                (string Indentation, int SplitIndex) = GetIndentation();
                 NewText = "";
-                if (SmartSplit) NewText += "  ";
-                if (cdiff <= 0)
+                if (SplitIndex <= 0)
                 {
-                    NewText += e.Text + indentation;
+                    NewText += e.Text + Indentation;
                 }
                 else
                 {
-                    if (cdiff > 0) NewText += indentation.Substring(0, cdiff);
+                    if (SplitIndex > 0) NewText += Indentation.Substring(0, SplitIndex);
                     NewText += e.Text;
-                    if (indentation.Length - cdiff > 0) NewText += indentation.Substring(0, indentation.Length - cdiff);
+                    if (Indentation.Length - SplitIndex > 0) NewText += Indentation.Substring(0, Indentation.Length - SplitIndex);
                 }
             }
             InsertText(Caret.Index, NewText);
