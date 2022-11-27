@@ -7,6 +7,9 @@ using System.Linq;
 // - Insert to replace character (in base class, MultilineTextArea)
 // - Make Undo/Redo system of types insertion and addition and use the InsertText and RemoveText methods,
 //   that way only what needs to be redrawn/retokenized will ever be redrawn/retokenized
+// - Trigger Undo/Redo state recording every X seconds rather than every single character insertion/removal
+// - Record last index in line, and when moving up/down, set the caret index to max(last_index_in_line, index_otherwise).
+//   Moving left/right will reset last_index_in_line based on the index in the current line. Only works for monospace.
 
 namespace RPGStudioMK.Widgets;
 
@@ -22,6 +25,8 @@ public class ScriptEditorTextArea : MultilineTextArea
     protected int OldScrolledY;
     protected int OldLineCount;
     protected bool RequireScrollAdjustment = false;
+    protected int SelectedLineNumberOrigin = -1;
+    protected int LastLineNumber;
 
     protected new int BottomLineIndex => base.BottomLineIndex + 1;
 
@@ -984,12 +989,58 @@ public class ScriptEditorTextArea : MultilineTextArea
         RedoableStates.RemoveAt(RedoableStates.Count - 1);
     }
 
+    public override void LeftMouseDown(MouseEventArgs e)
+    {
+        base.LeftMouseDown(e);
+        int rx = e.X - Viewport.X;
+        int ry = e.Y - Viewport.Y + Parent.ScrolledY;
+        if (rx >= 0 && rx < LineTextWidth && Mouse.Inside)
+        {
+            // Clicked a line number; selected whole line
+            int linenum = ry / (LineHeight + LineMargins);
+            if (linenum >= Lines.Count || linenum < 0) return;
+            Line line = Lines[linenum];
+            SetSelection(line.StartIndex, line.Length + (line.EndsInNewline ? 0 : 1), true);
+            SelectedLineNumberOrigin = linenum;
+            LastLineNumber = linenum;
+        }
+    }
+
+    public override void MouseMoving(MouseEventArgs e)
+    {
+        base.MouseMoving(e);
+        if (!Mouse.LeftMousePressed || SelectedLineNumberOrigin == -1) return;
+        int ry = e.Y - Viewport.Y + Parent.ScrolledY;
+        // Clicked a line number; selected whole line
+        int linenum = ry / (LineHeight + LineMargins);
+        if (linenum >= Lines.Count || linenum < 0) return;
+        if (linenum == LastLineNumber && LastLineNumber != -1) return;
+        Line line = Lines[linenum];
+        Line Origin = Lines[SelectedLineNumberOrigin];
+        if (line.LineIndex < Origin.LineIndex)
+        {
+            SetSelection(line.StartIndex, Origin.StartIndex - line.StartIndex + Origin.Length + (Origin.EndsInNewline ? 0 : 1));
+        }
+        else if (line.LineIndex > Origin.LineIndex)
+        {
+            SetSelection(Origin.StartIndex, line.StartIndex - Origin.StartIndex + line.Length + (line.EndsInNewline ? 0 : 1));
+        }
+        else SetSelection(line.StartIndex, line.Length + (line.EndsInNewline ? 0 : 1));
+        LastLineNumber = linenum;
+    }
+
+    public override void LeftMouseUp(MouseEventArgs e)
+    {
+        base.LeftMouseUp(e);
+        SelectedLineNumberOrigin = -1;
+        LastLineNumber = -1;
+    }
+
     protected class ScriptEditorState : TextAreaState
     {
         protected new ScriptEditorTextArea TextArea => (ScriptEditorTextArea) base.TextArea;
 
         public List<Line> Lines;
-        public List<Token> Tokens;
         public List<List<Token>> LineTokens;
         public List<List<(int, Color)>> LineColors;
 
