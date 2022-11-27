@@ -202,7 +202,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         int pos = Token.Index - Line.StartIndex;
         Color c = Token.Type switch
         {
-            "comment" => new Color(96, 160, 96),
+            "comment" or "begin_multiline_comment" or "end_multiline_comment" => new Color(96, 160, 96),
             "number" or "hex" or "regex" or "string" => new Color(255, 128, 128),
             "assignment" or "symbol" or "empty_method" or "parenthesis_open" or "parenthesis_close" or
             "logical_operator" or "bitwise_operator" or "relational_operator" or "arithmetic_operator" or
@@ -308,22 +308,6 @@ public class ScriptEditorTextArea : MultilineTextArea
         }
         if (SplitIndex > Count) Count = SplitIndex;
         SplitIndex -= Caret.IndexInLine;
-        /*  "comment" => new Color(96, 160, 96),
-            "number" or "hex" or "regex" or "string" => new Color(255, 128, 128),
-            "class" or "def" or "if" or "true" or "false" or "else" or "end" or "begin" or
-            "end" or "rescue" or "ensure" or "return" or "next" or "break" or "yield" or
-            "alias" or "elsif" or "case" or "when" or "module" or "not" or "and" or "or"
-            or "redo" or "retry" or "for" or "undef" or "unless" or "super" or "then" or
-            "while" or "defined?" or "self" or "raise" or "do" => new Color(128, 128, 255),
-            "assignment" or "symbol" or "empty_method" or "parenthesis_open" or "parenthesis_close" or
-            "logical_operator" or "bitwise_operator" or "relational_operator" or "arithmetic_operator" or
-            "range" or "object_access" or "line_end" or "ternary_operator" or "array_initialization" or
-            "hash_initialization" or "array_access" or "block" or "argument_list" => new Color(96, 192, 192),
-            "class_definition" or "module_definition" or "constant" or "instance_variable" or
-            "class_variable" or "global_variable" => new Color(192, 192, 96),*/
-        //if (Token.Type == "class" || Token.Type == "module" || Token.Type == "def" || Token.Type == "if" || Token.Type == "do" || Token.Type == "unless" ||
-        //    Token.Type == "begin" || Token.Type == "for" || Token.Type == "while" || Token.Type == "until" || Token.Type == "case" ||
-        //    !OpenedAccessThisLine && (Token.Type == "block" && Token.Value == "{" || Token.Type == "array_access" && Token.Value == "["))
         string str = "";
         for (int i = 0; i < Count; i++) str += " ";
         return (str, SplitIndex);
