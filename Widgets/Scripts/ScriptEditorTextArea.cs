@@ -4,12 +4,9 @@ using System.Linq;
 
 // TODO:
 // - Run tokenizer on separate thread on startup
-// - Insert to replace character (in base class, MultilineTextArea)
 // - Make Undo/Redo system of types insertion and addition and use the InsertText and RemoveText methods,
 //   that way only what needs to be redrawn/retokenized will ever be redrawn/retokenized
 // - Trigger Undo/Redo state recording every X seconds rather than every single character insertion/removal
-// - Record last index in line, and when moving up/down, set the caret index to max(last_index_in_line, index_otherwise).
-//   Moving left/right will reset last_index_in_line based on the index in the current line. Only works for monospace.
 
 namespace RPGStudioMK.Widgets;
 
@@ -342,6 +339,26 @@ public class ScriptEditorTextArea : MultilineTextArea
                     if (SplitIndex > 0) NewText += Indentation.Substring(0, SplitIndex);
                     NewText += e.Text;
                     if (Indentation.Length - SplitIndex > 0) NewText += Indentation.Substring(0, Indentation.Length - SplitIndex);
+                }
+            }
+            if (e.Text != "\n" && InsertMode)
+            {
+                int DistanceToNewline = -1;
+                for (int i = Caret.Index; i < Text.Length; i++)
+                {
+                    if (Text[i] == '\n')
+                    {
+                        DistanceToNewline = i - Caret.Index;
+                        break;
+                    }
+                }
+                if (DistanceToNewline > 0)
+                {
+                    RemoveText(Caret.Index, Math.Min(DistanceToNewline, NewText.Length));
+                }
+                else if (DistanceToNewline == -1)
+                {
+                    RemoveText(Caret.Index, Math.Min(Text.Length - Caret.Index, NewText.Length));
                 }
             }
             InsertText(Caret.Index, NewText);
