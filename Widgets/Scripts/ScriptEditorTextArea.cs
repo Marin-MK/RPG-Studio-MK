@@ -34,6 +34,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         SetSelectionBackgroundColor(new Color(128, 128, 255, 64));
         ConsiderInAutoScrollPositioningY = false;
         Sprites["nums"] = new Sprite(this.Viewport);
+        Sprites["guide"] = new Sprite(this.Viewport, new SolidBitmap(1, Size.Height, new Color(64, 64, 128)));
     }
 
     public void SetLineTextColor(Color LineTextColor)
@@ -68,6 +69,15 @@ public class ScriptEditorTextArea : MultilineTextArea
         {
             this.TextXOffset = TextXOffset;
         }
+    }
+
+    public override void SetFont(Font Font)
+    {
+        if (this.Font == null && Font != null || this.Font != null && Font == null || !this.Font.Equals(Font))
+        {
+            Sprites["guide"].X = TextXOffset + Font.TextSize('a').Width * 80;
+        }
+        base.SetFont(Font);
     }
 
     public override void SetText(string Text, bool SetCaretToEnd = false, bool ClearUndoStates = true)
@@ -1059,6 +1069,12 @@ public class ScriptEditorTextArea : MultilineTextArea
         base.LeftMouseUp(e);
         SelectedLineNumberOrigin = -1;
         LastLineNumber = -1;
+    }
+
+    public override void SizeChanged(BaseEventArgs e)
+    {
+        base.SizeChanged(e);
+        ((SolidBitmap) Sprites["guide"].Bitmap).SetSize(1, Size.Height);
     }
 
     protected class ScriptEditorState : TextAreaState
