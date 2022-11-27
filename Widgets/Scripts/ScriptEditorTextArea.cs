@@ -141,6 +141,10 @@ public class ScriptEditorTextArea : MultilineTextArea
     {
         foreach (List<Token> Line in LineTokens)
         {
+            // If Line is null, that means we have yet to tokenize this line.
+            // As the indices are written on tokenization, which happens with the lastest information,
+            // we don't need to remember any shifting of any kind here.
+            if (Line == null) continue;
             foreach (Token Token in Line)
             {
                 if (Token.Index >= StartIndex) Token.Index += Offset;
@@ -363,6 +367,10 @@ public class ScriptEditorTextArea : MultilineTextArea
                     RemoveText(this.Caret.Index - Count, Count);
                 }
             }
+        }
+        else if (e.Tab)
+        {
+            TabInput();
         }
         if (this.Text != text) OnTextChanged?.Invoke(new BaseEventArgs());
     }
@@ -1083,7 +1091,7 @@ public class ScriptEditorTextArea : MultilineTextArea
             // Note that this will redraw every line if newlines were involved!
             for (int i = TextArea.TopLineIndex; i <= TextArea.BottomLineIndex; i++)
             {
-                if (TextArea.Lines.Count != Lines.Count || TextArea.Lines[i].Text != Lines[i].Text) ChangedLines.Add(i);
+                if (i < Lines.Count && (TextArea.Lines.Count != Lines.Count || TextArea.Lines[i].Text != Lines[i].Text)) ChangedLines.Add(i);
             }
             this.TextArea.Text = this.Text;
             this.TextArea.Lines = CloneLineList(this.Lines);
