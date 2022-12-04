@@ -35,6 +35,12 @@ public class ScriptEditorTextArea : MultilineTextArea
         ConsiderInAutoScrollPositioningY = false;
         Sprites["nums"] = new Sprite(this.Viewport);
         Sprites["guide"] = new Sprite(this.Viewport, new SolidBitmap(1, Size.Height, new Color(64, 64, 128)));
+
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.UP, Keycode.ALT), _ => ShiftLineUp()),
+            new Shortcut(this, new Key(Keycode.DOWN, Keycode.ALT), _ => ShiftLineDown())
+        }, false);
     }
 
     public void SetLineTextColor(Color LineTextColor)
@@ -122,6 +128,199 @@ public class ScriptEditorTextArea : MultilineTextArea
     public override void SetTextColorSelected(Color TextColorSelected)
     {
         throw new MethodNotSupportedException(this);
+    }
+
+    protected virtual void ShiftLineUp()
+    {
+        // TODO: Shifting the current line, or all lines included in the active selection, one up, while moving the line that was previously there to the bottom of the shifted lines.
+        // - Swap the text in the Text field
+        // - Swap the lines in the Lines list, as well as their indices
+        // - Retokenize all affected lines by updating all the relevant indices, rather than actually retokenizing
+        // - Move caret position
+        // - Move selection caret positions
+        // - Redraw the affected lines
+        int LineStart = Caret.Line.LineIndex;
+        int LineEnd = Caret.Line.LineIndex;
+        if (HasSelection)
+        {
+            LineStart = SelectionLeft.Line.LineIndex;
+            LineEnd = SelectionRight.Line.LineIndex;
+        }
+        int LineToSwap = LineStart - 1;
+        // Can't swap if there is no line above the selection or current line
+        if (LineToSwap < 0) return;
+        Line SwappingLine = Lines[LineToSwap];
+        List<Token>? SwappingTokens = LineTokens[LineToSwap];
+        List<(int, Color)> SwappingColors = LineColors[LineToSwap];
+        // We have the very last line of the text in our non-swapping lines
+        if (Lines[LineEnd].Length == 0 || Lines[LineEnd].Text[Lines[LineEnd].Length - 1] != '\n')
+        {
+            // To swap correctly, we have to add a newline to the very last line of our non-swapping lines, and remove the newline from the swapping line.
+            Line LastLine = Lines[LineEnd];
+            // We can add the newline to the very end of the text, since this can only happen at the end anyway.
+            this.Text += "\n";
+            LastLine.SetText(LastLine.Text + "\n");
+
+            this.Text = this.Text.Remove(SwappingLine.EndIndex, 1);
+            SwappingLine.SetText(SwappingLine.Text.Remove(SwappingLine.Length - 1, 1));
+            for (int i = LineStart; i <= LineEnd; i++)
+            {
+                Lines[i].StartIndex--;
+            }
+            Caret.Index--;
+            if (HasSelection)
+            {
+                SelectionStart.Index--;
+                SelectionEnd.Index--;
+            }
+        }
+        int SwapSize = 0;
+        for (int i = LineStart; i <= LineEnd; i++)
+        {
+            SwapSize += Lines[i].Length;
+        }
+        // Swap the lines in Text
+        string LineToSwapText = this.Text.Substring(SwappingLine.StartIndex, SwappingLine.Length);
+        this.Text = this.Text.Insert(Lines[LineEnd].EndIndex + 1, LineToSwapText);
+        this.Text = this.Text.Remove(SwappingLine.StartIndex, SwappingLine.Length);
+        // Swap the lines in Lines and swap the tokens in LineTokens
+        Lines.Insert(LineEnd + 1, SwappingLine); // Add the old line with the old indices at the end of the selection or current line
+        LineTokens.Insert(LineEnd + 1, SwappingTokens);
+        LineColors.Insert(LineEnd + 1, SwappingColors);
+        // Now shift the swapping line's and tokens' indices by the length of the entire selection or current line
+        SwappingLine.StartIndex += SwapSize;
+        SwappingLine.LineIndex += LineEnd - LineStart + 1;
+        if (SwappingTokens != null)
+        {
+            foreach (Token token in SwappingTokens)
+            {
+                token.Index += SwapSize;
+            }
+        }
+        // Now shift all non-swapping lines and tokens by the length of the swapping line
+        // Also, shift the indices of the tokens of these lines so that we don't have to retokenize them
+        for (int i = LineStart; i <= LineEnd; i++)
+        {
+            Lines[i].StartIndex -= SwappingLine.Length;
+            Lines[i].LineIndex--;
+            foreach (Token token in LineTokens[i])
+            {
+                token.Index -= SwappingLine.Length;
+            }
+        }
+        // Remove the old line and tokens at the original position (if we removed it before the loop, LineStart would not point to the original start of the non-swapping lines)
+        Lines.RemoveAt(LineToSwap);
+        LineTokens.RemoveAt(LineToSwap);
+        LineColors.RemoveAt(LineToSwap);
+
+        // Move the caret and selection
+        Caret.Index -= SwappingLine.Length;
+        if (HasSelection)
+        {
+            SelectionStart.Index -= SwappingLine.Length;
+            SelectionEnd.Index -= SwappingLine.Length;
+        }
+
+        // Redraw all lines (linestart-1..lineend-1 is non-swapping, lineend is at the index of the swapping line)
+        for (int i = LineStart - 1; i <= LineEnd; i++)
+        {
+            RedrawLine(i);
+        }
+        RedrawSelectionBoxes();
+        UpdateCaretPosition(true);
+
+        this.OnTextChanged?.Invoke(new BaseEventArgs());
+    }
+
+    protected virtual void ShiftLineDown()
+    {
+        // TODO: Shifting the current line, or all lines included in the active selection, one down, while moving the line that was previously there to the top of the shifted lines.
+        // - Swap the text in the Text field
+        // - Swap the lines in the Lines list, as well as their indices
+        // - Retokenize all affected lines by updating all the relevant indices, rather than actually retokenizing
+        // - Move caret position
+        // - Move selection caret positions
+        // - Redraw the affected lines
+        int LineStart = Caret.Line.LineIndex;
+        int LineEnd = Caret.Line.LineIndex;
+        if (HasSelection)
+        {
+            LineStart = SelectionLeft.Line.LineIndex;
+            LineEnd = SelectionRight.Line.LineIndex;
+        }
+        int LineToSwap = LineEnd + 1;
+        // Can't swap if there is no line above the selection or current line
+        if (LineToSwap >= Lines.Count) return;
+        Line SwappingLine = Lines[LineToSwap];
+        // Add a newline to the swapping line, and remove a newline from the last non-swapping line, and adjust the indices as-needed.
+        if (SwappingLine.Length == 0 || SwappingLine.Text[SwappingLine.Length - 1] != '\n')
+        {
+            // This can only ever happen at the very end of the text, so we don't need to insert and can add instead.
+            this.Text += "\n";
+            SwappingLine.SetText(SwappingLine.Text + "\n");
+            Line LastNonSwappingLine = Lines[LineEnd];
+            this.Text = this.Text.Remove(LastNonSwappingLine.EndIndex, 1);
+            LastNonSwappingLine.SetText(LastNonSwappingLine.Text.Remove(LastNonSwappingLine.Length - 1, 1));
+            SwappingLine.StartIndex--;
+        }
+        List<Token>? SwappingTokens = LineTokens[LineToSwap];
+        List<(int, Color)> SwappingColors = LineColors[LineToSwap];
+        int SwapSize = 0;
+        for (int i = LineStart; i <= LineEnd; i++)
+        {
+            SwapSize += Lines[i].Length;
+        }
+        // Swap the lines in Text
+        string LineToSwapText = this.Text.Substring(SwappingLine.StartIndex, SwappingLine.Length);
+        this.Text = this.Text.Remove(SwappingLine.StartIndex, SwappingLine.Length);
+        this.Text = this.Text.Insert(Lines[LineStart].StartIndex, LineToSwapText);
+        // Remove the old line and tokens at the original position
+        Lines.RemoveAt(LineToSwap);
+        LineTokens.RemoveAt(LineToSwap);
+        LineColors.RemoveAt(LineToSwap);
+        // Now shift the swapping line's and tokens' indices by the length of the entire selection or current line
+        SwappingLine.StartIndex -= SwapSize;
+        SwappingLine.LineIndex -= LineEnd - LineStart + 1;
+        if (SwappingTokens != null)
+        {
+            foreach (Token token in SwappingTokens)
+            {
+                token.Index -= SwapSize;
+            }
+        }
+        // Now shift all non-swapping lines and tokens by the length of the swapping line
+        // Also, shift the indices of the tokens of these lines so that we don't have to retokenize them
+        for (int i = LineStart; i <= LineEnd; i++)
+        {
+            Lines[i].StartIndex += SwappingLine.Length;
+            Lines[i].LineIndex++;
+            foreach (Token token in LineTokens[i])
+            {
+                token.Index += SwappingLine.Length;
+            }
+        }
+        // Swap the lines in Lines and swap the tokens in LineTokens (if we removed it before the loop, LineStart would not point to the original start of the non-swapping lines)
+        Lines.Insert(LineStart, SwappingLine); // Add the old line with the old indices at the end of the selection or current line
+        LineTokens.Insert(LineStart, SwappingTokens);
+        LineColors.Insert(LineStart, SwappingColors);
+
+        // Move the caret and selection
+        Caret.Index += SwappingLine.Length;
+        if (HasSelection)
+        {
+            SelectionStart.Index += SwappingLine.Length;
+            SelectionEnd.Index += SwappingLine.Length;
+        }
+        
+        // Redraw all lines (linestart+1..lineend is non-swapping, linestart is at the index of the swapping line)
+        for (int i = LineStart; i <= LineEnd + 1; i++)
+        {
+            RedrawLine(i);
+        }
+        RedrawSelectionBoxes();
+        UpdateCaretPosition(true);
+        
+        this.OnTextChanged?.Invoke(new BaseEventArgs());
     }
 
     protected void RetokenizeLine(int LineIndex)
@@ -238,7 +437,7 @@ public class ScriptEditorTextArea : MultilineTextArea
          * That means we cannot have multi-line tokens, but those are only relevant for multi-line strings and comments
          * and the like, which are rather uncommon in Ruby.
          * If these are strictly necessary, workarounds can be created to work with these. I don't think it's worth the effort though.*/
-        TokenizeUntokenizedLines(false);
+            TokenizeUntokenizedLines(false);
         RedrawText();
     }
 
