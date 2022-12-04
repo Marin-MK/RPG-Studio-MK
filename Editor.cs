@@ -592,8 +592,7 @@ public static class Editor
             {
                 CloseProject(false);
                 Data.SetProjectPath(result);
-                MainWindow.CreateEditor();
-                MakeRecentProject();
+                if (MainWindow.CreateEditor()) MakeRecentProject();
             }
         }
     }

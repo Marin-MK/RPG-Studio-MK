@@ -27,6 +27,7 @@ public static class Data
     public static bool StopLoading = false;
 
     public static EssentialsVersion EssentialsVersion = EssentialsVersion.Unknown;
+    public static bool UsesExternalScripts = false;
 
     static Action<float> OnProgressUpdated;
 
@@ -44,6 +45,7 @@ public static class Data
         Scripts.Clear();
         System = null;
         StopLoading = false;
+        UsesExternalScripts = false;
     }
 
     public static void LoadGameData(Action<float> OnProgressUpdated)
@@ -370,6 +372,69 @@ public static class Data
 
     private static void LoadScripts()
     {
+        if (Directory.Exists(DataPath + "/Scripts"))
+            LoadScriptsFiles();
+        else LoadScriptsRXDATA();
+    }
+
+    private static void LoadScriptsExternal()
+    {
+        List<(string, string)>? GetScripts(string Path, int Depth)
+        {
+            List<(string, string)>? Files = new List<(string, string)>();
+            foreach (string File in Directory.GetFiles(Path))
+            {
+                try
+                {
+                    StreamReader sr = new StreamReader(global::System.IO.File.OpenRead(File));
+                    string filename = global::System.IO.Path.GetFileNameWithoutExtension(File);
+                    Match m = Regex.Match(filename, @"^\d+_(.*)$");
+                    if (!m.Success) continue;
+                    filename = m.Groups[1].Value;
+                    Files.Add((filename, sr.ReadToEnd()));
+                    sr.Close();
+                }
+                catch (Exception ex)
+                {
+                    LoadError("Scripts", ex.Message + "\n\n" + ex.StackTrace);
+                    return null;
+                }
+            }
+            foreach (string Directory in Directory.GetDirectories(Path))
+            {
+                List<(string, string)>? DirFiles = GetScripts(Directory, Depth + 1);
+                if (DirFiles == null) return null;
+                if (Depth == 0) Files.Add(("==================", ""));
+                else Files.Add(("", ""));
+                string DirName = global::System.IO.Path.GetFileName(Directory);
+                Match m = Regex.Match(DirName, @"^\d+_(.*)$");
+                if (!m.Success) continue;
+                string SectionName = m.Groups[1].Value;
+                Files.Add(($"[[ {SectionName} ]]", ""));
+                Files.AddRange(DirFiles);
+            }
+            return Files;
+        }
+        List<(string, string)>? Files = GetScripts(DataPath + "/Scripts", 0);
+        if (Files == null) return;
+        if (Files.Count == 0)
+        {
+            LoadScriptsRXDATA();
+            return;
+        }
+        foreach ((string Name, string Code) in Files)
+        {
+            Script Script = new Script();
+            Script.Name = Name;
+            Script.Content = Code;
+            Scripts.Add(Script);
+        }
+        UsesExternalScripts = true;
+    }
+
+    private static void LoadScriptsRXDATA()
+    {
+        UsesExternalScripts = false;
         SafeLoad("Scripts.rxdata", File =>
         {
             IntPtr data = Ruby.Marshal.Load(File);
@@ -454,6 +519,17 @@ public static class Data
     }
 
     private static void SaveScripts()
+    {
+        if (UsesExternalScripts) SaveScriptsExternal();
+        else SaveScriptsRXDATA();
+    }
+
+    private static void SaveScriptsExternal()
+    {
+        new MessageBox("WIP", "Not yet implemented.", IconType.Error);
+    }
+
+    private static void SaveScriptsRXDATA()
     {
         SafeSave("Scripts.rxdata", File =>
         {
