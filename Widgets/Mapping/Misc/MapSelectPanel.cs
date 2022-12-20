@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using RPGStudioMK.Game;
 using System.Diagnostics;
+using RPGStudioMK.Undo;
 
 namespace RPGStudioMK.Widgets;
 
@@ -347,6 +348,12 @@ public class MapSelectPanel : Widget
     private void NewMap(BaseEventArgs e)
     {
         Map Map = new Map("Untitled Map", Editor.GetFreeMapID());
+        Map.TilesetIDs.Add(1);
+        Map.AutotileIDs.Clear();
+        for (int i = 0; i < 7; i++)
+        {
+            Map.AutotileIDs.Add(Data.Tilesets[Map.TilesetIDs[0]].ID * 7 + i);
+        }
         Map.SetSize(15, 15);
         MapPropertiesWindow mpw = new MapPropertiesWindow(Map, false);
         mpw.OnClosed += delegate (BaseEventArgs ev)

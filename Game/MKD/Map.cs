@@ -38,7 +38,6 @@ public class Map : ICloneable
     {
         this.Name = Name;
         this.ID = ID;
-        for (int i = 0; i < 7; i++) AutotileIDs.Add(0);
     }
 
     public Map(int ID, IntPtr data, IntPtr mapinfo)
