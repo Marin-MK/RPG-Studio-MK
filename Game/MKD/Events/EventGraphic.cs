@@ -15,6 +15,9 @@ public class EventGraphic : ICloneable
     public int NumDirections;
     public int NumFrames;
 
+    /// <summary>
+    /// DO NOT USE!
+    /// </summary>
     public EventGraphic()
     {
 

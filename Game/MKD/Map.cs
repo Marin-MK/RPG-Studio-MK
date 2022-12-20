@@ -12,7 +12,7 @@ public class Map : ICloneable
     public int Height;
     public List<Layer> Layers = new List<Layer>();
     public List<int> TilesetIDs = new List<int>();
-    public List<int> AutotileIDs = new List<int>();
+    public List<int> AutotileIDs { get; set; } = new List<int>();
     public Dictionary<int, Event> Events = new Dictionary<int, Event>();
 
     // RMXP MapInfo Properties
@@ -29,9 +29,16 @@ public class Map : ICloneable
     public bool AutoplayBGS = false;
     public int EncounterStep = 0;
 
-    public Map()
-    {
+    /// <summary>
+    /// DO NOT USE!
+    /// </summary>
+    public Map() { }
 
+    public Map(string Name, int ID)
+    {
+        this.Name = Name;
+        this.ID = ID;
+        for (int i = 0; i < 7; i++) AutotileIDs.Add(0);
     }
 
     public Map(int ID, IntPtr data, IntPtr mapinfo)
@@ -324,9 +331,7 @@ public class Map : ICloneable
 
     public object Clone()
     {
-        Map m = new Map();
-        m.ID = this.ID;
-        m.Name = this.Name;
+        Map m = new Map(this.Name, this.ID);
         m.Width = this.Width;
         m.Height = this.Height;
         m.BGM = (AudioFile)this.BGM.Clone();

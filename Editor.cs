@@ -86,20 +86,23 @@ public static class Editor
     {
         if (Program.ReleaseMode) return;
 
-        PopupWindow win = new PopupWindow();
-        win.SetSize(400, 400);
-        win.Center();
+        MainWindow.SetSize(1920, 1080);
+        MainWindow.SetPosition(1000, 500);
 
-        Button btn = new Button(win);
-        btn.SetPosition(200 - btn.Size.Width / 2, 200 - btn.Size.Height / 2);
-        btn.SetText("Zoom");
-
-        win.StartAnimation(new LinearAnimation("zoom_in", 50, x =>
-        {
-            win.SetGlobalZoom((byte) Math.Round(255 * x));
-            win.SetGlobalZoom((float) x);
-            win.Center();
-        }));
+        //PopupWindow win = new PopupWindow();
+        //win.SetSize(400, 400);
+        //win.Center();
+        //
+        //Button btn = new Button(win);
+        //btn.SetPosition(200 - btn.Size.Width / 2, 200 - btn.Size.Height / 2);
+        //btn.SetText("Zoom");
+        //
+        //win.StartAnimation(new LinearAnimation("zoom_in", 50, x =>
+        //{
+        //    win.SetGlobalZoom((byte) Math.Round(255 * x));
+        //    win.SetGlobalZoom((float) x);
+        //    win.Center();
+        //}));
 
         //Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
 

@@ -8,17 +8,17 @@ public class AudioFile : ICloneable
     public int Volume;
     public int Pitch;
 
-    public AudioFile()
-    {
-
-    }
-
     public AudioFile(string Name = "", int Volume = 80, int Pitch = 100)
     {
         this.Name = Name;
         this.Volume = Volume;
         this.Pitch = Pitch;
     }
+
+    /// <summary>
+    /// DO NOT USE!
+    /// </summary>
+    public AudioFile() { }
 
     public AudioFile(IntPtr data)
     {

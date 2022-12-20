@@ -346,9 +346,7 @@ public class MapSelectPanel : Widget
 
     private void NewMap(BaseEventArgs e)
     {
-        Map Map = new Map();
-        Map.ID = Editor.GetFreeMapID();
-        Map.Name = "Untitled Map";
+        Map Map = new Map("Untitled Map", Editor.GetFreeMapID());
         Map.SetSize(15, 15);
         MapPropertiesWindow mpw = new MapPropertiesWindow(Map, false);
         mpw.OnClosed += delegate (BaseEventArgs ev)

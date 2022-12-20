@@ -17,13 +17,15 @@ public class EventPage : ICloneable
     public EventPage()
     {
         this.Name = "Untitled Page";
-        this.Graphic = new EventGraphic();
+        this.Graphic = new EventGraphic("");
         this.TriggerMode = TriggerMode.Action;
         this.MoveRoute = new MoveRoute();
         this.Settings = new EventSettings();
         this.Condition = new EventCondition();
-        this.Commands = new List<EventCommand>();
-        this.Commands.Add(new EventCommand(CommandCode.Blank, 0, new List<object>()));
+        this.Commands = new List<EventCommand>
+        {
+            new EventCommand(CommandCode.Blank, 0, new List<object>())
+        };
     }
 
     public EventPage(IntPtr data)

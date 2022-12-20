@@ -11,6 +11,9 @@ public class EventCommand : ICloneable
     public int Indent;
     public List<object> Parameters = new List<object>();
 
+    /// <summary>
+    /// DO NOT USE!
+    /// </summary>
     public EventCommand()
     {
 

@@ -263,6 +263,8 @@ public class ScriptEditorTextArea : MultilineTextArea
             LastNonSwappingLine.SetText(LastNonSwappingLine.Text.Remove(LastNonSwappingLine.Length - 1, 1));
             SwappingLine.StartIndex--;
         }
+        // Retokenize the line that will be moved to the top, to make sure it exists.
+        RetokenizeLine(LineToSwap);
         List<Token>? SwappingTokens = LineTokens[LineToSwap];
         List<(int, Color)> SwappingColors = LineColors[LineToSwap];
         int SwapSize = 0;

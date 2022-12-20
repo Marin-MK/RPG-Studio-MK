@@ -373,7 +373,7 @@ public static class Data
     private static void LoadScripts()
     {
         if (Directory.Exists(DataPath + "/Scripts"))
-            LoadScriptsFiles();
+            LoadScriptsExternal();
         else LoadScriptsRXDATA();
     }
 
