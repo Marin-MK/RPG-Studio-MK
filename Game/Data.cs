@@ -526,7 +526,78 @@ public static class Data
 
     private static void SaveScriptsExternal()
     {
-        //new MessageBox("WIP", "Not yet implemented.", IconType.Error);
+        if (!Directory.Exists(DataPath + "/Scripts")) Directory.CreateDirectory(DataPath + "/Scripts");
+        else
+        {
+            // Delete all .rb files and all (\d+)_* folders
+            ClearScriptFolder(DataPath + "/Scripts", false);
+        }
+        string? FirstParent = null;
+        string? SecondParent = null;
+        int MainCount = 0;
+        int SubCount = 0;
+        List<(string, int)> SubFolderCounts = new List<(string, int)>();
+        List<(string, string, int)> Tracker = new List<(string, string, int)>(); // First Parent, Second Parent, No. Files
+        foreach (Script script in Scripts)
+        {
+            if (script.Name == "==================")
+            {
+                FirstParent = null;
+                SecondParent = null;
+                SubCount = 0;
+            }
+            else
+            {
+                Match m = Regex.Match(script.Name, @"\[\[ (.*) \]\]");
+                if (m.Success)
+                {
+                    if (FirstParent == null)
+                    {
+                        MainCount++;
+                        if (m.Groups[1].Value == "Main") FirstParent = "999_" + m.Groups[1].Value;
+                        else FirstParent = Utilities.Digits(MainCount, 3) + "_" + m.Groups[1].Value;
+                    }
+                    else
+                    {
+                        SubCount++;
+                        SecondParent = Utilities.Digits(SubCount, 3) + "_" + m.Groups[1].Value;
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(script.Name) && string.IsNullOrEmpty(script.Content)) continue; // We don't write scripts without a name and without content
+                    string ScriptPath = null;
+                    if (FirstParent == null) ScriptPath = DataPath + "/Scripts";
+                    else if (SecondParent == null) ScriptPath = DataPath + "/Scripts/" + FirstParent;
+                    else ScriptPath = DataPath + "/Scripts/" + FirstParent + "/" + SecondParent;
+                    Directory.CreateDirectory(ScriptPath);
+                    (string First, string Second, int Count)? result = Tracker.Find(t => t.Item1 == FirstParent && t.Item2 == SecondParent);
+                    int FileCount = result == null ? 0 : result.Value.Count;
+                    if (result != null) Tracker.Remove(((string, string, int)) result);
+                    FileCount += 1;
+                    Tracker.Add((FirstParent, SecondParent, FileCount));
+                    if (script.Name == "Main") FileCount = 999;
+                    ScriptPath += $"/{Utilities.Digits(FileCount, 3)}_{script.Name}.rb";
+                    File.WriteAllText(ScriptPath, script.Content);
+                }
+            }
+        }
+    }
+
+    private static void ClearScriptFolder(string Path, bool Delete)
+    {
+        foreach (string file in Directory.GetFiles(Path))
+        {
+            if (file.EndsWith(".rb")) File.Delete(file);
+        }
+        foreach (string folder in Directory.GetDirectories(Path))
+        {
+            if (Regex.IsMatch(folder, @"\d+_.*$"))
+            {
+                ClearScriptFolder(folder, true);
+                if (!Utilities.DoesDirectoryHaveAnyFiles(folder)) Directory.Delete(folder);
+            }
+        }
     }
 
     private static void SaveScriptsRXDATA()

@@ -1029,6 +1029,16 @@ pbConnectToEditor";
     {
         for (int i = Start; i <= End; i++) Callback(i);
     }
+
+    public static bool DoesDirectoryHaveAnyFiles(string Path)
+    {
+        if (Directory.EnumerateFiles(Path).Any()) return true;
+        foreach (string folder in Directory.EnumerateDirectories(Path))
+        {
+            if (DoesDirectoryHaveAnyFiles(folder)) return true;
+        }
+        return false;
+    }
 }
 
 public enum BinaryData
