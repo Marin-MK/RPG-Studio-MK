@@ -19,7 +19,7 @@ public partial class MapViewer
         SidebarWidgetEvents = EventsPanel;
         MainContainer.OnDoubleLeftMouseDownInside += _ =>
         {
-            if (!MovedSinceLastClick) OpenOrCreateEventCursorIsOver();
+            if (!MovedSinceLastClick && Mode == MapMode.Events) OpenOrCreateEventCursorIsOver();
         };
     }
 

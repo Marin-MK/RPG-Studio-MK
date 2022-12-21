@@ -906,14 +906,12 @@ pbConnectToEditor";
                 NewCost = CostFunction(NewValue);
                 if (NewCost < Cost)
                 {
-                    Console.WriteLine("flip");
                     Value = NewValue;
                     Cost = NewCost;
                 }
                 else
                 {
                     // Reversing direction was not more beneficial; halve step size instead.
-                    Console.WriteLine("halve");
                     Step /= 2d;
                 }
             }

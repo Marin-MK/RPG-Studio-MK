@@ -24,7 +24,7 @@ public static class Data
     public static List<Script> Scripts = new List<Script>();
     public static System System;
 
-    public static bool StopLoading = false;
+    public static bool StopLoading;
 
     public static EssentialsVersion EssentialsVersion = EssentialsVersion.Unknown;
     public static bool UsesExternalScripts = false;
@@ -526,7 +526,7 @@ public static class Data
 
     private static void SaveScriptsExternal()
     {
-        new MessageBox("WIP", "Not yet implemented.", IconType.Error);
+        //new MessageBox("WIP", "Not yet implemented.", IconType.Error);
     }
 
     private static void SaveScriptsRXDATA()

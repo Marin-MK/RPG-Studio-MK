@@ -35,7 +35,6 @@ public class ProgressWindow : PopupWindow
         ProgressBar.SetSize(Size.Width - 14 - WindowEdges * 2, 32);
         ProgressBar.OnValueChanged += _ =>
         {
-            Console.WriteLine(ProgressBar.Progress);
             if (ProgressBar.Progress == 1)
             {
                 if (CloseWhenDone && !Disposed) this.OnFinished?.Invoke();

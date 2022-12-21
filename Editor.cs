@@ -210,8 +210,7 @@ public static class Editor
         string projectfile = Data.ProjectFilePath;
         CloseProject(false);
         Data.SetProjectPath(projectfile);
-        MainWindow.CreateEditor();
-        MakeRecentProject();
+        if (MainWindow.CreateEditor()) MakeRecentProject();
     }
 
     /// <summary>
@@ -553,9 +552,9 @@ public static class Editor
             {
                 CloseProject(false);
                 Data.SetProjectPath(Path.Combine(Folder, "Game.rxproj"));
-                MainWindow.CreateEditor();
-                MakeRecentProject();
+                if (MainWindow.CreateEditor()) MakeRecentProject();
             });
+            window.SetProgress(0f);
             await Utilities.CopyKit(Kit.Name, Folder, src, e =>
             {
                 Graphics.Schedule(() => {

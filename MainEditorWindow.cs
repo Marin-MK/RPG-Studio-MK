@@ -210,13 +210,15 @@ public partial class MainEditorWindow : UIWindow
             StatusBarDivider.SetVisible(false);
             Graphics.Update(false, true);
             Data.SetProjectPath(ProjectFile);
-            CreateEditor();
-            Editor.MakeRecentProject();
-            MenuBar.SetVisible(true);
-            StatusBar.SetVisible(true);
-            ToolBar.SetVisible(true);
-            Blue1pxSeparator.SetVisible(true);
-            StatusBarDivider.SetVisible(true);
+            if (CreateEditor())
+            {
+                Editor.MakeRecentProject();
+                MenuBar.SetVisible(true);
+                StatusBar.SetVisible(true);
+                ToolBar.SetVisible(true);
+                Blue1pxSeparator.SetVisible(true);
+                StatusBarDivider.SetVisible(true);
+            }
         }
     }
 

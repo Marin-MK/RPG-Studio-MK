@@ -902,7 +902,6 @@ public class ScriptEditorTextArea : MultilineTextArea
 
     protected override void UpdateCaretPosition(bool ResetScroll)
     {
-        Console.WriteLine(Caret.Index);
         Sprites["caret"].X = TextXOffset + Caret.Line.WidthUpTo(Caret.IndexInLine);
         Sprites["caret"].Y = Caret.Line.LineIndex * LineHeight + Caret.Line.LineIndex * LineMargins - Parent.ScrolledY;
         if (ResetScroll) RequireCaretRepositioning = true;

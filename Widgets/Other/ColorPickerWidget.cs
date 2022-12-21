@@ -137,10 +137,10 @@ public class ColorPickerWidget : Widget
 			});
             PC = CalculatePrimaryColor(LowestPosition);
             FC = CalculateColor(LowestPosition, LowestAlpha, LowestBeta);
-            if (FinalCost > 0)
-			{
-				Console.WriteLine($"{FinalCost} - {Color}");
-			}
+            //if (FinalCost > 0)
+			//{
+			//	Console.WriteLine($"{FinalCost} - {Color}");
+			//}
 			return (FinalPos, FinalAlpha, FinalBeta);
 		}
 		return (LowestPosition, LowestAlpha, LowestBeta);

@@ -23,8 +23,8 @@ public class Map : ICloneable
     public int ParentID;
 
     // RMXP Map Properties
-    public AudioFile BGM = new AudioFile();
-    public AudioFile BGS = new AudioFile();
+    public AudioFile BGM = new AudioFile("");
+    public AudioFile BGS = new AudioFile("");
     public bool AutoplayBGM = false;
     public bool AutoplayBGS = false;
     public int EncounterStep = 0;
