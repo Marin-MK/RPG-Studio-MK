@@ -207,7 +207,7 @@ public static class Editor
     /// </summary>
     public static void ReloadProject()
     {
-        string projectfile = Data.ProjectFilePath;
+        string projectfile = Data.ProjectRMXPGamePath;
         CloseProject(false);
         Data.SetProjectPath(projectfile);
         if (MainWindow.CreateEditor()) MakeRecentProject();

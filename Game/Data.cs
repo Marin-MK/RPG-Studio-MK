@@ -1,6 +1,7 @@
 ﻿using RPGStudioMK.Widgets;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -26,10 +27,14 @@ public static partial class Data
 
     public static bool StopLoading;
 
+    private static nint GameDataModule;
+    private static nint SpeciesClass;
+
     public static EssentialsVersion EssentialsVersion = EssentialsVersion.Unknown;
     public static bool UsesExternalScripts = false;
 
     static Action<float> OnProgressUpdated;
+    static Action<string> OnLoadTextChanging;
 
     public static void ClearProjectData()
     {
@@ -48,22 +53,40 @@ public static partial class Data
         UsesExternalScripts = false;
     }
 
-    public static void LoadGameData(Action<float> OnProgressUpdated)
+    public static void LoadGameData(Action<float> OnProgressUpdated, Action<string> OnLoadTextChanging)
     {
         Data.OnProgressUpdated = OnProgressUpdated;
+        Data.OnLoadTextChanging = OnLoadTextChanging;
         Compatibility.RMXP.Setup();
+
+        if (GameDataModule == nint.Zero) GameDataModule = Ruby.Module.Define("GameData");
+        if (SpeciesClass == nint.Zero) SpeciesClass = Ruby.Class.Define("Species", GameDataModule, null);
         if (StopLoading) return;
+
         LoadTilesets();
         if (StopLoading) return;
+
         LoadScripts();
         if (StopLoading) return;
+
+        SetLoadText("Loading maps...");
         LoadMaps();
         if (StopLoading) return;
+
+        SetLoadText("Loading project...");
         LoadSystem();
         if (StopLoading) return;
+
         LoadCommonEvents();
         if (StopLoading) return;
         LoadGameINI();
+
+        if (StopLoading) return;
+        SetLoadText("Loading species...");
+        LoadSpecies();
+
+        SetLoadText("Loading project...");
+        SetLoadProgress(1f);
     }
 
     public static void SaveGameData()
@@ -155,7 +178,7 @@ public static partial class Data
             if (ErrorType != "Errno::EACCES")
             {
                 // Other error than simultaneous access, no point in retrying.
-                return (false, ErrorType);
+                return (false, Ruby.GetErrorText());
             }
             Thread.Sleep(DelayInMS);
             Tries--;
@@ -169,9 +192,27 @@ public static partial class Data
         OnProgressUpdated?.Invoke(Progress);
     }
 
+    private static  void SetLoadText(string Text)
+    {
+        SetLoadProgress(0);
+        OnLoadTextChanging?.Invoke(Text);
+    }
+
     public static bool EssentialsAtLeast(EssentialsVersion Version)
     {
         return EssentialsVersion >= Version;
+    }
+
+    public static bool IsPrimaryVersion(EssentialsVersion Version)
+    {
+        switch (Version)
+        {
+            case EssentialsVersion.v17: return EssentialsVersion >= EssentialsVersion.v17 && EssentialsVersion <= EssentialsVersion.v17_2;
+            case EssentialsVersion.v18: return EssentialsVersion == EssentialsVersion.v18 || EssentialsVersion == EssentialsVersion.v18_1;
+            case EssentialsVersion.v19: return EssentialsVersion == EssentialsVersion.v19 || EssentialsVersion == EssentialsVersion.v19_1;
+            case EssentialsVersion.v20: return EssentialsVersion == EssentialsVersion.v20 || EssentialsVersion == EssentialsVersion.v20_1;
+            default: return false;
+        }
     }
 }
 

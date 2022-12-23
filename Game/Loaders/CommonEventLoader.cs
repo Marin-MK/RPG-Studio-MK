@@ -14,10 +14,12 @@ public static partial class Data
         {
             IntPtr list = Ruby.Marshal.Load(File);
             Ruby.Pin(list);
-            for (int i = 1; i < Ruby.Array.Length(list); i++)
+            int CommonEventCount = (int) Ruby.Array.Length(list);
+            for (int i = 1; i < CommonEventCount; i++)
             {
                 CommonEvent ce = new CommonEvent(Ruby.Array.Get(list, i));
                 CommonEvents.Add(ce);
+                SetLoadProgress((float) (i - 1) / (CommonEventCount - 1));
             }
             Ruby.Unpin(list);
         });

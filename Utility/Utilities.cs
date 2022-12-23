@@ -434,6 +434,7 @@ public static class Utilities
         else if (obj == Ruby.True) return true;
         else if (obj == Ruby.False) return false;
         else if (Ruby.Funcall(obj, "is_a?", Ruby.GetConst(Ruby.Object.Class, "Integer")) == Ruby.True) return Ruby.Integer.FromPtr(obj);
+        else if (Ruby.Is(obj, "Symbol")) return Ruby.Symbol.FromPtr(obj);
         else if (Ruby.Is(obj, "String")) return Ruby.String.FromPtr(obj);
         else if (Ruby.Is(obj, "Array"))
         {

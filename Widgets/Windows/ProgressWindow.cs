@@ -14,13 +14,16 @@ public class ProgressWindow : PopupWindow
     Label MessageLabel;
     ProgressBar ProgressBar;
 
-    public ProgressWindow(string Title, string Message, bool CloseWhenDone = true, bool Cancellable = true)
+    public ProgressWindow(string Title, string Message, bool CloseWhenDone = true, bool Cancellable = true, bool ShowOKButton = true)
     {
         this.Message = Message;
         this.CloseWhenDone = CloseWhenDone;
 
         SetTitle(Title);
-        MinimumSize = MaximumSize = new Size(300, CloseWhenDone && !Cancellable ? 110 : 140);
+        int height = 140;
+        if (CloseWhenDone && !Cancellable) height = 110;
+        if (!CloseWhenDone && !ShowOKButton) height = 110;
+        MinimumSize = MaximumSize = new Size(300, height);
         SetSize(MaximumSize);
         Center();
 
@@ -45,7 +48,7 @@ public class ProgressWindow : PopupWindow
         this.OnFinished += () => Close();
         this.OnCancelled += () => Close();
 
-        if (!CloseWhenDone)
+        if (!CloseWhenDone && ShowOKButton)
         {
             CreateButton("OK", _ => this.OnFinished?.Invoke());
             Buttons[0].SetEnabled(false);

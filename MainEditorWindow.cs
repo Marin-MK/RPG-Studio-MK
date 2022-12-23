@@ -241,10 +241,11 @@ public partial class MainEditorWindow : UIWindow
         s.Start();
 
         Editor.LoadProjectSettings();
-        ProgressWindow pw = new ProgressWindow("Loading", "Loading project...", true);
+        ProgressWindow pw = new ProgressWindow("Loading", "Loading project...", false, false, false);
         Graphics.Update();
         Data.LoadGameData(f =>
         {
+            if (f == 1) f = 0.99999f;
             // f is percentage of maps that have been parsed
             pw.SetProgress(f);
             // Force redraw in between maps loaded
@@ -256,6 +257,10 @@ public partial class MainEditorWindow : UIWindow
                 Data.ClearProjectData();
                 Data.AbortLoad();
             }
+        }, txt =>
+        {
+            pw.SetMessage(txt);
+            if (Graphics.CanUpdate()) Graphics.Update();
         });
         if (!pw.Disposed) pw.Dispose();
         if (Data.StopLoading)
