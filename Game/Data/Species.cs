@@ -465,7 +465,7 @@ public class Species
 		Ruby.SetIVar(e, "@catch_rate", Ruby.Integer.ToPtr(this.CatchRate));
 		Ruby.SetIVar(e, "@happiness", Ruby.Integer.ToPtr(this.Happiness));
 		nint MovesArray = Ruby.Array.Create();
-		Ruby.Pin(MovesArray);
+		Ruby.SetIVar(e, "@moves", MovesArray);
 		foreach ((int Level, string Move) in Moves)
 		{
 			nint MoveArray = Ruby.Array.Create(2);
@@ -473,66 +473,50 @@ public class Species
 			Ruby.Array.Set(MoveArray, 1, Ruby.Symbol.ToPtr(Move));
 			Ruby.Array.Push(MovesArray, MoveArray);
 		}
-		Ruby.Unpin(MovesArray);
-		Ruby.SetIVar(e, "@moves", MovesArray);
 		nint TutorMovesArray = Ruby.Array.Create();
-		Ruby.Pin(TutorMovesArray);
+		Ruby.SetIVar(e, "@tutor_moves", TutorMovesArray);
 		foreach (string Move in TutorMoves)
 		{
 			Ruby.Array.Push(TutorMovesArray, Ruby.Symbol.ToPtr(Move));
 		}
-		Ruby.Unpin(TutorMovesArray);
-		Ruby.SetIVar(e, "@tutor_moves", TutorMovesArray);
 		nint EggMovesArray = Ruby.Array.Create();
-		Ruby.Pin(EggMovesArray);
+		Ruby.SetIVar(e, "@egg_moves", EggMovesArray);
 		foreach (string Move in EggMoves)
 		{
 			Ruby.Array.Push(EggMovesArray, Ruby.Symbol.ToPtr(Move));
 		}
-		Ruby.Unpin(EggMovesArray);
-		Ruby.SetIVar(e, "@egg_moves", EggMovesArray);
 		nint AbilitiesArray = Ruby.Array.Create();
-		Ruby.Pin(AbilitiesArray);
+		Ruby.SetIVar(e, "@abilities", AbilitiesArray);
 		foreach (string Ability in Abilities)
 		{
 			Ruby.Array.Push(AbilitiesArray, Ruby.Symbol.ToPtr(Ability));
 		}
-		Ruby.Unpin(AbilitiesArray);
-		Ruby.SetIVar(e, "@abilities", AbilitiesArray);
         nint HiddenAbilitiesArray = Ruby.Array.Create();
-        Ruby.Pin(HiddenAbilitiesArray);
+        Ruby.SetIVar(e, "@hidden_abilities", HiddenAbilitiesArray);
         foreach (string Ability in HiddenAbilities)
         {
             Ruby.Array.Push(HiddenAbilitiesArray, Ruby.Symbol.ToPtr(Ability));
         }
-        Ruby.Unpin(HiddenAbilitiesArray);
-        Ruby.SetIVar(e, "@hidden_abilities", HiddenAbilitiesArray);
 		nint WildItemCommonArray = Ruby.Array.Create();
-		Ruby.Pin(WildItemCommonArray);
+		Ruby.SetIVar(e, "@wild_item_common", WildItemCommonArray);
 		foreach (string Item in WildItemCommon)
 		{
 			Ruby.Array.Push(WildItemCommonArray, Ruby.Symbol.ToPtr(Item));
 		}
-		Ruby.Unpin(WildItemCommonArray);
-		Ruby.SetIVar(e, "@wild_item_common", WildItemCommonArray);
 		nint WildItemUncommonArray = Ruby.Array.Create();
-		Ruby.Pin(WildItemUncommonArray);
+		Ruby.SetIVar(e, "@wild_item_uncommon", WildItemUncommonArray);
 		foreach (string Item in WildItemUncommon)
 		{
 			Ruby.Array.Push(WildItemUncommonArray, Ruby.Symbol.ToPtr(Item));
 		}
-		Ruby.Unpin(WildItemUncommonArray);
-		Ruby.SetIVar(e, "@wild_item_uncommon", WildItemUncommonArray);
         nint WildItemRareArray = Ruby.Array.Create();
-        Ruby.Pin(WildItemRareArray);
+        Ruby.SetIVar(e, "@wild_item_rare", WildItemRareArray);
         foreach (string Item in WildItemRare)
         {
             Ruby.Array.Push(WildItemRareArray, Ruby.Symbol.ToPtr(Item));
         }
-        Ruby.Unpin(WildItemRareArray);
-        Ruby.SetIVar(e, "@wild_item_rare", WildItemRareArray);
         nint EggGroupsArray = Ruby.Array.Create();
-        Ruby.Pin(EggGroupsArray);
+        Ruby.SetIVar(e, "@egg_groups", EggGroupsArray);
         foreach (EggGroup group in EggGroups)
         {
 			string rgroup = group switch
@@ -556,18 +540,14 @@ public class Species
 			};
             Ruby.Array.Push(EggGroupsArray, Ruby.Symbol.ToPtr(rgroup));
         }
-        Ruby.Unpin(EggGroupsArray);
-        Ruby.SetIVar(e, "@egg_groups", EggGroupsArray);
 		Ruby.SetIVar(e, "@hatch_steps", Ruby.Integer.ToPtr(this.HatchSteps));
 		Ruby.SetIVar(e, "@incense", this.Incense == null ? Ruby.Nil : Ruby.Symbol.ToPtr(this.Incense));
 		nint OffSpringArray = Ruby.Array.Create();
-		Ruby.Pin(OffSpringArray);
+		Ruby.SetIVar(e, "@offspring", OffSpringArray);
 		foreach (string Species in Offspring)
 		{
 			Ruby.Array.Push(OffSpringArray, Ruby.Symbol.ToPtr(Species));
 		}
-		Ruby.Unpin(OffSpringArray);
-		Ruby.SetIVar(e, "@offspring", OffSpringArray);
 		Ruby.SetIVar(e, "@height", Ruby.Integer.ToPtr((int) (this.Height * 10)));
 		Ruby.SetIVar(e, "@weight", Ruby.Integer.ToPtr((int) (this.Weight * 10)));
         string rcolor = this.Color switch
@@ -621,25 +601,21 @@ public class Species
 		Ruby.SetIVar(e, "@habitat", Ruby.Symbol.ToPtr(rhabitat));
 		Ruby.SetIVar(e, "@generation", Ruby.Integer.ToPtr(this.Generation));
 		nint FlagsArray = Ruby.Array.Create();
-		Ruby.Pin(FlagsArray);
+		Ruby.SetIVar(e, "@flags", FlagsArray);
 		foreach (string Flag in Flags)
 		{
 			Ruby.Array.Push(FlagsArray, Ruby.String.ToPtr(Flag));
 		}
-		Ruby.Unpin(FlagsArray);
-		Ruby.SetIVar(e, "@flags", FlagsArray);
 		Ruby.SetIVar(e, "@mega_stone", this.MegaStone == null ? Ruby.Nil : Ruby.Symbol.ToPtr(this.MegaStone));
 		Ruby.SetIVar(e, "@mega_move", this.MegaMove == null ? Ruby.Nil : Ruby.Symbol.ToPtr(this.MegaMove));
 		Ruby.SetIVar(e, "@unmega_form", Ruby.Integer.ToPtr(this.UnmegaForm));
 		Ruby.SetIVar(e, "@mega_message", Ruby.Integer.ToPtr(this.MegaMessage));
         nint EvolutionsArray = Ruby.Array.Create();
-        Ruby.Pin(EvolutionsArray);
+        Ruby.SetIVar(e, "@evolutions", EvolutionsArray);
         foreach (Evolution evo in Evolutions)
         {
             Ruby.Array.Push(EvolutionsArray, evo.Save());
         }
-        Ruby.Unpin(EvolutionsArray);
-        Ruby.SetIVar(e, "@evolutions", EvolutionsArray);
         Ruby.Unpin(e);
         return e;
     }

@@ -35,7 +35,7 @@ public static partial class Data
                 nint valueptr = Ruby.Hash.Get(data, keyptr);
                 Species obj = new Species(valueptr);
                 Species.Add(intname, obj);
-                SetLoadProgress((float) i / length);
+                SetLoadProgress((float) i / (length - 1));
             }
             Ruby.Unpin(KeyArray);
             Ruby.Unpin(data);
