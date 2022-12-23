@@ -28,7 +28,6 @@ public static partial class Data
     public static bool StopLoading;
 
     private static nint GameDataModule;
-    private static nint SpeciesClass;
 
     public static EssentialsVersion EssentialsVersion = EssentialsVersion.Unknown;
     public static bool UsesExternalScripts = false;
@@ -60,7 +59,7 @@ public static partial class Data
         Compatibility.RMXP.Setup();
 
         if (GameDataModule == nint.Zero) GameDataModule = Ruby.Module.Define("GameData");
-        if (SpeciesClass == nint.Zero) SpeciesClass = Ruby.Class.Define("Species", GameDataModule, null);
+        if (Game.Species.Class == nint.Zero) Game.Species.Class = Ruby.Class.Define("Species", GameDataModule, null);
         if (StopLoading) return;
 
         LoadTilesets();
@@ -97,6 +96,7 @@ public static partial class Data
         SaveSystem();
         SaveCommonEvents();
         SaveGameINI();
+        SaveSpecies();
     }
 
     public static void SetProjectPath(string RXProjectFilePath)

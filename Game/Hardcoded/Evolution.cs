@@ -11,13 +11,120 @@ public class Evolution
 {
     public SpeciesResolver Species;
     public EvolutionType Type;
+    public string? UnknownType;
     public List<object> Parameters;
     public bool Prevolution;
+
+    public Evolution(SpeciesResolver Species, EvolutionType Type, List<object> Parameters, bool Prevolution = false)
+    {
+        this.Species = Species;
+        this.Type = Type;
+        this.Parameters = Parameters;
+        this.Prevolution = Prevolution;
+    }
 
     public Evolution(nint Array)
     {
         this.Species = (SpeciesResolver) Ruby.Symbol.FromPtr(Ruby.Array.Get(Array, 0));
-        this.Type = Ruby.Symbol.FromPtr(Ruby.Array.Get(Array, 1)) switch
+        string rtype = Ruby.Symbol.FromPtr(Ruby.Array.Get(Array, 1));
+        this.Type = MethodStrToEnum(rtype);
+        if (this.Type == EvolutionType.None) UnknownType = rtype;
+        this.Parameters = new List<object>();
+        for (int i = 2; i < Ruby.Array.Length(Array) - 1; i++)
+        {
+            nint robj = Ruby.Array.Get(Array, i);
+            object nobj = Utilities.RubyToNative(robj);
+            this.Parameters.Add(nobj);
+        }
+        this.Prevolution = Ruby.Array.Get(Array, (int) Ruby.Array.Length(Array) - 1) == Ruby.True;
+    }
+
+    public nint Save()
+    {
+        nint e = Ruby.Array.Create();
+        Ruby.Pin(e);
+        Ruby.Array.Push(e, Ruby.Symbol.ToPtr(Species));
+        string rtype = this.Type switch
+        {
+            EvolutionType.Level => "Level",
+            EvolutionType.LevelMale => "LevelMale",
+            EvolutionType.LevelFemale => "LevelFemale",
+            EvolutionType.LevelDay => "LevelDay",
+            EvolutionType.LevelNight => "LevelNight",
+            EvolutionType.LevelMorning => "LevelMorning",
+            EvolutionType.LevelAfternoon => "LevelAfternoon",
+            EvolutionType.LevelEvening => "LevelEvening",
+            EvolutionType.LevelNoWeather => "LevelNoWeather",
+            EvolutionType.LevelSun => "LevelSun",
+            EvolutionType.LevelRain => "LevelRain",
+            EvolutionType.LevelSnow => "LevelSnow",
+            EvolutionType.LevelSandstorm => "LevelSandstorm",
+            EvolutionType.LevelCycling => "LevelCycling",
+            EvolutionType.LevelSurfing => "LevelSurfing",
+            EvolutionType.LevelDiving => "LevelDiving",
+            EvolutionType.LevelDarkness => "LevelDarkness",
+            EvolutionType.LevelDarkInParty => "LevelDarkInParty",
+            EvolutionType.AttackGreaterThanDefense => "AttackGreater",
+            EvolutionType.AttackDefenseEqual => "AtkDefEqual",
+            EvolutionType.DefenseGreaterThanAttack => "DefenseGreater",
+            EvolutionType.Silcoon => "Silcoon",
+            EvolutionType.Cascoon => "Cascoon",
+            EvolutionType.Ninjask => "Ninjask",
+            EvolutionType.Shedinja => "Shedinja",
+            EvolutionType.Happiness => "Happiness",
+            EvolutionType.HappinessMale => "HappinessMale",
+            EvolutionType.HappinessFemale => "HappinessFemale",
+            EvolutionType.HappinessDay => "HappinessDay",
+            EvolutionType.HappinessNight => "HappinessNight",
+            EvolutionType.HappinessMove => "HappinessMove",
+            EvolutionType.HappinessMoveType => "HappinessMoveType",
+            EvolutionType.HappienssHoldItem => "HappienssHoldItem",
+            EvolutionType.MaxHappiness => "MaxHappiness",
+            EvolutionType.Beauty => "Beauty",
+            EvolutionType.HoldItem => "HoldItem",
+            EvolutionType.HoldItemMale => "HoldItemMale",
+            EvolutionType.HoldItemFemale => "HoldItemFemale",
+            EvolutionType.DayHoldItem => "DayHoldItem",
+            EvolutionType.NightHoldItem => "NightHoldItem",
+            EvolutionType.HoldItemHappiness => "HoldItemHappiness",
+            EvolutionType.HasMove => "HasMove",
+            EvolutionType.HasMoveType => "HasMoveType",
+            EvolutionType.HasInParty => "HasInParty",
+            EvolutionType.Location => "Location",
+            EvolutionType.LocationFlag => "LocationFlag",
+            EvolutionType.Region => "Region",
+            EvolutionType.Item => "Item",
+            EvolutionType.ItemMale => "ItemMale",
+            EvolutionType.ItemFemale => "ItemFemale",
+            EvolutionType.ItemDay => "ItemDay",
+            EvolutionType.ItemNight => "ItemNight",
+            EvolutionType.ItemHappiness => "ItemHappiness",
+            EvolutionType.Trade => "Trade",
+            EvolutionType.TradeMale => "TradeMale",
+            EvolutionType.TradeFemale => "TradeFemale",
+            EvolutionType.TradeDay => "TradeDay",
+            EvolutionType.TradeNight => "TradeNight",
+            EvolutionType.TradeItem => "TradeItem",
+            EvolutionType.TradeSpecies => "TradeSpecies",
+            EvolutionType.BattleDealCriticalHit => "BattleDealCriticalHit",
+            EvolutionType.Event => "Event",
+            EvolutionType.EventAfterDamageTaken => "EventAfterDamageTake",
+            EvolutionType.None => UnknownType ?? "Unknown",
+            _ => throw new Exception("Invalid evolution type.")
+        };
+        Ruby.Array.Push(e, Ruby.Symbol.ToPtr(rtype));
+        foreach (object param in Parameters)
+        {
+            Ruby.Array.Push(e, Utilities.NativeToRuby(param));
+        }
+        Ruby.Array.Push(e, Prevolution ? Ruby.True : Ruby.False);
+        Ruby.Unpin(e);
+        return e;
+    }
+
+    public static EvolutionType MethodStrToEnum(string type)
+    {
+        return type switch
         {
             "Level" => EvolutionType.Level,
             "LevelMale" => EvolutionType.LevelMale,
@@ -84,14 +191,6 @@ public class Evolution
             "EventAfterDamageTake" => EvolutionType.EventAfterDamageTaken,
             _ => EvolutionType.None
         };
-        this.Parameters = new List<object>();
-        for (int i = 2; i < Ruby.Array.Length(Array) - 1; i++)
-        {
-            nint robj = Ruby.Array.Get(Array, i);
-            object nobj = Utilities.RubyToNative(robj);
-            this.Parameters.Add(nobj);
-        }
-        this.Prevolution = Ruby.Array.Get(Array, (int) Ruby.Array.Length(Array) - 1) == Ruby.True;
     }
 }
 
