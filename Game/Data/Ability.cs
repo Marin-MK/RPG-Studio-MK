@@ -20,7 +20,8 @@ public class Ability
         this.ID = ID;
         this.Name = hash["Name"];
         this.Description = hash["Description"];
-        this.Flags = hash["Flags"].Split(',').Select(x => x.Trim()).ToList();
+        if (hash.ContainsKey("Flags")) this.Flags = hash["Flags"].Split(',').Select(x => x.Trim()).ToList();
+        else this.Flags = new List<string>();
     }
 
     public Ability(nint Data)

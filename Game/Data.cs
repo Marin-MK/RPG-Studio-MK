@@ -23,6 +23,7 @@ public static partial class Data
     public static List<CommonEvent> CommonEvents = new List<CommonEvent>();
     public static Dictionary<string, Species> Species = new Dictionary<string, Species>();
     public static Dictionary<string, Ability> Abilities = new Dictionary<string, Ability>();
+    public static Dictionary<string, Type> Types = new Dictionary<string, Type>();
     public static List<Script> Scripts = new List<Script>();
     public static System System;
 
@@ -48,6 +49,7 @@ public static partial class Data
         CommonEvents.Clear();
         Species.Clear();
         Abilities.Clear();
+        Types.Clear();
         Scripts.Clear();
         System = null;
         StopLoading = false;
@@ -63,6 +65,7 @@ public static partial class Data
         if (GameDataModule == nint.Zero) GameDataModule = Ruby.Module.Define("GameData");
         if (Game.Species.Class == nint.Zero) Game.Species.Class = Ruby.Class.Define("Species", GameDataModule, null);
         if (Game.Ability.Class == nint.Zero) Game.Ability.Class = Ruby.Class.Define("Ability", GameDataModule, null);
+        if (Game.Type.Class == nint.Zero) Game.Type.Class = Ruby.Class.Define("Type", GameDataModule, null);
         if (StopLoading) return;
 
         LoadTilesets();
@@ -88,8 +91,12 @@ public static partial class Data
         LoadSpecies();
 
         if (StopLoading) return;
-        SetLoadText("loading abilities...");
+        SetLoadText("Loading abilities...");
         LoadAbilities();
+
+        if (StopLoading) return;
+        SetLoadText("Loading types...");
+        LoadTypes();
 
         SetLoadText("Loading project...");
         SetLoadProgress(1f);
@@ -105,6 +112,7 @@ public static partial class Data
         SaveGameINI();
         SaveSpecies();
         SaveAbilities();
+        SaveTypes();
     }
 
     public static void SetProjectPath(string RXProjectFilePath)

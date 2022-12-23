@@ -1,0 +1,147 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RPGStudioMK.Game;
+
+public class Type
+{
+    public static nint Class = nint.Zero;
+
+    public string ID;
+    public string Name;
+    public bool SpecialType;
+    public bool PseudoType;
+    public List<TypeResolver> Weaknesses;
+    public List<TypeResolver> Resistances;
+    public List<TypeResolver> Immunities;
+    public int IconPosition;
+    public List<string> Flags;
+
+    public Type(string ID, Dictionary<string, string> hash)
+    {
+        this.ID = ID;
+        this.Name = hash["Name"];
+        if (hash.ContainsKey("IsSpecialType")) this.SpecialType = hash["IsSpecialType"].ToLower() == "true";
+        if (hash.ContainsKey("IsPseudoType")) this.PseudoType = hash["IsPseudoType"].ToLower() == "true";
+        if (hash.ContainsKey("Weaknesses")) this.Weaknesses = hash["Weaknesses"].Split(',').Select(x => (TypeResolver) x.Trim()).ToList();
+        else this.Weaknesses = new List<TypeResolver>();
+        if (hash.ContainsKey("Resistances")) this.Resistances = hash["Resistances"].Split(',').Select(x => (TypeResolver) x.Trim()).ToList();
+        else this.Resistances = new List<TypeResolver>();
+        if (hash.ContainsKey("Immunities")) this.Immunities = hash["Immunities"].Split(',').Select(x => (TypeResolver) x.Trim()).ToList();
+        else this.Immunities = new List<TypeResolver>();
+        this.IconPosition = Convert.ToInt32(hash["IconPosition"]);
+        if (hash.ContainsKey("Flags")) this.Flags = hash["Flags"].Split(',').Select(x => x.Trim()).ToList();
+        else this.Flags = new List<string>();
+    }
+
+    public Type(nint Data)
+    {
+        this.ID = Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@id"));
+        this.Name = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_name"));
+        this.SpecialType = Ruby.GetIVar(Data, "@special_type") == Ruby.True;
+        this.PseudoType = Ruby.GetIVar(Data, "@pseudo_type") == Ruby.True;
+        nint WeaknessArray = Ruby.GetIVar(Data, "@weaknesses");
+        int WeaknessArrayLength = (int) Ruby.Array.Length(WeaknessArray);
+        this.Weaknesses = new List<TypeResolver>();
+        for (int i = 0; i < WeaknessArrayLength; i++)
+        {
+            this.Weaknesses.Add((TypeResolver) Ruby.Symbol.FromPtr(Ruby.Array.Get(WeaknessArray, i)));
+        }
+        nint ResistancesArray = Ruby.GetIVar(Data, "@resistances");
+        int ResistancesArrayLength = (int) Ruby.Array.Length(ResistancesArray);
+        this.Resistances = new List<TypeResolver>();
+        for (int i = 0; i < ResistancesArrayLength; i++)
+        {
+            this.Resistances.Add((TypeResolver) Ruby.Symbol.FromPtr(Ruby.Array.Get(ResistancesArray, i)));
+        }
+        nint ImmunitiesArray = Ruby.GetIVar(Data, "@immunities");
+        int ImmunitiesArrayLength = (int) Ruby.Array.Length(ImmunitiesArray);
+        this.Immunities = new List<TypeResolver>();
+        for (int i = 0; i < ImmunitiesArrayLength; i++)
+        {
+            this.Immunities.Add((TypeResolver) Ruby.Symbol.FromPtr(Ruby.Array.Get(ImmunitiesArray, i)));
+        }
+        nint FlagsArray = Ruby.GetIVar(Data, "@flags");
+        int FlagsArrayLength = (int) Ruby.Array.Length(FlagsArray);
+        this.Flags = new List<string>();
+        for (int i = 0; i < FlagsArrayLength; i++)
+        {
+            this.Flags.Add(Ruby.String.FromPtr(Ruby.Array.Get(FlagsArray, i)));
+        }
+        this.IconPosition = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@icon_position"));
+    }
+
+    public nint Save()
+    {
+        nint e = Ruby.Funcall(Class, "new");
+        Ruby.Pin(e);
+        Ruby.SetIVar(e, "@id", Ruby.Symbol.ToPtr(this.ID));
+        Ruby.SetIVar(e, "@real_name", Ruby.String.ToPtr(this.Name));
+        Ruby.SetIVar(e, "@special_type", this.SpecialType ? Ruby.True : Ruby.False);
+        Ruby.SetIVar(e, "@pseudo_type", this.PseudoType ? Ruby.True : Ruby.False);
+        nint WeaknessArray = Ruby.Array.Create();
+        Ruby.SetIVar(e, "@weaknesses", WeaknessArray);
+        foreach (string Type in Weaknesses)
+        {
+            Ruby.Array.Push(WeaknessArray, Ruby.Symbol.ToPtr(Type));
+        }
+        nint ResistanceArray = Ruby.Array.Create();
+        Ruby.SetIVar(e, "@resistances", ResistanceArray);
+        foreach (string Type in Resistances)
+        {
+            Ruby.Array.Push(ResistanceArray, Ruby.Symbol.ToPtr(Type));
+        }
+        nint ImmunitiesArray = Ruby.Array.Create();
+        Ruby.SetIVar(e, "@immunities", ImmunitiesArray);
+        foreach (string Type in Immunities)
+        {
+            Ruby.Array.Push(ImmunitiesArray, Ruby.Symbol.ToPtr(Type));
+        }
+        nint FlagsArray = Ruby.Array.Create();
+        Ruby.SetIVar(e, "@flags", FlagsArray);
+        foreach (string Flag in Flags)
+        {
+            Ruby.Array.Push(FlagsArray, Ruby.String.ToPtr(Flag));
+        }
+        Ruby.SetIVar(e, "@icon_position", Ruby.Integer.ToPtr(this.IconPosition));
+        Ruby.Unpin(e);
+        return e;
+    }
+}
+
+[DebuggerDisplay("{ID}")]
+public class TypeResolver
+{
+    private string _id;
+    public string ID { get => _id; set { _id = value; _type = null; } }
+    private Type _type;
+    public Type Type
+    {
+        get
+        {
+            if (_type != null) return _type;
+            _type = Data.Types[ID];
+            return _type;
+        }
+    }
+
+    public TypeResolver(string ID)
+    {
+        this.ID = ID;
+    }
+
+    public TypeResolver(Type Species)
+    {
+        this.ID = Species.ID;
+        _type = Type;
+    }
+
+    public static implicit operator string(TypeResolver s) => s.ID; // string x = typeResolver
+    public static implicit operator Type(TypeResolver s) => s.Type; // Type x = typeResolver
+    public static explicit operator TypeResolver(Type s) => new TypeResolver(s); // TypeResolver x = (TypeResolver) type
+    public static explicit operator TypeResolver(string ID) => new TypeResolver(ID); // TypeResolver x = (TypeResolver) str
+}
