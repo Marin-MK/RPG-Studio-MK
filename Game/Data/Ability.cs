@@ -36,8 +36,6 @@ public class Ability
         {
             this.Flags.Add(Ruby.String.FromPtr(Ruby.Array.Get(FlagsArray, i)));
         }
-        Ruby.SetGlobal("$d", Data);
-        Ruby.Eval("p $d");
     }
 
     public nint Save()

@@ -24,6 +24,7 @@ public static partial class Data
     public static Dictionary<string, Species> Species = new Dictionary<string, Species>();
     public static Dictionary<string, Ability> Abilities = new Dictionary<string, Ability>();
     public static Dictionary<string, Type> Types = new Dictionary<string, Type>();
+    public static Dictionary<string, TrainerType> TrainerTypes = new Dictionary<string, TrainerType>();
     public static List<Script> Scripts = new List<Script>();
     public static System System;
 
@@ -50,6 +51,7 @@ public static partial class Data
         Species.Clear();
         Abilities.Clear();
         Types.Clear();
+        TrainerTypes.Clear();
         Scripts.Clear();
         System = null;
         StopLoading = false;
@@ -66,6 +68,7 @@ public static partial class Data
         if (Game.Species.Class == nint.Zero) Game.Species.Class = Ruby.Class.Define("Species", GameDataModule, null);
         if (Game.Ability.Class == nint.Zero) Game.Ability.Class = Ruby.Class.Define("Ability", GameDataModule, null);
         if (Game.Type.Class == nint.Zero) Game.Type.Class = Ruby.Class.Define("Type", GameDataModule, null);
+        if (Game.TrainerType.Class == nint.Zero) Game.TrainerType.Class = Ruby.Class.Define("TrainerType", GameDataModule, null);
         if (StopLoading) return;
 
         LoadTilesets();
@@ -98,6 +101,10 @@ public static partial class Data
         SetLoadText("Loading types...");
         LoadTypes();
 
+        if (StopLoading) return;
+        SetLoadText("Loading trainer types...");
+        LoadTrainerTypes();
+
         SetLoadText("Loading project...");
         SetLoadProgress(1f);
     }
@@ -113,6 +120,7 @@ public static partial class Data
         SaveSpecies();
         SaveAbilities();
         SaveTypes();
+        SaveTrainerTypes();
     }
 
     public static void SetProjectPath(string RXProjectFilePath)
