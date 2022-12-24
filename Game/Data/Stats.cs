@@ -20,6 +20,17 @@ public struct Stats
 
     }
 
+    public Stats(List<int> Stats)
+    {
+        if (Stats.Count != 6) throw new Exception("Invalid length of stats List.");
+        this.HP = Stats[0];
+        this.Attack = Stats[1];
+        this.Defense = Stats[2];
+        this.SpecialAttack = Stats[3];
+        this.SpecialDefense = Stats[4];
+        this.Speed = Stats[5];
+    }
+
     public Stats(nint HashData)
     {
         this.HP = (int) Ruby.Integer.FromPtr(Ruby.Hash.Get(HashData, Ruby.Symbol.ToPtr("HP")));

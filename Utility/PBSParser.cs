@@ -39,4 +39,35 @@ public static class PBSParser
         sr.Close();
         OnParseSection(CurrentID, CurrentSection);
     }
+
+    public static void ParseSectionBasedFileWithOrder(string Filename, Action<string, List<(string, string)>> OnParseSection)
+    {
+        if (!File.Exists(Filename)) throw new Exception($"The specified file '{Filename}' does not exist.");
+        StreamReader sr = new StreamReader(File.OpenRead(Filename));
+        string CurrentID = null;
+        List<(string, string)> CurrentSection = new List<(string, string)>();
+        while (!sr.EndOfStream)
+        {
+            string line = sr.ReadLine().Trim();
+            // Skip empty lines and comments
+            if (string.IsNullOrEmpty(line) || line[0] == '#') continue;
+            if (line[0] == '[' && line[^1] == ']') // Start a section
+            {
+                if (CurrentID != null)
+                {
+                    // Parse the previous section
+                    OnParseSection(CurrentID, CurrentSection);
+                    CurrentSection.Clear();
+                }
+                CurrentID = line.Substring(1, line.Length - 2);
+            }
+            else if (line.Contains("="))
+            {
+                string[] split = line.Split('=');
+                CurrentSection.Add((split[0].Trim(), split[1].Trim()));
+            }
+        }
+        sr.Close();
+        OnParseSection(CurrentID, CurrentSection);
+    }
 }

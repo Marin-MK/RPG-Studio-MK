@@ -13,9 +13,9 @@ namespace RPGStudioMK.Game;
 
 public static partial class Data
 {
-    private static void LoadTrainerTypes()
+    private static void LoadTrainers()
     {
-        SafeLoad("trainer_types.dat", File =>
+        SafeLoad("trainers.dat", File =>
         {
             nint Data = Marshal.Load(File);
             Ruby.Pin(Data);
@@ -27,7 +27,7 @@ public static partial class Data
                 nint key = Ruby.Array.Get(Keys, i);
                 nint robj = Ruby.Hash.Get(Data, key);
                 string ckey = Ruby.Symbol.FromPtr(key);
-                TrainerTypes.Add(ckey, new TrainerType(robj));
+                Trainers.Add(new Trainer(robj));
                 SetLoadProgress((float) i / (KeyCount - 1));
             }
             Ruby.Unpin(Data);
@@ -35,24 +35,24 @@ public static partial class Data
         });
     }
 
-    private static void LoadTrainerTypesFromPBS(string FilePath)
+    private static void LoadTrainersFromPBS(string FilePath)
     {
-        PBSParser.ParseSectionBasedFile(FilePath, (id, hash) =>
+        PBSParser.ParseSectionBasedFileWithOrder(FilePath, (id, pairs) =>
         {
-            TrainerTypes.Add(id, new TrainerType(id, hash));
+            Trainers.Add(new Trainer(id, pairs));
         });
     }
 
-    private static void SaveTrainerTypes()
+    private static void SaveTrainers()
     {
-        SafeSave("trainer_types.dat", File =>
+        SafeSave("trainers.dat", File =>
         {
             nint Data = Ruby.Hash.Create();
             Ruby.Pin(Data);
-            foreach (TrainerType t in TrainerTypes.Values)
+            foreach (Trainer t in Trainers)
             {
                 nint tdata = t.Save();
-                Ruby.Hash.Set(Data, Ruby.Symbol.ToPtr(t.ID), tdata);
+                Ruby.Hash.Set(Data, Ruby.GetIVar(tdata, "@id"), tdata);
             }
             Ruby.Marshal.Dump(Data, File);
             Ruby.Unpin(Data);

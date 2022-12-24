@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace RPGStudioMK.Game;
 
+[DebuggerDisplay("{ID}")]
 public class Ability
 {
     public static nint Class = nint.Zero;
@@ -54,4 +56,37 @@ public class Ability
         Ruby.Unpin(e);
         return e;
     }
+}
+
+[DebuggerDisplay("{ID}")]
+public class AbilityResolver
+{
+    private string _id;
+    public string ID { get => _id; set { _id = value; _ability = null; } }
+    private Ability _ability;
+    public Ability Ability
+    {
+        get
+        {
+            if (_ability != null) return _ability;
+            _ability = Data.Abilities[ID];
+            return _ability;
+        }
+    }
+
+    public AbilityResolver(string ID)
+    {
+        this.ID = ID;
+    }
+
+    public AbilityResolver(Ability Ability)
+    {
+        this.ID = Ability.ID;
+        _ability = Ability;
+    }
+
+    public static implicit operator string(AbilityResolver s) => s.ID;
+    public static implicit operator Ability(AbilityResolver s) => s.Ability;
+    public static explicit operator AbilityResolver(Ability s) => new AbilityResolver(s);
+    public static explicit operator AbilityResolver(string ID) => new AbilityResolver(ID);
 }

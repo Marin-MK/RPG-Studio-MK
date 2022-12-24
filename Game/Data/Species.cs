@@ -1,19 +1,12 @@
-﻿using amethyst;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.NetworkInformation;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using static rubydotnet.Ruby;
 
 namespace RPGStudioMK.Game;
 
+[DebuggerDisplay("{ID}")]
 public class Species
 {
 	public static nint Class = nint.Zero;
@@ -39,8 +32,8 @@ public class Species
 	public List<(int, string)> Moves;
 	public List<string> TutorMoves;
 	public List<string> EggMoves;
-	public List<string> Abilities;
-	public List<string> HiddenAbilities;
+	public List<AbilityResolver> Abilities;
+	public List<AbilityResolver> HiddenAbilities;
 	public List<string> WildItemCommon;
 	public List<string> WildItemUncommon;
 	public List<string> WildItemRare;
@@ -126,9 +119,9 @@ public class Species
 		else this.TutorMoves = new List<string>();
 		if (hash.ContainsKey("EggMoves")) this.EggMoves = hash["EggMoves"].Split(',').Select(m => m.Trim()).ToList();
 		else this.EggMoves = new List<string>();
-        this.Abilities = hash["Abilities"].Split(',').Select(m => m.Trim()).ToList();
-		if (hash.ContainsKey("HiddenAbilities")) this.HiddenAbilities = hash["HiddenAbilities"].Split(',').Select(m => m.Trim()).ToList();
-		else this.HiddenAbilities = new List<string>();
+        this.Abilities = hash["Abilities"].Split(',').Select(m => (AbilityResolver) m.Trim()).ToList();
+		if (hash.ContainsKey("HiddenAbilities")) this.HiddenAbilities = hash["HiddenAbilities"].Split(',').Select(m => (AbilityResolver) m.Trim()).ToList();
+		else this.HiddenAbilities = new List<AbilityResolver>();
 		if (hash.ContainsKey("WildItemCommon")) this.WildItemCommon = hash["WildItemCommon"].Split(',').Select(m => m.Trim()).ToList();
 		else this.WildItemCommon = new List<string>();
 		if (hash.ContainsKey("WildItemUncommon")) this.WildItemUncommon = hash["WildItemUncommon"].Split(',').Select(m => m.Trim()).ToList();
@@ -330,19 +323,19 @@ public class Species
 		}
 		nint AbilityArray = Ruby.GetIVar(Data, "@abilities");
 		int AbilityArrayLength = (int) Ruby.Array.Length(AbilityArray);
-		this.Abilities = new List<string>();
+		this.Abilities = new List<AbilityResolver>();
 		for (int i = 0; i < AbilityArrayLength; i++)
 		{
 			string ability = Ruby.Symbol.FromPtr(Ruby.Array.Get(AbilityArray, i));
-			this.Abilities.Add(ability);
+			this.Abilities.Add((AbilityResolver) ability);
 		}
 		nint HiddenAbilityArray = Ruby.GetIVar(Data, "@hidden_abilities");
 		int HiddenAbilityArrayLength = (int) Ruby.Array.Length(HiddenAbilityArray);
-		this.HiddenAbilities = new List<string>();
+		this.HiddenAbilities = new List<AbilityResolver>();
 		for (int i = 0; i < HiddenAbilityArrayLength; i++)
 		{
 			string ability = Ruby.Symbol.FromPtr(Ruby.Array.Get(HiddenAbilityArray, i));
-			this.HiddenAbilities.Add(ability);
+			this.HiddenAbilities.Add((AbilityResolver) ability);
 		}
         nint WildItemCommonArray = Ruby.GetIVar(Data, "@wild_item_common");
         int WildItemCommonArrayLength = (int) Ruby.Array.Length(WildItemCommonArray);
@@ -648,8 +641,8 @@ public class SpeciesResolver
 		_species = Species;
 	}
 
-	public static implicit operator string(SpeciesResolver s) => s.ID; // string x = speciesResolver
-	public static implicit operator Species(SpeciesResolver s) => s.Species; // Species x = speciesResolver
-	public static explicit operator SpeciesResolver(Species s) => new SpeciesResolver(s); // SpeciesResolver x = (SpeciesResolver) species
-	public static explicit operator SpeciesResolver(string ID) => new SpeciesResolver(ID); // SpeciesResolver x = (SpeciesResolver) str
+	public static implicit operator string(SpeciesResolver s) => s.ID;
+	public static implicit operator Species(SpeciesResolver s) => s.Species;
+	public static explicit operator SpeciesResolver(Species s) => new SpeciesResolver(s);
+	public static explicit operator SpeciesResolver(string ID) => new SpeciesResolver(ID);
 }

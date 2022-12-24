@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace RPGStudioMK.Game;
 
+[DebuggerDisplay("{ID}")]
 public class Type
 {
     public static nint Class = nint.Zero;
@@ -134,14 +135,14 @@ public class TypeResolver
         this.ID = ID;
     }
 
-    public TypeResolver(Type Species)
+    public TypeResolver(Type Type)
     {
-        this.ID = Species.ID;
+        this.ID = Type.ID;
         _type = Type;
     }
 
-    public static implicit operator string(TypeResolver s) => s.ID; // string x = typeResolver
-    public static implicit operator Type(TypeResolver s) => s.Type; // Type x = typeResolver
-    public static explicit operator TypeResolver(Type s) => new TypeResolver(s); // TypeResolver x = (TypeResolver) type
-    public static explicit operator TypeResolver(string ID) => new TypeResolver(ID); // TypeResolver x = (TypeResolver) str
+    public static implicit operator string(TypeResolver s) => s.ID;
+    public static implicit operator Type(TypeResolver s) => s.Type;
+    public static explicit operator TypeResolver(Type s) => new TypeResolver(s);
+    public static explicit operator TypeResolver(string ID) => new TypeResolver(ID);
 }

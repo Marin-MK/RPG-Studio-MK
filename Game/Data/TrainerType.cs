@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace RPGStudioMK.Game;
 
+[DebuggerDisplay("{ID}")]
 public class TrainerType
 {
     public static nint Class = nint.Zero;
@@ -54,8 +56,6 @@ public class TrainerType
         {
             this.Flags.Add(Ruby.String.FromPtr(Ruby.Array.Get(FlagsArray, i)));
         }
-        Ruby.SetGlobal("$d", Data);
-        Ruby.Eval("p $d");
         if (Ruby.GetIVar(Data, "@intro_BGM") != Ruby.Nil) this.IntroBGM = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@intro_BGM"));
         if (Ruby.GetIVar(Data, "@battle_BGM") != Ruby.Nil) this.BattleBGM = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@battle_BGM"));
         if (Ruby.GetIVar(Data, "@victory_BGM") != Ruby.Nil) this.VictoryBGM = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@victory_BGM"));
@@ -82,4 +82,37 @@ public class TrainerType
         Ruby.Unpin(e);
         return e;
     }
+}
+
+[DebuggerDisplay("{ID}")]
+public class TrainerTypeResolver
+{
+    private string _id;
+    public string ID { get => _id; set { _id = value; _trainertype = null; } }
+    private TrainerType _trainertype;
+    public TrainerType TrainerType
+    {
+        get
+        {
+            if (_trainertype != null) return _trainertype;
+            _trainertype = Data.TrainerTypes[ID];
+            return _trainertype;
+        }
+    }
+
+    public TrainerTypeResolver(string ID)
+    {
+        this.ID = ID;
+    }
+
+    public TrainerTypeResolver(TrainerType TrainerType)
+    {
+        this.ID = TrainerType.ID;
+        _trainertype = TrainerType;
+    }
+
+    public static implicit operator string(TrainerTypeResolver s) => s.ID;
+    public static implicit operator TrainerType(TrainerTypeResolver s) => s.TrainerType;
+    public static explicit operator TrainerTypeResolver(TrainerType s) => new TrainerTypeResolver(s);
+    public static explicit operator TrainerTypeResolver(string ID) => new TrainerTypeResolver(ID);
 }
