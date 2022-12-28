@@ -650,7 +650,7 @@ public class MapImageWidget : Widget
         }
     }
 
-    public void DrawTiles(List<Point> Coords, int layer)
+    public void DrawTiles(List<Point> Coords, int layer, Point OriginPoint)
     {
         SetLayerLocked(layer, false);
         for (int i = 0; i < Coords.Count; i++)
@@ -658,8 +658,8 @@ public class MapImageWidget : Widget
             int MapTileX = Coords[i].X;
             int MapTileY = Coords[i].Y;
             if (MapTileX < 0 || MapTileX >= MapData.Width || MapTileY < 0 || MapTileY >= MapData.Height) continue;
-            int OriginX = MapViewer.OriginPoint.X;
-            int OriginY = MapViewer.OriginPoint.Y;
+            int OriginX = OriginPoint.X;
+            int OriginY = OriginPoint.Y;
             if (MapViewer.CursorOrigin == Location.TopRight || MapViewer.CursorOrigin == Location.BottomRight)
             {
                 OriginX -= MapViewer.CursorWidth;

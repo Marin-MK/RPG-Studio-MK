@@ -383,7 +383,9 @@ public partial class MapViewer
                             }
                         }
                     }
-                    MapWidget.DrawTiles(points, Layer);
+                    // If we're drawing a line, the origin/anchor is the old point, not the current point.
+                    // If we're not drawing a line, the origin is wherever we started the button press.
+                    MapWidget.DrawTiles(points, Layer, DrawingLine ? LastDrawnPoint : OriginPoint);
                     if (!DrawingLine)
                     {
                         LastDrawnPoint = new Point((int)Math.Floor(newx / 32d), (int)Math.Floor(newy / 32d));
