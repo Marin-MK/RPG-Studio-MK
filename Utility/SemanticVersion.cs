@@ -1,0 +1,53 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+namespace RPGStudioMK;
+
+[DebuggerDisplay("({Major}.{Minor}.{Patch})")]
+public struct SemanticVersion
+{
+    public int Major;
+    public int Minor;
+    public int Patch;
+
+    public SemanticVersion(int Major, int Minor, int Patch)
+    {
+        this.Major = Major;
+        this.Minor = Minor;
+        this.Patch = Patch;
+    }
+
+    public SemanticVersion(string Version)
+    {
+        Match m = Regex.Match(Version, @"(\d+)\.(\d+)\.(\d+)");
+        if (m.Success)
+        {
+            this.Major = Convert.ToInt32(m.Groups[1].Value);
+            this.Minor = Convert.ToInt32(m.Groups[2].Value);
+            this.Patch = Convert.ToInt32(m.Groups[3].Value);
+            return;
+        }
+        m = Regex.Match(Version, @"(\d+)\.(\d+)");
+        if (m.Success)
+        {
+            this.Major = Convert.ToInt32(m.Groups[1].Value);
+            this.Minor = Convert.ToInt32(m.Groups[2].Value);
+            this.Patch = 0;
+            return;
+        }
+        m = Regex.Match(Version, @"(\d+)");
+        if (m.Success)
+        {
+            this.Major = Convert.ToInt32(m.Groups[1].Value);
+            this.Minor = 0;
+            this.Patch = 0;
+            return;
+        }
+        throw new ArgumentException($"Invalid version format (expected A.B.C, A.B, or A), got '{Version}'.");
+    }
+}

@@ -44,7 +44,7 @@ public static partial class Data
 
     private static void LoadSpeciesFromPBS(string FilePath)
     {
-        PBSParser.ParseSectionBasedFile(ProjectPath + "/PBS/pokemon.txt", (id, hash) =>
+        FormattedTextParser.ParseSectionBasedFile(ProjectPath + "/PBS/pokemon.txt", (id, hash) =>
         {
             Species.Add(id, new Species(id, hash));
         });

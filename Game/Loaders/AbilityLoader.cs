@@ -37,7 +37,7 @@ public static partial class Data
 
     private static void LoadAbilitiesFromPBS(string FilePath)
     {
-        PBSParser.ParseSectionBasedFile(FilePath, (id, hash) =>
+        FormattedTextParser.ParseSectionBasedFile(FilePath, (id, hash) =>
         {
             Abilities.Add(id, new Ability(id, hash));
         });

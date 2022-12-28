@@ -215,8 +215,6 @@ public class TrainerPokemon
 
     public TrainerPokemon(nint Hash)
     {
-        Ruby.SetGlobal("$h", Hash);
-        Ruby.Eval("p $h");
         this.Species = (SpeciesResolver) Ruby.Symbol.FromPtr(Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("species")));
         this.Level = (int) Ruby.Integer.FromPtr(Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("level")));
         nint rform = Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("form"));

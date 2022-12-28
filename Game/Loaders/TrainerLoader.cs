@@ -37,7 +37,7 @@ public static partial class Data
 
     private static void LoadTrainersFromPBS(string FilePath)
     {
-        PBSParser.ParseSectionBasedFileWithOrder(FilePath, (id, pairs) =>
+        FormattedTextParser.ParseSectionBasedFileWithOrder(FilePath, (id, pairs) =>
         {
             Trainers.Add(new Trainer(id, pairs));
         });

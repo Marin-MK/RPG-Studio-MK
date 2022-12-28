@@ -37,7 +37,7 @@ public static partial class Data
 
     private static void LoadTypesFromPBS(string FilePath)
     {
-        PBSParser.ParseSectionBasedFile(FilePath, (id, hash) =>
+        FormattedTextParser.ParseSectionBasedFile(FilePath, (id, hash) =>
         {
             Types.Add(id, new Type(id, hash));
         });

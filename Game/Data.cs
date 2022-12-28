@@ -28,6 +28,7 @@ public static partial class Data
     public static List<Trainer> Trainers = new List<Trainer>();
     public static List<Script> Scripts = new List<Script>();
     public static System System;
+    public static List<GamePlugin> Plugins = new List<GamePlugin>();
 
     public static bool StopLoading;
 
@@ -56,6 +57,7 @@ public static partial class Data
         Trainers.Clear();
         Scripts.Clear();
         System = null;
+        Plugins.Clear();
         StopLoading = false;
         UsesExternalScripts = false;
     }
@@ -112,8 +114,13 @@ public static partial class Data
         SetLoadText("Loading trainers...");
         LoadTrainers();
 
+        if (StopLoading) return;
+        SetLoadText("Loading plugins...");
+        LoadPlugins();
+
         SetLoadText("Loading project...");
         SetLoadProgress(1f);
+
     }
 
     public static void SaveGameData()

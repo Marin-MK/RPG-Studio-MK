@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace RPGStudioMK.Utility;
 
-public static class PBSParser
+public static class FormattedTextParser
 {
     public static void ParseSectionBasedFile(string Filename, Action<string, Dictionary<string, string>> OnParseSection)
     {
@@ -69,5 +69,25 @@ public static class PBSParser
         }
         sr.Close();
         OnParseSection(CurrentID, CurrentSection);
+    }
+
+    public static void ParseSectionBasedFileWithOrderWithoutHeader(string Filename, Action<List<(string, string)>> OnParseSection)
+    {
+        if (!File.Exists(Filename)) throw new Exception($"The specified file '{Filename}' does not exist.");
+        StreamReader sr = new StreamReader(File.OpenRead(Filename));
+        List<(string, string)> CurrentSection = new List<(string, string)>();
+        while (!sr.EndOfStream)
+        {
+            string line = sr.ReadLine().Trim();
+            // Skip empty lines and comments
+            if (string.IsNullOrEmpty(line) || line[0] == '#') continue;
+            if (line.Contains("="))
+            {
+                string[] split = line.Split('=');
+                CurrentSection.Add((split[0].Trim(), split[1].Trim()));
+            }
+        }
+        sr.Close();
+        OnParseSection(CurrentSection);
     }
 }
