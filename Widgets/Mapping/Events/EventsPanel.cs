@@ -78,6 +78,7 @@ public class EventsPanel : Widget
         {
             StackPanel.Widgets[0].Dispose();
         }
+        if (Map == null) return;
         List<int> keys = Map.Events.Keys.ToList();
         keys.Sort();
         for (int i = 0; i < keys.Count; i++)

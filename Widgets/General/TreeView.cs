@@ -41,8 +41,11 @@ public class TreeView : Widget
     public void SetNodes(List<TreeNode> Nodes)
     {
         this.Nodes = Nodes;
-        SelectedNode = Nodes[0];
+        Sprites["hover"].Visible = false;
+        Sprites["hover"].Y = -24;
+        SelectedNode = Nodes.Count > 0 ? Nodes[0] : null;
         this.Redraw();
+        MouseMoving(Graphics.LastMouseEvent);
     }
 
     public override void SizeChanged(BaseEventArgs e)
@@ -64,12 +67,14 @@ public class TreeView : Widget
         }
         int height = items * 24;
         SetSize(maxwidth, height + TrailingBlank);
+        if (height == 0) height++;
         Sprites["list"].Bitmap = new Bitmap(Size.Width, height, Graphics.MaxTextureSize);
         Sprites["text"].Bitmap = new Bitmap(Size.Width, height, Graphics.MaxTextureSize);
         Sprites["list"].Bitmap.Unlock();
         Sprites["text"].Bitmap.Unlock();
 
         int y = 0;
+        Sprites["selector"].Y = -24;
         for (int i = 0; i < this.Nodes.Count; i++)
         {
             y = DrawNode(this.Nodes[i], 15, y, true, i == this.Nodes.Count - 1);
@@ -118,7 +123,7 @@ public class TreeView : Widget
 
     int GetMaxNodeWidth(List<TreeNode> Nodes, int depth = 0)
     {
-        int width = 0;
+        int width = 128;
         foreach (TreeNode n in Nodes)
         {
             int textlength = Fonts.Paragraph.TextSize(n.Name ?? n.Object.ToString()).Width;
@@ -203,6 +208,11 @@ public class TreeView : Widget
     public void SetSelectedNode(TreeNode node, bool CallEvent = true)
     {
         SelectedNode = node;
+        if (node == null && Nodes.Count == 0)
+        {
+            HoveringNode = null;
+            Sprites["hover"].Visible = false;
+        }
         if (CallEvent) this.OnSelectedNodeChanged?.Invoke(Graphics.LastMouseEvent);
         Redraw();
     }
@@ -219,6 +229,12 @@ public class TreeView : Widget
     public override void MouseMoving(MouseEventArgs e)
     {
         base.MouseMoving(e);
+        if (Nodes.Count == 0 && HoveringNode != null)
+        {
+            HoveringNode = null;
+            Sprites["hover"].Visible = false;
+            return;
+        }
         if (!Mouse.Inside) return;
         int rx = e.X - this.Viewport.X + Position.X - ScrolledPosition.X;
         int ry = e.Y - this.Viewport.Y + Position.Y - ScrolledPosition.Y;

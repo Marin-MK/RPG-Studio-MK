@@ -52,11 +52,15 @@ public class MapSelectPanel : Widget
         mapview.SetWidth(212);
         mapview.OnSelectedNodeChanged += delegate (MouseEventArgs e)
         {
-            Stopwatch.Start();
-            SetMap(Data.Maps[(int)mapview.SelectedNode.Object], true);
-            Stopwatch.Stop();
-            Editor.MainWindow.StatusBar.QueueMessage($"Loaded Map #{mapview.SelectedNode.Object} ({Stopwatch.ElapsedMilliseconds}ms)", false, 1000);
-            Stopwatch.Reset();
+            if (mapview.SelectedNode == null) SetMap(null);
+            else
+            {
+                Stopwatch.Start();
+                SetMap(Data.Maps[(int)mapview.SelectedNode.Object], true);
+                Stopwatch.Stop();
+                Editor.MainWindow.StatusBar.QueueMessage($"Loaded Map #{mapview.SelectedNode.Object} ({Stopwatch.ElapsedMilliseconds}ms)", false, 1000);
+                Stopwatch.Reset();
+            }
         };
         mapview.OnDragAndDropped += delegate (BaseEventArgs e) { DragAndDropped(); };
         mapview.OnNodeCollapseChanged += delegate (TreeNode Node, TreeNode OldSelectedNode)
@@ -106,7 +110,7 @@ public class MapSelectPanel : Widget
                 Shortcut = "Del",
                 IsClickable = delegate (BoolEventArgs e)
                 {
-                    e.Value = mapview.HoveringNode != null && mapview.Nodes.Count > 1;
+                    e.Value = mapview.HoveringNode != null && mapview.Nodes.Count > 0;
                 }
             }
         });
@@ -306,21 +310,22 @@ public class MapSelectPanel : Widget
     public void SetMap(Map Map, bool CalledFromTreeView = false)
     {
         if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetMap(Map);
-        Editor.ProjectSettings.LastMapID = Map.ID;
+        int MapID = Map?.ID ?? -1;
+        Editor.ProjectSettings.LastMapID = MapID;
         Editor.ProjectSettings.LastLayer = 0;
         if (!CalledFromTreeView) // Has yet to update the selection
         {
             TreeNode node = null;
             for (int i = 0; i < mapview.Nodes.Count; i++)
             {
-                if ((int)mapview.Nodes[i].Object == Map.ID)
+                if ((int)mapview.Nodes[i].Object == MapID)
                 {
                     node = mapview.Nodes[i];
                     break;
                 }
                 else
                 {
-                    TreeNode n = mapview.Nodes[i].FindNode(n => (int)n.Object == Map.ID);
+                    TreeNode n = mapview.Nodes[i].FindNode(n => (int)n.Object == MapID);
                     if (n != null)
                     {
                         node = n;
@@ -345,7 +350,7 @@ public class MapSelectPanel : Widget
         Sprites["block"].Y = Size.Height - 11;
     }
 
-    private void NewMap(BaseEventArgs e)
+    public void NewMap(BaseEventArgs e)
     {
         Map Map = new Map("Untitled Map", Editor.GetFreeMapID());
         Map.TilesetIDs.Add(1);
@@ -457,7 +462,8 @@ public class MapSelectPanel : Widget
                 }
                 mapview.Nodes.Remove(mapview.HoveringNode);
                 SortNodeList(mapview.Nodes);
-                mapview.SetSelectedNode(mapview.Nodes[i > 0 ? i - 1 : 0]);
+                if (mapview.Nodes.Count > 0) mapview.SetSelectedNode(mapview.Nodes[i > 0 ? i - 1 : 0]);
+                else mapview.SetSelectedNode(null);
                 break;
             }
             else
@@ -518,7 +524,7 @@ public class MapSelectPanel : Widget
 
     private void DeleteMap(BaseEventArgs e)
     {
-        if (mapview.Nodes.Count <= 1) return;
+        if (mapview.Nodes.Count <= 0) return;
         string message = "Are you sure you want to delete this map?";
         if (mapview.HoveringNode.Nodes.Count > 0) message += " All of its children will also be deleted.";
         DeleteMapPopup confirm = new DeleteMapPopup(mapview.HoveringNode.Nodes.Count > 0, "Warning", message, ButtonType.YesNoCancel, IconType.Warning);

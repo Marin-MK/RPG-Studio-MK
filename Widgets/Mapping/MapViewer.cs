@@ -58,6 +58,8 @@ public partial class MapViewer : Widget
     public Widget SidebarWidgetEvents;
     public CursorWidget Cursor;
 
+    Container NoMapContainer;
+
     HintWindow HintWindow;
 
     public MapViewer(IContainer Parent) : base(Parent)
@@ -267,6 +269,8 @@ public partial class MapViewer : Widget
         this.Map = Map;
 
         MapWidget.SetMap(Map);
+        MapWidget.SetVisible(Map != null);
+        Cursor.SetVisible(Map != null && MainContainer.Mouse.Inside);
 
         CancelSelection(new BaseEventArgs());
         LayerPanel.CreateLayers();
@@ -289,10 +293,42 @@ public partial class MapViewer : Widget
         PositionMap();
         MainContainer.HScrollBar.SetValue(0.5);
         MainContainer.VScrollBar.SetValue(0.5);
+
+        if (Map == null)
+        {
+            NoMapContainer = new Container(MainContainer);
+            Label NoMapsLabel = new Label(NoMapContainer);
+            NoMapsLabel.SetFont(Fonts.Paragraph);
+            NoMapsLabel.SetText("You don't have any maps yet. Get started by creating one now.");
+            NoMapsLabel.RedrawText(true);
+            NoMapContainer.SetSize(NoMapsLabel.Size.Width, 64);
+            Button CreateMapButton = new Button(NoMapContainer);
+            CreateMapButton.SetWidth(128);
+            CreateMapButton.SetPosition(NoMapContainer.Size.Width / 2 - CreateMapButton.Size.Width / 2, 30);
+            CreateMapButton.SetText("Create Map");
+            CreateMapButton.OnClicked += _ =>
+            {
+                Editor.MainWindow.MapWidget.MapSelectPanel.NewMap(new BaseEventArgs());
+            };
+            PositionMap();
+        }
+        else
+        {
+            NoMapContainer?.Dispose();
+            NoMapContainer = null;
+        }
     }
 
     public virtual void PositionMap()
     {
+        if (Map == null)
+        {
+            MapWidget.SetPosition(0, 0);
+            MapWidget.SetSize(1, 1);
+            DummyWidget.SetSize(MainContainer.Size);
+            NoMapContainer?.SetPosition(MainContainer.Size.Width / 2 - NoMapContainer.Size.Width / 2, MainContainer.Size.Height / 2 - NoMapContainer.Size.Height / 2);
+            return;
+        }
         int w = (int)Math.Round(Map.Width * 32d * ZoomFactor);
         int h = (int)Math.Round(Map.Height * 32d * ZoomFactor);
         int minx = MainContainer.Size.Width / 2 - w / 2;

@@ -27,12 +27,12 @@ public class LayerWidget : Widget
         this.Layers = Layers;
         SelectedLayer = 0;
         Redraw();
-        SetSize(278, Layers.Count * 24);
+        SetSize(278, (Layers?.Count ?? 1) * 24);
     }
 
     public void UpdateLayers()
     {
-        SetHeight(Layers.Count * 24);
+        SetHeight((Layers?.Count ?? 1) * 24);
         Redraw();
     }
 
@@ -74,10 +74,12 @@ public class LayerWidget : Widget
 
     protected override void Draw()
     {
+        base.Draw();
         Sprites["bg"].Bitmap?.Dispose();
+        Sprites["text"].Bitmap?.Dispose();
+        if (Layers == null) return;
         Sprites["bg"].Bitmap = new Bitmap(Size.Width, 24 * Layers.Count);
         Sprites["bg"].Bitmap.Unlock();
-        Sprites["text"].Bitmap?.Dispose();
         Sprites["text"].Bitmap = new Bitmap(Size.Width, 24 * Layers.Count);
         Sprites["text"].Bitmap.Unlock();
         Sprites["text"].Bitmap.Font = Fonts.Paragraph;
@@ -97,7 +99,6 @@ public class LayerWidget : Widget
         }
         Sprites["bg"].Bitmap.Lock();
         Sprites["text"].Bitmap.Lock();
-        base.Draw();
     }
 
     public override void HoverChanged(MouseEventArgs e)
@@ -113,6 +114,7 @@ public class LayerWidget : Widget
     public override void MouseMoving(MouseEventArgs e)
     {
         base.MouseMoving(e);
+        if (Layers == null) return;
         if (MapViewer.UsingLeft || MapViewer.UsingRight || TilesPanel.UsingLeft || TilesPanel.UsingRight) return;
         if (!Mouse.Inside)
         {
@@ -129,6 +131,7 @@ public class LayerWidget : Widget
     public override void MouseDown(MouseEventArgs e)
     {
         base.MouseDown(e);
+        if (Layers == null) return;
         if (MapViewer.UsingLeft || MapViewer.UsingRight || TilesPanel.UsingLeft || TilesPanel.UsingRight) return;
         if (Mouse.Inside)
         {

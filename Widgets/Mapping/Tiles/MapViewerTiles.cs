@@ -182,6 +182,7 @@ public partial class MapViewer
 
     public void UpdateTilePlacement(MouseEventArgs e, int oldx = -1, int oldy = -1, int newx = -1, int newy = -1)
     {
+        if (Map == null) return;
         if (!MainContainer.Mouse.Inside) return;
         if (MainContainer.HScrollBar != null && (MainContainer.HScrollBar.SliderDragging || MainContainer.HScrollBar.SliderHovering)) return;
         if (MainContainer.VScrollBar != null && (MainContainer.VScrollBar.SliderDragging || MainContainer.VScrollBar.SliderHovering)) return;
@@ -636,6 +637,7 @@ public partial class MapViewer
 
     private partial void MouseMovingTiles(MouseEventArgs e)
     {
+        if (Map == null) return;
         if (Mode == MapMode.Tiles)
         {
             if (TilesPanel.UsingLeft || TilesPanel.UsingRight || LayerPanel.UsingLeft || LayerPanel.UsingRight) return;

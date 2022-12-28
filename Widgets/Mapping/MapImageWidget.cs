@@ -36,6 +36,7 @@ public class MapImageWidget : Widget
 
     public void SetZoomFactor(double factor)
     {
+        if (MapData == null) return;
         for (int i = 0; i < MapData.Layers.Count; i++)
         {
             Sprites[i.ToString()].ZoomX = factor;
@@ -213,6 +214,11 @@ public class MapImageWidget : Widget
 
     public virtual void UpdateSize()
     {
+        if (MapData == null)
+        {
+            this.SetSize(320, 320);
+            return;
+        }
         int Width = (int)Math.Round(MapData.Width * 32 * ZoomFactor);
         int Height = (int)Math.Round(MapData.Height * 32 * ZoomFactor);
         this.SetSize(Width, Height);
@@ -221,7 +227,7 @@ public class MapImageWidget : Widget
     public virtual void SetMap(Map MapData, int RelativeX = 0, int RelativeY = 0)
     {
         this.MapData = MapData;
-        this.MapID = MapData.ID;
+        this.MapID = MapData?.ID ?? -1;
         this.RelativeX = RelativeX;
         this.RelativeY = RelativeY;
         UpdateSize();
@@ -238,6 +244,7 @@ public class MapImageWidget : Widget
                 this.Sprites.Remove(key);
             }
         }
+        if (MapData == null) return;
         // Create layers
         for (int i = 0; i < MapData.Layers.Count; i++)
         {
@@ -270,6 +277,7 @@ public class MapImageWidget : Widget
 
     public List<Point> GetTilesFromMouse(int oldx, int oldy, int newx, int newy, int layer)
     {
+        if (this.MapData == null) return new List<Point>();
         List<Point> Coords = new List<Point>();
         switch (MapViewer.TilesPanel.DrawTool)
         {

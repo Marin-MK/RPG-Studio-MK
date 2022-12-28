@@ -225,6 +225,17 @@ public class TilesPanel : Widget
         this.AutotileContainers.Clear();
         if (SingleAutotileContainer is CollapsibleContainer) SingleAutotileContainer.Dispose();
         SingleAutotileContainer = null;
+        for (int i = 0; i < this.TilesetContainers.Count; i++)
+        {
+            this.TilesetContainers[i].Dispose();
+        }
+        this.TilesetContainers.Clear();
+        if (this.MapData == null)
+        {
+            MainStackPanel.UpdateLayout();
+            UpdateCursor();
+            return;
+        }
         Bitmap singles = null;
         SingleAutotileCount = MapData.AutotileIDs.FindAll(id => id != -1 && Data.Autotiles[id] != null/*Data.Autotiles[id].Format == AutotileFormat.Single*/).Count;
         if (SingleAutotileCount > 0)
@@ -285,11 +296,6 @@ public class TilesPanel : Widget
             bmp.Lock();*/
         }
         if (singles != null) singles.Lock();
-        for (int i = 0; i < this.TilesetContainers.Count; i++)
-        {
-            this.TilesetContainers[i].Dispose();
-        }
-        this.TilesetContainers.Clear();
         for (int i = 0; i < MapData.TilesetIDs.Count; i++)
         {
             int tilesetid = MapData.TilesetIDs[i];
@@ -482,6 +488,7 @@ public class TilesPanel : Widget
 
     public void SelectTile(TileData tile)
     {
+        if (this.MapData == null) return;
         if (tile == null)
         {
             TilesetIndex = -1;
@@ -529,6 +536,11 @@ public class TilesPanel : Widget
 
     public void UpdateCursor()
     {
+        if (this.MapData == null)
+        {
+            Cursor.SetVisible(false);
+            return;
+        }
         if (MapViewer.SelectionOnMap)
         {
             AutotileIndex = AutotileCombination = TilesetIndex = TileStartX = TileEndX = TileStartY = TileEndY = -1;

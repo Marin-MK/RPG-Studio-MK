@@ -84,11 +84,13 @@ public class LayerPanel : Widget
 
     public void CreateLayers()
     {
-        layerwidget.SetLayers(Map.Layers);
+        layerwidget.SetLayers(Map?.Layers);
     }
 
     public override void Update()
     {
+        base.Update();
+        if (this.Map == null) return;
         if (this.SelectedWidget)
         {
             if (SelectedLayer > 0 && Input.Trigger(Keycode.DOWN))
@@ -100,7 +102,6 @@ public class LayerPanel : Widget
                 layerwidget.SetSelectedLayer(SelectedLayer + 1);
             }
         }
-        base.Update();
     }
 
     public override void WidgetSelected(BaseEventArgs e)

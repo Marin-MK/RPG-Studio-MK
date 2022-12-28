@@ -27,6 +27,7 @@ public partial class MapViewer
     {
         for (int i = 0; i < EventBoxes.Count; i++) EventBoxes[i].Dispose();
         EventBoxes.Clear();
+        if (Map == null) return;
         foreach (KeyValuePair<int, Event> kvp in Map.Events)
         {
             CreateEventBox(kvp.Value);
@@ -113,6 +114,7 @@ public partial class MapViewer
 
     public void OpenOrCreateEventCursorIsOver()
     {
+        if (Map == null) return;
         bool found = false;
         foreach (EventBox eb in EventBoxes)
         {
@@ -138,6 +140,7 @@ public partial class MapViewer
 
     public void DeleteEventCursorIsOver(bool Undoable)
     {
+        if (Map == null) return;
         EventBox box = null;
         foreach (EventBox eb in EventBoxes)
         {
@@ -220,12 +223,14 @@ public partial class MapViewer
 
     public void MoveCursorLeft()
     {
+        if (Map == null) return;
         MapTileX -= 1;
         SelectEventBoxCursorIsOver();
     }
 
     public void MoveCursorRight()
     {
+        if (Map == null) return;
         bool found = false;
         foreach (EventBox eb in EventBoxes)
         {
@@ -242,6 +247,7 @@ public partial class MapViewer
 
     public void MoveCursorUp()
     {
+        if (Map == null) return;
         bool found = false;
         foreach (EventBox eb in EventBoxes)
         {
@@ -258,12 +264,14 @@ public partial class MapViewer
 
     public void MoveCursorDown()
     {
+        if (Map == null) return;
         MapTileY += 1;
         SelectEventBoxCursorIsOver();
     }
 
     private partial void MouseDownEvents(MouseEventArgs e)
     {
+        if (Map == null) return;
         if (Mode == MapMode.Events && Mouse.LeftMouseTriggered && MainContainer.Mouse.Inside)
         {
             int rx = e.X - MapWidget.Viewport.X;
@@ -300,6 +308,7 @@ public partial class MapViewer
 
     private partial void MouseMovingEvents(MouseEventArgs e)
     {
+        if (Map == null) return;
         if (Mode == MapMode.Events && DraggingEvent != null && Mouse.LeftMousePressed)
         {
             int rx = e.X - MapWidget.Viewport.X;
