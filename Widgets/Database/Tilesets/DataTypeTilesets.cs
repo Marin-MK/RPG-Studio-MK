@@ -109,6 +109,7 @@ public class DataTypeTilesets : Widget
         NameLabel = new Label(MainBox);
         NameLabel.SetText("Name");
         NameLabel.SetFont(Fonts.Paragraph);
+        NameLabel.RedrawText(true);
         NameBox = new TextBox(MainBox);
         NameBox.SetSize(180, 25);
         NameBox.SetFont(Fonts.Paragraph);
@@ -132,6 +133,7 @@ public class DataTypeTilesets : Widget
         GraphicLabel = new Label(MainBox);
         GraphicLabel.SetText("Tileset Graphic");
         GraphicLabel.SetFont(Fonts.Paragraph);
+        GraphicLabel.RedrawText(true);
         GraphicBox = new PickerBox(MainBox);
         GraphicBox.SetSize(180, 25);
         GraphicBox.SetFont(Fonts.Paragraph);
@@ -167,6 +169,7 @@ public class DataTypeTilesets : Widget
             Label AutotileLabel = new Label(MainBox);
             AutotileLabel.SetText($"Autotile {i + 1}");
             AutotileLabel.SetFont(Fonts.Paragraph);
+            AutotileLabel.RedrawText(true);
             AutotileLabels.Add(AutotileLabel);
             PickerBox AutotileBox = new PickerBox(MainBox);
             AutotileBox.SetSize(162, 25);
@@ -207,6 +210,7 @@ public class DataTypeTilesets : Widget
         FogLabel = new Label(MainBox);
         FogLabel.SetText("Fog Graphic");
         FogLabel.SetFont(Fonts.Paragraph);
+        FogLabel.RedrawText(true);
         FogBox = new PickerBox(MainBox);
         FogBox.SetSize(180, 25);
         FogBox.SetFont(Fonts.Paragraph);
@@ -244,6 +248,7 @@ public class DataTypeTilesets : Widget
         PanoramaLabel = new Label(MainBox);
         PanoramaLabel.SetText("Panorama Graphic");
         PanoramaLabel.SetFont(Fonts.Paragraph);
+        PanoramaLabel.RedrawText(true);
         PanoramaBox = new PickerBox(MainBox);
         PanoramaBox.SetSize(180, 25);
         PanoramaBox.SetFont(Fonts.Paragraph);
@@ -287,6 +292,7 @@ public class DataTypeTilesets : Widget
 16 = Puddle
 17 = No effect"
         );
+        TagDetailLabel.RedrawText(true);
         TagDetailLabel.SetPosition(680, 18);
         TagDetailLabel.SetWidth(400);
         TagDetailLabel.SetVisible(false);
@@ -348,6 +354,7 @@ public class DataTypeTilesets : Widget
                 NameLabel.SetPosition(102 - NameLabel.Size.Width, 20);
                 NameBox.SetPosition(110, 18);
                 GraphicLabel.SetText("Graphic");
+                GraphicLabel.RedrawText(true);
                 GraphicLabel.SetPosition(102 - GraphicLabel.Size.Width, 53);
                 GraphicBox.SetPosition(110, 51);
                 for (int i = 0; i < 7; i++)
@@ -358,6 +365,7 @@ public class DataTypeTilesets : Widget
                 FogLabel.SetPosition(102 - FogLabel.Size.Width, 426);
                 FogBox.SetPosition(110, 424);
                 PanoramaLabel.SetText("Panorama");
+                PanoramaLabel.RedrawText(true);
                 PanoramaLabel.SetPosition(102 - PanoramaLabel.Size.Width, 459);
                 PanoramaBox.SetPosition(110, 457);
             }
@@ -366,6 +374,7 @@ public class DataTypeTilesets : Widget
                 NameLabel.SetPosition(148 - NameLabel.Size.Width, 20);
                 NameBox.SetPosition(156, 18);
                 GraphicLabel.SetText("Tileset Graphic");
+                GraphicLabel.RedrawText(true);
                 GraphicLabel.SetPosition(148 - GraphicLabel.Size.Width, 53);
                 GraphicBox.SetPosition(156, 51);
                 for (int i = 0; i < 7; i++)
@@ -376,6 +385,7 @@ public class DataTypeTilesets : Widget
                 FogLabel.SetPosition(148 - FogLabel.Size.Width, 426);
                 FogBox.SetPosition(156, 424);
                 PanoramaLabel.SetText("Panorama Name");
+                PanoramaLabel.RedrawText(true);
                 PanoramaLabel.SetPosition(148 - PanoramaLabel.Size.Width, 459);
                 PanoramaBox.SetPosition(156, 457);
             }
@@ -397,6 +407,7 @@ public class DataTypeTilesets : Widget
             NameLabel.SetPosition(148 - NameLabel.Size.Width, 20);
             NameBox.SetPosition(156, 18);
             GraphicLabel.SetText("Tileset Graphic");
+            GraphicLabel.RedrawText(true);
             GraphicLabel.SetPosition(148 - GraphicLabel.Size.Width, 53);
             GraphicBox.SetPosition(156, 51);
             for (int i = 0; i < 7; i++)
@@ -407,6 +418,7 @@ public class DataTypeTilesets : Widget
             FogLabel.SetPosition(148 - FogLabel.Size.Width, 426);
             FogBox.SetPosition(156, 424);
             PanoramaLabel.SetText("Panorama Name");
+            PanoramaLabel.RedrawText(true);
             PanoramaLabel.SetPosition(148 - PanoramaLabel.Size.Width, 459);
             PanoramaBox.SetPosition(156, 457);
 
