@@ -20,8 +20,13 @@ public static class FormattedTextParser
             string line = sr.ReadLine().Trim();
             // Skip empty lines and comments
             if (string.IsNullOrEmpty(line) || line[0] == '#') continue;
-            if (line[0] == '[' && line[^1] == ']') // Start a section
+            if (line[0] == '[' && line.Contains(']')) // Start a section
             {
+                if (line.Contains('#'))
+                {
+                    line = line.Substring(0, line.IndexOf('#')).Trim();
+                }
+                if (line[^1] != ']') throw new Exception($"Invalid PBS data in '{Filename}' line:\n{line}");
                 if (CurrentID != null)
                 {
                     // Parse the previous section
@@ -51,8 +56,13 @@ public static class FormattedTextParser
             string line = sr.ReadLine().Trim();
             // Skip empty lines and comments
             if (string.IsNullOrEmpty(line) || line[0] == '#') continue;
-            if (line[0] == '[' && line[^1] == ']') // Start a section
+            if (line[0] == '[' && line.Contains(']')) // Start a section
             {
+                if (line.Contains('#'))
+                {
+                    line = line.Substring(0, line.IndexOf('#')).Trim();
+                }
+                if (line[^1] != ']') throw new Exception($"Invalid PBS data in '{Filename}' line:\n{line}");
                 if (CurrentID != null)
                 {
                     // Parse the previous section

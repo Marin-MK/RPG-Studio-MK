@@ -79,9 +79,9 @@ public class Species
         this.BaseStats.HP = Convert.ToInt32(_stats[0]);
         this.BaseStats.Attack = Convert.ToInt32(_stats[1]);
         this.BaseStats.Defense = Convert.ToInt32(_stats[2]);
-        this.BaseStats.SpecialAttack = Convert.ToInt32(_stats[3]);
-        this.BaseStats.SpecialDefense = Convert.ToInt32(_stats[4]);
-        this.BaseStats.Speed = Convert.ToInt32(_stats[5]);
+        this.BaseStats.SpecialAttack = Convert.ToInt32(_stats[4]);
+        this.BaseStats.SpecialDefense = Convert.ToInt32(_stats[5]);
+        this.BaseStats.Speed = Convert.ToInt32(_stats[3]);
         string[] _evs = hash["EVs"].Split(',');
         this.EVs = new Stats();
         for (int i = 0; i < _evs.Length - 1; i += 2)
@@ -161,117 +161,6 @@ public class Species
 		if (hash.ContainsKey("UnmegaForm")) this.UnmegaForm = Convert.ToInt32(hash["UnmegaForm"]);
 		if (hash.ContainsKey("MegaMessage")) this.MegaMessage = Convert.ToInt32(hash["MegaMessage"]);
 	}
-
-	private GrowthRate GrowthRateStrToEnum(string growth)
-	{
-		return growth switch
-		{
-			"Medium" => GrowthRate.Medium,
-			"Fast" => GrowthRate.Fast,
-			"Parabolic" => GrowthRate.Parabolic,
-			"Slow" => GrowthRate.Slow,
-			"Erratic" => GrowthRate.Erratic,
-			"Fluctuating" => GrowthRate.Fluctuating,
-			_ => throw new Exception($"Invalid growth rate '{growth}'.")
-		};
-	}
-
-	private GenderRatio GenderRatioStrToEnum(string ratio)
-	{
-		return ratio switch
-        {
-            "AlwaysMale" => GenderRatio.AlwaysMale,
-            "AlwaysFemale" => GenderRatio.AlwaysFemale,
-            "Genderless" => GenderRatio.Genderless,
-            "FemaleOneEighth" => GenderRatio.FemaleOneEighth,
-            "Female25Percent" => GenderRatio.Female25Percent,
-            "Female50Percent" => GenderRatio.Female50Percent,
-            "Female75Percent" => GenderRatio.Female75Percent,
-            "FemaleSevenEighths" => GenderRatio.FemaleSevenEighths,
-            _ => throw new Exception($"Invalid gender ratio '{ratio}'.")
-        };
-    }
-
-	private EggGroup EggGroupStrToEnum(string group)
-	{
-		return group switch
-		{
-			"Undiscovered" => EggGroup.Undiscovered,
-			"Monster" => EggGroup.Monster,
-			"Water1" => EggGroup.Water1,
-			"Bug" => EggGroup.Bug,
-			"Flying" => EggGroup.Flying,
-			"Field" => EggGroup.Field,
-			"Fairy" => EggGroup.Fairy,
-			"Grass" => EggGroup.Grass,
-			"Humanlike" => EggGroup.HumanLike,
-			"Water3" => EggGroup.Water3,
-			"Mineral" => EggGroup.Mineral,
-			"Amorphous" => EggGroup.Amorphous,
-			"Water2" => EggGroup.Water2,
-			"Ditto" => EggGroup.Ditto,
-			"Dragon" => EggGroup.Dragon,
-			_ => throw new Exception($"Invalid egg group '{group}'.")
-		};
-    }
-
-	private BodyColor ColorStrToEnum(string color)
-	{
-		return color switch
-        {
-            "Red" => BodyColor.Red,
-            "Blue" => BodyColor.Blue,
-            "Yellow" => BodyColor.Yellow,
-            "Green" => BodyColor.Green,
-            "Black" => BodyColor.Black,
-            "Brown" => BodyColor.Brown,
-            "Purple" => BodyColor.Purple,
-            "Gray" => BodyColor.Gray,
-            "White" => BodyColor.White,
-            "Pink" => BodyColor.Pink,
-            _ => throw new Exception($"Invalid body color '{color}'.")
-        };
-    }
-
-	private BodyShape ShapeStrToEnum(string shape)
-	{
-		return shape switch
-        {
-            "Head" => BodyShape.Head,
-            "Serpentine" => BodyShape.Serpentine,
-            "Finned" => BodyShape.Finned,
-            "HeadArms" => BodyShape.HeadAndArms,
-            "HeadBase" => BodyShape.HeadAndBase,
-            "BipedalTail" => BodyShape.BipedalWithTail,
-            "HeadLegs" => BodyShape.HeadAndLegs,
-            "Quadruped" => BodyShape.Quadruped,
-            "Winged" => BodyShape.Winged,
-            "Multiped" => BodyShape.Multiped,
-            "MultiBody" => BodyShape.MultiBody,
-            "Bipedal" => BodyShape.Bipedal,
-            "MultiWinged" => BodyShape.MultiWinged,
-            "Insectoid" => BodyShape.Insectoid,
-            _ => throw new Exception($"Invalid body shape '{shape}'.")
-        };
-    }
-
-    private Habitat HabitatStrToEnum(string habitat)
-    {
-        return habitat switch
-        {
-            "None" => Habitat.None,
-            "Grassland" => Habitat.Grassland,
-            "Forest" => Habitat.Forest,
-            "WatersEdge" => Habitat.WatersEdge,
-            "Sea" => Habitat.Sea,
-            "Cave" => Habitat.Cave,
-            "Mountain" => Habitat.Mountain,
-            "RoughTerrain" => Habitat.RoughTerrain,
-            "Urban" => Habitat.Urban,
-            "Rare" => Habitat.Rare,
-            _ => throw new Exception($"Invalid habitat '{habitat}'.")
-        };
-    }
 
 	public Species(nint Data)
 	{
@@ -431,29 +320,9 @@ public class Species
 		Ruby.SetIVar(e, "@base_stats", this.BaseStats.Save());
 		Ruby.SetIVar(e, "@evs", this.EVs.Save());
 		Ruby.SetIVar(e, "@base_exp", Ruby.Integer.ToPtr(this.BaseEXP));
-        string rgrowth = this.GrowthRate switch
-        {
-            GrowthRate.Medium => "Medium",
-            GrowthRate.Fast => "Fast",
-            GrowthRate.Parabolic => "Parabolic",
-            GrowthRate.Slow => "Slow",
-            GrowthRate.Erratic => "Erratic",
-            GrowthRate.Fluctuating => "Fluctuating",
-            _ => throw new Exception($"Invalid growth rate '{this.GrowthRate}'.")
-        };
+        string rgrowth = GrowthRateEnumToStr(this.GrowthRate);
 		Ruby.SetIVar(e, "@growth_rate", Ruby.Symbol.ToPtr(rgrowth));
-        string rratio = this.GenderRatio switch
-        {
-            GenderRatio.AlwaysMale => "AlwaysMale",
-            GenderRatio.AlwaysFemale => "AlwaysFemale",
-            GenderRatio.Genderless => "Genderless",
-            GenderRatio.FemaleOneEighth => "FemaleOneEighth",
-            GenderRatio.Female25Percent => "Female25Percent",
-            GenderRatio.Female50Percent => "Female50Percent",
-            GenderRatio.Female75Percent => "Female75Percent",
-            GenderRatio.FemaleSevenEighths => "FemaleSevenEighths",
-            _ => throw new Exception($"Invalid gender ratio '{this.GenderRatio}'.")
-        };
+        string rratio = GenderRatioEnumToStr(this.GenderRatio);
 		Ruby.SetIVar(e, "@gender_ratio", Ruby.Symbol.ToPtr(rratio));
 		Ruby.SetIVar(e, "@catch_rate", Ruby.Integer.ToPtr(this.CatchRate));
 		Ruby.SetIVar(e, "@happiness", Ruby.Integer.ToPtr(this.Happiness));
@@ -512,25 +381,7 @@ public class Species
         Ruby.SetIVar(e, "@egg_groups", EggGroupsArray);
         foreach (EggGroup group in EggGroups)
         {
-			string rgroup = group switch
-			{
-				EggGroup.Undiscovered => "Undiscovered",
-				EggGroup.Monster => "Monster",
-				EggGroup.Water1 => "Water1",
-				EggGroup.Bug => "Bug",
-				EggGroup.Flying => "Flying",
-				EggGroup.Field => "Field",
-				EggGroup.Fairy => "Fairy",
-				EggGroup.Grass => "Grass",
-				EggGroup.HumanLike => "Humanlike",
-				EggGroup.Water3 => "Water3",
-				EggGroup.Mineral => "Mineral",
-				EggGroup.Amorphous => "Amorphous",
-				EggGroup.Water2 => "Water2",
-				EggGroup.Ditto => "Ditto",
-				EggGroup.Dragon => "Dragon",
-				_ => throw new Exception($"Invalid egg group '{group}'.")
-			};
+            string rgroup = EggGroupEnumToStr(group);
             Ruby.Array.Push(EggGroupsArray, Ruby.Symbol.ToPtr(rgroup));
         }
 		Ruby.SetIVar(e, "@hatch_steps", Ruby.Integer.ToPtr(this.HatchSteps));
@@ -543,54 +394,11 @@ public class Species
 		}
 		Ruby.SetIVar(e, "@height", Ruby.Integer.ToPtr((int) (this.Height * 10)));
 		Ruby.SetIVar(e, "@weight", Ruby.Integer.ToPtr((int) (this.Weight * 10)));
-        string rcolor = this.Color switch
-        {
-            BodyColor.Red => "Red",
-            BodyColor.Blue => "Blue",
-            BodyColor.Yellow => "Yellow",
-            BodyColor.Green => "Green",
-            BodyColor.Black => "Black",
-            BodyColor.Brown => "Brown",
-            BodyColor.Purple => "Purple",
-            BodyColor.Gray => "Gray",
-            BodyColor.White => "White",
-            BodyColor.Pink => "Pink",
-            _ => throw new Exception($"Invalid body color '{this.Color}'.")
-        };
+        string rcolor = ColorEnumToStr(this.Color);
 		Ruby.SetIVar(e, "@color", Ruby.Symbol.ToPtr(rcolor));
-        string rshape = this.Shape switch
-        {
-            BodyShape.Head => "Head",
-            BodyShape.Serpentine => "Serpentine",
-            BodyShape.Finned => "Finned",
-            BodyShape.HeadAndArms => "HeadArms",
-            BodyShape.HeadAndBase => "HeadBase",
-            BodyShape.BipedalWithTail => "BipedalTail",
-            BodyShape.HeadAndLegs => "HeadLegs",
-            BodyShape.Quadruped => "Quadruped",
-            BodyShape.Winged => "Winged",
-            BodyShape.Multiped => "Multiped",
-            BodyShape.MultiBody => "MultiBody",
-            BodyShape.Bipedal => "Bipedal",
-            BodyShape.MultiWinged => "MultiWinged",
-            BodyShape.Insectoid => "Insectoid",
-            _ => throw new Exception($"Invalid body shape '{this.Shape}'.")
-        };
+        string rshape = ShapeEnumToStr(this.Shape);
 		Ruby.SetIVar(e, "@shape", Ruby.Symbol.ToPtr(rshape));
-        string rhabitat = this.Habitat switch
-        {
-            Habitat.None => "None",
-            Habitat.Grassland => "Grassland",
-            Habitat.Forest => "Forest",
-            Habitat.WatersEdge => "WatersEdge",
-            Habitat.Sea => "Sea",
-            Habitat.Cave => "Cave",
-            Habitat.Mountain => "Mountain",
-            Habitat.RoughTerrain => "RoughTerrain",
-            Habitat.Urban => "Urban",
-            Habitat.Rare => "Rare",
-            _ => throw new Exception($"Invalid habitat '{this.Habitat}'.")
-        };
+        string rhabitat = HabitatEnumToStr(this.Habitat);
 		Ruby.SetIVar(e, "@habitat", Ruby.Symbol.ToPtr(rhabitat));
 		Ruby.SetIVar(e, "@generation", Ruby.Integer.ToPtr(this.Generation));
 		nint FlagsArray = Ruby.Array.Create();
@@ -611,6 +419,228 @@ public class Species
         }
         Ruby.Unpin(e);
         return e;
+    }
+
+    public static GrowthRate GrowthRateStrToEnum(string growth)
+    {
+        return growth switch
+        {
+            "Medium" => GrowthRate.Medium,
+            "Fast" => GrowthRate.Fast,
+            "Parabolic" => GrowthRate.Parabolic,
+            "Slow" => GrowthRate.Slow,
+            "Erratic" => GrowthRate.Erratic,
+            "Fluctuating" => GrowthRate.Fluctuating,
+            _ => throw new Exception($"Invalid growth rate '{growth}'.")
+        };
+    }
+
+    public static string GrowthRateEnumToStr(GrowthRate growth)
+    {
+        return growth switch
+        {
+            GrowthRate.Medium => "Medium",
+            GrowthRate.Fast => "Fast",
+            GrowthRate.Parabolic => "Parabolic",
+            GrowthRate.Slow => "Slow",
+            GrowthRate.Erratic => "Erratic",
+            GrowthRate.Fluctuating => "Fluctuating",
+            _ => throw new Exception($"Invalid growth rate '{growth}'.")
+        };
+    }
+
+    public static GenderRatio GenderRatioStrToEnum(string ratio)
+    {
+        return ratio switch
+        {
+            "AlwaysMale" => GenderRatio.AlwaysMale,
+            "AlwaysFemale" => GenderRatio.AlwaysFemale,
+            "Genderless" => GenderRatio.Genderless,
+            "FemaleOneEighth" => GenderRatio.FemaleOneEighth,
+            "Female25Percent" => GenderRatio.Female25Percent,
+            "Female50Percent" => GenderRatio.Female50Percent,
+            "Female75Percent" => GenderRatio.Female75Percent,
+            "FemaleSevenEighths" => GenderRatio.FemaleSevenEighths,
+            _ => throw new Exception($"Invalid gender ratio '{ratio}'.")
+        };
+    }
+
+    public static string GenderRatioEnumToStr(GenderRatio ratio)
+    {
+        return ratio switch
+        {
+            GenderRatio.AlwaysMale => "AlwaysMale",
+            GenderRatio.AlwaysFemale => "AlwaysFemale",
+            GenderRatio.Genderless => "Genderless",
+            GenderRatio.FemaleOneEighth => "FemaleOneEighth",
+            GenderRatio.Female25Percent => "Female25Percent",
+            GenderRatio.Female50Percent => "Female50Percent",
+            GenderRatio.Female75Percent => "Female75Percent",
+            GenderRatio.FemaleSevenEighths => "FemaleSevenEighths",
+            _ => throw new Exception($"Invalid gender ratio '{ratio}'.")
+        };
+    }
+
+    public static EggGroup EggGroupStrToEnum(string group)
+    {
+        return group switch
+        {
+            "Undiscovered" => EggGroup.Undiscovered,
+            "Monster" => EggGroup.Monster,
+            "Water1" => EggGroup.Water1,
+            "Bug" => EggGroup.Bug,
+            "Flying" => EggGroup.Flying,
+            "Field" => EggGroup.Field,
+            "Fairy" => EggGroup.Fairy,
+            "Grass" => EggGroup.Grass,
+            "Humanlike" => EggGroup.HumanLike,
+            "Water3" => EggGroup.Water3,
+            "Mineral" => EggGroup.Mineral,
+            "Amorphous" => EggGroup.Amorphous,
+            "Water2" => EggGroup.Water2,
+            "Ditto" => EggGroup.Ditto,
+            "Dragon" => EggGroup.Dragon,
+            _ => throw new Exception($"Invalid egg group '{group}'.")
+        };
+    }
+
+    public static string EggGroupEnumToStr(EggGroup group)
+    {
+        return group switch
+        {
+            EggGroup.Undiscovered => "Undiscovered",
+            EggGroup.Monster => "Monster",
+            EggGroup.Water1 => "Water1",
+            EggGroup.Bug => "Bug",
+            EggGroup.Flying => "Flying",
+            EggGroup.Field => "Field",
+            EggGroup.Fairy => "Fairy",
+            EggGroup.Grass => "Grass",
+            EggGroup.HumanLike => "Humanlike",
+            EggGroup.Water3 => "Water3",
+            EggGroup.Mineral => "Mineral",
+            EggGroup.Amorphous => "Amorphous",
+            EggGroup.Water2 => "Water2",
+            EggGroup.Ditto => "Ditto",
+            EggGroup.Dragon => "Dragon",
+            _ => throw new Exception($"Invalid egg group '{group}'.")
+        };
+    }
+
+    public static BodyColor ColorStrToEnum(string color)
+    {
+        return color switch
+        {
+            "Red" => BodyColor.Red,
+            "Blue" => BodyColor.Blue,
+            "Yellow" => BodyColor.Yellow,
+            "Green" => BodyColor.Green,
+            "Black" => BodyColor.Black,
+            "Brown" => BodyColor.Brown,
+            "Purple" => BodyColor.Purple,
+            "Gray" => BodyColor.Gray,
+            "White" => BodyColor.White,
+            "Pink" => BodyColor.Pink,
+            _ => throw new Exception($"Invalid body color '{color}'.")
+        };
+    }
+
+    public static string ColorEnumToStr(BodyColor color)
+    {
+        return color switch
+        {
+            BodyColor.Red => "Red",
+            BodyColor.Blue => "Blue",
+            BodyColor.Yellow => "Yellow",
+            BodyColor.Green => "Green",
+            BodyColor.Black => "Black",
+            BodyColor.Brown => "Brown",
+            BodyColor.Purple => "Purple",
+            BodyColor.Gray => "Gray",
+            BodyColor.White => "White",
+            BodyColor.Pink => "Pink",
+            _ => throw new Exception($"Invalid body color '{color}'.")
+        };
+    }
+
+    public static BodyShape ShapeStrToEnum(string shape)
+    {
+        return shape switch
+        {
+            "Head" => BodyShape.Head,
+            "Serpentine" => BodyShape.Serpentine,
+            "Finned" => BodyShape.Finned,
+            "HeadArms" => BodyShape.HeadAndArms,
+            "HeadBase" => BodyShape.HeadAndBase,
+            "BipedalTail" => BodyShape.BipedalWithTail,
+            "HeadLegs" => BodyShape.HeadAndLegs,
+            "Quadruped" => BodyShape.Quadruped,
+            "Winged" => BodyShape.Winged,
+            "Multiped" => BodyShape.Multiped,
+            "MultiBody" => BodyShape.MultiBody,
+            "Bipedal" => BodyShape.Bipedal,
+            "MultiWinged" => BodyShape.MultiWinged,
+            "Insectoid" => BodyShape.Insectoid,
+            _ => throw new Exception($"Invalid body shape '{shape}'.")
+        };
+    }
+
+    public static string ShapeEnumToStr(BodyShape shape)
+    {
+        return shape switch
+        {
+            BodyShape.Head => "Head",
+            BodyShape.Serpentine => "Serpentine",
+            BodyShape.Finned => "Finned",
+            BodyShape.HeadAndArms => "HeadArms",
+            BodyShape.HeadAndBase => "HeadBase",
+            BodyShape.BipedalWithTail => "BipedalTail",
+            BodyShape.HeadAndLegs => "HeadLegs",
+            BodyShape.Quadruped => "Quadruped",
+            BodyShape.Winged => "Winged",
+            BodyShape.Multiped => "Multiped",
+            BodyShape.MultiBody => "MultiBody",
+            BodyShape.Bipedal => "Bipedal",
+            BodyShape.MultiWinged => "MultiWinged",
+            BodyShape.Insectoid => "Insectoid",
+            _ => throw new Exception($"Invalid body shape '{shape}'.")
+        };
+    }
+
+    public static Habitat HabitatStrToEnum(string habitat)
+    {
+        return habitat switch
+        {
+            "None" => Habitat.None,
+            "Grassland" => Habitat.Grassland,
+            "Forest" => Habitat.Forest,
+            "WatersEdge" => Habitat.WatersEdge,
+            "Sea" => Habitat.Sea,
+            "Cave" => Habitat.Cave,
+            "Mountain" => Habitat.Mountain,
+            "RoughTerrain" => Habitat.RoughTerrain,
+            "Urban" => Habitat.Urban,
+            "Rare" => Habitat.Rare,
+            _ => throw new Exception($"Invalid habitat '{habitat}'.")
+        };
+    }
+
+    public static string HabitatEnumToStr(Habitat habitat)
+    {
+        return habitat switch
+        {
+            Habitat.None => "None",
+            Habitat.Grassland => "Grassland",
+            Habitat.Forest => "Forest",
+            Habitat.WatersEdge => "WatersEdge",
+            Habitat.Sea => "Sea",
+            Habitat.Cave => "Cave",
+            Habitat.Mountain => "Mountain",
+            Habitat.RoughTerrain => "RoughTerrain",
+            Habitat.Urban => "Urban",
+            Habitat.Rare => "Rare",
+            _ => throw new Exception($"Invalid habitat '{habitat}'.")
+        };
     }
 }
 
