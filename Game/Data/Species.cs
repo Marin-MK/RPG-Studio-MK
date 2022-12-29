@@ -34,12 +34,12 @@ public class Species
 	public List<MoveResolver> EggMoves;
 	public List<AbilityResolver> Abilities;
 	public List<AbilityResolver> HiddenAbilities;
-	public List<string> WildItemCommon;
-	public List<string> WildItemUncommon;
-	public List<string> WildItemRare;
+	public List<ItemResolver> WildItemCommon;
+	public List<ItemResolver> WildItemUncommon;
+	public List<ItemResolver> WildItemRare;
 	public List<EggGroup> EggGroups;
 	public int HatchSteps;
-	public string? Incense;
+	public ItemResolver? Incense;
 	public List<SpeciesResolver> Offspring;
 	public List<Evolution> Evolutions;
 	public List<Evolution> Prevolutions;
@@ -50,7 +50,7 @@ public class Species
 	public Habitat Habitat;
 	public int Generation;
 	public List<string> Flags;
-	public string? MegaStone;
+	public ItemResolver? MegaStone;
 	public MoveResolver? MegaMove;
 	public int UnmegaForm;
 	public int MegaMessage;
@@ -122,15 +122,15 @@ public class Species
         this.Abilities = hash["Abilities"].Split(',').Select(m => (AbilityResolver) m.Trim()).ToList();
 		if (hash.ContainsKey("HiddenAbilities")) this.HiddenAbilities = hash["HiddenAbilities"].Split(',').Select(m => (AbilityResolver) m.Trim()).ToList();
 		else this.HiddenAbilities = new List<AbilityResolver>();
-		if (hash.ContainsKey("WildItemCommon")) this.WildItemCommon = hash["WildItemCommon"].Split(',').Select(m => m.Trim()).ToList();
-		else this.WildItemCommon = new List<string>();
-		if (hash.ContainsKey("WildItemUncommon")) this.WildItemUncommon = hash["WildItemUncommon"].Split(',').Select(m => m.Trim()).ToList();
-		else this.WildItemUncommon = new List<string>();
-		if (hash.ContainsKey("WildItemRare")) this.WildItemRare = hash["WildItemRare"].Split(',').Select(m => m.Trim()).ToList();
-		else this.WildItemRare = new List<string>();
+		if (hash.ContainsKey("WildItemCommon")) this.WildItemCommon = hash["WildItemCommon"].Split(',').Select(m => (ItemResolver) m.Trim()).ToList();
+		else this.WildItemCommon = new List<ItemResolver>();
+		if (hash.ContainsKey("WildItemUncommon")) this.WildItemUncommon = hash["WildItemUncommon"].Split(',').Select(m => (ItemResolver) m.Trim()).ToList();
+		else this.WildItemUncommon = new List<ItemResolver>();
+		if (hash.ContainsKey("WildItemRare")) this.WildItemRare = hash["WildItemRare"].Split(',').Select(m => (ItemResolver) m.Trim()).ToList();
+		else this.WildItemRare = new List<ItemResolver>();
         this.EggGroups = hash["EggGroups"].Split(',').Select(m => EggGroupStrToEnum(m)).ToList();
         this.HatchSteps = Convert.ToInt32(hash["HatchSteps"]);
-        if (hash.ContainsKey("Incense")) this.Incense = hash["Incense"];
+        if (hash.ContainsKey("Incense")) this.Incense = (ItemResolver) hash["Incense"];
 		if (hash.ContainsKey("Offspring")) this.Offspring = hash["Offspring"].Split(',').Select(s => (SpeciesResolver) s.Trim()).ToList();
 		else this.Offspring = new List<SpeciesResolver>();
 		this.Evolutions = new List<Evolution>();
@@ -156,7 +156,7 @@ public class Species
 		this.Generation = Convert.ToInt32(hash["Generation"]);
 		if (hash.ContainsKey("Flags")) this.Flags = hash["Flags"].Split(',').ToList();
 		else this.Flags = new List<string>();
-		if (hash.ContainsKey("MegaStone")) this.MegaStone = hash["MegaStone"];
+		if (hash.ContainsKey("MegaStone")) this.MegaStone = (ItemResolver) hash["MegaStone"];
 		if (hash.ContainsKey("MegaMove")) this.MegaMove = (MoveResolver) hash["MegaMove"];
 		if (hash.ContainsKey("UnmegaForm")) this.UnmegaForm = Convert.ToInt32(hash["UnmegaForm"]);
 		if (hash.ContainsKey("MegaMessage")) this.MegaMessage = Convert.ToInt32(hash["MegaMessage"]);
@@ -228,27 +228,27 @@ public class Species
 		}
         nint WildItemCommonArray = Ruby.GetIVar(Data, "@wild_item_common");
         int WildItemCommonArrayLength = (int) Ruby.Array.Length(WildItemCommonArray);
-        this.WildItemCommon = new List<string>();
+        this.WildItemCommon = new List<ItemResolver>();
         for (int i = 0; i < WildItemCommonArrayLength; i++)
         {
             string item = Ruby.Symbol.FromPtr(Ruby.Array.Get(WildItemCommonArray, i));
-			this.WildItemCommon.Add(item);
+			this.WildItemCommon.Add((ItemResolver) item);
         }
 		nint WildItemUncommonArray = Ruby.GetIVar(Data, "@wild_item_uncommon");
         int WildItemUncommonArrayLength = (int) Ruby.Array.Length(WildItemUncommonArray);
-        this.WildItemUncommon = new List<string>();
+        this.WildItemUncommon = new List<ItemResolver>();
         for (int i = 0; i < WildItemUncommonArrayLength; i++)
         {
             string item = Ruby.Symbol.FromPtr(Ruby.Array.Get(WildItemUncommonArray, i));
-			this.WildItemUncommon.Add(item);
+			this.WildItemUncommon.Add((ItemResolver) item);
         }
 		nint WildItemRareArray = Ruby.GetIVar(Data, "@wild_item_rare");
         int WildItemRareArrayLength = (int) Ruby.Array.Length(WildItemRareArray);
-        this.WildItemRare = new List<string>();
+        this.WildItemRare = new List<ItemResolver>();
         for (int i = 0; i < WildItemRareArrayLength; i++)
         {
             string item = Ruby.Symbol.FromPtr(Ruby.Array.Get(WildItemRareArray, i));
-			this.WildItemRare.Add(item);
+			this.WildItemRare.Add((ItemResolver) item);
         }
         nint EggGroupsArray = Ruby.GetIVar(Data, "@egg_groups");
         int EggGroupsArrayLength = (int) Ruby.Array.Length(EggGroupsArray);
@@ -259,7 +259,7 @@ public class Species
 			this.EggGroups.Add(EggGroupStrToEnum(egggroup));
         }
 		this.HatchSteps = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@hatch_steps"));
-		this.Incense = Ruby.GetIVar(Data, "@incense") == Ruby.Nil ? null : Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@incense"));
+		this.Incense = Ruby.GetIVar(Data, "@incense") == Ruby.Nil ? null : (ItemResolver) Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@incense"));
 		nint OffspringArray = Ruby.GetIVar(Data, "@offspring");
 		int OffspringArraylength = (int) Ruby.Array.Length(OffspringArray);
 		this.Offspring = new List<SpeciesResolver>();
@@ -285,7 +285,7 @@ public class Species
 			string flag = Ruby.String.FromPtr(Ruby.Array.Get(FlagsArray, i));
 			this.Flags.Add(flag);
 		}
-		this.MegaStone = Ruby.GetIVar(Data, "@mega_stone") == Ruby.Nil ? null : Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@mega_stone"));
+		this.MegaStone = Ruby.GetIVar(Data, "@mega_stone") == Ruby.Nil ? null : (ItemResolver) Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@mega_stone"));
         this.MegaMove = Ruby.GetIVar(Data, "@mega_move") == Ruby.Nil ? null : (MoveResolver) Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@mega_move"));
 		this.UnmegaForm = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@unmega_form"));
 		this.MegaMessage = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@mega_message"));

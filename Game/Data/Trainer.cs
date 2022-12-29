@@ -17,7 +17,7 @@ public class Trainer
     public string Name;
     public int Version;
     public string LoseText;
-    public List<string> Items;
+    public List<ItemResolver> Items;
     public List<TrainerPokemon> Party;
 
     public Trainer(string ID, List<(string Key, string Value)> pairs)
@@ -31,9 +31,9 @@ public class Trainer
         (string, string)? x = pairs.Find(x => x.Key == "Items");
         if (x.HasValue && x.Value.Item1 != null)
         {
-            this.Items = x.Value.Item2.Split(',').Select(x => x.Trim()).ToList();
+            this.Items = x.Value.Item2.Split(',').Select(x => (ItemResolver) x.Trim()).ToList();
         }
-        else this.Items = new List<string>();
+        else this.Items = new List<ItemResolver>();
         int sidx = -1;
         this.Party = new List<TrainerPokemon>();
         for (int i = 0; i < pairs.Count; i++)
@@ -70,10 +70,10 @@ public class Trainer
         this.LoseText = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_lose_text"));
         nint ItemsArray = Ruby.GetIVar(Data, "@items");
         int ItemsArrayLength = (int) Ruby.Array.Length(ItemsArray);
-        this.Items = new List<string>();
+        this.Items = new List<ItemResolver>();
         for (int i = 0; i < ItemsArrayLength; i++)
         {
-            this.Items.Add(Ruby.Symbol.FromPtr(Ruby.Array.Get(ItemsArray, i)));
+            this.Items.Add((ItemResolver) Ruby.Symbol.FromPtr(Ruby.Array.Get(ItemsArray, i)));
         }
         nint PartyArray = Ruby.GetIVar(Data, "@pokemon");
         int PartyLength = (int) Ruby.Array.Length(PartyArray);
@@ -121,10 +121,10 @@ public class TrainerPokemon
     public int Level;
     public int? Form;
     public string? Name;
-    public List<string>? Moves;
+    public List<MoveResolver>? Moves;
     public AbilityResolver? Ability;
     public int? AbilityIndex;
-    public string? Item;
+    public ItemResolver? Item;
     public int? Gender;
     public Nature? Nature;
     public Stats? IVs;
@@ -133,7 +133,7 @@ public class TrainerPokemon
     public bool? Shiny;
     public bool? SuperShiny;
     public bool? Shadow;
-    public string? Ball;
+    public ItemResolver? Ball;
 
     public TrainerPokemon(List<(string Key, string Value)> Data)
     {
@@ -152,7 +152,7 @@ public class TrainerPokemon
                     this.Name = Data[i].Value;
                     break;
                 case "Moves":
-                    this.Moves = Data[i].Value.Split(',').Select(x => x.Trim()).ToList();
+                    this.Moves = Data[i].Value.Split(',').Select(x => (MoveResolver) x.Trim()).ToList();
                     break;
                 case "Ability":
                     this.Ability = (AbilityResolver) Data[i].Value;
@@ -161,7 +161,7 @@ public class TrainerPokemon
                     this.AbilityIndex = Convert.ToInt32(Data[i].Value);
                     break;
                 case "Item":
-                    this.Item = Data[i].Value;
+                    this.Item = (ItemResolver) Data[i].Value;
                     break;
                 case "Gender":
                     this.Gender = Data[i].Value.ToLower() switch
@@ -205,7 +205,7 @@ public class TrainerPokemon
                     };
                     break;
                 case "Ball":
-                    this.Ball = Data[i].Value;
+                    this.Ball = (ItemResolver) Data[i].Value;
                     break;
                 default:
                     throw new Exception($"Invalid key in trainer pokemon definition: '{Data[i].Key}'.");
@@ -225,10 +225,10 @@ public class TrainerPokemon
         if (rmoves != Ruby.Nil)
         {
             int rmoveslength = (int) Ruby.Array.Length(rmoves);
-            this.Moves = new List<string>();
+            this.Moves = new List<MoveResolver>();
             for (int i = 0; i < rmoveslength; i++)
             {
-                this.Moves.Add(Ruby.Symbol.FromPtr(Ruby.Array.Get(rmoves, i)));
+                this.Moves.Add((MoveResolver) Ruby.Symbol.FromPtr(Ruby.Array.Get(rmoves, i)));
             }
         }
         nint rability = Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("ability"));
@@ -236,7 +236,7 @@ public class TrainerPokemon
         nint rabilityindex = Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("ability_index"));
         if (rabilityindex != Ruby.Nil) this.AbilityIndex = (int) Ruby.Integer.FromPtr(rabilityindex);
         nint ritem = Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("item"));
-        if (ritem != Ruby.Nil) this.Item = Ruby.Symbol.FromPtr(ritem);
+        if (ritem != Ruby.Nil) this.Item = (ItemResolver) Ruby.Symbol.FromPtr(ritem);
         nint rgender = Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("gender"));
         if (rgender != Ruby.Nil) this.Gender = (int) Ruby.Integer.FromPtr(rgender);
         nint rnature = Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("nature"));
@@ -254,7 +254,7 @@ public class TrainerPokemon
         nint rshadow = Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("shadowness"));
         if (rshadow != Ruby.Nil) this.Shadow = rshadow == Ruby.True;
         nint rball = Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("poke_ball"));
-        if (rball != Ruby.Nil) this.Ball = Ruby.Symbol.FromPtr(rball);
+        if (rball != Ruby.Nil) this.Ball = (ItemResolver) Ruby.Symbol.FromPtr(rball);
     }
 
     public nint Save()

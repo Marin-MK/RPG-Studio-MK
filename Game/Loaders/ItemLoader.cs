@@ -13,9 +13,9 @@ namespace RPGStudioMK.Game;
 
 public static partial class Data
 {
-    private static void LoadMoves()
+    private static void LoadItems()
     {
-        SafeLoad("moves.dat", File =>
+        SafeLoad("items.dat", File =>
         {
             nint Data = Marshal.Load(File);
             Ruby.Pin(Data);
@@ -27,7 +27,7 @@ public static partial class Data
                 nint key = Ruby.Array.Get(Keys, i);
                 nint robj = Ruby.Hash.Get(Data, key);
                 string ckey = Ruby.Symbol.FromPtr(key);
-                Moves.Add(ckey, new Move(robj));
+                Items.Add(ckey, new Item(robj));
                 SetLoadProgress((float) i / (KeyCount - 1));
             }
             Ruby.Unpin(Keys);
@@ -35,24 +35,24 @@ public static partial class Data
         });
     }
 
-    private static void LoadMovesFromPBS(string FilePath)
+    private static void LoadItemsFromPBS(string FilePath)
     {
         FormattedTextParser.ParseSectionBasedFile(FilePath, (id, hash) =>
         {
-            Moves.Add(id, new Move(id, hash));
+            Items.Add(id, new Item(id, hash));
         });
     }
 
-    private static void SaveMoves()
+    private static void SaveItems()
     {
-        SafeSave("moves.dat", File =>
+        SafeSave("items.dat", File =>
         {
             nint Data = Ruby.Hash.Create();
             Ruby.Pin(Data);
-            foreach (Move m in Moves.Values)
+            foreach (Item i in Items.Values)
             {
-                nint mdata = m.Save();
-                Ruby.Hash.Set(Data, Ruby.Symbol.ToPtr(m.ID), mdata);
+                nint idata = i.Save();
+                Ruby.Hash.Set(Data, Ruby.Symbol.ToPtr(i.ID), idata);
             }
             Ruby.Marshal.Dump(Data, File);
             Ruby.Unpin(Data);

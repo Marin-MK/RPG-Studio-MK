@@ -25,6 +25,7 @@ public static partial class Data
     public static Dictionary<string, Ability> Abilities = new Dictionary<string, Ability>();
     public static Dictionary<string, Move> Moves = new Dictionary<string, Move>();
     public static Dictionary<string, Type> Types = new Dictionary<string, Type>();
+    public static Dictionary<string, Item> Items = new Dictionary<string, Item>();
     public static Dictionary<string, TrainerType> TrainerTypes = new Dictionary<string, TrainerType>();
     public static Dictionary<(int Map, int Version), EncounterTable> Encounters = new Dictionary<(int, int), EncounterTable>();
     public static List<Trainer> Trainers = new List<Trainer>();
@@ -55,6 +56,7 @@ public static partial class Data
         Species.Clear();
         Abilities.Clear();
         Moves.Clear();
+        Items.Clear();
         Types.Clear();
         TrainerTypes.Clear();
         Encounters.Clear();
@@ -77,6 +79,7 @@ public static partial class Data
         if (Game.Species.Class == nint.Zero) Game.Species.Class = Ruby.Class.Define("Species", GameDataModule, null);
         if (Game.Ability.Class == nint.Zero) Game.Ability.Class = Ruby.Class.Define("Ability", GameDataModule, null);
         if (Game.Move.Class == nint.Zero) Game.Move.Class = Ruby.Class.Define("Move", GameDataModule, null);
+        if (Game.Item.Class == nint.Zero) Game.Item.Class = Ruby.Class.Define("Item", GameDataModule, null);
         if (Game.Type.Class == nint.Zero) Game.Type.Class = Ruby.Class.Define("Type", GameDataModule, null);
         if (Game.TrainerType.Class == nint.Zero) Game.TrainerType.Class = Ruby.Class.Define("TrainerType", GameDataModule, null);
         if (Game.Trainer.Class == nint.Zero) Game.Trainer.Class = Ruby.Class.Define("Trainer", GameDataModule, null);
@@ -114,6 +117,10 @@ public static partial class Data
         LoadMoves();
 
         if (StopLoading) return;
+        SetLoadText("Loading items...");
+        LoadItems();
+
+        if (StopLoading) return;
         SetLoadText("Loading types...");
         LoadTypes();
 
@@ -148,6 +155,7 @@ public static partial class Data
         SaveSpecies();
         SaveAbilities();
         SaveMoves();
+        SaveItems();
         SaveTypes();
         SaveTrainerTypes();
         SaveTrainers();
