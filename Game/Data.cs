@@ -135,7 +135,6 @@ public static partial class Data
 
         SetLoadText("Loading project...");
         SetLoadProgress(1f);
-
     }
 
     public static void SaveGameData()

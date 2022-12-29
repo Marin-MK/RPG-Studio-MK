@@ -20,8 +20,8 @@ public class Species
 	public string RealCategory;
 	public string RealPokedexEntry;
 	public int PokedexForm;
-	public string Type1;
-	public string? Type2;
+	public TypeResolver Type1;
+	public TypeResolver? Type2;
 	public Stats BaseStats;
 	public Stats EVs;
 	public int BaseEXP;
@@ -29,9 +29,9 @@ public class Species
 	public GenderRatio GenderRatio;
 	public int CatchRate;
 	public int Happiness;
-	public List<(int, string)> Moves;
-	public List<string> TutorMoves;
-	public List<string> EggMoves;
+	public List<(int, MoveResolver)> Moves;
+	public List<MoveResolver> TutorMoves;
+	public List<MoveResolver> EggMoves;
 	public List<AbilityResolver> Abilities;
 	public List<AbilityResolver> HiddenAbilities;
 	public List<string> WildItemCommon;
@@ -51,7 +51,7 @@ public class Species
 	public int Generation;
 	public List<string> Flags;
 	public string? MegaStone;
-	public string? MegaMove;
+	public MoveResolver? MegaMove;
 	public int UnmegaForm;
 	public int MegaMessage;
 
@@ -71,8 +71,8 @@ public class Species
         if (hash["Types"].Contains(","))
         {
             string[] _types = hash["Types"].Split(',');
-            this.Type1 = _types[0];
-            this.Type2 = _types[1];
+            this.Type1 = (TypeResolver) _types[0];
+            this.Type2 = (TypeResolver) _types[1];
         }
         string[] _stats = hash["BaseStats"].Split(',');
         this.BaseStats = new Stats();
@@ -108,17 +108,17 @@ public class Species
         this.CatchRate = Convert.ToInt32(hash["CatchRate"]);
         this.Happiness = Convert.ToInt32(hash["Happiness"]);
         string[] _moves = hash["Moves"].Split(',');
-        this.Moves = new List<(int, string)>();
+        this.Moves = new List<(int, MoveResolver)>();
         for (int i = 0; i < _moves.Length - 1; i += 2)
         {
             int level = Convert.ToInt32(_moves[i]);
-            string move = _moves[i + 1];
+            MoveResolver move = (MoveResolver) _moves[i + 1];
             this.Moves.Add((level, move));
         }
-		if (hash.ContainsKey("TutorMoves")) this.TutorMoves = hash["TutorMoves"].Split(',').Select(m => m.Trim()).ToList();
-		else this.TutorMoves = new List<string>();
-		if (hash.ContainsKey("EggMoves")) this.EggMoves = hash["EggMoves"].Split(',').Select(m => m.Trim()).ToList();
-		else this.EggMoves = new List<string>();
+		if (hash.ContainsKey("TutorMoves")) this.TutorMoves = hash["TutorMoves"].Split(',').Select(m => (MoveResolver) m.Trim()).ToList();
+		else this.TutorMoves = new List<MoveResolver>();
+		if (hash.ContainsKey("EggMoves")) this.EggMoves = hash["EggMoves"].Split(',').Select(m => (MoveResolver) m.Trim()).ToList();
+		else this.EggMoves = new List<MoveResolver>();
         this.Abilities = hash["Abilities"].Split(',').Select(m => (AbilityResolver) m.Trim()).ToList();
 		if (hash.ContainsKey("HiddenAbilities")) this.HiddenAbilities = hash["HiddenAbilities"].Split(',').Select(m => (AbilityResolver) m.Trim()).ToList();
 		else this.HiddenAbilities = new List<AbilityResolver>();
@@ -157,7 +157,7 @@ public class Species
 		if (hash.ContainsKey("Flags")) this.Flags = hash["Flags"].Split(',').ToList();
 		else this.Flags = new List<string>();
 		if (hash.ContainsKey("MegaStone")) this.MegaStone = hash["MegaStone"];
-		if (hash.ContainsKey("MegaMove")) this.MegaMove = hash["MegaMove"];
+		if (hash.ContainsKey("MegaMove")) this.MegaMove = (MoveResolver) hash["MegaMove"];
 		if (hash.ContainsKey("UnmegaForm")) this.UnmegaForm = Convert.ToInt32(hash["UnmegaForm"]);
 		if (hash.ContainsKey("MegaMessage")) this.MegaMessage = Convert.ToInt32(hash["MegaMessage"]);
 	}
@@ -173,8 +173,8 @@ public class Species
 		this.RealPokedexEntry = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_pokedex_entry"));
 		this.PokedexForm = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@pokedex_form"));
 		nint TypeArray = Ruby.GetIVar(Data, "@types");
-		if (Ruby.Array.Length(TypeArray) == 2) Type2 = Ruby.Symbol.FromPtr(Ruby.Array.Get(TypeArray, 1));
-		Type1 = Ruby.Symbol.FromPtr(Ruby.Array.Get(TypeArray, 0));
+		if (Ruby.Array.Length(TypeArray) == 2) Type2 = (TypeResolver) Ruby.Symbol.FromPtr(Ruby.Array.Get(TypeArray, 1));
+		Type1 = (TypeResolver) Ruby.Symbol.FromPtr(Ruby.Array.Get(TypeArray, 0));
 		this.BaseStats = new Stats(Ruby.GetIVar(Data, "@base_stats"));
 		this.EVs = new Stats(Ruby.GetIVar(Data, "@evs"));
 		this.BaseEXP = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@base_exp"));
@@ -186,29 +186,29 @@ public class Species
 		this.Happiness = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@happiness"));
 		nint MoveArray = Ruby.GetIVar(Data, "@moves");
 		int MoveArrayLength = (int) Ruby.Array.Length(MoveArray);
-		this.Moves = new List<(int, string)>();
+		this.Moves = new List<(int, MoveResolver)>();
 		for (int i = 0; i < MoveArrayLength; i++)
 		{
 			nint robj = Ruby.Array.Get(MoveArray, i);
 			int level = (int) Ruby.Integer.FromPtr(Ruby.Array.Get(robj, 0));
-			string move = Ruby.Symbol.FromPtr(Ruby.Array.Get(robj, 1));
+			MoveResolver move = (MoveResolver) Ruby.Symbol.FromPtr(Ruby.Array.Get(robj, 1));
 			this.Moves.Add((level, move));
 		}
 		nint TutorMoveArray = Ruby.GetIVar(Data, "@tutor_moves");
 		int TutorMoveArrayLength = (int) Ruby.Array.Length(TutorMoveArray);
-		this.TutorMoves = new List<string>();
+		this.TutorMoves = new List<MoveResolver>();
 		for (int i = 0; i < TutorMoveArrayLength; i++)
 		{
 			string move = Ruby.Symbol.FromPtr(Ruby.Array.Get(TutorMoveArray, i));
-			this.TutorMoves.Add(move);
+			this.TutorMoves.Add((MoveResolver) move);
 		}
 		nint EggMoveArray = Ruby.GetIVar(Data, "@egg_moves");
 		int EggMoveArrayLength = (int) Ruby.Array.Length(EggMoveArray);
-		this.EggMoves = new List<string>();
+		this.EggMoves = new List<MoveResolver>();
 		for (int i = 0; i < EggMoveArrayLength; i++)
 		{
 			string move = Ruby.Symbol.FromPtr(Ruby.Array.Get(EggMoveArray, i));
-			this.EggMoves.Add(move);
+			this.EggMoves.Add((MoveResolver) move);
 		}
 		nint AbilityArray = Ruby.GetIVar(Data, "@abilities");
 		int AbilityArrayLength = (int) Ruby.Array.Length(AbilityArray);
@@ -286,7 +286,7 @@ public class Species
 			this.Flags.Add(flag);
 		}
 		this.MegaStone = Ruby.GetIVar(Data, "@mega_stone") == Ruby.Nil ? null : Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@mega_stone"));
-        this.MegaMove = Ruby.GetIVar(Data, "@mega_move") == Ruby.Nil ? null : Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@mega_move"));
+        this.MegaMove = Ruby.GetIVar(Data, "@mega_move") == Ruby.Nil ? null : (MoveResolver) Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@mega_move"));
 		this.UnmegaForm = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@unmega_form"));
 		this.MegaMessage = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@mega_message"));
 		nint EvolutionsArray = Ruby.GetIVar(Data, "@evolutions");
