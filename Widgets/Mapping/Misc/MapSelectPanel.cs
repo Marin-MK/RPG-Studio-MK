@@ -508,7 +508,8 @@ public class MapSelectPanel : Widget
             if (mapview.Nodes[i] == mapview.HoveringNode)
             {
                 mapview.Nodes.RemoveAt(i);
-                mapview.SetSelectedNode(i >= mapview.Nodes.Count ? mapview.Nodes[i - 1] : mapview.Nodes[i]);
+                if (mapview.Nodes.Count == 0) mapview.SetSelectedNode(null);
+                else mapview.SetSelectedNode(i >= mapview.Nodes.Count ? mapview.Nodes[i - 1] : mapview.Nodes[i]);
                 break;
             }
             else if (mapview.Nodes[i].ContainsNode(mapview.HoveringNode))

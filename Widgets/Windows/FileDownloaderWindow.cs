@@ -11,7 +11,8 @@ public class FileDownloaderWindow : ProgressWindow
 
     public Action<Exception> OnError;
 
-    public FileDownloaderWindow(string URL, string Filename, string DownloadText = "Downloading File...", bool CloseWhenDone = true, bool Cancellable = true) : base("Downloader", "Connecting to server...", CloseWhenDone, Cancellable)
+    public FileDownloaderWindow(string URL, string Filename, string DownloadText = "Downloading File...", bool CloseWhenDone = true, bool Cancellable = true) :
+        base("Downloader", "Connecting to server...", CloseWhenDone, Cancellable, false, true)
     {
         downloader = new FileDownloader(URL, Filename);
         this.OnCancelled += () => downloader.Stop();

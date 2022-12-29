@@ -542,7 +542,7 @@ public static class Editor
 
         async Task CopyStep()
         {
-            ProgressWindow window = new ProgressWindow("Copying", "Copying files...");
+            ProgressWindow window = new ProgressWindow("Copying", "Copying files...", true, true, true, true);
             CancellationTokenSource src = new CancellationTokenSource();
             window.OnCancelled += () =>
             {
