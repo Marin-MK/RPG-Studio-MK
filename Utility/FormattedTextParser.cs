@@ -90,4 +90,39 @@ public static class FormattedTextParser
         sr.Close();
         OnParseSection(CurrentSection);
     }
+
+    public static void ParseLineByLineWithHeader(string Filename, Action<string, List<string>> OnParseSection)
+    {
+        if (!File.Exists(Filename)) throw new Exception($"The specified file '{Filename}' does not exist.");
+        StreamReader sr = new StreamReader(File.OpenRead(Filename));
+        string CurrentID = null;
+        List<string> CurrentSection = new List<string>();
+        while (!sr.EndOfStream)
+        {
+            string line = sr.ReadLine().Trim();
+            // Skip empty lines and comments
+            if (string.IsNullOrEmpty(line) || line[0] == '#') continue;
+            if (line[0] == '[' && line.Contains(']')) // Start a section
+            {
+                if (line.Contains('#'))
+                {
+                    line = line.Substring(0, line.IndexOf('#')).Trim();
+                }
+                if (line[^1] != ']') throw new Exception($"Invalid PBS data in '{Filename}' line:\n{line}");
+                if (CurrentID != null)
+                {
+                    // Parse the previous section
+                    OnParseSection(CurrentID, CurrentSection);
+                    CurrentSection.Clear();
+                }
+                CurrentID = line.Substring(1, line.Length - 2);
+            }
+            else
+            {
+                CurrentSection.Add(line);
+            }
+        }
+        sr.Close();
+        OnParseSection(CurrentID, CurrentSection);
+    }
 }

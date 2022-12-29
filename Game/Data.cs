@@ -25,6 +25,7 @@ public static partial class Data
     public static Dictionary<string, Ability> Abilities = new Dictionary<string, Ability>();
     public static Dictionary<string, Type> Types = new Dictionary<string, Type>();
     public static Dictionary<string, TrainerType> TrainerTypes = new Dictionary<string, TrainerType>();
+    public static Dictionary<(int Map, int Version), EncounterTable> Encounters = new Dictionary<(int, int), EncounterTable>();
     public static List<Trainer> Trainers = new List<Trainer>();
     public static List<Script> Scripts = new List<Script>();
     public static System System;
@@ -54,6 +55,7 @@ public static partial class Data
         Abilities.Clear();
         Types.Clear();
         TrainerTypes.Clear();
+        Encounters.Clear();
         Trainers.Clear();
         Scripts.Clear();
         System = null;
@@ -74,6 +76,7 @@ public static partial class Data
         if (Game.Type.Class == nint.Zero) Game.Type.Class = Ruby.Class.Define("Type", GameDataModule, null);
         if (Game.TrainerType.Class == nint.Zero) Game.TrainerType.Class = Ruby.Class.Define("TrainerType", GameDataModule, null);
         if (Game.Trainer.Class == nint.Zero) Game.Trainer.Class = Ruby.Class.Define("Trainer", GameDataModule, null);
+        if (Game.EncounterTable.Class == nint.Zero) Game.EncounterTable.Class = Ruby.Class.Define("Encounter", GameDataModule, null);
         if (StopLoading) return;
 
         LoadTilesets();
@@ -115,6 +118,10 @@ public static partial class Data
         LoadTrainers();
 
         if (StopLoading) return;
+        SetLoadText("Loading encounters...");
+        LoadEncounters();
+
+        if (StopLoading) return;
         SetLoadText("Loading plugins...");
         LoadPlugins();
 
@@ -136,6 +143,7 @@ public static partial class Data
         SaveTypes();
         SaveTrainerTypes();
         SaveTrainers();
+        SaveEncounters();
     }
 
     public static void SetProjectPath(string RXProjectFilePath)

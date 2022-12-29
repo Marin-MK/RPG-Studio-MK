@@ -156,6 +156,9 @@ public static class Editor
         }
     }
 
+    /// <summary>
+    /// Opens a window containing all undoable changes.
+    /// </summary>
     public static void ShowUndoHistory()
     {
         UndoListWindow win = new UndoListWindow(UndoList, false);
@@ -167,6 +170,9 @@ public static class Editor
         };
     }
 
+    /// <summary>
+    /// Opens a window containing all redoable changes.
+    /// </summary>
     public static void ShowRedoHistory()
     {
         UndoListWindow win = new UndoListWindow(RedoList, true);
@@ -234,7 +240,6 @@ public static class Editor
     /// <summary>
     /// Returns the first unused map ID for the current project.
     /// </summary>
-    /// <returns></returns>
     public static int GetFreeMapID()
     {
         int i = 1;
@@ -251,7 +256,6 @@ public static class Editor
     /// <summary>
     /// Returns the first unused event ID for the current map.
     /// </summary>
-    /// <returns></returns>
     public static int GetFreeEventID(Map Map)
     {
         int i = 1;
@@ -268,7 +272,6 @@ public static class Editor
     /// <summary>
     /// Returns the first unused tileset ID for the current project.
     /// </summary>
-    /// <returns></returns>
     public static int GetFreeTilesetID()
     {
         int i = 1;
