@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace RPGStudioMK.Game;
 
-public static partial class Data
+public static class PluginManager
 {
-    private static void LoadPlugins()
+    public static void LoadAll(bool WithProgress)
     {
         List<string> PluginDirs = Directory.EnumerateDirectories(Data.ProjectPath + "/Plugins").ToList();
         for (int i = 0; i < PluginDirs.Count; i++)
@@ -20,7 +20,7 @@ public static partial class Data
             string PluginDirectory = PluginDirs[i];
             GamePlugin p = new GamePlugin(PluginDirectory);
             Data.Plugins.Add(p);
-            SetLoadProgress((float) i / (PluginDirs.Count - 1));
+            if (WithProgress) Data.SetLoadProgress((float) i / (PluginDirs.Count - 1));
         }
     }
 }

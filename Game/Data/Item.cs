@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 namespace RPGStudioMK.Game;
 
 [DebuggerDisplay("{ID}")]
-public class Item
+public class Item : IGameData
 {
-    public static nint Class = nint.Zero;
+    public static nint Class => BaseDataManager.Classes["Item"];
 
     public string ID;
     public string Name;

@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace RPGStudioMK.Game;
 
-public class EncounterTable
+public class EncounterTable : IGameData
 {
-    public static nint Class = nint.Zero;
+    public static nint Class => BaseDataManager.Classes["Encounter"];
 
     public string ID;
     public int MapID;

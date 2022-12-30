@@ -7,13 +7,13 @@ using System.Linq;
 namespace RPGStudioMK.Game;
 
 [DebuggerDisplay("{ID}")]
-public class Species
+public class Species : IGameData
 {
-	public static nint Class = nint.Zero;
-	public static List<(Species, Evolution)> PrevolutionsToRegister = new List<(Species, Evolution)>();
+    public static nint Class => BaseDataManager.Classes["Species"];
+    public static List<(Species, Evolution)> PrevolutionsToRegister = new List<(Species, Evolution)>();
 
     public string ID;
-	public string SpeciesName;
+	public string SpeciesID;
 	public int Form;
 	public string RealName;
 	public string? RealFormName;
@@ -66,7 +66,7 @@ public class Species
 	public Species(string ID, Dictionary<string, string> hash)
 	{
         this.ID = ID;
-        this.SpeciesName = ID;
+        this.SpeciesID = ID;
         this.RealName = hash["Name"];
         if (hash["Types"].Contains(","))
         {
@@ -74,6 +74,7 @@ public class Species
             this.Type1 = (TypeResolver) _types[0];
             this.Type2 = (TypeResolver) _types[1];
         }
+        else this.Type1 = (TypeResolver) hash["Types"];
         string[] _stats = hash["BaseStats"].Split(',');
         this.BaseStats = new Stats();
         this.BaseStats.HP = Convert.ToInt32(_stats[0]);
@@ -165,7 +166,7 @@ public class Species
 	public Species(nint Data)
 	{
 		this.ID = Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@id"));
-		this.SpeciesName = Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@species"));
+		this.SpeciesID = Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@species"));
 		this.Form = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@form"));
 		this.RealName = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_name"));
 		this.RealFormName = Ruby.GetIVar(Data, "@real_form_name") == Ruby.Nil ? null : Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_form_name"));
@@ -306,7 +307,7 @@ public class Species
         nint e = Ruby.Funcall(Class, "new");
         Ruby.Pin(e);
 		Ruby.SetIVar(e, "@id", Ruby.Symbol.ToPtr(this.ID));
-		Ruby.SetIVar(e, "@species", Ruby.Symbol.ToPtr(this.SpeciesName));
+		Ruby.SetIVar(e, "@species", Ruby.Symbol.ToPtr(this.SpeciesID));
 		Ruby.SetIVar(e, "@form", Ruby.Integer.ToPtr(this.Form));
 		Ruby.SetIVar(e, "@real_name", Ruby.String.ToPtr(this.RealName));
 		Ruby.SetIVar(e, "@real_form_name", this.RealFormName == null ? Ruby.Nil : Ruby.String.ToPtr(this.RealFormName));

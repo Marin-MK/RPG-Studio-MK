@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace RPGStudioMK.Game;
 
-public class Metadata
+public class Metadata : IGameData
 {
-    public static nint Class = nint.Zero;
+    public static nint Class => BaseDataManager.Classes["Metadata"];
 
     public int ID;
     public int StartMoney;

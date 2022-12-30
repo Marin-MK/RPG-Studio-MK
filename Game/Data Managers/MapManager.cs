@@ -8,8 +8,11 @@ using System.IO;
 
 namespace RPGStudioMK.Game;
 
-public static partial class Data
+public class MapManager : BaseDataManager
 {
+    public MapManager()
+        : base(null, null, null, "maps", false) { }
+
     /// <summary>
     /// Returns a list of map files in the given folder.
     /// </summary>
@@ -35,13 +38,14 @@ public static partial class Data
         return Filenames;
     }
 
-    private static void LoadMaps()
+    protected override void LoadData()
     {
+        base.LoadData();
         SafeLoad("MapInfos.rxdata", InfoFile =>
         {
             IntPtr mapinfo = Ruby.Marshal.Load(InfoFile);
             Ruby.Pin(mapinfo);
-            List<(string, int)> Filenames = GetMapIDs(DataPath);
+            List<(string, int)> Filenames = GetMapIDs(Data.DataPath);
             int total = Filenames.Count;
             int count = 0;
             foreach ((string name, int id) tuple in Filenames)
@@ -52,25 +56,26 @@ public static partial class Data
                     Ruby.Pin(mapdata);
                     int id = tuple.id;
                     Map map = new Map(id, mapdata, Ruby.Hash.Get(mapinfo, Ruby.Integer.ToPtr(id)));
-                    Maps[map.ID] = map;
+                    Data.Maps[map.ID] = map;
                     Ruby.Unpin(mapdata);
                     count++;
-                    SetLoadProgress(count / (float)total);
+                    Data.SetLoadProgress(count / (float)total);
                 });
-                if (StopLoading) break;
+                if (Data.StopLoading) break;
             }
             Ruby.Unpin(mapinfo);
             Editor.AssignOrderToNewMaps();
         });
     }
 
-    private static void SaveMaps()
+    protected override void SaveData()
     {
+        base.SaveData();
         (bool Success, string Error) = SafeSave("MapInfos.rxdata", InfoFile =>
         {
             IntPtr mapinfos = Ruby.Hash.Create();
             Ruby.Pin(mapinfos);
-            foreach (Map map in Maps.Values)
+            foreach (Map map in Data.Maps.Values)
             {
                 SafeSave($"Map{Utilities.Digits(map.ID, 3)}.rxdata", MapFile =>
                 {
@@ -86,7 +91,7 @@ public static partial class Data
                     IntPtr mapdata = map.Save();
                     Ruby.Marshal.Dump(mapdata, MapFile);
                 });
-                if (StopLoading) break;
+                if (Data.StopLoading) break;
             }
             Ruby.Marshal.Dump(mapinfos, InfoFile);
             Ruby.Unpin(mapinfos);
@@ -95,17 +100,23 @@ public static partial class Data
         {
             // Delete all maps that are not part of of the data anymore
             // At least, only if saving all the other maps and info was a success.
-            foreach ((string filename, int id) map in GetMapIDs(DataPath))
+            foreach ((string filename, int id) map in GetMapIDs(Data.DataPath))
             {
                 try
                 {
-                    if (!Maps.ContainsKey(map.id)) File.Delete(DataPath + "/" + map.filename);
+                    if (!Data.Maps.ContainsKey(map.id)) File.Delete(Data.DataPath + "/" + map.filename);
                 }
                 catch (Exception)
                 {
-                    Console.WriteLine($"Failed to delete '{DataPath}/{map.filename}'.");
+                    Console.WriteLine($"Failed to delete '{Data.DataPath}/{map.filename}'.");
                 }
             }
         }
+    }
+
+    public override void Clear()
+    {
+        base.Clear();
+        Data.Maps.Clear();
     }
 }

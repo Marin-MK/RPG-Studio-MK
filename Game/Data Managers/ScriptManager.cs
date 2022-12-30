@@ -8,11 +8,15 @@ using System.Text.RegularExpressions;
 
 namespace RPGStudioMK.Game;
 
-public static partial class Data
+public class ScriptManager : BaseDataManager
 {
-    private static void LoadScripts()
+    public ScriptManager()
+        : base(null, "Scripts.rxdata", null, "scripts", false) { }
+
+    protected override void LoadData()
     {
-        if (Directory.Exists(DataPath + "/Scripts"))
+        base.LoadData();
+        if (Directory.Exists(Data.DataPath + "/Scripts"))
             LoadScriptsExternal();
         else LoadScriptsRXDATA();
         #region Code Injection
@@ -21,49 +25,49 @@ public static partial class Data
         if (Inject)
         {
             string startcode = Utilities.GetInjectedCodeStart();
-            if (Scripts[0].Name != "RPG Studio MK1")
+            if (Data.Scripts[0].Name != "RPG Studio MK1")
             {
                 if (!string.IsNullOrEmpty(startcode))
                 {
                     Script script = new Script();
                     script.Name = "RPG Studio MK1";
                     script.Content = startcode;
-                    Scripts.Insert(0, script);
+                    Data.Scripts.Insert(0, script);
                 }
             }
             else
             {
-                if (string.IsNullOrEmpty(startcode)) Scripts.RemoveAt(0);
-                else Scripts[0].Content = startcode;
+                if (string.IsNullOrEmpty(startcode)) Data.Scripts.RemoveAt(0);
+                else Data.Scripts[0].Content = startcode;
             }
             // Injects code at the bottom of the script list, above Main
             string maincode = Utilities.GetInjectedCodeAboveMain();
-            if (Scripts.Count < 3 || Scripts[Scripts.Count - 2].Name != "RPG Studio MK2")
+            if (Data.Scripts.Count < 3 || Data.Scripts[Data.Scripts.Count - 2].Name != "RPG Studio MK2")
             {
                 if (!string.IsNullOrEmpty(maincode))
                 {
                     Script script = new Script();
                     script.Name = "RPG Studio MK2";
                     script.Content = maincode;
-                    Scripts.Insert(Scripts.Count - 1, script);
+                    Data.Scripts.Insert(Data.Scripts.Count - 1, script);
                 }
             }
             else
             {
-                if (string.IsNullOrEmpty(maincode)) Scripts.RemoveAt(Scripts.Count - 2);
-                else Scripts[Scripts.Count - 2].Content = maincode;
+                if (string.IsNullOrEmpty(maincode)) Data.Scripts.RemoveAt(Data.Scripts.Count - 2);
+                else Data.Scripts[Data.Scripts.Count - 2].Content = maincode;
             }
         }
         #endregion
         #region Version Detection
         // Find Essentials version
-        for (int i = 0; i < Scripts.Count; i++)
+        for (int i = 0; i < Data.Scripts.Count; i++)
         {
-            Script s = Scripts[i];
+            Script s = Data.Scripts[i];
             Match m = Regex.Match(s.Content, "module Essentials[\t\r\n ]*VERSION[\t\r\n ]*=[\t\r\n ]*\"(.*)\"");
             if (m.Success && !string.IsNullOrEmpty(m.Groups[1].Value)) // v19, v19.1, v20, etc.
             {
-                EssentialsVersion = m.Groups[1].Value switch
+                Data.EssentialsVersion = m.Groups[1].Value switch
                 {
                     "19" => EssentialsVersion.v19,
                     "19.1" => EssentialsVersion.v19_1,
@@ -76,7 +80,7 @@ public static partial class Data
             m = Regex.Match(s.Content, "(ESSENTIALS_VERSION|ESSENTIALSVERSION)[\t\r\n ]*=[\t\r\n ]*\"(.*)\"");
             if (m.Success && !string.IsNullOrEmpty(m.Groups[2].Value)) // v17, v17.1, v17.2, v18, v18.1
             {
-                EssentialsVersion = m.Groups[2].Value switch
+                Data.EssentialsVersion = m.Groups[2].Value switch
                 {
                     "17" => EssentialsVersion.v17,
                     "17.1" => EssentialsVersion.v17_1,
@@ -91,7 +95,7 @@ public static partial class Data
         #endregion
     }
 
-    private static void LoadScriptsExternal()
+    private void LoadScriptsExternal()
     {
         List<(string, string)>? GetScripts(string Path, int Depth)
         {
@@ -129,7 +133,7 @@ public static partial class Data
             }
             return Files;
         }
-        List<(string, string)>? Files = GetScripts(DataPath + "/Scripts", 0);
+        List<(string, string)>? Files = GetScripts(Data.DataPath + "/Scripts", 0);
         if (Files == null) return;
         if (Files.Count == 0)
         {
@@ -141,14 +145,14 @@ public static partial class Data
             Script Script = new Script();
             Script.Name = Name;
             Script.Content = Code;
-            Scripts.Add(Script);
+            Data.Scripts.Add(Script);
         }
-        UsesExternalScripts = true;
+        Data.UsesExternalScripts = true;
     }
 
-    private static void LoadScriptsRXDATA()
+    private void LoadScriptsRXDATA()
     {
-        UsesExternalScripts = false;
+        Data.UsesExternalScripts = false;
         SafeLoad("Scripts.rxdata", File =>
         {
             IntPtr data = Ruby.Marshal.Load(File);
@@ -156,32 +160,33 @@ public static partial class Data
             for (int i = 0; i < Ruby.Array.Length(data); i++)
             {
                 IntPtr script = Ruby.Array.Get(data, i);
-                Scripts.Add(new Script(script));
+                Data.Scripts.Add(new Script(script));
             }
             Ruby.Unpin(data);
         });
     }
 
-    private static void SaveScripts()
+    protected override void SaveData()
     {
-        if (UsesExternalScripts) SaveScriptsExternal();
+        base.SaveData();
+        if (Data.UsesExternalScripts) SaveScriptsExternal();
         else SaveScriptsRXDATA();
     }
 
-    private static void SaveScriptsExternal()
+    private void SaveScriptsExternal()
     {
-        if (!Directory.Exists(DataPath + "/Scripts")) Directory.CreateDirectory(DataPath + "/Scripts");
+        if (!Directory.Exists(Data.DataPath + "/Scripts")) Directory.CreateDirectory(Data.DataPath + "/Scripts");
         else
         {
             // Delete all .rb files and all (\d+)_* folders
-            ClearScriptFolder(DataPath + "/Scripts", false);
+            ClearScriptFolder(Data.DataPath + "/Scripts", false);
         }
         string? FirstParent = null;
         string? SecondParent = null;
         int MainCount = 0;
         int SubCount = 0;
         List<(string, string, int)> Tracker = new List<(string, string, int)>(); // First Parent, Second Parent, No. Files
-        foreach (Script script in Scripts)
+        foreach (Script script in Data.Scripts)
         {
             if (script.Name == "==================")
             {
@@ -210,9 +215,9 @@ public static partial class Data
                 {
                     if (string.IsNullOrEmpty(script.Name) && string.IsNullOrEmpty(script.Content)) continue; // We don't write scripts without a name and without content
                     string ScriptPath = null;
-                    if (FirstParent == null) ScriptPath = DataPath + "/Scripts";
-                    else if (SecondParent == null) ScriptPath = DataPath + "/Scripts/" + FirstParent;
-                    else ScriptPath = DataPath + "/Scripts/" + FirstParent + "/" + SecondParent;
+                    if (FirstParent == null) ScriptPath = Data.DataPath + "/Scripts";
+                    else if (SecondParent == null) ScriptPath = Data.DataPath + "/Scripts/" + FirstParent;
+                    else ScriptPath = Data.DataPath + "/Scripts/" + FirstParent + "/" + SecondParent;
                     Directory.CreateDirectory(ScriptPath);
                     (string First, string Second, int Count)? result = Tracker.Find(t => t.Item1 == FirstParent && t.Item2 == SecondParent);
                     int FileCount = result == null ? 0 : result.Value.Count;
@@ -227,7 +232,7 @@ public static partial class Data
         }
     }
 
-    private static void ClearScriptFolder(string Path, bool Delete)
+    private void ClearScriptFolder(string Path, bool Delete)
     {
         foreach (string file in Directory.GetFiles(Path))
         {
@@ -243,13 +248,13 @@ public static partial class Data
         }
     }
 
-    private static void SaveScriptsRXDATA()
+    private void SaveScriptsRXDATA()
     {
-        SafeSave("Scripts.rxdata", File =>
+        SafeSave(Filename, File =>
         {
             IntPtr scripts = Ruby.Array.Create();
             Ruby.Pin(scripts);
-            foreach (Script script in Scripts)
+            foreach (Script script in Data.Scripts)
             {
                 IntPtr scriptdata = script.Save();
                 Ruby.Array.Push(scripts, scriptdata);
@@ -257,5 +262,11 @@ public static partial class Data
             Ruby.Marshal.Dump(scripts, File);
             Ruby.Unpin(scripts);
         });
+    }
+
+    public override void Clear()
+    {
+        base.Clear();
+        Data.Scripts.Clear();
     }
 }

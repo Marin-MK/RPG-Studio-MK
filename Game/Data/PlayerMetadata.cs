@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace RPGStudioMK.Game;
 
 [DebuggerDisplay("{ID}: {TrainerType}")]
-public class PlayerMetadata
+public class PlayerMetadata : IGameData
 {
-    public static nint Class = nint.Zero;
+    public static nint Class => BaseDataManager.Classes["PlayerMetadata"];
 
     public int ID;
     public TrainerTypeResolver TrainerType;
@@ -42,8 +42,6 @@ public class PlayerMetadata
 
     public PlayerMetadata(nint Data)
     {
-        Ruby.SetGlobal("$d", Data);
-        Ruby.Eval("p $d");
         string GetStrOrNull(string Variable)
         {
             nint value = Ruby.GetIVar(Data, Variable);

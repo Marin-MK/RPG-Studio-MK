@@ -12,15 +12,22 @@ namespace RPGStudioMK.Game;
 
 public static partial class Data
 {
+    // General Path Data
     public static string ProjectPath;
     public static string ProjectFilePath;
     public static string ProjectRMXPGamePath;
     public static string DataPath;
 
+    // RMXP Data
     public static Dictionary<int, Map> Maps = new Dictionary<int, Map>();
     public static List<Tileset> Tilesets = new List<Tileset>();
     public static List<Autotile> Autotiles = new List<Autotile>();
     public static List<CommonEvent> CommonEvents = new List<CommonEvent>();
+    public static List<Script> Scripts = new List<Script>();
+    public static System System;
+    public static Metadata Metadata;
+    public static Dictionary<int, PlayerMetadata> PlayerMetadata = new Dictionary<int, PlayerMetadata>();
+    // Essentials Data
     public static Dictionary<string, Species> Species = new Dictionary<string, Species>();
     public static Dictionary<string, Ability> Abilities = new Dictionary<string, Ability>();
     public static Dictionary<string, Move> Moves = new Dictionary<string, Move>();
@@ -29,20 +36,16 @@ public static partial class Data
     public static Dictionary<string, TrainerType> TrainerTypes = new Dictionary<string, TrainerType>();
     public static Dictionary<(int Map, int Version), EncounterTable> Encounters = new Dictionary<(int, int), EncounterTable>();
     public static List<Trainer> Trainers = new List<Trainer>();
-    public static List<Script> Scripts = new List<Script>();
-    public static System System;
-    public static Metadata Metadata;
-    public static Dictionary<int, PlayerMetadata> PlayerMetadata = new Dictionary<int, PlayerMetadata>();
+    // Other Project Data & Settings
     public static List<GamePlugin> Plugins = new List<GamePlugin>();
-
-    public static bool StopLoading;
-
-    private static nint GameDataModule;
-    private static nint MapMetadataClass;
-
     public static EssentialsVersion EssentialsVersion = EssentialsVersion.Unknown;
     public static bool UsesExternalScripts = false;
 
+    // Used during loading process
+    public static bool StopLoading;
+    
+    public static bool LoadedMetadataFromPBS = false;
+    static List<BaseDataManager>? DataManagers;
     static Action<float> OnProgressUpdated;
     static Action<string> OnLoadTextChanging;
 
@@ -52,26 +55,44 @@ public static partial class Data
         ProjectFilePath = null;
         ProjectRMXPGamePath = null;
         DataPath = null;
-        Maps.Clear();
-        Tilesets.Clear();
-        Autotiles.Clear();
-        CommonEvents.Clear();
-        Species.Clear();
-        Abilities.Clear();
-        Moves.Clear();
-        Items.Clear();
-        Types.Clear();
-        TrainerTypes.Clear();
-        Encounters.Clear();
-        Trainers.Clear();
-        Scripts.Clear();
-        Encounters.Clear();
-        System = null;
-        Metadata = null;
-        PlayerMetadata.Clear();
+        DataManagers.ForEach(dm => dm.Clear());
         Plugins.Clear();
         StopLoading = false;
         UsesExternalScripts = false;
+    }
+
+    private static void InitializeDataManagers()
+    {
+        if (DataManagers != null) return;
+        // The order and types of data that are loaded in this format.
+        // There are few restrictions, other than:
+        // - Tilesets must be loaded before maps
+        // - Maps must be loaded before map metadata
+        // - Metadata must be loaded before player metadata (this is not a strict requirement,
+        //   but player metadata will discard data if metadata loads from PBS)
+        DataManagers = new List<BaseDataManager>()
+        {
+            // RMXP Data
+            new GameConfigManager(),
+            new TilesetManager(),
+            new MapManager(),
+            new CommonEventManager(),
+            new ScriptManager(),
+            new SystemManager(),
+            // Important/Useful Essentials Data
+            new MapMetadataManager(false),
+            new MetadataManager(false),
+            new PlayerMetadataManager(),
+            // Other Essentials Data
+            new SpeciesManager(false), // TODO: Load Forms from PBS if species are loaded from PBS.
+            new AbilityManager(false),
+            new ItemManager(false),
+            new MoveManager(false),
+            new TypeManager(false),
+            new TrainerTypeManager(false),
+            new TrainerManager(false),
+            new EncounterManager(false),
+        };
     }
 
     public static void LoadGameData(Action<float> OnProgressUpdated, Action<string> OnLoadTextChanging)
@@ -80,90 +101,17 @@ public static partial class Data
         Data.OnLoadTextChanging = OnLoadTextChanging;
         Compatibility.RMXP.Setup();
 
-        if (GameDataModule == nint.Zero) GameDataModule = Ruby.Module.Define("GameData");
-        if (MapMetadataClass == nint.Zero) MapMetadataClass = Ruby.Class.Define("MapMetadata", GameDataModule, null);
-        if (Game.Species.Class == nint.Zero) Game.Species.Class = Ruby.Class.Define("Species", GameDataModule, null);
-        if (Game.Ability.Class == nint.Zero) Game.Ability.Class = Ruby.Class.Define("Ability", GameDataModule, null);
-        if (Game.Move.Class == nint.Zero) Game.Move.Class = Ruby.Class.Define("Move", GameDataModule, null);
-        if (Game.Item.Class == nint.Zero) Game.Item.Class = Ruby.Class.Define("Item", GameDataModule, null);
-        if (Game.Type.Class == nint.Zero) Game.Type.Class = Ruby.Class.Define("Type", GameDataModule, null);
-        if (Game.TrainerType.Class == nint.Zero) Game.TrainerType.Class = Ruby.Class.Define("TrainerType", GameDataModule, null);
-        if (Game.Trainer.Class == nint.Zero) Game.Trainer.Class = Ruby.Class.Define("Trainer", GameDataModule, null);
-        if (Game.EncounterTable.Class == nint.Zero) Game.EncounterTable.Class = Ruby.Class.Define("Encounter", GameDataModule, null);
-        if (Game.Metadata.Class == nint.Zero) Game.Metadata.Class = Ruby.Class.Define("Metadata", GameDataModule, null);
-        if (Game.PlayerMetadata.Class == nint.Zero) Game.PlayerMetadata.Class = Ruby.Class.Define("PlayerMetadata", GameDataModule, null);
-
-        if (StopLoading) return;
-        SetLoadText("Loading tilesets...");
-        LoadTilesets();
-
-        if (StopLoading) return;
-        SetLoadText("Loading scripts...");
-        LoadScripts();
-
-        if (StopLoading) return;
-        SetLoadText("Loading maps...");
-        LoadMaps();
-
-        if (StopLoading) return;
-        SetLoadText("Loading map metadata...");
-        LoadMapMetadata();
-
-        if (StopLoading) return;
-        SetLoadText("Loading game system...");
-        LoadSystem();
-
-        if (StopLoading) return;
-        SetLoadText("Loading common events...");
-        LoadCommonEvents();
-
-        if (StopLoading) return;
-        SetLoadText("Loading game config...");
-        LoadGameINI();
-
-        if (StopLoading) return;
-        SetLoadText("Loading species...");
-        LoadSpecies();
-
-        if (StopLoading) return;
-        SetLoadText("Loading abilities...");
-        LoadAbilities();
-
-        if (StopLoading) return;
-        SetLoadText("Loading moves...");
-        LoadMoves();
-
-        if (StopLoading) return;
-        SetLoadText("Loading items...");
-        LoadItems();
-
-        if (StopLoading) return;
-        SetLoadText("Loading types...");
-        LoadTypes();
-
-        if (StopLoading) return;
-        SetLoadText("Loading trainer types...");
-        LoadTrainerTypes();
-
-        if (StopLoading) return;
-        SetLoadText("Loading trainers...");
-        LoadTrainers();
-
-        if (StopLoading) return;
-        SetLoadText("Loading encounters...");
-        LoadEncounters();
-
-        if (StopLoading) return;
-        SetLoadText("Loading metadata...");
-        LoadMetadata();
-
-        if (StopLoading) return;
-        SetLoadText("Loading player metadata...");
-        LoadPlayerMetadata();
+        InitializeDataManagers();
+        DataManagers.ForEach(dm => dm.InitializeClass());
+        DataManagers.ForEach(dm =>
+        {
+            if (StopLoading) return;
+            dm.Load();
+        });
 
         if (StopLoading) return;
         SetLoadText("Loading plugins...");
-        LoadPlugins();
+        PluginManager.LoadAll(true);
 
         SetLoadText("Loading project...");
         SetLoadProgress(1f);
@@ -171,23 +119,7 @@ public static partial class Data
 
     public static void SaveGameData()
     {
-        SaveTilesets();
-        SaveScripts();
-        SaveMaps();
-        SaveMapMetadata();
-        SaveSystem();
-        SaveCommonEvents();
-        SaveGameINI();
-        SaveSpecies();
-        SaveAbilities();
-        SaveMoves();
-        SaveItems();
-        SaveTypes();
-        SaveTrainerTypes();
-        SaveTrainers();
-        SaveEncounters();
-        SaveMetadata();
-        SavePlayerMetadata();
+        DataManagers.ForEach(dm => dm.Save());
     }
 
     public static void SetProjectPath(string RXProjectFilePath)
@@ -200,93 +132,20 @@ public static partial class Data
         ProjectRMXPGamePath = path + "/Game.rxproj";
     }
 
-    public static void AbortLoad()
-    {
-        StopLoading = true;
-    }
-
-    private static void LoadError(string File, string ErrorMessage)
-    {
-        string text = ErrorMessage switch
-        {
-            "Errno::EACCES" => $"RPG Studio MK was unable to load '{File}' because it was likely in use by another process.\nPlease try again.",
-            "Errno::ENOENT" => $"RPG Studio MK was unable to load '{File}' because it does not exist.",
-            "TypeError" => $"RPG Studio MK was unable to load '{File}' because it contains incorrect data. Are you sure this file has the correct name?",
-            "EOFError" => $"RPG Studio MK was unable to load '{File}' because it was empty or contained invalid data.\nIt may be corrupt or outdated.",
-            _ => $"RPG Studio MK was unable to load '{File}'.\n\n" + ErrorMessage + "\n\nPlease try again."
-        };
-        MessageBox mbox = new MessageBox("Error", text, ButtonType.OK, IconType.Error);
-        AbortLoad();
-    }
-
-    private static void SaveError(string File, string ErrorMessage)
-    {
-        string text = ErrorMessage switch
-        {
-            "Errno::EACCES" => $"RPG Studio MK was unable to save '{File}' because it was likely in use by another process.\n\n" +
-                                "All other data has been saved successfully. Please try again.",
-            _ => $"RPG Studio MK was unable to save '{File}'.\n\n{ErrorMessage}\n\nAll other data has been saved successfully. Please try again."
-        };
-        MessageBox mbox = new MessageBox("Error", text, ButtonType.OK, IconType.Error);
-        // Keep saving; prefer corrupting data if something is seriously wrong, which is doubtful, over
-        // the prospect of losing all data in memory if the issue is only something minor, in a small section of the program.
-    }
-
-    private static (bool Success, string Error) SafeLoad(string Filename, Action<IntPtr> Action)
-    {
-        (bool Success, string Error) = SafelyOpenAndCloseFile(DataPath + "/" + Filename, "rb", Action);
-        if (!Success) LoadError("Data/" + Filename, Error);
-        return (Success, Error);
-    }
-
-    private static (bool Success, string Error) SafeSave(string Filename, Action<IntPtr> Action)
-    {
-        (bool Success, string Error) = SafelyOpenAndCloseFile(DataPath + "/" + Filename, "wb", Action);
-        if (!Success) SaveError("Data/" + Filename, Error);
-        return (Success, Error);
-    }
-
-    private static (bool Success, string Error) SafelyOpenAndCloseFile(string Filename, string Mode, Action<IntPtr> Action, int Tries = 10, int DelayInMS = 40)
-    {
-        int Total = Tries;
-        while (Tries > 0)
-        {
-            if (Ruby.Protect(_ =>
-            {
-                IntPtr File = Ruby.File.Open(Filename, Mode);
-                Ruby.Pin(File);
-                Action(File);
-                Ruby.File.Close(File);
-                Ruby.Unpin(File);
-                return IntPtr.Zero;
-            }))
-            {
-                if (Tries != Total)
-                    Console.WriteLine($"{Filename.Split('/').Last()} opened after {Total - Tries + 1} attempt(s) and {DelayInMS * (Total - Tries + 1)}ms.");
-                return (true, null);
-            }
-            string ErrorType = Ruby.GetErrorType();
-            if (ErrorType != "Errno::EACCES")
-            {
-                // Other error than simultaneous access, no point in retrying.
-                return (false, Ruby.GetErrorText());
-            }
-            Thread.Sleep(DelayInMS);
-            Tries--;
-        }
-        Console.WriteLine($"{Filename.Split('/').Last()} failed to open after {Total} attempt(s) and {DelayInMS * Total}ms.");
-        return (false, "Errno::EACCES");
-    }
-
-    private static void SetLoadProgress(float Progress)
+    public static void SetLoadProgress(float Progress)
     {
         OnProgressUpdated?.Invoke(Progress);
     }
 
-    private static  void SetLoadText(string Text)
+    public static void SetLoadText(string Text)
     {
         SetLoadProgress(0);
         OnLoadTextChanging?.Invoke(Text);
+    }
+
+    public static void AbortLoad()
+    {
+        Data.StopLoading = true;
     }
 
     public static bool EssentialsAtLeast(EssentialsVersion Version)

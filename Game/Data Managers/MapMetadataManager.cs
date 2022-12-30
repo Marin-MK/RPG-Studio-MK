@@ -1,4 +1,5 @@
-﻿using RPGStudioMK.Utility;
+﻿using amethyst;
+using RPGStudioMK.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,130 +13,122 @@ using static rubydotnet.Ruby;
 
 namespace RPGStudioMK.Game;
 
-public static partial class Data
+public class MapMetadataManager : BaseDataManager
 {
-    private static void LoadMapMetadata()
+    public MapMetadataManager(bool FromPBS = false)
+        : base("MapMetadata", "map_metadata.dat", "map_metadata.txt", "map metadata", FromPBS) { }
+
+    protected override void LoadData()
     {
-        SafeLoad("map_metadata.dat", File =>
+        base.LoadData();
+        LoadAsHash((key, robj) =>
         {
-            nint Data = Marshal.Load(File);
-            Ruby.Pin(Data);
-            nint Keys = Ruby.Hash.Keys(Data);
-            Ruby.Pin(Keys);
-            int KeyCount = (int) Ruby.Array.Length(Keys);
-            for (int i = 0; i < KeyCount; i++)
+            int ckey = (int) Ruby.Integer.FromPtr(key);
+            // Read properties of the map and add the to the corresponding Map object.
+            bool GetDefaultTrue(string Variable)
             {
-                nint key = Ruby.Array.Get(Keys, i);
-                nint robj = Ruby.Hash.Get(Data, key);
-                int ckey = (int) Ruby.Integer.FromPtr(key);
-                // Read properties of the map and add the to the corresponding Map object.
-                bool GetDefaultTrue(string Variable)
-                {
-                    nint value = Ruby.GetIVar(robj, Variable);
-                    if (value == Ruby.Nil) return true;
-                    else return value == Ruby.True;
-                }
-                bool GetDefaultFalse(string Variable)
-                {
-                    nint value = Ruby.GetIVar(robj, Variable);
-                    if (value == Ruby.Nil) return false;
-                    else return value == Ruby.True;
-                }
-                string GetStrOrNull(string Variable)
-                {
-                    nint value = Ruby.GetIVar(robj, Variable);
-                    if (value == Ruby.Nil) return null;
-                    return Ruby.String.FromPtr(value);
-                }
-                Map Map = Maps[ckey];
-                Map.InGameName = GetStrOrNull("@real_name");
-                Map.OutdoorMap = GetDefaultFalse("@outdoor_map");
-                Map.AnnounceLocation = GetDefaultFalse("@announce_location");
-                Map.CanBicycle = GetDefaultTrue("@can_bicycle");
-                if (Ruby.GetIVar(robj, "@outdoor_map") == Ruby.Nil && Ruby.GetIVar(robj, "@can_bicycle") == Ruby.Nil)
-                {
-                    // Maps default to being indoor maps, but
-                    // CanBicycle defaults to false on indoor maps, whereas it defaults to true on outdoor maps.
-                    Map.CanBicycle = false;
-                }
-                Map.AlwaysBicycle = GetDefaultFalse("@always_bicycle");
-                nint tpdest = Ruby.GetIVar(robj, "@teleport_destination");
-                if (tpdest != Ruby.Nil)
-                {
-                    int mapid = (int) Ruby.Integer.FromPtr(Ruby.Array.Get(tpdest, 0));
-                    int mapx = (int) Ruby.Integer.FromPtr(Ruby.Array.Get(tpdest, 1));
-                    int mapy = (int) Ruby.Integer.FromPtr(Ruby.Array.Get(tpdest, 2));
-                    Map.HealingSpot = (mapid, mapx, mapy);
-                }
-                nint weather = Ruby.GetIVar(robj, "@weather");
-                if (weather != Ruby.Nil)
-                {
-                    string wtype = Ruby.Symbol.FromPtr(Ruby.Array.Get(weather, 0));
-                    Weather rwtype = wtype switch
-                    {
-                        "None" => Weather.None,
-                        "Rain" => Weather.Rain,
-                        "Storm" => Weather.Storm,
-                        "Snow" => Weather.Snow,
-                        "Blizzard" => Weather.Blizzard,
-                        "Sandstorm" => Weather.Sandstorm,
-                        "HeavyRain" => Weather.HeavyRain,
-                        "Sun" => Weather.Sun,
-                        "Fog" => Weather.Fog,
-                        _ => throw new Exception($"Invalid weather type '{wtype}'.")
-                    };
-                    int wstrength = (int) Ruby.Integer.FromPtr(Ruby.Array.Get(weather, 1));
-                    Map.Weather = (rwtype, wstrength);
-                }
-                nint townmappos = Ruby.GetIVar(robj, "@town_map_position");
-                if (townmappos != Ruby.Nil)
-                {
-                    int regionid = (int) Ruby.Integer.FromPtr(Ruby.Array.Get(townmappos, 0));
-                    int regionx = (int) Ruby.Integer.FromPtr(Ruby.Array.Get(townmappos, 1));
-                    int regiony = (int) Ruby.Integer.FromPtr(Ruby.Array.Get(townmappos, 2));
-                    Map.TownMapPosition = (regionid, regionx, regiony);
-                }
-                nint rdiveid = Ruby.GetIVar(robj, "@dive_map_id");
-                if (rdiveid != Ruby.Nil) Map.DiveMapID = (int)Ruby.Integer.FromPtr(rdiveid);
-                Map.DarkMap = GetDefaultFalse("@dark_map");
-                Map.SafariMap = GetDefaultFalse("@safari_map");
-                Map.SnapEdges = GetDefaultFalse("@snap_edges");
-                Map.RandomDungeon = GetDefaultFalse("@random_dungeon");
-                Map.BattleBackground = GetStrOrNull("@battle_background");
-                Map.WildBattleBGM = GetStrOrNull("@wild_battle_BGM");
-                Map.TrainerBattleBGM = GetStrOrNull("@trainer_battle_BGM");
-                Map.WildVictoryBGM = GetStrOrNull("@wild_victory_BGM");
-                Map.TrainerVictoryBGM = GetStrOrNull("@trainer_victory_BGM");
-                Map.WildCaptureME = GetStrOrNull("@wild_capture_ME");
-                nint townmapsize = Ruby.GetIVar(robj, "@town_map_size");
-                if (townmapsize != Ruby.Nil)
-                {
-                    int sqwidth = (int) Ruby.Integer.FromPtr(Ruby.Array.Get(townmapsize, 0));
-                    string sqformat = Ruby.String.FromPtr(Ruby.Array.Get(townmapsize, 1));
-                    Map.TownMapSize = (sqwidth, sqformat);
-                }
-                Map.BattleEnvironment = Ruby.GetIVar(robj, "@battle_environment") == Ruby.Nil ? null : Ruby.Symbol.FromPtr(Ruby.GetIVar(robj, "@battle_environment"));
-                nint FlagsArray = Ruby.GetIVar(robj, "@flags");
-                Map.Flags = new List<string>();
-                if (FlagsArray != Ruby.Nil)
-                {
-                    int FlagCount = (int) Ruby.Array.Length(FlagsArray);
-                    for (int j = 0; j < FlagCount; j++)
-                    {
-                        string flag = Ruby.String.FromPtr(Ruby.Array.Get(FlagsArray, j));
-                        Map.Flags.Add(flag);
-                    }
-                }
-                SetLoadProgress((float) i / (KeyCount - 1));
+                nint value = Ruby.GetIVar(robj, Variable);
+                if (value == Ruby.Nil) return true;
+                else return value == Ruby.True;
             }
-            Ruby.Unpin(Keys);
-            Ruby.Unpin(Data);
+            bool GetDefaultFalse(string Variable)
+            {
+                nint value = Ruby.GetIVar(robj, Variable);
+                if (value == Ruby.Nil) return false;
+                else return value == Ruby.True;
+            }
+            string GetStrOrNull(string Variable)
+            {
+                nint value = Ruby.GetIVar(robj, Variable);
+                if (value == Ruby.Nil) return null;
+                return Ruby.String.FromPtr(value);
+            }
+            Map Map = Data.Maps[ckey];
+            Map.InGameName = GetStrOrNull("@real_name");
+            Map.OutdoorMap = GetDefaultFalse("@outdoor_map");
+            Map.AnnounceLocation = GetDefaultFalse("@announce_location");
+            Map.CanBicycle = GetDefaultTrue("@can_bicycle");
+            if (Ruby.GetIVar(robj, "@outdoor_map") == Ruby.Nil && Ruby.GetIVar(robj, "@can_bicycle") == Ruby.Nil)
+            {
+                // Maps default to being indoor maps, but
+                // CanBicycle defaults to false on indoor maps, whereas it defaults to true on outdoor maps.
+                Map.CanBicycle = false;
+            }
+            Map.AlwaysBicycle = GetDefaultFalse("@always_bicycle");
+            nint tpdest = Ruby.GetIVar(robj, "@teleport_destination");
+            if (tpdest != Ruby.Nil)
+            {
+                int mapid = (int)Ruby.Integer.FromPtr(Ruby.Array.Get(tpdest, 0));
+                int mapx = (int)Ruby.Integer.FromPtr(Ruby.Array.Get(tpdest, 1));
+                int mapy = (int)Ruby.Integer.FromPtr(Ruby.Array.Get(tpdest, 2));
+                Map.HealingSpot = (mapid, mapx, mapy);
+            }
+            nint weather = Ruby.GetIVar(robj, "@weather");
+            if (weather != Ruby.Nil)
+            {
+                string wtype = Ruby.Symbol.FromPtr(Ruby.Array.Get(weather, 0));
+                Weather rwtype = wtype switch
+                {
+                    "None" => Weather.None,
+                    "Rain" => Weather.Rain,
+                    "Storm" => Weather.Storm,
+                    "Snow" => Weather.Snow,
+                    "Blizzard" => Weather.Blizzard,
+                    "Sandstorm" => Weather.Sandstorm,
+                    "HeavyRain" => Weather.HeavyRain,
+                    "Sun" => Weather.Sun,
+                    "Fog" => Weather.Fog,
+                    _ => throw new Exception($"Invalid weather type '{wtype}'.")
+                };
+                int wstrength = (int)Ruby.Integer.FromPtr(Ruby.Array.Get(weather, 1));
+                Map.Weather = (rwtype, wstrength);
+            }
+            nint townmappos = Ruby.GetIVar(robj, "@town_map_position");
+            if (townmappos != Ruby.Nil)
+            {
+                int regionid = (int)Ruby.Integer.FromPtr(Ruby.Array.Get(townmappos, 0));
+                int regionx = (int)Ruby.Integer.FromPtr(Ruby.Array.Get(townmappos, 1));
+                int regiony = (int)Ruby.Integer.FromPtr(Ruby.Array.Get(townmappos, 2));
+                Map.TownMapPosition = (regionid, regionx, regiony);
+            }
+            nint rdiveid = Ruby.GetIVar(robj, "@dive_map_id");
+            if (rdiveid != Ruby.Nil) Map.DiveMapID = (int)Ruby.Integer.FromPtr(rdiveid);
+            Map.DarkMap = GetDefaultFalse("@dark_map");
+            Map.SafariMap = GetDefaultFalse("@safari_map");
+            Map.SnapEdges = GetDefaultFalse("@snap_edges");
+            Map.RandomDungeon = GetDefaultFalse("@random_dungeon");
+            Map.BattleBackground = GetStrOrNull("@battle_background");
+            Map.WildBattleBGM = GetStrOrNull("@wild_battle_BGM");
+            Map.TrainerBattleBGM = GetStrOrNull("@trainer_battle_BGM");
+            Map.WildVictoryBGM = GetStrOrNull("@wild_victory_BGM");
+            Map.TrainerVictoryBGM = GetStrOrNull("@trainer_victory_BGM");
+            Map.WildCaptureME = GetStrOrNull("@wild_capture_ME");
+            nint townmapsize = Ruby.GetIVar(robj, "@town_map_size");
+            if (townmapsize != Ruby.Nil)
+            {
+                int sqwidth = (int)Ruby.Integer.FromPtr(Ruby.Array.Get(townmapsize, 0));
+                string sqformat = Ruby.String.FromPtr(Ruby.Array.Get(townmapsize, 1));
+                Map.TownMapSize = (sqwidth, sqformat);
+            }
+            Map.BattleEnvironment = Ruby.GetIVar(robj, "@battle_environment") == Ruby.Nil ? null : Ruby.Symbol.FromPtr(Ruby.GetIVar(robj, "@battle_environment"));
+            nint FlagsArray = Ruby.GetIVar(robj, "@flags");
+            Map.Flags = new List<string>();
+            if (FlagsArray != Ruby.Nil)
+            {
+                int FlagCount = (int)Ruby.Array.Length(FlagsArray);
+                for (int j = 0; j < FlagCount; j++)
+                {
+                    string flag = Ruby.String.FromPtr(Ruby.Array.Get(FlagsArray, j));
+                    Map.Flags.Add(flag);
+                }
+            }
         });
     }
 
-    private static void LoadMapMetadataFromPBS(string FilePath)
+    protected override void LoadPBS()
     {
-        FormattedTextParser.ParseSectionBasedFile(FilePath, (id, hash) =>
+        base.LoadPBS();
+        FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
         {
             Map Map = Data.Maps[Convert.ToInt32(id)];
             bool GetDefaultTrue(string Name)
@@ -227,18 +220,19 @@ public static partial class Data
             Map.BattleEnvironment = hash.ContainsKey("Environment") ? hash["Environment"] : null;
             if (hash.ContainsKey("Flags")) Map.Flags = hash["Flags"].Split(',').Select(x => x.Trim()).ToList();
             else Map.Flags = new List<string>();
-        });
+        }, Data.SetLoadProgress);
     }
 
-    private static void SaveMapMetadata()
+    protected override void SaveData()
     {
+        base.SaveData();
         SafeSave("map_metadata.dat", File =>
         {
             nint Data = Ruby.Hash.Create();
             Ruby.Pin(Data);
-            foreach (Map Map in Maps.Values)
+            foreach (Map Map in Game.Data.Maps.Values)
             {
-                nint e = Ruby.Funcall(MapMetadataClass, "new");
+                nint e = Ruby.Funcall(GetClass(), "new");
                 Ruby.Hash.Set(Data, Ruby.Integer.ToPtr(Map.ID), e);
                 Ruby.SetIVar(e, "@real_name", Map.InGameName == null ? Ruby.Nil : Ruby.String.ToPtr(Map.InGameName));
                 Ruby.SetIVar(e, "@outdoor_map", Map.OutdoorMap ? Ruby.True : Ruby.False);
@@ -322,5 +316,12 @@ public static partial class Data
             Ruby.Marshal.Dump(Data, File);
             Ruby.Unpin(Data);
         });
+    }
+
+    public override void Clear()
+    {
+        base.Clear();
+        // Clearing this data happens when all maps are cleared,
+        // as this data is part of map data internally.
     }
 }

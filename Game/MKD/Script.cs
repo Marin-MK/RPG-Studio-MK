@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace RPGStudioMK.Game;
 
+[DebuggerDisplay("{Name}")]
 public class Script
 {
     public long MagicNumber;

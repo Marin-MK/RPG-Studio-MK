@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace RPGStudioMK.Game;
 
-public class CommonEvent
+public class CommonEvent : IGameData
 {
     public int ID;
     public string Name;

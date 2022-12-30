@@ -243,24 +243,37 @@ public partial class MainEditorWindow : UIWindow
         Editor.LoadProjectSettings();
         ProgressWindow pw = new ProgressWindow("Loading", "Loading project...", false, false, false);
         Graphics.Update();
+        Stopwatch timer = Stopwatch.StartNew();
         Data.LoadGameData(f =>
         {
-            if (f == 1) f = 0.99999f;
-            // f is percentage of maps that have been parsed
-            pw.SetProgress(f);
-            // Force redraw in between maps loaded
-            if (Graphics.CanUpdate()) Graphics.Update();
-            // Window was closed, return to main loop to finish closing program
+            if (!Graphics.CanUpdate())
+            {
+                // Window was closed, return to main loop to finish closing program
+                if (!pw.Disposed) pw.Dispose();
+                Data.ClearProjectData();
+                Data.AbortLoad();
+            }
             else
+            {
+                pw.SetProgress(f);
+                // Update graphics at most 10 times per second to make sure the user isn't waiting
+                // longer for progress bar to be rendered than to actually load the data.
+                if (timer.ElapsedMilliseconds > 100)
+                {
+                    timer.Restart();
+                    Graphics.Update();
+                }
+                else return;
+            }
+        }, txt =>
+        {
+            if (!Graphics.CanUpdate())
             {
                 if (!pw.Disposed) pw.Dispose();
                 Data.ClearProjectData();
                 Data.AbortLoad();
             }
-        }, txt =>
-        {
             pw.SetMessage(txt);
-            if (Graphics.CanUpdate()) Graphics.Update();
         });
         if (!pw.Disposed) pw.Dispose();
         if (Data.StopLoading)

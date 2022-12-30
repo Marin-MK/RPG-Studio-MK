@@ -9,16 +9,23 @@ namespace RPGStudioMK.Utility;
 
 public static class FormattedTextParser
 {
-    public static void ParseSectionBasedFile(string Filename, Action<string, Dictionary<string, string>> OnParseSection)
+    public static string? RootFolder;
+
+    public static void ParseSectionBasedFile(string Filename, Action<string, Dictionary<string, string>> OnParseSection, Action<float>? OnProgress = null)
     {
+        if (RootFolder != null && File.Exists(RootFolder + "/" + Filename)) Filename = RootFolder + "/" + Filename;
         if (!File.Exists(Filename)) throw new Exception($"The specified file '{Filename}' does not exist.");
-        StreamReader sr = new StreamReader(File.OpenRead(Filename));
         string CurrentID = null;
+        Queue<string> LineQueue = new Queue<string>(File.ReadLines(Filename));
+        int Current = 0;
+        int Total = LineQueue.Count - 1;
         Dictionary<string, string> CurrentSection = new Dictionary<string, string>();
-        while (!sr.EndOfStream)
+        while (LineQueue.Count > 0)
         {
-            string line = sr.ReadLine().Trim();
+            Current++;
+            string line = LineQueue.Dequeue().Trim();
             // Skip empty lines and comments
+            if (Total != 0) OnProgress?.Invoke((float) Current / Total);
             if (string.IsNullOrEmpty(line) || line[0] == '#') continue;
             if (line[0] == '[' && line.Contains(']')) // Start a section
             {
@@ -41,19 +48,23 @@ public static class FormattedTextParser
                 CurrentSection.Add(split[0].Trim(), split[1].Trim());
             }
         }
-        sr.Close();
         OnParseSection(CurrentID, CurrentSection);
     }
 
-    public static void ParseSectionBasedFileWithOrder(string Filename, Action<string, List<(string, string)>> OnParseSection)
+    public static void ParseSectionBasedFileWithOrder(string Filename, Action<string, List<(string, string)>> OnParseSection, Action<float>? OnProgress = null)
     {
+        if (RootFolder != null && File.Exists(RootFolder + "/" + Filename)) Filename = RootFolder + "/" + Filename;
         if (!File.Exists(Filename)) throw new Exception($"The specified file '{Filename}' does not exist.");
-        StreamReader sr = new StreamReader(File.OpenRead(Filename));
+        Queue<string> LineQueue = new Queue<string>(File.ReadLines(Filename));
+        int Current = 0;
+        int Total = LineQueue.Count - 1;
         string CurrentID = null;
         List<(string, string)> CurrentSection = new List<(string, string)>();
-        while (!sr.EndOfStream)
+        while (LineQueue.Count > 0)
         {
-            string line = sr.ReadLine().Trim();
+            Current++;
+            string line = LineQueue.Dequeue().Trim();
+            if (Total != 0) OnProgress?.Invoke((float) Current / Total);
             // Skip empty lines and comments
             if (string.IsNullOrEmpty(line) || line[0] == '#') continue;
             if (line[0] == '[' && line.Contains(']')) // Start a section
@@ -77,18 +88,22 @@ public static class FormattedTextParser
                 CurrentSection.Add((split[0].Trim(), split[1].Trim()));
             }
         }
-        sr.Close();
         OnParseSection(CurrentID, CurrentSection);
     }
 
-    public static void ParseSectionBasedFileWithOrderWithoutHeader(string Filename, Action<List<(string, string)>> OnParseSection)
+    public static void ParseSectionBasedFileWithOrderWithoutHeader(string Filename, Action<List<(string, string)>> OnParseSection, Action<float>? OnProgress = null)
     {
+        if (RootFolder != null && File.Exists(RootFolder + "/" + Filename)) Filename = RootFolder + "/" + Filename;
         if (!File.Exists(Filename)) throw new Exception($"The specified file '{Filename}' does not exist.");
-        StreamReader sr = new StreamReader(File.OpenRead(Filename));
+        Queue<string> LineQueue = new Queue<string>(File.ReadLines(Filename));
+        int Current = 0;
+        int Total = LineQueue.Count - 1;
         List<(string, string)> CurrentSection = new List<(string, string)>();
-        while (!sr.EndOfStream)
+        while (LineQueue.Count > 0)
         {
-            string line = sr.ReadLine().Trim();
+            Current++;
+            string line = LineQueue.Dequeue().Trim();
+            if (Total != 0) OnProgress?.Invoke((float) Current / Total);
             // Skip empty lines and comments
             if (string.IsNullOrEmpty(line) || line[0] == '#') continue;
             if (line.Contains("="))
@@ -97,19 +112,23 @@ public static class FormattedTextParser
                 CurrentSection.Add((split[0].Trim(), split[1].Trim()));
             }
         }
-        sr.Close();
         OnParseSection(CurrentSection);
     }
 
-    public static void ParseLineByLineWithHeader(string Filename, Action<string, List<string>> OnParseSection)
+    public static void ParseLineByLineWithHeader(string Filename, Action<string, List<string>> OnParseSection, Action<float>? OnProgress = null)
     {
+        if (RootFolder != null && File.Exists(RootFolder + "/" + Filename)) Filename = RootFolder + "/" + Filename;
         if (!File.Exists(Filename)) throw new Exception($"The specified file '{Filename}' does not exist.");
-        StreamReader sr = new StreamReader(File.OpenRead(Filename));
+        Queue<string> LineQueue = new Queue<string>(File.ReadLines(Filename));
+        int Current = 0;
+        int Total = LineQueue.Count - 1;
         string CurrentID = null;
         List<string> CurrentSection = new List<string>();
-        while (!sr.EndOfStream)
+        while (LineQueue.Count > 0)
         {
-            string line = sr.ReadLine().Trim();
+            Current++;
+            string line = LineQueue.Dequeue().Trim();
+            if (Total != 0) OnProgress?.Invoke((float) Current / Total);
             // Skip empty lines and comments
             if (string.IsNullOrEmpty(line) || line[0] == '#') continue;
             if (line[0] == '[' && line.Contains(']')) // Start a section
@@ -132,7 +151,6 @@ public static class FormattedTextParser
                 CurrentSection.Add(line);
             }
         }
-        sr.Close();
         OnParseSection(CurrentID, CurrentSection);
     }
 }

@@ -6,35 +6,41 @@ using System.Threading.Tasks;
 
 namespace RPGStudioMK.Game;
 
-public static partial class Data
+public class TilesetManager : BaseDataManager
 {
-    private static void LoadTilesets()
+    public TilesetManager()
+        : base(null, "Tilesets.rxdata", null, "tilesets", false) { }
+
+    protected override void LoadData()
     {
-        SafeLoad("Tilesets.rxdata", File =>
+        base.LoadData();
+        SafeLoad(Filename, File =>
         {
             IntPtr data = Ruby.Marshal.Load(File);
             Ruby.Pin(data);
-            Autotiles.AddRange(new Autotile[Ruby.Array.Length(data) * 7]);
-            Tilesets.Add(null);
+            Data.Autotiles.AddRange(new Autotile[Ruby.Array.Length(data) * 7]);
+            Data.Tilesets.Add(null);
             for (int i = 0; i < Ruby.Array.Length(data); i++)
             {
                 IntPtr tileset = Ruby.Array.Get(data, i);
                 if (tileset != Ruby.Nil)
                 {
-                    Tilesets.Add(new Tileset(tileset));
+                    Data.Tilesets.Add(new Tileset(tileset));
                 }
+                if (Data.StopLoading) break;
             }
             Ruby.Unpin(data);
         });
     }
 
-    private static void SaveTilesets()
+    protected override void SaveData()
     {
-        SafeSave("Tilesets.rxdata", File =>
+        base.SaveData();
+        SafeSave(Filename, File =>
         {
             IntPtr tilesets = Ruby.Array.Create();
             Ruby.Pin(tilesets);
-            foreach (Tileset tileset in Tilesets)
+            foreach (Tileset tileset in Data.Tilesets)
             {
                 if (tileset == null) Ruby.Array.Push(tilesets, Ruby.Nil);
                 else
@@ -46,5 +52,11 @@ public static partial class Data
             Ruby.Marshal.Dump(tilesets, File);
             Ruby.Unpin(tilesets);
         });
+    }
+
+    public override void Clear()
+    {
+        base.Clear();
+        Data.Tilesets.Clear();
     }
 }

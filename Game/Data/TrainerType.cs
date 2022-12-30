@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace RPGStudioMK.Game;
 
 [DebuggerDisplay("{ID}")]
-public class TrainerType
+public class TrainerType : IGameData
 {
-    public static nint Class = nint.Zero;
+    public static nint Class => BaseDataManager.Classes["TrainerType"];
 
     public string ID;
     public string Name;

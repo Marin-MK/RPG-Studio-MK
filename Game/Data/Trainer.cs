@@ -9,9 +9,9 @@ using static rubydotnet.Ruby;
 namespace RPGStudioMK.Game;
 
 [DebuggerDisplay("{TrainerType} {Name} {Version}")]
-public class Trainer
+public class Trainer : IGameData
 {
-    public static nint Class = nint.Zero;
+    public static nint Class => BaseDataManager.Classes["Trainer"];
 
     public TrainerTypeResolver TrainerType;
     public string Name;
