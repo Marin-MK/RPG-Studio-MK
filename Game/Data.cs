@@ -31,6 +31,8 @@ public static partial class Data
     public static List<Trainer> Trainers = new List<Trainer>();
     public static List<Script> Scripts = new List<Script>();
     public static System System;
+    public static Metadata Metadata;
+    public static Dictionary<int, PlayerMetadata> PlayerMetadata = new Dictionary<int, PlayerMetadata>();
     public static List<GamePlugin> Plugins = new List<GamePlugin>();
 
     public static bool StopLoading;
@@ -65,6 +67,8 @@ public static partial class Data
         Scripts.Clear();
         Encounters.Clear();
         System = null;
+        Metadata = null;
+        PlayerMetadata.Clear();
         Plugins.Clear();
         StopLoading = false;
         UsesExternalScripts = false;
@@ -86,6 +90,8 @@ public static partial class Data
         if (Game.TrainerType.Class == nint.Zero) Game.TrainerType.Class = Ruby.Class.Define("TrainerType", GameDataModule, null);
         if (Game.Trainer.Class == nint.Zero) Game.Trainer.Class = Ruby.Class.Define("Trainer", GameDataModule, null);
         if (Game.EncounterTable.Class == nint.Zero) Game.EncounterTable.Class = Ruby.Class.Define("Encounter", GameDataModule, null);
+        if (Game.Metadata.Class == nint.Zero) Game.Metadata.Class = Ruby.Class.Define("Metadata", GameDataModule, null);
+        if (Game.PlayerMetadata.Class == nint.Zero) Game.PlayerMetadata.Class = Ruby.Class.Define("PlayerMetadata", GameDataModule, null);
 
         if (StopLoading) return;
         SetLoadText("Loading tilesets...");
@@ -148,6 +154,14 @@ public static partial class Data
         LoadEncounters();
 
         if (StopLoading) return;
+        SetLoadText("Loading metadata...");
+        LoadMetadata();
+
+        if (StopLoading) return;
+        SetLoadText("Loading player metadata...");
+        LoadPlayerMetadata();
+
+        if (StopLoading) return;
         SetLoadText("Loading plugins...");
         LoadPlugins();
 
@@ -172,6 +186,8 @@ public static partial class Data
         SaveTrainerTypes();
         SaveTrainers();
         SaveEncounters();
+        SaveMetadata();
+        SavePlayerMetadata();
     }
 
     public static void SetProjectPath(string RXProjectFilePath)
