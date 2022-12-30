@@ -22,6 +22,30 @@ public class Map : ICloneable
     public int Order;
     public int ParentID;
 
+    // Essentials Metadata Properties
+    public string? InGameName;
+    public bool OutdoorMap;
+    public bool AnnounceLocation;
+    public bool CanBicycle;
+    public bool AlwaysBicycle;
+    public (int MapID, int X, int Y)? HealingSpot;
+    public (Weather Weather, int Intensity)? Weather;
+    public (int Region, int X, int Y)? TownMapPosition;
+    public int? DiveMapID;
+    public bool DarkMap;
+    public bool SafariMap;
+    public bool SnapEdges;
+    public bool RandomDungeon;
+    public string? BattleBackground;
+    public string? WildBattleBGM;
+    public string? TrainerBattleBGM;
+    public string? WildVictoryBGM;
+    public string? TrainerVictoryBGM;
+    public string? WildCaptureME;
+    public (int Width, string Included)? TownMapSize;
+    public string? BattleEnvironment;
+    public List<string> Flags = new List<string>();
+
     // RMXP Map Properties
     public AudioFile BGM = new AudioFile("");
     public AudioFile BGS = new AudioFile("");

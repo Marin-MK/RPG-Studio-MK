@@ -36,6 +36,7 @@ public static partial class Data
     public static bool StopLoading;
 
     private static nint GameDataModule;
+    private static nint MapMetadataClass;
 
     public static EssentialsVersion EssentialsVersion = EssentialsVersion.Unknown;
     public static bool UsesExternalScripts = false;
@@ -76,6 +77,7 @@ public static partial class Data
         Compatibility.RMXP.Setup();
 
         if (GameDataModule == nint.Zero) GameDataModule = Ruby.Module.Define("GameData");
+        if (MapMetadataClass == nint.Zero) MapMetadataClass = Ruby.Class.Define("MapMetadata", GameDataModule, null);
         if (Game.Species.Class == nint.Zero) Game.Species.Class = Ruby.Class.Define("Species", GameDataModule, null);
         if (Game.Ability.Class == nint.Zero) Game.Ability.Class = Ruby.Class.Define("Ability", GameDataModule, null);
         if (Game.Move.Class == nint.Zero) Game.Move.Class = Ruby.Class.Define("Move", GameDataModule, null);
@@ -84,24 +86,33 @@ public static partial class Data
         if (Game.TrainerType.Class == nint.Zero) Game.TrainerType.Class = Ruby.Class.Define("TrainerType", GameDataModule, null);
         if (Game.Trainer.Class == nint.Zero) Game.Trainer.Class = Ruby.Class.Define("Trainer", GameDataModule, null);
         if (Game.EncounterTable.Class == nint.Zero) Game.EncounterTable.Class = Ruby.Class.Define("Encounter", GameDataModule, null);
-        if (StopLoading) return;
 
+        if (StopLoading) return;
+        SetLoadText("Loading tilesets...");
         LoadTilesets();
-        if (StopLoading) return;
 
+        if (StopLoading) return;
+        SetLoadText("Loading scripts...");
         LoadScripts();
-        if (StopLoading) return;
 
+        if (StopLoading) return;
         SetLoadText("Loading maps...");
         LoadMaps();
-        if (StopLoading) return;
 
-        SetLoadText("Loading project...");
+        if (StopLoading) return;
+        SetLoadText("Loading map metadata...");
+        LoadMapMetadata();
+
+        if (StopLoading) return;
+        SetLoadText("Loading game system...");
         LoadSystem();
-        if (StopLoading) return;
 
-        LoadCommonEvents();
         if (StopLoading) return;
+        SetLoadText("Loading common events...");
+        LoadCommonEvents();
+
+        if (StopLoading) return;
+        SetLoadText("Loading game config...");
         LoadGameINI();
 
         if (StopLoading) return;
@@ -149,6 +160,7 @@ public static partial class Data
         SaveTilesets();
         SaveScripts();
         SaveMaps();
+        SaveMapMetadata();
         SaveSystem();
         SaveCommonEvents();
         SaveGameINI();
