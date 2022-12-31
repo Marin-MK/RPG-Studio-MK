@@ -9,7 +9,7 @@ using static rubydotnet.Ruby;
 namespace RPGStudioMK.Game;
 
 [DebuggerDisplay("{TrainerType} {Name} {Version}")]
-public class Trainer : IGameData
+public class Trainer : IGameData, ICloneable
 {
     public static nint Class => BaseDataManager.Classes["Trainer"];
 
@@ -19,6 +19,8 @@ public class Trainer : IGameData
     public string LoseText;
     public List<ItemResolver> Items;
     public List<TrainerPokemon> Party;
+
+    private Trainer() { }
 
     public Trainer(string ID, List<(string Key, string Value)> pairs)
     {
@@ -112,10 +114,22 @@ public class Trainer : IGameData
         Ruby.Unpin(e);
         return e;
     }
+
+    public object Clone()
+    {
+        Trainer t = new Trainer();
+        t.TrainerType = (TrainerTypeResolver) this.TrainerType.ID;
+        t.Name = this.Name;
+        t.Version = this.Version;
+        t.LoseText = this.LoseText;
+        t.Items = this.Items.Select(x => (ItemResolver) x.ID).ToList();
+        t.Party = this.Party.Select(x => (TrainerPokemon) x.Clone()).ToList();
+        return t;
+    }
 }
 
 [DebuggerDisplay("{Species} {Level}")]
-public class TrainerPokemon
+public class TrainerPokemon : ICloneable
 {
     public SpeciesResolver Species;
     public int Level;
@@ -134,6 +148,8 @@ public class TrainerPokemon
     public bool? SuperShiny;
     public bool? Shadow;
     public ItemResolver? Ball;
+
+    private TrainerPokemon() { }
 
     public TrainerPokemon(List<(string Key, string Value)> Data)
     {
@@ -288,6 +304,29 @@ public class TrainerPokemon
         if (this.Ball != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("poke_ball"), Ruby.Symbol.ToPtr(this.Ball));
         Ruby.Unpin(e);
         return e;
+    }
+
+    public object Clone()
+    {
+        TrainerPokemon t = new TrainerPokemon();
+        t.Species = (SpeciesResolver) this.Species.ID;
+        t.Level = this.Level;
+        t.Form = this.Form;
+        t.Name = this.Name;
+        t.Moves = this.Moves.Select(x => (MoveResolver) x.ID).ToList();
+        t.Ability = this.Ability;
+        t.AbilityIndex = this.AbilityIndex;
+        if (this.Item != null) t.Item = (ItemResolver) this.Item.ID;
+        t.Gender = this.Gender;
+        t.Nature = this.Nature;
+        if (this.IVs.HasValue) t.IVs = (Stats) this.IVs.Value.Clone();
+        if (this.EVs.HasValue) t.EVs = (Stats) this.EVs.Value.Clone();
+        t.Happiness = this.Happiness;
+        t.Shiny = this.Shiny;
+        t.SuperShiny = this.SuperShiny;
+        t.Shadow = this.Shadow;
+        if (this.Ball != null) t.Ball = (ItemResolver) this.Ball.ID;
+        return t;
     }
 
     private Nature NatureStrToEnum(string nature)

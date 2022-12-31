@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace RPGStudioMK.Game;
 
 [DebuggerDisplay("{ID}")]
-public class Ability : IGameData
+public class Ability : IGameData, ICloneable
 {
     public static nint Class => BaseDataManager.Classes["Ability"];
 
@@ -16,6 +16,11 @@ public class Ability : IGameData
     public string Name;
     public string Description;
     public List<string> Flags;
+
+    private Ability()
+    {
+
+    }
 
     public Ability(string ID, Dictionary<string, string> hash)
     {
@@ -55,6 +60,16 @@ public class Ability : IGameData
         }
         Ruby.Unpin(e);
         return e;
+    }
+
+    public object Clone()
+    {
+        Ability a = new Ability();
+        a.ID = this.ID;
+        a.Name = this.Name;
+        a.Description = this.Description;
+        a.Flags = new List<string>(this.Flags);
+        return a;
     }
 }
 

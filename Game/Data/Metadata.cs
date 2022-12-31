@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace RPGStudioMK.Game;
 
-public class Metadata : IGameData
+public class Metadata : IGameData, ICloneable
 {
     public static nint Class => BaseDataManager.Classes["Metadata"];
 
@@ -23,6 +23,8 @@ public class Metadata : IGameData
     public string? WildCaptureME;
     public string? SurfBGM;
     public string? BicycleBGM;
+
+    private Metadata() { }
 
     public Metadata(int ID, Dictionary<string, string> hash)
     {
@@ -103,5 +105,23 @@ public class Metadata : IGameData
         Ruby.SetIVar(e, "@bicycle_BGM", this.BicycleBGM == null ? Ruby.Nil : Ruby.String.ToPtr(this.BicycleBGM));
         Ruby.Unpin(e);
         return e;
+    }
+
+    public object Clone()
+    {
+        Metadata m = new Metadata();
+        m.ID = this.ID;
+        m.StartMoney = this.StartMoney;
+        m.StartItemStorage = this.StartItemStorage.Select(x => (ItemResolver) x.ID).ToList();
+        m.Home = (this.Home.MapID, this.Home.X, this.Home.Y, this.Home.Dir);
+        m.RealStorageCreator = this.RealStorageCreator;
+        m.WildBattleBGM = this.WildBattleBGM;
+        m.TrainerBattleBGM = this.TrainerBattleBGM;
+        m.WildVictoryBGM = this.WildVictoryBGM;
+        m.TrainerVictoryBGM = this.TrainerVictoryBGM;
+        m.WildCaptureME = this.WildCaptureME;
+        m.SurfBGM = this.SurfBGM;
+        m.BicycleBGM = this.BicycleBGM;
+        return m;
     }
 }

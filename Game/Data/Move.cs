@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace RPGStudioMK.Game;
 
 [DebuggerDisplay("{ID}")]
-public class Move : IGameData
+public class Move : IGameData, ICloneable
 {
     public static nint Class => BaseDataManager.Classes["Move"];
 
@@ -25,6 +25,8 @@ public class Move : IGameData
     public List<string> Flags;
     public int EffectChance;
     public string Description;
+
+    private Move() { }
 
     public Move(string ID, Dictionary<string, string> hash)
     {
@@ -92,6 +94,25 @@ public class Move : IGameData
         Ruby.SetIVar(e, "@real_description", Ruby.String.ToPtr(this.Description));
         Ruby.Unpin(e);
         return e;
+    }
+
+    public object Clone()
+    {
+        Move m = new Move();
+        m.ID = this.ID;
+        m.Name = this.Name;
+        m.Type = (TypeResolver) this.Type.ID;
+        m.Category = this.Category;
+        m.BaseDamage = this.BaseDamage;
+        m.Accuracy = this.Accuracy;
+        m.TotalPP = this.TotalPP;
+        m.Target = this.Target;
+        m.Priority = this.Priority;
+        m.FunctionCode = this.FunctionCode;
+        m.Flags = new List<string>(this.Flags);
+        m.EffectChance = this.EffectChance;
+        m.Description = this.Description;
+        return m;
     }
 
     public static MoveCategory CategoryStrToEnum(string Category)

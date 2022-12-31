@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace RPGStudioMK.Game;
 
 [DebuggerDisplay("{ID}: {TrainerType}")]
-public class PlayerMetadata : IGameData
+public class PlayerMetadata : IGameData, ICloneable
 {
     public static nint Class => BaseDataManager.Classes["PlayerMetadata"];
 
@@ -22,6 +22,8 @@ public class PlayerMetadata : IGameData
     public string? FishCharset;
     public string? SurfFishCharset;
     public (int MapID, int X, int Y, Direction Dir)? Home;
+
+    private PlayerMetadata() { }
 
     public PlayerMetadata(int ID, Dictionary<string, string> hash)
     {
@@ -95,5 +97,21 @@ public class PlayerMetadata : IGameData
         Ruby.SetIVar(e, "@home", HomeArray);
         Ruby.Unpin(e);
         return e;
+    }
+
+    public object Clone()
+    {
+        PlayerMetadata p = new PlayerMetadata();
+        p.ID = this.ID;
+        p.TrainerType = (TrainerTypeResolver) this.TrainerType.ID;
+        p.WalkCharset = this.WalkCharset;
+        p.RunCharset = this.RunCharset;
+        p.CycleCharset = this.CycleCharset;
+        p.SurfCharset = this.SurfCharset;
+        p.DiveCharset = this.DiveCharset;
+        p.FishCharset = this.FishCharset;
+        p.SurfFishCharset = this.SurfFishCharset;
+        if (this.Home.HasValue) p.Home = (this.Home.Value.MapID, this.Home.Value.X, this.Home.Value.Y, this.Home.Value.Dir);
+        return p;
     }
 }

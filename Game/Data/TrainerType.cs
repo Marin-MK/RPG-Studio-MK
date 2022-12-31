@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace RPGStudioMK.Game;
 
 [DebuggerDisplay("{ID}")]
-public class TrainerType : IGameData
+public class TrainerType : IGameData, ICloneable
 {
     public static nint Class => BaseDataManager.Classes["TrainerType"];
 
@@ -21,6 +21,8 @@ public class TrainerType : IGameData
     public string? IntroBGM;
     public string? BattleBGM;
     public string? VictoryBGM;
+
+    private TrainerType() { }
 
     public TrainerType(string ID, Dictionary<string, string> hash)
     {
@@ -81,6 +83,21 @@ public class TrainerType : IGameData
         Ruby.SetIVar(e, "@victory_BGM", this.VictoryBGM == null ? Ruby.Nil : Ruby.String.ToPtr(this.VictoryBGM));
         Ruby.Unpin(e);
         return e;
+    }
+
+    public object Clone()
+    {
+        TrainerType t = new TrainerType();
+        t.ID = this.ID;
+        t.Name = this.Name;
+        t.Gender = this.Gender;
+        t.BaseMoney = this.BaseMoney;
+        t.SkillLevel = this.SkillLevel;
+        t.Flags = new List<string>(this.Flags);
+        t.IntroBGM = this.IntroBGM;
+        t.BattleBGM = this.BattleBGM;
+        t.VictoryBGM = this.VictoryBGM;
+        return t;
     }
 }
 

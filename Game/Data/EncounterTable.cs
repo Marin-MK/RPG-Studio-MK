@@ -16,7 +16,12 @@ public class EncounterTable : IGameData
     public int Version;
     public Dictionary<EncounterType, int> StepChances;
     public Dictionary<EncounterType, List<Encounter>> Encounters;
-    
+
+    private EncounterTable()
+    {
+
+    }
+
     public EncounterTable(int MapID, int Version, List<string> lines)
     {
         this.ID = MapID.ToString() + "_" + Version.ToString();
@@ -129,6 +134,22 @@ public class EncounterTable : IGameData
         return e;
     }
 
+    public object Clone()
+    {
+        EncounterTable t = new EncounterTable();
+        t.ID = this.ID;
+        t.MapID = this.MapID;
+        t.Version = this.Version;
+        t.StepChances = new Dictionary<EncounterType, int>(this.StepChances);
+        t.Encounters = new Dictionary<EncounterType, List<Encounter>>();
+        foreach (KeyValuePair<EncounterType, List<Encounter>> kvp in this.Encounters)
+        {
+            List<Encounter> NewList = kvp.Value.Select(x => (Encounter) x.Clone()).ToList();
+            t.Encounters.Add(kvp.Key, NewList);
+        }
+        return t;
+    }
+
     public static EncounterType EncounterTypeStrToEnum(string Type)
     {
         return Type switch
@@ -204,6 +225,8 @@ public class Encounter
     public int MinLevel;
     public int MaxLevel;
 
+    private Encounter() { }
+
     public Encounter(string[] Line)
     {
         this.Probability = Convert.ToInt32(Line[0]);
@@ -230,6 +253,16 @@ public class Encounter
         Ruby.Array.Set(e, 2, Ruby.Integer.ToPtr(this.MinLevel));
         Ruby.Array.Set(e, 3, Ruby.Integer.ToPtr(this.MaxLevel));
         Ruby.Unpin(e);
+        return e;
+    }
+
+    public object Clone()
+    {
+        Encounter e = new Encounter();
+        e.Probability = this.Probability;
+        e.Species = (SpeciesResolver) this.Species.ID;
+        e.MinLevel = this.MinLevel;
+        e.MaxLevel = this.MaxLevel;
         return e;
     }
 }

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace RPGStudioMK.Game;
 
 [DebuggerDisplay("{ID}")]
-public class Item : IGameData
+public class Item : IGameData, ICloneable
 {
     public static nint Class => BaseDataManager.Classes["Item"];
 
@@ -26,6 +26,8 @@ public class Item : IGameData
     public bool Consumable;
     public List<string> Flags;
     public MoveResolver? Move;
+
+    private Item() { }
 
     public Item(string ID, Dictionary<string, string> hash)
     {
@@ -125,6 +127,24 @@ public class Item : IGameData
         Ruby.SetIVar(e, "@move", this.Move == null ? Ruby.Nil : Ruby.Symbol.ToPtr(this.Move));
         Ruby.Unpin(e);
         return e;
+    }
+
+    public object Clone()
+    {
+        Item i = new Item();
+        i.ID = this.ID;
+        i.Name = this.Name;
+        i.Plural = this.Plural;
+        i.Pocket = this.Pocket;
+        i.Price = this.Price;
+        i.SellPrice = this.SellPrice;
+        i.Description = this.Description;
+        i.FieldUse = this.FieldUse;
+        i.BattleUse = this.BattleUse;
+        i.Consumable = this.Consumable;
+        i.Flags = new List<string>(this.Flags);
+        i.Move = this.Move;
+        return i;
     }
 }
 

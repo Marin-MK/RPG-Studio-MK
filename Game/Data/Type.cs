@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace RPGStudioMK.Game;
 
 [DebuggerDisplay("{ID}")]
-public class Type : IGameData
+public class Type : IGameData, ICloneable
 {
     public static nint Class => BaseDataManager.Classes["Type"];
 
@@ -21,6 +21,8 @@ public class Type : IGameData
     public List<TypeResolver> Immunities;
     public int IconPosition;
     public List<string> Flags;
+
+    private Type() { }
 
     public Type(string ID, Dictionary<string, string> hash)
     {
@@ -111,6 +113,21 @@ public class Type : IGameData
         Ruby.SetIVar(e, "@icon_position", Ruby.Integer.ToPtr(this.IconPosition));
         Ruby.Unpin(e);
         return e;
+    }
+
+    public object Clone()
+    {
+        Type t = new Type();
+        t.ID = this.ID;
+        t.Name = this.Name;
+        t.SpecialType = this.SpecialType;
+        t.PseudoType = this.PseudoType;
+        t.Weaknesses = this.Weaknesses.Select(x => (TypeResolver) x.ID).ToList();
+        t.Resistances = this.Resistances.Select(x => (TypeResolver) x.ID).ToList();
+        t.Immunities = this.Immunities.Select(x => (TypeResolver) x.ID).ToList();
+        t.IconPosition = this.IconPosition;
+        t.Flags = new List<string>(this.Flags);
+        return t;
     }
 }
 
