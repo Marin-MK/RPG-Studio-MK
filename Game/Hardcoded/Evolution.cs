@@ -7,19 +7,21 @@ using System.Threading.Tasks;
 
 namespace RPGStudioMK.Game;
 
-public class Evolution
+public class Evolution : ICloneable
 {
     public SpeciesResolver Species;
     public EvolutionType Type;
     public string? UnknownType;
-    public List<object> Parameters;
+    public object Parameter;
     public bool Prevolution;
 
-    public Evolution(SpeciesResolver Species, EvolutionType Type, List<object> Parameters, bool Prevolution = false)
+    private Evolution() { }
+
+    public Evolution(SpeciesResolver Species, EvolutionType Type, object Parameter, bool Prevolution = false)
     {
         this.Species = Species;
         this.Type = Type;
-        this.Parameters = Parameters;
+        this.Parameter = Parameter;
         this.Prevolution = Prevolution;
     }
 
@@ -28,14 +30,8 @@ public class Evolution
         this.Species = (SpeciesResolver) Ruby.Symbol.FromPtr(Ruby.Array.Get(Array, 0));
         string rtype = Ruby.Symbol.FromPtr(Ruby.Array.Get(Array, 1));
         this.Type = MethodStrToEnum(rtype);
-        if (this.Type == EvolutionType.None) UnknownType = rtype;
-        this.Parameters = new List<object>();
-        for (int i = 2; i < Ruby.Array.Length(Array) - 1; i++)
-        {
-            nint robj = Ruby.Array.Get(Array, i);
-            object nobj = Utilities.RubyToNative(robj);
-            this.Parameters.Add(nobj);
-        }
+        if (this.Type == EvolutionType.None && !string.IsNullOrEmpty(rtype)) UnknownType = rtype;
+        this.Parameter = Utilities.RubyToNative(Ruby.Array.Get(Array, 2));
         this.Prevolution = Ruby.Array.Get(Array, (int) Ruby.Array.Length(Array) - 1) == Ruby.True;
     }
 
@@ -109,14 +105,11 @@ public class Evolution
             EvolutionType.BattleDealCriticalHit => "BattleDealCriticalHit",
             EvolutionType.Event => "Event",
             EvolutionType.EventAfterDamageTaken => "EventAfterDamageTake",
-            EvolutionType.None => UnknownType ?? "Unknown",
-            _ => throw new Exception("Invalid evolution type.")
+            EvolutionType.None => UnknownType ?? "None",
+            _ => throw new Exception($"Invalid evolution type '{this.Type}'.")
         };
         Ruby.Array.Push(e, Ruby.Symbol.ToPtr(rtype));
-        foreach (object param in Parameters)
-        {
-            Ruby.Array.Push(e, Utilities.NativeToRuby(param));
-        }
+        Ruby.Array.Push(e, Utilities.NativeToRuby(this.Parameter));
         Ruby.Array.Push(e, Prevolution ? Ruby.True : Ruby.False);
         Ruby.Unpin(e);
         return e;
@@ -191,6 +184,16 @@ public class Evolution
             "EventAfterDamageTake" => EvolutionType.EventAfterDamageTaken,
             _ => EvolutionType.None
         };
+    }
+
+    public object Clone()
+    {
+        Evolution e = new Evolution();
+        e.Species = (SpeciesResolver) this.Species.ID;
+        e.Type = this.Type;
+        e.Parameter = this.Parameter; // Will realistically always be a primitive data type
+        e.Prevolution = this.Prevolution;
+        return e;
     }
 }
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RPGStudioMK.Game;
 
-public struct Stats
+public struct Stats : ICloneable
 {
     public int HP;
     public int Attack;
@@ -53,5 +53,17 @@ public struct Stats
         Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("SPEED"), Ruby.Integer.ToPtr(this.Speed));
         Ruby.Unpin(e);
         return e;
+    }
+
+    public object Clone()
+    {
+        Stats s = new Stats();
+        s.HP = this.HP;
+        s.Attack = this.Attack;
+        s.Defense = this.Defense;
+        s.SpecialAttack = this.SpecialAttack;
+        s.SpecialDefense = this.SpecialDefense;
+        s.Speed = this.Speed;
+        return s;
     }
 }

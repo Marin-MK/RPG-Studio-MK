@@ -84,7 +84,7 @@ public static partial class Data
             new MetadataManager(false),
             new PlayerMetadataManager(),
             // Other Essentials Data
-            new SpeciesManager(false), // TODO: Load Forms from PBS if species are loaded from PBS.
+            new SpeciesManager(false),
             new AbilityManager(false),
             new ItemManager(false),
             new MoveManager(false),

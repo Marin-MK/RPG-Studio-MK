@@ -7,18 +7,18 @@ using System.Linq;
 namespace RPGStudioMK.Game;
 
 [DebuggerDisplay("{ID}")]
-public class Species : IGameData
+public class Species : IGameData, ICloneable
 {
     public static nint Class => BaseDataManager.Classes["Species"];
     public static List<(Species, Evolution)> PrevolutionsToRegister = new List<(Species, Evolution)>();
 
     public string ID;
-	public string SpeciesID;
+	public SpeciesResolver BaseSpecies;
 	public int Form;
-	public string RealName;
-	public string? RealFormName;
-	public string RealCategory;
-	public string RealPokedexEntry;
+	public string Name;
+    public string? FormName;
+	public string Category;
+	public string PokedexEntry;
 	public int PokedexForm;
 	public TypeResolver Type1;
 	public TypeResolver? Type2;
@@ -29,7 +29,7 @@ public class Species : IGameData
 	public GenderRatio GenderRatio;
 	public int CatchRate;
 	public int Happiness;
-	public List<(int, MoveResolver)> Moves;
+	public List<(int Level, MoveResolver Move)> Moves;
 	public List<MoveResolver> TutorMoves;
 	public List<MoveResolver> EggMoves;
 	public List<AbilityResolver> Abilities;
@@ -66,8 +66,8 @@ public class Species : IGameData
 	public Species(string ID, Dictionary<string, string> hash)
 	{
         this.ID = ID;
-        this.SpeciesID = ID;
-        this.RealName = hash["Name"];
+        this.BaseSpecies = (SpeciesResolver) ID;
+        this.Name = hash["Name"];
         if (hash["Types"].Contains(","))
         {
             string[] _types = hash["Types"].Split(',');
@@ -101,8 +101,8 @@ public class Species : IGameData
             };
         }
         this.Form = 0;
-        this.RealCategory = hash["Category"];
-        this.RealPokedexEntry = hash["Pokedex"];
+        this.Category = hash["Category"];
+        this.PokedexEntry = hash["Pokedex"];
         this.BaseEXP = Convert.ToInt32(hash["BaseExp"]);
         this.GrowthRate = GrowthRateStrToEnum(hash["GrowthRate"]);
         this.GenderRatio = GenderRatioStrToEnum(hash["GenderRatio"]);
@@ -163,15 +163,193 @@ public class Species : IGameData
 		if (hash.ContainsKey("MegaMessage")) this.MegaMessage = Convert.ToInt32(hash["MegaMessage"]);
 	}
 
+    public void LoadFormPBS(string ID, Dictionary<string, string> hash)
+    {
+        if (hash.ContainsKey("Types"))
+        {
+            if (hash["Types"].Contains(','))
+            {
+                string[] _types = hash["Types"].Split(',').Select(x => x.Trim()).ToArray();
+                this.Type1 = (TypeResolver) _types[0];
+                this.Type2 = (TypeResolver) _types[1];
+            }
+            else this.Type1 = (TypeResolver) hash["Types"];
+        }
+        if (hash.ContainsKey("BaseStats"))
+        {
+            string[] _stats = hash["BaseStats"].Split(',');
+            this.BaseStats = new Stats();
+            this.BaseStats.HP = Convert.ToInt32(_stats[0]);
+            this.BaseStats.Attack = Convert.ToInt32(_stats[1]);
+            this.BaseStats.Defense = Convert.ToInt32(_stats[2]);
+            this.BaseStats.SpecialAttack = Convert.ToInt32(_stats[4]);
+            this.BaseStats.SpecialDefense = Convert.ToInt32(_stats[5]);
+            this.BaseStats.Speed = Convert.ToInt32(_stats[3]);
+        }
+        if (hash.ContainsKey("EVs"))
+        {
+            string[] _evs = hash["EVs"].Split(',');
+            this.EVs = new Stats();
+            for (int i = 0; i < _evs.Length - 1; i += 2)
+            {
+                string stat = _evs[i];
+                int amt = Convert.ToInt32(_evs[i + 1]);
+                int idx = stat switch
+                {
+                    "HP" => this.EVs.HP = amt,
+                    "ATTACK" => this.EVs.Attack = amt,
+                    "DEFENSE" => this.EVs.Defense = amt,
+                    "SPECIAL_ATTACK" => this.EVs.SpecialAttack = amt,
+                    "SPECIAL_DEFENSE" => this.EVs.SpecialDefense = amt,
+                    "SPEED" => this.EVs.Speed = amt,
+                    _ => throw new Exception("Invalid stat.")
+                };
+            }
+        }
+        if (hash.ContainsKey("CatchRate"))
+        {
+            this.CatchRate = Convert.ToInt32(hash["CatchRate"]);
+        }
+        if (hash.ContainsKey("Happiness"))
+        {
+            this.Happiness = Convert.ToInt32(hash["Happiness"]);
+        }
+        if (hash.ContainsKey("Abilities"))
+        {
+            this.Abilities = hash["Abilities"].Split(',').Select(m => (AbilityResolver) m.Trim()).ToList();
+        }
+        if (hash.ContainsKey("HiddenAbilities"))
+        {
+            this.HiddenAbilities = hash["HiddenAbilities"].Split(',').Select(m => (AbilityResolver) m.Trim()).ToList();
+        }
+        if (hash.ContainsKey("Moves"))
+        {
+            string[] _moves = hash["Moves"].Split(',');
+            this.Moves = new List<(int, MoveResolver)>();
+            for (int i = 0; i < _moves.Length - 1; i += 2)
+            {
+                int level = Convert.ToInt32(_moves[i]);
+                MoveResolver move = (MoveResolver) _moves[i + 1];
+                this.Moves.Add((level, move));
+            }
+        }
+        if (hash.ContainsKey("TutorMoves"))
+        {
+            this.TutorMoves = hash["TutorMoves"].Split(',').Select(m => (MoveResolver) m.Trim()).ToList();
+        }
+        if (hash.ContainsKey("EggMoves"))
+        {
+            this.EggMoves = hash["EggMoves"].Split(',').Select(m => (MoveResolver) m.Trim()).ToList();
+        }
+        if (hash.ContainsKey("EggGroups"))
+        {
+            this.EggGroups = hash["EggGroups"].Split(',').Select(m => EggGroupStrToEnum(m)).ToList();
+        }
+        if (hash.ContainsKey("HatchSteps"))
+        {
+            this.HatchSteps = Convert.ToInt32(hash["HatchSteps"]);
+        }
+        if (hash.ContainsKey("Offspring"))
+        {
+            this.Offspring = hash["Offspring"].Split(',').Select(s => (SpeciesResolver) s.Trim()).ToList();
+        }
+        if (hash.ContainsKey("Height"))
+        {
+            this.Height = (float) Convert.ToDouble(hash["Height"]);
+        }
+        if (hash.ContainsKey("Weight"))
+        {
+            this.Weight = (float) Convert.ToDouble(hash["Weight"]);
+        }
+        if (hash.ContainsKey("Color"))
+        {
+		    this.Color = ColorStrToEnum(hash["Color"]);
+        }
+        if (hash.ContainsKey("Shape"))
+        {
+            this.Shape = ShapeStrToEnum(hash["Shape"]);
+        }
+        if (hash.ContainsKey("Habitat"))
+        {
+            this.Habitat = HabitatStrToEnum(hash["Habitat"]);
+        }
+        if (hash.ContainsKey("Category"))
+        {
+            this.Category = hash["Category"];
+        }
+        if (hash.ContainsKey("Pokedex"))
+        {
+            this.PokedexEntry = hash["Pokedex"];
+        }
+        if (hash.ContainsKey("FormName"))
+        {
+            this.FormName = hash["FormName"];
+        }
+        if (hash.ContainsKey("Generation"))
+        {
+            this.Generation = Convert.ToInt32(hash["Generation"]);
+        }
+        if (hash.ContainsKey("Flags"))
+        {
+            this.Flags = hash["Flags"].Split(',').Select(x => x.Trim()).ToList();
+        }
+        if (hash.ContainsKey("WildItemCommon"))
+        {
+            this.WildItemCommon = hash["WildItemCommon"].Split(',').Select(m => (ItemResolver)m.Trim()).ToList();
+        }
+        if (hash.ContainsKey("WildItemUncommon"))
+        {
+            this.WildItemUncommon = hash["WildItemUncommon"].Split(',').Select(m => (ItemResolver)m.Trim()).ToList();
+        }
+        if (hash.ContainsKey("WildItemRare"))
+        {
+            this.WildItemRare = hash["WildItemRare"].Split(',').Select(m => (ItemResolver)m.Trim()).ToList();
+        }
+        if (hash.ContainsKey("Evolutions"))
+        {
+            string[] _evos = hash["Evolutions"].Split(',');
+            this.Evolutions = new List<Evolution>();
+            for (int i = 0; i < _evos.Length - 2; i += 3)
+            {
+                string species = _evos[i];
+                EvolutionType method = Evolution.MethodStrToEnum(_evos[i + 1]);
+                string param = _evos[i + 2];
+                Evolution evo = new Evolution((SpeciesResolver)species, method, string.IsNullOrEmpty(param) ? new List<object>() : new List<object>() { param }, false);
+                this.Evolutions.Add(evo);
+                PrevolutionsToRegister.Add((this, evo));
+            }
+        }
+        if (hash.ContainsKey("MegaStone"))
+        {
+            this.MegaStone = (ItemResolver) hash["MegaStone"];
+        }
+        if (hash.ContainsKey("MegaMove"))
+        {
+            this.MegaMove = (MoveResolver) hash["MegaMove"];
+        }
+        if (hash.ContainsKey("MegaMessage"))
+        {
+            this.MegaMessage = Convert.ToInt32(hash["MegaMessage"]);
+        }
+        if (hash.ContainsKey("UnmegaForm"))
+        {
+            this.UnmegaForm = Convert.ToInt32(hash["UnmegaForm"]);
+        }
+        if (hash.ContainsKey("PokedexForm"))
+        {
+            this.PokedexForm = Convert.ToInt32(hash["PokedexForm"]);
+        }
+    }
+
 	public Species(nint Data)
 	{
 		this.ID = Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@id"));
-		this.SpeciesID = Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@species"));
+		this.BaseSpecies = (SpeciesResolver) Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@species"));
 		this.Form = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@form"));
-		this.RealName = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_name"));
-		this.RealFormName = Ruby.GetIVar(Data, "@real_form_name") == Ruby.Nil ? null : Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_form_name"));
-		this.RealCategory = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_category"));
-		this.RealPokedexEntry = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_pokedex_entry"));
+		this.Name = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_name"));
+		this.FormName = Ruby.GetIVar(Data, "@real_form_name") == Ruby.Nil ? null : Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_form_name"));
+		this.Category = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_category"));
+		this.PokedexEntry = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_pokedex_entry"));
 		this.PokedexForm = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@pokedex_form"));
 		nint TypeArray = Ruby.GetIVar(Data, "@types");
 		if (Ruby.Array.Length(TypeArray) == 2) Type2 = (TypeResolver) Ruby.Symbol.FromPtr(Ruby.Array.Get(TypeArray, 1));
@@ -307,12 +485,12 @@ public class Species : IGameData
         nint e = Ruby.Funcall(Class, "new");
         Ruby.Pin(e);
 		Ruby.SetIVar(e, "@id", Ruby.Symbol.ToPtr(this.ID));
-		Ruby.SetIVar(e, "@species", Ruby.Symbol.ToPtr(this.SpeciesID));
+		Ruby.SetIVar(e, "@species", Ruby.Symbol.ToPtr(this.BaseSpecies));
 		Ruby.SetIVar(e, "@form", Ruby.Integer.ToPtr(this.Form));
-		Ruby.SetIVar(e, "@real_name", Ruby.String.ToPtr(this.RealName));
-		Ruby.SetIVar(e, "@real_form_name", this.RealFormName == null ? Ruby.Nil : Ruby.String.ToPtr(this.RealFormName));
-		Ruby.SetIVar(e, "@real_category", Ruby.String.ToPtr(this.RealCategory));
-		Ruby.SetIVar(e, "@real_pokedex_entry", Ruby.String.ToPtr(this.RealPokedexEntry));
+		Ruby.SetIVar(e, "@real_name", Ruby.String.ToPtr(this.Name));
+		Ruby.SetIVar(e, "@real_form_name", this.FormName == null ? Ruby.Nil : Ruby.String.ToPtr(this.FormName));
+		Ruby.SetIVar(e, "@real_category", Ruby.String.ToPtr(this.Category));
+		Ruby.SetIVar(e, "@real_pokedex_entry", Ruby.String.ToPtr(this.PokedexEntry));
 		Ruby.SetIVar(e, "@pokedex_form", Ruby.Integer.ToPtr(this.PokedexForm));
 		nint TypeArray = Ruby.Array.Create();
 		Ruby.Array.Push(TypeArray, Ruby.Symbol.ToPtr(Type1));
@@ -420,6 +598,54 @@ public class Species : IGameData
         }
         Ruby.Unpin(e);
         return e;
+    }
+
+    public object Clone()
+    {
+        Species s = new Species();
+		s.ID = this.ID;
+		s.BaseSpecies = (SpeciesResolver) this.BaseSpecies.ID;
+		s.Form = this.Form;
+		s.Name = this.Name;
+		s.FormName = this.FormName;
+		s.Category = this.Category;
+		s.PokedexEntry = this.PokedexEntry;
+		s.PokedexForm = this.PokedexForm;
+		s.Type1 = (TypeResolver) this.Type1.ID;
+		if (this.Type2 != null) s.Type2 = (TypeResolver) this.Type2.ID;
+		s.BaseStats = (Stats) this.BaseStats.Clone();
+		s.EVs = (Stats) this.EVs.Clone();
+		s.BaseEXP = this.BaseEXP;
+		s.GrowthRate = this.GrowthRate;
+		s.GenderRatio = this.GenderRatio;
+		s.CatchRate = this.CatchRate;
+		s.Happiness = this.Happiness;
+		s.Moves = this.Moves.Select(x => (x.Level, (MoveResolver) x.Move.ID)).ToList();
+		s.TutorMoves = this.TutorMoves.Select(x => (MoveResolver) x.ID).ToList();
+		s.EggMoves = this.EggMoves.Select(x => (MoveResolver) x.ID).ToList();
+		s.Abilities = this.Abilities.Select(x => (AbilityResolver) x.ID).ToList();
+		s.HiddenAbilities = this.HiddenAbilities.Select(x => (AbilityResolver) x.ID).ToList();
+		s.WildItemCommon = this.WildItemCommon.Select(x => (ItemResolver) x.ID).ToList();
+        s.WildItemUncommon = this.WildItemUncommon.Select(x => (ItemResolver) x.ID).ToList();
+        s.WildItemRare = this.WildItemRare.Select(x => (ItemResolver) x.ID).ToList();
+        s.EggGroups = new List<EggGroup>(this.EggGroups);
+        s.HatchSteps = this.HatchSteps;
+        if (this.Incense != null) s.Incense = (ItemResolver) this.Incense.ID;
+        s.Offspring = this.Offspring.Select(x => (SpeciesResolver) x.ID).ToList();
+        s.Evolutions = this.Evolutions.Select(evo => (Evolution) evo.Clone()).ToList();
+        s.Prevolutions = this.Evolutions.Select(evo => (Evolution) evo.Clone()).ToList();
+        s.Height = this.Height;
+        s.Weight = this.Weight;
+        s.Color = this.Color;
+        s.Shape = this.Shape;
+        s.Habitat = this.Habitat;
+        s.Generation = this.Generation;
+        s.Flags = new List<string>(this.Flags);
+        if (this.MegaStone != null) s.MegaStone = (ItemResolver) this.MegaStone.ID;
+        if (this.MegaMove != null) s.MegaMove = (MoveResolver) this.MegaMove.ID;
+        s.UnmegaForm = this.UnmegaForm;
+        s.MegaMessage = this.MegaMessage;
+        return s;
     }
 
     public static GrowthRate GrowthRateStrToEnum(string growth)
