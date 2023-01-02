@@ -86,25 +86,56 @@ public static class Editor
     {
         if (Program.ReleaseMode) return;
 
-        MainWindow.SetSize(1920, 1080);
-        MainWindow.SetPosition(1000, 500);
-
-        //PopupWindow win = new PopupWindow();
-        //win.SetSize(400, 400);
-        //win.Center();
-        //
-        //Button btn = new Button(win);
-        //btn.SetPosition(200 - btn.Size.Width / 2, 200 - btn.Size.Height / 2);
-        //btn.SetText("Zoom");
-        //
-        //win.StartAnimation(new LinearAnimation("zoom_in", 50, x =>
-        //{
-        //    win.SetGlobalZoom((byte) Math.Round(255 * x));
-        //    win.SetGlobalZoom((float) x);
-        //    win.Center();
-        //}));
-
         //Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
+
+        PopupWindow win = new PopupWindow();
+        win.SetSize(600, 600);
+        win.Center();
+
+        var root = new OptimizedNode("Root");
+        var one = new OptimizedNode("One");
+        var two = new OptimizedNode("Two");
+        var three = new OptimizedNode("Three");
+        var xxx = new OptimizedNodeSeperator();
+        var four = new OptimizedNode("Four");
+        var five = new OptimizedNode("Five");
+        var six = new OptimizedNode("Six");
+        var seven = new OptimizedNode("Seven");
+        var eight = new OptimizedNode("Eight");
+        var nine = new OptimizedNode("Nine");
+        var ten = new OptimizedNode("Ten");
+        var eleven = new OptimizedNode("Eleven");
+        var twelve = new OptimizedNode("Twelve");
+        var thirteen = new OptimizedNode("Thirteen");
+        var fourteen = new OptimizedNode("Fourteen");
+
+        three.AddChild(xxx);
+
+        nine.AddChild(ten);
+        nine.AddChild(eleven);
+
+        seven.AddChild(eight);
+        seven.AddChild(nine);
+        seven.AddChild(twelve);
+
+        four.AddChild(five);
+        two.AddChild(three);
+        two.AddChild(four);
+        two.AddChild(six);
+
+        thirteen.AddChild(fourteen);
+
+        one.AddChild(two);
+        one.AddChild(seven);
+        one.AddChild(thirteen);
+
+        root.AddChild(one);
+
+        OptimizedTreeView tree = new OptimizedTreeView(win);
+        tree.SetDocked(true);
+        tree.SetPadding(40);
+        tree.SetBackgroundColor(10, 23, 37);
+        tree.SetRootNode(root);
 
         //Map Map = MainWindow.MapWidget?.Map;
         //if (Map == null) return;

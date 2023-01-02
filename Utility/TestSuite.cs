@@ -26,6 +26,17 @@ public class TestSuite
         if (!expected.Equals(actual)) throw new AssertEqualsException(expected, actual);
     }
 
+    protected void assertEqual<T>(List<T> expected, List<T> actual)
+    {
+        if (expected.Count != actual.Count) throw new AssertEqualsListException<T>(expected, actual);
+        for (int i = 0; i < expected.Count; i++)
+        {
+            T ex = expected[i];
+            T ac = actual[i];
+            if (!ex.Equals(ac)) throw new AssertEqualsListException<T>(expected, actual, i, ex, ac);
+        }
+    }
+
     protected void assertNull(object? node)
     {
         if (node != null) throw new AssertNullException(node);
@@ -73,6 +84,7 @@ public class TestSuite
         {
             if (type.BaseType == typeof(TestSuite))
             {
+                if (type.GetCustomAttribute<DisableTestClass>() != null) continue;
                 Run(type);
                 RanAny = true;
             }
@@ -87,9 +99,37 @@ public class TestMethod : Attribute
 
 }
 
+[AttributeUsage(AttributeTargets.Class)]
+public class DisableTestClass : Attribute
+{
+
+}
+
 public class AssertEqualsException : Exception
 {
     public AssertEqualsException(object expected, object actual) : base($"Expected result to be '{expected}', but got '{actual}'.") { }
+}
+
+public class AssertEqualsListException<T> : Exception
+{
+    public AssertEqualsListException(List<T> expected, List<T> actual)
+        : base($"Expected result to be:\n{ToStr(expected)}\n\nBut got:\n{ToStr(actual)}") { }
+
+    public AssertEqualsListException(List<T> expected, List<T> actual, int index, T ex, T ac)
+        : base($"Expected result to be:\n{ToStr(expected)}\n\nBut got:\n{ToStr(actual)}\n\nElement {index} was '{ex}' but was expected to be '{ac}'.") { }
+
+    static string ToStr(List<T> list)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.Append("[");
+        for (int i = 0; i < list.Count; i++)
+        {
+            sb.Append(list[i].ToString());
+            if (i < list.Count - 1) sb.Append(", ");
+        }
+        sb.Append("]");
+        return sb.ToString();
+    }
 }
 
 public class AssertNullException : Exception
