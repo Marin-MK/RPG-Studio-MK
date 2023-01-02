@@ -45,7 +45,35 @@ public static partial class Data
     public static bool StopLoading;
     
     public static bool LoadedMetadataFromPBS = false;
-    static List<BaseDataManager>? DataManagers;
+    // The order and types of data that are loaded in this format.
+    // There are few restrictions, other than:
+    // - Tilesets must be loaded before maps
+    // - Maps must be loaded before map metadata
+    // - Metadata must be loaded before player metadata (this is not a strict requirement,
+    //   but player metadata will discard data if metadata loads from PBS, so excessive data loading)
+    static List<BaseDataManager> DataManagers = new List<BaseDataManager>()
+    {
+        // RMXP Data
+        new GameConfigManager(),
+        new TilesetManager(),
+        new MapManager(),
+        new CommonEventManager(),
+        new ScriptManager(),
+        new SystemManager(),
+        // Important/Useful Essentials Data
+        new MapMetadataManager(false),
+        new MetadataManager(false),
+        new PlayerMetadataManager(),
+        // Other Essentials Data
+        new SpeciesManager(false),
+        new AbilityManager(false),
+        new ItemManager(false),
+        new MoveManager(false),
+        new TypeManager(false),
+        new TrainerTypeManager(false),
+        new TrainerManager(false),
+        new EncounterManager(false),
+    };
     static Action<float> OnProgressUpdated;
     static Action<string> OnLoadTextChanging;
 
@@ -61,47 +89,12 @@ public static partial class Data
         UsesExternalScripts = false;
     }
 
-    private static void InitializeDataManagers()
-    {
-        if (DataManagers != null) return;
-        // The order and types of data that are loaded in this format.
-        // There are few restrictions, other than:
-        // - Tilesets must be loaded before maps
-        // - Maps must be loaded before map metadata
-        // - Metadata must be loaded before player metadata (this is not a strict requirement,
-        //   but player metadata will discard data if metadata loads from PBS)
-        DataManagers = new List<BaseDataManager>()
-        {
-            // RMXP Data
-            new GameConfigManager(),
-            new TilesetManager(),
-            new MapManager(),
-            new CommonEventManager(),
-            new ScriptManager(),
-            new SystemManager(),
-            // Important/Useful Essentials Data
-            new MapMetadataManager(false),
-            new MetadataManager(false),
-            new PlayerMetadataManager(),
-            // Other Essentials Data
-            new SpeciesManager(false),
-            new AbilityManager(false),
-            new ItemManager(false),
-            new MoveManager(false),
-            new TypeManager(false),
-            new TrainerTypeManager(false),
-            new TrainerManager(false),
-            new EncounterManager(false),
-        };
-    }
-
     public static void LoadGameData(Action<float> OnProgressUpdated, Action<string> OnLoadTextChanging)
     {
         Data.OnProgressUpdated = OnProgressUpdated;
         Data.OnLoadTextChanging = OnLoadTextChanging;
         Compatibility.RMXP.Setup();
 
-        InitializeDataManagers();
         DataManagers.ForEach(dm => dm.InitializeClass());
         DataManagers.ForEach(dm =>
         {

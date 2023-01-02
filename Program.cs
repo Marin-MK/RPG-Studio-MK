@@ -25,6 +25,7 @@ public class Program
     [STAThread]
     static void Main(params string[] args)
     {
+        if (!ReleaseMode) TestSuite.RunAll();
         InitializeProgram();
         if (args.Length == 1) ProjectFile = args[0];
         MainEditorWindow win = new MainEditorWindow();
