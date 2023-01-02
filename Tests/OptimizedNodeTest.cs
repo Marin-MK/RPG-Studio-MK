@@ -192,5 +192,11 @@ public class OptimizedNodeTest : TestSuite
         assertEqual(nc, na.GetPreviousSibling());
 
         assertEqual(5, root.GetTotalNodeCount());
+
+        assertEqual(nb, root.GetLastNode());
+        assertEqual(nb, nb.GetLastNode());
+        assertEqual(na, na.GetLastNode());
+        assertEqual(nd, nd.GetLastNode());
+        assertEqual(nd, nc.GetLastNode());
     }
 }
