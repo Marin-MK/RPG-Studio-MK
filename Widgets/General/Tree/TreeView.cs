@@ -29,13 +29,13 @@ public class TreeView : Widget
 
     public TreeView(IContainer Parent) : base(Parent)
     {
-        Sprites["selector"] = new Sprite(this.Viewport, new SolidBitmap(1, 21, new Color(28, 50, 73)));
-        Sprites["hover"] = new Sprite(this.Viewport, new SolidBitmap(2, 21, new Color(55, 187, 255)));
+        Sprites["selector"] = new Sprite(Viewport, new SolidBitmap(1, 21, new Color(28, 50, 73)));
+        Sprites["hover"] = new Sprite(Viewport, new SolidBitmap(2, 21, new Color(55, 187, 255)));
         Sprites["hover"].Visible = false;
-        Sprites["list"] = new Sprite(this.Viewport);
-        Sprites["list_drag"] = new Sprite(this.Viewport);
-        Sprites["text"] = new Sprite(this.Viewport);
-        this.OnWidgetSelected += WidgetSelected;
+        Sprites["list"] = new Sprite(Viewport);
+        Sprites["list_drag"] = new Sprite(Viewport);
+        Sprites["text"] = new Sprite(Viewport);
+        OnWidgetSelected += WidgetSelected;
     }
 
     public void SetNodes(List<TreeNode> Nodes)
@@ -44,26 +44,26 @@ public class TreeView : Widget
         Sprites["hover"].Visible = false;
         Sprites["hover"].Y = -24;
         SelectedNode = Nodes.Count > 0 ? Nodes[0] : null;
-        this.Redraw();
+        Redraw();
         MouseMoving(Graphics.LastMouseEvent);
     }
 
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-        (this.Sprites["selector"].Bitmap as SolidBitmap).SetSize(this.Size.Width, 21);
+        (Sprites["selector"].Bitmap as SolidBitmap).SetSize(Size.Width, 21);
     }
 
     protected override void Draw()
     {
         Sprites["list"].Bitmap?.Dispose();
         Sprites["text"].Bitmap?.Dispose();
-        int maxwidth = GetMaxNodeWidth(this.Nodes);
+        int maxwidth = GetMaxNodeWidth(Nodes);
         int items = 0;
-        for (int i = 0; i < this.Nodes.Count; i++)
+        for (int i = 0; i < Nodes.Count; i++)
         {
             items++;
-            items += this.Nodes[i].GetDisplayedNodeCount();
+            items += Nodes[i].GetDisplayedNodeCount();
         }
         int height = items * 24;
         SetSize(maxwidth, height + TrailingBlank);
@@ -75,9 +75,9 @@ public class TreeView : Widget
 
         int y = 0;
         Sprites["selector"].Y = -24;
-        for (int i = 0; i < this.Nodes.Count; i++)
+        for (int i = 0; i < Nodes.Count; i++)
         {
-            y = DrawNode(this.Nodes[i], 15, y, true, i == this.Nodes.Count - 1);
+            y = DrawNode(Nodes[i], 15, y, true, i == Nodes.Count - 1);
             y += 24;
         }
 
@@ -92,11 +92,11 @@ public class TreeView : Widget
         bool selected = DraggingNode == null && node == SelectedNode || node == DraggingNode;
         if (selected) Sprites["selector"].Y = y;
         node.PixelsIndented = x;
-        this.Sprites["text"].Bitmap.Font = Fonts.Paragraph;
+        Sprites["text"].Bitmap.Font = Fonts.Paragraph;
         string text = node.Name ?? node.Object.ToString();
         Size s = Fonts.Paragraph.TextSize(text);
         Color c = selected ? new Color(55, 187, 255) : Color.WHITE;
-        this.Sprites["text"].Bitmap.DrawText(text, x + 12, y + 1, c);
+        Sprites["text"].Bitmap.DrawText(text, x + 12, y + 1, c);
 
         if (!FirstGeneration)
         {
@@ -195,7 +195,7 @@ public class TreeView : Widget
 
     int GetNodeDepth(TreeNode node, int depth = 0, List<TreeNode> NodeList = null)
     {
-        if (NodeList == null) NodeList = this.Nodes;
+        if (NodeList == null) NodeList = Nodes;
         foreach (TreeNode child in NodeList)
         {
             if (child == node) return depth;
@@ -213,7 +213,7 @@ public class TreeView : Widget
             HoveringNode = null;
             Sprites["hover"].Visible = false;
         }
-        if (CallEvent) this.OnSelectedNodeChanged?.Invoke(Graphics.LastMouseEvent);
+        if (CallEvent) OnSelectedNodeChanged?.Invoke(Graphics.LastMouseEvent);
         Redraw();
     }
 
@@ -236,8 +236,8 @@ public class TreeView : Widget
             return;
         }
         if (!Mouse.Inside) return;
-        int rx = e.X - this.Viewport.X + Position.X - ScrolledPosition.X;
-        int ry = e.Y - this.Viewport.Y + Position.Y - ScrolledPosition.Y;
+        int rx = e.X - Viewport.X + Position.X - ScrolledPosition.X;
+        int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
         if (ry >= Size.Height - TrailingBlank)
         {
             Sprites["hover"].Visible = false;
@@ -253,11 +253,11 @@ public class TreeView : Widget
         HoverBottom = !HoverTop && !HoverOver;
         int index = 0;
         TreeNode n = null;
-        for (int i = 0; i < this.Nodes.Count; i++)
+        for (int i = 0; i < Nodes.Count; i++)
         {
-            n = this.Nodes[i].FindNodeIndex(globalindex - index);
+            n = Nodes[i].FindNodeIndex(globalindex - index);
             if (n != null) break;
-            index += this.Nodes[i].GetDisplayedNodeCount() + 1;
+            index += Nodes[i].GetDisplayedNodeCount() + 1;
         }
         HoveringNode = n;
         if (DraggingNode != null && HoveringNode != null)
@@ -269,19 +269,19 @@ public class TreeView : Widget
             {
                 int upidx = globalindex - 1;
                 index = 0;
-                for (int i = 0; i < this.Nodes.Count; i++)
+                for (int i = 0; i < Nodes.Count; i++)
                 {
-                    upnode = this.Nodes[i].FindNodeIndex(upidx - index);
+                    upnode = Nodes[i].FindNodeIndex(upidx - index);
                     if (upnode != null) break;
-                    index += this.Nodes[i].GetDisplayedNodeCount() + 1;
+                    index += Nodes[i].GetDisplayedNodeCount() + 1;
                 }
             }
             if (upnode != null)
             {
                 TreeNode HoverParent = null;
-                if (this.Nodes.Contains(HoveringNode))
+                if (Nodes.Contains(HoveringNode))
                 {
-                    int diff = this.Nodes.IndexOf(HoveringNode) - this.Nodes.IndexOf(upnode);
+                    int diff = Nodes.IndexOf(HoveringNode) - Nodes.IndexOf(upnode);
                     if (diff == 1)
                     {
                         // Upnode is indeed above the current node in our parent.
@@ -296,7 +296,7 @@ public class TreeView : Widget
                 else if (upnode.Nodes.Count > 0 && upnode.Nodes[0] == HoveringNode) MergeTopLines = true;
                 else
                 {
-                    foreach (TreeNode MainNode in this.Nodes)
+                    foreach (TreeNode MainNode in Nodes)
                     {
                         HoverParent = MainNode.FindParentNode(n => n == HoveringNode);
                         if (HoverParent != null) break;
@@ -321,16 +321,16 @@ public class TreeView : Widget
             TreeNode btmnode = null;
             int dwnidx = globalindex + 1;
             index = 0;
-            for (int i = 0; i < this.Nodes.Count; i++)
+            for (int i = 0; i < Nodes.Count; i++)
             {
-                btmnode = this.Nodes[i].FindNodeIndex(dwnidx - index);
+                btmnode = Nodes[i].FindNodeIndex(dwnidx - index);
                 if (btmnode != null) break;
-                index += this.Nodes[i].GetDisplayedNodeCount() + 1;
+                index += Nodes[i].GetDisplayedNodeCount() + 1;
             }
             if (btmnode != null)
             {
                 TreeNode HoverParent = null;
-                if (this.Nodes.Contains(HoveringNode))
+                if (Nodes.Contains(HoveringNode))
                 {
                     if (HoveringNode.Nodes.Count > 0 && HoveringNode.Nodes[0] == btmnode)
                     {
@@ -339,7 +339,7 @@ public class TreeView : Widget
                     }
                     else
                     {
-                        int diff = this.Nodes.IndexOf(btmnode) - this.Nodes.IndexOf(HoveringNode);
+                        int diff = Nodes.IndexOf(btmnode) - Nodes.IndexOf(HoveringNode);
                         if (diff == 1)
                         {
                             // Btmnode is indeed below the current node in our parent.
@@ -359,7 +359,7 @@ public class TreeView : Widget
                 }
                 else
                 {
-                    foreach (TreeNode MainNode in this.Nodes)
+                    foreach (TreeNode MainNode in Nodes)
                     {
                         HoverParent = MainNode.FindParentNode(n => n == HoveringNode);
                         if (HoverParent != null) break;
@@ -388,11 +388,11 @@ public class TreeView : Widget
     {
         base.MouseDown(e);
         if (!Mouse.Inside) return;
-        TreeNode oldselected = this.SelectedNode;
+        TreeNode oldselected = SelectedNode;
         if (e.LeftButton && !e.OldLeftButton && e.LeftButton)
         {
-            int rx = e.X - this.Viewport.X + Position.X - ScrolledPosition.X;
-            int ry = e.Y - this.Viewport.Y + Position.Y - ScrolledPosition.Y;
+            int rx = e.X - Viewport.X + Position.X - ScrolledPosition.X;
+            int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
             if (ry >= Size.Height - TrailingBlank)
             {
                 DraggingNode = null;
@@ -402,11 +402,11 @@ public class TreeView : Widget
             int globalindex = (int)Math.Floor(ry / 24d);
             int index = 0;
             TreeNode n = null;
-            for (int i = 0; i < this.Nodes.Count; i++)
+            for (int i = 0; i < Nodes.Count; i++)
             {
-                n = this.Nodes[i].FindNodeIndex(globalindex - index);
+                n = Nodes[i].FindNodeIndex(globalindex - index);
                 if (n != null) break;
-                index += this.Nodes[i].GetDisplayedNodeCount() + 1;
+                index += Nodes[i].GetDisplayedNodeCount() + 1;
             }
             if (n == null)
             {
@@ -419,7 +419,7 @@ public class TreeView : Widget
                 TreeNode selnode = SelectedNode;
                 n.Collapsed = !n.Collapsed;
                 if (n.Collapsed && n.ContainsNode(SelectedNode)) SelectedNode = n;
-                this.OnNodeCollapseChanged?.Invoke(n, selnode);
+                OnNodeCollapseChanged?.Invoke(n, selnode);
             }
             else
             {
@@ -428,7 +428,7 @@ public class TreeView : Widget
         }
         if (SelectedNode != oldselected)
         {
-            this.OnSelectedNodeChanged?.Invoke(e);
+            OnSelectedNodeChanged?.Invoke(e);
             Redraw();
         }
     }
@@ -442,17 +442,17 @@ public class TreeView : Widget
                 if (DraggingNode == HoveringNode)
                 {
                     SelectedNode = HoveringNode;
-                    this.OnSelectedNodeChanged?.Invoke(e);
-                    this.Redraw();
+                    OnSelectedNodeChanged?.Invoke(e);
+                    Redraw();
                 }
                 else
                 {
-                    this.OnDragAndDropped?.Invoke(new BaseEventArgs());
+                    OnDragAndDropped?.Invoke(new BaseEventArgs());
                 }
             }
             DraggingNode = null;
             UpdateHoverDrag();
-            this.Redraw();
+            Redraw();
         }
     }
 
@@ -473,10 +473,10 @@ public class TreeView : Widget
             {
                 DestroyTimer("long_hover");
                 HoveringNode.Collapsed = false;
-                this.OnNodeCollapseChanged?.Invoke(HoveringNode, SelectedNode);
-                this.Redraw();
+                OnNodeCollapseChanged?.Invoke(HoveringNode, SelectedNode);
+                Redraw();
             }
-            else if (TimerExists("long_hover") && (HoveringNode == null || !HoveringNode.Collapsed  || HoveringNode.Nodes.Count == 0 || !HoverOver))
+            else if (TimerExists("long_hover") && (HoveringNode == null || !HoveringNode.Collapsed || HoveringNode.Nodes.Count == 0 || !HoverOver))
             {
                 DestroyTimer("long_hover");
             }
@@ -506,10 +506,10 @@ public class TreeNode : ICloneable
     {
         int count = 0;
         if (Collapsed) return 0;
-        for (int i = 0; i < this.Nodes.Count; i++)
+        for (int i = 0; i < Nodes.Count; i++)
         {
             count++;
-            count += this.Nodes[i].GetDisplayedNodeCount();
+            count += Nodes[i].GetDisplayedNodeCount();
         }
         return count;
     }
@@ -521,22 +521,22 @@ public class TreeNode : ICloneable
         {
             return null;
         }
-        for (int i = 0; i < this.Nodes.Count; i++)
+        for (int i = 0; i < Nodes.Count; i++)
         {
             Index -= 1;
-            TreeNode n = this.Nodes[i].FindNodeIndex(Index);
+            TreeNode n = Nodes[i].FindNodeIndex(Index);
             if (n != null) return n;
-            Index -= this.Nodes[i].GetDisplayedNodeCount();
+            Index -= Nodes[i].GetDisplayedNodeCount();
         }
         return null;
     }
 
     public bool ContainsNode(TreeNode n)
     {
-        for (int i = 0; i < this.Nodes.Count; i++)
+        for (int i = 0; i < Nodes.Count; i++)
         {
-            if (this.Nodes[i] == n) return true;
-            if (this.Nodes[i].ContainsNode(n)) return true;
+            if (Nodes[i] == n) return true;
+            if (Nodes[i].ContainsNode(n)) return true;
         }
         return false;
     }
@@ -607,17 +607,17 @@ public class TreeNode : ICloneable
     public object Clone()
     {
         TreeNode n = new TreeNode();
-        n.Name = this.Name;
-        n.Object = this.Object;
-        n.Collapsed = this.Collapsed;
-        n.Nodes = this.Nodes.ConvertAll(n => (TreeNode) n.Clone());
-        n.PixelsIndented = this.PixelsIndented;
+        n.Name = Name;
+        n.Object = Object;
+        n.Collapsed = Collapsed;
+        n.Nodes = Nodes.ConvertAll(n => (TreeNode)n.Clone());
+        n.PixelsIndented = PixelsIndented;
         return n;
     }
 
     public override string ToString()
     {
-        return this.Name;
+        return Name;
     }
 
     public override bool Equals(object obj)
@@ -625,12 +625,12 @@ public class TreeNode : ICloneable
         if (this == obj) return true;
         if (obj is TreeNode)
         {
-            TreeNode n = (TreeNode) obj;
-            return this.Name == n.Name &&
-                   this.Object.Equals(n.Object) &&
-                   this.Collapsed == n.Collapsed &&
-                   this.Nodes.Equals(n.Nodes) &&
-                   this.PixelsIndented == n.PixelsIndented;
+            TreeNode n = (TreeNode)obj;
+            return Name == n.Name &&
+                   Object.Equals(n.Object) &&
+                   Collapsed == n.Collapsed &&
+                   Nodes.Equals(n.Nodes) &&
+                   PixelsIndented == n.PixelsIndented;
         }
         return false;
     }

@@ -96,7 +96,6 @@ public static class Editor
         var one = new OptimizedNode("One");
         var two = new OptimizedNode("Two");
         var three = new OptimizedNode("Three");
-        var xxx = new OptimizedNodeSeperator();
         var four = new OptimizedNode("Four");
         var five = new OptimizedNode("Five");
         var six = new OptimizedNode("Six");
@@ -108,8 +107,12 @@ public static class Editor
         var twelve = new OptimizedNode("Twelve");
         var thirteen = new OptimizedNode("Thirteen");
         var fourteen = new OptimizedNode("Fourteen");
-
-        three.AddChild(xxx);
+        var fifteen = new OptimizedNode("Fifteen");
+        var sixteen = new OptimizedNode("Sixteen");
+        var seventeen = new OptimizedNode("Seventeen");
+        var abc = new OptimizedNode("abc");
+        var def = new OptimizedNode("def");
+        var ghi = new OptimizedNode("ghi");
 
         nine.AddChild(ten);
         nine.AddChild(eleven);
@@ -124,18 +127,32 @@ public static class Editor
         two.AddChild(six);
 
         thirteen.AddChild(fourteen);
+        fourteen.AddChild(abc);
+        fourteen.AddChild(def);
+        def.AddChild(ghi);
+        ghi.AddChild(new OptimizedNode("jkl"));
+        def.AddChild(new OptimizedNode("mno"));
 
         one.AddChild(two);
         one.AddChild(seven);
         one.AddChild(thirteen);
+        one.AddChild(new OptimizedNode("pqr"));
+
+        sixteen.AddChild(seventeen);
 
         root.AddChild(one);
+        root.AddChild(new OptimizedNodeSeparator(8));
+        root.AddChild(fifteen);
+        root.AddChild(new OptimizedNodeSeparator(32));
+        root.AddChild(sixteen);
 
         OptimizedTreeView tree = new OptimizedTreeView(win);
         tree.SetDocked(true);
         tree.SetPadding(40);
         tree.SetBackgroundColor(10, 23, 37);
         tree.SetRootNode(root);
+
+        win.CreateButton("OK", _ => win.Close());
 
         //Map Map = MainWindow.MapWidget?.Map;
         //if (Map == null) return;
