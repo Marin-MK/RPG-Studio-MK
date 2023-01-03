@@ -699,6 +699,106 @@ public class OptimizedNodeTest : TestSuite
     }
 
     [TestMethod]
+    void TestDeepTreeNextPrev()
+    {
+        // final tree:
+        // - one
+        //   - two
+        //     - three
+        //       - four
+        //   - five
+        //     - six
+        //       - seven
+        //         - eight
+        //     - nine
+        var one = new OptimizedNode("One");
+        var two = new OptimizedNode("Two");
+        var three = new OptimizedNode("Three");
+        var four = new OptimizedNode("Four");
+        var five = new OptimizedNode("Five");
+        var six = new OptimizedNode("Six");
+        var seven = new OptimizedNode("Seven");
+        var eight = new OptimizedNode("Eight");
+        var nine = new OptimizedNode("Nine");
+
+        three.AddChild(four);
+        two.AddChild(three);
+        one.AddChild(two);
+
+        seven.AddChild(eight);
+        six.AddChild(seven);
+        five.AddChild(six);
+        five.AddChild(nine);
+        one.AddChild(five);
+
+        assertEqual(nine, one.GetLastNode());
+        assertEqual(four, two.GetLastNode());
+        assertEqual(four, three.GetLastNode());
+        assertEqual(four, four.GetLastNode());
+        assertEqual(nine, five.GetLastNode());
+        assertEqual(eight, six.GetLastNode());
+        assertEqual(eight, seven.GetLastNode());
+        assertEqual(eight, eight.GetLastNode());
+        assertEqual(nine, nine.GetLastNode());
+
+        assertEqual(two, one.GetNextNode());
+        assertNull(one.GetNextSibling());
+        assertNull(one.GetPreviousNode());
+        assertNull(one.GetPreviousSibling());
+
+        assertEqual(three, two.GetNextNode());
+        assertEqual(five, two.GetNextSibling());
+        assertEqual(one, two.GetPreviousNode());
+        assertNull(two.GetPreviousSibling());
+
+        assertEqual(four, three.GetNextNode());
+        assertNull(three.GetNextSibling());
+        assertEqual(two, three.GetPreviousNode());
+        assertNull(three.GetPreviousSibling());
+
+        assertEqual(five, four.GetNextNode());
+        assertNull(four.GetNextSibling());
+        assertEqual(three, four.GetPreviousNode());
+        assertNull(four.GetPreviousSibling());
+
+        assertEqual(six, five.GetNextNode());
+        assertNull(five.GetNextSibling());
+        assertEqual(four, five.GetPreviousNode());
+        assertEqual(two, five.GetPreviousSibling());
+
+        assertEqual(seven, six.GetNextNode());
+        assertEqual(nine, six.GetNextSibling());
+        assertEqual(five, six.GetPreviousNode());
+        assertNull(six.GetPreviousSibling());
+
+        assertEqual(eight, seven.GetNextNode());
+        assertNull(seven.GetNextSibling());
+        assertEqual(six, seven.GetPreviousNode());
+        assertNull(seven.GetPreviousSibling());
+
+        assertEqual(nine, eight.GetNextNode());
+        assertNull(eight.GetNextSibling());
+        assertEqual(seven, eight.GetPreviousNode());
+        assertNull(eight.GetPreviousSibling());
+
+        assertNull(nine.GetNextNode());
+        assertNull(nine.GetNextSibling());
+        assertEqual(eight, nine.GetPreviousNode());
+        assertEqual(six, nine.GetPreviousSibling());
+
+        assertEqual(0, one.GlobalIndex);
+        assertEqual(1, two.GlobalIndex);
+        assertEqual(2, three.GlobalIndex);
+        assertEqual(3, four.GlobalIndex);
+        assertEqual(4, five.GlobalIndex);
+        assertEqual(5, six.GlobalIndex);
+        assertEqual(6, seven.GlobalIndex);
+        assertEqual(7, eight.GlobalIndex);
+        assertEqual(8, nine.GlobalIndex);
+
+    }
+
+    [TestMethod]
     void TestBigGetAllChildrenWithExpansion()
     {
         // final tree:
@@ -760,5 +860,498 @@ public class OptimizedNodeTest : TestSuite
 
         assertEqual(expectedFalse, root.GetAllChildren(false));
         assertEqual(expectedTrue, root.GetAllChildren(true));
+    }
+
+    [TestMethod]
+    void TestDelete()
+    {
+        // final tree:
+        // - one
+        //   - two
+        //     - three
+        //       - four
+        //       - five
+        //   - six
+        //   - seven
+        //   - eight
+        //     - nine
+
+        var one = new OptimizedNode("One");
+        var two = new OptimizedNode("Two");
+        var three = new OptimizedNode("Three");
+        var four = new OptimizedNode("Four");
+        var five = new OptimizedNode("Five");
+        var six = new OptimizedNode("Six");
+        var seven = new OptimizedNode("Seven");
+        var eight = new OptimizedNode("Eight");
+        var nine = new OptimizedNode("Nine");
+
+        three.AddChild(four);
+        three.AddChild(five);
+
+        two.AddChild(three);
+
+        eight.AddChild(nine);
+
+        one.AddChild(two);
+        one.AddChild(six);
+        one.AddChild(seven);
+        one.AddChild(eight);
+
+        assertEqual(0, one.GlobalIndex);
+        assertEqual(1, two.GlobalIndex);
+        assertEqual(2, three.GlobalIndex);
+        assertEqual(3, four.GlobalIndex);
+        assertEqual(4, five.GlobalIndex);
+        assertEqual(5, six.GlobalIndex);
+        assertEqual(6, seven.GlobalIndex);
+        assertEqual(7, eight.GlobalIndex);
+        assertEqual(8, nine.GlobalIndex);
+
+        // final tree:
+        // - one
+        //   - two
+        //     - three
+        //       - four
+        //   - six
+        //   - seven
+        //   - eight
+        //     - nine
+
+        five.Delete(true);
+
+        assertEqual(0, one.GlobalIndex);
+        assertEqual(1, two.GlobalIndex);
+        assertEqual(2, three.GlobalIndex);
+        assertEqual(3, four.GlobalIndex);
+        assertEqual(4, six.GlobalIndex);
+        assertEqual(5, seven.GlobalIndex);
+        assertEqual(6, eight.GlobalIndex);
+        assertEqual(7, nine.GlobalIndex);
+
+        assertNull(four.GetNextSibling());
+        assertEqual(six, four.GetNextNode());
+        assertEqual(two, six.GetPreviousSibling());
+        assertEqual(four, six.GetPreviousNode());
+
+        // final tree:
+        // - one
+        //   - two
+        //   - six
+        //   - seven
+        //   - eight
+        //     - nine
+
+        three.Delete(true);
+
+        assertEqual(0, one.GlobalIndex);
+        assertEqual(1, two.GlobalIndex);
+        assertEqual(2, six.GlobalIndex);
+        assertEqual(3, seven.GlobalIndex);
+        assertEqual(4, eight.GlobalIndex);
+        assertEqual(5, nine.GlobalIndex);
+
+        assertEqual(two, six.GetPreviousNode());
+        assertEqual(two, six.GetPreviousSibling());
+        assertEqual(six, two.GetNextNode());
+        assertEqual(six, two.GetNextSibling());
+    }
+
+    [TestMethod]
+    void TestDeleteFlatten()
+    {
+        // final tree:
+        // - one
+        //   - two
+        //     - three
+        //       - four
+        //       - five
+        //   - six
+        //   - seven
+        //   - eight
+        //     - nine
+
+        var one = new OptimizedNode("One");
+        var two = new OptimizedNode("Two");
+        var three = new OptimizedNode("Three");
+        var four = new OptimizedNode("Four");
+        var five = new OptimizedNode("Five");
+        var six = new OptimizedNode("Six");
+        var seven = new OptimizedNode("Seven");
+        var eight = new OptimizedNode("Eight");
+        var nine = new OptimizedNode("Nine");
+
+        three.AddChild(four);
+        three.AddChild(five);
+
+        two.AddChild(three);
+
+        eight.AddChild(nine);
+
+        one.AddChild(two);
+        one.AddChild(six);
+        one.AddChild(seven);
+        one.AddChild(eight);
+
+        assertEqual(0, one.GlobalIndex);
+        assertEqual(1, two.GlobalIndex);
+        assertEqual(2, three.GlobalIndex);
+        assertEqual(3, four.GlobalIndex);
+        assertEqual(4, five.GlobalIndex);
+        assertEqual(5, six.GlobalIndex);
+        assertEqual(6, seven.GlobalIndex);
+        assertEqual(7, eight.GlobalIndex);
+        assertEqual(8, nine.GlobalIndex);
+
+        // final tree:
+        // - one
+        //   - two
+        //     - four
+        //     - five
+        //   - six
+        //   - seven
+        //   - eight
+        //     - nine
+
+        three.Delete(false);
+
+        assertEqual(0, one.GlobalIndex);
+        assertEqual(1, two.GlobalIndex);
+        assertEqual(2, four.GlobalIndex);
+        assertEqual(3, five.GlobalIndex);
+        assertEqual(4, six.GlobalIndex);
+        assertEqual(5, seven.GlobalIndex);
+        assertEqual(6, eight.GlobalIndex);
+        assertEqual(7, nine.GlobalIndex);
+
+        assertEqual(two, four.Parent);
+        assertEqual(two, five.Parent);
+        assertEqual(six, two.GetNextSibling());
+        assertEqual(four, two.GetNextNode());
+        assertEqual(five, four.GetNextNode());
+        assertEqual(six, five.GetNextNode());
+        assertEqual(four, five.GetPreviousSibling());
+        assertEqual(five, four.GetNextSibling());
+
+        // final tree:
+        // - one
+        //   - six
+        //   - seven
+        //   - eight
+        //     - nine
+
+        two.Delete(true);
+
+        assertEqual(0, one.GlobalIndex);
+        assertEqual(1, six.GlobalIndex);
+        assertEqual(2, seven.GlobalIndex);
+        assertEqual(3, eight.GlobalIndex);
+        assertEqual(4, nine.GlobalIndex);
+
+        assertEqual(one, six.GetPreviousNode());
+        assertNull(six.GetPreviousSibling());
+        assertEqual(seven, six.GetNextNode());
+        assertEqual(seven, six.GetNextSibling());
+        assertEqual(six, one.GetNextNode());
+
+        // final tree:
+        // - one
+        //   - six
+        //   - seven
+        //   - nine
+
+        eight.Delete(false);
+
+        assertEqual(0, one.GlobalIndex);
+        assertEqual(1, six.GlobalIndex);
+        assertEqual(2, seven.GlobalIndex);
+        assertEqual(3, nine.GlobalIndex);
+
+        assertEqual(one, nine.Parent);
+        assertEqual(seven, nine.GetPreviousNode());
+        assertEqual(seven, nine.GetPreviousSibling());
+        assertEqual(nine, seven.GetNextNode());
+        assertEqual(nine, seven.GetNextSibling());
+    }
+
+    [TestMethod]
+    void TestBigFlatten()
+    {
+        // final tree:
+        // - one
+        //   - two
+        //     - three
+        //       - four
+        //     - five
+        //   - six
+        //     - seven
+
+        var one = new OptimizedNode("One");
+        var two = new OptimizedNode("Two");
+        var three = new OptimizedNode("Three");
+        var four = new OptimizedNode("Four");
+        var five = new OptimizedNode("Five");
+        var six = new OptimizedNode("Six");
+        var seven = new OptimizedNode("Seven");
+        
+        three.AddChild(four);
+
+        two.AddChild(three);
+        two.AddChild(five);
+
+        six.AddChild(seven);
+
+        one.AddChild(two);
+        one.AddChild(six);
+
+        assertEqual(0, one.GlobalIndex);
+        assertEqual(1, two.GlobalIndex);
+        assertEqual(2, three.GlobalIndex);
+        assertEqual(3, four.GlobalIndex);
+        assertEqual(4, five.GlobalIndex);
+        assertEqual(5, six.GlobalIndex);
+        assertEqual(6, seven.GlobalIndex);
+
+        // final tree:
+        // - one
+        //   - three
+        //     - four
+        //   - five
+        //   - six
+        //     - seven
+
+        two.Delete(false);
+
+        assertEqual(0, one.GlobalIndex);
+        assertEqual(1, three.GlobalIndex);
+        assertEqual(2, four.GlobalIndex);
+        assertEqual(3, five.GlobalIndex);
+        assertEqual(4, six.GlobalIndex);
+        assertEqual(5, seven.GlobalIndex);
+
+        assertEqual(one, three.Parent);
+        assertEqual(three, four.Parent);
+        assertEqual(one, five.Parent);
+        assertEqual(one, six.Parent);
+
+        assertEqual(three, one.GetNextNode());
+        assertEqual(one, three.GetPreviousNode());
+        assertEqual(four, three.GetNextNode());
+        assertEqual(three, four.GetPreviousNode());
+        assertEqual(five, four.GetNextNode());
+        assertEqual(four, five.GetPreviousNode());
+        assertEqual(six, five.GetNextNode());
+        assertEqual(five, six.GetPreviousNode());
+        assertEqual(seven, six.GetNextNode());
+        assertEqual(six, seven.GetPreviousNode());
+
+        assertEqual(five, three.GetNextSibling());
+        assertNull(three.GetPreviousSibling());
+        assertEqual(six, five.GetNextSibling());
+        assertEqual(three, five.GetPreviousSibling());
+        assertNull(six.GetNextSibling());
+        assertEqual(five, six.GetPreviousSibling());
+    }
+
+    [TestMethod]
+    void TestBigDelete()
+    {
+        // final tree:
+        // - one
+        //   - two
+        //     - three
+        //       - four
+        //     - five
+        //   - six
+        //     - seven
+
+        var one = new OptimizedNode("One");
+        var two = new OptimizedNode("Two");
+        var three = new OptimizedNode("Three");
+        var four = new OptimizedNode("Four");
+        var five = new OptimizedNode("Five");
+        var six = new OptimizedNode("Six");
+        var seven = new OptimizedNode("Seven");
+
+        three.AddChild(four);
+
+        two.AddChild(three);
+        two.AddChild(five);
+
+        six.AddChild(seven);
+
+        one.AddChild(two);
+        one.AddChild(six);
+
+        assertEqual(0, one.GlobalIndex);
+        assertEqual(1, two.GlobalIndex);
+        assertEqual(2, three.GlobalIndex);
+        assertEqual(3, four.GlobalIndex);
+        assertEqual(4, five.GlobalIndex);
+        assertEqual(5, six.GlobalIndex);
+        assertEqual(6, seven.GlobalIndex);
+
+        // final tree:
+        // - one
+        //   - six
+        //     - seven
+
+        two.Delete(true);
+
+        assertEqual(0, one.GlobalIndex);
+        assertEqual(1, six.GlobalIndex);
+        assertEqual(2, seven.GlobalIndex);
+
+        assertEqual(one, six.Parent);
+        assertEqual(six, seven.Parent);
+
+        assertEqual(six, one.GetNextNode());
+        assertEqual(seven, six.GetNextNode());
+        assertNull(seven.GetNextNode());
+
+        assertNull(one.GetPreviousNode());
+        assertEqual(one, six.GetPreviousNode());
+        assertEqual(six, seven.GetPreviousNode());
+
+        assertNull(one.GetNextSibling());
+        assertNull(one.GetPreviousSibling());
+        assertNull(six.GetNextSibling());
+        assertNull(six.GetPreviousSibling());
+        assertNull(seven.GetNextSibling());
+        assertNull(seven.GetPreviousSibling());
+    }
+
+    [TestMethod]
+    void TestSeveralDeletes()
+    {
+        // final tree:
+        // - root
+        //   - one
+        //     - two
+        //       - three
+        //       - four
+        //         - five
+        //       - six
+        //     - seven
+        //       - eight
+        //       - nine
+        //         - ten
+        //         - eleven
+        //       - twelve
+        //     - thirteen
+        //       - fourteen
+        //         - abc
+        //         - def
+        //           - ghi
+        //             - jkl
+        //           - mno
+        //     - pqr
+        //   - XXX8
+        //   - fifteen
+        //   - XXX32
+        //   - sixteen
+
+        var root = new OptimizedNode("Root");
+        var one = new OptimizedNode("One");
+        var two = new OptimizedNode("Two");
+        var three = new OptimizedNode("Three");
+        var four = new OptimizedNode("Four");
+        var five = new OptimizedNode("Five");
+        var six = new OptimizedNode("Six");
+        var seven = new OptimizedNode("Seven");
+        var eight = new OptimizedNode("Eight");
+        var nine = new OptimizedNode("Nine");
+        var ten = new OptimizedNode("Ten");
+        var eleven = new OptimizedNode("Eleven");
+        var twelve = new OptimizedNode("Twelve");
+        var thirteen = new OptimizedNode("Thirteen");
+        var fourteen = new OptimizedNode("Fourteen");
+        var fifteen = new OptimizedNode("Fifteen");
+        var sixteen = new OptimizedNode("Sixteen");
+        var seventeen = new OptimizedNode("Seventeen");
+        var abc = new OptimizedNode("abc");
+        var def = new OptimizedNode("def");
+        var ghi = new OptimizedNode("ghi");
+
+        nine.AddChild(ten);
+        nine.AddChild(eleven);
+
+        seven.AddChild(eight);
+        seven.AddChild(nine);
+        seven.AddChild(twelve);
+
+        four.AddChild(five);
+        two.AddChild(three);
+        two.AddChild(four);
+        two.AddChild(six);
+
+        thirteen.AddChild(fourteen);
+        fourteen.AddChild(abc);
+        fourteen.AddChild(def);
+        def.AddChild(ghi);
+        ghi.AddChild(new OptimizedNode("jkl"));
+        def.AddChild(new OptimizedNode("mno"));
+
+        one.AddChild(two);
+        one.AddChild(seven);
+        one.AddChild(thirteen);
+        one.AddChild(new OptimizedNode("pqr"));
+
+        sixteen.AddChild(seventeen);
+
+        root.AddChild(one);
+        root.AddChild(new OptimizedNodeSeparator(8));
+        root.AddChild(fifteen);
+        root.AddChild(new OptimizedNodeSeparator(32));
+        root.AddChild(sixteen);
+
+        assertEqual(1, one.GlobalIndex);
+        assertEqual(2, two.GlobalIndex);
+        assertEqual(3, three.GlobalIndex);
+        assertEqual(4, four.GlobalIndex);
+        assertEqual(5, five.GlobalIndex);
+        assertEqual(6, six.GlobalIndex);
+        assertEqual(7, seven.GlobalIndex);
+        assertEqual(8, eight.GlobalIndex);
+
+        assertEqual(one, two.Parent);
+        assertEqual(two, three.Parent);
+        assertEqual(two, four.Parent);
+        assertEqual(four, five.Parent);
+        assertEqual(two, six.Parent);
+        assertEqual(one, seven.Parent);
+        assertEqual(seven, eight.Parent);
+
+        // final tree:
+        // - root
+        //   - one
+        //     - two
+        //       - three
+        //       - four
+        //         - five <<< DELETE
+        //       - six
+        //     - seven
+        //       - eight
+
+        five.Delete(true);
+
+        assertEqual(1, one.GlobalIndex);
+        assertEqual(2, two.GlobalIndex);
+        assertEqual(3, three.GlobalIndex);
+        assertEqual(4, four.GlobalIndex);
+        assertEqual(5, six.GlobalIndex);
+        assertEqual(6, seven.GlobalIndex);
+        assertEqual(7, eight.GlobalIndex);
+
+        assertEqual(one, two.Parent);
+        assertEqual(two, three.Parent);
+        assertEqual(two, four.Parent);
+        assertEqual(two, six.Parent);
+        assertEqual(one, seven.Parent);
+        assertEqual(seven, eight.Parent);
+        assertEqual(six, four.GetNextNode());
+        assertEqual(four, six.GetPreviousNode());
+        assertEqual(six, four.GetNextSibling());
+        assertEqual(four, six.GetPreviousSibling());
     }
 }

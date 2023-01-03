@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace RPGStudioMK;
 
@@ -57,46 +58,90 @@ public class TestSuite
         if (obj is not bool || (bool) obj != false) throw new AssertFalseException(obj);
     }
 
-    public static void Run(Type type)
+    public static (int, List<AssertionException>) Run(Type type)
     {
         if (type.BaseType != typeof(TestSuite)) throw new Exception("Cannot run tests on a class that does not inherit from the test suite.");
         object obj = Activator.CreateInstance(type);
+        int Count = 0;
+        List<AssertionException> Exceptions = new List<AssertionException>();
         foreach (MethodInfo method in obj.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
         {
             TestMethod? attrib = method.GetCustomAttribute<TestMethod>();
             if (attrib != null)
             {
-                Console.WriteLine($"Running {type.Name}.{method.Name}...");
-                method.Invoke(obj, null);
+                Action test = (Action) Delegate.CreateDelegate(typeof(Action), obj, method.Name);
+                if (attrib.Throw)
+                {
+                    test();
+                    continue;
+                }
+                try
+                {
+                    test();
+                }
+                catch (AssertionException ex)
+                {
+                    string[] lines = ex.StackTrace.Split('\n');
+                    int? line = null;
+                    Match m = Regex.Match(lines[0], @":line (\d+)");
+                    if (m.Success)
+                    {
+                        line = Convert.ToInt32(m.Groups[1].Value);
+                    }
+                    string linetext = line != null ? $" line {line}" : "";
+                    Console.WriteLine($"ERROR: Assertion failed ({method.Name}(){linetext}): {ex.Message}");
+                    Exceptions.Add(ex);
+                }
+                Count++;
             }
         }
+        return (Count, Exceptions);
     }
 
-    public static void Run<T>() where T : TestSuite
+    public static (int, List<AssertionException>) Run<T>() where T : TestSuite
     {
-        Run(typeof(T));
+        return Run(typeof(T));
     }
 
-    public static void RunAll()
+    public static void RunAll(bool ThrowIfAnyErrors = true)
     {
+        Stopwatch s = Stopwatch.StartNew();
         bool RanAny = false;
+        int Count = 0;
+        List<AssertionException> Exceptions = new List<AssertionException>();
         foreach (Type type in Assembly.GetExecutingAssembly().GetTypes())
         {
             if (type.BaseType == typeof(TestSuite))
             {
                 if (type.GetCustomAttribute<DisableTestClass>() != null) continue;
-                Run(type);
+                (int, List<AssertionException>) result = Run(type);
+                Count += result.Item1;
+                Exceptions.AddRange(result.Item2);
                 RanAny = true;
             }
         }
-        if (RanAny) Console.WriteLine();
+        if (RanAny)
+        {
+            Console.WriteLine($"All tests have been executed, {Count - Exceptions.Count}/{Count} passed ({s.ElapsedMilliseconds}ms).");
+            Console.WriteLine();
+            if (ThrowIfAnyErrors && Exceptions.Count > 0)
+            {
+                bool Plural = Exceptions.Count > 1;
+                throw new AssertionException($"There {(Plural ? "were" : "was")} {Exceptions.Count}/{Count} failing test{(Plural ? "s" : "")}.");
+            }
+        }
     }
 }
 
 [AttributeUsage(AttributeTargets.Method)]
 public class TestMethod : Attribute
 {
+    public bool Throw { get; protected set; }
 
+    public TestMethod(bool Throw = false)
+    {
+        this.Throw = Throw;
+    }
 }
 
 [AttributeUsage(AttributeTargets.Class)]
@@ -105,12 +150,17 @@ public class DisableTestClass : Attribute
 
 }
 
-public class AssertEqualsException : Exception
+public class AssertionException : Exception
+{
+    public AssertionException(string Message) : base(Message) { }
+}
+
+public class AssertEqualsException : AssertionException
 {
     public AssertEqualsException(object expected, object actual) : base($"Expected result to be '{expected}', but got '{actual}'.") { }
 }
 
-public class AssertEqualsListException<T> : Exception
+public class AssertEqualsListException<T> : AssertionException
 {
     public AssertEqualsListException(List<T> expected, List<T> actual)
         : base($"Expected result to be:\n{ToStr(expected)}\n\nBut got:\n{ToStr(actual)}") { }
@@ -132,22 +182,22 @@ public class AssertEqualsListException<T> : Exception
     }
 }
 
-public class AssertNullException : Exception
+public class AssertNullException : AssertionException
 {
     public AssertNullException(object result) : base($"Expected result to be null, but got '{result}'.") { }
 }
 
-public class AssertNotNullException : Exception
+public class AssertNotNullException : AssertionException
 {
     public AssertNotNullException() : base($"Expected result to not be null, but the result was null.") { }
 }
 
-public class AssertTrueException : Exception
+public class AssertTrueException : AssertionException
 {
     public AssertTrueException(object result) : base($"Expected result to be true, but got '{result}'.") { }
 }
 
-public class AssertFalseException : Exception
+public class AssertFalseException : AssertionException
 {
     public AssertFalseException(object result) : base($"Expected result to be false, but got '{result}'.") { }
 }

@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json;
+using System.Runtime.CompilerServices;
 
 namespace RPGStudioMK;
 
@@ -487,6 +488,23 @@ public static class Utilities
     public static Color RandomColor(byte Alpha = 255)
     {
         return new Color((byte) Random(0, 255), (byte) Random(0, 255), (byte) Random(0, 255), Alpha);
+    }
+
+    public static string RandomText(int? Length = null)
+    {
+        if (Length == null) Length = Random(1, 27);
+        StringBuilder sb = new StringBuilder();
+        char[] choice = new char[]
+        {
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+        };
+        for (int i = 0; i < Length; i++)
+        {
+            sb.Append(choice[Random(0, choice.Length)]);
+        }
+        return sb.ToString();
     }
 
     public static IntPtr NativeToRuby(object obj)
