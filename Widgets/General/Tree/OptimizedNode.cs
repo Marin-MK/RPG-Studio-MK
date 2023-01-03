@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -222,7 +223,7 @@ public class OptimizedNode : IOptimizedNode
             while (Index >= 0)
             {
                 if (Children[Index] is OptimizedNode)
-                    return (OptimizedNode) Children[Index];
+                    return ((OptimizedNode) Children[Index]).GetLastNode(IgnoreExpansion);
                 Index--;
             }
             return this;
@@ -395,6 +396,36 @@ public class OptimizedNode : IOptimizedNode
     }
 
     /// <summary>
+    /// Deletes this node from its parent, properly updating both its parent's tree and its own tree.
+    /// </summary>
+    public void Delete(bool DeleteChildren)
+    {
+        if (this.Parent == null && !DeleteChildren && HasChildren) throw new Exception("Cannot flatten children into parent, because this node is the root node and it does not have a parent.");
+        int Size = DeleteChildren ? GetTotalNodeCount() : 1;
+        int MaxIndex = DeleteChildren ? (GetLastNode()?.GlobalIndex ?? this.GlobalIndex) : this.GlobalIndex;
+        Root.ChangeIndexFrom(MaxIndex + 1, -Size);
+        int Index = Parent.Children.IndexOf(this);
+        Parent.Children.Remove(this);
+        if (DeleteChildren)
+        {
+            this.SetRoot(this);
+            this.SetDepth(0);
+            this.SetIndicesSequentially(0);
+        }
+        else if (this.Children.Count > 0)
+        {
+            // Flatten the children into the parent list
+            Parent.Children.InsertRange(Index, this.Children);
+            this.Children.ForEach(c =>
+            {
+                c.SetParent(Parent);
+                c.SetDepth(c.Depth - 1);
+            });
+        }
+        this.Parent = null;
+    }
+
+    /// <summary>
     /// Recursively sets the root of this node and all its children to the specified node.
     /// </summary>
     /// <param name="Root">The new root node of this node and all its children.</param>
@@ -495,7 +526,7 @@ public class OptimizedNode : IOptimizedNode
     /// Returns the number of (visible) child nodes and the height of all separators in this tree.
     /// </summary>
     /// <returns></returns>
-    public (int NodeCount, int SeperatorHeightSum) GetChildrenHeight(bool IgnoreExpansion = true)
+    public (int NodeCount, int SeparatorHeightSum) GetChildrenHeight(bool IgnoreExpansion = true)
     {
         int NodeCount = 0;
         int SeparatorHeight = 0;
@@ -516,26 +547,29 @@ public class OptimizedNode : IOptimizedNode
         return (NodeCount, SeparatorHeight);
     }
 
-    public (int NodeCount, int SeparatorHeightSum) GetExcessiveHeight(bool IgnoreExpansion = true)
+    public (int NodeCount, int SeparatorHeight) GetChildrenHeightUntil(IOptimizedNode NodeToStopAt, bool IgnoreExpansion = true)
     {
+        int NodeCount = 0;
         int SeparatorHeight = 0;
-        if (!HasChildren || !IgnoreExpansion && !Expanded) return (0, 0);
-        int Index = Children.Count - 1;
-        while (Index >= 0)
+        if (IgnoreExpansion || Expanded)
         {
-            if (Children[Index] is OptimizedNodeSeparator)
+            foreach (IOptimizedNode c in Children)
             {
-                SeparatorHeight += ((OptimizedNodeSeparator) Children[Index]).Height;
+                if (c == NodeToStopAt) return (NodeCount, SeparatorHeight);
+                if (c is OptimizedNode)
+                {
+                    NodeCount++;
+                    (int NodeCount, int SepHeight) result = ((OptimizedNode) c).GetChildrenHeightUntil(NodeToStopAt, IgnoreExpansion);
+                    NodeCount += result.NodeCount;
+                    SeparatorHeight += result.SepHeight;
+                }
+                else if (c is OptimizedNodeSeparator)
+                {
+                    SeparatorHeight += ((OptimizedNodeSeparator) c).Height;
+                }
             }
-            else
-            {
-                OptimizedNode LastNode = (OptimizedNode) Children[Index];
-                (int ChildNodeCount, int ChildSepHeight) = LastNode.GetChildrenHeight(IgnoreExpansion);
-                return (ChildNodeCount, ChildSepHeight + SeparatorHeight);
-            }
-            Index--;
         }
-        return (0, 0);
+        return (NodeCount, SeparatorHeight);
     }
 
     /// <summary>

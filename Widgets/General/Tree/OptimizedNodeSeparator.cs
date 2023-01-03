@@ -100,4 +100,9 @@ public class OptimizedNodeSeparator : IOptimizedNode
             this.CanDragOver = CanDragOver;
         }
     }
+
+    public void Delete(bool _)
+    {
+        Parent.Children.Remove(this);
+    }
 }

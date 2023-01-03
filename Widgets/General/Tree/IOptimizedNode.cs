@@ -35,4 +35,5 @@ public interface IOptimizedNode
     public void SetRoot(OptimizedNode Root);
     public void SetParent(OptimizedNode Parent);
     public void SetDepth(int Depth);
+    public void Delete(bool DeleteChildren);
 }

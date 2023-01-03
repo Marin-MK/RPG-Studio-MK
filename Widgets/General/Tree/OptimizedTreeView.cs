@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace RPGStudioMK.Widgets;
 
@@ -127,7 +128,7 @@ public class OptimizedTreeView : Widget
                 {
                     LastDrawData[i] = (LastDrawData[i].Node, LastDrawData[i].Y + movamt);
                 }
-                // Remove the data entry here, so it can inserted in the call below.
+                // Remove the data entry here, so it can be inserted in the call below.
                 LastDrawData.RemoveAt(Index);
                 Y = RedrawNode(Node, Y, true, () => Index);
                 Node.GetAllChildren(false).ForEach(n =>
@@ -178,11 +179,156 @@ public class OptimizedTreeView : Widget
         }
     }
 
+    public void InsertNode(OptimizedNode ParentNode, int? InsertionIndex, IOptimizedNode NewNode)
+    {
+        bool DidNotHaveChildren = ParentNode.HasChildren;
+        bool RedrawPrevSibling = ParentNode.HasChildren && (InsertionIndex == null || InsertionIndex == ParentNode.Children.Count);
+        if (!ParentNode.Expanded && ParentNode.HasChildren) SetExpanded(ParentNode, true);
+        BGSprite.Bitmap.Unlock();
+        TXTSprite.Bitmap.Unlock();
+        ParentNode.InsertChild(InsertionIndex ?? ParentNode.Children.Count, NewNode);
+        (int CountUntil, int SepHeightUntil) = ParentNode.GetChildrenHeightUntil(NewNode, false);
+        int Y = GetDrawnYCoord(ParentNode) + LineHeight + CountUntil * LineHeight + SepHeightUntil;
+        int NodeCount = 0;
+        int SepHeight = 0;
+        if (NewNode is OptimizedNode)
+        {
+            (NodeCount, SepHeight) = ((OptimizedNode) NewNode).GetChildrenHeight(false);
+        }
+        else
+        {
+            SepHeight = ((OptimizedNodeSeparator) NewNode).Height;
+        }
+        int Height = (NodeCount + 1) * LineHeight + SepHeight;
+        int movy = Y;
+        int movh = BGSprite.Bitmap.Height - movy;
+        int movamt = Height;
+        BGSprite.Bitmap = BGSprite.Bitmap.ResizeWithoutBuild(BGSprite.Bitmap.Width, BGSprite.Bitmap.Height + movamt);
+        TXTSprite.Bitmap = TXTSprite.Bitmap.ResizeWithoutBuild(TXTSprite.Bitmap.Width, TXTSprite.Bitmap.Height + movamt);
+        TXTSprite.Bitmap.Font = Fonts.Paragraph;
+        TXTSprite.Bitmap.BlendMode = BlendMode.Addition;
+        BGSprite.Bitmap.Unlock();
+        TXTSprite.Bitmap.Unlock();
+        BGSprite.Bitmap.ShiftVertically(movy, movh, movamt, true);
+        TXTSprite.Bitmap.ShiftVertically(movy, movh, movamt, true);
+        int Index = LastDrawData.FindIndex(d => d.Y >= Y);
+        for (int i = Index; i < LastDrawData.Count; i++)
+        {
+            LastDrawData[i] = (LastDrawData[i].Node, LastDrawData[i].Y + movamt);
+        }
+        Y = RedrawNode(NewNode, Y, true, () => Index);
+        if (NewNode is OptimizedNode) ((OptimizedNode) NewNode).GetAllChildren(false).ForEach(n =>
+        {
+            Index++;
+            Y = RedrawNode(n, Y, true, () => Index);
+        });
+        if (!DidNotHaveChildren)
+        {
+            BGSprite.Bitmap.FillRect(0, movy - LineHeight, BGSprite.Bitmap.Width, LineHeight, Color.ALPHA);
+            TXTSprite.Bitmap.FillRect(0, movy - LineHeight, TXTSprite.Bitmap.Width, LineHeight, Color.ALPHA);
+            ParentNode.Expand();
+            RedrawNode(ParentNode, movy - LineHeight, false);
+        }
+        // If there is a new last node, then the previous last node does not have the line coming
+        // from its parent indicating that there is another node.
+        // So we draw that line manually here, outside of any node redrawing.
+        if (RedrawPrevSibling)
+        {
+            int x = (NewNode.Depth - 1) * DepthIndent + XOffset;
+            int sy = GetDrawnYCoord(ParentNode) + LineHeight;
+            int ey = movy;
+            BGSprite.Bitmap.DrawLine(x + 19 - DepthIndent, sy, x + 19 - DepthIndent, ey, new Color(46, 104, 146));
+        }
+        BGSprite.Bitmap.Lock();
+        TXTSprite.Bitmap.Lock();
+    }
+
+    public void DeleteNode(IOptimizedNode Node, bool DeleteChildren)
+    {
+        OptimizedNode Parent = Node.Parent;
+        int OldDepth = Node.Depth;
+        int ChildIndex = Parent.Children.IndexOf(Node);
+        Node.Delete(DeleteChildren);
+        if (Root.Children.Count == 0)
+        {
+            BGSprite.Bitmap.Dispose();
+            TXTSprite.Bitmap.Dispose();
+            LastDrawData.Clear();
+            return;
+        }
+        (int NodeCount, int SepHeight) = (0, 0);
+        if (Node is OptimizedNode)
+        {
+            (NodeCount, SepHeight) = ((OptimizedNode) Node).GetChildrenHeight(false);
+            NodeCount++; // Count the node itself
+        }
+        else
+        {
+            SepHeight = ((OptimizedNodeSeparator) Node).Height;
+        }
+        int Y = GetDrawnYCoord(Node);
+        int HeightToClear = NodeCount * LineHeight + SepHeight;
+        BGSprite.Bitmap.Unlock();
+        TXTSprite.Bitmap.Unlock();
+        BGSprite.Bitmap.FillRect(0, Y, BGSprite.Bitmap.Width, HeightToClear, Color.ALPHA);
+        TXTSprite.Bitmap.FillRect(0, Y, TXTSprite.Bitmap.Width, HeightToClear, Color.ALPHA);
+        BGSprite.Bitmap.Lock();
+        TXTSprite.Bitmap.Lock();
+        int movy = Y + HeightToClear;
+        int movh = BGSprite.Bitmap.Height - movy;
+        int shift = DeleteChildren ? HeightToClear : LineHeight;
+        BGSprite.Bitmap.ShiftVertically(movy, movh, -shift, true);
+        TXTSprite.Bitmap.ShiftVertically(movy, movh, -shift, true);
+        BGSprite.Bitmap = BGSprite.Bitmap.ResizeWithoutBuild(BGSprite.Bitmap.Width, BGSprite.Bitmap.Height - shift);
+        TXTSprite.Bitmap = TXTSprite.Bitmap.ResizeWithoutBuild(TXTSprite.Bitmap.Width, TXTSprite.Bitmap.Height - shift);
+        TXTSprite.Bitmap.Font = Fonts.Paragraph;
+        TXTSprite.Bitmap.BlendMode = BlendMode.Addition;
+        TXTSprite.Bitmap.RecreateTexture();
+        int Index = LastDrawData.FindIndex(d => d.Y >= Y);
+        for (int i = Index; i < LastDrawData.Count; i++)
+        {
+            if (LastDrawData[i].Y >= Y && LastDrawData[i].Y < Y + HeightToClear)
+            {
+                LastDrawData.RemoveAt(i);
+                i--;
+            }
+            else LastDrawData[i] = (LastDrawData[i].Node, LastDrawData[i].Y - shift);
+        }
+        if (ChildIndex == Parent.Children.Count) // We deleted the last node in the parent's list of nodes
+        {
+            BGSprite.Bitmap.Unlock();
+            TXTSprite.Bitmap.Unlock();
+            if (Parent.Children.Count == 0)
+            {
+                // If our parent no longer has any children, we redraw the parent to get rid of the collapse box
+                BGSprite.Bitmap.FillRect(0, GetDrawnYCoord(Parent), BGSprite.Bitmap.Width, LineHeight, Color.ALPHA);
+                TXTSprite.Bitmap.FillRect(0, GetDrawnYCoord(Parent), TXTSprite.Bitmap.Width, LineHeight, Color.ALPHA);
+                RedrawNode(Parent, GetDrawnYCoord(Parent), false);
+            }
+            else if (OldDepth > 1) // Don't remove lines when we're at the root node, because the root node doesn't draw lines
+            {
+                // If we still have children and we deleted the last node, that means the line from our parent should stop
+                // at an earlier point that it did before, which means we need to redraw our previous sibling (and all its children)
+                // to get the proper line to show up.
+                // Or if we're smart about it, similarly to what we did for inserting nodes, we can delete just the line, since we know its start and end point.
+                // We can simply delete the part of the line that's no longer accurate and save ourselves the trouble of redrawing god knows how many nodes.
+                IOptimizedNode PreviousSibling = Parent.Children[ChildIndex - 1];
+                int x = (OldDepth - 1) * DepthIndent + XOffset;
+                int sy = GetDrawnYCoord(PreviousSibling) + 12;
+                int ey = movy - shift - 1;
+                BGSprite.Bitmap.DrawLine(x + 19 - DepthIndent, sy, x + 19 - DepthIndent, ey, Color.ALPHA);
+            }
+            BGSprite.Bitmap.Lock();
+            TXTSprite.Bitmap.Lock();
+        }
+    }
+
     public void RedrawAllNodes()
     {
         LastDrawData.Clear();
         BGSprite.Bitmap?.Dispose();
         TXTSprite.Bitmap?.Dispose();
+        if (Root.Children.Count == 0) return;
         (int RootNodeCount, int RootSepHeight) = Root.GetChildrenHeight(false);
         BGSprite.Bitmap = new Bitmap(Size.Width, RootNodeCount * LineHeight + RootSepHeight);
         BGSprite.Bitmap.Unlock();
@@ -414,9 +560,9 @@ public class OptimizedTreeView : Widget
             }
             else if (this.DragState == DragStates.Over)
             {
-                // Over one one
+                // Over one node
                 if (this.HoveringNode is OptimizedNode)
-                    ScrollContainer.Sprites["drag"].X = x + BGSprite.Bitmap.Font.TextSize(((OptimizedNode) this.HoveringNode).Text).Width + 30;
+                    ScrollContainer.Sprites["drag"].X = x + TXTSprite.Bitmap.Font.TextSize(((OptimizedNode) this.HoveringNode).Text).Width + 30;
                 else ScrollContainer.Sprites["drag"].X = 4;
                 ScrollContainer.Sprites["drag"].Y = y + height / 2 - 3;
                 ScrollContainer.Sprites["drag"].Bitmap = new Bitmap(7, 7);
@@ -457,7 +603,10 @@ public class OptimizedTreeView : Widget
             {
                 SetExpanded((OptimizedNode) ActiveNode, !((OptimizedNode) ActiveNode).Expanded);
             }
-            else SetSelectedNode(this.ActiveNode, Input.Press(Keycode.CTRL));
+            else
+            {
+                SetSelectedNode(this.ActiveNode, Input.Press(Keycode.CTRL));
+            }
         }
         this.Dragging = false;
         this.ActiveNode = null;
