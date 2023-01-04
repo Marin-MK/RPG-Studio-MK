@@ -44,7 +44,7 @@ public class EventChangeUndoAction : BaseUndoAction
         // Ensure we're on the map this action was taken on
         if (Editor.MainWindow.MapWidget.Map.ID != MapID)
         {
-            Editor.MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps[this.MapID]);
+            Editor.MainWindow.MapWidget.SetMap(Data.Maps[this.MapID]);
             Continue = false;
         }
         if (!Continue) return false;

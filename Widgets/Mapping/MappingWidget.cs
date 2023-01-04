@@ -81,6 +81,8 @@ public class MappingWidget : Widget
     public void SetMap(Game.Map Map)
     {
         this.Map = Map;
+        Editor.ProjectSettings.LastMapID = Map.ID;
+        Editor.ProjectSettings.LastLayer = 0;
         MapViewer.SetMap(Map);
     }
 

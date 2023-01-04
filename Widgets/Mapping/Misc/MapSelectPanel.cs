@@ -52,11 +52,11 @@ public class MapSelectPanel : Widget
         mapview.SetWidth(212);
         mapview.OnSelectedNodeChanged += delegate (MouseEventArgs e)
         {
-            if (mapview.SelectedNode == null) SetMap(null);
+            if (mapview.SelectedNode == null) Editor.MainWindow.MapWidget.SetMap(null);
             else
             {
                 Stopwatch.Start();
-                SetMap(Data.Maps[(int)mapview.SelectedNode.Object], true);
+                Editor.MainWindow.MapWidget.SetMap(Data.Maps[(int) mapview.SelectedNode.Object]);
                 Stopwatch.Stop();
                 Editor.MainWindow.StatusBar.QueueMessage($"Loaded Map #{mapview.SelectedNode.Object} ({Stopwatch.ElapsedMilliseconds}ms)", false, 1000);
                 Stopwatch.Reset();
@@ -307,34 +307,31 @@ public class MapSelectPanel : Widget
         return nodes;
     }
 
-    public void SetMap(Map Map, bool CalledFromTreeView = false)
+    public void SetMap(Map Map)
     {
-        if (Editor.MainWindow.MapWidget != null) Editor.MainWindow.MapWidget.SetMap(Map);
+        if (Map == null) mapview.SetSelectedNode(null);
+        // No need to update the selected node if we already have the desired map active
+        if ((int) mapview.SelectedNode.Object == Map.ID) return;
         int MapID = Map?.ID ?? -1;
-        Editor.ProjectSettings.LastMapID = MapID;
-        Editor.ProjectSettings.LastLayer = 0;
-        if (!CalledFromTreeView) // Has yet to update the selection
+        TreeNode node = null;
+        for (int i = 0; i < mapview.Nodes.Count; i++)
         {
-            TreeNode node = null;
-            for (int i = 0; i < mapview.Nodes.Count; i++)
+            if ((int)mapview.Nodes[i].Object == MapID)
             {
-                if ((int)mapview.Nodes[i].Object == MapID)
+                node = mapview.Nodes[i];
+                break;
+            }
+            else
+            {
+                TreeNode n = mapview.Nodes[i].FindNode(n => (int)n.Object == MapID);
+                if (n != null)
                 {
-                    node = mapview.Nodes[i];
+                    node = n;
                     break;
                 }
-                else
-                {
-                    TreeNode n = mapview.Nodes[i].FindNode(n => (int)n.Object == MapID);
-                    if (n != null)
-                    {
-                        node = n;
-                        break;
-                    }
-                }
             }
-            mapview.SetSelectedNode(node, false);
         }
+        mapview.SetSelectedNode(node, false);
     }
 
     public override void SizeChanged(BaseEventArgs e)
@@ -405,7 +402,7 @@ public class MapSelectPanel : Widget
     {
         Map map = Data.Maps[(int) mapview.HoveringNode.Object];
         bool activemap = Editor.MainWindow.MapWidget.Map.ID == map.ID;
-        if (!activemap) SetMap(map, false);
+        if (!activemap) Editor.MainWindow.MapWidget.SetMap(map);
         ShiftMapWindow win = new ShiftMapWindow(map);
         win.OnClosed += _ =>
         {

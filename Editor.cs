@@ -771,7 +771,7 @@ public static class Editor
         MainWindow.MapWidget.MapSelectPanel.PopulateList();
         int mapid = ProjectSettings.LastMapID;
         int lastlayer = ProjectSettings.LastLayer;
-        MainWindow.MapWidget.MapSelectPanel.SetMap(Data.Maps.ContainsKey(mapid) ? Data.Maps[mapid] : Data.Maps.Count == 0 ? null : Data.Maps.Values.First());
+        MainWindow.MapWidget.SetMap(Data.Maps.ContainsKey(mapid) ? Data.Maps[mapid] : Data.Maps.Count == 0 ? null : Data.Maps.Values.First());
         MainWindow.MapWidget.SetSelectedLayer(lastlayer);
         MainWindow.MapWidget.SetZoomFactor(ProjectSettings.LastZoomFactor);
 
