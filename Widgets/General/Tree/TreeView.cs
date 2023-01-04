@@ -625,7 +625,7 @@ public class TreeNode : ICloneable
         if (this == obj) return true;
         if (obj is TreeNode)
         {
-            TreeNode n = (TreeNode)obj;
+            TreeNode n = (TreeNode) obj;
             return Name == n.Name &&
                    Object.Equals(n.Object) &&
                    Collapsed == n.Collapsed &&

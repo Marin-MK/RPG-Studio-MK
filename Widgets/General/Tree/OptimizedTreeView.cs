@@ -25,6 +25,11 @@ public class OptimizedTreeView : Widget
     // or by creating a new bitmap and copying everything over. This would need to happen after the new content is drawn or deleted,
     // otherwise we might copy something in an overlapping region, or copy somewhere off the bitmap.
 
+    // TODO:
+    // - Deselect a node if it was selected and it is selected again with control down
+    // - Select first visible parent node if a node is collapsed and the one single selected node is within that tree
+    // - Deselect all selected nodes within a node tree if that node is collapsed
+
     static Bitmap TreeIconsBitmap;
 
     public OptimizedNode Root { get; protected set; }
@@ -35,6 +40,10 @@ public class OptimizedTreeView : Widget
     public List<IOptimizedNode> SelectedNodes { get; protected set; } = new List<IOptimizedNode>();
     public bool MultipleSelected => SelectedNodes.Count > 1;
     public IOptimizedNode SelectedNode => SelectedNodes.Count > 0 ? SelectedNodes[0] : null;
+    public bool DragAndDrop { get; protected set; } = true;
+
+    public GenericObjectEvent<IOptimizedNode> OnDragAndDropping;
+    public GenericObjectEvent<IOptimizedNode> OnDragAndDropped;
 
     List<(IOptimizedNode Node, int Y)> LastDrawData = new List<(IOptimizedNode, int)>();
     List<(IOptimizedNode Node, int SpriteIndex)> SelectionSprites = new List<(IOptimizedNode, int)>();
@@ -49,6 +58,7 @@ public class OptimizedTreeView : Widget
     private int DragLineOffset = 0;
     private Point? DragOriginPoint;
     private bool ValidatedDragMovement = false;
+    private IOptimizedNode OldHoveringNode;
 
     public OptimizedTreeView(IContainer Parent) : base(Parent)
     {
@@ -94,6 +104,14 @@ public class OptimizedTreeView : Widget
         {
             this.DepthIndent = DepthIndent;
             RedrawAllNodes();
+        }
+    }
+
+    public void SetDragAndDrop(bool DragAndDrop)
+    {
+        if (this.DragAndDrop != DragAndDrop)
+        {
+            this.DragAndDrop = DragAndDrop;
         }
     }
 
@@ -188,7 +206,8 @@ public class OptimizedTreeView : Widget
         TXTSprite.Bitmap.Unlock();
         ParentNode.InsertChild(InsertionIndex ?? ParentNode.Children.Count, NewNode);
         (int CountUntil, int SepHeightUntil) = ParentNode.GetChildrenHeightUntil(NewNode, false);
-        int Y = GetDrawnYCoord(ParentNode) + LineHeight + CountUntil * LineHeight + SepHeightUntil;
+        int Y = GetDrawnYCoord(ParentNode) + CountUntil * LineHeight + SepHeightUntil;
+        if (ParentNode != NewNode.Root) Y += LineHeight; // Add the height of the parent node itself, unless the parent node is the root (because it is not displayed)
         int NodeCount = 0;
         int SepHeight = 0;
         if (NewNode is OptimizedNode)
@@ -212,6 +231,7 @@ public class OptimizedTreeView : Widget
         BGSprite.Bitmap.ShiftVertically(movy, movh, movamt, true);
         TXTSprite.Bitmap.ShiftVertically(movy, movh, movamt, true);
         int Index = LastDrawData.FindIndex(d => d.Y >= Y);
+        if (Index < 0) Index = LastDrawData.Count;
         for (int i = Index; i < LastDrawData.Count; i++)
         {
             LastDrawData[i] = (LastDrawData[i].Node, LastDrawData[i].Y + movamt);
@@ -343,6 +363,7 @@ public class OptimizedTreeView : Widget
         }
         BGSprite.Bitmap.Lock();
         TXTSprite.Bitmap.Lock();
+        PrintStructure();
     }
 
     private int RedrawNode(IOptimizedNode Node, int y, bool AddData = true, Func<int> IndexProvider = null)
@@ -378,7 +399,7 @@ public class OptimizedTreeView : Widget
             {
                 int sx = RNode.Expanded ? 11 : 0;
                 BGSprite.Bitmap.Build(new Rect(x + 14, y + 6, 11, 11), TreeIconsBitmap, new Rect(sx, 0, 11, 11));
-                if (RNode.Expanded) BGSprite.Bitmap.DrawLine(x + 19, y + 17, x + 19, y + 23, new Color(64, 104, 146));
+                if (RNode.Expanded) BGSprite.Bitmap.DrawLine(x + 19, y + 17, x + 19, y + LineHeight - 1, new Color(64, 104, 146));
             }
             TXTSprite.Bitmap.DrawText(RNode.Text, x + 30, y + 2, Color.WHITE);
             if (AddData)
@@ -444,6 +465,20 @@ public class OptimizedTreeView : Widget
         }
     }
 
+    void PrintStructure()
+    {
+        Console.WriteLine(">>>>>>>>>>>>>> START");
+        foreach (IOptimizedNode node in Root.GetAllChildren(true))
+        {
+            if (node is OptimizedNodeSeparator) Console.WriteLine($"========== ({((OptimizedNodeSeparator) node).Height})");
+            else
+            {
+                OptimizedNode n = (OptimizedNode) node;
+                Console.WriteLine($"({Utilities.Digits(n.GlobalIndex, 2)}): {n.Text} (parent: {n.Parent.GlobalIndex})");
+            }
+        }
+    }
+
     public override void MouseMoving(MouseEventArgs e)
     {
         base.MouseMoving(e);
@@ -458,7 +493,7 @@ public class OptimizedTreeView : Widget
         }
         int rx = e.X - ScrollContainer.Viewport.X;
         int ry = e.Y - ScrollContainer.Viewport.Y + ScrollContainer.TopCutOff;
-        float yfraction = 0.5f;
+        float yfraction = 0f;
         for (int i = 0; i < LastDrawData.Count; i++)
         {
             IOptimizedNode Node = LastDrawData[i].Node;
@@ -478,13 +513,14 @@ public class OptimizedTreeView : Widget
             {
                 ValidatedDragMovement = true;
             }
+            this.OnDragAndDropping?.Invoke(new GenericObjectEventArgs<IOptimizedNode>(this.ActiveNode));
         }
         // Drag-and-drop
         if (Dragging && ValidatedDragMovement && HoveringNode != null)
         {
             bool CanDragOver = this.HoveringNode.CanDragOver;
-            bool TopArea = !CanDragOver && yfraction < 0.5f || yfraction < 1f / 3;
-            bool MiddleArea = CanDragOver && yfraction < 2f / 3;
+            bool TopArea = !CanDragOver && yfraction < 0.5f || yfraction < 1f / 4;
+            bool MiddleArea = CanDragOver && yfraction < 3f / 4;
             bool BottomArea = !TopArea && !MiddleArea;
             // Void this position if the hovering node is contained by the active node,
             // or if we're still on the active node
@@ -593,7 +629,45 @@ public class OptimizedTreeView : Widget
     public override void LeftMouseUp(MouseEventArgs e)
     {
         base.LeftMouseUp(e);
-        if (this.ActiveNode != null && this.ActiveNode.Selectable && this.ActiveNode == this.HoveringNode && (!this.Dragging || !this.ValidatedDragMovement))
+        if (this.Dragging && this.ValidatedDragMovement)
+        {
+            if (this.ActiveNode != this.HoveringNode && // Drag-and-dropping over different node
+                (this.ActiveNode is not OptimizedNode || !((OptimizedNode) this.ActiveNode).Contains(this.HoveringNode))) // If the hovered node is a child of the active node, we can't make active node a child of the hovering node.
+            {
+                if (this.DragState == DragStates.Over && this.HoveringNode is OptimizedNode) // If the hovered node is a node capable of having children
+                {
+                    DeleteNode(this.ActiveNode, true);
+                    InsertNode((OptimizedNode) this.HoveringNode, null, this.ActiveNode);
+                    this.OnDragAndDropped?.Invoke(new GenericObjectEventArgs<IOptimizedNode>(this.ActiveNode));
+                }
+                else if (this.DragState == DragStates.Above || this.DragState == DragStates.SharedAbove)
+                {
+                    Console.WriteLine(LastDrawData);
+                    DeleteNode(this.ActiveNode, true);
+                    int HoveredIndex = this.HoveringNode.Parent.Children.IndexOf(this.HoveringNode);
+                    InsertNode(this.HoveringNode.Parent, HoveredIndex, this.ActiveNode);
+                    this.OnDragAndDropped?.Invoke(new GenericObjectEventArgs<IOptimizedNode>(this.ActiveNode));
+                }
+                else if (this.DragState == DragStates.Below || this.DragState == DragStates.SharedBelow)
+                {
+                    DeleteNode(this.ActiveNode, true);
+                    // If we're below a node with visible children, then we want to insert the node as its first child rather than a sibling.
+                    if (this.DragState == DragStates.SharedBelow && this.HoveringNode is OptimizedNode &&
+                        ((OptimizedNode) this.HoveringNode).HasChildren && ((OptimizedNode) this.HoveringNode).Expanded)
+                    {
+                        InsertNode((OptimizedNode) this.HoveringNode, 0, this.ActiveNode);
+                    }
+                    else
+                    {
+                        int HoveredIndex = this.HoveringNode.Parent.Children.IndexOf(this.HoveringNode);
+                        InsertNode(this.HoveringNode.Parent, HoveredIndex + 1, this.ActiveNode);
+                    }
+                    this.OnDragAndDropped?.Invoke(new GenericObjectEventArgs<IOptimizedNode>(this.ActiveNode));
+                }
+                PrintStructure();
+            }
+        }
+        else if (this.ActiveNode != null && this.ActiveNode.Selectable && this.ActiveNode == this.HoveringNode)
         {
             int rx = e.X - ScrollContainer.Viewport.X + ScrollContainer.LeftCutOff;
             int ry = e.Y - ScrollContainer.Viewport.Y + ScrollContainer.TopCutOff;
@@ -615,6 +689,38 @@ public class OptimizedTreeView : Widget
         this.DragOriginPoint = null;
         if (this.ValidatedDragMovement) RedrawDragState();
         this.ValidatedDragMovement = false;
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        if (OldHoveringNode != HoveringNode)
+        {
+            if (TimerExists("long_hover")) DestroyTimer("long_hover");
+        }
+        if (Dragging && ValidatedDragMovement && (ActiveNode is not OptimizedNode || !((OptimizedNode) ActiveNode).Contains(HoveringNode)) && HoveringNode is OptimizedNode)
+        {
+            OptimizedNode HovNode = (OptimizedNode) HoveringNode;
+            bool MayExpand = !HovNode.Expanded && HovNode.HasChildren && this.DragState == DragStates.Over;
+            if (MayExpand && !TimerExists("long_hover"))
+            {
+                SetTimer("long_hover", 500);
+            }
+            else if (MayExpand && TimerPassed("long_hover"))
+            {
+                DestroyTimer("long_hover");
+                SetExpanded(HovNode, true);
+            }
+            else if (TimerExists("long_hover") && (HovNode.Expanded || !HovNode.HasChildren || this.DragState != DragStates.Over))
+            {
+                DestroyTimer("long_hover");
+            }
+        }
+        else
+        {
+            if (TimerExists("long_hover")) DestroyTimer("long_hover");
+        }
+        OldHoveringNode = HoveringNode;
     }
 }
 

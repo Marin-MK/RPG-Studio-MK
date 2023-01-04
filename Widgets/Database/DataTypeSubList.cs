@@ -18,7 +18,7 @@ public class DataTypeSubList : Widget
     public int ListMaximum;
 
     public BaseEvent OnSelectionChanged { get { return ListDrawer.OnSelectionChanged; } set { ListDrawer.OnSelectionChanged = value; } }
-    public ObjectEvent OnMaximumChanged;
+    public GenericObjectEvent<int> OnMaximumChanged;
 
     public DataTypeSubList(string HeaderText, int InitialListMaximum, IContainer Parent) : base(Parent)
     {
@@ -57,7 +57,7 @@ public class DataTypeSubList : Widget
             win.OnClosed += _ =>
             {
                 if (!win.Apply || ListMaximum == win.Value) return;
-                OnMaximumChanged?.Invoke(new ObjectEventArgs(win.Value));
+                OnMaximumChanged?.Invoke(new GenericObjectEventArgs<int>(win.Value));
                 ListMaximum = win.Value;
             };
         };

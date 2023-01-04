@@ -27,17 +27,17 @@ public class OptimizedNodeSeparator : IOptimizedNode
     /// Called when this node gets a different parent.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public ObjectEvent OnParentChanged { get; }
+    public GenericObjectEvent<OptimizedNode> OnParentChanged { get; }
     /// <summary>
     /// Called when this node gets a different root.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public ObjectEvent OnRootChanged { get; }
+    public GenericObjectEvent<OptimizedNode> OnRootChanged { get; }
     /// <summary>
     /// Called when the depth of this node changes.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public ObjectEvent OnDepthChanged { get; }
+    public GenericObjectEvent<int> OnDepthChanged { get; }
 
     public void SetRoot(OptimizedNode Root)
     {
@@ -45,7 +45,7 @@ public class OptimizedNodeSeparator : IOptimizedNode
         {
             OptimizedNode OldRoot = this.Root;
             this.Root = Root;
-            OnRootChanged?.Invoke(new ObjectEventArgs(this.Root, OldRoot));
+            OnRootChanged?.Invoke(new GenericObjectEventArgs<OptimizedNode>(this.Root, OldRoot));
         }
     }
 
@@ -55,7 +55,7 @@ public class OptimizedNodeSeparator : IOptimizedNode
         {
             OptimizedNode OldParent = this.Parent;
             this.Parent = Parent;
-            OnParentChanged?.Invoke(new ObjectEventArgs(this.Parent, OldParent));
+            OnParentChanged?.Invoke(new GenericObjectEventArgs<OptimizedNode>(this.Parent, OldParent));
         }
     }
 
@@ -65,7 +65,7 @@ public class OptimizedNodeSeparator : IOptimizedNode
         {
             int OldDepth = this.Depth;
             this.Depth = Depth;
-            OnDepthChanged?.Invoke(new ObjectEventArgs(this.Depth, OldDepth));
+            OnDepthChanged?.Invoke(new GenericObjectEventArgs<int>(this.Depth, OldDepth));
         }
     }
 

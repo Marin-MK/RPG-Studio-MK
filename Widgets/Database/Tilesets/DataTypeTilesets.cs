@@ -51,9 +51,9 @@ public class DataTypeTilesets : Widget
         TilesetList = new DataTypeSubList("Tilesets", Editor.ProjectSettings.TilesetCapacity, Grid);
         TilesetList.SetBackgroundColor(28, 50, 73);
         TilesetList.SetGridRow(0, 1);
-        TilesetList.OnMaximumChanged += delegate (ObjectEventArgs e)
+        TilesetList.OnMaximumChanged += delegate (GenericObjectEventArgs<int> e)
         {
-            int NewCapacity = (int)e.Object;
+            int NewCapacity = e.Object;
             if (NewCapacity == Editor.ProjectSettings.TilesetCapacity) return;
             List<Tileset> OldTilesets = Data.Tilesets.ConvertAll(t => (Tileset) t?.Clone());
             int OldCapacity = Editor.ProjectSettings.TilesetCapacity;

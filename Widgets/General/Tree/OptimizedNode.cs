@@ -29,7 +29,7 @@ public class OptimizedNode : IOptimizedNode
     public bool HasChildren => Children.Count > 0;
     /// <summary>
     /// The global index in a tree view. If all nodes were expanded,
-    /// this would be the position of this node in the overall list.
+    /// this would be the position of this node in the overall list, excluding any non-node items that don't have a global index.
     /// </summary>
     public int GlobalIndex { get; protected set; }
     /// <summary>
@@ -75,42 +75,42 @@ public class OptimizedNode : IOptimizedNode
     /// Called when this node is expanded or collapsed, regardless of whether it has children.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public BaseEvent OnExpansionChanged;
+    public GenericObjectEvent<bool> OnExpansionChanged;
     /// <summary>
     /// Called when the text of this node changes.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public BaseEvent OnTextChanged;
+    public GenericObjectEvent<string> OnTextChanged;
     /// <summary>
     /// Called when the object associated with this node changes.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public BaseEvent OnObjectChanged;
+    public ObjectEvent OnObjectChanged;
     /// <summary>
     /// Called when a node is inserted as a child of this node.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public ObjectEvent OnNodeInserted;
+    public GenericObjectEvent<IOptimizedNode> OnNodeInserted;
     /// <summary>
     /// Called when the global index of this node changes.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public ObjectEvent OnGlobalIndexChanged;
+    public GenericObjectEvent<int> OnGlobalIndexChanged;
     /// <summary>
     /// Called when this node gets a different parent.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public ObjectEvent OnParentChanged { get; set; }
+    public GenericObjectEvent<OptimizedNode> OnParentChanged { get; set; }
     /// <summary>
     /// Called when this node gets a different root.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public ObjectEvent OnRootChanged { get; set; }
+    public GenericObjectEvent<OptimizedNode> OnRootChanged { get; set; }
     /// <summary>
     /// Called when the depth of this node changes.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public ObjectEvent OnDepthChanged { get; set; }
+    public GenericObjectEvent<int> OnDepthChanged { get; set; }
 
     public OptimizedNode(string Text, object Object = null)
     {
@@ -131,7 +131,7 @@ public class OptimizedNode : IOptimizedNode
             this.Expanded = Expanded;
             if (this.Expanded) OnExpanded?.Invoke(new BaseEventArgs());
             else OnCollapsed?.Invoke(new BaseEventArgs());
-            OnExpansionChanged?.Invoke(new BaseEventArgs());
+            OnExpansionChanged?.Invoke(new GenericObjectEventArgs<bool>(this.Expanded, !this.Expanded));
         }
     }
 
@@ -160,7 +160,7 @@ public class OptimizedNode : IOptimizedNode
         if (this.Text != Text)
         {
             this.Text = Text;
-            OnTextChanged?.Invoke(new BaseEventArgs());
+            OnTextChanged?.Invoke(new GenericObjectEventArgs<string>(this.Text));
         }
     }
 
@@ -172,8 +172,9 @@ public class OptimizedNode : IOptimizedNode
     {
         if (this.Object != Object)
         {
+            object OldObject = this.Object;
             this.Object = Object;
-            OnObjectChanged?.Invoke(new BaseEventArgs());
+            OnObjectChanged?.Invoke(new ObjectEventArgs(this.Object, OldObject));
         }
     }
 
@@ -299,7 +300,7 @@ public class OptimizedNode : IOptimizedNode
         if (GlobalIndex >= Index)
         {
             GlobalIndex += Count;
-            OnGlobalIndexChanged?.Invoke(new ObjectEventArgs(GlobalIndex, GlobalIndex - Count));
+            OnGlobalIndexChanged?.Invoke(new GenericObjectEventArgs<int>(GlobalIndex, GlobalIndex - Count));
         }
         Children.FindAll(c => c is OptimizedNode).ForEach(c => ((OptimizedNode) c).ChangeIndexFrom(Index, Count));
     }
@@ -392,7 +393,7 @@ public class OptimizedNode : IOptimizedNode
         NewNode.SetRoot(Root);
         NewNode.SetParent(this);
         NewNode.SetDepth(Depth + 1);
-        OnNodeInserted?.Invoke(new ObjectEventArgs(NewNode));
+        OnNodeInserted?.Invoke(new GenericObjectEventArgs<IOptimizedNode>(NewNode));
     }
 
     /// <summary>
@@ -435,7 +436,7 @@ public class OptimizedNode : IOptimizedNode
         {
             OptimizedNode OldRoot = this.Root;
             this.Root = Root;
-            OnRootChanged?.Invoke(new ObjectEventArgs(this.Root, OldRoot));
+            OnRootChanged?.Invoke(new GenericObjectEventArgs<OptimizedNode>(this.Root, OldRoot));
         }
         Children.ForEach(c => c.SetRoot(Root));
     }
@@ -446,7 +447,7 @@ public class OptimizedNode : IOptimizedNode
         {
             OptimizedNode OldParent = this.Parent;
             this.Parent = Parent;
-            OnParentChanged?.Invoke(new ObjectEventArgs(this.Parent, OldParent));
+            OnParentChanged?.Invoke(new GenericObjectEventArgs<OptimizedNode>(this.Parent, OldParent));
         }
     }
 
@@ -460,7 +461,7 @@ public class OptimizedNode : IOptimizedNode
         {
             int OldDepth = this.Depth;
             this.Depth = Depth;
-            OnDepthChanged?.Invoke(new ObjectEventArgs(this.Depth, OldDepth));
+            OnDepthChanged?.Invoke(new GenericObjectEventArgs<int>(this.Depth, OldDepth));
         }
         Children.ForEach(c => c.SetDepth(Depth + 1));
     }
@@ -584,7 +585,7 @@ public class OptimizedNode : IOptimizedNode
         {
             int OldIndex = GlobalIndex;
             GlobalIndex = CurrentIndex;
-            OnGlobalIndexChanged?.Invoke(new ObjectEventArgs(GlobalIndex, OldIndex));
+            OnGlobalIndexChanged?.Invoke(new GenericObjectEventArgs<int>(GlobalIndex, OldIndex));
         }
         CurrentIndex++;
         foreach (IOptimizedNode Child in Children)
