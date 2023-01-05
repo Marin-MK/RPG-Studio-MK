@@ -121,7 +121,7 @@ public class EventBox : Widget
                     int sy = sh * (gfx.Direction / 2 - 1);
                     Bitmap SmallBitmap = new Bitmap(sw, sh);
                     SmallBitmap.Unlock();
-                    SmallBitmap.Build(0, 0, SourceBitmap, new Rect(sx, sy, sw, sh));
+                    SmallBitmap.Build(0, 0, SourceBitmap, new Rect(sx, sy, sw, sh), BlendMode.None);
                     SmallBitmap.Lock();
                     SourceBitmap.Dispose();
                     Sprites["gfx"].Bitmap = SmallBitmap;
@@ -155,7 +155,7 @@ public class EventBox : Widget
                     }
                     Bitmap SmallBitmap = new Bitmap(sw, sh);
                     SmallBitmap.Unlock();
-                    SmallBitmap.Build(0, 0, SourceBitmap, new Rect(sx, sy, sw, sh));
+                    SmallBitmap.Build(0, 0, SourceBitmap, new Rect(sx, sy, sw, sh), BlendMode.None);
                     SmallBitmap.Lock();
                     Sprites["gfx"].Bitmap = SmallBitmap;
                     if (gfx.CharacterHue != 0)

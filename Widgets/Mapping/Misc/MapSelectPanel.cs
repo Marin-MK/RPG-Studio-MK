@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using RPGStudioMK.Game;
 using System.Diagnostics;
-using RPGStudioMK.Undo;
-using System.Linq;
 
 namespace RPGStudioMK.Widgets;
 
@@ -36,7 +34,7 @@ public class MapSelectPanel : Widget
         MapTree.SetDocked(true);
         MapTree.SetPadding(0, 35, 0, 0);
         MapTree.SetHResizeToFill(false);
-        MapTree.SetExtraXScrollArea(4);
+        MapTree.SetExtraXScrollArea(24);
         MapTree.SetExtraYScrollArea(32);
         MapTree.OnSelectionChanged += e =>
         {
@@ -50,7 +48,7 @@ public class MapSelectPanel : Widget
                 Stopwatch.Reset();
             }
         };
-        MapTree.OnDragAndDropped += e => throw new NotImplementedException();
+        MapTree.OnDragAndDropped += delegate (GenericObjectEventArgs<IOptimizedNode> e) { DragAndDropped((OptimizedNode) e.Object); };
         MapTree.OnNodeExpansionChanged += delegate (GenericObjectEventArgs<OptimizedNode> e)
         {
             OptimizedNode Node = e.Object;
@@ -133,156 +131,10 @@ public class MapSelectPanel : Widget
         });
     }
 
-    /*public void DragAndDropped()
+    public void DragAndDropped(OptimizedNode Node)
     {
-        List<TreeNode> OldNodes = MapTree.Nodes.ConvertAll(n => (TreeNode) n.Clone());
-        TreeNode DraggingNode = MapTree.DraggingNode;
-        TreeNode HoveringNode = MapTree.HoveringNode;
-        bool Top = MapTree.HoverTop;
-        bool Over = MapTree.HoverOver;
-        bool Bottom = MapTree.HoverBottom;
-        // If the hovering node is a child of our dragging node,
-        // we are trying to move the map inside a child map, which
-        // obviously is not possible.
-        if (DraggingNode.FindNode(n => n == HoveringNode) != null) return;
-        // Remove the node
-        if (MapTree.Nodes.Contains(DraggingNode)) MapTree.Nodes.Remove(DraggingNode);
-        else
-        {
-            TreeNode Parent = GetParent(DraggingNode);
-            if (Parent == null) throw new Exception("No parent node found.");
-            Parent.Nodes.Remove(DraggingNode);
-        }
-        // Add the node
-        if (Top)
-        {
-            // Root-level
-            if (MapTree.Nodes.Contains(HoveringNode))
-            {
-                int index = MapTree.Nodes.IndexOf(HoveringNode);
-                MapTree.Nodes.Insert(index, DraggingNode);
-            }
-            else
-            {
-                TreeNode Parent = GetParent(HoveringNode);
-                if (Parent == null) throw new Exception("No parent node found.");
-                int index = Parent.Nodes.IndexOf(HoveringNode);
-                Parent.Nodes.Insert(index, DraggingNode);
-                if (Parent.Collapsed)
-                {
-                    Parent.Collapsed = false;
-                    TreeNode oldnode = null;
-                    foreach (TreeNode node in OldNodes)
-                    {
-                        if (node.Object == Parent.Object)
-                        {
-                            oldnode = node;
-                            break;
-                        }
-                        else
-                        {
-                            TreeNode n = node.FindNode(n => n.Object == Parent.Object);
-                            if (n != null)
-                            {
-                                oldnode = n;
-                                break;
-                            }
-                        }
-                    }
-                    if (oldnode == null) throw new Exception("Could not find old node.");
-                    oldnode.Collapsed = false;
-                    Data.Maps[(int) Parent.Object].Expanded = true;
-                    Undo.NodeCollapseChangeUndoAction.Create((int) Parent.Object, true, false, (int) MapTree.SelectedNode.Object);
-                }
-            }
-        }
-        else if (Over)
-        {
-            HoveringNode.Nodes.Add(DraggingNode);
-            if (HoveringNode.Collapsed)
-            {
-                HoveringNode.Collapsed = false;
-                TreeNode oldnode = null;
-                foreach (TreeNode node in OldNodes)
-                {
-                    if (node.Object == HoveringNode.Object)
-                    {
-                        oldnode = node;
-                        break;
-                    }
-                    else
-                    {
-                        TreeNode n = node.FindNode(n => n.Object == HoveringNode.Object);
-                        if (n != null)
-                        {
-                            oldnode = n;
-                            break;
-                        }
-                    }
-                }
-                if (oldnode == null) throw new Exception("Could not find old node.");
-                oldnode.Collapsed = false;
-                Data.Maps[(int) HoveringNode.Object].Expanded = true;
-                Undo.NodeCollapseChangeUndoAction.Create((int) HoveringNode.Object, true, false, (int) MapTree.SelectedNode.Object);
-            }
-        }
-        else if (Bottom)
-        {
-            // Has and showing children; add to children instead
-            if (HoveringNode.Nodes.Count > 0 && !HoveringNode.Collapsed)
-            {
-                HoveringNode.Nodes.Insert(0, DraggingNode);
-            }
-            // Root-level node to add below
-            else if (MapTree.Nodes.Contains(HoveringNode))
-            {
-                // Add below node in parent list
-                int index = MapTree.Nodes.IndexOf(HoveringNode);
-                MapTree.Nodes.Insert(index + 1, DraggingNode);
-            }
-            else // Deeper node to add below
-            {
-                TreeNode Parent = GetParent(HoveringNode);
-                if (Parent == null) throw new Exception("No parent node found.");
-                int index = Parent.Nodes.IndexOf(HoveringNode);
-                Parent.Nodes.Insert(index + 1, DraggingNode);
-                if (Parent.Collapsed)
-                {
-                    Parent.Collapsed = false;
-                    TreeNode oldnode = null;
-                    foreach (TreeNode node in OldNodes)
-                    {
-                        if (node.Object == Parent.Object)
-                        {
-                            oldnode = node;
-                            break;
-                        }
-                        else
-                        {
-                            TreeNode n = node.FindNode(n => n.Object == Parent.Object);
-                            if (n != null)
-                            {
-                                oldnode = n;
-                                break;
-                            }
-                        }
-                    }
-                    if (oldnode == null) throw new Exception("Could not find old node.");
-                    oldnode.Collapsed = false;
-                    Data.Maps[(int) Parent.Object].Expanded = true;
-                    Undo.NodeCollapseChangeUndoAction.Create((int) Parent.Object, true, false, (int) MapTree.SelectedNode.Object);
-                }
-            }
-        }
-        else return;
-        if (!OldNodes.Equals(MapTree.Nodes))
-        {
-            // Now update all map ParentID/Order fields to reflect the current Node structure
-            Editor.UpdateOrder(MapTree.Nodes);
-            MapTree.Redraw();
-            Undo.MapOrderChangeUndoAction.Create(OldNodes, MapTree.Nodes.ConvertAll(n => (TreeNode)n.Clone()));
-        }
-    }*/
+        Data.Maps[(int) Node.Object].ParentID = Node.Parent.GlobalIndex;
+    }
 
     public List<OptimizedNode> PopulateList(int PopulateChildrenOfID = 0)
     {

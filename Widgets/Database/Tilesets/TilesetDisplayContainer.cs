@@ -84,7 +84,8 @@ public class TilesetDisplayContainer : Widget
                     Sprites["autotiles"].Bitmap.Build(
                         (i + 1) * 33, 0,
                         Tileset.Autotiles[i].AutotileBitmap,
-                        new Rect(0, 0, 32, 32)
+                        new Rect(0, 0, 32, 32),
+                        BlendMode.None
                     );
                 }
                 Sprites["autotiles"].Bitmap.Lock();

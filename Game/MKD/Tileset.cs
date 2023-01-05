@@ -74,7 +74,7 @@ public class Tileset : ICloneable
             {
                 for (int tilex = 0; tilex < 8; tilex++)
                 {
-                    _tlb.Build(tilex * 32 + tilex, tiley * 32 + tiley, TilesetBitmap, tilex * 32, tiley * 32, 32, 32);
+                    _tlb.Build(tilex * 32 + tilex, tiley * 32 + tiley, TilesetBitmap, tilex * 32, tiley * 32, 32, 32, BlendMode.None);
                 }
             }
             _tlb.Lock();

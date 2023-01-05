@@ -262,7 +262,7 @@ public class TilesPanel : Widget
             //{
             int x = 33 * (SingleIndex % 8);
             int y = 33 * (int)Math.Floor(SingleIndex / 8d);
-            singles.Build(x, y, autotile.AutotileBitmap, new Rect(0, 0, 32, 32));
+            singles.Build(x, y, autotile.AutotileBitmap, new Rect(0, 0, 32, 32), BlendMode.None);
             AutotileContainers.Add(i);
             SingleIndex++;
             //    continue;
@@ -364,11 +364,11 @@ public class TilesPanel : Widget
                 for (int j = 0; j < 4; j++)
                 {
                     bmp.Build(new Rect(16 * (j % 2), 16 * (int)Math.Floor(j / 2d), 16, 16), autotile.AutotileBitmap,
-                        new Rect(16 * (Tiles[j] % 6), 16 * (int)Math.Floor(Tiles[j] / 6d), 16, 16));
+                        new Rect(16 * (Tiles[j] % 6), 16 * (int)Math.Floor(Tiles[j] / 6d), 16, 16), BlendMode.None);
                 }
             }
             bmp.Lock();
-            ((AutotileContainers[AutotileIndex] as CollapsibleContainer).Widgets[0] as ImageBox).Bitmap.Build(x, y, bmp);
+            ((AutotileContainers[AutotileIndex] as CollapsibleContainer).Widgets[0] as ImageBox).Bitmap.Build(x, y, bmp, BlendMode.None);
             bmp.Dispose();
         }
         if (locked) ((AutotileContainers[AutotileIndex] as CollapsibleContainer).Widgets[0] as ImageBox).Bitmap.Lock();

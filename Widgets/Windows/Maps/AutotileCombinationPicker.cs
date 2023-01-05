@@ -90,7 +90,8 @@ public class AutotilePickerMap : PopupWindow
                         16 * (int)Math.Floor(Tiles[j] / 6d),
                         16,
                         16
-                    )
+                    ),
+                    BlendMode.None
                 );
             }
         }

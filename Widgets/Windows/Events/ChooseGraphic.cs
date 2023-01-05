@@ -379,7 +379,7 @@ public class ChooseGraphic : PopupWindow
                     }
                     Bitmap SmallBmp = new Bitmap(srcw, srch);
                     SmallBmp.Unlock();
-                    SmallBmp.Build(0, 0, SourceBitmap, new Rect(srcx, srcy, srcw, srch));
+                    SmallBmp.Build(0, 0, SourceBitmap, new Rect(srcx, srcy, srcw, srch), BlendMode.None);
                     SmallBmp.Lock();
                     GraphicBox.SetBitmap(SmallBmp);
                     if (Graphic.CharacterHue != 0)

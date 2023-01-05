@@ -277,15 +277,15 @@ public static class Utilities
                     {
                         Bitmap tilesetimage = Data.Tilesets[Map.TilesetIDs[tile.Index]].TilesetBitmap;
                         int tilesetx = tile.ID % 8;
-                        int tilesety = (int)Math.Floor(tile.ID / 8d);
-                        bmp.Build(new Rect(x * 32, y * 32, 32, 32), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
+                        int tilesety = (int) Math.Floor(tile.ID / 8d);
+                        bmp.Build(new Rect(x * 32, y * 32, 32, 32), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32), layer == 0 ? BlendMode.None : BlendMode.Blend);
                     }
                     else if (tile.TileType == TileType.Autotile)
                     {
                         Autotile autotile = Data.Autotiles[Map.AutotileIDs[tile.Index]];
                         if (autotile.Format == AutotileFormat.Single)
                         {
-                            bmp.Build(new Rect(x * 32, y * 32, 32, 32), autotile.AutotileBitmap, new Rect(0, 0, 32, 32));
+                            bmp.Build(new Rect(x * 32, y * 32, 32, 32), autotile.AutotileBitmap, new Rect(0, 0, 32, 32), layer == 0 ? BlendMode.None : BlendMode.Blend);
                         }
                         else
                         {
@@ -293,7 +293,8 @@ public static class Utilities
                             for (int i = 0; i < 4; i++)
                             {
                                 bmp.Build(new Rect(x * 32 + 16 * (i % 2), y * 32 + 16 * (int)Math.Floor(i / 2d), 16, 16), autotile.AutotileBitmap,
-                                    new Rect(16 * (Tiles[i] % 6), 16 * (int)Math.Floor(Tiles[i] / 6d), 16, 16));
+                                    new Rect(16 * (Tiles[i] % 6), 16 * (int)Math.Floor(Tiles[i] / 6d), 16, 16),
+                                    layer == 0 ? BlendMode.None : BlendMode.Blend);
                             }
                         }
                     }
@@ -321,14 +322,14 @@ public static class Utilities
                         Bitmap tilesetimage = Data.Tilesets[Map.TilesetIDs[tile.Index]].TilesetBitmap;
                         int tilesetx = tile.ID % 8;
                         int tilesety = (int)Math.Floor(tile.ID / 8d);
-                        bmp.Build(new Rect(x * 16, y * 16, 16, 16), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32));
+                        bmp.Build(new Rect(x * 16, y * 16, 16, 16), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32), layer == 0 ? BlendMode.None : BlendMode.Blend);
                     }
                     else if (tile.TileType == TileType.Autotile)
                     {
                         Autotile autotile = Data.Autotiles[Map.AutotileIDs[tile.Index]];
                         if (autotile.Format == AutotileFormat.Single)
                         {
-                            bmp.Build(new Rect(x * 16, y * 16, 16, 16), autotile.AutotileBitmap, new Rect(0, 0, 32, 32));
+                            bmp.Build(new Rect(x * 16, y * 16, 16, 16), autotile.AutotileBitmap, new Rect(0, 0, 32, 32), layer == 0 ? BlendMode.None : BlendMode.Blend);
                         }
                         else
                         {
@@ -336,7 +337,8 @@ public static class Utilities
                             for (int i = 0; i < 4; i++)
                             {
                                 bmp.Build(new Rect(x * 16 + 8 * (i % 2), y * 16 + 8 * (int)Math.Floor(i / 2d), 8, 8), autotile.AutotileBitmap,
-                                    new Rect(16 * (Tiles[i] % 6), 16 * (int)Math.Floor(Tiles[i] / 6d), 16, 16));
+                                    new Rect(16 * (Tiles[i] % 6), 16 * (int)Math.Floor(Tiles[i] / 6d), 16, 16),
+                                    layer == 0 ? BlendMode.None : BlendMode.Blend);
                             }
                         }
                     }

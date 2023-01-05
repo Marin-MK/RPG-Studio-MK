@@ -1,11 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace RPGStudioMK.Widgets;
 
@@ -581,9 +575,9 @@ public class OptimizedTreeView : Widget
         if (Root.Children.Count == 0) return;
         (int RootNodeCount, int RootSepHeight) = Root.GetChildrenHeight(false);
         int MaxWidth = CalculateMaxWidth(Root) + ExtraXScrollArea;
-        BGSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight, Graphics.MaxTextureSize.Width, 1024);
+        BGSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight);
         BGSprite.Bitmap.Unlock();
-        TXTSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight, Graphics.MaxTextureSize.Width, 1024);
+        TXTSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight);
         TXTSprite.Bitmap.Unlock();
         TXTSprite.Bitmap.Font = this.Font;
         UpdateSize(false); // No need to recalculate width as we just calculated it to find the bitmap width
@@ -630,7 +624,7 @@ public class OptimizedTreeView : Widget
             if (RNode.Children.Count > 0)
             {
                 int sx = RNode.Expanded ? 11 : 0;
-                BGSprite.Bitmap.Build(new Rect(x + 14, y + 6, 11, 11), TreeIconsBitmap, new Rect(sx, 0, 11, 11));
+                BGSprite.Bitmap.Build(new Rect(x + 14, y + 6, 11, 11), TreeIconsBitmap, new Rect(sx, 0, 11, 11), BlendMode.None);
                 if (RNode.Expanded) BGSprite.Bitmap.DrawLine(x + 19, y + 17, x + 19, y + LineHeight - 1, new Color(64, 104, 146));
             }
             bool sel = SelectedNodes.Contains(RNode);
@@ -770,7 +764,8 @@ public class OptimizedTreeView : Widget
             ScrollContainer.HScrollBar.SetPadding(HScrollBarPaddingAlone);
             ScrollContainer.SetWidth(Size.Width - (HResizeToFill ? 0 : 12));
         }
-        int w = Recalculate ? CalculateMaxWidth(Root) + ExtraXScrollArea : BGSprite.Bitmap.Width;
+        int w = Recalculate ? CalculateMaxWidth(Root) : BGSprite.Bitmap.Width;
+        w += ExtraXScrollArea;
         if (w < ScrollContainer.Size.Width) w = ScrollContainer.Size.Width;
         SpriteContainer.SetSize(w, BGSprite.Bitmap.Height + ExtraYScrollArea);
         if (OldWidth != SpriteContainer.Size.Width)
@@ -916,6 +911,19 @@ public class OptimizedTreeView : Widget
                 SpriteContainer.Sprites["drag"].Bitmap.SetPixel(1, 5, c);
                 SpriteContainer.Sprites["drag"].Bitmap.SetPixel(3, 5, c);
                 SpriteContainer.Sprites["drag"].Bitmap.Lock();
+                // Check if the hover-over icon is off-screen, and adjust our horizontal scroll if it is.
+                int visx = SpriteContainer.LeftCutOff;
+                int visw = ScrollContainer.Size.Width;
+                if (SpriteContainer.Sprites["drag"].X < visx)
+                {
+                    ScrollContainer.ScrolledX = SpriteContainer.Sprites["drag"].X - 4;
+                    ScrollContainer.UpdateAutoScroll();
+                }
+                else if (SpriteContainer.Sprites["drag"].X > visx + visw - 11)
+                {
+                    ScrollContainer.ScrolledX += SpriteContainer.Sprites["drag"].X - (visx + visw - 11);
+                    ScrollContainer.UpdateAutoScroll();
+                }
             }
         }
     }

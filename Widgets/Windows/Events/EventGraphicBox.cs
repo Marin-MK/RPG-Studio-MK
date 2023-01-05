@@ -50,7 +50,7 @@ public class EventGraphicBox : Widget
                 int sy = sh * (Graphic.Direction / 2 - 1);
                 Bitmap SmallBitmap = new Bitmap(sw, sh);
                 SmallBitmap.Unlock();
-                SmallBitmap.Build(0, 0, SourceBitmap, new Rect(sx, sy, sw, sh));
+                SmallBitmap.Build(0, 0, SourceBitmap, new Rect(sx, sy, sw, sh), BlendMode.None);
                 SmallBitmap.Lock();
                 SourceBitmap.Dispose();
                 SC.Sprites["gfx"].Bitmap = SmallBitmap;
@@ -82,7 +82,7 @@ public class EventGraphicBox : Widget
                 }
                 Bitmap SmallBitmap = new Bitmap(sw, sh);
                 SmallBitmap.Unlock();
-                SmallBitmap.Build(0, 0, SourceBitmap, new Rect(sx, sy, sw, sh));
+                SmallBitmap.Build(0, 0, SourceBitmap, new Rect(sx, sy, sw, sh), BlendMode.None);
                 SmallBitmap.Lock();
                 SC.Sprites["gfx"].Bitmap = SmallBitmap;
                 if (Graphic.CharacterHue != 0)
