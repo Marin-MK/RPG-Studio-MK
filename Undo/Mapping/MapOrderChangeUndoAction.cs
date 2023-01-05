@@ -34,7 +34,8 @@ public class MapOrderChangeUndoAction : BaseUndoAction
             SetMode(EditorMode.Mapping);
             return false;
         }
-        TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.mapview;
+        // TODO
+        /*TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.MapTree;
         int SelectedMapID = (int) mapview.SelectedNode.Object;
         TriggerLogical(IsRedo);
         TreeNode SelectedNode = null;
@@ -57,7 +58,7 @@ public class MapOrderChangeUndoAction : BaseUndoAction
         }
         if (SelectedNode == null) throw new Exception("Could not find selected node.");
         Editor.MainWindow.MapWidget.SetHint($"{(IsRedo ? "Redid" : "Undid")} map list order changes");
-        mapview.SetSelectedNode(SelectedNode);
+        mapview.SetSelectedNode(SelectedNode);*/
         return true;
     }
 

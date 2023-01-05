@@ -308,7 +308,8 @@ public partial class MapViewer : Widget
             CreateMapButton.SetText("Create Map");
             CreateMapButton.OnClicked += _ =>
             {
-                Editor.MainWindow.MapWidget.MapSelectPanel.NewMap(new BaseEventArgs());
+                // TODO
+                //Editor.MainWindow.MapWidget.MapSelectPanel.NewMap(new BaseEventArgs());
             };
             PositionMap();
         }

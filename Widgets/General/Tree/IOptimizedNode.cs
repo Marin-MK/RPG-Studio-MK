@@ -36,4 +36,10 @@ public interface IOptimizedNode
     public void SetParent(OptimizedNode Parent);
     public void SetDepth(int Depth);
     public void Delete(bool DeleteChildren);
+
+    /// <summary>
+    /// Returns a list of this node's ancestors, in order of ascending depth.
+    /// </summary>
+    /// <returns>A list of nodes.</returns>
+    public List<OptimizedNode> GetAncestors();
 }

@@ -51,7 +51,8 @@ public class MapChangeUndoAction : BaseUndoAction
             return false;
         }
         Dictionary<int, (int Order, int Parent)> OrderParentList = null;
-        TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.mapview;
+        // TODO
+        /*TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.MapTree;
         int SelectedMapID = (int) mapview.SelectedNode.Object;
         int MinOrder = Maps.Min(m => m.Order);
         if (Creation)
@@ -136,14 +137,15 @@ public class MapChangeUndoAction : BaseUndoAction
             }
         }
         if (SelectedNode == null) SelectedNode = mapview.Nodes[0];
-        mapview.SetSelectedNode(SelectedNode);
+        mapview.SetSelectedNode(SelectedNode);*/
         return true;
     }
 
     public override void TriggerLogical(bool IsRedo)
     {
         Dictionary<int, (int Order, int Parent)> OrderParentList = null;
-        TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.mapview;
+        // TODO
+        /*TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.MapTree;
         int SelectedMapID = (int) mapview.SelectedNode.Object;
         int MinOrder = Maps.Min(m => m.Order);
         if (Creation)
@@ -184,6 +186,6 @@ public class MapChangeUndoAction : BaseUndoAction
         {
             Data.Maps[kvp.Key].Order = kvp.Value.Order;
             Data.Maps[kvp.Key].ParentID = kvp.Value.Parent;
-        }
+        }*/
     }
 }

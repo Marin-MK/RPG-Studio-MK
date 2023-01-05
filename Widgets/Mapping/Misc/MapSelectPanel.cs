@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using RPGStudioMK.Game;
 using System.Diagnostics;
 using RPGStudioMK.Undo;
+using System.Linq;
 
 namespace RPGStudioMK.Widgets;
 
 public class MapSelectPanel : Widget
 {
-    public Container allmapcontainer;
-    public TreeView mapview;
+    public OptimizedTreeView MapTree;
+    public Map? SelectedMap => MapTree.SelectedNode is OptimizedNode ? Data.Maps[(int) ((OptimizedNode) MapTree.SelectedNode).Object] : null;
+    public Map? HoveredMap => MapTree.HoveringNode is OptimizedNode ? Data.Maps[(int) ((OptimizedNode) MapTree.HoveringNode).Object] : null;
 
     Stopwatch Stopwatch = new Stopwatch();
 
@@ -30,116 +32,121 @@ public class MapSelectPanel : Widget
 
         Sprites["block"] = new Sprite(this.Viewport, new SolidBitmap(11, 11, new Color(64, 104, 146)));
 
-        allmapcontainer = new Container(this);
-        allmapcontainer.SetDocked(true);
-        allmapcontainer.SetPadding(0, 35, 11, 11);
-        allmapcontainer.VAutoScroll = true;
-        allmapcontainer.HAutoScroll = true;
-
-        VScrollBar vs = new VScrollBar(this);
-        vs.SetVDocked(true);
-        vs.SetRightDocked(true);
-        vs.SetPadding(0, 33, -1, 13);
-        allmapcontainer.SetVScrollBar(vs);
-
-        HScrollBar hs = new HScrollBar(this);
-        hs.SetHDocked(true);
-        hs.SetBottomDocked(true);
-        hs.SetPadding(1, 0, 13, -1);
-        allmapcontainer.SetHScrollBar(hs);
-
-        mapview = new TreeView(allmapcontainer);
-        mapview.SetWidth(212);
-        mapview.OnSelectedNodeChanged += delegate (MouseEventArgs e)
+        MapTree = new OptimizedTreeView(this);
+        MapTree.SetDocked(true);
+        MapTree.SetPadding(0, 35, 0, 0);
+        MapTree.SetHResizeToFill(false);
+        MapTree.SetExtraXScrollArea(4);
+        MapTree.SetExtraYScrollArea(32);
+        MapTree.OnSelectionChanged += e =>
         {
-            if (mapview.SelectedNode == null) Editor.MainWindow.MapWidget.SetMap(null);
+            if (MapTree.SelectedNode == null) Editor.MainWindow.MapWidget.SetMap(null);
             else
             {
                 Stopwatch.Start();
-                Editor.MainWindow.MapWidget.SetMap(Data.Maps[(int) mapview.SelectedNode.Object]);
+                Editor.MainWindow.MapWidget.SetMap(this.SelectedMap);
                 Stopwatch.Stop();
-                Editor.MainWindow.StatusBar.QueueMessage($"Loaded Map #{mapview.SelectedNode.Object} ({Stopwatch.ElapsedMilliseconds}ms)", false, 1000);
+                Editor.MainWindow.StatusBar.QueueMessage($"Loaded Map #{this.SelectedMap.ID} ({Stopwatch.ElapsedMilliseconds}ms)", false, 1000);
                 Stopwatch.Reset();
             }
         };
-        mapview.OnDragAndDropped += delegate (BaseEventArgs e) { DragAndDropped(); };
-        mapview.OnNodeCollapseChanged += delegate (TreeNode Node, TreeNode OldSelectedNode)
+        MapTree.OnDragAndDropped += e => throw new NotImplementedException();
+        MapTree.OnNodeExpansionChanged += delegate (GenericObjectEventArgs<OptimizedNode> e)
         {
+            OptimizedNode Node = e.Object;
             int mapid = (int) Node.Object;
-            int selmapid = (int) OldSelectedNode.Object;
-            Data.Maps[mapid].Expanded = !Node.Collapsed;
-            Undo.NodeCollapseChangeUndoAction.Create(mapid, !Node.Collapsed, Node.Collapsed, selmapid);
+            Data.Maps[mapid].Expanded = Node.Expanded;
+            Undo.NodeCollapseChangeUndoAction.Create(mapid, Node.Expanded, !Node.Expanded);
         };
-        mapview.TrailingBlank = 32;
-        allmapcontainer.SetContextMenuList(new List<IMenuItem>()
+        MapTree.OnNodeGlobalIndexChanged += delegate (GenericObjectEventArgs<OptimizedNode> e)
         {
-            new MenuItem("New Map")
+            Data.Maps[(int) e.Object.Object].Order = e.Object.GlobalIndex;
+        };
+        MapTree.SetContextMenuList(new List<IMenuItem>()
+        {
+            new MenuItem("New")
             {
-                OnClicked = NewMap
+                OnClicked = e => NewMap()
             },
-            new MenuItem("Edit Map")
+            new MenuItem("Edit")
             {
-                OnClicked = EditMap,
-                IsClickable = e => e.Value = mapview.HoveringNode != null
+                OnClicked = e => EditMap(),
+                IsClickable = e => e.Value = HoveredMap != null
             },
             new MenuItem("Shift")
             {
-                OnClicked = ShiftMap,
-                IsClickable = e => e.Value = mapview.HoveringNode != null
+                OnClicked = e => ShiftMap(),
+                IsClickable = e => e.Value = HoveredMap != null
             },
             new MenuSeparator(),
-            new MenuItem("Cut Map")
+            new MenuItem("Cut")
             {
-                OnClicked = CutMap,
-                IsClickable = delegate (BoolEventArgs e) { e.Value = mapview.HoveringNode != null && mapview.Nodes.Count > 1; }
+                OnClicked = e => CutMap(false),
+                IsClickable = e => e.Value = HoveredMap != null && !MapTree.Empty
             },
-            new MenuItem("Copy Map")
+            new MenuItem("Cut with children")
             {
-                OnClicked = CopyMap,
-                IsClickable = delegate (BoolEventArgs e) { e.Value = mapview.HoveringNode != null; }
+                OnClicked = e => CutMap(true),
+                IsClickable = e => e.Value = HoveredMap != null && !MapTree.Empty
             },
-            new MenuItem("Paste Map")
+            new MenuItem("Copy")
             {
-                OnClicked = PasteMap,
-                IsClickable = delegate (BoolEventArgs e) { e.Value = Utilities.IsClipboardValidBinary(BinaryData.MAP); }
+                OnClicked = e => CopyMap(false),
+                IsClickable = e => e.Value = HoveredMap != null
+            },
+            new MenuItem("Copy with children")
+            {
+                OnClicked = e => CopyMap(true),
+                IsClickable = e => e.Value = HoveredMap != null
+            },
+            new MenuItem("Paste")
+            {
+                OnClicked = _ => PasteMap(),
+                IsClickable = e => e.Value = Utilities.IsClipboardValidBinary(BinaryData.MAPS)
+            },
+            new MenuSeparator(),
+            new MenuItem("Expand All")
+            {
+                IsClickable = e => e.Value = HoveredMap != null && MapTree.HoveringNode is OptimizedNode && ((OptimizedNode) MapTree.HoveringNode).HasChildren
+            },
+            new MenuItem("Collapse All")
+            {
+                IsClickable = e => e.Value = HoveredMap != null && MapTree.HoveringNode is OptimizedNode && ((OptimizedNode) MapTree.HoveringNode).HasChildren
             },
             new MenuSeparator(),
             new MenuItem("Delete")
             {
-                OnClicked = DeleteMap,
+                OnClicked = e => DeleteMap(),
                 Shortcut = "Del",
-                IsClickable = delegate (BoolEventArgs e)
-                {
-                    e.Value = mapview.HoveringNode != null && mapview.Nodes.Count > 0;
-                }
+                IsClickable = e => e.Value = HoveredMap != null && !MapTree.Empty
             }
         });
         OnWidgetSelected += WidgetSelected;
         SetBackgroundColor(10, 23, 37);
     }
 
-    void SortNodeList(List<TreeNode> Nodes)
+    void SortNodeList(List<OptimizedNode> Nodes)
     {
-        Nodes.Sort((TreeNode n1, TreeNode n2) =>
+        Nodes.Sort((OptimizedNode n1, OptimizedNode n2) =>
         {
-            return Data.Maps[(int)n1.Object].Order.CompareTo(Data.Maps[(int)n2.Object].Order);
+            return n1.GlobalIndex.CompareTo(n2.GlobalIndex);
         });
     }
 
-    public void DragAndDropped()
+    /*public void DragAndDropped()
     {
-        List<TreeNode> OldNodes = mapview.Nodes.ConvertAll(n => (TreeNode) n.Clone());
-        TreeNode DraggingNode = mapview.DraggingNode;
-        TreeNode HoveringNode = mapview.HoveringNode;
-        bool Top = mapview.HoverTop;
-        bool Over = mapview.HoverOver;
-        bool Bottom = mapview.HoverBottom;
+        List<TreeNode> OldNodes = MapTree.Nodes.ConvertAll(n => (TreeNode) n.Clone());
+        TreeNode DraggingNode = MapTree.DraggingNode;
+        TreeNode HoveringNode = MapTree.HoveringNode;
+        bool Top = MapTree.HoverTop;
+        bool Over = MapTree.HoverOver;
+        bool Bottom = MapTree.HoverBottom;
         // If the hovering node is a child of our dragging node,
         // we are trying to move the map inside a child map, which
         // obviously is not possible.
         if (DraggingNode.FindNode(n => n == HoveringNode) != null) return;
         // Remove the node
-        if (mapview.Nodes.Contains(DraggingNode)) mapview.Nodes.Remove(DraggingNode);
+        if (MapTree.Nodes.Contains(DraggingNode)) MapTree.Nodes.Remove(DraggingNode);
         else
         {
             TreeNode Parent = GetParent(DraggingNode);
@@ -150,10 +157,10 @@ public class MapSelectPanel : Widget
         if (Top)
         {
             // Root-level
-            if (mapview.Nodes.Contains(HoveringNode))
+            if (MapTree.Nodes.Contains(HoveringNode))
             {
-                int index = mapview.Nodes.IndexOf(HoveringNode);
-                mapview.Nodes.Insert(index, DraggingNode);
+                int index = MapTree.Nodes.IndexOf(HoveringNode);
+                MapTree.Nodes.Insert(index, DraggingNode);
             }
             else
             {
@@ -185,7 +192,7 @@ public class MapSelectPanel : Widget
                     if (oldnode == null) throw new Exception("Could not find old node.");
                     oldnode.Collapsed = false;
                     Data.Maps[(int) Parent.Object].Expanded = true;
-                    Undo.NodeCollapseChangeUndoAction.Create((int) Parent.Object, true, false, (int) mapview.SelectedNode.Object);
+                    Undo.NodeCollapseChangeUndoAction.Create((int) Parent.Object, true, false, (int) MapTree.SelectedNode.Object);
                 }
             }
         }
@@ -216,7 +223,7 @@ public class MapSelectPanel : Widget
                 if (oldnode == null) throw new Exception("Could not find old node.");
                 oldnode.Collapsed = false;
                 Data.Maps[(int) HoveringNode.Object].Expanded = true;
-                Undo.NodeCollapseChangeUndoAction.Create((int) HoveringNode.Object, true, false, (int) mapview.SelectedNode.Object);
+                Undo.NodeCollapseChangeUndoAction.Create((int) HoveringNode.Object, true, false, (int) MapTree.SelectedNode.Object);
             }
         }
         else if (Bottom)
@@ -227,11 +234,11 @@ public class MapSelectPanel : Widget
                 HoveringNode.Nodes.Insert(0, DraggingNode);
             }
             // Root-level node to add below
-            else if (mapview.Nodes.Contains(HoveringNode))
+            else if (MapTree.Nodes.Contains(HoveringNode))
             {
                 // Add below node in parent list
-                int index = mapview.Nodes.IndexOf(HoveringNode);
-                mapview.Nodes.Insert(index + 1, DraggingNode);
+                int index = MapTree.Nodes.IndexOf(HoveringNode);
+                MapTree.Nodes.Insert(index + 1, DraggingNode);
             }
             else // Deeper node to add below
             {
@@ -263,82 +270,53 @@ public class MapSelectPanel : Widget
                     if (oldnode == null) throw new Exception("Could not find old node.");
                     oldnode.Collapsed = false;
                     Data.Maps[(int) Parent.Object].Expanded = true;
-                    Undo.NodeCollapseChangeUndoAction.Create((int) Parent.Object, true, false, (int) mapview.SelectedNode.Object);
+                    Undo.NodeCollapseChangeUndoAction.Create((int) Parent.Object, true, false, (int) MapTree.SelectedNode.Object);
                 }
             }
         }
         else return;
-        if (!OldNodes.Equals(mapview.Nodes))
+        if (!OldNodes.Equals(MapTree.Nodes))
         {
             // Now update all map ParentID/Order fields to reflect the current Node structure
-            Editor.UpdateOrder(mapview.Nodes);
-            mapview.Redraw();
-            Undo.MapOrderChangeUndoAction.Create(OldNodes, mapview.Nodes.ConvertAll(n => (TreeNode)n.Clone()));
+            Editor.UpdateOrder(MapTree.Nodes);
+            MapTree.Redraw();
+            Undo.MapOrderChangeUndoAction.Create(OldNodes, MapTree.Nodes.ConvertAll(n => (TreeNode)n.Clone()));
         }
-    }
+    }*/
 
-    public TreeNode GetParent(TreeNode NodeToFindParentOf)
+    public List<OptimizedNode> PopulateList(int PopulateChildrenOfID = 0)
     {
-        if (mapview.Nodes.Contains(NodeToFindParentOf)) throw new Exception("Must handle root level node manually");
-        foreach (TreeNode Node in mapview.Nodes)
-        {
-            TreeNode result = Node.FindParentNode(n => n == NodeToFindParentOf);
-            if (result != null) return result;
-        }
-        return null;
-    }
-
-    public List<TreeNode> PopulateList(int PopulateChildrenOfID = 0)
-    {
-        List<TreeNode> nodes = new List<TreeNode>();
+        List<OptimizedNode> nodes = new List<OptimizedNode>();
         foreach (Map map in Data.Maps.Values)
         {
             if (map.ParentID == PopulateChildrenOfID)
             {
-                TreeNode node = new TreeNode() { Name = map.ToString(), Object = map.ID };
-                List<TreeNode> Nodes = PopulateList(map.ID);
-                node.Nodes = Nodes;
-                node.Collapsed = !map.Expanded;
-                nodes.Add(node);
+                OptimizedNode Node = new OptimizedNode(map.ToString(), map.ID);
+                List<OptimizedNode> Children = PopulateList(map.ID);
+                Children.ForEach(n => Node.AddChild(n));
+                Node.SetExpanded(map.Expanded);
+                nodes.Add(Node);
             }
         }
         SortNodeList(nodes);
-        if (PopulateChildrenOfID == 0) mapview.SetNodes(nodes);
+        if (PopulateChildrenOfID == 0) MapTree.SetNodes(nodes);
         return nodes;
     }
 
     public void SetMap(Map Map)
     {
-        if (Map == null) mapview.SetSelectedNode(null);
+        if (Map == null) MapTree.SetSelectedNode(null, false);
         // No need to update the selected node if we already have the desired map active
-        if ((int) mapview.SelectedNode.Object == Map.ID) return;
+        if (SelectedMap != null && SelectedMap == Map) return;
         int MapID = Map?.ID ?? -1;
-        TreeNode node = null;
-        for (int i = 0; i < mapview.Nodes.Count; i++)
-        {
-            if ((int)mapview.Nodes[i].Object == MapID)
-            {
-                node = mapview.Nodes[i];
-                break;
-            }
-            else
-            {
-                TreeNode n = mapview.Nodes[i].FindNode(n => (int)n.Object == MapID);
-                if (n != null)
-                {
-                    node = n;
-                    break;
-                }
-            }
-        }
-        mapview.SetSelectedNode(node, false);
+        OptimizedNode Node = MapTree.Root.GetNode(n => (int) n.Object == MapID, true, true);
+        MapTree.SetSelectedNode(Node, false);
     }
 
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
         if (Size.Width == 50 && Size.Height == 50) return;
-        mapview.MinimumSize.Width = Size.Width - 11;
         Sprites["bar1"].X = Size.Width - 11;
         (Sprites["bar1"].Bitmap as SolidBitmap).SetSize(1, Size.Height - 41);
         Sprites["bar2"].Y = Size.Height - 11;
@@ -347,7 +325,7 @@ public class MapSelectPanel : Widget
         Sprites["block"].Y = Size.Height - 11;
     }
 
-    public void NewMap(BaseEventArgs e)
+    public void NewMap()
     {
         Map Map = new Map("Untitled Map", Editor.GetFreeMapID());
         Map.TilesetIDs.Add(1);
@@ -369,193 +347,157 @@ public class MapSelectPanel : Widget
                     Layer Layer = new Layer($"Layer {z + 1}", mpw.Map.Width, mpw.Map.Height);
                     mpw.Map.Layers.Add(Layer);
                 }
-                Dictionary<int, (int Order, int Parent)> OldOrderParentList = GetTreeState();
-                Editor.AddMap(mpw.Map, mapview.HoveringNode == null ? 0 : (int) mapview.HoveringNode.Object);
-                Dictionary<int, (int Order, int Parent)> NewOrderParentList = GetTreeState();
-                Undo.MapChangeUndoAction.Create(new List<Map>() { mpw.Map }, OldOrderParentList, NewOrderParentList, true);
+                InsertMap((OptimizedNode) MapTree.HoveringNode, mpw.Map);
             }
         };
     }
 
-    private void EditMap(BaseEventArgs e)
+    private OptimizedNode InsertMap(OptimizedNode Parent, Map Map)
     {
-        Map map = Data.Maps[(int)mapview.HoveringNode.Object];
-        bool activemap = Editor.MainWindow.MapWidget.Map.ID == map.ID;
-        MapPropertiesWindow mpw = new MapPropertiesWindow(map);
+        OptimizedNode NewNode = new OptimizedNode(Map.Name, Map.ID);
+        MapTree.InsertNode(Parent, null, NewNode);
+        Map.Order = NewNode.GlobalIndex;
+        Map.ParentID = (int) Parent.Object;
+        Data.Maps.Add(Map.ID, Map);
+        NewNode.OnGlobalIndexChanged += _ => MapTree.OnNodeExpansionChanged.Invoke(new GenericObjectEventArgs<OptimizedNode>(NewNode));
+        MapTree.SetSelectedNode(NewNode, false);
+        // TODO: undo/redo
+        return NewNode;
+    }
+
+    private void EditMap()
+    {
+        if (HoveredMap == null) return;
+        Map Map = HoveredMap;
+        bool activemap = Editor.MainWindow.MapWidget.Map.ID == Map.ID;
+        MapPropertiesWindow mpw = new MapPropertiesWindow(Map);
         mpw.OnClosed += delegate (BaseEventArgs ev)
         {
             if (mpw.UpdateMapViewer)
             {
-                Data.Maps[map.ID] = mpw.Map;
-                if (mapview.HoveringNode.Name != mpw.Map.Name)
+                Data.Maps[Map.ID] = mpw.Map;
+                if (((OptimizedNode) MapTree.HoveringNode).Text != mpw.Map.Name)
                 {
-                    mapview.HoveringNode.Name = mpw.Map.Name;
-                    mapview.Redraw();
+                    ((OptimizedNode) MapTree.HoveringNode).SetText(mpw.Map.Name);
+                    MapTree.RedrawNodeText((OptimizedNode) MapTree.HoveringNode);
                 }
                 Editor.UnsavedChanges = mpw.UnsavedChanges;
-                if (Editor.MainWindow.MapWidget != null && activemap) Editor.MainWindow.MapWidget.SetMap(mpw.Map);
+                if (activemap) Editor.MainWindow.MapWidget.SetMap(mpw.Map); // Redraw the map if it's currently active
             }
         };
     }
-
-    private void ShiftMap(BaseEventArgs e)
+    
+    private void ShiftMap()
     {
-        Map map = Data.Maps[(int) mapview.HoveringNode.Object];
-        bool activemap = Editor.MainWindow.MapWidget.Map.ID == map.ID;
-        if (!activemap) Editor.MainWindow.MapWidget.SetMap(map);
-        ShiftMapWindow win = new ShiftMapWindow(map);
+        if (HoveredMap == null) return;
+        Map Map = HoveredMap;
+        bool activemap = Editor.MainWindow.MapWidget.Map.ID == Map.ID;
+        if (!activemap) Editor.MainWindow.MapWidget.SetMap(Map);
+        ShiftMapWindow win = new ShiftMapWindow(Map);
         win.OnClosed += _ =>
         {
             if (!win.Apply) return;
-            List<Layer> OldLayers = map.Layers.ConvertAll(l => (Layer) l.Clone());
-            map.Shift(win.Direction, win.Value, win.ShiftEvents);
-            Editor.MainWindow.MapWidget.SetMap(map);
-            Size s = new Size(map.Width, map.Height);
-            Undo.MapSizeChangeUndoAction.Create(map.ID, OldLayers, s, map.Layers.ConvertAll(l => (Layer) l.Clone()), s);
+            // TODO: Change all ConvertAll uses to Select for consistency
+            List<Layer> OldLayers = Map.Layers.ConvertAll(l => (Layer) l.Clone());
+            Map.Shift(win.Direction, win.Value, win.ShiftEvents);
+            Editor.MainWindow.MapWidget.SetMap(Map); // Redraw the map
+            Size s = new Size(Map.Width, Map.Height);
+            Undo.MapSizeChangeUndoAction.Create(Map.ID, OldLayers, s, Map.Layers.ConvertAll(l => (Layer) l.Clone()), s);
         };
     }
-
-    private void CutMap(BaseEventArgs e)
+    
+    private void CutMap(bool WithChildren)
     {
-        CopyMap(e);
-        DeleteMapAndKeepChildren();
+        Map map = HoveredMap;
+        if (map == null) return;
+        CopyMap(WithChildren);
+        DeleteNode(MapTree.HoveringNode, WithChildren);
     }
-
-    private void CopyMap(BaseEventArgs e)
+    
+    private void CopyMap(bool WithChildren)
     {
-        Map map = Data.Maps[(int)mapview.HoveringNode.Object];
-        Utilities.SetClipboard(map, BinaryData.MAP);
-    }
-
-    private void PasteMap(BaseEventArgs e)
-    {
-        if (!Utilities.IsClipboardValidBinary(BinaryData.MAP)) return;
-        Map map = Utilities.GetClipboard<Map>();
-        map.ID = Editor.GetFreeMapID();
-        Dictionary<int, (int Order, int Parent)> OldOrderParentList = GetTreeState();
-        Editor.AddMap(map, mapview.HoveringNode == null ? 0 : (int)mapview.HoveringNode.Object);
-        Dictionary<int, (int Order, int Parent)> NewOrderParentList = GetTreeState();
-        Undo.MapChangeUndoAction.Create(new List<Map>() { map }, OldOrderParentList, NewOrderParentList, true);
-    }
-
-    /// <summary>
-    /// Deletes the hovered map and moves the children to the parent.
-    /// </summary>
-    void DeleteMapAndKeepChildren()
-    {
-        Dictionary<int, (int Order, int Parent)> OldOrderParentList = GetTreeState();
-        int MapID = (int)mapview.HoveringNode.Object;
-        Map Map = Data.Maps[MapID];
-        Data.Maps.Remove(MapID);
-        Editor.DecrementMapOrderFrom(Map.Order);
-        for (int i = 0; i < mapview.Nodes.Count; i++)
+        if (MapTree.HoveringNode is not OptimizedNode) return;
+        List<Map> Maps = new List<Map>() { HoveredMap };
+        if (WithChildren) ((OptimizedNode) MapTree.HoveringNode).GetAllChildren(true).ForEach(n =>
         {
-            if ((int)mapview.Nodes[i].Object == MapID)
-            {
-                if (mapview.HoveringNode.Nodes.Count > 0)
-                {
-                    mapview.HoveringNode.Nodes.ForEach(n => Data.Maps[(int)n.Object].ParentID = 0);
-                    mapview.Nodes.AddRange(mapview.HoveringNode.Nodes);
-                }
-                mapview.Nodes.Remove(mapview.HoveringNode);
-                SortNodeList(mapview.Nodes);
-                if (mapview.Nodes.Count > 0) mapview.SetSelectedNode(mapview.Nodes[i > 0 ? i - 1 : 0]);
-                else mapview.SetSelectedNode(null);
-                break;
-            }
-            else
-            {
-                TreeNode Node = mapview.Nodes[i].FindParentNode(n => n.Object == mapview.HoveringNode.Object);
-                if (Node == null) continue;
-                if (mapview.HoveringNode.Nodes.Count > 0)
-                {
-                    mapview.HoveringNode.Nodes.ForEach(n => Data.Maps[(int)n.Object].ParentID = 0);
-                    Node.Nodes.AddRange(mapview.HoveringNode.Nodes);
-                }
-                Node.Nodes.Remove(mapview.HoveringNode);
-                SortNodeList(Node.Nodes);
-                mapview.SetSelectedNode(Node);
-                break;
-            }
-        }
-        mapview.Redraw();
-        Dictionary<int, (int Order, int Parent)> NewOrderParentList = GetTreeState();
-        Undo.MapChangeUndoAction.Create(new List<Map>() { Map }, OldOrderParentList, NewOrderParentList, false);
+            if (n is not OptimizedNode) return;
+            Map m = Data.Maps[(int) ((OptimizedNode) n).Object];
+            Maps.Add(m);
+        });
+        Utilities.SetClipboard(Maps, BinaryData.MAPS);
     }
-
-    Dictionary<int, (int Order, int Parent)> GetTreeState()
+    
+    private void PasteMap()
     {
-        Dictionary<int, (int Order, int Parent)> OrderParentList = new Dictionary<int, (int Order, int Parent)>();
-        foreach (KeyValuePair<int, Map> kvp in Data.Maps)
+        if (!Utilities.IsClipboardValidBinary(BinaryData.MAPS)) return;
+        PrintIndices();
+        List<Map> maps = Utilities.GetClipboard<List<Map>>();
+        Dictionary<int, OptimizedNode> MapHash = new Dictionary<int, OptimizedNode>();
+        // The list is maps is ordered from root to child, meaning if we encounter a node with a parent, that parent must already have been encountered or the data is invalid.
+        for (int i = 0; i < maps.Count; i++)
         {
-            OrderParentList.Add(kvp.Key, (kvp.Value.Order, kvp.Value.ParentID));
+            OptimizedNode ParentNode = null;
+            if (!MapHash.ContainsKey(maps[i].ParentID)) ParentNode = (OptimizedNode) MapTree.HoveringNode;
+            else ParentNode = MapHash[maps[i].ParentID];
+            int id = maps[i].ID;
+            maps[i].ID = Editor.GetFreeMapID();
+            OptimizedNode NewNode = InsertMap(ParentNode, maps[i]);
+            MapHash.Add(id, NewNode);
         }
-        return OrderParentList;
+        PrintIndices();
     }
 
-    /// <summary>
-    /// Deletes the hovered map and all its children.
-    /// </summary>
-    void DeleteMapAndDeleteChildren()
+    void PrintIndices()
     {
-        Dictionary<int, (int Order, int Parent)> OldOrderParentList = GetTreeState();
-        List<Map> Maps = DeleteMapRecursively(mapview.HoveringNode);
-        for (int i = 0; i < mapview.Nodes.Count; i++)
+        Console.WriteLine(">>>>> START");
+        MapTree.Root.GetAllChildren(true).ForEach(c =>
         {
-            if (mapview.Nodes[i] == mapview.HoveringNode)
-            {
-                mapview.Nodes.RemoveAt(i);
-                if (mapview.Nodes.Count == 0) mapview.SetSelectedNode(null);
-                else mapview.SetSelectedNode(i >= mapview.Nodes.Count ? mapview.Nodes[i - 1] : mapview.Nodes[i]);
-                break;
-            }
-            else if (mapview.Nodes[i].ContainsNode(mapview.HoveringNode))
-            {
-                mapview.SetSelectedNode(mapview.Nodes[i].RemoveNode(mapview.HoveringNode));
-                break;
-            }
-        }
-        Editor.OptimizeOrder();
-        Dictionary<int, (int Order, int Parent)> NewOrderParentList = GetTreeState();
-        Undo.MapChangeUndoAction.Create(Maps, OldOrderParentList, NewOrderParentList, false);
+            if (c is not OptimizedNode) return;
+            OptimizedNode Node = (OptimizedNode)c;
+            string depth = "";
+            for (int i = 0; i < Node.Depth; i++) depth += " ";
+            depth += "- ";
+            Console.WriteLine($"{depth}{Node.GlobalIndex}: {Node.Text} ({Node.Parent.GlobalIndex})");
+        });
+    }
+    
+    private void DeleteNode(IOptimizedNode Node, bool DeleteChildren)
+    {
+        List<IOptimizedNode> Children = new List<IOptimizedNode>();
+        if (Node is OptimizedNode) Children = new List<IOptimizedNode>(((OptimizedNode) Node).Children);
+        List<IOptimizedNode> DeletedNodes = MapTree.DeleteNode(Node, DeleteChildren);
+        DeletedNodes.ForEach(n =>
+        {
+            if (n is not OptimizedNode) return;
+            OptimizedNode Node = (OptimizedNode) n;
+            Map DeletedMap = Data.Maps[(int) Node.Object];
+            Data.Maps.Remove(DeletedMap.ID);
+        });
+        // If we're not deleting our children we're flattening them.
+        // The node parent property updates automatically, but we have to manually update
+        // the ParentID property of the map that's associated with the node.
+        if (!DeleteChildren) Children.ForEach(c =>
+        {
+            if (c is not OptimizedNode) return;
+            OptimizedNode n = (OptimizedNode) c;
+            Data.Maps[(int) n.Object].ParentID = c.Parent.GlobalIndex;
+        });
+        // TODO: undo/redo
     }
 
-    private void DeleteMap(BaseEventArgs e)
+    private void DeleteMap()
     {
-        if (mapview.Nodes.Count <= 0) return;
-        string message = "Are you sure you want to delete this map?";
-        if (mapview.HoveringNode.Nodes.Count > 0) message += " All of its children will also be deleted.";
-        DeleteMapPopup confirm = new DeleteMapPopup(mapview.HoveringNode.Nodes.Count > 0, "Warning", message, ButtonType.YesNoCancel, IconType.Warning);
-        confirm.OnClosed += delegate (BaseEventArgs ev)
+        if (MapTree.Empty || HoveredMap == null) return;
+        bool AskDeleteChildren = MapTree.HoveringNode is OptimizedNode && ((OptimizedNode) MapTree.HoveringNode).HasChildren;
+        DeleteMapPopup confirm = new DeleteMapPopup(AskDeleteChildren, "Warning", "Are you sure you want to delete this map?", ButtonType.YesNoCancel, IconType.Warning);
+        confirm.OnClosed += _ =>
         {
             if (confirm.Result == 0) // Yes
             {
-                bool DeleteChildMaps = mapview.HoveringNode.Nodes.Count > 0 ? confirm.DeleteChildMaps.Checked : false;
                 Editor.UnsavedChanges = true;
-                if (DeleteChildMaps) // Delete children
-                {
-                    DeleteMapAndDeleteChildren();
-                }
-                else // Keep and move children
-                {
-                    DeleteMapAndKeepChildren();
-                }
-                mapview.Redraw();
+                Console.WriteLine(MapTree.Root);
+                DeleteNode(MapTree.HoveringNode, confirm.DeleteChildren);
             }
         };
-    }
-
-    private List<Map> DeleteMapRecursively(TreeNode node)
-    {
-        List<Map> DeletedMaps = new List<Map>();
-        for (int i = 0; i < node.Nodes.Count; i++)
-        {
-            DeletedMaps.AddRange(DeleteMapRecursively(node.Nodes[i]));
-        }
-        int MapID = (int)node.Object;
-        Map Map = Data.Maps[MapID];
-        Data.Maps.Remove(MapID);
-        DeletedMaps.Add(Map);
-        return DeletedMaps;
     }
 }

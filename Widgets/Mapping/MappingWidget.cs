@@ -84,6 +84,7 @@ public class MappingWidget : Widget
         Editor.ProjectSettings.LastMapID = Map.ID;
         Editor.ProjectSettings.LastLayer = 0;
         MapViewer.SetMap(Map);
+        MapSelectPanel.SetMap(Map);
     }
 
     public void SetMapAnimations(bool Animations)

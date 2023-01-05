@@ -276,6 +276,41 @@ public class OptimizedNode : IOptimizedNode
     }
 
     /// <summary>
+    /// Returns the node that passes the predicate if it exists, or null otherwise.
+    /// </summary>
+    /// <param name="Predicate">The condition for finding the node.</param>
+    /// <param name="IgnoreSelf">Whether to ignore itself and only check its children.</param>
+    /// <param name="IgnoreExpansion">Whether to ignore whether a node is expanded or not.</param>
+    /// <returns>The node if it exists, or null otherwise.</returns>
+    public OptimizedNode? GetNode(Func<OptimizedNode, bool> Predicate, bool IgnoreSelf = true, bool IgnoreExpansion = true)
+    {
+        if (!IgnoreSelf && Predicate(this)) return this;
+        if (IgnoreExpansion || Expanded)
+        {
+            foreach (IOptimizedNode Child in Children)
+            {
+                if (Child is not OptimizedNode) continue;
+                OptimizedNode? Node = ((OptimizedNode) Child).GetNode(Predicate, IgnoreExpansion);
+                if (Node != null) return Node;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Returns a list of this node's ancestors, in order of ascending depth.
+    /// </summary>
+    /// <returns>A list of nodes.</returns>
+    public List<OptimizedNode> GetAncestors()
+    {
+        if (this == Root) return new List<OptimizedNode>() { };
+        List<OptimizedNode> List = new List<OptimizedNode>();
+        List.AddRange(((IOptimizedNode) Parent).GetAncestors());
+        List.Add(Parent);
+        return List;
+    }
+
+    /// <summary>
     /// Returns whether the specified node is contained by any of this node's children.
     /// </summary>
     /// <param name="Node">The node to search for.</param>
@@ -500,6 +535,11 @@ public class OptimizedNode : IOptimizedNode
         {
             this.CanDragOver = CanDragOver;
         }
+    }
+
+    public void ClearChildren()
+    {
+        this.Children.Clear();
     }
 
     /// <summary>

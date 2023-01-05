@@ -106,7 +106,6 @@ public class TestSuite
     public static void RunAll(bool ThrowIfAnyErrors = true)
     {
         Stopwatch s = Stopwatch.StartNew();
-        bool RanAny = false;
         int Count = 0;
         List<AssertionException> Exceptions = new List<AssertionException>();
         foreach (Type type in Assembly.GetExecutingAssembly().GetTypes())
@@ -117,12 +116,13 @@ public class TestSuite
                 (int, List<AssertionException>) result = Run(type);
                 Count += result.Item1;
                 Exceptions.AddRange(result.Item2);
-                RanAny = true;
             }
         }
-        if (RanAny)
+        if (Count > 0)
         {
-            Console.WriteLine($"All tests have been executed, {Count - Exceptions.Count}/{Count} passed ({s.ElapsedMilliseconds}ms).");
+            float perc = (int) Math.Round((float) (Count - Exceptions.Count) / Count * 1000) / 10f;
+            if (Exceptions.Count > 0) Console.WriteLine();
+            Console.WriteLine($"Ran {Count} tests, {Count - Exceptions.Count}/{Count} ({perc}%) passed ({s.ElapsedMilliseconds}ms).");
             Console.WriteLine();
             if (ThrowIfAnyErrors && Exceptions.Count > 0)
             {
@@ -163,10 +163,10 @@ public class AssertEqualsException : AssertionException
 public class AssertEqualsListException<T> : AssertionException
 {
     public AssertEqualsListException(List<T> expected, List<T> actual)
-        : base($"Expected result to be:\n{ToStr(expected)}\n\nBut got:\n{ToStr(actual)}") { }
+        : base($"Expected result to be:\n{ToStr(expected)}\nBut got:\n{ToStr(actual)}") { }
 
     public AssertEqualsListException(List<T> expected, List<T> actual, int index, T ex, T ac)
-        : base($"Expected result to be:\n{ToStr(expected)}\n\nBut got:\n{ToStr(actual)}\n\nElement {index} was '{ex}' but was expected to be '{ac}'.") { }
+        : base($"Expected result to be:\n{ToStr(expected)}\nBut got:\n{ToStr(actual)}\n\nElement {index} was '{ex}' but was expected to be '{ac}'.") { }
 
     static string ToStr(List<T> list)
     {

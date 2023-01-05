@@ -105,4 +105,16 @@ public class OptimizedNodeSeparator : IOptimizedNode
     {
         Parent.Children.Remove(this);
     }
+
+    /// <summary>
+    /// Returns a list of this node's ancestors, in order of ascending depth.
+    /// </summary>
+    /// <returns>A list of nodes.</returns>
+    public List<OptimizedNode> GetAncestors()
+    {
+        List<OptimizedNode> List = new List<OptimizedNode>();
+        List.AddRange(Parent.GetAncestors());
+        List.Add(Parent);
+        return List;
+    }
 }

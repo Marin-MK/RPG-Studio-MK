@@ -1063,7 +1063,7 @@ pbConnectToEditor";
 public enum BinaryData
 {
     MAP_SELECTION,
-    MAP,
+    MAPS,
     TILESET,
     EVENT,
     EVENT_PAGE,

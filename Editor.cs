@@ -137,6 +137,7 @@ public static class Editor
         one.AddChild(seven);
         one.AddChild(thirteen);
         one.AddChild(new OptimizedNode("pqr"));
+        one.AddChild(new OptimizedNode("Some rather long text, so that we can properly test the horizontal scrolling capabilities of the system."));
 
         sixteen.AddChild(seventeen);
 
@@ -150,6 +151,8 @@ public static class Editor
         tree.SetDocked(true);
         tree.SetPadding(40);
         tree.SetBackgroundColor(10, 23, 37);
+        tree.SetExtraXScrollArea(40);
+        tree.SetExtraYScrollArea(40);
         tree.SetRootNode(root);
 
         win.CreateButton("OK", _ => win.Close());
@@ -464,46 +467,6 @@ public static class Editor
                     Orders[i] = (mapid, Data.Maps[mapid].Order);
                 }
             }
-        }
-    }
-
-    /// <summary>
-    /// Adds a Map to the map list.
-    /// </summary>
-    /// <param name="Map">The new Map object.</param>
-    /// <param name="ParentID">The ID of the parent map, or 0 if adding to bottom.</param>
-    public static void AddMap(Map Map, int ParentID = 0)
-    {
-        Map.ParentID = ParentID;
-        Data.Maps.Add(Map.ID, Map);
-        TreeNode node = new TreeNode() { Name = Map.ToString(), Object = Map.ID };
-        if (MainWindow.MapWidget != null)
-        {
-            TreeView mapview = MainWindow.MapWidget.MapSelectPanel.mapview;
-            if (mapview.HoveringNode != null)
-            {
-                if ((int)mapview.HoveringNode.Object != ParentID) throw new Exception("Adding map to wrong node.");
-                int maxorder = GetHighestMapOrder(mapview.HoveringNode);
-                if (Data.Maps.Values.Any(m => m.Order == maxorder + 1)) IncrementMapOrderFrom(maxorder + 1);
-                if (Data.Maps.Values.Any(m => m.Order == maxorder + 1)) throw new Exception("Error creating unique order");
-                Map.Order = maxorder + 1;
-                Map.ParentID = (int)mapview.HoveringNode.Object;
-                mapview.HoveringNode.Nodes.Add(node);
-                mapview.HoveringNode.Collapsed = false;
-                Data.Maps[(int)mapview.HoveringNode.Object].Expanded = true;
-            }
-            else
-            {
-                int max = 0;
-                foreach (Map m in Data.Maps.Values) if (m.Order > max) max = m.Order;
-                Map.Order = max + 1;
-                mapview.Nodes.Add(node);
-            }
-            mapview.SetSelectedNode(node);
-        }
-        else
-        {
-            throw new NotImplementedException();
         }
     }
 

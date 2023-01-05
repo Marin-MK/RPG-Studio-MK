@@ -14,6 +14,7 @@ public static class PluginManager
 {
     public static void LoadAll(bool WithProgress)
     {
+        if (!Directory.Exists(Data.ProjectPath + "/Plugins")) return;
         List<string> PluginDirs = Directory.EnumerateDirectories(Data.ProjectPath + "/Plugins").ToList();
         for (int i = 0; i < PluginDirs.Count; i++)
         {

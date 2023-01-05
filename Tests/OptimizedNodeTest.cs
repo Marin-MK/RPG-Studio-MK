@@ -1354,4 +1354,44 @@ public class OptimizedNodeTest : TestSuite
         assertEqual(six, four.GetNextSibling());
         assertEqual(four, six.GetPreviousSibling());
     }
+
+    [TestMethod]
+    void TestAncestors()
+    {
+        // final tree:
+        // - one
+        //   - two
+        //     - three
+        //       - four
+        //     - five
+        //   - six
+        //     - seven
+
+        var one = new OptimizedNode("One");
+        var two = new OptimizedNode("Two");
+        var three = new OptimizedNode("Three");
+        var four = new OptimizedNode("Four");
+        var five = new OptimizedNode("Five");
+        var six = new OptimizedNode("Six");
+        var seven = new OptimizedNode("Seven");
+
+        three.AddChild(four);
+
+        two.AddChild(three);
+        two.AddChild(five);
+
+        six.AddChild(seven);
+
+        one.AddChild(two);
+        one.AddChild(six);
+
+        assertEqual(new List<OptimizedNode>() { one, two, three }, four.GetAncestors());
+        assertEqual(new List<OptimizedNode>() { one, two }, three.GetAncestors());
+        assertEqual(new List<OptimizedNode>() { one }, two.GetAncestors());
+        assertEqual(new List<OptimizedNode>() { }, one.GetAncestors());
+
+        assertEqual(new List<OptimizedNode>() { one, two }, five.GetAncestors());
+        assertEqual(new List<OptimizedNode>() { one, six }, seven.GetAncestors());
+        assertEqual(new List<OptimizedNode>() { one }, six.GetAncestors());
+    }
 }

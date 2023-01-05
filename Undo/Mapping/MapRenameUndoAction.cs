@@ -47,7 +47,8 @@ public class MapRenameUndoAction : BaseUndoAction
         }
         if (!Continue) return false;
         TriggerLogical(IsRedo);
-        TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.mapview;
+        // TODO
+        /*TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.MapTree;
         foreach (TreeNode Node in mapview.Nodes)
         {
             if ((int) Node.Object == this.MapID)
@@ -65,7 +66,7 @@ public class MapRenameUndoAction : BaseUndoAction
                 }
             }
         }
-        mapview.Redraw();
+        mapview.Redraw();*/
         return true;
     }
 

@@ -36,21 +36,36 @@ public class OptimizedTreeView : Widget
     public int LineHeight { get; protected set; } = 24;
     public int DepthIndent { get; protected set; } = 20;
     public int XOffset { get; protected set; } = 6;
+    public int ExtraXScrollArea { get; protected set; } = 0;
+    public int ExtraYScrollArea { get; protected set; } = 0;
     public IOptimizedNode HoveringNode { get; protected set; }
     public List<IOptimizedNode> SelectedNodes { get; protected set; } = new List<IOptimizedNode>();
     public bool MultipleSelected => SelectedNodes.Count > 1;
     public IOptimizedNode SelectedNode => SelectedNodes.Count > 0 ? SelectedNodes[0] : null;
     public bool DragAndDrop { get; protected set; } = true;
+    public bool Empty => !Root.HasChildren;
+    public bool RequireSelection { get; protected set; } = true;
+    public Font Font { get; protected set; }
+    public Padding HScrollBarPaddingAlone { get; protected set; } = new Padding(1, 0, 1, -1);
+    public Padding HScrollBarPaddingShared { get; protected set; } = new Padding(1, 0, 13, -1);
+    public Padding VScrollBarPaddingAlone { get; protected set; } = new Padding(0, 1, -1, 1);
+    public Padding VScrollBarPaddingShared { get; protected set; } = new Padding(0, 1, -1, 13);
+    public bool HResizeToFill { get; protected set; } = false;
+    public bool VResizeToFill { get; protected set; } = true;
 
     public GenericObjectEvent<IOptimizedNode> OnDragAndDropping;
     public GenericObjectEvent<IOptimizedNode> OnDragAndDropped;
+    public BaseEvent OnSelectionChanged;
+    public GenericObjectEvent<OptimizedNode> OnNodeExpansionChanged;
+    public GenericObjectEvent<OptimizedNode> OnNodeGlobalIndexChanged;
 
-    List<(IOptimizedNode Node, int Y)> LastDrawData = new List<(IOptimizedNode, int)>();
-    List<(IOptimizedNode Node, int SpriteIndex)> SelectionSprites = new List<(IOptimizedNode, int)>();
+    private List<(IOptimizedNode Node, int Y)> LastDrawData = new List<(IOptimizedNode, int)>();
+    private List<(IOptimizedNode Node, int SpriteIndex)> SelectionSprites = new List<(IOptimizedNode, int)>();
 
-    Container ScrollContainer;
-    Sprite BGSprite => ScrollContainer.Sprites["bg"];
-    Sprite TXTSprite => ScrollContainer.Sprites["txt"];
+    private Container ScrollContainer;
+    private Container SpriteContainer;
+    private Sprite BGSprite => SpriteContainer.Sprites["bg"];
+    private Sprite TXTSprite => SpriteContainer.Sprites["txt"];
 
     private IOptimizedNode? ActiveNode;
     private bool Dragging = false;
@@ -66,26 +81,55 @@ public class OptimizedTreeView : Widget
         {
             TreeIconsBitmap = new Bitmap("assets/img/tree_icons");
         }
+
+        this.Font = Fonts.Paragraph;
+
         ScrollContainer = new Container(this);
-        ScrollContainer.SetDocked(true);
-        ScrollContainer.Sprites["hover"] = new Sprite(Viewport, new SolidBitmap(1, 1, new Color(55, 187, 255)));
-        ScrollContainer.Sprites["hover"].Visible = false;
-        ScrollContainer.Sprites["hover"].Z = 1;
-        ScrollContainer.Sprites["bg"] = new Sprite(Viewport);
-        ScrollContainer.Sprites["bg"].Z = 2;
-        ScrollContainer.Sprites["txt"] = new Sprite(Viewport);
-        ScrollContainer.Sprites["txt"].Z = 2;
-        ScrollContainer.Sprites["drag"] = new Sprite(Viewport);
-        ScrollContainer.Sprites["drag"].Z = 3;
+
+        VScrollBar vs = new VScrollBar(this);
+        vs.SetVDocked(true);
+        vs.SetRightDocked(true);
+        ScrollContainer.SetVScrollBar(vs);
+        ScrollContainer.VAutoScroll = true;
+
+        HScrollBar hs = new HScrollBar(this);
+        hs.SetHDocked(true);
+        hs.SetBottomDocked(true);
+        ScrollContainer.SetHScrollBar(hs);
+        ScrollContainer.HAutoScroll = true;
+
+        SpriteContainer = new Container(ScrollContainer);
+        SpriteContainer.Sprites["hover"] = new Sprite(SpriteContainer.Viewport, new SolidBitmap(1, 1, new Color(55, 187, 255)));
+        SpriteContainer.Sprites["hover"].Visible = false;
+        SpriteContainer.Sprites["hover"].Z = 1;
+        SpriteContainer.Sprites["bg"] = new Sprite(SpriteContainer.Viewport);
+        SpriteContainer.Sprites["bg"].Z = 2;
+        SpriteContainer.Sprites["txt"] = new Sprite(SpriteContainer.Viewport);
+        SpriteContainer.Sprites["txt"].Z = 2;
+        SpriteContainer.Sprites["drag"] = new Sprite(SpriteContainer.Viewport);
+        SpriteContainer.Sprites["drag"].Z = 3;
+
         OnWidgetSelected += WidgetSelected;
+        this.Root = new OptimizedNode("ROOT");
+
+        this.OnContextMenuOpening += e => e.Value = !ScrollContainer.HScrollBar.Mouse.Inside && !ScrollContainer.VScrollBar.Mouse.Inside;
     }
 
-    public void SetRootNode(OptimizedNode Root)
+    public void SetRootNode(OptimizedNode Root, IOptimizedNode? SelectedNode = null)
     {
         if (this.Root != Root)
         {
             this.Root = Root;
+            this.Root.GetAllChildren(true).ForEach(n =>
+            {
+                if (n is OptimizedNode)
+                {
+                    OptimizedNode Node = (OptimizedNode) n;
+                    Node.OnGlobalIndexChanged = _ => OnNodeGlobalIndexChanged?.Invoke(new GenericObjectEventArgs<OptimizedNode>(Node));
+                }
+            });
             RedrawAllNodes();
+            if (RequireSelection) SetSelectedNode(SelectedNode ?? (Root.HasChildren ? Root.Children[0] : null), false);
         }
     }
 
@@ -115,6 +159,127 @@ public class OptimizedTreeView : Widget
         }
     }
 
+    public void SetRequireSelection(bool RequireSelection)
+    {
+        if (this.RequireSelection != RequireSelection)
+        {
+            this.RequireSelection = RequireSelection;
+            if (this.RequireSelection && this.SelectedNodes.Count == 0 && Root.HasChildren)
+            {
+                this.SetSelectedNode(Root.Children[0], false);
+            }
+        }
+    }
+
+    public void SetFont(Font Font)
+    {
+        if (this.Font != Font)
+        {
+            this.Font = Font;
+            RedrawAllNodes();
+        }
+    }
+
+    public void SetVScrollBarPaddingAlone(Padding VScrollBarPaddingAlone)
+    {
+        if (this.VScrollBarPaddingAlone != VScrollBarPaddingAlone)
+        {
+            this.VScrollBarPaddingAlone = VScrollBarPaddingAlone;
+            if (BGSprite.Bitmap != null) UpdateSize();
+        }
+    }
+
+    public void SetVScrollBarPaddingShared(Padding VScrollBarPaddingShared)
+    {
+        if (this.VScrollBarPaddingShared != VScrollBarPaddingShared)
+        {
+            this.VScrollBarPaddingShared = VScrollBarPaddingShared;
+            if (BGSprite.Bitmap != null) UpdateSize();
+        }
+    }
+
+    public void SetHScrollBarPaddingAlone(Padding HScrollBarPaddingAlone)
+    {
+        if (this.HScrollBarPaddingAlone != HScrollBarPaddingAlone)
+        {
+            this.HScrollBarPaddingAlone = HScrollBarPaddingAlone;
+            if (BGSprite.Bitmap != null) UpdateSize();
+        }
+    }
+
+    public void SetHScrollBarPaddingShared(Padding HScrollBarPaddingShared)
+    {
+        if (this.HScrollBarPaddingShared != HScrollBarPaddingShared)
+        {
+            this.HScrollBarPaddingShared = HScrollBarPaddingShared;
+            if (BGSprite.Bitmap != null) UpdateSize();
+        }
+    }
+
+    public void SetVResizeToFill(bool VResizeToFill)
+    {
+        if (this.VResizeToFill != VResizeToFill)
+        {
+            this.VResizeToFill = VResizeToFill;
+            if (BGSprite.Bitmap != null) UpdateSize();
+        }
+    }
+
+    public void SetHResizeToFill(bool HResizeToFill)
+    {
+        if (this.HResizeToFill != HResizeToFill)
+        {
+            this.HResizeToFill = HResizeToFill;
+            if (BGSprite.Bitmap != null) UpdateSize();
+        }
+    }
+
+    public void SetNodes(List<OptimizedNode> Nodes, OptimizedNode? SelectedNode = null)
+    {
+        this.Root.ClearChildren();
+        foreach (OptimizedNode node in Nodes)
+        {
+            this.Root.AddChild(node);
+        }
+        this.Root.GetAllChildren(true).ForEach(n =>
+        {
+            if (n is OptimizedNode)
+            {
+                OptimizedNode node = (OptimizedNode) n;
+                node.OnGlobalIndexChanged = _ => OnNodeGlobalIndexChanged?.Invoke(new GenericObjectEventArgs<OptimizedNode>(node));
+            }
+        });
+        RedrawAllNodes();
+        if (RequireSelection) SetSelectedNode(SelectedNode ?? (Root.HasChildren ? Root.Children[0] : null), false);
+    }
+
+    public void SetXOffset(int XOffset)
+    {
+        if (this.XOffset != XOffset)
+        {
+            this.XOffset = XOffset;
+            this.RedrawAllNodes();
+        }
+    }
+
+    public void SetExtraXScrollArea(int ExtraXScrollArea)
+    {
+        if (this.ExtraXScrollArea != ExtraXScrollArea)
+        {
+            this.ExtraXScrollArea = ExtraXScrollArea;
+            if (BGSprite.Bitmap != null) this.UpdateSize();
+        }
+    }
+
+    public void SetExtraYScrollArea(int ExtraYScrollArea)
+    {
+        if (this.ExtraYScrollArea != ExtraYScrollArea)
+        {
+            this.ExtraYScrollArea = ExtraYScrollArea;
+            if (BGSprite.Bitmap != null) this.UpdateSize();
+        }
+    }
+
     public unsafe void SetExpanded(OptimizedNode Node, bool Expanded)
     {
         if (Node.Expanded != Expanded)
@@ -125,6 +290,7 @@ public class OptimizedTreeView : Widget
                 BGSprite.Bitmap.Unlock();
                 TXTSprite.Bitmap.Unlock();
                 Node.SetExpanded(Expanded);
+                UpdateSize();
                 (int NodeCount, int SepHeight) = Node.GetChildrenHeight(false);
                 int Y = GetDrawnYCoord(Node);
                 int Height = (NodeCount + 1) * LineHeight + SepHeight;
@@ -133,9 +299,11 @@ public class OptimizedTreeView : Widget
                 int movamt = Height - LineHeight;
                 BGSprite.Bitmap.FillRect(0, Y, BGSprite.Bitmap.Width, LineHeight, Color.ALPHA);
                 TXTSprite.Bitmap.FillRect(0, Y, TXTSprite.Bitmap.Width, LineHeight, Color.ALPHA);
-                BGSprite.Bitmap = BGSprite.Bitmap.ResizeWithoutBuild(BGSprite.Bitmap.Width, BGSprite.Bitmap.Height + movamt);
-                TXTSprite.Bitmap = TXTSprite.Bitmap.ResizeWithoutBuild(TXTSprite.Bitmap.Width, TXTSprite.Bitmap.Height + movamt);
-                TXTSprite.Bitmap.Font = Fonts.Paragraph;
+                int NewWidth = SpriteContainer.Size.Width - ExtraXScrollArea;
+                BGSprite.Bitmap = BGSprite.Bitmap.ResizeWithoutBuild(NewWidth, BGSprite.Bitmap.Height + movamt);
+                TXTSprite.Bitmap = TXTSprite.Bitmap.ResizeWithoutBuild(NewWidth, TXTSprite.Bitmap.Height + movamt);
+                UpdateSize(false);
+                TXTSprite.Bitmap.Font = this.Font;
                 TXTSprite.Bitmap.BlendMode = BlendMode.Addition;
                 BGSprite.Bitmap.Unlock();
                 TXTSprite.Bitmap.Unlock();
@@ -169,6 +337,7 @@ public class OptimizedTreeView : Widget
                 BGSprite.Bitmap.FillRect(0, Y, BGSprite.Bitmap.Width, LineHeight, Color.ALPHA);
                 TXTSprite.Bitmap.FillRect(0, Y, TXTSprite.Bitmap.Width, LineHeight, Color.ALPHA);
                 Node.SetExpanded(Expanded);
+                UpdateSize();
                 RedrawNode(Node, Y, false);
                 int movy = Y + Height;
                 int movh = BGSprite.Bitmap.Height - (movy);
@@ -177,9 +346,10 @@ public class OptimizedTreeView : Widget
                 TXTSprite.Bitmap.ShiftVertically(movy, movh, -movamt, true);
                 BGSprite.Bitmap = BGSprite.Bitmap.ResizeWithoutBuild(BGSprite.Bitmap.Width, BGSprite.Bitmap.Height - movamt);
                 TXTSprite.Bitmap = TXTSprite.Bitmap.ResizeWithoutBuild(TXTSprite.Bitmap.Width, TXTSprite.Bitmap.Height - movamt);
-                TXTSprite.Bitmap.Font = Fonts.Paragraph;
+                UpdateSize(false);
+                TXTSprite.Bitmap.Font = this.Font;
                 TXTSprite.Bitmap.BlendMode = BlendMode.Addition;
-                TXTSprite.Bitmap.RecreateTexture();
+                TXTSprite.Bitmap.Relock();
                 int Index = LastDrawData.FindIndex(d => d.Node == Node);
                 for (int i = Index + 1; i < LastDrawData.Count; i++)
                 {
@@ -194,7 +364,27 @@ public class OptimizedTreeView : Widget
                     }
                 }
             }
+            OnNodeExpansionChanged?.Invoke(new GenericObjectEventArgs<OptimizedNode>(Node));
         }
+    }
+
+    private int CalculateMaxWidth(OptimizedNode Start)
+    {
+        int MaxWidth = 0;
+        if (Start != Start.Root) // Do not include the root as it has no text
+        {
+            int w = (Start.Depth - 1) * DepthIndent + XOffset;
+            w += 30; // offset of text to start of node wrt depth
+            w += Font.TextSize(Start.Text).Width; // width of text
+            MaxWidth = w;
+        }
+        if (!Start.Expanded) return MaxWidth;
+        foreach (IOptimizedNode Child in Start.Children)
+        {
+            int cw = Child is OptimizedNodeSeparator ? 0 : CalculateMaxWidth((OptimizedNode) Child);
+            if (cw > MaxWidth) MaxWidth = cw;
+        }
+        return MaxWidth;
     }
 
     public void InsertNode(OptimizedNode ParentNode, int? InsertionIndex, IOptimizedNode NewNode)
@@ -205,6 +395,7 @@ public class OptimizedTreeView : Widget
         BGSprite.Bitmap.Unlock();
         TXTSprite.Bitmap.Unlock();
         ParentNode.InsertChild(InsertionIndex ?? ParentNode.Children.Count, NewNode);
+        UpdateSize();
         (int CountUntil, int SepHeightUntil) = ParentNode.GetChildrenHeightUntil(NewNode, false);
         int Y = GetDrawnYCoord(ParentNode) + CountUntil * LineHeight + SepHeightUntil;
         if (ParentNode != NewNode.Root) Y += LineHeight; // Add the height of the parent node itself, unless the parent node is the root (because it is not displayed)
@@ -222,9 +413,11 @@ public class OptimizedTreeView : Widget
         int movy = Y;
         int movh = BGSprite.Bitmap.Height - movy;
         int movamt = Height;
-        BGSprite.Bitmap = BGSprite.Bitmap.ResizeWithoutBuild(BGSprite.Bitmap.Width, BGSprite.Bitmap.Height + movamt);
-        TXTSprite.Bitmap = TXTSprite.Bitmap.ResizeWithoutBuild(TXTSprite.Bitmap.Width, TXTSprite.Bitmap.Height + movamt);
-        TXTSprite.Bitmap.Font = Fonts.Paragraph;
+        int NewWidth = SpriteContainer.Size.Width - ExtraXScrollArea;
+        BGSprite.Bitmap = BGSprite.Bitmap.ResizeWithoutBuild(NewWidth, BGSprite.Bitmap.Height + movamt);
+        TXTSprite.Bitmap = TXTSprite.Bitmap.ResizeWithoutBuild(NewWidth, TXTSprite.Bitmap.Height + movamt);
+        UpdateSize(false);
+        TXTSprite.Bitmap.Font = this.Font;
         TXTSprite.Bitmap.BlendMode = BlendMode.Addition;
         BGSprite.Bitmap.Unlock();
         TXTSprite.Bitmap.Unlock();
@@ -263,18 +456,21 @@ public class OptimizedTreeView : Widget
         TXTSprite.Bitmap.Lock();
     }
 
-    public void DeleteNode(IOptimizedNode Node, bool DeleteChildren)
+    public List<IOptimizedNode> DeleteNode(IOptimizedNode Node, bool DeleteChildren)
     {
         OptimizedNode Parent = Node.Parent;
+        OptimizedNode? NextSibling = (Node as OptimizedNode)?.GetNextSibling();
         int OldDepth = Node.Depth;
         int ChildIndex = Parent.Children.IndexOf(Node);
         Node.Delete(DeleteChildren);
+        UpdateSize();
         if (Root.Children.Count == 0)
         {
             BGSprite.Bitmap.Dispose();
             TXTSprite.Bitmap.Dispose();
             LastDrawData.Clear();
-            return;
+            SetSelectedNode(null, false);
+            return null;
         }
         (int NodeCount, int SepHeight) = (0, 0);
         if (Node is OptimizedNode)
@@ -292,18 +488,20 @@ public class OptimizedTreeView : Widget
         TXTSprite.Bitmap.Unlock();
         BGSprite.Bitmap.FillRect(0, Y, BGSprite.Bitmap.Width, HeightToClear, Color.ALPHA);
         TXTSprite.Bitmap.FillRect(0, Y, TXTSprite.Bitmap.Width, HeightToClear, Color.ALPHA);
-        BGSprite.Bitmap.Lock();
-        TXTSprite.Bitmap.Lock();
         int movy = Y + HeightToClear;
         int movh = BGSprite.Bitmap.Height - movy;
         int shift = DeleteChildren ? HeightToClear : LineHeight;
         BGSprite.Bitmap.ShiftVertically(movy, movh, -shift, true);
         TXTSprite.Bitmap.ShiftVertically(movy, movh, -shift, true);
-        BGSprite.Bitmap = BGSprite.Bitmap.ResizeWithoutBuild(BGSprite.Bitmap.Width, BGSprite.Bitmap.Height - shift);
-        TXTSprite.Bitmap = TXTSprite.Bitmap.ResizeWithoutBuild(TXTSprite.Bitmap.Width, TXTSprite.Bitmap.Height - shift);
-        TXTSprite.Bitmap.Font = Fonts.Paragraph;
+        BGSprite.Bitmap.Lock();
+        TXTSprite.Bitmap.Lock();
+        int NewWidth = SpriteContainer.Size.Width - ExtraXScrollArea;
+        BGSprite.Bitmap = BGSprite.Bitmap.ResizeWithoutBuild(NewWidth, BGSprite.Bitmap.Height - shift);
+        TXTSprite.Bitmap = TXTSprite.Bitmap.ResizeWithoutBuild(NewWidth, TXTSprite.Bitmap.Height - shift);
+        UpdateSize(false);
+        TXTSprite.Bitmap.Font = this.Font;
         TXTSprite.Bitmap.BlendMode = BlendMode.Addition;
-        TXTSprite.Bitmap.RecreateTexture();
+        TXTSprite.Bitmap.Relock();
         int Index = LastDrawData.FindIndex(d => d.Y >= Y);
         for (int i = Index; i < LastDrawData.Count; i++)
         {
@@ -314,6 +512,23 @@ public class OptimizedTreeView : Widget
             }
             else LastDrawData[i] = (LastDrawData[i].Node, LastDrawData[i].Y - shift);
         }
+        IOptimizedNode NodeToSelect = null;
+        if (!DeleteChildren && Node is OptimizedNode && ((OptimizedNode) Node).HasChildren)
+        {
+            // We flattened the children to the node's parent, so now we have to redraw all of them to correct the depth
+            BGSprite.Bitmap.Unlock();
+            TXTSprite.Bitmap.Unlock();
+            ((OptimizedNode) Node).GetAllChildren(false).ForEach(n =>
+            {
+                Y = RedrawNode(n, Y, true, () => Index);
+                Index++;
+            });
+            BGSprite.Bitmap.Lock();
+            TXTSprite.Bitmap.Lock();
+            NodeToSelect = ((OptimizedNode) Node).Children[0];
+        }
+        else if (NextSibling != null) NodeToSelect = NextSibling;
+        else NodeToSelect = Parent;
         if (ChildIndex == Parent.Children.Count) // We deleted the last node in the parent's list of nodes
         {
             BGSprite.Bitmap.Unlock();
@@ -341,6 +556,21 @@ public class OptimizedTreeView : Widget
             BGSprite.Bitmap.Lock();
             TXTSprite.Bitmap.Lock();
         }
+        if (NodeToSelect == null && !Empty) throw new Exception("Did not find a new node to select despite the tree not being empty");
+        // If we still have our currently selected node, we don't need to change our selected node
+        if (NodeToSelect == this.Root)
+        {
+            if (this.Root.HasChildren) NodeToSelect = this.Root.Children[0];
+            else NodeToSelect = null;
+        }
+        if (!this.Root.Contains(SelectedNode)) SetSelectedNode(NodeToSelect, false);
+        if (DeleteChildren && Node is OptimizedNode)
+        {
+            List<IOptimizedNode> List = ((OptimizedNode) Node).GetAllChildren(true);
+            List.Insert(0, Node);
+            return List;
+        }
+        return new List<IOptimizedNode>() { Node };
     }
 
     public void RedrawAllNodes()
@@ -350,11 +580,13 @@ public class OptimizedTreeView : Widget
         TXTSprite.Bitmap?.Dispose();
         if (Root.Children.Count == 0) return;
         (int RootNodeCount, int RootSepHeight) = Root.GetChildrenHeight(false);
-        BGSprite.Bitmap = new Bitmap(Size.Width, RootNodeCount * LineHeight + RootSepHeight);
+        int MaxWidth = CalculateMaxWidth(Root) + ExtraXScrollArea;
+        BGSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight, Graphics.MaxTextureSize.Width, 1024);
         BGSprite.Bitmap.Unlock();
-        TXTSprite.Bitmap = new Bitmap(Size.Width, RootNodeCount * LineHeight + RootSepHeight);
+        TXTSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight, Graphics.MaxTextureSize.Width, 1024);
         TXTSprite.Bitmap.Unlock();
-        TXTSprite.Bitmap.Font = Fonts.Paragraph;
+        TXTSprite.Bitmap.Font = this.Font;
+        UpdateSize(false); // No need to recalculate width as we just calculated it to find the bitmap width
         List<IOptimizedNode> nodes = Root.GetAllChildren(false);
         int y = 0;
         for (int i = 0; i < nodes.Count; i++)
@@ -363,7 +595,7 @@ public class OptimizedTreeView : Widget
         }
         BGSprite.Bitmap.Lock();
         TXTSprite.Bitmap.Lock();
-        PrintStructure();
+        UpdateSize(false);
     }
 
     private int RedrawNode(IOptimizedNode Node, int y, bool AddData = true, Func<int> IndexProvider = null)
@@ -401,7 +633,8 @@ public class OptimizedTreeView : Widget
                 BGSprite.Bitmap.Build(new Rect(x + 14, y + 6, 11, 11), TreeIconsBitmap, new Rect(sx, 0, 11, 11));
                 if (RNode.Expanded) BGSprite.Bitmap.DrawLine(x + 19, y + 17, x + 19, y + LineHeight - 1, new Color(64, 104, 146));
             }
-            TXTSprite.Bitmap.DrawText(RNode.Text, x + 30, y + 2, Color.WHITE);
+            bool sel = SelectedNodes.Contains(RNode);
+            TXTSprite.Bitmap.DrawText(RNode.Text, x + 30, y + 2, sel ? new Color(55, 187, 255) : Color.WHITE);
             if (AddData)
             {
                 if (IndexProvider != null)
@@ -416,6 +649,16 @@ public class OptimizedTreeView : Widget
         return y;
     }
 
+    public void RedrawNodeText(OptimizedNode Node)
+    {
+        TXTSprite.Bitmap.Unlock();
+        int x = (Node.Depth - 1) * DepthIndent + XOffset;
+        int y = GetDrawnYCoord(Node);
+        TXTSprite.Bitmap.FillRect(0, y, TXTSprite.Bitmap.Width, LineHeight, Color.ALPHA);
+        TXTSprite.Bitmap.DrawText(Node.Text, x + 30, y + 2, SelectedNodes.Contains(Node) ? new Color(55, 187, 255) : Color.WHITE);
+        TXTSprite.Bitmap.Lock();
+    }
+
     private int GetDrawnYCoord(IOptimizedNode Node)
     {
         (_, int Y) = LastDrawData.Find(d => d.Node == Node);
@@ -426,25 +669,57 @@ public class OptimizedTreeView : Widget
     {
         SelectionSprites.ForEach(s =>
         {
-            ScrollContainer.Sprites[$"sel_{s.SpriteIndex}"].Dispose();
-            ScrollContainer.Sprites.Remove($"sel_{s.SpriteIndex}");
+            SpriteContainer.Sprites[$"sel_{s.SpriteIndex}"].Dispose();
+            SpriteContainer.Sprites.Remove($"sel_{s.SpriteIndex}");
         });
         SelectionSprites.Clear();
-        SelectedNodes.Clear();
+        while (SelectedNodes.Count > 0)
+        {
+            IOptimizedNode n = SelectedNodes[0];
+            SelectedNodes.RemoveAt(0);
+            if (n.Root == n) continue; // This node was deleted
+            if (n is not OptimizedNode) continue;
+            RedrawNodeText((OptimizedNode) n);
+        }
+    }
+
+    private void ExpandUpTo(IOptimizedNode Node)
+    {
+        List<OptimizedNode> Ancestors = Node.GetAncestors();
+        // Start at 1 to skip the root node, which is always expanded
+        for (int i = 1; i < Ancestors.Count; i++)
+        {
+            if (!Ancestors[i].Expanded) SetExpanded(Ancestors[i], true);
+        }
+    }
+
+    private void SelectIndividualNode(IOptimizedNode Node)
+    {
+        ExpandUpTo(Node);
+        int i = 0;
+        while (SpriteContainer.Sprites.ContainsKey($"sel_{i}")) i++;
+        SpriteContainer.Sprites[$"sel_{i}"] = new Sprite(SpriteContainer.Viewport);
+        int height = Node is OptimizedNodeSeparator ? ((OptimizedNodeSeparator) Node).Height : LineHeight;
+        SpriteContainer.Sprites[$"sel_{i}"].Bitmap = new SolidBitmap(SpriteContainer.Size.Width, height, new Color(28, 50, 73));
+        int y = GetDrawnYCoord(Node);
+        SelectedNodes.Add(Node);
+        SpriteContainer.Sprites[$"sel_{i}"].Y = y;
+        SpriteContainer.UpdateBounds();
+        SelectionSprites.Add((Node, i));
+        if (Node is OptimizedNode) RedrawNodeText((OptimizedNode) Node);
+    }
+
+    private void UpdateSelection(IOptimizedNode Node)
+    {
+        int i = SelectionSprites.Find(s => s.Node == Node).SpriteIndex;
+        SpriteContainer.Sprites[$"sel_{i}"].Y = GetDrawnYCoord(Node);
     }
 
     public void SetSelectedNode(IOptimizedNode Node, bool AllowMultiple)
     {
         if (!AllowMultiple) ClearSelection();
-        int i = 0;
-        while (ScrollContainer.Sprites.ContainsKey($"sel_{i}")) i++;
-        ScrollContainer.Sprites[$"sel_{i}"] = new Sprite(this.Viewport);
-        int height = Node is OptimizedNodeSeparator ? ((OptimizedNodeSeparator) Node).Height : LineHeight;
-        ScrollContainer.Sprites[$"sel_{i}"].Bitmap = new SolidBitmap(Size.Width, height, new Color(28, 50, 73));
-        int y = GetDrawnYCoord(Node);
-        ScrollContainer.Sprites[$"sel_{i}"].Y = y;
-        SelectionSprites.Add((Node, i));
-        SelectedNodes.Add(Node);
+        if (Node != null) SelectIndividualNode(Node);
+        OnSelectionChanged?.Invoke(new BaseEventArgs());
     }
 
     public void SetHoveringNode(IOptimizedNode Node)
@@ -455,27 +730,57 @@ public class OptimizedTreeView : Widget
         {
             int Y = GetDrawnYCoord(this.HoveringNode);
             int Height = this.HoveringNode is OptimizedNodeSeparator ? ((OptimizedNodeSeparator) this.HoveringNode).Height : LineHeight;
-            ScrollContainer.Sprites["hover"].Y = Y;
-            ((SolidBitmap) ScrollContainer.Sprites["hover"].Bitmap).SetSize(2, Height);
-            ScrollContainer.Sprites["hover"].Visible = !Dragging || !ValidatedDragMovement;
+            SpriteContainer.Sprites["hover"].Y = Y;
+            ((SolidBitmap) SpriteContainer.Sprites["hover"].Bitmap).SetSize(2, Height);
+            SpriteContainer.Sprites["hover"].Visible = !Dragging || !ValidatedDragMovement;
         }
         else
         {
-            ScrollContainer.Sprites["hover"].Visible = false;
+            SpriteContainer.Sprites["hover"].Visible = false;
         }
     }
 
-    void PrintStructure()
+    public override void SizeChanged(BaseEventArgs e)
     {
-        Console.WriteLine(">>>>>>>>>>>>>> START");
-        foreach (IOptimizedNode node in Root.GetAllChildren(true))
+        base.SizeChanged(e);
+        if (this.Empty) ScrollContainer.SetSize(Size);
+        else UpdateSize(false); // The max width of the tree itself does not depend on the size of this widget
+    }
+
+    void UpdateSize(bool Recalculate = true)
+    {
+        int OldWidth = SpriteContainer.Size.Width;
+        if (ScrollContainer.HScrollBar.Visible)
         {
-            if (node is OptimizedNodeSeparator) Console.WriteLine($"========== ({((OptimizedNodeSeparator) node).Height})");
-            else
+            ScrollContainer.VScrollBar.SetPadding(VScrollBarPaddingShared);
+            ScrollContainer.SetHeight(Size.Height - 12);
+        }
+        else
+        {
+            ScrollContainer.VScrollBar.SetPadding(VScrollBarPaddingAlone);
+            ScrollContainer.SetHeight(Size.Height - (VResizeToFill ? 0 : 12));
+        }
+        if (ScrollContainer.VScrollBar.Visible)
+        {
+            ScrollContainer.HScrollBar.SetPadding(HScrollBarPaddingShared);
+            ScrollContainer.SetWidth(Size.Width - 12);
+        }
+        else
+        {
+            ScrollContainer.HScrollBar.SetPadding(HScrollBarPaddingAlone);
+            ScrollContainer.SetWidth(Size.Width - (HResizeToFill ? 0 : 12));
+        }
+        int w = Recalculate ? CalculateMaxWidth(Root) + ExtraXScrollArea : BGSprite.Bitmap.Width;
+        if (w < ScrollContainer.Size.Width) w = ScrollContainer.Size.Width;
+        SpriteContainer.SetSize(w, BGSprite.Bitmap.Height + ExtraYScrollArea);
+        if (OldWidth != SpriteContainer.Size.Width)
+        {
+            // Resize all selection sprites
+            SelectionSprites.ForEach(s =>
             {
-                OptimizedNode n = (OptimizedNode) node;
-                Console.WriteLine($"({Utilities.Digits(n.GlobalIndex, 2)}): {n.Text} (parent: {n.Parent.GlobalIndex})");
-            }
+                SolidBitmap bmp = (SolidBitmap) SpriteContainer.Sprites[$"sel_{s.SpriteIndex}"].Bitmap;
+                bmp.SetSize(w, bmp.BitmapHeight);
+            });
         }
     }
 
@@ -486,13 +791,13 @@ public class OptimizedTreeView : Widget
         DragStates? OldDragState = this.DragState;
         DragLineOffset = 0;
         SetHoveringNode(null);
-        if (!ScrollContainer.Mouse.Inside)
+        if (!SpriteContainer.Mouse.Inside || ScrollContainer.HScrollBar.Mouse.Inside || ScrollContainer.VScrollBar.Mouse.Inside)
         {
             RedrawDragState();
             return;
         }
-        int rx = e.X - ScrollContainer.Viewport.X;
-        int ry = e.Y - ScrollContainer.Viewport.Y + ScrollContainer.TopCutOff;
+        int rx = e.X - Viewport.X + SpriteContainer.LeftCutOff;
+        int ry = e.Y - Viewport.Y + SpriteContainer.TopCutOff;
         float yfraction = 0f;
         for (int i = 0; i < LastDrawData.Count; i++)
         {
@@ -508,7 +813,7 @@ public class OptimizedTreeView : Widget
         }
         if (Dragging && !ValidatedDragMovement)
         {
-            Point mp = new Point(e.X, e.Y);
+            Point mp = new Point(rx, ry);
             if (DragOriginPoint.Distance(mp) >= 10)
             {
                 ValidatedDragMovement = true;
@@ -567,7 +872,7 @@ public class OptimizedTreeView : Widget
 
     private void RedrawDragState()
     {
-        ScrollContainer.Sprites["drag"].Bitmap?.Dispose();
+        SpriteContainer.Sprites["drag"].Bitmap?.Dispose();
         if (DragState != null)
         {
             int x = this.HoveringNode.Depth * DepthIndent + DragLineOffset;
@@ -577,40 +882,40 @@ public class OptimizedTreeView : Widget
                 this.DragState == DragStates.SharedAbove || this.DragState == DragStates.SharedBelow)
             {
                 // Single line between two nodes
-                ScrollContainer.Sprites["drag"].X = x;
-                ScrollContainer.Sprites["drag"].Y = y + 2;
+                SpriteContainer.Sprites["drag"].X = x;
+                SpriteContainer.Sprites["drag"].Y = y + 2;
                 switch (this.DragState)
                 {
                     case DragStates.Below:
-                        ScrollContainer.Sprites["drag"].Y = y + height - 2;
+                        SpriteContainer.Sprites["drag"].Y = y + height - 2;
                         break;
                     case DragStates.SharedBelow:
-                        ScrollContainer.Sprites["drag"].Y = y + height;
+                        SpriteContainer.Sprites["drag"].Y = y + height;
                         break;
                     case DragStates.SharedAbove:
-                        ScrollContainer.Sprites["drag"].Y = y;
+                        SpriteContainer.Sprites["drag"].Y = y;
                         break;
                 }
                 int width = Math.Max(100, Size.Width - x - 10);
-                ScrollContainer.Sprites["drag"].Bitmap = new SolidBitmap(width, 1, new Color(55, 187, 255));
+                SpriteContainer.Sprites["drag"].Bitmap = new SolidBitmap(width, 1, new Color(55, 187, 255));
             }
             else if (this.DragState == DragStates.Over)
             {
                 // Over one node
                 if (this.HoveringNode is OptimizedNode)
-                    ScrollContainer.Sprites["drag"].X = x + TXTSprite.Bitmap.Font.TextSize(((OptimizedNode) this.HoveringNode).Text).Width + 30;
-                else ScrollContainer.Sprites["drag"].X = 4;
-                ScrollContainer.Sprites["drag"].Y = y + height / 2 - 3;
-                ScrollContainer.Sprites["drag"].Bitmap = new Bitmap(7, 7);
-                ScrollContainer.Sprites["drag"].Bitmap = new Bitmap(7, 7);
-                ScrollContainer.Sprites["drag"].Bitmap.Unlock();
+                    SpriteContainer.Sprites["drag"].X = x + TXTSprite.Bitmap.Font.TextSize(((OptimizedNode) this.HoveringNode).Text).Width + 30;
+                else SpriteContainer.Sprites["drag"].X = 4;
+                SpriteContainer.Sprites["drag"].Y = y + height / 2 - 3;
+                SpriteContainer.Sprites["drag"].Bitmap = new Bitmap(7, 7);
+                SpriteContainer.Sprites["drag"].Bitmap = new Bitmap(7, 7);
+                SpriteContainer.Sprites["drag"].Bitmap.Unlock();
                 Color c = new Color(55, 187, 255);
-                ScrollContainer.Sprites["drag"].Bitmap.DrawLine(2, 0, 6, 0, c);
-                ScrollContainer.Sprites["drag"].Bitmap.DrawLine(2, 0, 2, 6, c);
-                ScrollContainer.Sprites["drag"].Bitmap.DrawLine(0, 4, 4, 4, c);
-                ScrollContainer.Sprites["drag"].Bitmap.SetPixel(1, 5, c);
-                ScrollContainer.Sprites["drag"].Bitmap.SetPixel(3, 5, c);
-                ScrollContainer.Sprites["drag"].Bitmap.Lock();
+                SpriteContainer.Sprites["drag"].Bitmap.DrawLine(2, 0, 6, 0, c);
+                SpriteContainer.Sprites["drag"].Bitmap.DrawLine(2, 0, 2, 6, c);
+                SpriteContainer.Sprites["drag"].Bitmap.DrawLine(0, 4, 4, 4, c);
+                SpriteContainer.Sprites["drag"].Bitmap.SetPixel(1, 5, c);
+                SpriteContainer.Sprites["drag"].Bitmap.SetPixel(3, 5, c);
+                SpriteContainer.Sprites["drag"].Bitmap.Lock();
             }
         }
     }
@@ -622,7 +927,9 @@ public class OptimizedTreeView : Widget
         if (HoveringNode != null && HoveringNode.Draggable)
         {
             this.Dragging = true;
-            this.DragOriginPoint = new Point(e.X, e.Y);
+            int rx = e.X - Viewport.X + SpriteContainer.LeftCutOff;
+            int ry = e.Y - Viewport.Y + SpriteContainer.TopCutOff;
+            this.DragOriginPoint = new Point(rx, ry);
         }
     }
 
@@ -642,7 +949,6 @@ public class OptimizedTreeView : Widget
                 }
                 else if (this.DragState == DragStates.Above || this.DragState == DragStates.SharedAbove)
                 {
-                    Console.WriteLine(LastDrawData);
                     DeleteNode(this.ActiveNode, true);
                     int HoveredIndex = this.HoveringNode.Parent.Children.IndexOf(this.HoveringNode);
                     InsertNode(this.HoveringNode.Parent, HoveredIndex, this.ActiveNode);
@@ -664,13 +970,13 @@ public class OptimizedTreeView : Widget
                     }
                     this.OnDragAndDropped?.Invoke(new GenericObjectEventArgs<IOptimizedNode>(this.ActiveNode));
                 }
-                PrintStructure();
+                if (this.SelectedNode != null) UpdateSelection(this.SelectedNode);
             }
         }
         else if (this.ActiveNode != null && this.ActiveNode.Selectable && this.ActiveNode == this.HoveringNode)
         {
-            int rx = e.X - ScrollContainer.Viewport.X + ScrollContainer.LeftCutOff;
-            int ry = e.Y - ScrollContainer.Viewport.Y + ScrollContainer.TopCutOff;
+            int rx = e.X - Viewport.X + SpriteContainer.LeftCutOff;
+            int ry = e.Y - Viewport.Y + SpriteContainer.TopCutOff;
             int NodeX = (this.ActiveNode.Depth - 1) * DepthIndent + XOffset;
             int NodeY = GetDrawnYCoord(ActiveNode);
             if (ActiveNode is OptimizedNode && rx >= NodeX + 14 && rx < NodeX + 25 && ry >= NodeY + 6 && ry < NodeY + 17)
@@ -679,7 +985,7 @@ public class OptimizedTreeView : Widget
             }
             else
             {
-                SetSelectedNode(this.ActiveNode, Input.Press(Keycode.CTRL));
+                SetSelectedNode(this.ActiveNode, false); // Input.Press(Keycode.CTRL)
             }
         }
         this.Dragging = false;
@@ -719,6 +1025,15 @@ public class OptimizedTreeView : Widget
         else
         {
             if (TimerExists("long_hover")) DestroyTimer("long_hover");
+        }
+        if (Input.Trigger(Keycode.ESCAPE) && this.Dragging)
+        {
+            this.Dragging = false;
+            this.ActiveNode = null;
+            this.DragState = null;
+            this.DragOriginPoint = null;
+            if (ValidatedDragMovement) RedrawDragState();
+            this.ValidatedDragMovement = false;
         }
         OldHoveringNode = HoveringNode;
     }

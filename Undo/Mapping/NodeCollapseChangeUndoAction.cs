@@ -16,19 +16,17 @@ public class NodeCollapseChangeUndoAction : BaseUndoAction
     public int MapID;
     public bool OldCollapsed;
     public bool NewCollapsed;
-    public int SelectedMapID;
 
-    public NodeCollapseChangeUndoAction(int MapID, bool OldCollapsed, bool NewCollapsed, int SelectedMapID)
+    public NodeCollapseChangeUndoAction(int MapID, bool OldCollapsed, bool NewCollapsed)
     {
         this.MapID = MapID;
         this.OldCollapsed = OldCollapsed;
         this.NewCollapsed = NewCollapsed;
-        this.SelectedMapID = SelectedMapID;
     }
 
-    public static void Create(int MapID, bool OldCollapsed, bool NewCollapsed, int SelectedMapID)
+    public static void Create(int MapID, bool OldCollapsed, bool NewCollapsed)
     {
-        var c = new NodeCollapseChangeUndoAction(MapID, OldCollapsed, NewCollapsed, SelectedMapID);
+        var c = new NodeCollapseChangeUndoAction(MapID, OldCollapsed, NewCollapsed);
         c.Register();
     }
 
@@ -39,7 +37,8 @@ public class NodeCollapseChangeUndoAction : BaseUndoAction
             SetMode(EditorMode.Mapping);
             return false;
         }
-        TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.mapview;
+        // TODO
+        /*TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.MapTree;
         int SelectedMapID = (int) mapview.SelectedNode.Object;
         TreeNode Node = null;
         foreach (TreeNode n in mapview.Nodes)
@@ -66,7 +65,7 @@ public class NodeCollapseChangeUndoAction : BaseUndoAction
             mapview.SetSelectedNode(Node);
         }
         mapview.Redraw();
-        Editor.MainWindow.MapWidget.SetHint($"{(IsRedo ? "Redid" : "Undid")} map collapsed state changes");
+        Editor.MainWindow.MapWidget.SetHint($"{(IsRedo ? "Redid" : "Undid")} map collapsed state changes");*/
         return true;
     }
 

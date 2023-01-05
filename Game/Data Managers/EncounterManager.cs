@@ -22,8 +22,14 @@ public class EncounterManager : BaseDataManager
         LoadAsHash((key, value) =>
         {
             string ckey = Ruby.Symbol.FromPtr(key);
-            int mapid = Convert.ToInt32(ckey.Split('_')[0]);
-            int version = Convert.ToInt32(ckey.Split('_')[1]);
+            int mapid = 0;
+            int version = 0;
+            if (ckey.Contains('_'))
+            {
+                mapid = Convert.ToInt32(ckey.Split('_')[0]);
+                version = Convert.ToInt32(ckey.Split('_')[1]);
+            }
+            else mapid = Convert.ToInt32(ckey);
             EncounterTable enct = new EncounterTable(value);
             Data.Encounters.Add((mapid, version), enct);
         });
