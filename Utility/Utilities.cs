@@ -584,53 +584,57 @@ public static class Utilities
 
     public static List<Point> GetIdenticalConnected(Map map, int layer, int x, int y)
     {
-
-        return GetIdenticalConnectedInternal(map, layer, x, y, x, y, new List<Point>());
-    }
-
-    private static List<Point> GetIdenticalConnectedInternal(Map map, int layer, int x, int y, int sx, int sy, List<Point> visited)
-    {
-        // TODO: Iterative algorithm, or use some other data structure to perform the algorithm more efficiently
-        // so we don't have arbitrary stack overflows
-        if (Math.Abs(sx - x) > 30 || Math.Abs(sy - y) > 30) return new List<Point>();
-        if (x < 0 || x >= map.Width || y < 0 || y >= map.Height) return new List<Point>();
-        if (visited.Exists(p => p.X == x && p.Y == y)) return new List<Point>();
-        TileData src = map.Layers[layer].Tiles[x + y * map.Width];
-        List<Point> points = new List<Point>() { new Point(x, y) };
-        visited.Add(new Point(x, y));
-        if (x > 0)
+        if (x < 0 || y < 0 || x >= map.Width || y >= map.Height) return new List<Point>();
+        bool[] visited = new bool[map.Width * map.Height];
+        bool[] connected = new bool[map.Width * map.Height];
+        Queue<(int, int)> queue = new Queue<(int, int)>();
+        int pos = y * map.Width + x;
+        TileData sourceTile = map.Layers[layer].Tiles[pos];
+        queue.Enqueue((x, y));
+        while (queue.Count > 0)
         {
-            TileData tile = map.Layers[layer].Tiles[(x - 1) + y * map.Width];
-            if (src is null && tile == null || src is not null && src.Equals(tile))
+            (x, y) = queue.Dequeue();
+            pos = y * map.Width + x;
+            if (visited[pos]) continue;
+            visited[pos] = true;
+            connected[pos] = true;
+            if (x > 0 && IsTileSimilar(map, layer, x - 1, y, sourceTile))
             {
-                points.AddRange(GetIdenticalConnectedInternal(map, layer, x - 1, y, sx, sy, visited));
+                queue.Enqueue((x - 1, y));
+            }
+            if (x < map.Width - 1 && IsTileSimilar(map, layer, x + 1, y, sourceTile))
+            {
+                queue.Enqueue((x + 1, y));
+            }
+            if (y > 0 && IsTileSimilar(map, layer, x, y - 1, sourceTile))
+            {
+                queue.Enqueue((x, y - 1));
+            }
+            if (y < map.Height - 1 && IsTileSimilar(map, layer, x, y + 1, sourceTile))
+            {
+                queue.Enqueue((x, y + 1));
             }
         }
-        if (x < map.Width - 1)
+        List<Point> points = new List<Point>();
+        for (int i = 0; i < connected.Length; i++)
         {
-            TileData tile = map.Layers[layer].Tiles[(x + 1) + y * map.Width];
-            if (src is null && tile == null || src is not null && src.Equals(tile))
+            if (connected[i])
             {
-                points.AddRange(GetIdenticalConnectedInternal(map, layer, x + 1, y, sx, sy, visited));
-            }
-        }
-        if (y > 0)
-        {
-            TileData tile = map.Layers[layer].Tiles[x + (y - 1) * map.Width];
-            if (src is null && tile == null || src is not null && src.Equals(tile))
-            {
-                points.AddRange(GetIdenticalConnectedInternal(map, layer, x, y - 1, sx, sy, visited));
-            }
-        }
-        if (y < map.Height - 1)
-        {
-            TileData tile = map.Layers[layer].Tiles[x + (y + 1) * map.Width];
-            if (src is null && tile == null || src is not null && src.Equals(tile))
-            {
-                points.AddRange(GetIdenticalConnectedInternal(map, layer, x, y + 1, sx, sy, visited));
+                // Turn the index into an x,y coordinate
+                int px = i % map.Width;
+                int py = i / map.Width;
+                points.Add(new Point(px, py));
             }
         }
         return points;
+    }
+
+    private static bool IsTileSimilar(Map map, int layer, int x, int y, TileData sourceTile)
+    {
+        TileData targetTile = map.Layers[layer].Tiles[y * map.Width + x];
+        if (sourceTile is null && targetTile is null) return true;
+        if (sourceTile is null && targetTile is not null || sourceTile is not null && targetTile is null) return false;
+        return sourceTile.Equals(targetTile);
     }
 
     public static void SetClipboard(string s)
