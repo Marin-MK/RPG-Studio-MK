@@ -262,7 +262,17 @@ public class TilesPanel : Widget
             //{
             int x = 33 * (SingleIndex % 8);
             int y = 33 * (int)Math.Floor(SingleIndex / 8d);
-            singles.Build(x, y, autotile.AutotileBitmap, new Rect(0, 0, 32, 32), BlendMode.None);
+            if (autotile.AutotileBitmap is null)
+            {
+                singles.DrawRect(x, y, 32, 32, Color.RED);
+                singles.DrawRect(x + 1, y + 1, 30, 30, Color.RED);
+                singles.DrawLine(x + 2, y + 2, x + 29, y + 29, Color.RED);
+                singles.DrawLine(x + 29, y + 2, x + 2, y + 29, Color.RED);
+            }
+            else
+            {
+                singles.Build(x, y, autotile.AutotileBitmap, new Rect(0, 0, 32, 32), BlendMode.None);
+            }
             AutotileContainers.Add(i);
             SingleIndex++;
             //    continue;

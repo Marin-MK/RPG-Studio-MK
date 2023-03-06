@@ -273,9 +273,11 @@ public class Tileset : ICloneable
         for (int i1 = 0; i1 < this.Autotiles.Count; i1++)
         {
             Autotile a1 = this.Autotiles[i1];
+            if (a1 is null || a1.AutotileBitmap is null) continue;
             for (int i2 = 0; i2 < this.Autotiles.Count; i2++)
             {
                 Autotile a2 = this.Autotiles[i2];
+                if (a2 is null || a2.AutotileBitmap is null) continue;
                 if (a1 == a2 || a1 == null || a2 == null || a1.Format != a2.Format || a1.Format != AutotileFormat.RMXP) continue;
                 bool Equal = true;
                 for (int y = 0; y < 32; y++)
