@@ -278,7 +278,8 @@ public static class Utilities
                         Bitmap tilesetimage = Data.Tilesets[Map.TilesetIDs[tile.Index]].TilesetBitmap;
                         int tilesetx = tile.ID % 8;
                         int tilesety = (int) Math.Floor(tile.ID / 8d);
-                        bmp.Build(new Rect(x * 32, y * 32, 32, 32), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32), layer == 0 ? BlendMode.None : BlendMode.Blend);
+                        if (tilesety * 32 + 32 <= tilesetimage.Height)
+                            bmp.Build(new Rect(x * 32, y * 32, 32, 32), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32), layer == 0 ? BlendMode.None : BlendMode.Blend);
                     }
                     else if (tile.TileType == TileType.Autotile)
                     {
@@ -322,7 +323,8 @@ public static class Utilities
                         Bitmap tilesetimage = Data.Tilesets[Map.TilesetIDs[tile.Index]].TilesetBitmap;
                         int tilesetx = tile.ID % 8;
                         int tilesety = (int)Math.Floor(tile.ID / 8d);
-                        bmp.Build(new Rect(x * 16, y * 16, 16, 16), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32), layer == 0 ? BlendMode.None : BlendMode.Blend);
+                        if (tilesety * 32 + 32 <= tilesetimage.Height)
+                            bmp.Build(new Rect(x * 16, y * 16, 16, 16), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32), layer == 0 ? BlendMode.None : BlendMode.Blend);
                     }
                     else if (tile.TileType == TileType.Autotile)
                     {

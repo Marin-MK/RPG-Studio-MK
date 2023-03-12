@@ -143,7 +143,8 @@ public class MapImageWidget : Widget
                     if (tilesetimage == null) continue;
                     int tilesetx = tile_id % 8;
                     int tilesety = (int)Math.Floor(tile_id / 8d);
-                    bmp.Build(new Rect(mapx, mapy, 32, 32), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32), BlendMode.None);
+                    if (tilesety * 32 + 32 <= tilesetimage.Height)
+                        bmp.Build(new Rect(mapx, mapy, 32, 32), tilesetimage, new Rect(tilesetx * 32, tilesety * 32, 32, 32), BlendMode.None);
                 }
                 else if (MapData.Layers[Layer].Tiles[y * MapData.Width + x].TileType == TileType.Autotile)
                 {
