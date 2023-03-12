@@ -34,7 +34,8 @@ public class Archive : IDisposable
     /// Extracts all files and directories within this archive to the specified directory.
     /// </summary>
     /// <param name="Directory">The directory in which to extract this zip archive.</param>
-    public void Extract(string Directory)
+    /// <param name="OverwriteFiles">Whether to overwrite duplicate files.</param>
+    public void Extract(string Directory, bool OverwriteFiles = true)
     {
         ZipArchive.ExtractToDirectory(Directory);
     }
@@ -44,9 +45,10 @@ public class Archive : IDisposable
     /// </summary>
     /// <param name="Directory">The directory in which to extract the files and directories.</param>
     /// <param name="Condition">The condition on which to select files and directories to extract.</param>
-    public void ExtractWhere(string Directory, Predicate<ArchiveEntry> Condition)
+    /// <param name="OverwriteFiles">Whether to overwrite duplicate files.</param>
+    public void ExtractWhere(string Directory, Predicate<ArchiveEntry> Condition, bool OverwriteFiles = true)
     {
-        Files.FindAll(f => Condition(f)).ForEach(f => f.Extract(Directory));
+        Files.FindAll(f => Condition(f)).ForEach(f => f.Extract(Directory, OverwriteFiles));
     }
 
     /// <summary>

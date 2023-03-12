@@ -115,10 +115,10 @@ public static partial class Data
         DataManagers.ForEach(dm => dm.Save());
     }
 
-    public static void SetProjectPath(string RXProjectFilePath)
+    public static void SetProjectPath(string OriginalProjectFilePath)
     {
-        if (!RXProjectFilePath.EndsWith(".rxproj")) throw new Exception("Invalid project file path.");
-        string path = Path.GetDirectoryName(RXProjectFilePath).Replace('\\', '/');
+        if (!OriginalProjectFilePath.EndsWith(".rxproj") && !OriginalProjectFilePath.EndsWith(".mkproj")) throw new Exception("Invalid project file path.");
+        string path = Path.GetDirectoryName(OriginalProjectFilePath).Replace('\\', '/');
         ProjectPath = path;
         DataPath = path + "/Data";
         ProjectFilePath = path + "/project.mkproj";

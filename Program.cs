@@ -16,9 +16,9 @@ public class Program
 {
     /// <summary>
     /// Whether or not exceptions should be caught and displayed, and whether unsaved changes messages should be given.
-    /// If false, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
+    /// If true, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
     /// </summary>
-    public static bool DebugMode = true;
+    public static bool DebugMode = false;
     public static bool ReleaseMode => !DebugMode;
     public static string ProjectFile = null;
     public static bool ThrownError = false;
