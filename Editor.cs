@@ -80,6 +80,16 @@ public static class Editor
     public static bool Redoing = false;
 
     /// <summary>
+    /// The absolute path to the application's data folder.
+    /// </summary>
+    private static string AppDataFolder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RPG Studio MK");
+
+    /// <summary>
+    /// The absolute path to the general settings file of the program.
+    /// </summary>
+    private static string SettingsFilePath => Path.Combine(AppDataFolder, "editor.mkd");
+
+    /// <summary>
     /// Debug method for quickly testing a piece of functionality.
     /// </summary>
     public static void Test()
@@ -879,7 +889,8 @@ public static class Editor
     public static void DumpGeneralSettings()
     {
         GeneralSettings.SecondsUsed += (int)Math.Floor((DateTime.Now - TimeOpened).TotalSeconds);
-        Stream stream = new FileStream("editor.mkd", FileMode.Create, FileAccess.Write);
+        if (!Directory.Exists(AppDataFolder)) Directory.CreateDirectory(AppDataFolder);
+        Stream stream = new FileStream(SettingsFilePath, FileMode.Create, FileAccess.Write);
         Utilities.WriteSerializationID(stream, 0);
         Utilities.SerializeStream(stream, GeneralSettings);
         stream.Close();
@@ -890,9 +901,9 @@ public static class Editor
     /// </summary>
     public static void LoadGeneralSettings()
     {
-        if (File.Exists("editor.mkd"))
+        if (File.Exists(SettingsFilePath))
         {
-            Stream stream = new FileStream("editor.mkd", FileMode.Open, FileAccess.Read);
+            Stream stream = new FileStream(SettingsFilePath, FileMode.Open, FileAccess.Read);
             Utilities.ReadSerializationID(stream, 0);
             GeneralSettings = Utilities.DeserializeStream<GeneralSettings>(stream);
             stream.Close();
