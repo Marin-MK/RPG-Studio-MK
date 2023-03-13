@@ -280,6 +280,6 @@ public class Button : Widget
                 if (!Disposed && !this.Enabled) RedrawText();
             }
         }
-        if (!Disposed) RedrawFiller();
+        if (!Disposed && Graphics.CanUpdate()) RedrawFiller();
     }
 }
