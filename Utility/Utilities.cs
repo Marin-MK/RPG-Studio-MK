@@ -769,13 +769,13 @@ public static class Utilities
 
     public static bool KitExists(string KitName)
     {
-        string Filename = Path.Combine("Kits", KitName + ".zip");
+        string Filename = Path.Combine(Editor.KitsFolder, KitName + ".zip");
         return File.Exists(Filename);
     }
 
     public static async Task CopyKit(string KitName, string DestinationFolder, CancellationTokenSource Source, Action<float> OnProgress)
     {
-        string Filename = Path.Combine("Kits", KitName + ".zip");
+        string Filename = Path.Combine(Editor.KitsFolder, KitName + ".zip");
         Archive archive = new Archive(Filename);
         string MainFolder = null;
         if (!Directory.Exists(DestinationFolder)) Directory.CreateDirectory(DestinationFolder);

@@ -82,12 +82,17 @@ public static class Editor
     /// <summary>
     /// The absolute path to the application's data folder.
     /// </summary>
-    private static string AppDataFolder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RPG Studio MK");
+    public static string AppDataFolder => Path.Combine(MKUtils.MKUtils.AppDataFolder, "RPG Studio MK");
+
+    /// <summary>
+    /// The absolute path to the installed kits folder.
+    /// </summary>
+    public static string KitsFolder => Path.Combine(AppDataFolder, "Kits");
 
     /// <summary>
     /// The absolute path to the general settings file of the program.
     /// </summary>
-    private static string SettingsFilePath => Path.Combine(AppDataFolder, "editor.mkd");
+    public static string SettingsFilePath => Path.Combine(AppDataFolder, "editor.mkd");
 
     /// <summary>
     /// Debug method for quickly testing a piece of functionality.
@@ -578,8 +583,8 @@ public static class Editor
             else
             {
                 // The kit has not been downloaded before, so we download it now.
-                string Filename = Path.Combine("Kits", Kit.Name + ".zip");
-                if (!Directory.Exists("Kits")) Directory.CreateDirectory("Kits");
+                string Filename = Path.Combine(KitsFolder, Kit.Name + ".zip");
+                if (!Directory.Exists(KitsFolder)) Directory.CreateDirectory(KitsFolder);
                 FileDownloaderWindow window = new FileDownloaderWindow(Kit.Download, Filename, "Downloading kit...");
                 window.OnFinished += () =>
                 {
@@ -601,10 +606,13 @@ public static class Editor
                 CloseProject(false);
                 Data.SetProjectPath(Path.Combine(Folder, "Game.rxproj"));
                 string mkprojPath = Path.Combine(Folder, "project.mkproj");
-                if (MainWindow.CreateEditor()) MakeRecentProject();
-                if (!File.Exists(mkprojPath))
+                if (MainWindow.CreateEditor())
                 {
-                    DumpProjectSettings();
+                    MakeRecentProject();
+                    if (!File.Exists(mkprojPath))
+                    {
+                        DumpProjectSettings();
+                    }
                 }
             });
             window.SetProgress(0f);
@@ -952,8 +960,8 @@ public static class Editor
     /// </summary>
     public static void DumpProjectSettings()
     {
-        // Saves the assembly version into the project file.
-        ProjectSettings.SavedVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
+        // Saves the version into the project file.
+        ProjectSettings.SavedVersion = _version;
         Stream stream = new FileStream(Data.ProjectPath + "/project.mkproj", FileMode.Create, FileAccess.Write);
         Utilities.WriteSerializationID(stream, 0);
         Utilities.SerializeStream(stream, ProjectSettings);
