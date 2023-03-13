@@ -576,7 +576,12 @@ public static class Editor
             {
                 CloseProject(false);
                 Data.SetProjectPath(Path.Combine(Folder, "Game.rxproj"));
+                string mkprojPath = Path.Combine(Folder, "project.mkproj");
                 if (MainWindow.CreateEditor()) MakeRecentProject();
+                if (!File.Exists(mkprojPath))
+                {
+                    DumpProjectSettings();
+                }
             });
             window.SetProgress(0f);
             await Utilities.CopyKit(Kit.Name, Folder, src, e =>
