@@ -3,7 +3,7 @@ If ((Get-Content Program.cs) | Select-String -Pattern "public static bool DebugM
 }
 Else {
 	Write-Host "Building..."
-	dotnet publish -r win-x64 --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true
+	dotnet publish -r win-x64 --self-contained false -p:PublishSingleFile=true
 	Write-Host "Removing old version text..."
 	rm "bin/Debug/net7.0/win-x64/publish/version.txt"
 	Write-Host "Writing new version..."
