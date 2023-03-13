@@ -197,20 +197,24 @@ public class BaseDataManager
         int Total = Tries;
         while (Tries > 0)
         {
+            IntPtr File = IntPtr.Zero;
             if (Ruby.Protect(_ =>
             {
-                IntPtr File = Ruby.File.Open(Filename, Mode);
+                File = Ruby.File.Open(Filename, Mode);
                 Ruby.Pin(File);
                 Action(File);
                 Ruby.File.Close(File);
+                File = IntPtr.Zero;
                 Ruby.Unpin(File);
                 return IntPtr.Zero;
             }))
             {
                 if (Tries != Total)
                     Console.WriteLine($"{Filename.Split('/').Last()} opened after {Total - Tries + 1} attempt(s) and {DelayInMS * (Total - Tries + 1)}ms.");
+                if (File != IntPtr.Zero) Ruby.File.Close(File);
                 return (true, null);
             }
+            if (File != IntPtr.Zero) Ruby.File.Close(File);
             string ErrorType = Ruby.GetErrorType();
             if (ErrorType != "Errno::EACCES")
             {
