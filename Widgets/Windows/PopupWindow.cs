@@ -141,6 +141,12 @@ public class PopupWindow : Widget, IPopupWindow
 
     public virtual void Close()
     {
+        if (Disposed)
+        {
+            Editor.CanUndo = true;
+            this.OnClosed?.Invoke(new BaseEventArgs());
+            return;
+        }
         StartAnimation(new SigmoidAnimation("zoom_in", 400, x =>
         {
             SetGlobalZoom(1 - (float) x);
