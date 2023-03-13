@@ -177,42 +177,14 @@ public static class Editor
         //MapAfterEffectsWindow maew = new MapAfterEffectsWindow(Map);
     }
 
-    private static string _version;
-
     /// <summary>
     /// Returns the displayed string for the current editor version.
     /// </summary>
     public static string GetVersionString()
     {
-        // Changed in Project Settings -> Package -> Package Version (stored in .csproj)
-        // Try getting the version from the assembly first (debug)
-        Assembly assembly = Assembly.GetExecutingAssembly();
-        if (assembly is not null && !string.IsNullOrEmpty(assembly.Location))
-        {
-            _version = FileVersionInfo.GetVersionInfo(assembly.Location).ProductVersion;
-            if (!string.IsNullOrEmpty(_version)) _version = RemoveExcessZeroes(_version);
-        }
-        if (string.IsNullOrEmpty(_version))
-        {
-            // Try getting it from version.txt otherwise (release)
-            _version = File.ReadAllText("version.txt").TrimEnd();
-            if (string.IsNullOrEmpty(_version)) _version = "Unknown";
-            else _version = RemoveExcessZeroes(_version);
-        }
         string VersionName = "Version";
-        if (_version[0] == '0') VersionName = "Alpha";
-        return VersionName + " " + _version;
-    }
-
-    private static string RemoveExcessZeroes(string version)
-    {
-        List<string> _split = version.Split('.').ToList();
-        while (_split[^1] == "0")
-        {
-            _split.RemoveAt(_split.Count - 1);
-        }
-        if (_split.Count == 0) _split.Add("1");
-        return _split.GetRange(0, _split.Count).Aggregate((a, b) => a + "." + b);
+        if (!string.IsNullOrEmpty(Program.CurrentVersion) && Program.CurrentVersion[0] == '0') VersionName = "Alpha";
+        return VersionName + " " + Program.CurrentVersion;
     }
 
     /// <summary>
@@ -967,7 +939,7 @@ public static class Editor
     public static void DumpProjectSettings()
     {
         // Saves the version into the project file.
-        ProjectSettings.SavedVersion = _version;
+        ProjectSettings.SavedVersion = Program.CurrentVersion;
         Stream stream = new FileStream(Data.ProjectPath + "/project.mkproj", FileMode.Create, FileAccess.Write);
         Utilities.WriteSerializationID(stream, 0);
         Utilities.SerializeStream(stream, ProjectSettings);
@@ -1004,6 +976,41 @@ public static class Editor
         UnsavedChanges = false;
     }
 
+    public static void AskToUpdate()
+    {
+        string updaterPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, "MK", "Core");
+        string updaterFile = Path.Combine(updaterPath, "updater.exe");
+        bool hasUpdater = File.Exists(updaterFile);
+        if (hasUpdater)
+        {
+            MessageBox win = new MessageBox("Updater", $"An update for RPG Studio MK is available. Would you like to automatically install this update?\nCurrent version: {Program.CurrentVersion}\nLatest version: {Program.LatestVersion}", ButtonType.YesNo, IconType.Info);
+            win.OnClosed += _ =>
+            {
+                if (win.Result == 0) // Yes
+                {
+                    // Open updater
+                    // Close program
+                    Editor.ExitEditor();
+                    Directory.SetCurrentDirectory(updaterPath);
+                    Process proc = new Process();
+                    proc.StartInfo = new ProcessStartInfo("cmd");
+                    proc.StartInfo.ArgumentList.Add("/c");
+                    proc.StartInfo.ArgumentList.Add("updater.exe");
+                    proc.StartInfo.ArgumentList.Add("--automatic-update");
+                    proc.StartInfo.RedirectStandardOutput = true;
+                    proc.StartInfo.UseShellExecute = false;
+                    proc.StartInfo.CreateNoWindow = true;
+                    proc.Start();
+                }
+            };
+        }
+        else
+        {
+            new MessageBox("Updater", $"An update for RPG Studio MK is available. Please run the original RPG Studio MK installer again to install the new version and the automatic updater.\nCurrent version: {Program.CurrentVersion}\nLatest version: {Program.LatestVersion}", ButtonType.OK, IconType.Info);
+        }
+        Program.PromptedUpdate = true;
+    }
+
     /// <summary>
     /// Called every tick for logic updates.
     /// </summary>
@@ -1013,6 +1020,10 @@ public static class Editor
         if (Input.Trigger(Keycode.F2))
         {
             Graphics.ShowFrames = !Graphics.ShowFrames;
+        }
+        if (Program.UpdateAvailable && !Program.PromptedUpdate)
+        {
+            AskToUpdate();
         }
     }
 }
