@@ -616,11 +616,17 @@ public static class Editor
                 }
             });
             window.SetProgress(0f);
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            int updateFrequency = 16; // Update the screen every x ms
             await Utilities.CopyKit(Kit.Name, Folder, src, e =>
             {
-                Graphics.Schedule(() => {
-                    if (!src.IsCancellationRequested) window.SetProgress(e);
-                });
+                if (stopwatch.ElapsedMilliseconds > updateFrequency || e == 1) 
+                {
+                    stopwatch.Restart();
+                    Graphics.Schedule(() => {
+                        if (!src.IsCancellationRequested) window.SetProgress(e);
+                    });
+                }
             });
         }
     }
