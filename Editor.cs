@@ -172,18 +172,42 @@ public static class Editor
         //MapAfterEffectsWindow maew = new MapAfterEffectsWindow(Map);
     }
 
+    private static string _version;
+
     /// <summary>
     /// Returns the displayed string for the current editor version.
     /// </summary>
     public static string GetVersionString()
     {
         // Changed in Project Settings -> Package -> Package Version (stored in .csproj)
+        // Try getting the version from the assembly first (debug)
         Assembly assembly = Assembly.GetExecutingAssembly();
-        string Version = FileVersionInfo.GetVersionInfo(assembly.Location).ProductVersion;
-        if (string.IsNullOrEmpty(Version)) Version = "Unknown";
+        if (assembly is not null && !string.IsNullOrEmpty(assembly.Location))
+        {
+            _version = FileVersionInfo.GetVersionInfo(assembly.Location).ProductVersion;
+            if (!string.IsNullOrEmpty(_version)) _version = RemoveExcessZeroes(_version);
+        }
+        if (string.IsNullOrEmpty(_version))
+        {
+            // Try getting it from version.txt otherwise (release)
+            _version = File.ReadAllText("version.txt").TrimEnd();
+            if (string.IsNullOrEmpty(_version)) _version = "Unknown";
+            else _version = RemoveExcessZeroes(_version);
+        }
         string VersionName = "Version";
-        if (Version[0] == '0') VersionName = "Alpha";
-        return VersionName + " " + Version;
+        if (_version[0] == '0') VersionName = "Alpha";
+        return VersionName + " " + _version;
+    }
+
+    private static string RemoveExcessZeroes(string version)
+    {
+        List<string> _split = version.Split('.').ToList();
+        while (_split[^1] == "0")
+        {
+            _split.RemoveAt(_split.Count - 1);
+        }
+        if (_split.Count == 0) _split.Add("1");
+        return _split.GetRange(0, _split.Count).Aggregate((a, b) => a + "." + b);
     }
 
     /// <summary>

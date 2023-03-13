@@ -88,7 +88,7 @@ public class Program
     private static void InitializeProgram()
     {
         // Ensures the working directory becomes the editor directory
-        Directory.SetCurrentDirectory(Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName);
+        Directory.SetCurrentDirectory(Path.GetDirectoryName(Environment.ProcessPath));
         Console.WriteLine("Launching RPG Studio MK.");
         Console.WriteLine($"Editor Version: {Editor.GetVersionString()}");
         if (!ReleaseMode)

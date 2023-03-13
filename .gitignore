@@ -7,7 +7,6 @@
 *.sln.docstates
 
 line_count.rb
-*.bat
 
 # Visual Studio folder
 .vs
