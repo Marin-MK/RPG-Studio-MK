@@ -606,6 +606,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         {
             if (i >= Lines.Count) break;
             int y = -offset + (i - TopLineIndex) * (LineHeight + LineMargins);
+            if (y >= Sprites["nums"].Bitmap.Height) break;
             Sprites["nums"].Bitmap.DrawText((i + 1).ToString(), LineTextWidth - 3, y, LineTextColor, DrawOptions.RightAlign);
         }
         Sprites["nums"].Bitmap.Lock();
