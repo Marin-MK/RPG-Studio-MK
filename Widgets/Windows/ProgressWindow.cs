@@ -19,7 +19,7 @@ public class ProgressWindow : PopupWindow
     int LastSecond;
     List<float> LastProgress = new List<float>();
 
-    public ProgressWindow(string Title, string Message, bool CloseWhenDone = true, bool Cancellable = true, bool ShowOKButton = true, bool ShowETA = false)
+    public ProgressWindow(string Title, string Message, bool CloseWhenDone = true, bool Cancellable = true, bool ShowOKButton = true, bool ShowETA = false) : base(false)
     {
         this.Message = Message;
         this.CloseWhenDone = CloseWhenDone;

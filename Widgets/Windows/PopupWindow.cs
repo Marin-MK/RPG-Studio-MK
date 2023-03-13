@@ -15,8 +15,9 @@ public class PopupWindow : Widget, IPopupWindow
     public int WindowEdges = 7;
 
     bool HasAnimated = false;
+    bool ShowAnimation;
 
-    public PopupWindow() : base(((UIWindow) Graphics.Windows[0]).UI)
+    public PopupWindow(bool ShowAnimation = true) : base(((UIWindow) Graphics.Windows[0]).UI)
     {
         Window.SetOverlayOpacity(96);
         Sprites["shadow"] = new Sprite(this.Viewport);
@@ -31,6 +32,15 @@ public class PopupWindow : Widget, IPopupWindow
         Window.SetOverlayZIndex(WindowLayer * 10 - 1);
         this.SetZIndex(WindowLayer * 10);
         Editor.CanUndo = false;
+        this.ShowAnimation = ShowAnimation;
+        if (this.ShowAnimation)
+        {
+            SetVisible(false);
+        }
+        else
+        {
+            this.HasAnimated = true;
+        }
     }
 
     public override void Update()
@@ -38,11 +48,11 @@ public class PopupWindow : Widget, IPopupWindow
         if (!HasAnimated)
         {
             // Do this in the update method rather than the constructor, because some window constructors
-            StartAnimation(new LinearAnimation("zoom_in", 60, x =>
+            StartAnimation(new SigmoidAnimation("zoom_in", 400, x =>
             {
-                SetGlobalZoom((byte) Math.Round(255 * x));
                 SetGlobalZoom((float) x);
                 Center();
+                SetVisible(true);
             }));
             HasAnimated = true;
         }
@@ -131,9 +141,17 @@ public class PopupWindow : Widget, IPopupWindow
 
     public virtual void Close()
     {
-        Editor.CanUndo = true;
-        Dispose();
-        this.OnClosed?.Invoke(new BaseEventArgs());
+        StartAnimation(new SigmoidAnimation("zoom_in", 400, x =>
+        {
+            SetGlobalZoom(1 - (float) x);
+            Center();
+            if (x == 1)
+            {
+                Editor.CanUndo = true;
+                Dispose();
+                this.OnClosed?.Invoke(new BaseEventArgs());
+            }
+        }));
     }
 
     public override void Dispose()
