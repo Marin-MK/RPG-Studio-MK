@@ -7,21 +7,22 @@ namespace RPGStudioMK.Widgets;
 
 public class FileDownloaderWindow : ProgressWindow
 {
-    FileDownloader downloader;
+    Downloader downloader;
 
     public Action<Exception> OnError;
 
     public FileDownloaderWindow(string URL, string Filename, string DownloadText = "Downloading File...", bool CloseWhenDone = true, bool Cancellable = true) :
         base("Downloader", "Connecting to server...", CloseWhenDone, Cancellable, false, true)
     {
-        downloader = new FileDownloader(URL, Filename);
-        this.OnCancelled += () => downloader.Stop();
-        downloader.OnProgress += _ => Graphics.Schedule(() =>
+        downloader = new Downloader(URL, Filename);
+        this.OnCancelled += () => downloader.Cancel();
+        downloader.OnProgress += x => Graphics.Schedule(() =>
         {
-            if (!downloader.Stopped)
+            Console.WriteLine(x.Factor);
+            if (!downloader.Cancelled)
             {
                 this.SetMessage(DownloadText);
-                this.SetProgress(downloader.Progress);
+                this.SetProgress(x.Factor);
             }
         });
         downloader.OnError += e => Graphics.Schedule(() =>
