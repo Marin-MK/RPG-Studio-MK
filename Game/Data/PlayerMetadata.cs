@@ -42,8 +42,35 @@ public class PlayerMetadata : IGameData, ICloneable
         }
     }
 
-    public PlayerMetadata(nint Data)
+    public PlayerMetadata(List<string> line)
     {
+        // ID is set by caller (1 = A, 2 = B, etc.)
+        this.TrainerType = (TrainerTypeResolver) line[0];
+        this.WalkCharset = line[1];
+        this.CycleCharset = line[2];
+        this.SurfCharset = line[3];
+        this.RunCharset = line[4];
+        this.DiveCharset = line[5];
+        this.FishCharset = line[6];
+        this.SurfFishCharset = line[7]; // "Field Move" character sheet in v19
+    }
+
+    public PlayerMetadata(nint Data, bool v19)
+    {
+        if (v19)
+        {
+            // [:POKEMONTRAINER_Red, "trainer_POKEMONTRAINER_Red", "boy_bike", "boy_surf", "boy_run", "boy_surf", "boy_fish_offset", "boy_fish_offset"]
+            // ID is set by caller (1 = A, 2 = B, etc.)
+            this.TrainerType = (TrainerTypeResolver) Ruby.Symbol.FromPtr(Ruby.Array.Get(Data, 0));
+            this.WalkCharset = Ruby.String.FromPtr(Ruby.Array.Get(Data, 1));
+            this.CycleCharset = Ruby.String.FromPtr(Ruby.Array.Get(Data, 2));
+            this.SurfCharset = Ruby.String.FromPtr(Ruby.Array.Get(Data, 3));
+            this.RunCharset = Ruby.String.FromPtr(Ruby.Array.Get(Data, 4));
+            this.DiveCharset = Ruby.String.FromPtr(Ruby.Array.Get(Data, 5));
+            this.FishCharset = Ruby.String.FromPtr(Ruby.Array.Get(Data, 6));
+            this.SurfFishCharset = Ruby.String.FromPtr(Ruby.Array.Get(Data, 7)); // "Field Move" character sheet in v19
+            return;
+        }
         string GetStrOrNull(string Variable)
         {
             nint value = Ruby.GetIVar(Data, Variable);

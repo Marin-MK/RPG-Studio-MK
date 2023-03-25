@@ -15,6 +15,8 @@ public class Item : IGameData, ICloneable
     public static nint Class => BaseDataManager.Classes["Item"];
 
     public string ID;
+    [Obsolete]
+    public int? IDNumber;
     public string Name;
     public string Plural;
     public ItemPocket Pocket;
@@ -23,6 +25,8 @@ public class Item : IGameData, ICloneable
     public string Description;
     public FieldUse FieldUse;
     public BattleUse BattleUse;
+    [Obsolete]
+    public int? UseType;
     public bool Consumable;
     public List<string> Flags;
     public MoveResolver? Move;
@@ -82,24 +86,45 @@ public class Item : IGameData, ICloneable
         if (hash.ContainsKey("Move")) this.Move = (MoveResolver) hash["Move"];
     }
 
+    public Item(List<string> line)
+    {
+        this.IDNumber = Convert.ToInt32(line[0]);
+        this.ID = line[1];
+        this.Name = line[2];
+        this.Plural = line[3];
+        this.Pocket = (ItemPocket) Convert.ToInt32(line[4]);
+        this.Price = Convert.ToInt32(line[5]);
+        this.Description = line[6];
+        this.FieldUse = (FieldUse) Convert.ToInt32(line[7]);
+        this.BattleUse = (BattleUse) Convert.ToInt32(line[8]);
+        this.UseType = Convert.ToInt32(line[9]);
+        if (!string.IsNullOrEmpty(line[10])) this.Move = (MoveResolver) line[10];
+        this.Flags = new List<string>();
+    }
+
     public Item(nint Data)
     {
         this.ID = Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@id"));
+        if (Ruby.GetIVar(Data, "@id_number") != Ruby.Nil) this.IDNumber = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@id_number"));
         this.Name = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_name"));
         this.Plural = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_name_plural"));
         this.Pocket = (ItemPocket) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@pocket"));
         this.Price = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@price"));
-        this.SellPrice = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@sell_price"));
+        if (Ruby.GetIVar(Data, "@sell_price") != Ruby.Nil) this.SellPrice = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@sell_price"));
+        else this.SellPrice = this.Price / 2;
         this.Description = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_description"));
         this.FieldUse = (FieldUse) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@field_use"));
         this.BattleUse = (BattleUse) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@battle_use"));
         this.Consumable = Ruby.GetIVar(Data, "@consumable") == Ruby.True;
         nint FlagsArray = Ruby.GetIVar(Data, "@flags");
-        int FlagsArrayLength = (int) Ruby.Array.Length(FlagsArray);
         this.Flags = new List<string>();
-        for (int i = 0; i < FlagsArrayLength; i++)
+        if (FlagsArray != Ruby.Nil)
         {
-            this.Flags.Add(Ruby.String.FromPtr(Ruby.Array.Get(FlagsArray, i)));
+            int FlagsArrayLength = (int) Ruby.Array.Length(FlagsArray);
+            for (int i = 0; i < FlagsArrayLength; i++)
+            {
+                this.Flags.Add(Ruby.String.FromPtr(Ruby.Array.Get(FlagsArray, i)));
+            }
         }
         if (Ruby.GetIVar(Data, "@move") != Ruby.Nil) this.Move = (MoveResolver) Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@move"));
     }
@@ -109,11 +134,12 @@ public class Item : IGameData, ICloneable
         nint e = Ruby.Funcall(Class, "new");
         Ruby.Pin(e);
         Ruby.SetIVar(e, "@id", Ruby.Symbol.ToPtr(this.ID));
+        if (this.IDNumber.HasValue) Ruby.SetIVar(e, "@id_number", Ruby.Integer.ToPtr(this.IDNumber.Value));
         Ruby.SetIVar(e, "@real_name", Ruby.String.ToPtr(this.Name));
         Ruby.SetIVar(e, "@real_name_plural", Ruby.String.ToPtr(this.Plural));
         Ruby.SetIVar(e, "@pocket", Ruby.Integer.ToPtr((int) this.Pocket));
         Ruby.SetIVar(e, "@price", Ruby.Integer.ToPtr(this.Price));
-        Ruby.SetIVar(e, "@sell_price", Ruby.Integer.ToPtr(this.SellPrice));
+        if (Game.Data.IsVersionAtLeast(EssentialsVersion.v20)) Ruby.SetIVar(e, "@sell_price", Ruby.Integer.ToPtr(this.SellPrice));
         Ruby.SetIVar(e, "@real_description", Ruby.String.ToPtr(this.Description));
         Ruby.SetIVar(e, "@field_use", Ruby.Integer.ToPtr((int) this.FieldUse));
         Ruby.SetIVar(e, "@battle_use", Ruby.Integer.ToPtr((int) this.BattleUse));

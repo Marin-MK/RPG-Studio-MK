@@ -10,8 +10,7 @@ namespace RPGStudioMK.Game;
 
 public class MapManager : BaseDataManager
 {
-    public MapManager()
-        : base(null, null, null, "maps", false) { }
+    public MapManager() : base(null, null, null, "maps") { }
 
     /// <summary>
     /// Returns a list of map files in the given folder.
@@ -38,9 +37,10 @@ public class MapManager : BaseDataManager
         return Filenames;
     }
 
-    protected override void LoadData()
+    public override void Load(bool fromPBS = false)
     {
-        base.LoadData();
+        base.Load(fromPBS);
+        Logger.Write("Loading maps");
         SafeLoad("MapInfos.rxdata", InfoFile =>
         {
             IntPtr mapinfo = Ruby.Marshal.Load(InfoFile);
@@ -68,9 +68,10 @@ public class MapManager : BaseDataManager
         });
     }
 
-    protected override void SaveData()
+    public override void Save()
     {
-        base.SaveData();
+        base.Save();
+        Logger.Write("Saving maps and map metadata");
         (bool Success, string Error) = SafeSave("MapInfos.rxdata", InfoFile =>
         {
             IntPtr mapinfos = Ruby.Hash.Create();
@@ -117,6 +118,7 @@ public class MapManager : BaseDataManager
     public override void Clear()
     {
         base.Clear();
+        Logger.Write("Clearing map data");
         Data.Maps.Clear();
     }
 }

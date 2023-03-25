@@ -13,12 +13,13 @@ namespace RPGStudioMK.Game;
 
 public class TrainerTypeManager : BaseDataManager
 {
-    public TrainerTypeManager(bool FromPBS = false)
-        : base("TrainerType", "trainer_types.dat", "trainer_types.txt", "trainer types", FromPBS) { }
+    public TrainerTypeManager()
+        : base("TrainerType", "trainer_types.dat", "trainer_types.txt", "trainer types") { }
 
     protected override void LoadData()
     {
         base.LoadData();
+        Logger.Write("Loading trainer types");
         LoadAsHash((key, value) =>
         {
             string ckey = Ruby.Symbol.FromPtr(key);
@@ -29,21 +30,36 @@ public class TrainerTypeManager : BaseDataManager
     protected override void LoadPBS()
     {
         base.LoadPBS();
-        FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
+        if (Game.Data.IsVersionAtLeast(EssentialsVersion.v20))
         {
-            Data.TrainerTypes.Add(id, new TrainerType(id, hash));
-        }, Data.SetLoadProgress);
+            Logger.Write("Loading trainer types from PBS with EV >= v20");
+            FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
+            {
+                Data.TrainerTypes.Add(id, new TrainerType(id, hash));
+            }, Data.SetLoadProgress);
+        }
+        else
+        {
+            Logger.Write("Loading trainer types from PBS with EV < v20");
+            FormattedTextParser.ParseLineByLineCommaBased("trainertypes.txt", line =>
+            {
+                TrainerType trainertypedata = new TrainerType(line);
+                Data.TrainerTypes.Add(trainertypedata.ID, trainertypedata);
+            }, Data.SetLoadProgress);
+        }
     }
 
     protected override void SaveData()
     {
         base.SaveData();
+        Logger.Write("Saving trainer types");
         SaveAsHash(Data.TrainerTypes.Values, t => Ruby.Symbol.ToPtr(t.ID));
     }
 
     public override void Clear()
     {
         base.Clear();
+        Logger.Write("Clearing trainer types");
         Data.TrainerTypes.Clear();
     }
 }

@@ -14,12 +14,12 @@ namespace RPGStudioMK.Game;
 
 public class AbilityManager : BaseDataManager
 {
-    public AbilityManager(bool FromPBS = false) :
-        base("Ability", "abilities.dat", "abilities.txt", "abilitites", FromPBS) { }
+    public AbilityManager() : base("Ability", "abilities.dat", "abilities.txt", "abilitites") { }
 
     protected override void LoadData()
     {
         base.LoadData();
+        Logger.Write("Loading abilities");
         LoadAsHash((key, value) =>
         {
             string ckey = Ruby.Symbol.FromPtr(key);
@@ -30,21 +30,36 @@ public class AbilityManager : BaseDataManager
     protected override void LoadPBS()
     {
         base.LoadPBS();
-        FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
+        if (Game.Data.IsVersionAtLeast(EssentialsVersion.v20))
         {
-            Data.Abilities.Add(id, new Ability(id, hash));
-        }, Data.SetLoadProgress);
+            Logger.Write("Loading abilities from PBS with EV >= v20");
+            FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
+            {
+                Data.Abilities.Add(id, new Ability(id, hash));
+            }, Data.SetLoadProgress);
+        }
+        else
+        {
+            Logger.Write("Loading abilities from PBS with EV < v20");
+            FormattedTextParser.ParseLineByLineCommaBased(PBSFilename, line =>
+            {
+                Ability abilitydata = new Ability(line);
+                Data.Abilities.Add(abilitydata.ID, abilitydata);
+            }, Data.SetLoadProgress);
+        }
     }
 
     protected override void SaveData()
     {
         base.SaveData();
+        Logger.Write("Saving abilities");
         SaveAsHash(Data.Abilities.Values, abil => Ruby.Symbol.ToPtr(abil.ID));
     }
 
     public override void Clear()
     {
         base.Clear();
+        Logger.Write("Clearing abilities");
         Data.Abilities.Clear();
     }
 }

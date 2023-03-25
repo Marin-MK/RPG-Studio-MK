@@ -10,12 +10,11 @@ namespace RPGStudioMK.Game;
 
 public class ScriptManager : BaseDataManager
 {
-    public ScriptManager()
-        : base(null, "Scripts.rxdata", null, "scripts", false) { }
+    public ScriptManager() : base(null, "Scripts.rxdata", null, "scripts") { }
 
-    protected override void LoadData()
+    public override void Load(bool fromPBS = false)
     {
-        base.LoadData();
+        base.Load(fromPBS);
         if (Directory.Exists(Data.DataPath + "/Scripts"))
             LoadScriptsExternal();
         else LoadScriptsRXDATA();
@@ -97,6 +96,7 @@ public class ScriptManager : BaseDataManager
 
     private void LoadScriptsExternal()
     {
+        Logger.Write("Loading scripts from external files");
         List<(string, string)>? GetScripts(string Path, int Depth)
         {
             List<(string, string)>? Files = new List<(string, string)>();
@@ -152,6 +152,7 @@ public class ScriptManager : BaseDataManager
 
     private void LoadScriptsRXDATA()
     {
+        Logger.Write("Loading scripts from RXDATA file");
         Data.UsesExternalScripts = false;
         SafeLoad("Scripts.rxdata", File =>
         {
@@ -166,15 +167,16 @@ public class ScriptManager : BaseDataManager
         });
     }
 
-    protected override void SaveData()
+    public override void Save()
     {
-        base.SaveData();
+        base.Save();
         if (Data.UsesExternalScripts) SaveScriptsExternal();
         else SaveScriptsRXDATA();
     }
 
     private void SaveScriptsExternal()
     {
+        Logger.Write("Saving scripts to external files");
         if (!Directory.Exists(Data.DataPath + "/Scripts")) Directory.CreateDirectory(Data.DataPath + "/Scripts");
         else
         {
@@ -250,6 +252,7 @@ public class ScriptManager : BaseDataManager
 
     private void SaveScriptsRXDATA()
     {
+        Logger.Write("Saving scripts to RXDATA file");
         SafeSave(Filename, File =>
         {
             IntPtr scripts = Ruby.Array.Create();
@@ -267,6 +270,7 @@ public class ScriptManager : BaseDataManager
     public override void Clear()
     {
         base.Clear();
+        Logger.Write("Clearing scripts");
         Data.Scripts.Clear();
     }
 }

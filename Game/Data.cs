@@ -44,36 +44,33 @@ public static partial class Data
     // Used during loading process
     public static bool StopLoading;
     
-    public static bool LoadedMetadataFromPBS = false;
     // The order and types of data that are loaded in this format.
     // There are few restrictions, other than:
     // - Tilesets must be loaded before maps
     // - Maps must be loaded before map metadata
     // - Metadata must be loaded before player metadata (this is not a strict requirement,
     //   but player metadata will discard data if metadata loads from PBS, so excessive data loading)
-    static List<BaseDataManager> DataManagers = new List<BaseDataManager>()
+    static DataManager DataManager = new DataManager(new List<BaseDataManager>()
     {
         // RMXP Data
+        new ScriptManager(),
         new GameConfigManager(),
         new TilesetManager(),
         new MapManager(),
         new CommonEventManager(),
-        new ScriptManager(),
         new SystemManager(),
-        // Important/Useful Essentials Data
-        new MapMetadataManager(false),
-        new MetadataManager(false),
-        new PlayerMetadataManager(),
+        // Metadata, player metadata & map metadata
+        new MainMetadataManager(),
         // Other Essentials Data
-        new SpeciesManager(false),
-        new AbilityManager(false),
-        new ItemManager(false),
-        new MoveManager(false),
-        new TypeManager(false),
-        new TrainerTypeManager(false),
-        new TrainerManager(false),
-        new EncounterManager(false),
-    };
+        new SpeciesManager(),
+        new AbilityManager(),
+        new ItemManager(),
+        new MoveManager(),
+        new TypeManager(),
+        new TrainerTypeManager(),
+        new TrainerManager(),
+        new EncounterManager(),
+    });
     static Action<float> OnProgressUpdated;
     static Action<string> OnLoadTextChanging;
 
@@ -83,7 +80,7 @@ public static partial class Data
         ProjectFilePath = null;
         ProjectRMXPGamePath = null;
         DataPath = null;
-        DataManagers.ForEach(dm => dm.Clear());
+        DataManager.Clear();
         Plugins.Clear();
         StopLoading = false;
         UsesExternalScripts = false;
@@ -95,12 +92,7 @@ public static partial class Data
         Data.OnLoadTextChanging = OnLoadTextChanging;
         Compatibility.RMXP.Setup();
 
-        DataManagers.ForEach(dm => dm.InitializeClass());
-        DataManagers.ForEach(dm =>
-        {
-            if (StopLoading) return;
-            dm.Load();
-        });
+        DataManager.Load(false);
 
         if (StopLoading) return;
         SetLoadText("Loading plugins...");
@@ -112,7 +104,7 @@ public static partial class Data
 
     public static void SaveGameData()
     {
-        DataManagers.ForEach(dm => dm.Save());
+        DataManager.Save();
     }
 
     public static void SetProjectPath(string OriginalProjectFilePath)
@@ -141,21 +133,21 @@ public static partial class Data
         Data.StopLoading = true;
     }
 
-    public static bool EssentialsAtLeast(EssentialsVersion Version)
+    public static bool IsVersionAtLeast(EssentialsVersion Version)
     {
         return EssentialsVersion >= Version;
     }
 
     public static bool IsPrimaryVersion(EssentialsVersion Version)
     {
-        switch (Version)
+        return EssentialsVersion switch
         {
-            case EssentialsVersion.v17: return EssentialsVersion >= EssentialsVersion.v17 && EssentialsVersion <= EssentialsVersion.v17_2;
-            case EssentialsVersion.v18: return EssentialsVersion == EssentialsVersion.v18 || EssentialsVersion == EssentialsVersion.v18_1;
-            case EssentialsVersion.v19: return EssentialsVersion == EssentialsVersion.v19 || EssentialsVersion == EssentialsVersion.v19_1;
-            case EssentialsVersion.v20: return EssentialsVersion == EssentialsVersion.v20 || EssentialsVersion == EssentialsVersion.v20_1;
-            default: return false;
-        }
+            >= EssentialsVersion.v17 and <= EssentialsVersion.v17_2 => Version == EssentialsVersion.v17,
+            EssentialsVersion.v18 or EssentialsVersion.v18_1 => Version == EssentialsVersion.v18,
+            EssentialsVersion.v19 or EssentialsVersion.v19_1 => Version == EssentialsVersion.v19,
+            EssentialsVersion.v20 or EssentialsVersion.v20_1 => Version == EssentialsVersion.v20,
+            _ => false
+        };
     }
 }
 

@@ -9,28 +9,26 @@ namespace RPGStudioMK.Game;
 public class CommonEventManager : BaseDataManager
 {
     public CommonEventManager() 
-        : base(null, "CommonEvents.rxdata", null, "common events", false) { }
+        : base(null, "CommonEvents.rxdata", null, "common events") { }
 
-    protected override void LoadData()
+    public override void Load(bool fromPBS = false)
     {
-        base.LoadData();
+        base.Load(fromPBS);
+        Logger.Write("Loading common events");
         LoadAsArray(e => Data.CommonEvents.Add(new CommonEvent(e)), true);
     }
 
-    protected override void LoadPBS()
+    public override void Save()
     {
-        throw new MethodNotSupportedException(this);
-    }
-
-    protected override void SaveData()
-    {
-        base.SaveData();
+        base.Save();
+        Logger.Write("Saving common events");
         SaveAsArray(Data.CommonEvents, true);
     }
 
     public override void Clear()
     {
         base.Clear();
+        Logger.Write("Clearing common events");
         Data.CommonEvents.Clear();
     }
 }

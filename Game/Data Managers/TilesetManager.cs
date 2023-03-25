@@ -8,12 +8,12 @@ namespace RPGStudioMK.Game;
 
 public class TilesetManager : BaseDataManager
 {
-    public TilesetManager()
-        : base(null, "Tilesets.rxdata", null, "tilesets", false) { }
+    public TilesetManager() : base(null, "Tilesets.rxdata", null, "tilesets") { }
 
-    protected override void LoadData()
+    public override void Load(bool fromPBS = false)
     {
-        base.LoadData();
+        base.Load(fromPBS);
+        Logger.Write("Loading tilesets");
         SafeLoad(Filename, File =>
         {
             IntPtr data = Ruby.Marshal.Load(File);
@@ -33,9 +33,10 @@ public class TilesetManager : BaseDataManager
         });
     }
 
-    protected override void SaveData()
+    public override void Save()
     {
         base.SaveData();
+        Logger.Write("Saving tilesets");
         SafeSave(Filename, File =>
         {
             IntPtr tilesets = Ruby.Array.Create();
@@ -57,6 +58,7 @@ public class TilesetManager : BaseDataManager
     public override void Clear()
     {
         base.Clear();
+        Logger.Write("Clearing tilesets");
         Data.Tilesets.Clear();
     }
 }

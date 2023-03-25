@@ -15,12 +15,12 @@ namespace RPGStudioMK.Game;
 
 public class MapMetadataManager : BaseDataManager
 {
-    public MapMetadataManager(bool FromPBS = false)
-        : base("MapMetadata", "map_metadata.dat", "map_metadata.txt", "map metadata", FromPBS) { }
+    public MapMetadataManager() : base("MapMetadata", "map_metadata.dat", "map_metadata.txt", "map metadata") { }
 
     protected override void LoadData()
     {
         base.LoadData();
+        Logger.Write("Loading map metadata");
         LoadAsHash((key, robj) =>
         {
             int ckey = (int) Ruby.Integer.FromPtr(key);
@@ -115,7 +115,7 @@ public class MapMetadataManager : BaseDataManager
             Map.Flags = new List<string>();
             if (FlagsArray != Ruby.Nil)
             {
-                int FlagCount = (int)Ruby.Array.Length(FlagsArray);
+                int FlagCount = (int) Ruby.Array.Length(FlagsArray);
                 for (int j = 0; j < FlagCount; j++)
                 {
                     string flag = Ruby.String.FromPtr(Ruby.Array.Get(FlagsArray, j));
@@ -127,105 +127,113 @@ public class MapMetadataManager : BaseDataManager
 
     protected override void LoadPBS()
     {
+        if (!Game.Data.IsVersionAtLeast(EssentialsVersion.v20)) return;
         base.LoadPBS();
+        Logger.Write("Loading map metadata from PBS");
         FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
         {
             Map Map = Data.Maps[Convert.ToInt32(id)];
-            bool GetDefaultTrue(string Name)
-            {
-                if (hash.ContainsKey(Name))
-                {
-                    switch (hash[Name].ToLower())
-                    {
-                        case "true": case "t": case "yes": case "y":
-                            return true;
-                        default:
-                            return false;
-                    }
-                }
-                return true;
-            }
-            bool GetDefaultFalse(string Name)
-            {
-                if (hash.ContainsKey(Name))
-                {
-                    switch (hash[Name].ToLower())
-                    {
-                        case "true": case "t": case "yes": case "y":
-                            return true;
-                        default:
-                            return false;
-                    }
-                }
-                return false;
-            }
-            Map.InGameName = hash.ContainsKey("Name") ? hash["Name"] : null;
-            Map.OutdoorMap = GetDefaultFalse("Outdoor");
-            Map.AnnounceLocation = GetDefaultFalse("ShowArea");
-            Map.CanBicycle = GetDefaultTrue("Bicycle");
-            if (!hash.ContainsKey("Outdoor") && !hash.ContainsKey("Bicycle"))
-            {
-                // Default is outdoor false, bicycle true, but that would mean
-                // indoor bicycling. If this is the case, turn bicycling off.
-                Map.CanBicycle = false;
-            }
-            Map.AlwaysBicycle = GetDefaultFalse("BicycleAlways");
-            if (hash.ContainsKey("HealingSpot"))
-            {
-                int[] _hspot = hash["HealingSpot"].Split(',').Select(x => Convert.ToInt32(x.Trim())).ToArray();
-                Map.HealingSpot = (_hspot[0], _hspot[1], _hspot[2]);
-            }
-            if (hash.ContainsKey("Weather"))
-            {
-                string[] _weather = hash["Weather"].Split(',');
-                Weather wtype = _weather[0] switch 
-                {
-                    "None" => Weather.None,
-                    "Rain" => Weather.Rain,
-                    "Storm" => Weather.Storm,
-                    "Snow" => Weather.Snow,
-                    "Blizzard" => Weather.Blizzard,
-                    "Sandstorm" => Weather.Sandstorm,
-                    "HeavyRain" => Weather.HeavyRain,
-                    "Sun" => Weather.Sun,
-                    "Fog" => Weather.Fog,
-                    _ => throw new Exception($"Invalid weather type '{_weather[0]}'.")
-                };
-                int intensity = Convert.ToInt32(_weather[1]);
-                Map.Weather = (wtype, intensity);
-            }
-            if (hash.ContainsKey("MapPosition"))
-            {
-                int[] _mappos = hash["MapPosition"].Split(',').Select(x => Convert.ToInt32(x.Trim())).ToArray();
-                Map.TownMapPosition = (_mappos[0], _mappos[1], _mappos[2]);
-            }
-            if (hash.ContainsKey("DiveMap")) Map.DiveMapID = Convert.ToInt32(hash["DiveMap"]);
-            Map.DarkMap = GetDefaultFalse("DarkMap");
-            Map.SafariMap = GetDefaultFalse("SafariMap");
-            Map.SnapEdges = GetDefaultFalse("SnapEdges");
-            Map.RandomDungeon = GetDefaultFalse("Dungeon");
-            Map.BattleBackground = hash.ContainsKey("BattleBack") ? hash["BattleBack"] : null;
-            Map.WildBattleBGM = hash.ContainsKey("WildBattleBGM") ? hash["WildBattleBGM"] : null;
-            Map.TrainerBattleBGM = hash.ContainsKey("TrainerBattleBGM") ? hash["TrainerBattleBGM"] : null;
-            Map.WildVictoryBGM = hash.ContainsKey("WildVictoryBGM") ? hash["WildVictoryBGM"] : null;
-            Map.TrainerVictoryBGM = hash.ContainsKey("TrainerVictoryBGM") ? hash["TrainerVictoryBGM"] : null;
-            Map.WildCaptureME = hash.ContainsKey("WildCaptureME") ? hash["WildCaptureME"] : null;
-            if (hash.ContainsKey("MapSize"))
-            {
-                string[] _mapsize = hash["MapSize"].Split(',').Select(x => x.Trim()).ToArray();
-                int width = Convert.ToInt32(_mapsize[0]);
-                string included = _mapsize[1];
-                Map.TownMapSize = (width, included);
-            }
-            Map.BattleEnvironment = hash.ContainsKey("Environment") ? hash["Environment"] : null;
-            if (hash.ContainsKey("Flags")) Map.Flags = hash["Flags"].Split(',').Select(x => x.Trim()).ToList();
-            else Map.Flags = new List<string>();
+            SetMapMetadata(Map, hash);
         }, Data.SetLoadProgress);
+    }
+
+    public static void SetMapMetadata(Map Map, Dictionary<string, string> hash)
+    {
+        bool GetDefaultTrue(string Name)
+        {
+            if (hash.ContainsKey(Name))
+            {
+                switch (hash[Name].ToLower())
+                {
+                    case "true": case "t": case "yes": case "y":
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+            return true;
+        }
+        bool GetDefaultFalse(string Name)
+        {
+            if (hash.ContainsKey(Name))
+            {
+                switch (hash[Name].ToLower())
+                {
+                    case "true": case "t": case "yes": case "y":
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+            return false;
+        }
+        Map.InGameName = hash.ContainsKey("Name") ? hash["Name"] : null;
+        Map.OutdoorMap = GetDefaultFalse("Outdoor");
+        Map.AnnounceLocation = GetDefaultFalse("ShowArea");
+        Map.CanBicycle = GetDefaultTrue("Bicycle");
+        if (!hash.ContainsKey("Outdoor") && !hash.ContainsKey("Bicycle"))
+        {
+            // Default is outdoor false, bicycle true, but that would mean
+            // indoor bicycling. If this is the case, turn bicycling off.
+            Map.CanBicycle = false;
+        }
+        Map.AlwaysBicycle = GetDefaultFalse("BicycleAlways");
+        if (hash.ContainsKey("HealingSpot"))
+        {
+            int[] _hspot = hash["HealingSpot"].Split(',').Select(x => Convert.ToInt32(x.Trim())).ToArray();
+            Map.HealingSpot = (_hspot[0], _hspot[1], _hspot[2]);
+        }
+        if (hash.ContainsKey("Weather"))
+        {
+            string[] _weather = hash["Weather"].Split(',');
+            Weather wtype = _weather[0] switch 
+            {
+                "None" => Weather.None,
+                "Rain" => Weather.Rain,
+                "Storm" => Weather.Storm,
+                "Snow" => Weather.Snow,
+                "Blizzard" => Weather.Blizzard,
+                "Sandstorm" => Weather.Sandstorm,
+                "HeavyRain" => Weather.HeavyRain,
+                "Sun" => Weather.Sun,
+                "Fog" => Weather.Fog,
+                _ => throw new Exception($"Invalid weather type '{_weather[0]}'.")
+            };
+            int intensity = Convert.ToInt32(_weather[1]);
+            Map.Weather = (wtype, intensity);
+        }
+        if (hash.ContainsKey("MapPosition"))
+        {
+            int[] _mappos = hash["MapPosition"].Split(',').Select(x => Convert.ToInt32(x.Trim())).ToArray();
+            Map.TownMapPosition = (_mappos[0], _mappos[1], _mappos[2]);
+        }
+        if (hash.ContainsKey("DiveMap")) Map.DiveMapID = Convert.ToInt32(hash["DiveMap"]);
+        Map.DarkMap = GetDefaultFalse("DarkMap");
+        Map.SafariMap = GetDefaultFalse("SafariMap");
+        Map.SnapEdges = GetDefaultFalse("SnapEdges");
+        Map.RandomDungeon = GetDefaultFalse("Dungeon");
+        Map.BattleBackground = hash.ContainsKey("BattleBack") ? hash["BattleBack"] : null;
+        Map.WildBattleBGM = hash.ContainsKey("WildBattleBGM") ? hash["WildBattleBGM"] : null;
+        Map.TrainerBattleBGM = hash.ContainsKey("TrainerBattleBGM") ? hash["TrainerBattleBGM"] : null;
+        Map.WildVictoryBGM = hash.ContainsKey("WildVictoryBGM") ? hash["WildVictoryBGM"] : null;
+        Map.TrainerVictoryBGM = hash.ContainsKey("TrainerVictoryBGM") ? hash["TrainerVictoryBGM"] : null;
+        Map.WildCaptureME = hash.ContainsKey("WildCaptureME") ? hash["WildCaptureME"] : null;
+        if (hash.ContainsKey("MapSize"))
+        {
+            string[] _mapsize = hash["MapSize"].Split(',').Select(x => x.Trim()).ToArray();
+            int width = Convert.ToInt32(_mapsize[0]);
+            string included = _mapsize[1];
+            Map.TownMapSize = (width, included);
+        }
+        Map.BattleEnvironment = hash.ContainsKey("Environment") ? hash["Environment"] : null;
+        if (hash.ContainsKey("Flags")) Map.Flags = hash["Flags"].Split(',').Select(x => x.Trim()).ToList();
+        else Map.Flags = new List<string>();
     }
 
     protected override void SaveData()
     {
         base.SaveData();
+        Logger.Write("Saving map metadata");
         SafeSave("map_metadata.dat", File =>
         {
             nint Data = Ruby.Hash.Create();

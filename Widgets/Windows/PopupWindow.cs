@@ -149,6 +149,7 @@ public class PopupWindow : Widget, IPopupWindow
         }
         StartAnimation(new SigmoidAnimation("zoom_in", 400, x =>
         {
+            if (Disposed) return;
             SetGlobalZoom(1 - (float) x);
             Center();
             if (x == 1)

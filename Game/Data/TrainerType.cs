@@ -13,6 +13,8 @@ public class TrainerType : IGameData, ICloneable
     public static nint Class => BaseDataManager.Classes["TrainerType"];
 
     public string ID;
+    [Obsolete]
+    public int? IDNumber;
     public string Name;
     public int Gender;
     public int BaseMoney;
@@ -21,6 +23,8 @@ public class TrainerType : IGameData, ICloneable
     public string? IntroBGM;
     public string? BattleBGM;
     public string? VictoryBGM;
+    [Obsolete]
+    public string? SkillCode;
 
     private TrainerType() { }
 
@@ -44,23 +48,58 @@ public class TrainerType : IGameData, ICloneable
         if (hash.ContainsKey("VictoryBGM")) this.VictoryBGM = hash["VictoryBGM"];
     }
 
+    public TrainerType(List<string> line)
+    {
+        this.IDNumber = Convert.ToInt32(line[0]);
+        this.ID = line[1];
+        this.Name = line[2];
+        this.BaseMoney = Convert.ToInt32(line[3]);
+        this.BattleBGM = line[4];
+        this.VictoryBGM = line[5];
+        this.IntroBGM = line[6];
+        this.Gender = line[7].ToLower() switch
+        {
+            "male" or "m" or "0" => 0,
+            "female" or "f" or "1" => 1,
+            _ => 2
+        };
+        this.SkillLevel = string.IsNullOrEmpty(line[8]) ? BaseMoney : Convert.ToInt32(line[8]);
+        this.SkillCode = line[9];
+    }
+
     public TrainerType(nint Data)
     {
         this.ID = Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@id"));
+        if (Ruby.GetIVar(Data, "@id_number") != Ruby.Nil) this.IDNumber = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@id_number"));
         this.Name = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_name"));
         this.Gender = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@gender"));
         this.BaseMoney = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@base_money"));
         this.SkillLevel = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@skill_level"));
         nint FlagsArray = Ruby.GetIVar(Data, "@flags");
-        int FlagsArrayLength = (int) Ruby.Array.Length(FlagsArray);
         this.Flags = new List<string>();
-        for (int i = 0; i < FlagsArrayLength; i++)
+        if (FlagsArray != Ruby.Nil)
         {
-            this.Flags.Add(Ruby.String.FromPtr(Ruby.Array.Get(FlagsArray, i)));
+            int FlagsArrayLength = (int) Ruby.Array.Length(FlagsArray);
+            for (int i = 0; i < FlagsArrayLength; i++)
+            {
+                this.Flags.Add(Ruby.String.FromPtr(Ruby.Array.Get(FlagsArray, i)));
+            }
         }
-        if (Ruby.GetIVar(Data, "@intro_BGM") != Ruby.Nil) this.IntroBGM = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@intro_BGM"));
+        string introVariable = "@intro_";
+        string victoryVariable = "@victory_";
+        if (Game.Data.IsVersionAtLeast(EssentialsVersion.v20))
+        {
+            introVariable += "BGM";
+            victoryVariable += "BGM";
+        }
+        else
+        {
+            introVariable += "ME";
+            victoryVariable += "ME";
+        }
+        if (Ruby.GetIVar(Data, introVariable) != Ruby.Nil) this.IntroBGM = Ruby.String.FromPtr(Ruby.GetIVar(Data, introVariable));
         if (Ruby.GetIVar(Data, "@battle_BGM") != Ruby.Nil) this.BattleBGM = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@battle_BGM"));
-        if (Ruby.GetIVar(Data, "@victory_BGM") != Ruby.Nil) this.VictoryBGM = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@victory_BGM"));
+        if (Ruby.GetIVar(Data, victoryVariable) != Ruby.Nil) this.VictoryBGM = Ruby.String.FromPtr(Ruby.GetIVar(Data, victoryVariable));
     }
 
     public nint Save()
@@ -78,9 +117,21 @@ public class TrainerType : IGameData, ICloneable
         {
             Ruby.Array.Push(FlagsArray, Ruby.String.ToPtr(Flag));
         }
-        Ruby.SetIVar(e, "@intro_BGM", this.IntroBGM == null ? Ruby.Nil : Ruby.String.ToPtr(this.IntroBGM));
+        string introVariable = "@intro_";
+        string victoryVariable = "@victory_";
+        if (Game.Data.IsVersionAtLeast(EssentialsVersion.v20))
+        {
+            introVariable += "BGM";
+            victoryVariable += "BGM";
+        }
+        else
+        {
+            introVariable += "ME";
+            victoryVariable += "ME";
+        }
+        Ruby.SetIVar(e, introVariable, this.IntroBGM == null ? Ruby.Nil : Ruby.String.ToPtr(this.IntroBGM));
         Ruby.SetIVar(e, "@battle_BGM", this.BattleBGM == null ? Ruby.Nil : Ruby.String.ToPtr(this.BattleBGM));
-        Ruby.SetIVar(e, "@victory_BGM", this.VictoryBGM == null ? Ruby.Nil : Ruby.String.ToPtr(this.VictoryBGM));
+        Ruby.SetIVar(e, victoryVariable, this.VictoryBGM == null ? Ruby.Nil : Ruby.String.ToPtr(this.VictoryBGM));
         Ruby.Unpin(e);
         return e;
     }

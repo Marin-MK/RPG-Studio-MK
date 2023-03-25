@@ -558,10 +558,8 @@ public static class Editor
                 string Filename = Path.Combine(KitsFolder, Kit.Name + ".zip");
                 if (!Directory.Exists(KitsFolder)) Directory.CreateDirectory(KitsFolder);
                 FileDownloaderWindow window = new FileDownloaderWindow(Kit.Download, Filename, "Downloading kit...");
-                window.OnFinished += () =>
-                {
-                    CopyStep();
-                };
+                window.Download();
+                CopyStep();
             }
         }
 

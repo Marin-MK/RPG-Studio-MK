@@ -153,4 +153,39 @@ public static class FormattedTextParser
         }
         OnParseSection(CurrentID, CurrentSection);
     }
+
+    public static void ParseLineByLineCommaBased(string Filename, Action<List<string>> OnParseSection, Action<float>? OnProgress = null)
+    {
+        if (RootFolder != null && File.Exists(RootFolder + "/" + Filename)) Filename = RootFolder + "/" + Filename;
+        if (!File.Exists(Filename)) throw new Exception($"The specified file '{Filename}' does not exist.");
+        Queue<string> LineQueue = new Queue<string>(File.ReadLines(Filename));
+        int Current = 0;
+        int Total = LineQueue.Count - 1;
+        while (LineQueue.Count > 0)
+        {
+            Current++;
+            string line = LineQueue.Dequeue().Trim();
+            if (Total != 0) OnProgress?.Invoke((float) Current / Total);
+            // Skip empty lines and comments
+            if (string.IsNullOrEmpty(line) || line[0] == '#') continue;
+            List<string> ary = line.Split(',').ToList();
+            int startIndex = -1;
+            for (int i = 0; i < ary.Count; i++)
+            {
+                string trimmed = ary[i].Trim();
+                if (trimmed.Length == 0) continue;
+                if (startIndex == -1 && trimmed[0] == '"')
+                {
+                    startIndex = i;
+                }
+                if (trimmed[^1] == '"' && i != startIndex)
+                {
+                    ary[startIndex] = ary.GetRange(startIndex, i - startIndex + 1).Aggregate((a, b) => a + "," + b).Trim('"');
+                    ary.RemoveRange(startIndex + 1, i - startIndex);
+                    startIndex = -1;
+                }
+            }
+            OnParseSection?.Invoke(ary.Select(x => x.Trim().Trim('"')).ToList());
+        }
+    }
 }

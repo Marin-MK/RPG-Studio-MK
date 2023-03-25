@@ -7,7 +7,7 @@
     <StartupObject>RPGStudioMK.Program</StartupObject>
     <Authors>Marijn Herrebout</Authors>
     <Product>RPG Studio MK</Product>
-    <Version>0.11.0</Version>
+    <Version>0.11.1</Version>
     <Platforms>x64</Platforms>
     <AssemblyName>RPG Studio MK</AssemblyName>
     <Configurations>Debug;Release</Configurations>

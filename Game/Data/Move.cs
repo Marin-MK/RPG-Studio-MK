@@ -13,6 +13,8 @@ public class Move : IGameData, ICloneable
     public static nint Class => BaseDataManager.Classes["Move"];
 
     public string ID;
+    [Obsolete]
+    public int? IDNumber;
     public string Name;
     public TypeResolver Type;
     public MoveCategory Category;
@@ -46,9 +48,32 @@ public class Move : IGameData, ICloneable
         this.Description = hash["Description"];
     }
 
+    public Move(List<string> line)
+    {
+        this.IDNumber = Convert.ToInt32(line[0]);
+        this.ID = line[1];
+        this.Name = line[2];
+        this.FunctionCode = line[3];
+        this.BaseDamage = Convert.ToInt32(line[4]);
+        this.Type = (TypeResolver) line[5];
+        this.Category = CategoryStrToEnum(line[6]);
+        this.Accuracy = Convert.ToInt32(line[7]);
+        this.TotalPP = Convert.ToInt32(line[8]);
+        this.EffectChance = Convert.ToInt32(line[9]);
+        this.Target = TargetStrToEnum(line[10]);
+        this.Priority = Convert.ToInt32(line[11]);
+        this.Flags = new List<string>();
+        foreach (char c in line[12])
+        {
+            this.Flags.Add(c.ToString());
+        }
+        this.Description = line[13];
+    }
+
     public Move(nint Data)
     {
         this.ID = Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@id"));
+        if (Ruby.GetIVar(Data, "@id_number") != Ruby.Nil) this.IDNumber = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@id_number"));
         this.Name = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_name"));
         this.Type = (TypeResolver) Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@type"));
         this.Category = (MoveCategory) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@category"));
@@ -58,13 +83,24 @@ public class Move : IGameData, ICloneable
         this.Target = TargetStrToEnum(Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@target")));
         this.Priority = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@priority"));
         this.FunctionCode = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@function_code"));
-        nint FlagsArray = Ruby.GetIVar(Data, "@flags");
-        int FlagCount = (int) Ruby.Array.Length(FlagsArray);
+        nint FlagsData = Ruby.GetIVar(Data, "@flags");
         this.Flags = new List<string>();
-        for (int i = 0; i < FlagCount; i++)
+        if (Game.Data.IsVersionAtLeast(EssentialsVersion.v20))
         {
-            string Flag = Ruby.String.FromPtr(Ruby.Array.Get(FlagsArray, i));
-            this.Flags.Add(Flag);
+            int FlagCount = (int) Ruby.Array.Length(FlagsData);
+            for (int i = 0; i < FlagCount; i++)
+            {
+                string Flag = Ruby.String.FromPtr(Ruby.Array.Get(FlagsData, i));
+                this.Flags.Add(Flag);
+            }
+        }
+        else
+        {
+            string FlagString = Ruby.String.FromPtr(FlagsData);
+            foreach (char c in FlagString)
+            {
+                this.Flags.Add(c.ToString());
+            }
         }
         this.EffectChance = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@effect_chance"));
         this.Description = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_description"));
@@ -75,6 +111,7 @@ public class Move : IGameData, ICloneable
         nint e = Ruby.Funcall(Class, "new");
         Ruby.Pin(e);
         Ruby.SetIVar(e, "@id", Ruby.Symbol.ToPtr(this.ID));
+        if (this.IDNumber.HasValue) Ruby.SetIVar(e, "@id_number", Ruby.Integer.ToPtr(this.IDNumber.Value));
         Ruby.SetIVar(e, "@real_name", Ruby.String.ToPtr(this.Name));
         Ruby.SetIVar(e, "@type", Ruby.Symbol.ToPtr(this.Type));
         Ruby.SetIVar(e, "@category", Ruby.Integer.ToPtr((int) this.Category));
@@ -84,11 +121,19 @@ public class Move : IGameData, ICloneable
         Ruby.SetIVar(e, "@target", Ruby.Symbol.ToPtr(TargetEnumToStr(this.Target)));
         Ruby.SetIVar(e, "@priority", Ruby.Integer.ToPtr(this.Priority));
         Ruby.SetIVar(e, "@function_code", Ruby.String.ToPtr(this.FunctionCode));
-        nint FlagsArray = Ruby.Array.Create();
-        Ruby.SetIVar(e, "@flags", FlagsArray);
-        foreach (string Flag in Flags)
+        if (Game.Data.IsVersionAtLeast(EssentialsVersion.v20))
         {
-            Ruby.Array.Push(FlagsArray, Ruby.String.ToPtr(Flag));
+            nint FlagsArray = Ruby.Array.Create();
+            Ruby.SetIVar(e, "@flags", FlagsArray);
+            foreach (string Flag in Flags)
+            {
+                Ruby.Array.Push(FlagsArray, Ruby.String.ToPtr(Flag));
+            }
+        }
+        else
+        {
+            string FlagString = this.Flags.Aggregate((a, b) => a + b);
+            Ruby.SetIVar(e, "@flags", Ruby.String.ToPtr(FlagString));
         }
         Ruby.SetIVar(e, "@effect_chance", Ruby.Integer.ToPtr(this.EffectChance));
         Ruby.SetIVar(e, "@real_description", Ruby.String.ToPtr(this.Description));

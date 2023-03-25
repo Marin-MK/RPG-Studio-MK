@@ -13,12 +13,12 @@ namespace RPGStudioMK.Game;
 
 public class EncounterManager : BaseDataManager
 {
-    public EncounterManager(bool FromPBS = false)
-        : base("Encounter", "encounters.dat", "encounters.txt", "encounters", FromPBS) { }
+    public EncounterManager() : base("Encounter", "encounters.dat", "encounters.txt", "encounters") { }
 
     protected override void LoadData()
     {
         base.LoadData();
+        Logger.Write("Loading encounters");
         LoadAsHash((key, value) =>
         {
             string ckey = Ruby.Symbol.FromPtr(key);
@@ -38,6 +38,7 @@ public class EncounterManager : BaseDataManager
     protected override void LoadPBS()
     {
         base.LoadPBS();
+        Logger.Write("Loading encounters from PBS");
         FormattedTextParser.ParseLineByLineWithHeader(PBSFilename, (id, lines) =>
         {
             int mapid = 0;
@@ -55,12 +56,14 @@ public class EncounterManager : BaseDataManager
     protected override void SaveData()
     {
         base.SaveData();
+        Logger.Write("Saving encounters");
         SaveAsHash(Data.Encounters.Values, enc => Ruby.Symbol.ToPtr(enc.ID));
     }
 
     public override void Clear()
     {
         base.Clear();
+        Logger.Write("Clearing encounters");
         Data.Encounters.Clear();
     }
 }

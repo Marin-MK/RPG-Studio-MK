@@ -49,7 +49,7 @@ public class EditEventWindow : PopupWindow
         WidthLabel.SetFont(Fonts.Paragraph);
         WidthLabel.SetPosition(287, 50);
         WidthLabel.SetText("Width:");
-        WidthLabel.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
+        WidthLabel.SetVisible(Data.IsVersionAtLeast(EssentialsVersion.v19));
         NumericBox WidthBox = new NumericBox(this);
         WidthBox.SetPosition(287, 68);
         WidthBox.SetSize(91, 27);
@@ -60,19 +60,19 @@ public class EditEventWindow : PopupWindow
             this.Event.Width = WidthBox.Value;
             EventPageControl.RedrawGraphic();
         };
-        WidthBox.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
+        WidthBox.SetVisible(Data.IsVersionAtLeast(EssentialsVersion.v19));
 
         Label XLabel = new Label(this);
         XLabel.SetFont(Fonts.Paragraph);
         XLabel.SetPosition(390, 71);
         XLabel.SetText("x");
-        XLabel.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
+        XLabel.SetVisible(Data.IsVersionAtLeast(EssentialsVersion.v19));
 
         Label HeightLabel = new Label(this);
         HeightLabel.SetFont(Fonts.Paragraph);
         HeightLabel.SetPosition(410, 50);
         HeightLabel.SetText("Height:");
-        HeightLabel.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
+        HeightLabel.SetVisible(Data.IsVersionAtLeast(EssentialsVersion.v19));
         NumericBox HeightBox = new NumericBox(this);
         HeightBox.SetPosition(410, 68);
         HeightBox.SetSize(91, 27);
@@ -83,7 +83,7 @@ public class EditEventWindow : PopupWindow
             this.Event.Height = HeightBox.Value;
             EventPageControl.RedrawGraphic();
         };
-        HeightBox.SetVisible(Data.EssentialsAtLeast(EssentialsVersion.v19));
+        HeightBox.SetVisible(Data.IsVersionAtLeast(EssentialsVersion.v19));
 
         Label PagesLabel = new Label(this);
         PagesLabel.SetFont(Fonts.Header);

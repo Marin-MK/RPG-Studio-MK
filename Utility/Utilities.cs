@@ -770,7 +770,9 @@ public static class Utilities
     public static bool KitExists(string KitName)
     {
         string Filename = Path.Combine(Editor.KitsFolder, KitName + ".zip");
-        return File.Exists(Filename);
+        if (!File.Exists(Filename)) return false;
+        FileInfo fi = new FileInfo(Filename);
+        return fi.Length > 0;
     }
 
     public static async Task CopyKit(string KitName, string DestinationFolder, CancellationTokenSource Source, Action<float> OnProgress)

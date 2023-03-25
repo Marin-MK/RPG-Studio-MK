@@ -11,13 +11,13 @@ namespace RPGStudioMK.Game;
 public class GameConfigManager : BaseDataManager
 {
     public GameConfigManager()
-        : base(null, "Game.ini", null, "game config", false) { }
+        : base(null, "Game.ini", null, "game config") { }
 
     private static Encoding win1252;
 
-    protected override void LoadData()
+    public override void Load(bool fromPBS = false)
     {
-        base.LoadData();
+        Logger.Write("Loading game config");
         if (win1252 == null)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -31,9 +31,10 @@ public class GameConfigManager : BaseDataManager
         }
     }
 
-    protected override void SaveData()
+    public override void Save()
     {
         base.SaveData();
+        Logger.Write("Saving game config");
         string inifilename = $"{Data.ProjectPath}/{Filename}";
         string data = File.ReadAllText(inifilename, win1252);
         data = Regex.Replace(data, @"Title=.*\n", $"Title={Editor.ProjectSettings.ProjectName}{Environment.NewLine}");
@@ -43,6 +44,7 @@ public class GameConfigManager : BaseDataManager
     public override void Clear()
     {
         base.Clear();
+        Logger.Write("Clearing game config");
         Editor.ProjectSettings.ProjectName = null;
     }
 }

@@ -13,12 +13,12 @@ namespace RPGStudioMK.Game;
 
 public class ItemManager : BaseDataManager
 {
-    public ItemManager(bool FromPBS = false)
-        : base("Item", "items.dat", "items.txt", "items", FromPBS) { }
+    public ItemManager() : base("Item", "items.dat", "items.txt", "items") { }
 
     protected override void LoadData()
     {
         base.LoadData();
+        Logger.Write("Loading items");
         LoadAsHash((key, value) =>
         {
             string item = Ruby.Symbol.FromPtr(key);
@@ -29,21 +29,36 @@ public class ItemManager : BaseDataManager
     protected override void LoadPBS()
     {
         base.LoadPBS();
-        FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
+        if (Game.Data.IsVersionAtLeast(EssentialsVersion.v20))
         {
-            Data.Items.Add(id, new Item(id, hash));
-        }, Data.SetLoadProgress);
+            Logger.Write("Loading items from PBS with EV >= v20");
+            FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
+            {
+                Data.Items.Add(id, new Item(id, hash));
+            }, Data.SetLoadProgress);
+        }
+        else
+        {
+            Logger.Write("Loading items from PBS with EV < v20");
+            FormattedTextParser.ParseLineByLineCommaBased(PBSFilename, line =>
+            {
+                Item itemdata = new Item(line);
+                Data.Items.Add(itemdata.ID, itemdata);
+            }, Data.SetLoadProgress);
+        }
     }
 
     protected override void SaveData()
     {
         base.SaveData();
+        Logger.Write("Saving items");
         SaveAsHash(Data.Items.Values, e => Ruby.Symbol.ToPtr(e.ID));
     }
 
     public override void Clear()
     {
         base.Clear();
+        Logger.Write("Clearing items");
         Data.Items.Clear();
     }
 }

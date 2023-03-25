@@ -19,18 +19,16 @@ public class BaseDataManager
     public string Filename;
     public string PBSFilename;
     public string Message;
-    public bool FromPBS;
 
-    public BaseDataManager(string ClassName, string Filename, string PBSFilename, string Message, bool FromPBS = false)
+    public BaseDataManager(string ClassName, string Filename, string PBSFilename, string Message)
     {
         this.ClassName = ClassName;
         this.Filename = Filename;
         this.PBSFilename = PBSFilename;
         this.Message = Message;
-        this.FromPBS = FromPBS;
     }
 
-    public void InitializeClass()
+    public virtual void InitializeClass()
     {
         if (GameDataModule == nint.Zero) GameDataModule = Ruby.Module.Define("GameData");
         if (ClassName == null) return;
@@ -119,10 +117,10 @@ public class BaseDataManager
         });
     }
 
-    public virtual void Load()
+    public virtual void Load(bool fromPBS)
     {
         Data.SetLoadText($"Loading {Message}...");
-        if (this.FromPBS) LoadPBS();
+        if (fromPBS) LoadPBS();
         else LoadData();
     }
 

@@ -13,28 +13,35 @@ namespace RPGStudioMK.Game;
 
 public class SpeciesManager : BaseDataManager
 {
-    public SpeciesManager(bool FromPBS = false)
-        : base("Species", "species.dat", "pokemon.txt", "species", FromPBS) { }
+    public SpeciesManager() : base("Species", "species.dat", "pokemon.txt", "species") { }
 
     protected override void LoadData()
     {
         base.LoadData();
+        Logger.Write("Loading species");
         LoadAsHash((key, value) =>
         {
-            string id = Ruby.Symbol.FromPtr(key);
-            Data.Species.Add(id, new Species(value));
+            string realID = Ruby.Symbol.FromPtr(Ruby.GetIVar(value, "@id"));
+            if (Data.Species.ContainsKey(realID)) return;
+            Species speciesdata = new Species(value);
+            Data.Species.Add(speciesdata.ID, speciesdata);
         });
     }
 
     protected override void LoadPBS()
     {
         base.LoadPBS();
+        Logger.Write("Loading species from PBS");
         FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
         {
-            Data.Species.Add(id, new Species(id, hash));
+            Species speciesdata = new Species(id, hash);
+            Data.Species.Add(speciesdata.ID, speciesdata);
         }, Data.SetLoadProgress);
         Data.SetLoadText("Loading forms...");
-        FormattedTextParser.ParseSectionBasedFile(Data.ProjectPath + "/PBS/pokemon_forms.txt", (id, hash) =>
+        string formsFile = Data.ProjectPath + "/PBS/pokemon_forms.txt";
+        if (!Game.Data.IsVersionAtLeast(EssentialsVersion.v20)) formsFile = Data.ProjectPath + "/PBS/pokemonforms.txt";
+        Logger.Write("Loading species forms from PBS");
+        FormattedTextParser.ParseSectionBasedFile(formsFile, (id, hash) =>
         {
             string[] _id = id.Split(',').Select(x => x.Trim()).ToArray();
             SpeciesResolver BaseSpecies = (SpeciesResolver) _id[0];
@@ -46,6 +53,7 @@ public class SpeciesManager : BaseDataManager
             NewSpecies.ID = _id[0] + "_" + _id[1];
             Data.Species.Add(NewSpecies.ID, NewSpecies);
         }, Data.SetLoadProgress);
+        Logger.Write("Registering prevolutions");
         Game.Species.PrevolutionsToRegister.ForEach(p =>
         {
             p.Item2.Species.Species.Prevolutions.Add(new Evolution((SpeciesResolver) p.Item1, p.Item2.Type, p.Item2.Parameter, true));
@@ -56,12 +64,14 @@ public class SpeciesManager : BaseDataManager
     protected override void SaveData()
     {
         base.SaveData();
+        Logger.Write("Saving species");
         SaveAsHash(Data.Species.Values, s => Ruby.Symbol.ToPtr(s.ID));
     }
 
     public override void Clear()
     {
         base.Clear();
+        Logger.Write("Clearing species");
         Data.Species.Clear();
     }
 }

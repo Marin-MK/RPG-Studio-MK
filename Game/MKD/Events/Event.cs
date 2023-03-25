@@ -35,7 +35,7 @@ public class Event : ICloneable
         this.ID = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(data, "@id"));
         this.Name = Ruby.String.FromPtr(Ruby.GetIVar(data, "@name"));
         Match match = Regex.Match(this.Name, @"[sS]ize\((\d+),(\d+)\)");
-        if (Data.EssentialsAtLeast(EssentialsVersion.v19) && match.Success)
+        if (Data.IsVersionAtLeast(EssentialsVersion.v19) && match.Success)
         {
             this.Width = Convert.ToInt32(match.Groups[1].Value);
             this.Height = Convert.ToInt32(match.Groups[2].Value);

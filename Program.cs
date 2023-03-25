@@ -22,7 +22,7 @@ public class Program
     /// Whether or not exceptions should be caught and displayed, and whether unsaved changes messages should be given.
     /// If true, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
     /// </summary>
-    public static bool DebugMode = false;
+    public static bool DebugMode = true;
     public static bool ReleaseMode => !DebugMode;
     public static string ProjectFile = null;
     public static bool ThrownError = false;
@@ -34,6 +34,8 @@ public class Program
     [STAThread]
     static void Main(params string[] args)
     {
+        Logger.Start(null);// Path.Combine(Editor.AppDataFolder, "log.txt"));
+        Logger.Write("Log is active");
         // Ensures the working directory becomes the editor directory
         Directory.SetCurrentDirectory(Path.GetDirectoryName(Environment.ProcessPath));
         if (DebugMode) TestSuite.RunAll();
@@ -92,9 +94,11 @@ public class Program
 
         // Stops amethyst
         Amethyst.Stop();
+        Logger.Write("Log is inactive");
+        Logger.Stop();
     }
 
-    public static async Task VerifyVersions()
+    public static void VerifyVersions()
     {
         // Load current version
         // Changed in Project Settings -> Package -> Package Version (stored in .csproj)
@@ -113,7 +117,13 @@ public class Program
             else CurrentVersion = RemoveExcessZeroes(CurrentVersion);
         }
         // Load latest version
-        if (await VersionMetadata.Load())
+        if (DebugMode)
+        {
+            Logger.Write("Skipped latest version check in Debug Mode");
+            Console.WriteLine("Skipped latest version check in Debug Mode");
+            return;
+        }
+        if (VersionMetadata.Load())
         {
             LatestVersion = VersionMetadata.ProgramVersion;
             // Compare versions

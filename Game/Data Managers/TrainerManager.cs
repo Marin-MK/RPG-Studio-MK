@@ -13,18 +13,19 @@ namespace RPGStudioMK.Game;
 
 public class TrainerManager : BaseDataManager
 {
-    public TrainerManager(bool FromPBS = false)
-        : base("Trainer", "trainers.dat", "trainers.txt", "trainers", FromPBS) { }
+    public TrainerManager() : base("Trainer", "trainers.dat", "trainers.txt", "trainers") { }
 
     protected override void LoadData()
     {
         base.LoadData();
+        Logger.Write("Loading trainers");
         LoadAsHash((key, value) => Data.Trainers.Add(new Trainer(value)));
     }
 
     protected override void LoadPBS()
     {
         base.LoadPBS();
+        Logger.Write("Loading trainers from PBS");
         FormattedTextParser.ParseSectionBasedFileWithOrder(PBSFilename, (id, pairs) =>
         {
             Data.Trainers.Add(new Trainer(id, pairs));
@@ -34,6 +35,7 @@ public class TrainerManager : BaseDataManager
     protected override void SaveData()
     {
         base.SaveData();
+        Logger.Write("Saving trainers");
         SaveAsHash(Data.Trainers, t =>
         {
             nint Array = Ruby.Array.Create();
@@ -49,6 +51,7 @@ public class TrainerManager : BaseDataManager
     public override void Clear()
     {
         base.Clear();
+        Logger.Write("Clearing trainers");
         Data.Trainers.Clear();
     }
 }

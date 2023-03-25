@@ -13,13 +13,15 @@ public class Type : IGameData, ICloneable
     public static nint Class => BaseDataManager.Classes["Type"];
 
     public string ID;
+    [Obsolete]
+    public int? IDNumber;
     public string Name;
     public bool SpecialType;
     public bool PseudoType;
     public List<TypeResolver> Weaknesses;
     public List<TypeResolver> Resistances;
     public List<TypeResolver> Immunities;
-    public int IconPosition;
+    public int? IconPosition;
     public List<string> Flags;
 
     private Type() { }
@@ -36,7 +38,7 @@ public class Type : IGameData, ICloneable
         else this.Resistances = new List<TypeResolver>();
         if (hash.ContainsKey("Immunities")) this.Immunities = hash["Immunities"].Split(',').Select(x => (TypeResolver) x.Trim()).ToList();
         else this.Immunities = new List<TypeResolver>();
-        this.IconPosition = Convert.ToInt32(hash["IconPosition"]);
+        if (hash.ContainsKey("IconPosition")) this.IconPosition = Convert.ToInt32(hash["IconPosition"]);
         if (hash.ContainsKey("Flags")) this.Flags = hash["Flags"].Split(',').Select(x => x.Trim()).ToList();
         else this.Flags = new List<string>();
     }
@@ -44,6 +46,7 @@ public class Type : IGameData, ICloneable
     public Type(nint Data)
     {
         this.ID = Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@id"));
+        if (Ruby.GetIVar(Data, "@id_number") != Ruby.Nil) this.IDNumber = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@id_number"));
         this.Name = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_name"));
         this.SpecialType = Ruby.GetIVar(Data, "@special_type") == Ruby.True;
         this.PseudoType = Ruby.GetIVar(Data, "@pseudo_type") == Ruby.True;
@@ -69,13 +72,16 @@ public class Type : IGameData, ICloneable
             this.Immunities.Add((TypeResolver) Ruby.Symbol.FromPtr(Ruby.Array.Get(ImmunitiesArray, i)));
         }
         nint FlagsArray = Ruby.GetIVar(Data, "@flags");
-        int FlagsArrayLength = (int) Ruby.Array.Length(FlagsArray);
         this.Flags = new List<string>();
-        for (int i = 0; i < FlagsArrayLength; i++)
+        if (FlagsArray != Ruby.Nil)
         {
-            this.Flags.Add(Ruby.String.FromPtr(Ruby.Array.Get(FlagsArray, i)));
+            int FlagsArrayLength = (int) Ruby.Array.Length(FlagsArray);
+            for (int i = 0; i < FlagsArrayLength; i++)
+            {
+                this.Flags.Add(Ruby.String.FromPtr(Ruby.Array.Get(FlagsArray, i)));
+            }
         }
-        this.IconPosition = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@icon_position"));
+        if (Ruby.GetIVar(Data, "@icon_position") != Ruby.Nil) this.IconPosition = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@icon_position"));
     }
 
     public nint Save()
@@ -83,6 +89,7 @@ public class Type : IGameData, ICloneable
         nint e = Ruby.Funcall(Class, "new");
         Ruby.Pin(e);
         Ruby.SetIVar(e, "@id", Ruby.Symbol.ToPtr(this.ID));
+        if (this.IDNumber.HasValue) Ruby.SetIVar(e, "@id_number", Ruby.Integer.ToPtr(this.IDNumber.Value));
         Ruby.SetIVar(e, "@real_name", Ruby.String.ToPtr(this.Name));
         Ruby.SetIVar(e, "@special_type", this.SpecialType ? Ruby.True : Ruby.False);
         Ruby.SetIVar(e, "@pseudo_type", this.PseudoType ? Ruby.True : Ruby.False);
@@ -110,7 +117,7 @@ public class Type : IGameData, ICloneable
         {
             Ruby.Array.Push(FlagsArray, Ruby.String.ToPtr(Flag));
         }
-        Ruby.SetIVar(e, "@icon_position", Ruby.Integer.ToPtr(this.IconPosition));
+        if (this.IconPosition.HasValue) Ruby.SetIVar(e, "@icon_position", Ruby.Integer.ToPtr(this.IconPosition.Value));
         Ruby.Unpin(e);
         return e;
     }
