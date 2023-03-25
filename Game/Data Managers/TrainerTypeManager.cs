@@ -19,7 +19,7 @@ public class TrainerTypeManager : BaseDataManager
     protected override void LoadData()
     {
         base.LoadData();
-        Logger.Write("Loading trainer types");
+        Logger.WriteLine("Loading trainer types");
         LoadAsHash((key, value) =>
         {
             string ckey = Ruby.Symbol.FromPtr(key);
@@ -32,7 +32,7 @@ public class TrainerTypeManager : BaseDataManager
         base.LoadPBS();
         if (Game.Data.IsVersionAtLeast(EssentialsVersion.v20))
         {
-            Logger.Write("Loading trainer types from PBS with EV >= v20");
+            Logger.WriteLine("Loading trainer types from PBS with EV >= v20");
             FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
             {
                 Data.TrainerTypes.Add(id, new TrainerType(id, hash));
@@ -40,7 +40,7 @@ public class TrainerTypeManager : BaseDataManager
         }
         else
         {
-            Logger.Write("Loading trainer types from PBS with EV < v20");
+            Logger.WriteLine("Loading trainer types from PBS with EV < v20");
             FormattedTextParser.ParseLineByLineCommaBased("trainertypes.txt", line =>
             {
                 TrainerType trainertypedata = new TrainerType(line);
@@ -52,14 +52,14 @@ public class TrainerTypeManager : BaseDataManager
     protected override void SaveData()
     {
         base.SaveData();
-        Logger.Write("Saving trainer types");
+        Logger.WriteLine("Saving trainer types");
         SaveAsHash(Data.TrainerTypes.Values, t => Ruby.Symbol.ToPtr(t.ID));
     }
 
     public override void Clear()
     {
         base.Clear();
-        Logger.Write("Clearing trainer types");
+        Logger.WriteLine("Clearing trainer types");
         Data.TrainerTypes.Clear();
     }
 }

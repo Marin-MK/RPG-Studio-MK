@@ -19,7 +19,7 @@ public class MetadataManager : BaseDataManager
     protected override void LoadData()
     {
         base.LoadData();
-        Logger.Write("Loading metadata");
+        Logger.WriteLine("Loading metadata");
         SafeLoad(Filename, File =>
         {
             nint Data = Marshal.Load(File);
@@ -27,7 +27,7 @@ public class MetadataManager : BaseDataManager
             nint mainmetadata = Ruby.Hash.Get(Data, Ruby.Integer.ToPtr(0));
             if (!Game.Data.IsVersionAtLeast(EssentialsVersion.v20))
             {
-                Logger.Write("Loading player metadata too since EV < v20");
+                Logger.WriteLine("Loading player metadata too since EV < v20");
                 // Also load player metadata in v19; disables PlayerMetadataManager
                 string[] players = { "player_A", "player_B", "player_C", "player_D", "player_E", "player_F", "player_G", "player_H" };
                 for (int i = 0; i < players.Length; i++)
@@ -49,42 +49,42 @@ public class MetadataManager : BaseDataManager
         base.LoadPBS();
         if (Game.Data.IsVersionAtLeast(EssentialsVersion.v20))
         {
-            Logger.Write("Loading metadata and player metadata from PBS with EV >= v20");
+            Logger.WriteLine("Loading metadata and player metadata from PBS with EV >= v20");
             FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
             {
                 int nid = Convert.ToInt32(id);
                 if (nid == 0) // Global metadata
                 {
-                    Logger.Write("Loading metadata from PBS with EV >= v20");
+                    Logger.WriteLine("Loading metadata from PBS with EV >= v20");
                     Data.Metadata = new Metadata(nid, hash);
                 }
                 else
                 {
-                    Logger.Write($"Loading player {nid} metadata from PBS with EV >= v20");
+                    Logger.WriteLine($"Loading player {nid} metadata from PBS with EV >= v20");
                     Data.PlayerMetadata.Add(nid, new PlayerMetadata(nid, hash));
                 }
             }, Data.SetLoadProgress);
         }
         else
         {
-            Logger.Write("Loading metadata, player metadata and map metadata from PBS with EV < v20");
+            Logger.WriteLine("Loading metadata, player metadata and map metadata from PBS with EV < v20");
             FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
             {
                 int nid = Convert.ToInt32(id);
                 if (nid == 0) // Metadata and player metadata
                 {
-                    Logger.Write("Loading metadata from PBS with EV < v20");
+                    Logger.WriteLine("Loading metadata from PBS with EV < v20");
                     Data.Metadata = new Metadata(nid, hash);
                     string[] players = { "PlayerA", "PlayerB", "PlayerC", "PlayerD", "PlayerE", "PlayerF", "PlayerG", "PlayerH" };
                     for (int i = 0; i < players.Length; i++)
                     {
                         if (hash.ContainsKey(players[i]))
                         {
-                            Logger.Write("Loading player {0} metadata from PBS with EV < v20", i + 1);
+                            Logger.WriteLine("Loading player {0} metadata from PBS with EV < v20", i + 1);
                             Game.Data.PlayerMetadata.Add(i + 1, new PlayerMetadata(hash[players[i]].Split(',').ToList()) { ID = i + 1 });
                         }
                     }
-                    Logger.Write("Loading map metadata from PBS with EV < v20");
+                    Logger.WriteLine("Loading map metadata from PBS with EV < v20");
                 }
                 else
                 {
@@ -99,7 +99,7 @@ public class MetadataManager : BaseDataManager
     protected override void SaveData()
     {
         base.SaveData();
-        Logger.Write("Saving metadata");
+        Logger.WriteLine("Saving metadata");
         SafeSave(Filename, File =>
         {
             nint Data = Ruby.Hash.Create();

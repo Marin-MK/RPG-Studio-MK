@@ -74,6 +74,7 @@ public class ScriptManager : BaseDataManager
                     "20.1" => EssentialsVersion.v20_1,
                     _ => EssentialsVersion.Unknown
                 };
+                Logger.WriteLine("Detected Essentials version: {0}", Data.EssentialsVersion);
                 break;
             }
             m = Regex.Match(s.Content, "(ESSENTIALS_VERSION|ESSENTIALSVERSION)[\t\r\n ]*=[\t\r\n ]*\"(.*)\"");
@@ -88,6 +89,7 @@ public class ScriptManager : BaseDataManager
                     "18.1" => EssentialsVersion.v18_1,
                     _ => EssentialsVersion.Unknown
                 };
+                Logger.WriteLine("Detected Essentials version: {0}", Data.EssentialsVersion);
                 break;
             }
         }
@@ -96,7 +98,7 @@ public class ScriptManager : BaseDataManager
 
     private void LoadScriptsExternal()
     {
-        Logger.Write("Loading scripts from external files");
+        Logger.WriteLine("Loading scripts from external files");
         List<(string, string)>? GetScripts(string Path, int Depth)
         {
             List<(string, string)>? Files = new List<(string, string)>();
@@ -152,7 +154,7 @@ public class ScriptManager : BaseDataManager
 
     private void LoadScriptsRXDATA()
     {
-        Logger.Write("Loading scripts from RXDATA file");
+        Logger.WriteLine("Loading scripts from RXDATA file");
         Data.UsesExternalScripts = false;
         SafeLoad("Scripts.rxdata", File =>
         {
@@ -176,7 +178,7 @@ public class ScriptManager : BaseDataManager
 
     private void SaveScriptsExternal()
     {
-        Logger.Write("Saving scripts to external files");
+        Logger.WriteLine("Saving scripts to external files");
         if (!Directory.Exists(Data.DataPath + "/Scripts")) Directory.CreateDirectory(Data.DataPath + "/Scripts");
         else
         {
@@ -252,7 +254,7 @@ public class ScriptManager : BaseDataManager
 
     private void SaveScriptsRXDATA()
     {
-        Logger.Write("Saving scripts to RXDATA file");
+        Logger.WriteLine("Saving scripts to RXDATA file");
         SafeSave(Filename, File =>
         {
             IntPtr scripts = Ruby.Array.Create();
@@ -270,7 +272,7 @@ public class ScriptManager : BaseDataManager
     public override void Clear()
     {
         base.Clear();
-        Logger.Write("Clearing scripts");
+        Logger.WriteLine("Clearing scripts");
         Data.Scripts.Clear();
     }
 }

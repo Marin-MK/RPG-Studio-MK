@@ -186,7 +186,7 @@ public static class Utilities
             int seconds = Editor.GeneralSettings.SecondsUsed % 60;
             int minutes = Editor.GeneralSettings.SecondsUsed / 60 % 60;
             int hours = Editor.GeneralSettings.SecondsUsed / 60 / 60 % 24;
-            Console.WriteLine($"Time spent in the program: {hours}h:{minutes}min:{seconds}s");
+            Logger.WriteLine($"Time spent in the program: {hours}h:{minutes}min:{seconds}s");
         }
         Color black = new Color(0, 0, 0, 64);
         Bitmap c = new Bitmap(5, 5);
@@ -778,10 +778,10 @@ public static class Utilities
     public static async Task CopyKit(string KitName, string DestinationFolder, CancellationTokenSource Source, Action<float> OnProgress)
     {
         string Filename = Path.Combine(Editor.KitsFolder, KitName + ".zip");
-        Archive archive = new Archive(Filename);
+        MKUtils.Archive archive = new MKUtils.Archive(Filename);
         string MainFolder = null;
         if (!Directory.Exists(DestinationFolder)) Directory.CreateDirectory(DestinationFolder);
-        foreach (ArchiveEntry entry in archive.Files)
+        foreach (MKUtils.ArchiveEntry entry in archive.Files)
         {
             if (entry.Filename.Contains('\\') || entry.Filename.Contains('/')) continue;
             if (MainFolder != null)
@@ -798,7 +798,7 @@ public static class Utilities
         {
             float total = archive.Files.Count;
             float count = 0;
-            foreach (ArchiveEntry entry in archive.Files)
+            foreach (MKUtils.ArchiveEntry entry in archive.Files)
             {
                 await entry.ExtractAsync(DestinationFolder);
                 Source.Token.ThrowIfCancellationRequested();
@@ -814,7 +814,7 @@ public static class Utilities
             // all the files to reside, thus we purge this part of the path for all the other entries.
             float total = archive.Files.Count - 1;
             float count = 0;
-            foreach (ArchiveEntry entry in archive.Files)
+            foreach (MKUtils.ArchiveEntry entry in archive.Files)
             {
                 if (entry.Filename == MainFolder) continue;
                 if (entry.Filename.Contains(MainFolder)) entry.Rename(entry.Filename.Substring(MainFolder.Length + 1));

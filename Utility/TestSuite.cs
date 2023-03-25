@@ -89,7 +89,7 @@ public class TestSuite
                         line = Convert.ToInt32(m.Groups[1].Value);
                     }
                     string linetext = line != null ? $" line {line}" : "";
-                    Console.WriteLine($"ERROR: Assertion failed ({method.Name}(){linetext}): {ex.Message}");
+                    Logger.Error($"Assertion failed ({method.Name}(){linetext}): {ex.Message}");
                     Exceptions.Add(ex);
                 }
                 Count++;
@@ -121,9 +121,9 @@ public class TestSuite
         if (Count > 0)
         {
             float perc = (int) Math.Round((float) (Count - Exceptions.Count) / Count * 1000) / 10f;
-            if (Exceptions.Count > 0) Console.WriteLine();
-            Console.WriteLine($"Ran {Count} tests, {Count - Exceptions.Count}/{Count} ({perc}%) passed ({s.ElapsedMilliseconds}ms).");
-            Console.WriteLine();
+            if (Exceptions.Count > 0) Logger.WriteLine();
+            Logger.WriteLine($"Ran {Count} tests, {Count - Exceptions.Count}/{Count} ({perc}%) passed ({s.ElapsedMilliseconds}ms).");
+            Logger.WriteLine();
             if (ThrowIfAnyErrors && Exceptions.Count > 0)
             {
                 bool Plural = Exceptions.Count > 1;

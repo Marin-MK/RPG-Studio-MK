@@ -20,7 +20,7 @@ public class MapMetadataManager : BaseDataManager
     protected override void LoadData()
     {
         base.LoadData();
-        Logger.Write("Loading map metadata");
+        Logger.WriteLine("Loading map metadata");
         LoadAsHash((key, robj) =>
         {
             int ckey = (int) Ruby.Integer.FromPtr(key);
@@ -129,7 +129,7 @@ public class MapMetadataManager : BaseDataManager
     {
         if (!Game.Data.IsVersionAtLeast(EssentialsVersion.v20)) return;
         base.LoadPBS();
-        Logger.Write("Loading map metadata from PBS");
+        Logger.WriteLine("Loading map metadata from PBS");
         FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
         {
             Map Map = Data.Maps[Convert.ToInt32(id)];
@@ -233,7 +233,7 @@ public class MapMetadataManager : BaseDataManager
     protected override void SaveData()
     {
         base.SaveData();
-        Logger.Write("Saving map metadata");
+        Logger.WriteLine("Saving map metadata");
         SafeSave("map_metadata.dat", File =>
         {
             nint Data = Ruby.Hash.Create();

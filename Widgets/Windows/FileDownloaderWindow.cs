@@ -7,7 +7,7 @@ namespace RPGStudioMK.Widgets;
 
 public class FileDownloaderWindow : ProgressWindow
 {
-    Downloader downloader;
+    MKUtils.Downloader downloader;
 
     public Action<Exception> OnError;
 
@@ -17,8 +17,8 @@ public class FileDownloaderWindow : ProgressWindow
         base("Downloader", "Connecting to server...", CloseWhenDone, Cancellable, false, true)
     {
         this.DownloadText = DownloadText;
-        Logger.Write("Initializing downloader...");
-        downloader = new Downloader(URL, Filename);
+        Logger.WriteLine("Initializing downloader...");
+        downloader = new MKUtils.Downloader(URL, Filename);
         this.OnCancelled += () => downloader.Cancel();
         downloader.OnError += e => 
         {
@@ -34,7 +34,7 @@ public class FileDownloaderWindow : ProgressWindow
 
     public void Download()
     {
-        downloader.Download(null, new DynamicCallbackManager<DownloadProgress>(TimeSpan.FromMilliseconds(16), x =>
+        downloader.Download(null, new MKUtils.DynamicCallbackManager<MKUtils.DownloadProgress>(TimeSpan.FromMilliseconds(16), x =>
         {
             SetMessage(DownloadText);
             SetProgress((float) x.Factor);

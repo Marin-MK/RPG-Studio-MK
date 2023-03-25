@@ -18,7 +18,7 @@ public class EncounterManager : BaseDataManager
     protected override void LoadData()
     {
         base.LoadData();
-        Logger.Write("Loading encounters");
+        Logger.WriteLine("Loading encounters");
         LoadAsHash((key, value) =>
         {
             string ckey = Ruby.Symbol.FromPtr(key);
@@ -38,7 +38,7 @@ public class EncounterManager : BaseDataManager
     protected override void LoadPBS()
     {
         base.LoadPBS();
-        Logger.Write("Loading encounters from PBS");
+        Logger.WriteLine("Loading encounters from PBS");
         FormattedTextParser.ParseLineByLineWithHeader(PBSFilename, (id, lines) =>
         {
             int mapid = 0;
@@ -56,14 +56,14 @@ public class EncounterManager : BaseDataManager
     protected override void SaveData()
     {
         base.SaveData();
-        Logger.Write("Saving encounters");
+        Logger.WriteLine("Saving encounters");
         SaveAsHash(Data.Encounters.Values, enc => Ruby.Symbol.ToPtr(enc.ID));
     }
 
     public override void Clear()
     {
         base.Clear();
-        Logger.Write("Clearing encounters");
+        Logger.WriteLine("Clearing encounters");
         Data.Encounters.Clear();
     }
 }

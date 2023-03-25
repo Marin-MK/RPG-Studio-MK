@@ -32,25 +32,25 @@ public static class GameRunner
         Process.StartInfo.Arguments = "debug";
         Process.Start();
         Server = new Server(59995);
-        Console.WriteLine("Server started.");
+        Logger.WriteLine("Server started.");
         Server.OnClientAccepted += delegate (Server.Socket Socket)
         {
             if (FirstConnectedID == null)
             {
                 FirstConnectedID = Socket.ID;
-                Console.WriteLine($"Socket {Socket.ID} connected.");
+                Logger.WriteLine($"Socket {Socket.ID} connected.");
                 Socket.OnMessaged += delegate (Server.Socket Socket, string Message)
                 {
-                    Console.WriteLine($"Socket {Socket.ID} :: {Message}");
+                    Logger.WriteLine($"Socket {Socket.ID} :: {Message}");
                     OnDataOutput?.Invoke(new TextEventArgs(Message, null));
                 };
                 Socket.OnTimedOut += delegate (Server.Socket Socket)
                 {
-                    Console.WriteLine($"Socket {Socket.ID} timed out.");
+                    Logger.WriteLine($"Socket {Socket.ID} timed out.");
                 };
                 Socket.OnClosed += delegate (Server.Socket Socket)
                 {
-                    Console.WriteLine($"Socket {Socket.ID} disconnected.");
+                    Logger.WriteLine($"Socket {Socket.ID} disconnected.");
                     Server?.Stop();
                     Server = null;
                     FirstConnectedID = null;
@@ -59,13 +59,13 @@ public static class GameRunner
             }
             else
             {
-                Console.WriteLine($"Socket {Socket.ID} rejected.");
+                Logger.WriteLine($"Socket {Socket.ID} rejected.");
                 Socket.Close();
             }
         };
         Server.OnServerClosed += delegate (BaseEventArgs e)
         {
-            Console.WriteLine("Server closed.");
+            Logger.WriteLine("Server closed.");
             Server = null;
             FirstConnectedID = null;
         };

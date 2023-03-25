@@ -13,7 +13,7 @@ public class TilesetManager : BaseDataManager
     public override void Load(bool fromPBS = false)
     {
         base.Load(fromPBS);
-        Logger.Write("Loading tilesets");
+        Logger.WriteLine("Loading tilesets");
         SafeLoad(Filename, File =>
         {
             IntPtr data = Ruby.Marshal.Load(File);
@@ -36,7 +36,7 @@ public class TilesetManager : BaseDataManager
     public override void Save()
     {
         base.SaveData();
-        Logger.Write("Saving tilesets");
+        Logger.WriteLine("Saving tilesets");
         SafeSave(Filename, File =>
         {
             IntPtr tilesets = Ruby.Array.Create();
@@ -58,7 +58,7 @@ public class TilesetManager : BaseDataManager
     public override void Clear()
     {
         base.Clear();
-        Logger.Write("Clearing tilesets");
+        Logger.WriteLine("Clearing tilesets");
         Data.Tilesets.Clear();
     }
 }

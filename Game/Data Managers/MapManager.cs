@@ -40,7 +40,7 @@ public class MapManager : BaseDataManager
     public override void Load(bool fromPBS = false)
     {
         base.Load(fromPBS);
-        Logger.Write("Loading maps");
+        Logger.WriteLine("Loading maps");
         SafeLoad("MapInfos.rxdata", InfoFile =>
         {
             IntPtr mapinfo = Ruby.Marshal.Load(InfoFile);
@@ -71,7 +71,7 @@ public class MapManager : BaseDataManager
     public override void Save()
     {
         base.Save();
-        Logger.Write("Saving maps and map metadata");
+        Logger.WriteLine("Saving maps and map metadata");
         (bool Success, string Error) = SafeSave("MapInfos.rxdata", InfoFile =>
         {
             IntPtr mapinfos = Ruby.Hash.Create();
@@ -109,7 +109,7 @@ public class MapManager : BaseDataManager
                 }
                 catch (Exception)
                 {
-                    Console.WriteLine($"Failed to delete '{Data.DataPath}/{map.filename}'.");
+                    Logger.Error($"Failed to delete '{Data.DataPath}/{map.filename}'.");
                 }
             }
         }
@@ -118,7 +118,7 @@ public class MapManager : BaseDataManager
     public override void Clear()
     {
         base.Clear();
-        Logger.Write("Clearing map data");
+        Logger.WriteLine("Clearing map data");
         Data.Maps.Clear();
     }
 }

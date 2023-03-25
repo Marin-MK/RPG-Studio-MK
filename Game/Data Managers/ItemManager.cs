@@ -18,7 +18,7 @@ public class ItemManager : BaseDataManager
     protected override void LoadData()
     {
         base.LoadData();
-        Logger.Write("Loading items");
+        Logger.WriteLine("Loading items");
         LoadAsHash((key, value) =>
         {
             string item = Ruby.Symbol.FromPtr(key);
@@ -31,7 +31,7 @@ public class ItemManager : BaseDataManager
         base.LoadPBS();
         if (Game.Data.IsVersionAtLeast(EssentialsVersion.v20))
         {
-            Logger.Write("Loading items from PBS with EV >= v20");
+            Logger.WriteLine("Loading items from PBS with EV >= v20");
             FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
             {
                 Data.Items.Add(id, new Item(id, hash));
@@ -39,7 +39,7 @@ public class ItemManager : BaseDataManager
         }
         else
         {
-            Logger.Write("Loading items from PBS with EV < v20");
+            Logger.WriteLine("Loading items from PBS with EV < v20");
             FormattedTextParser.ParseLineByLineCommaBased(PBSFilename, line =>
             {
                 Item itemdata = new Item(line);
@@ -51,14 +51,14 @@ public class ItemManager : BaseDataManager
     protected override void SaveData()
     {
         base.SaveData();
-        Logger.Write("Saving items");
+        Logger.WriteLine("Saving items");
         SaveAsHash(Data.Items.Values, e => Ruby.Symbol.ToPtr(e.ID));
     }
 
     public override void Clear()
     {
         base.Clear();
-        Logger.Write("Clearing items");
+        Logger.WriteLine("Clearing items");
         Data.Items.Clear();
     }
 }

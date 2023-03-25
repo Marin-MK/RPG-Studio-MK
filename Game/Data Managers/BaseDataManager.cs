@@ -208,7 +208,7 @@ public class BaseDataManager
             }))
             {
                 if (Tries != Total)
-                    Console.WriteLine($"{Filename.Split('/').Last()} opened after {Total - Tries + 1} attempt(s) and {DelayInMS * (Total - Tries + 1)}ms.");
+                    Logger.WriteLine($"{Filename.Split('/').Last()} opened after {Total - Tries + 1} attempt(s) and {DelayInMS * (Total - Tries + 1)}ms.");
                 if (File != IntPtr.Zero) Ruby.File.Close(File);
                 return (true, null);
             }
@@ -222,7 +222,7 @@ public class BaseDataManager
             Thread.Sleep(DelayInMS);
             Tries--;
         }
-        Console.WriteLine($"{Filename.Split('/').Last()} failed to open after {Total} attempt(s) and {DelayInMS * Total}ms.");
+        Logger.WriteLine($"{Filename.Split('/').Last()} failed to open after {Total} attempt(s) and {DelayInMS * Total}ms.");
         return (false, "Errno::EACCES");
     }
 }

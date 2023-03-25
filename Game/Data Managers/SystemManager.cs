@@ -13,7 +13,7 @@ public class SystemManager : BaseDataManager
     public override void Load(bool fromPBS = false)
     {
         base.Load(fromPBS);
-        Logger.Write("Loading system data");
+        Logger.WriteLine("Loading system data");
         SafeLoad("System.rxdata", File =>
         {
             IntPtr data = Ruby.Marshal.Load(File);
@@ -26,7 +26,7 @@ public class SystemManager : BaseDataManager
     public override void Save()
     {
         base.Save();
-        Logger.Write("Saving system data");
+        Logger.WriteLine("Saving system data");
         Data.System.EditMapID = Editor.ProjectSettings.LastMapID;
         SafeSave("System.rxdata", File =>
         {
@@ -40,7 +40,7 @@ public class SystemManager : BaseDataManager
     public override void Clear()
     {
         base.Clear();
-        Logger.Write("Clearing system data");
+        Logger.WriteLine("Clearing system data");
         Data.System = null;
     }
 }

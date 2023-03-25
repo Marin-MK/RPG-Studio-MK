@@ -301,7 +301,7 @@ public class MapSelectPanel : Widget
 
     void PrintIndices()
     {
-        Console.WriteLine(">>>>> START");
+        Logger.WriteLine(">>>>> START");
         MapTree.Root.GetAllChildren(true).ForEach(c =>
         {
             if (c is not OptimizedNode) return;
@@ -309,7 +309,7 @@ public class MapSelectPanel : Widget
             string depth = "";
             for (int i = 0; i < Node.Depth; i++) depth += " ";
             depth += "- ";
-            Console.WriteLine($"{depth}{Node.GlobalIndex}: {Node.Text} ({Node.Parent.GlobalIndex})");
+            Logger.WriteLine($"{depth}{Node.GlobalIndex}: {Node.Text} ({Node.Parent.GlobalIndex})");
         });
     }
     

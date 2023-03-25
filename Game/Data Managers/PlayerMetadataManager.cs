@@ -27,7 +27,7 @@ public class PlayerMetadataManager : BaseDataManager
     protected override void LoadData()
     {
         base.LoadData();
-        Logger.Write("Loading player metadata");
+        Logger.WriteLine("Loading player metadata");
         LoadAsHash((key, value) =>
         {
             int ckey = (int) Ruby.Integer.FromPtr(key);
@@ -47,14 +47,14 @@ public class PlayerMetadataManager : BaseDataManager
     protected override void SaveData()
     {
         base.SaveData();
-        Logger.Write("Saving player metadata");
+        Logger.WriteLine("Saving player metadata");
         SaveAsHash(Data.PlayerMetadata.Values, m => Ruby.Integer.ToPtr(m.ID));
     }
 
     public override void Clear()
     {
         base.Clear();
-        Logger.Write("Clearing player metadata");
+        Logger.WriteLine("Clearing player metadata");
         Data.PlayerMetadata.Clear();
     }
 }

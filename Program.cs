@@ -1,7 +1,6 @@
 ﻿global using odl;
 global using amethyst;
 global using rubydotnet;
-global using MKUtils;
 
 using System;
 using System.IO;
@@ -34,8 +33,9 @@ public class Program
     [STAThread]
     static void Main(params string[] args)
     {
-        Logger.Start(null);// Path.Combine(Editor.AppDataFolder, "log.txt"));
-        Logger.Write("Log is active");
+        if (DebugMode) Logger.Start();
+        else Logger.Start(Path.Combine(Editor.AppDataFolder, "log.txt"));
+        Graphics.Logger = Logger.Instance;
         // Ensures the working directory becomes the editor directory
         Directory.SetCurrentDirectory(Path.GetDirectoryName(Environment.ProcessPath));
         if (DebugMode) TestSuite.RunAll();
@@ -94,7 +94,6 @@ public class Program
 
         // Stops amethyst
         Amethyst.Stop();
-        Logger.Write("Log is inactive");
         Logger.Stop();
     }
 
@@ -119,24 +118,23 @@ public class Program
         // Load latest version
         if (DebugMode)
         {
-            Logger.Write("Skipped latest version check in Debug Mode");
-            Console.WriteLine("Skipped latest version check in Debug Mode");
+            Logger.WriteLine("Skipped latest version check in Debug Mode");
             return;
         }
-        if (VersionMetadata.Load())
+        if (MKUtils.VersionMetadata.Load())
         {
-            LatestVersion = VersionMetadata.ProgramVersion;
+            LatestVersion = MKUtils.VersionMetadata.ProgramVersion;
             // Compare versions
-            int cmp = VersionMetadata.CompareVersions(CurrentVersion, LatestVersion);
+            int cmp = MKUtils.VersionMetadata.CompareVersions(CurrentVersion, LatestVersion);
             if (!string.IsNullOrEmpty(LatestVersion) && cmp == -1)
             {
                 // LatestVersion > CurrentVersion, so there is an update available.
                 UpdateAvailable = true;
-                Console.WriteLine($"Version {CurrentVersion} is outdated. Update {LatestVersion} is available.");
+                Logger.WriteLine($"Version {CurrentVersion} is outdated. Update {LatestVersion} is available.");
             }
-            else Console.WriteLine($"Version {CurrentVersion} is up-to-date.");
+            else Logger.WriteLine($"Version {CurrentVersion} is up-to-date.");
         }
-        else Console.WriteLine($"Failed to look for updates.");
+        else Logger.WriteLine($"Failed to look for updates.");
     }
 
     private static string RemoveExcessZeroes(string version)
@@ -152,11 +150,11 @@ public class Program
 
     private static void InitializeProgram()
     {
-        Console.WriteLine("Launching RPG Studio MK.");
-        Console.WriteLine($"Editor Version: {Editor.GetVersionString()}");
+        Logger.WriteLine("Launching RPG Studio MK.");
+        Logger.WriteLine($"Editor Version: {Editor.GetVersionString()}");
         if (!ReleaseMode)
         {
-            Console.WriteLine("===============================\nProgram launched in Debug mode.\n===============================");
+            Logger.WriteLine("===============================\nProgram launched in Debug mode.\n===============================");
         }
         PrintPlatformInfo();
         Config.Setup();
@@ -173,7 +171,9 @@ public class Program
 
     private static void InitializeRuby()
     {
-        Ruby.Initialize(Config.PathInfo);
+        Logger.WriteLine("Loading Ruby...");
+        string rubyVersion = Ruby.Initialize(Config.PathInfo);
+        Logger.WriteLine("Loaded Ruby ({0})", rubyVersion);
         IntPtr ruby_load_path = Ruby.GetGlobal("$LOAD_PATH");
         Ruby.Array.Push(ruby_load_path, Ruby.String.ToPtr("./lib/ruby/2.7.0"));
         if (NativeLibrary.Platform == NativeLibraryLoader.Platform.Windows)
@@ -200,8 +200,8 @@ public class Program
         else if (fw.Contains(".NETFrameworkApp")) Framework = ".NET Framework ";
         else Framework = "Unknown ";
         Framework += Environment.Version.ToString();
-        Console.WriteLine($"Framework: {Framework}");
-        Console.WriteLine($"OS Platform: {os.Platform} ({Graphics.Platform}) {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}");
-        Console.WriteLine($"OS Version: {os.VersionString}");
+        Logger.WriteLine($"Framework: {Framework}");
+        Logger.WriteLine($"OS Platform: {os.Platform} ({Graphics.Platform}) {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}");
+        Logger.WriteLine($"OS Version: {os.VersionString}");
     }
 }

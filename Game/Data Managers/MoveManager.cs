@@ -19,7 +19,7 @@ public class MoveManager : BaseDataManager
     protected override void LoadData()
     {
         base.LoadData();
-        Logger.Write("Loading moves");
+        Logger.WriteLine("Loading moves");
         LoadAsHash((key, value) =>
         {
             string ckey = Ruby.Symbol.FromPtr(key);
@@ -32,7 +32,7 @@ public class MoveManager : BaseDataManager
         base.LoadPBS();
         if (Game.Data.IsVersionAtLeast(EssentialsVersion.v20))
         {
-            Logger.Write("Loading moves from PBS with EV >= v20");
+            Logger.WriteLine("Loading moves from PBS with EV >= v20");
             FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
             {
                 Data.Moves.Add(id, new Move(id, hash));
@@ -40,7 +40,7 @@ public class MoveManager : BaseDataManager
         }
         else
         {
-            Logger.Write("Loading moves from PBS with EV < v20");
+            Logger.WriteLine("Loading moves from PBS with EV < v20");
             FormattedTextParser.ParseLineByLineCommaBased(PBSFilename, line =>
             {
                 Move movedata = new Move(line);
@@ -52,14 +52,14 @@ public class MoveManager : BaseDataManager
     protected override void SaveData()
     {
         base.SaveData();
-        Logger.Write("Saving moves");
+        Logger.WriteLine("Saving moves");
         SaveAsHash(Data.Moves.Values, m => Ruby.Symbol.ToPtr(m.ID));
     }
 
     public override void Clear()
     {
         base.Clear();
-        Logger.Write("Clearing moves");
+        Logger.WriteLine("Clearing moves");
         Data.Moves.Clear();
     }
 }

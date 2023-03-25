@@ -17,7 +17,7 @@ public class GameConfigManager : BaseDataManager
 
     public override void Load(bool fromPBS = false)
     {
-        Logger.Write("Loading game config");
+        Logger.WriteLine("Loading game config");
         if (win1252 == null)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -34,7 +34,7 @@ public class GameConfigManager : BaseDataManager
     public override void Save()
     {
         base.SaveData();
-        Logger.Write("Saving game config");
+        Logger.WriteLine("Saving game config");
         string inifilename = $"{Data.ProjectPath}/{Filename}";
         string data = File.ReadAllText(inifilename, win1252);
         data = Regex.Replace(data, @"Title=.*\n", $"Title={Editor.ProjectSettings.ProjectName}{Environment.NewLine}");
@@ -44,7 +44,7 @@ public class GameConfigManager : BaseDataManager
     public override void Clear()
     {
         base.Clear();
-        Logger.Write("Clearing game config");
+        Logger.WriteLine("Clearing game config");
         Editor.ProjectSettings.ProjectName = null;
     }
 }

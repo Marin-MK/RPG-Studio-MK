@@ -18,7 +18,7 @@ public class SpeciesManager : BaseDataManager
     protected override void LoadData()
     {
         base.LoadData();
-        Logger.Write("Loading species");
+        Logger.WriteLine("Loading species");
         LoadAsHash((key, value) =>
         {
             string realID = Ruby.Symbol.FromPtr(Ruby.GetIVar(value, "@id"));
@@ -31,7 +31,7 @@ public class SpeciesManager : BaseDataManager
     protected override void LoadPBS()
     {
         base.LoadPBS();
-        Logger.Write("Loading species from PBS");
+        Logger.WriteLine("Loading species from PBS");
         FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
         {
             Species speciesdata = new Species(id, hash);
@@ -40,7 +40,7 @@ public class SpeciesManager : BaseDataManager
         Data.SetLoadText("Loading forms...");
         string formsFile = Data.ProjectPath + "/PBS/pokemon_forms.txt";
         if (!Game.Data.IsVersionAtLeast(EssentialsVersion.v20)) formsFile = Data.ProjectPath + "/PBS/pokemonforms.txt";
-        Logger.Write("Loading species forms from PBS");
+        Logger.WriteLine("Loading species forms from PBS");
         FormattedTextParser.ParseSectionBasedFile(formsFile, (id, hash) =>
         {
             string[] _id = id.Split(',').Select(x => x.Trim()).ToArray();
@@ -53,7 +53,7 @@ public class SpeciesManager : BaseDataManager
             NewSpecies.ID = _id[0] + "_" + _id[1];
             Data.Species.Add(NewSpecies.ID, NewSpecies);
         }, Data.SetLoadProgress);
-        Logger.Write("Registering prevolutions");
+        Logger.WriteLine("Registering prevolutions");
         Game.Species.PrevolutionsToRegister.ForEach(p =>
         {
             p.Item2.Species.Species.Prevolutions.Add(new Evolution((SpeciesResolver) p.Item1, p.Item2.Type, p.Item2.Parameter, true));
@@ -64,14 +64,14 @@ public class SpeciesManager : BaseDataManager
     protected override void SaveData()
     {
         base.SaveData();
-        Logger.Write("Saving species");
+        Logger.WriteLine("Saving species");
         SaveAsHash(Data.Species.Values, s => Ruby.Symbol.ToPtr(s.ID));
     }
 
     public override void Clear()
     {
         base.Clear();
-        Logger.Write("Clearing species");
+        Logger.WriteLine("Clearing species");
         Data.Species.Clear();
     }
 }

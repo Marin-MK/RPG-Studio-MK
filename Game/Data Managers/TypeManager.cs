@@ -18,7 +18,7 @@ public class TypeManager : BaseDataManager
     protected override void LoadData()
     {
         base.LoadData();
-        Logger.Write("Loading types");
+        Logger.WriteLine("Loading types");
         LoadAsHash((key, value) =>
         {
             string ckey = Ruby.Symbol.FromPtr(key);
@@ -29,7 +29,7 @@ public class TypeManager : BaseDataManager
     protected override void LoadPBS()
     {
         base.LoadPBS();
-        Logger.Write("Loading types from PBS");
+        Logger.WriteLine("Loading types from PBS");
         FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
         {
             Data.Types.Add(id, new Type(id, hash));
@@ -39,14 +39,14 @@ public class TypeManager : BaseDataManager
     protected override void SaveData()
     {
         base.SaveData();
-        Logger.Write("Saving types");
+        Logger.WriteLine("Saving types");
         SaveAsHash(Data.Types.Values, t => Ruby.Symbol.ToPtr(t.ID));
     }
 
     public override void Clear()
     {
         base.Clear();
-        Logger.Write("Clearing types");
+        Logger.WriteLine("Clearing types");
         Data.Types.Clear();
     }
 }

@@ -19,7 +19,7 @@ public class AbilityManager : BaseDataManager
     protected override void LoadData()
     {
         base.LoadData();
-        Logger.Write("Loading abilities");
+        Logger.WriteLine("Loading abilities");
         LoadAsHash((key, value) =>
         {
             string ckey = Ruby.Symbol.FromPtr(key);
@@ -32,7 +32,7 @@ public class AbilityManager : BaseDataManager
         base.LoadPBS();
         if (Game.Data.IsVersionAtLeast(EssentialsVersion.v20))
         {
-            Logger.Write("Loading abilities from PBS with EV >= v20");
+            Logger.WriteLine("Loading abilities from PBS with EV >= v20");
             FormattedTextParser.ParseSectionBasedFile(PBSFilename, (id, hash) =>
             {
                 Data.Abilities.Add(id, new Ability(id, hash));
@@ -40,7 +40,7 @@ public class AbilityManager : BaseDataManager
         }
         else
         {
-            Logger.Write("Loading abilities from PBS with EV < v20");
+            Logger.WriteLine("Loading abilities from PBS with EV < v20");
             FormattedTextParser.ParseLineByLineCommaBased(PBSFilename, line =>
             {
                 Ability abilitydata = new Ability(line);
@@ -52,14 +52,14 @@ public class AbilityManager : BaseDataManager
     protected override void SaveData()
     {
         base.SaveData();
-        Logger.Write("Saving abilities");
+        Logger.WriteLine("Saving abilities");
         SaveAsHash(Data.Abilities.Values, abil => Ruby.Symbol.ToPtr(abil.ID));
     }
 
     public override void Clear()
     {
         base.Clear();
-        Logger.Write("Clearing abilities");
+        Logger.WriteLine("Clearing abilities");
         Data.Abilities.Clear();
     }
 }
