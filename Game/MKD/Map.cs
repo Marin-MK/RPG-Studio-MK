@@ -29,7 +29,7 @@ public class Map : ICloneable
     public bool CanBicycle;
     public bool AlwaysBicycle;
     public (int MapID, int X, int Y)? HealingSpot;
-    public (Weather Weather, int Intensity)? Weather;
+    public (string Weather, int Intensity)? Weather;
     public (int Region, int X, int Y)? TownMapPosition;
     public int? DiveMapID;
     public bool DarkMap;

@@ -27,8 +27,8 @@ public class Species : IGameData, ICloneable
 	public Stats BaseStats;
 	public Stats EVs;
 	public int BaseEXP;
-	public GrowthRate GrowthRate;
-	public GenderRatio GenderRatio;
+	public string GrowthRate;
+	public string GenderRatio;
 	public int CatchRate;
 	public int Happiness;
 	public List<(int Level, MoveResolver Move)> Moves;
@@ -39,7 +39,7 @@ public class Species : IGameData, ICloneable
 	public List<ItemResolver> WildItemCommon;
 	public List<ItemResolver> WildItemUncommon;
 	public List<ItemResolver> WildItemRare;
-	public List<EggGroup> EggGroups;
+	public List<string> EggGroups;
 	public int HatchSteps;
 	public ItemResolver? Incense;
 	public List<SpeciesResolver> Offspring;
@@ -47,9 +47,9 @@ public class Species : IGameData, ICloneable
 	public List<Evolution> Prevolutions;
 	public float Height;
 	public float Weight;
-	public BodyColor Color;
-	public BodyShape Shape;
-	public Habitat Habitat;
+	public string Color;
+	public string Shape;
+	public string Habitat;
 	public int Generation;
 	public List<string> Flags;
 	public ItemResolver? MegaStone;
@@ -124,8 +124,8 @@ public class Species : IGameData, ICloneable
         this.Category = hash.ContainsKey("Category") ? hash["Category"] : hash["Kind"];
         this.PokedexEntry = hash["Pokedex"];
         this.BaseEXP = Convert.ToInt32(hash.ContainsKey("BaseExp") ? hash["BaseExp"] : hash["BaseEXP"]);
-        this.GrowthRate = GrowthRateStrToEnum(hash["GrowthRate"]);
-        this.GenderRatio = GenderRatioStrToEnum(hash.ContainsKey("GenderRatio") ? hash["GenderRatio"] : hash["GenderRate"]);
+        this.GrowthRate = Data.HardcodedData.Assert(hash["GrowthRate"], Data.HardcodedData.GrowthRates);
+        this.GenderRatio = Data.HardcodedData.Assert(hash.ContainsKey("GenderRatio") ? hash["GenderRatio"] : hash["GenderRate"], Data.HardcodedData.GenderRatios);
         this.CatchRate = Convert.ToInt32(hash.ContainsKey("CatchRate") ? hash["CatchRate"] : hash["Rareness"]);
         this.Happiness = Convert.ToInt32(hash["Happiness"]);
         string[] _moves = hash["Moves"].Split(',');
@@ -150,7 +150,7 @@ public class Species : IGameData, ICloneable
 		else this.WildItemUncommon = new List<ItemResolver>();
 		if (hash.ContainsKey("WildItemRare")) this.WildItemRare = hash["WildItemRare"].Split(',').Select(m => (ItemResolver) m.Trim()).ToList();
 		else this.WildItemRare = new List<ItemResolver>();
-        this.EggGroups = (hash.ContainsKey("EggGroups") ? hash["EggGroups"] : hash["Compatibility"]).Split(',').Select(m => EggGroupStrToEnum(m)).ToList();
+        this.EggGroups = (hash.ContainsKey("EggGroups") ? hash["EggGroups"] : hash["Compatibility"]).Split(',').Select(m => Data.HardcodedData.Assert(m, Data.HardcodedData.EggGroups)).ToList();
         this.HatchSteps = Convert.ToInt32(hash.ContainsKey("HatchSteps") ? hash["HatchSteps"] : hash["StepsToHatch"]);
         if (hash.ContainsKey("Incense")) this.Incense = (ItemResolver) hash["Incense"];
 		if (hash.ContainsKey("Offspring")) this.Offspring = hash["Offspring"].Split(',').Select(s => (SpeciesResolver) s.Trim()).ToList();
@@ -163,7 +163,7 @@ public class Species : IGameData, ICloneable
 			for (int i = 0; i < _evos.Length - 2; i += 3)
 			{
 				string species = _evos[i];
-				EvolutionType method = Evolution.MethodStrToEnum(_evos[i + 1]);
+				string method = _evos[i + 1];
 				string param = _evos[i + 2];
 				Evolution evo = new Evolution((SpeciesResolver) species, method, string.IsNullOrEmpty(param) ? new List<object>() : new List<object>() { param }, false);
 				this.Evolutions.Add(evo);
@@ -172,9 +172,9 @@ public class Species : IGameData, ICloneable
 		}
         this.Height = (float) Convert.ToDouble(hash["Height"]);
         this.Weight = (float) Convert.ToDouble(hash["Weight"]);
-		this.Color = ColorStrToEnum(hash["Color"]);
-		this.Shape = ShapeStrToEnum(hash["Shape"]);
-		if (hash.ContainsKey("Habitat")) this.Habitat = HabitatStrToEnum(hash["Habitat"]);
+		this.Color = Data.HardcodedData.Assert(hash["Color"], Data.HardcodedData.BodyColors);
+		this.Shape = Data.HardcodedData.Assert(hash["Shape"], Data.HardcodedData.BodyShapes);
+		if (hash.ContainsKey("Habitat")) this.Habitat = Data.HardcodedData.Assert(hash["Habitat"], Data.HardcodedData.Habitats);
 		this.Generation = Convert.ToInt32(hash["Generation"]);
 		if (hash.ContainsKey("Flags")) this.Flags = hash["Flags"].Split(',').ToList();
 		else this.Flags = new List<string>();
@@ -280,7 +280,7 @@ public class Species : IGameData, ICloneable
         }
         if (hash.ContainsKey("EggGroups") || hash.ContainsKey("Compatibility"))
         {
-            this.EggGroups = (hash.ContainsKey("EggGroups") ? hash["EggGroups"] : hash["Compatibility"]).Split(',').Select(m => EggGroupStrToEnum(m)).ToList();
+            this.EggGroups = (hash.ContainsKey("EggGroups") ? hash["EggGroups"] : hash["Compatibility"]).Split(',').Select(m => Data.HardcodedData.Assert(m, Data.HardcodedData.EggGroups)).ToList();
         }
         if (hash.ContainsKey("HatchSteps"))
         {
@@ -304,15 +304,15 @@ public class Species : IGameData, ICloneable
         }
         if (hash.ContainsKey("Color"))
         {
-		    this.Color = ColorStrToEnum(hash["Color"]);
+		    this.Color = Data.HardcodedData.Assert(hash["Color"], Data.HardcodedData.BodyColors);
         }
         if (hash.ContainsKey("Shape"))
         {
-            this.Shape = ShapeStrToEnum(hash["Shape"]);
+            this.Shape = Data.HardcodedData.Assert(hash["Shape"], Data.HardcodedData.BodyShapes);
         }
         if (hash.ContainsKey("Habitat"))
         {
-            this.Habitat = HabitatStrToEnum(hash["Habitat"]);
+            this.Habitat = Data.HardcodedData.Assert(hash["Habitat"], Data.HardcodedData.Habitats);
         }
         if (hash.ContainsKey("Category"))
         {
@@ -357,7 +357,7 @@ public class Species : IGameData, ICloneable
             for (int i = 0; i < _evos.Length - 2; i += 3)
             {
                 string species = _evos[i];
-                EvolutionType method = Evolution.MethodStrToEnum(_evos[i + 1]);
+                string method = _evos[i + 1];
                 string param = _evos[i + 2];
                 Evolution evo = new Evolution((SpeciesResolver)species, method, string.IsNullOrEmpty(param) ? new List<object>() : new List<object>() { param }, false);
                 this.Evolutions.Add(evo);
@@ -412,9 +412,9 @@ public class Species : IGameData, ICloneable
 		this.EVs = new Stats(Ruby.GetIVar(Data, "@evs"));
 		this.BaseEXP = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@base_exp"));
 		string rgrowth = Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@growth_rate"));
-		this.GrowthRate = GrowthRateStrToEnum(rgrowth);
+		this.GrowthRate = Game.Data.HardcodedData.Assert(rgrowth, Game.Data.HardcodedData.GrowthRates);
 		string rratio = Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@gender_ratio"));
-		this.GenderRatio = GenderRatioStrToEnum(rratio);
+		this.GenderRatio = Game.Data.HardcodedData.Assert(rratio, Game.Data.HardcodedData.GenderRatios);
 		this.CatchRate = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@catch_rate"));
 		this.Happiness = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@happiness"));
 		nint MoveArray = Ruby.GetIVar(Data, "@moves");
@@ -494,11 +494,11 @@ public class Species : IGameData, ICloneable
         }
         nint EggGroupsArray = Ruby.GetIVar(Data, "@egg_groups");
         int EggGroupsArrayLength = (int) Ruby.Array.Length(EggGroupsArray);
-        this.EggGroups = new List<EggGroup>();
+        this.EggGroups = new List<string>();
         for (int i = 0; i < EggGroupsArrayLength; i++)
         {
             string egggroup = Ruby.Symbol.FromPtr(Ruby.Array.Get(EggGroupsArray, i));
-			this.EggGroups.Add(EggGroupStrToEnum(egggroup));
+			this.EggGroups.Add(Game.Data.HardcodedData.Assert(egggroup, Game.Data.HardcodedData.EggGroups));
         }
 		this.HatchSteps = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@hatch_steps"));
 		this.Incense = Ruby.GetIVar(Data, "@incense") == Ruby.Nil ? null : (ItemResolver) Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@incense"));
@@ -516,11 +516,11 @@ public class Species : IGameData, ICloneable
 		this.Height = Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@height")) / 10f;
 		this.Weight = Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@weight")) / 10f;
 		string rcolor = Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@color"));
-		this.Color = ColorStrToEnum(rcolor);
+		this.Color = Game.Data.HardcodedData.Assert(rcolor, Game.Data.HardcodedData.BodyColors);
 		string rshape = Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@shape"));
-		this.Shape = ShapeStrToEnum(rshape);
+		this.Shape = Game.Data.HardcodedData.Assert(rshape, Game.Data.HardcodedData.BodyShapes);
 		string rhabitat = Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@habitat"));
-        this.Habitat = HabitatStrToEnum(rhabitat);
+        this.Habitat = Game.Data.HardcodedData.Assert(rhabitat, Game.Data.HardcodedData.Habitats);
 		this.Generation = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@generation"));
 		nint FlagsArray = Ruby.GetIVar(Data, "@flags");
 		this.Flags = new List<string>();
@@ -576,10 +576,8 @@ public class Species : IGameData, ICloneable
 		Ruby.SetIVar(e, "@base_stats", this.BaseStats.Save());
 		Ruby.SetIVar(e, "@evs", this.EVs.Save());
 		Ruby.SetIVar(e, "@base_exp", Ruby.Integer.ToPtr(this.BaseEXP));
-        string rgrowth = GrowthRateEnumToStr(this.GrowthRate);
-		Ruby.SetIVar(e, "@growth_rate", Ruby.Symbol.ToPtr(rgrowth));
-        string rratio = GenderRatioEnumToStr(this.GenderRatio);
-		Ruby.SetIVar(e, "@gender_ratio", Ruby.Symbol.ToPtr(rratio));
+		Ruby.SetIVar(e, "@growth_rate", Ruby.Symbol.ToPtr(this.GrowthRate));
+		Ruby.SetIVar(e, "@gender_ratio", Ruby.Symbol.ToPtr(this.GenderRatio));
 		Ruby.SetIVar(e, "@catch_rate", Ruby.Integer.ToPtr(this.CatchRate));
 		Ruby.SetIVar(e, "@happiness", Ruby.Integer.ToPtr(this.Happiness));
 		nint MovesArray = Ruby.Array.Create();
@@ -635,10 +633,9 @@ public class Species : IGameData, ICloneable
         }
         nint EggGroupsArray = Ruby.Array.Create();
         Ruby.SetIVar(e, "@egg_groups", EggGroupsArray);
-        foreach (EggGroup group in EggGroups)
+        foreach (string group in EggGroups)
         {
-            string rgroup = EggGroupEnumToStr(group);
-            Ruby.Array.Push(EggGroupsArray, Ruby.Symbol.ToPtr(rgroup));
+            Ruby.Array.Push(EggGroupsArray, Ruby.Symbol.ToPtr(group));
         }
 		Ruby.SetIVar(e, "@hatch_steps", Ruby.Integer.ToPtr(this.HatchSteps));
 		Ruby.SetIVar(e, "@incense", this.Incense == null ? Ruby.Nil : Ruby.Symbol.ToPtr(this.Incense));
@@ -650,12 +647,9 @@ public class Species : IGameData, ICloneable
 		}
 		Ruby.SetIVar(e, "@height", Ruby.Integer.ToPtr((int) (this.Height * 10)));
 		Ruby.SetIVar(e, "@weight", Ruby.Integer.ToPtr((int) (this.Weight * 10)));
-        string rcolor = ColorEnumToStr(this.Color);
-		Ruby.SetIVar(e, "@color", Ruby.Symbol.ToPtr(rcolor));
-        string rshape = ShapeEnumToStr(this.Shape);
-		Ruby.SetIVar(e, "@shape", Ruby.Symbol.ToPtr(rshape));
-        string rhabitat = HabitatEnumToStr(this.Habitat);
-		Ruby.SetIVar(e, "@habitat", Ruby.Symbol.ToPtr(rhabitat));
+		Ruby.SetIVar(e, "@color", Ruby.Symbol.ToPtr(this.Color));
+		Ruby.SetIVar(e, "@shape", Ruby.Symbol.ToPtr(this.Shape));
+		Ruby.SetIVar(e, "@habitat", Ruby.Symbol.ToPtr(this.Habitat));
 		Ruby.SetIVar(e, "@generation", Ruby.Integer.ToPtr(this.Generation));
 		nint FlagsArray = Ruby.Array.Create();
 		Ruby.SetIVar(e, "@flags", FlagsArray);
@@ -705,7 +699,7 @@ public class Species : IGameData, ICloneable
 		s.WildItemCommon = this.WildItemCommon.Select(x => (ItemResolver) x.ID).ToList();
         s.WildItemUncommon = this.WildItemUncommon.Select(x => (ItemResolver) x.ID).ToList();
         s.WildItemRare = this.WildItemRare.Select(x => (ItemResolver) x.ID).ToList();
-        s.EggGroups = new List<EggGroup>(this.EggGroups);
+        s.EggGroups = new List<string>(this.EggGroups);
         s.HatchSteps = this.HatchSteps;
         if (this.Incense != null) s.Incense = (ItemResolver) this.Incense.ID;
         s.Offspring = this.Offspring.Select(x => (SpeciesResolver) x.ID).ToList();
@@ -723,228 +717,6 @@ public class Species : IGameData, ICloneable
         s.UnmegaForm = this.UnmegaForm;
         s.MegaMessage = this.MegaMessage;
         return s;
-    }
-
-    public static GrowthRate GrowthRateStrToEnum(string growth)
-    {
-        return growth switch
-        {
-            "Medium" => GrowthRate.Medium,
-            "Fast" => GrowthRate.Fast,
-            "Parabolic" => GrowthRate.Parabolic,
-            "Slow" => GrowthRate.Slow,
-            "Erratic" => GrowthRate.Erratic,
-            "Fluctuating" => GrowthRate.Fluctuating,
-            _ => throw new Exception($"Invalid growth rate '{growth}'.")
-        };
-    }
-
-    public static string GrowthRateEnumToStr(GrowthRate growth)
-    {
-        return growth switch
-        {
-            GrowthRate.Medium => "Medium",
-            GrowthRate.Fast => "Fast",
-            GrowthRate.Parabolic => "Parabolic",
-            GrowthRate.Slow => "Slow",
-            GrowthRate.Erratic => "Erratic",
-            GrowthRate.Fluctuating => "Fluctuating",
-            _ => throw new Exception($"Invalid growth rate '{growth}'.")
-        };
-    }
-
-    public static GenderRatio GenderRatioStrToEnum(string ratio)
-    {
-        return ratio switch
-        {
-            "AlwaysMale" => GenderRatio.AlwaysMale,
-            "AlwaysFemale" => GenderRatio.AlwaysFemale,
-            "Genderless" => GenderRatio.Genderless,
-            "FemaleOneEighth" => GenderRatio.FemaleOneEighth,
-            "Female25Percent" => GenderRatio.Female25Percent,
-            "Female50Percent" => GenderRatio.Female50Percent,
-            "Female75Percent" => GenderRatio.Female75Percent,
-            "FemaleSevenEighths" => GenderRatio.FemaleSevenEighths,
-            _ => throw new Exception($"Invalid gender ratio '{ratio}'.")
-        };
-    }
-
-    public static string GenderRatioEnumToStr(GenderRatio ratio)
-    {
-        return ratio switch
-        {
-            GenderRatio.AlwaysMale => "AlwaysMale",
-            GenderRatio.AlwaysFemale => "AlwaysFemale",
-            GenderRatio.Genderless => "Genderless",
-            GenderRatio.FemaleOneEighth => "FemaleOneEighth",
-            GenderRatio.Female25Percent => "Female25Percent",
-            GenderRatio.Female50Percent => "Female50Percent",
-            GenderRatio.Female75Percent => "Female75Percent",
-            GenderRatio.FemaleSevenEighths => "FemaleSevenEighths",
-            _ => throw new Exception($"Invalid gender ratio '{ratio}'.")
-        };
-    }
-
-    public static EggGroup EggGroupStrToEnum(string group)
-    {
-        return group switch
-        {
-            "Undiscovered" => EggGroup.Undiscovered,
-            "Monster" => EggGroup.Monster,
-            "Water1" => EggGroup.Water1,
-            "Bug" => EggGroup.Bug,
-            "Flying" => EggGroup.Flying,
-            "Field" => EggGroup.Field,
-            "Fairy" => EggGroup.Fairy,
-            "Grass" => EggGroup.Grass,
-            "Humanlike" => EggGroup.HumanLike,
-            "Water3" => EggGroup.Water3,
-            "Mineral" => EggGroup.Mineral,
-            "Amorphous" => EggGroup.Amorphous,
-            "Water2" => EggGroup.Water2,
-            "Ditto" => EggGroup.Ditto,
-            "Dragon" => EggGroup.Dragon,
-            _ => throw new Exception($"Invalid egg group '{group}'.")
-        };
-    }
-
-    public static string EggGroupEnumToStr(EggGroup group)
-    {
-        return group switch
-        {
-            EggGroup.Undiscovered => "Undiscovered",
-            EggGroup.Monster => "Monster",
-            EggGroup.Water1 => "Water1",
-            EggGroup.Bug => "Bug",
-            EggGroup.Flying => "Flying",
-            EggGroup.Field => "Field",
-            EggGroup.Fairy => "Fairy",
-            EggGroup.Grass => "Grass",
-            EggGroup.HumanLike => "Humanlike",
-            EggGroup.Water3 => "Water3",
-            EggGroup.Mineral => "Mineral",
-            EggGroup.Amorphous => "Amorphous",
-            EggGroup.Water2 => "Water2",
-            EggGroup.Ditto => "Ditto",
-            EggGroup.Dragon => "Dragon",
-            _ => throw new Exception($"Invalid egg group '{group}'.")
-        };
-    }
-
-    public static BodyColor ColorStrToEnum(string color)
-    {
-        return color switch
-        {
-            "Red" => BodyColor.Red,
-            "Blue" => BodyColor.Blue,
-            "Yellow" => BodyColor.Yellow,
-            "Green" => BodyColor.Green,
-            "Black" => BodyColor.Black,
-            "Brown" => BodyColor.Brown,
-            "Purple" => BodyColor.Purple,
-            "Gray" => BodyColor.Gray,
-            "White" => BodyColor.White,
-            "Pink" => BodyColor.Pink,
-            _ => throw new Exception($"Invalid body color '{color}'.")
-        };
-    }
-
-    public static string ColorEnumToStr(BodyColor color)
-    {
-        return color switch
-        {
-            BodyColor.Red => "Red",
-            BodyColor.Blue => "Blue",
-            BodyColor.Yellow => "Yellow",
-            BodyColor.Green => "Green",
-            BodyColor.Black => "Black",
-            BodyColor.Brown => "Brown",
-            BodyColor.Purple => "Purple",
-            BodyColor.Gray => "Gray",
-            BodyColor.White => "White",
-            BodyColor.Pink => "Pink",
-            _ => throw new Exception($"Invalid body color '{color}'.")
-        };
-    }
-
-    public static BodyShape ShapeStrToEnum(string shape)
-    {
-        return shape switch
-        {
-            "Head" => BodyShape.Head,
-            "Serpentine" => BodyShape.Serpentine,
-            "Finned" => BodyShape.Finned,
-            "HeadArms" => BodyShape.HeadAndArms,
-            "HeadBase" => BodyShape.HeadAndBase,
-            "BipedalTail" => BodyShape.BipedalWithTail,
-            "HeadLegs" => BodyShape.HeadAndLegs,
-            "Quadruped" => BodyShape.Quadruped,
-            "Winged" => BodyShape.Winged,
-            "Multiped" => BodyShape.Multiped,
-            "MultiBody" => BodyShape.MultiBody,
-            "Bipedal" => BodyShape.Bipedal,
-            "MultiWinged" => BodyShape.MultiWinged,
-            "Insectoid" => BodyShape.Insectoid,
-            _ => throw new Exception($"Invalid body shape '{shape}'.")
-        };
-    }
-
-    public static string ShapeEnumToStr(BodyShape shape)
-    {
-        return shape switch
-        {
-            BodyShape.Head => "Head",
-            BodyShape.Serpentine => "Serpentine",
-            BodyShape.Finned => "Finned",
-            BodyShape.HeadAndArms => "HeadArms",
-            BodyShape.HeadAndBase => "HeadBase",
-            BodyShape.BipedalWithTail => "BipedalTail",
-            BodyShape.HeadAndLegs => "HeadLegs",
-            BodyShape.Quadruped => "Quadruped",
-            BodyShape.Winged => "Winged",
-            BodyShape.Multiped => "Multiped",
-            BodyShape.MultiBody => "MultiBody",
-            BodyShape.Bipedal => "Bipedal",
-            BodyShape.MultiWinged => "MultiWinged",
-            BodyShape.Insectoid => "Insectoid",
-            _ => throw new Exception($"Invalid body shape '{shape}'.")
-        };
-    }
-
-    public static Habitat HabitatStrToEnum(string habitat)
-    {
-        return habitat switch
-        {
-            "None" => Habitat.None,
-            "Grassland" => Habitat.Grassland,
-            "Forest" => Habitat.Forest,
-            "WatersEdge" => Habitat.WatersEdge,
-            "Sea" => Habitat.Sea,
-            "Cave" => Habitat.Cave,
-            "Mountain" => Habitat.Mountain,
-            "RoughTerrain" => Habitat.RoughTerrain,
-            "Urban" => Habitat.Urban,
-            "Rare" => Habitat.Rare,
-            _ => throw new Exception($"Invalid habitat '{habitat}'.")
-        };
-    }
-
-    public static string HabitatEnumToStr(Habitat habitat)
-    {
-        return habitat switch
-        {
-            Habitat.None => "None",
-            Habitat.Grassland => "Grassland",
-            Habitat.Forest => "Forest",
-            Habitat.WatersEdge => "WatersEdge",
-            Habitat.Sea => "Sea",
-            Habitat.Cave => "Cave",
-            Habitat.Mountain => "Mountain",
-            Habitat.RoughTerrain => "RoughTerrain",
-            Habitat.Urban => "Urban",
-            Habitat.Rare => "Rare",
-            _ => throw new Exception($"Invalid habitat '{habitat}'.")
-        };
     }
 }
 

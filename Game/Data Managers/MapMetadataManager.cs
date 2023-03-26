@@ -66,22 +66,9 @@ public class MapMetadataManager : BaseDataManager
             nint weather = Ruby.GetIVar(robj, "@weather");
             if (weather != Ruby.Nil)
             {
-                string wtype = Ruby.Symbol.FromPtr(Ruby.Array.Get(weather, 0));
-                Weather rwtype = wtype switch
-                {
-                    "None" => Weather.None,
-                    "Rain" => Weather.Rain,
-                    "Storm" => Weather.Storm,
-                    "Snow" => Weather.Snow,
-                    "Blizzard" => Weather.Blizzard,
-                    "Sandstorm" => Weather.Sandstorm,
-                    "HeavyRain" => Weather.HeavyRain,
-                    "Sun" => Weather.Sun,
-                    "Fog" => Weather.Fog,
-                    _ => throw new Exception($"Invalid weather type '{wtype}'.")
-                };
+                string wtype = Data.HardcodedData.Assert(Ruby.Symbol.FromPtr(Ruby.Array.Get(weather, 0)), Data.HardcodedData.Weathers);
                 int wstrength = (int)Ruby.Integer.FromPtr(Ruby.Array.Get(weather, 1));
-                Map.Weather = (rwtype, wstrength);
+                Map.Weather = (wtype, wstrength);
             }
             nint townmappos = Ruby.GetIVar(robj, "@town_map_position");
             if (townmappos != Ruby.Nil)
@@ -186,19 +173,7 @@ public class MapMetadataManager : BaseDataManager
         if (hash.ContainsKey("Weather"))
         {
             string[] _weather = hash["Weather"].Split(',');
-            Weather wtype = _weather[0] switch 
-            {
-                "None" => Weather.None,
-                "Rain" => Weather.Rain,
-                "Storm" => Weather.Storm,
-                "Snow" => Weather.Snow,
-                "Blizzard" => Weather.Blizzard,
-                "Sandstorm" => Weather.Sandstorm,
-                "HeavyRain" => Weather.HeavyRain,
-                "Sun" => Weather.Sun,
-                "Fog" => Weather.Fog,
-                _ => throw new Exception($"Invalid weather type '{_weather[0]}'.")
-            };
+            string wtype = Data.HardcodedData.Assert(_weather[0], Data.HardcodedData.Weathers);
             int intensity = Convert.ToInt32(_weather[1]);
             Map.Weather = (wtype, intensity);
         }
@@ -263,20 +238,7 @@ public class MapMetadataManager : BaseDataManager
                 {
                     rweather = Ruby.Array.Create(2);
                     Ruby.Pin(rweather);
-                    string rtype = Map.Weather.Value.Weather switch
-                    {
-                        Weather.None => "None",
-                        Weather.Rain => "Rain",
-                        Weather.Storm => "Storm",
-                        Weather.Snow => "Snow",
-                        Weather.Blizzard => "Blizzard",
-                        Weather.Sandstorm => "Sandstorm",
-                        Weather.HeavyRain => "HeavyRain",
-                        Weather.Sun => "Sun",
-                        Weather.Fog => "Fog",
-                        _ => throw new Exception($"Invalid weather type '{Map.Weather.Value.Weather}'.")
-                    };
-                    Ruby.Array.Set(rweather, 0, Ruby.Symbol.ToPtr(rtype));
+                    Ruby.Array.Set(rweather, 0, Ruby.Symbol.ToPtr(Map.Weather.Value.Weather));
                     Ruby.Array.Set(rweather, 1, Ruby.Integer.ToPtr(Map.Weather.Value.Intensity));
                     Ruby.Unpin(rweather);
                 }

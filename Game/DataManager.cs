@@ -9,8 +9,7 @@ namespace RPGStudioMK.Game;
 public class DataManager
 {
     private List<BaseDataManager> dataManagers;
-    private bool firstTime = true;
-
+    
     public DataManager(List<BaseDataManager> dataManagers)
     {
         this.dataManagers = dataManagers;
@@ -19,18 +18,13 @@ public class DataManager
         if (tilesetIdx >= mapIdx) throw new Exception("TilesetManager must occur before MapManager");
     }
 
-    private void CreateClasses()
+    public void Setup()
     {
         dataManagers.ForEach(x => x.InitializeClass());
     }
 
     public void Load(bool fromPBS)
     {
-        if (firstTime)
-        {
-            CreateClasses();
-            firstTime = false;
-        }
         dataManagers.ForEach(x =>
         {
             if (Data.StopLoading) return;

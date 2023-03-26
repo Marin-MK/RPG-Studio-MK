@@ -14,8 +14,14 @@ public class EncounterTable : IGameData
     public string ID;
     public int MapID;
     public int Version;
-    public Dictionary<EncounterType, int> StepChances;
-    public Dictionary<EncounterType, List<Encounter>> Encounters;
+    /// <summary>
+    /// Key: EncounterType
+    /// </summary>
+    public Dictionary<string, int> StepChances;
+    /// <summary>
+    /// Key: EncounterType
+    /// </summary>
+    public Dictionary<string, List<Encounter>> Encounters;
 
     private EncounterTable()
     {
@@ -27,9 +33,9 @@ public class EncounterTable : IGameData
         this.ID = MapID.ToString() + "_" + Version.ToString();
         this.MapID = MapID;
         this.Version = Version;
-        this.StepChances = new Dictionary<EncounterType, int>();
-        this.Encounters = new Dictionary<EncounterType, List<Encounter>>();
-        EncounterType? CurrentType = null;
+        this.StepChances = new Dictionary<string, int>();
+        this.Encounters = new Dictionary<string, List<Encounter>>();
+        string? CurrentType = null;
         List<Encounter> CurrentEncounters = new List<Encounter>();
         for (int i = 0; i < lines.Count; i++)
         {
@@ -37,13 +43,13 @@ public class EncounterTable : IGameData
             string[] split = line.Split(',');
             try
             {
-                EncounterType type = EncounterTypeStrToEnum(split[0]);
+                string type = Data.HardcodedData.Assert(split[0], Data.HardcodedData.EncounterTypes);
                 if (split.Length == 2) StepChances.Add(type, Convert.ToInt32(split[1]));
                 else StepChances.Add(type, 0);
                 if (CurrentType != null)
                 {
                     // Add previous encounter list
-                    this.Encounters.Add((EncounterType) CurrentType, CurrentEncounters);
+                    this.Encounters.Add(CurrentType, CurrentEncounters);
                     CurrentEncounters = new List<Encounter>();
                 }
                 CurrentType = type;
@@ -59,7 +65,7 @@ public class EncounterTable : IGameData
                 CurrentEncounters.Add(enc);
             }
         }
-        this.Encounters.Add((EncounterType) CurrentType, CurrentEncounters);
+        this.Encounters.Add(CurrentType, CurrentEncounters);
     }
 
     public EncounterTable(nint Data)
@@ -71,21 +77,21 @@ public class EncounterTable : IGameData
         nint StepChancesKeys = Ruby.Hash.Keys(StepChancesHash);
         Ruby.Pin(StepChancesKeys);
         int StepChancesKeyLength = (int) Ruby.Array.Length(StepChancesKeys);
-        this.StepChances = new Dictionary<EncounterType, int>();
+        this.StepChances = new Dictionary<string, int>();
         for (int i = 0; i < StepChancesKeyLength; i++)
         {
             nint rkey = Ruby.Array.Get(StepChancesKeys, i);
             nint rvalue = Ruby.Hash.Get(StepChancesHash, rkey);
             string key = Ruby.Symbol.FromPtr(rkey);
             int value = (int) Ruby.Integer.FromPtr(rvalue);
-            this.StepChances.Add(EncounterTypeStrToEnum(key), value);
+            this.StepChances.Add(Game.Data.HardcodedData.Assert(key, Game.Data.HardcodedData.EncounterTypes), value);
         }
         Ruby.Unpin(StepChancesKeys);
         nint TypesHash = Ruby.GetIVar(Data, "@types");
         nint TypesKeys = Ruby.Hash.Keys(TypesHash);
         Ruby.Pin(TypesKeys);
         int TypesKeyLength = (int) Ruby.Array.Length(TypesKeys);
-        this.Encounters = new Dictionary<EncounterType, List<Encounter>>();
+        this.Encounters = new Dictionary<string, List<Encounter>>();
         for (int i = 0; i < TypesKeyLength; i++)
         {
             nint rkey = Ruby.Array.Get(TypesKeys, i);
@@ -98,7 +104,7 @@ public class EncounterTable : IGameData
                 nint renc = Ruby.Array.Get(rvalue, j);
                 Encs.Add(new Encounter(renc));
             }
-            this.Encounters.Add(EncounterTypeStrToEnum(key), Encs);
+            this.Encounters.Add(Game.Data.HardcodedData.Assert(key, Game.Data.HardcodedData.EncounterTypes), Encs);
         }
         Ruby.Unpin(TypesKeys);
     }
@@ -112,17 +118,17 @@ public class EncounterTable : IGameData
         Ruby.SetIVar(e, "@version", Ruby.Integer.ToPtr(this.Version));
         nint StepChancesHash = Ruby.Hash.Create();
         Ruby.SetIVar(e, "@step_chances", StepChancesHash);
-        foreach (KeyValuePair<EncounterType, int> kvp in StepChances)
+        foreach (KeyValuePair<string, int> kvp in StepChances)
         {
-            nint rkey = Ruby.Symbol.ToPtr(EncounterTypeEnumToStr(kvp.Key));
+            nint rkey = Ruby.Symbol.ToPtr(kvp.Key);
             nint rvalue = Ruby.Integer.ToPtr(kvp.Value);
             Ruby.Hash.Set(StepChancesHash, rkey, rvalue);
         }
         nint TypesHash = Ruby.Hash.Create();
         Ruby.SetIVar(e, "@types", TypesHash);
-        foreach (KeyValuePair<EncounterType, List<Encounter>> kvp in Encounters)
+        foreach (KeyValuePair<string, List<Encounter>> kvp in Encounters)
         {
-            nint rkey = Ruby.Symbol.ToPtr(EncounterTypeEnumToStr(kvp.Key));
+            nint rkey = Ruby.Symbol.ToPtr(kvp.Key);
             nint Ary = Ruby.Array.Create();
             Ruby.Hash.Set(TypesHash, rkey, Ary);
             foreach (Encounter enc in kvp.Value)
@@ -140,80 +146,14 @@ public class EncounterTable : IGameData
         t.ID = this.ID;
         t.MapID = this.MapID;
         t.Version = this.Version;
-        t.StepChances = new Dictionary<EncounterType, int>(this.StepChances);
-        t.Encounters = new Dictionary<EncounterType, List<Encounter>>();
-        foreach (KeyValuePair<EncounterType, List<Encounter>> kvp in this.Encounters)
+        t.StepChances = new Dictionary<string, int>(this.StepChances);
+        t.Encounters = new Dictionary<string, List<Encounter>>();
+        foreach (KeyValuePair<string, List<Encounter>> kvp in this.Encounters)
         {
             List<Encounter> NewList = kvp.Value.Select(x => (Encounter) x.Clone()).ToList();
             t.Encounters.Add(kvp.Key, NewList);
         }
         return t;
-    }
-
-    public static EncounterType EncounterTypeStrToEnum(string Type)
-    {
-        return Type switch
-        {
-            "Land" => EncounterType.Land,
-            "LandDay" => EncounterType.LandDay,
-            "LandNight" => EncounterType.LandNight,
-            "LandMorning" => EncounterType.LandMorning,
-            "LandAfternoon" => EncounterType.LandAfternoon,
-            "LandEvening" => EncounterType.LandEvening,
-            "Cave" => EncounterType.Cave,
-            "CaveDay" => EncounterType.CaveDay,
-            "CaveNight" => EncounterType.CaveNight,
-            "CaveMorning" => EncounterType.CaveMorning,
-            "CaveAfternoon" => EncounterType.CaveAfternoon,
-            "CaveEvening" => EncounterType.CaveEvening,
-            "Water" => EncounterType.Water,
-            "WaterDay" => EncounterType.WaterDay,
-            "WaterNight" => EncounterType.WaterNight,
-            "WaterMorning" => EncounterType.WaterMorning,
-            "WaterAfternoon" => EncounterType.WaterAfternoon,
-            "WaterEvening" => EncounterType.WaterEvening,
-            "OldRod" => EncounterType.OldRod,
-            "GoodRod" => EncounterType.GoodRod,
-            "SuperRod" => EncounterType.SuperRod,
-            "RockSmash" => EncounterType.RockSmash,
-            "HeadbuttLow" => EncounterType.HeadbuttLow,
-            "HeadbuttHigh" => EncounterType.HeadbuttHigh,
-            "BugContest" => EncounterType.BugContest,
-            _ => throw new Exception($"Invalid encounter type '{Type}'.")
-        };
-    }
-
-    public static string EncounterTypeEnumToStr(EncounterType Type)
-    {
-        return Type switch
-        {
-            EncounterType.Land => "Land",
-            EncounterType.LandDay => "LandDay",
-            EncounterType.LandNight => "LandNight",
-            EncounterType.LandMorning => "LandMorning",
-            EncounterType.LandAfternoon => "LandAfternoon",
-            EncounterType.LandEvening => "LandEvening",
-            EncounterType.Cave => "Cave",
-            EncounterType.CaveDay => "CaveDay",
-            EncounterType.CaveNight => "CaveNight",
-            EncounterType.CaveMorning => "CaveMorning",
-            EncounterType.CaveAfternoon => "CaveAfternoon",
-            EncounterType.CaveEvening => "CaveEvening",
-            EncounterType.Water => "Water",
-            EncounterType.WaterDay => "WaterDay",
-            EncounterType.WaterNight => "WaterNight",
-            EncounterType.WaterMorning => "WaterMorning",
-            EncounterType.WaterAfternoon => "WaterAfternoon",
-            EncounterType.WaterEvening => "WaterEvening",
-            EncounterType.OldRod => "OldRod",
-            EncounterType.GoodRod => "GoodRod",
-            EncounterType.SuperRod => "SuperRod",
-            EncounterType.RockSmash => "RockSmash",
-            EncounterType.HeadbuttLow => "HeadbuttLow",
-            EncounterType.HeadbuttHigh => "HeadbuttHigh",
-            EncounterType.BugContest => "BugContest",
-            _ => throw new Exception($"Invalid encounter type '{Type}'.")
-        };
     }
 }
 

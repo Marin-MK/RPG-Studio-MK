@@ -140,7 +140,7 @@ public class TrainerPokemon : ICloneable
     public int? AbilityIndex;
     public ItemResolver? Item;
     public int? Gender;
-    public Nature? Nature;
+    public string? Nature;
     public Stats? IVs;
     public Stats? EVs;
     public int? Happiness;
@@ -188,7 +188,7 @@ public class TrainerPokemon : ICloneable
                     };
                     break;
                 case "Nature":
-                    this.Nature = NatureStrToEnum(Data[i].Value);
+                    this.Nature = Game.Data.HardcodedData.Assert(Data[i].Value, Game.Data.HardcodedData.Natures);
                     break;
                 case "IV":
                     this.IVs = new Stats(Data[i].Value.Split(',').Select(x => Convert.ToInt32(x.Trim())).ToList());
@@ -256,7 +256,7 @@ public class TrainerPokemon : ICloneable
         nint rgender = Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("gender"));
         if (rgender != Ruby.Nil) this.Gender = (int) Ruby.Integer.FromPtr(rgender);
         nint rnature = Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("nature"));
-        if (rnature != Ruby.Nil) this.Nature = NatureStrToEnum(Ruby.Symbol.FromPtr(rnature));
+        if (rnature != Ruby.Nil) this.Nature = Data.HardcodedData.Assert(Ruby.Symbol.FromPtr(rnature), Data.HardcodedData.Natures);
         nint rivs = Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("iv"));
         if (rivs != Ruby.Nil) this.IVs = new Stats(rivs);
         nint revs = Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("ev"));
@@ -294,7 +294,7 @@ public class TrainerPokemon : ICloneable
         if (this.AbilityIndex != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("ability_index"), Ruby.Integer.ToPtr((int) this.AbilityIndex));
         if (this.Item != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("item"), Ruby.Symbol.ToPtr(this.Item));
         if (this.Gender != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("gender"), Ruby.Integer.ToPtr((int) this.Gender));
-        if (this.Nature != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("nature"), Ruby.Symbol.ToPtr(NatureEnumToStr((Nature) this.Nature)));
+        if (this.Nature != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("nature"), Ruby.Symbol.ToPtr(this.Nature));
         if (this.IVs != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("iv"), this.IVs.Value.Save());
         if (this.EVs != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("ev"), this.EVs.Value.Save());
         if (this.Happiness != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("happiness"), Ruby.Integer.ToPtr((int) this.Happiness));
@@ -327,71 +327,5 @@ public class TrainerPokemon : ICloneable
         t.Shadow = this.Shadow;
         if (this.Ball != null) t.Ball = (ItemResolver) this.Ball.ID;
         return t;
-    }
-
-    private Nature NatureStrToEnum(string nature)
-    {
-        return nature switch
-        {
-            "HARDY" => Game.Nature.Hardy,
-            "LONELY" => Game.Nature.Lonely,
-            "BRAVE" => Game.Nature.Brave,
-            "ADAMANT" => Game.Nature.Adamant,
-            "NAUGHTY" => Game.Nature.Naughty,
-            "BOLD" => Game.Nature.Bold,
-            "DOCILE" => Game.Nature.Docile,
-            "RELAXED" => Game.Nature.Relaxed,
-            "IMPISH" => Game.Nature.Impish,
-            "LAX" => Game.Nature.Lax,
-            "TIMID" => Game.Nature.Timid,
-            "HASTY" => Game.Nature.Hasty,
-            "SERIOUS" => Game.Nature.Serious,
-            "JOLLY" => Game.Nature.Jolly,
-            "NAIVE" => Game.Nature.Naive,
-            "MODEST" => Game.Nature.Modest,
-            "MILD" => Game.Nature.Mild,
-            "QUIET" => Game.Nature.Quiet,
-            "BASHFUL" => Game.Nature.Bashful,
-            "RASH" => Game.Nature.Rash,
-            "CALM" => Game.Nature.Calm,
-            "GENTLE" => Game.Nature.Gentle,
-            "SASSY" => Game.Nature.Sassy,
-            "CAREFUL" => Game.Nature.Careful,
-            "QUIRKY" => Game.Nature.Quirky,
-            _ => throw new Exception($"Invalid nature '{nature}'.")
-        };
-    }
-
-    private string NatureEnumToStr(Nature nature)
-    {
-        return nature switch
-        {
-            Game.Nature.Hardy => "HARDY",
-            Game.Nature.Lonely => "LONELY",
-            Game.Nature.Brave => "BRAVE",
-            Game.Nature.Adamant => "ADAMANT",
-            Game.Nature.Naughty => "NAUGHTY",
-            Game.Nature.Bold => "BOLD",
-            Game.Nature.Docile => "DOCILE",
-            Game.Nature.Relaxed => "RELAXED",
-            Game.Nature.Impish => "IMPISH",
-            Game.Nature.Lax => "LAX",
-            Game.Nature.Timid => "TIMID",
-            Game.Nature.Hasty => "HASTY",
-            Game.Nature.Serious => "SERIOUS",
-            Game.Nature.Jolly => "JOLLY",
-            Game.Nature.Naive => "NAIVE",
-            Game.Nature.Modest => "MODEST",
-            Game.Nature.Mild => "MILD",
-            Game.Nature.Quiet => "QUIET",
-            Game.Nature.Bashful => "BASHFUL",
-            Game.Nature.Rash => "RASH",
-            Game.Nature.Calm => "CALM",
-            Game.Nature.Gentle => "GENTLE",
-            Game.Nature.Sassy => "SASSY",
-            Game.Nature.Careful => "CAREFUL",
-            Game.Nature.Quirky => "QUIRKY",
-            _ => throw new Exception($"Invalid nature '{nature}'.")
-        };
     }
 }

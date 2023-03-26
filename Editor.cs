@@ -809,7 +809,7 @@ public static class Editor
     public static void OpenAboutWindow()
     {
         new MessageBox("About RPG Studio MK",
-            "This program is intended to be an editor for games made with the MK Starter Kit.\n" +
+            "This program is intended to be an editor for games made with Pokémon Essentials.\n" +
             "It was created by Marin, with additional support of various other individuals.\n" +
             "\n" +
             "Please turn to the GitHub page for a full credits list."
@@ -822,7 +822,7 @@ public static class Editor
     public static void OpenLegalWindow()
     {
         new MessageBox("Legal",
-            "Copyright © 2021 Marijn Herrebout\n\n" +
+            "Copyright © 2023 Marijn Herrebout\n\n" +
             "RPG Studio MK is licensed under the GNU General Public License v3+, referred to as GPLv3+.\n\n" +
             "You may view the details of this license from the file titled LICENSE in the program's root folder.\nIf not, please view https://www.gnu.org/licenses/gpl-3.0.html."
         );
@@ -901,7 +901,7 @@ public static class Editor
     /// </summary>
     public static void DumpGeneralSettings()
     {
-        GeneralSettings.SecondsUsed += (int)Math.Floor((DateTime.Now - TimeOpened).TotalSeconds);
+        GeneralSettings.SecondsUsed += (int) Math.Floor((DateTime.Now - TimeOpened).TotalSeconds);
         if (!Directory.Exists(AppDataFolder)) Directory.CreateDirectory(AppDataFolder);
         Stream stream = new FileStream(SettingsFilePath, FileMode.Create, FileAccess.Write);
         Utilities.WriteSerializationID(stream, 0);

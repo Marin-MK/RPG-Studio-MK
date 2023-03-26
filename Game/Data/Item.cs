@@ -19,12 +19,12 @@ public class Item : IGameData, ICloneable
     public int? IDNumber;
     public string Name;
     public string Plural;
-    public ItemPocket Pocket;
+    public int Pocket;
     public int Price;
     public int SellPrice;
     public string Description;
-    public FieldUse FieldUse;
-    public BattleUse BattleUse;
+    public int FieldUse;
+    public int BattleUse;
     [Obsolete]
     public int? UseType;
     public bool Consumable;
@@ -38,47 +38,26 @@ public class Item : IGameData, ICloneable
         this.ID = ID;
         this.Name = hash["Name"];
         this.Plural = hash["NamePlural"];
-        this.Pocket = (ItemPocket) Convert.ToInt32(hash["Pocket"]);
+        this.Pocket = Convert.ToInt32(hash["Pocket"]);
         this.Price = Convert.ToInt32(hash["Price"]);
         if (hash.ContainsKey("SellPrice")) this.SellPrice = Convert.ToInt32(hash["SellPrice"]);
         else this.SellPrice = this.Price / 2;
         this.Description = hash["Description"];
-        if (hash.ContainsKey("FieldUse")) this.FieldUse = hash["FieldUse"] switch
-        {
-            "None" => FieldUse.None,
-            "OnPokemon" => FieldUse.OnPokemon,
-            "Direct" => FieldUse.Direct,
-            "TM" => FieldUse.TM,
-            "HM" => FieldUse.HM,
-            "TR" => FieldUse.TR,
-            _ => throw new Exception($"Invalid item field use '{hash["FieldUse"]}'.")
-        };
-        if (hash.ContainsKey("BattleUse")) this.BattleUse = hash["BattleUse"] switch
-        {
-            "None" => BattleUse.None,
-            "OnPokemon" => BattleUse.OnPokemon,
-            "OnMove" => BattleUse.OnMove,
-            "OnBattler" => BattleUse.OnBattler,
-            "OnFoe" => BattleUse.OnFoe,
-            "Direct" => BattleUse.Direct,
-            _ => throw new Exception($"Invalid item battle use '{hash["BattleUse"]}'.")
-        };
+        if (hash.ContainsKey("FieldUse")) this.FieldUse = Data.HardcodedData.AssertIndex(hash["FieldUse"], Data.HardcodedData.ItemFieldUses);
+        if (hash.ContainsKey("BattleUse")) this.BattleUse = Data.HardcodedData.AssertIndex(hash["BattleUse"], Data.HardcodedData.ItemBattleUses);
         if (hash.ContainsKey("Flags")) this.Flags = hash["Flags"].Split(',').Select(x => x.Trim()).ToList();
         else this.Flags = new List<string>();
         if (hash.ContainsKey("Consumable"))
         {
-            switch (hash["Consumable"].ToLower())
+            this.Consumable = hash["Consumable"].ToLower() switch
             {
-                case "true": case "t": case "yes": case "y":
-                    this.Consumable = true;
-                    break;
-                default:
-                    this.Consumable = false;
-                    break;
-            }
+                "true" or "t" or "yes" or "y" => true,
+                _ => false
+            };
         }
         // Determine whether the item is consumable based on if it's a key item, TM or HM.
-        else if (!Flags.Contains("KeyItem") && FieldUse != FieldUse.TM && FieldUse != FieldUse.HM || FieldUse == FieldUse.TR)
+        // TODO: Remove hardcoding
+        else if (!Flags.Contains("KeyItem") && Data.HardcodedData.ItemFieldUses[FieldUse] != "TM" && Data.HardcodedData.ItemFieldUses[FieldUse] != "HM" || Data.HardcodedData.ItemFieldUses[FieldUse] == "TR")
         {
             // Not an important item, so it will be consumable.
             this.Consumable = true;
@@ -92,11 +71,11 @@ public class Item : IGameData, ICloneable
         this.ID = line[1];
         this.Name = line[2];
         this.Plural = line[3];
-        this.Pocket = (ItemPocket) Convert.ToInt32(line[4]);
+        this.Pocket = Convert.ToInt32(line[4]);
         this.Price = Convert.ToInt32(line[5]);
         this.Description = line[6];
-        this.FieldUse = (FieldUse) Convert.ToInt32(line[7]);
-        this.BattleUse = (BattleUse) Convert.ToInt32(line[8]);
+        this.FieldUse = Convert.ToInt32(line[7]);
+        this.BattleUse = Convert.ToInt32(line[8]);
         this.UseType = Convert.ToInt32(line[9]);
         if (!string.IsNullOrEmpty(line[10])) this.Move = (MoveResolver) line[10];
         this.Flags = new List<string>();
@@ -108,13 +87,13 @@ public class Item : IGameData, ICloneable
         if (Ruby.GetIVar(Data, "@id_number") != Ruby.Nil) this.IDNumber = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@id_number"));
         this.Name = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_name"));
         this.Plural = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_name_plural"));
-        this.Pocket = (ItemPocket) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@pocket"));
+        this.Pocket = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@pocket"));
         this.Price = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@price"));
         if (Ruby.GetIVar(Data, "@sell_price") != Ruby.Nil) this.SellPrice = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@sell_price"));
         else this.SellPrice = this.Price / 2;
         this.Description = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_description"));
-        this.FieldUse = (FieldUse) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@field_use"));
-        this.BattleUse = (BattleUse) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@battle_use"));
+        this.FieldUse = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@field_use"));
+        this.BattleUse = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@battle_use"));
         this.Consumable = Ruby.GetIVar(Data, "@consumable") == Ruby.True;
         nint FlagsArray = Ruby.GetIVar(Data, "@flags");
         this.Flags = new List<string>();

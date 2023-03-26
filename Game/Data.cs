@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -37,6 +38,8 @@ public static partial class Data
     public static Dictionary<(int Map, int Version), EncounterTable> Encounters = new Dictionary<(int, int), EncounterTable>();
     public static List<Trainer> Trainers = new List<Trainer>();
     // Other Project Data & Settings
+    public static HardcodedDataStore HardcodedData;
+    private static HardcodedDataStore GlobalHardcodedData;
     public static List<GamePlugin> Plugins = new List<GamePlugin>();
     public static EssentialsVersion EssentialsVersion = EssentialsVersion.Unknown;
     public static bool UsesExternalScripts = false;
@@ -74,6 +77,17 @@ public static partial class Data
     static Action<float> OnProgressUpdated;
     static Action<string> OnLoadTextChanging;
 
+    /// <summary>
+    /// First-time setup of classes, data stores, etc.
+    /// </summary>
+    public static void Setup()
+    {
+        Compatibility.RMXP.Setup();
+        DataManager.Setup();
+        if (!File.Exists("hardcoded_data.json")) throw new Exception("The global harcoded_data.json file is missing. The program can not continue.");
+        HardcodedData = HardcodedDataStore.Create("hardcoded_data.json");
+    }
+
     public static void ClearProjectData()
     {
         ProjectPath = null;
@@ -84,14 +98,18 @@ public static partial class Data
         Plugins.Clear();
         StopLoading = false;
         UsesExternalScripts = false;
+        if (GlobalHardcodedData is not null)
+        {
+            // Switch the project-specific hardcoded data out for the global hardcoded data again
+            HardcodedData = GlobalHardcodedData;
+        }
     }
 
     public static void LoadGameData(Action<float> OnProgressUpdated, Action<string> OnLoadTextChanging)
-    {
+    {   
         Data.OnProgressUpdated = OnProgressUpdated;
         Data.OnLoadTextChanging = OnLoadTextChanging;
-        Compatibility.RMXP.Setup();
-
+        
         DataManager.Load(false);
 
         if (StopLoading) return;
@@ -115,6 +133,12 @@ public static partial class Data
         DataPath = path + "/Data";
         ProjectFilePath = path + "/project.mkproj";
         ProjectRMXPGamePath = path + "/Game.rxproj";
+        if (File.Exists(ProjectPath + "/hardcoded_data.json"))
+        {
+            // Swap the global harcoded data out for project-specific hardcoded data
+            GlobalHardcodedData = HardcodedData;
+            HardcodedData = HardcodedDataStore.Create(ProjectPath + "/hardcoded_data.json");
+        }
     }
 
     public static void SetLoadProgress(float Progress)
@@ -163,4 +187,23 @@ public enum EssentialsVersion
     v19_1   = 7,
     v20     = 8,
     v20_1   = 9
+}
+
+public enum Hardcoded
+{
+    Habitats,
+    GrowthRates,
+    GenderRatios,
+    EvolutionMethods,
+    MoveCategories,
+    MoveTargets,
+    Natures,
+    Weathers,
+    ItemPockets,
+    ItemFieldUses,
+    ItemBattleUses,
+    BodyColors,
+    BodyShapes,
+    EggGroups,
+    EncounterTypes
 }

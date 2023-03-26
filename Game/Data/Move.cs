@@ -17,11 +17,11 @@ public class Move : IGameData, ICloneable
     public int? IDNumber;
     public string Name;
     public TypeResolver Type;
-    public MoveCategory Category;
+    public string Category;
     public int BaseDamage;
     public int Accuracy;
     public int TotalPP;
-    public MoveTarget Target;
+    public string Target;
     public int Priority;
     public string FunctionCode;
     public List<string> Flags;
@@ -35,11 +35,11 @@ public class Move : IGameData, ICloneable
         this.ID = ID;
         this.Name = hash["Name"];
         this.Type = (TypeResolver) hash["Type"];
-        this.Category = CategoryStrToEnum(hash["Category"]);
+        this.Category = Data.HardcodedData.Assert(hash["Category"], Data.HardcodedData.MoveCategories);
         if (hash.ContainsKey("BaseDamage")) this.BaseDamage = Convert.ToInt32(hash["BaseDamage"]);
         this.Accuracy = Convert.ToInt32(hash["Accuracy"]);
         this.TotalPP = Convert.ToInt32(hash["TotalPP"]);
-        this.Target = TargetStrToEnum(hash["Target"]);
+        this.Target = Data.HardcodedData.Assert(hash["Target"], Data.HardcodedData.MoveTargets);
         if (hash.ContainsKey("Priority")) this.Priority = Convert.ToInt32(hash["Priority"]);
         this.FunctionCode = hash["FunctionCode"];
         if (hash.ContainsKey("Flags")) this.Flags = hash["Flags"].Split(',').Select(x => x.Trim()).ToList();
@@ -56,11 +56,11 @@ public class Move : IGameData, ICloneable
         this.FunctionCode = line[3];
         this.BaseDamage = Convert.ToInt32(line[4]);
         this.Type = (TypeResolver) line[5];
-        this.Category = CategoryStrToEnum(line[6]);
+        this.Category = Data.HardcodedData.Assert(line[6], Data.HardcodedData.MoveCategories);
         this.Accuracy = Convert.ToInt32(line[7]);
         this.TotalPP = Convert.ToInt32(line[8]);
         this.EffectChance = Convert.ToInt32(line[9]);
-        this.Target = TargetStrToEnum(line[10]);
+        this.Target = Data.HardcodedData.Assert(line[10], Data.HardcodedData.MoveTargets);
         this.Priority = Convert.ToInt32(line[11]);
         this.Flags = new List<string>();
         foreach (char c in line[12])
@@ -76,11 +76,11 @@ public class Move : IGameData, ICloneable
         if (Ruby.GetIVar(Data, "@id_number") != Ruby.Nil) this.IDNumber = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@id_number"));
         this.Name = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_name"));
         this.Type = (TypeResolver) Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@type"));
-        this.Category = (MoveCategory) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@category"));
+        this.Category = Game.Data.HardcodedData.Get((int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@category")), Game.Data.HardcodedData.MoveCategories);
         this.BaseDamage = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@base_damage"));
         this.Accuracy = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@accuracy"));
         this.TotalPP = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@total_pp"));
-        this.Target = TargetStrToEnum(Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@target")));
+        this.Target = Game.Data.HardcodedData.Assert(Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@target")), Game.Data.HardcodedData.MoveTargets);
         this.Priority = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@priority"));
         this.FunctionCode = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@function_code"));
         nint FlagsData = Ruby.GetIVar(Data, "@flags");
@@ -114,11 +114,11 @@ public class Move : IGameData, ICloneable
         if (this.IDNumber.HasValue) Ruby.SetIVar(e, "@id_number", Ruby.Integer.ToPtr(this.IDNumber.Value));
         Ruby.SetIVar(e, "@real_name", Ruby.String.ToPtr(this.Name));
         Ruby.SetIVar(e, "@type", Ruby.Symbol.ToPtr(this.Type));
-        Ruby.SetIVar(e, "@category", Ruby.Integer.ToPtr((int) this.Category));
+        Ruby.SetIVar(e, "@category", Ruby.Integer.ToPtr(Data.HardcodedData.AssertIndex(this.Category, Data.HardcodedData.MoveCategories)));
         Ruby.SetIVar(e, "@base_damage", Ruby.Integer.ToPtr(this.BaseDamage));
         Ruby.SetIVar(e, "@accuracy", Ruby.Integer.ToPtr(this.Accuracy));
         Ruby.SetIVar(e, "@total_pp", Ruby.Integer.ToPtr(this.TotalPP));
-        Ruby.SetIVar(e, "@target", Ruby.Symbol.ToPtr(TargetEnumToStr(this.Target)));
+        Ruby.SetIVar(e, "@target", Ruby.Symbol.ToPtr(this.Target));
         Ruby.SetIVar(e, "@priority", Ruby.Integer.ToPtr(this.Priority));
         Ruby.SetIVar(e, "@function_code", Ruby.String.ToPtr(this.FunctionCode));
         if (Game.Data.IsVersionAtLeast(EssentialsVersion.v20))
@@ -158,80 +158,6 @@ public class Move : IGameData, ICloneable
         m.EffectChance = this.EffectChance;
         m.Description = this.Description;
         return m;
-    }
-
-    public static MoveCategory CategoryStrToEnum(string Category)
-    {
-        return Category switch
-        {
-            "Physical" => MoveCategory.Physical,
-            "Special" => MoveCategory.Special,
-            "Status" => MoveCategory.Status,
-            _ => throw new Exception($"Invalid move category '{Category}'.")
-        };
-    }
-
-    public static string CategoryEnumToStr(MoveCategory Category)
-    {
-        return Category switch
-        {
-            MoveCategory.Physical => "Physical",
-            MoveCategory.Special => "Special",
-            MoveCategory.Status => "Status",
-            _ => throw new Exception($"Invalid move category '{Category}'.")
-        };
-    }
-
-    public static MoveTarget TargetStrToEnum(string Target)
-    {
-        return Target switch
-        {
-            "None" => MoveTarget.None,
-            "User" => MoveTarget.User,
-            "NearAlly" => MoveTarget.NearAlly,
-            "UserOrNearAlly" => MoveTarget.UserOrNearAlly,
-            "AllAllies" => MoveTarget.AllAllies,
-            "UserAndAllies" => MoveTarget.UserAndAllies,
-            "NearFoe" => MoveTarget.NearFoe,
-            "RandomNearFoe" => MoveTarget.RandomNearFoe,
-            "AllNearFoes" => MoveTarget.AllNearFoes,
-            "Foe" => MoveTarget.Foe,
-            "AllFoes" => MoveTarget.AllFoes,
-            "NearOther" => MoveTarget.NearOther,
-            "AllNearOthers" => MoveTarget.AllNearOthers,
-            "Other" => MoveTarget.Other,
-            "AllBattlers" => MoveTarget.AllBattlers,
-            "UserSide" => MoveTarget.UserSide,
-            "FoeSide" => MoveTarget.FoeSide,
-            "BothSides" => MoveTarget.BothSides,
-            _ => throw new Exception($"Invalid move target '{Target}'.")
-        };
-    }
-
-    public static string TargetEnumToStr(MoveTarget Target)
-    {
-        return Target switch
-        {
-            MoveTarget.None => "None",
-            MoveTarget.User => "User",
-            MoveTarget.NearAlly => "NearAlly",
-            MoveTarget.UserOrNearAlly => "UserOrNearAlly",
-            MoveTarget.AllAllies => "AllAllies",
-            MoveTarget.UserAndAllies => "UserAndAllies",
-            MoveTarget.NearFoe => "NearFoe",
-            MoveTarget.RandomNearFoe => "RandomNearFoe",
-            MoveTarget.AllNearFoes => "AllNearFoes",
-            MoveTarget.Foe => "Foe",
-            MoveTarget.AllFoes => "AllFoes",
-            MoveTarget.NearOther => "NearOther",
-            MoveTarget.AllNearOthers => "AllNearOthers",
-            MoveTarget.Other => "Other",
-            MoveTarget.AllBattlers => "AllBattlers",
-            MoveTarget.UserSide => "UserSide",
-            MoveTarget.FoeSide => "FoeSide",
-            MoveTarget.BothSides => "BothSides",
-            _ => throw new Exception($"Invalid move target '{Target}'.")
-        };
     }
 }
 

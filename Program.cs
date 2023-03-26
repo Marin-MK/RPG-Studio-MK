@@ -23,7 +23,6 @@ public class Program
     /// </summary>
     public static bool DebugMode = true;
     public static bool ReleaseMode => !DebugMode;
-    public static string ProjectFile = null;
     public static bool ThrownError = false;
     public static string? LatestVersion;
     public static bool UpdateAvailable = false;
@@ -41,11 +40,12 @@ public class Program
         if (DebugMode) TestSuite.RunAll();
         VerifyVersions();
         InitializeProgram();
-        if (args.Length == 1) ProjectFile = args[0];
+        Game.Data.Setup();
+        string initialProjectFile = args.Length > 0 ? args[0] : null;
         MainEditorWindow win = new MainEditorWindow();
         Widget.DefaultContextMenuFont = Fonts.Paragraph;
         Graphics.Update();
-        win.Load(ProjectFile);
+        win.Load(initialProjectFile);
         win.Prepare();
         win.UI.Widgets.ForEach(e => e.UpdateBounds());
         Graphics.Update();
