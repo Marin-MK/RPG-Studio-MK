@@ -21,7 +21,7 @@ public class Program
     /// Whether or not exceptions should be caught and displayed, and whether unsaved changes messages should be given.
     /// If true, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
     /// </summary>
-    public static bool DebugMode = true;
+    public static bool DebugMode = false;
     public static bool ReleaseMode => !DebugMode;
     public static bool ThrownError = false;
     public static string? LatestVersion;
@@ -32,30 +32,43 @@ public class Program
     [STAThread]
     static void Main(params string[] args)
     {
-        if (DebugMode) Logger.Start();
-        else Logger.Start(Path.Combine(Editor.AppDataFolder, "log.txt"));
-        Graphics.Logger = Logger.Instance;
-        // Ensures the working directory becomes the editor directory
-        Directory.SetCurrentDirectory(Path.GetDirectoryName(Environment.ProcessPath));
-        if (DebugMode) TestSuite.RunAll();
-        VerifyVersions();
-        InitializeProgram();
-        Game.Data.Setup();
-        string initialProjectFile = args.Length > 0 ? args[0] : null;
-        MainEditorWindow win = new MainEditorWindow();
-        Widget.DefaultContextMenuFont = Fonts.Paragraph;
-        Graphics.Update();
-        win.Load(initialProjectFile);
-        win.Prepare();
-        win.UI.Widgets.ForEach(e => e.UpdateBounds());
-        Graphics.Update();
-        win.Show();
         Widgets.MessageBox ErrorBox = null;
-        win.OnSizeChanged += delegate (BaseEventArgs e)
+        MainEditorWindow win = null;
+        try
         {
-            if (ErrorBox != null && !ErrorBox.Disposed) ErrorBox.SetSize(win.Width, win.Height);
-        };
-        
+            if (DebugMode) Logger.Start();
+            else Logger.Start(Path.Combine(Editor.AppDataFolder, "log.txt"));
+            Graphics.Logger = Logger.Instance;
+            MKUtils.Logger.Instance = Logger.Instance;
+            // Ensures the working directory becomes the editor directory
+            Directory.SetCurrentDirectory(Path.GetDirectoryName(Environment.ProcessPath));
+            if (DebugMode) TestSuite.RunAll();
+
+            VerifyVersions();
+            InitializeProgram();
+            Logger.Write("Initializing data");
+            Game.Data.Setup();
+            string initialProjectFile = args.Length > 0 ? args[0] : null;
+            win = new MainEditorWindow();
+            Widget.DefaultContextMenuFont = Fonts.Paragraph;
+            Graphics.Update();
+            win.Load(initialProjectFile);
+            win.Prepare();
+            win.UI.Widgets.ForEach(e => e.UpdateBounds());
+            Graphics.Update();
+            win.Show();
+            win.OnSizeChanged += delegate (BaseEventArgs e)
+            {
+                if (ErrorBox != null && !ErrorBox.Disposed) ErrorBox.SetSize(win.Width, win.Height);
+            };
+        }
+        catch (Exception ex)
+        {
+            Logger.Error("Setup failed!");
+            Logger.Error(ex);
+            return;
+        }
+
         // Amethyst's main UI loop
         Amethyst.Run(() =>
         {
@@ -74,7 +87,8 @@ public class Program
                 {
                     if (!ThrownError)
                     {
-                        string msg = ex.GetType() + " : " + ex.Message + "\n\n" + ex.StackTrace;
+                        Logger.Error(ex);
+                        string msg = ex.GetType() + " : " + ex.Message + "\n" + ex.StackTrace;
                         ErrorBox = new Widgets.MessageBox("Error!", msg, new List<string>() { "Quit" }, Widgets.IconType.Error);
                         ErrorBox.SetSize(win.Width, win.Height);
                         ErrorBox.OnDisposed += delegate (BaseEventArgs e)
@@ -102,6 +116,7 @@ public class Program
         // Load current version
         // Changed in Project Settings -> Package -> Package Version (stored in .csproj)
         // Try getting the version from the assembly first (debug)
+        Logger.WriteLine("Determining current version...");
         Assembly assembly = Assembly.GetExecutingAssembly();
         if (assembly is not null && !string.IsNullOrEmpty(assembly.Location))
         {
@@ -121,6 +136,7 @@ public class Program
             Logger.WriteLine("Skipped latest version check in Debug Mode");
             return;
         }
+        Logger.WriteLine("Downloading version metadata...");
         if (MKUtils.VersionMetadata.Load())
         {
             LatestVersion = MKUtils.VersionMetadata.ProgramVersion;

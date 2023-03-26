@@ -82,7 +82,9 @@ public static partial class Data
     /// </summary>
     public static void Setup()
     {
+        Logger.WriteLine("Creating RMXP classes");
         Compatibility.RMXP.Setup();
+        Logger.WriteLine("Creating Data Managers");
         DataManager.Setup();
         if (!File.Exists("hardcoded_data.json")) throw new Exception("The global harcoded_data.json file is missing. The program can not continue.");
         HardcodedData = HardcodedDataStore.Create("hardcoded_data.json");

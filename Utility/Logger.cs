@@ -40,6 +40,11 @@ public static class Logger
         Instance.Error(message, args);
     }
 
+    public static void Error(Exception ex)
+    {
+        Instance.Error(ex);
+    }
+
     public static void Warn(string message, params object[] args)
     {
         Instance.Warn(message, args);
