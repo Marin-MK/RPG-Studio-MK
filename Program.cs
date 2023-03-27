@@ -21,7 +21,7 @@ public class Program
     /// Whether or not exceptions should be caught and displayed, and whether unsaved changes messages should be given.
     /// If true, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
     /// </summary>
-    public static bool DebugMode = false;
+    public static bool DebugMode = true;
     public static bool ReleaseMode => !DebugMode;
     public static bool ThrownError = false;
     public static string? LatestVersion;
@@ -37,7 +37,11 @@ public class Program
         try
         {
             if (DebugMode) Logger.Start();
-            else Logger.Start(Path.Combine(Editor.AppDataFolder, "log.txt"));
+            else
+            {
+                if (!Directory.Exists(Editor.AppDataFolder)) Directory.CreateDirectory(Editor.AppDataFolder);
+                Logger.Start(Path.Combine(Editor.AppDataFolder, "log.txt"));
+            }
             Graphics.Logger = Logger.Instance;
             MKUtils.Logger.Instance = Logger.Instance;
             // Ensures the working directory becomes the editor directory
@@ -46,7 +50,7 @@ public class Program
 
             VerifyVersions();
             InitializeProgram();
-            Logger.Write("Initializing data");
+            Logger.WriteLine("Initializing data");
             Game.Data.Setup();
             string initialProjectFile = args.Length > 0 ? args[0] : null;
             win = new MainEditorWindow();
