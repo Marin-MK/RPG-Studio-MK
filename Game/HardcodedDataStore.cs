@@ -11,63 +11,66 @@ namespace RPGStudioMK.Game;
 
 public class HardcodedDataStore
 {
-    [JsonPropertyName("habitats")]
-    public List<string> Habitats;
-    [JsonPropertyName("growth_rates")]
-    public List<string> GrowthRates;
-    [JsonPropertyName("gender_ratios")]
-    public List<string> GenderRatios;
-    [JsonPropertyName("evolution_methods")]
-    public List<string> EvolutionMethods;
-    [JsonPropertyName("move_categories")]
-    public List<string> MoveCategories;
-    [JsonPropertyName("move_targets")]
-    public List<string> MoveTargets;
-    [JsonPropertyName("natures")]
-    public List<string> Natures;
-    [JsonPropertyName("weathers")]
-    public List<string> Weathers;
-    [JsonPropertyName("item_pockets")]
-    public List<string> ItemPockets;
-    [JsonPropertyName("item_field_uses")]
-    public List<string> ItemFieldUses;
-    [JsonPropertyName("item_battle_uses")]
-    public List<string> ItemBattleUses;
-    [JsonPropertyName("body_colors")]
-    public List<string> BodyColors;
-    [JsonPropertyName("body_shapes")]
-    public List<string> BodyShapes;
-    [JsonPropertyName("egg_groups")]
-    public List<string> EggGroups;
-    [JsonPropertyName("encounter_types")]
-    public List<string> EncounterTypes;
+    public required List<string> Habitats { get; init; }
+    public required List<string> GrowthRates { get; init; }
+    public required List<string> GenderRatios { get; init; }
+    public required List<string> EvolutionMethods { get; init; }
+    public required List<string> MoveCategories { get; init; }
+    public required List<string> MoveTargets { get; init; }
+    public required List<string> Natures { get; init; }
+    public required List<string> Weathers { get; init; }
+    public required List<string> ItemPockets { get; init; }
+    public required List<string> ItemFieldUses { get; init; }
+    public required List<string> ItemBattleUses { get; init; }
+    public required List<string> BodyColors { get; init; }
+    public required List<string> BodyShapes { get; init; }
+    public required List<string> EggGroups { get; init; }
+    public required List<string> EncounterTypes { get; init; }
 
     public static HardcodedDataStore Create(string fileName)
     {
         Logger.WriteLine("Loading hardcoded data JSON from '{0}'", fileName);
         string dataText = File.ReadAllText(fileName);
-        var dataStore = JsonSerializer.Deserialize<HardcodedDataStore>(dataText, new JsonSerializerOptions() { AllowTrailingCommas = true, IncludeFields = true });
-        dataStore.Validate();
+        var rawData = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(dataText, new JsonSerializerOptions() { AllowTrailingCommas = true });
+        Validate(rawData);
+        var dataStore = new HardcodedDataStore()
+        {
+            Habitats = rawData["habitats"],
+            GrowthRates = rawData["growth_rates"],
+            GenderRatios = rawData["gender_ratios"],
+            EvolutionMethods = rawData["evolution_methods"],
+            MoveCategories = rawData["move_categories"],
+            MoveTargets = rawData["move_targets"],
+            Natures = rawData["natures"],
+            Weathers = rawData["weathers"],
+            ItemPockets = rawData["item_pockets"],
+            ItemFieldUses = rawData["item_field_uses"],
+            ItemBattleUses = rawData["item_battle_uses"],
+            BodyColors = rawData["body_colors"],
+            BodyShapes = rawData["body_shapes"],
+            EggGroups = rawData["egg_groups"],
+            EncounterTypes = rawData["encounter_types"]
+        };
         return dataStore;
     }
 
-    private void Validate()
+    private static void Validate(Dictionary<string, List<string>> data)
     {
-        if (Habitats == null || Habitats.Count == 0) throw new HardcodedDataException("habitats");
-        if (GrowthRates == null || GrowthRates.Count == 0) throw new HardcodedDataException("growth_rates");
-        if (GenderRatios == null || GenderRatios.Count == 0) throw new HardcodedDataException("gender_ratios");
-        if (EvolutionMethods == null || EvolutionMethods.Count == 0) throw new HardcodedDataException("evolution_methods");
-        if (MoveCategories == null || MoveCategories.Count == 0) throw new HardcodedDataException("move_categories");
-        if (MoveTargets == null || MoveTargets.Count == 0) throw new HardcodedDataException("move_targets");
-        if (Natures == null || Natures.Count == 0) throw new HardcodedDataException("natures");
-        if (Weathers == null || Weathers.Count == 0) throw new HardcodedDataException("weathers");
-        if (ItemPockets == null || ItemPockets.Count == 0) throw new HardcodedDataException("item_pockets");
-        if (ItemFieldUses == null || ItemFieldUses.Count == 0) throw new HardcodedDataException("item_field_uses");
-        if (ItemBattleUses == null || ItemBattleUses.Count == 0) throw new HardcodedDataException("item_battle_uses");
-        if (BodyColors == null || BodyColors.Count == 0) throw new HardcodedDataException("body_colors");
-        if (BodyShapes == null || BodyShapes.Count == 0) throw new HardcodedDataException("body_shapes");
-        if (EggGroups == null || EggGroups.Count == 0) throw new HardcodedDataException("egg_groups");
-        if (EncounterTypes == null || EncounterTypes.Count == 0) throw new HardcodedDataException("encounter_types");
+        if (!data.ContainsKey("habitats") || data["habitats"].Count == 0) throw new HardcodedDataException("habitats");
+        if (!data.ContainsKey("growth_rates") || data["growth_rates"].Count == 0) throw new HardcodedDataException("growth_rates");
+        if (!data.ContainsKey("gender_ratios") || data["gender_ratios"].Count == 0) throw new HardcodedDataException("gender_ratios");
+        if (!data.ContainsKey("evolution_methods") || data["evolution_methods"].Count == 0) throw new HardcodedDataException("evolution_methods");
+        if (!data.ContainsKey("move_categories") || data["move_categories"].Count == 0) throw new HardcodedDataException("move_categories");
+        if (!data.ContainsKey("move_targets") || data["move_targets"].Count == 0) throw new HardcodedDataException("move_targets");
+        if (!data.ContainsKey("natures") || data["natures"].Count == 0) throw new HardcodedDataException("natures");
+        if (!data.ContainsKey("weathers") || data["weathers"].Count == 0) throw new HardcodedDataException("weathers");
+        if (!data.ContainsKey("item_pockets") || data["item_pockets"].Count == 0) throw new HardcodedDataException("item_pockets");
+        if (!data.ContainsKey("item_field_uses") || data["item_field_uses"].Count == 0) throw new HardcodedDataException("item_field_uses");
+        if (!data.ContainsKey("item_battle_uses") || data["item_battle_uses"].Count == 0) throw new HardcodedDataException("item_battle_uses");
+        if (!data.ContainsKey("body_colors") || data["body_colors"].Count == 0) throw new HardcodedDataException("body_colors");
+        if (!data.ContainsKey("body_shapes") || data["body_shapes"].Count == 0) throw new HardcodedDataException("body_shapes");
+        if (!data.ContainsKey("egg_groups") || data["egg_groups"].Count == 0) throw new HardcodedDataException("egg_groups");
+        if (!data.ContainsKey("encounter_types") || data["encounter_types"].Count == 0) throw new HardcodedDataException("encounter_types");
     }
 
     public string Get(int index, List<string> dataStore)
