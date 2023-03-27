@@ -5,6 +5,7 @@ public class IconButton : Widget
     public Icon Icon;
     public bool Toggleable = false;
     public bool Selectable = true;
+    public bool UseBlueHoverBar = true;
 
     public bool Selected { get; protected set; } = false;
     public bool Enabled { get; protected set; } = true;
@@ -74,7 +75,8 @@ public class IconButton : Widget
     public override void HoverChanged(MouseEventArgs e)
     {
         base.HoverChanged(e);
-        Sprites["selector"].Visible = Mouse.Inside;
+        if (UseBlueHoverBar) Sprites["selector"].Visible = Mouse.Inside;
+        else SetIcon(Icon, Mouse.Inside);
     }
 
     public override void MouseDown(MouseEventArgs e)
@@ -125,6 +127,10 @@ public enum Icon
     SelectionMultiple = 17,
     ZoomOut = 18,
     ZoomIn = 19,
+    Pin = 20,
+    LeftNav = 21,
+    RightNav = 22,
+    DownNav = 23,
 
     Eyes = 28,
     EyeOpen = 29,

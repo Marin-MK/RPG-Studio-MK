@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
 
@@ -21,23 +23,63 @@ public class ScriptEditorTextBox : Widget
     public BoolEvent OnCopy { get => TextArea.OnCopy; set => TextArea.OnCopy = value; }
     public BoolEvent OnPaste { get => TextArea.OnPaste; set => TextArea.OnPaste = value; }
 
+    Dictionary<Script, ScriptEditorTextArea.ScriptEditorState> ScriptStates = new Dictionary<Script, ScriptEditorTextArea.ScriptEditorState>();
+
     Container ScrollContainer;
     ScriptEditorTextArea TextArea;
+    ScriptTabNavigator TabNavigator;
 
     public ScriptEditorTextBox(IContainer Parent) : base(Parent)
     {
         Sprites["bg"] = new Sprite(this.Viewport);
 
-        ScrollContainer = new Container(this);
+        Grid mainGrid = new Grid(this);
+        mainGrid.SetRows(
+            new GridSize(30, Unit.Pixels),
+            new GridSize(1),
+            new GridSize(0, Unit.Pixels)
+        );
+        mainGrid.SetDocked(true);
+
+        TabNavigator = new ScriptTabNavigator(mainGrid);
+        TabNavigator.OnScriptClosing += e =>
+        {
+            UpdateScriptState(e.Object);
+        };
+        TabNavigator.OnScriptClosed += _ =>
+        {
+            if (TabNavigator.OpenScript is null)
+            {
+                SetScript(null, false);
+                // No script is open; clear text area
+            }
+        };
+        TabNavigator.OnOpenScriptChanging += _ =>
+        {
+            if (TabNavigator.OpenScript is not null) UpdateScriptState(TabNavigator.OpenScript);
+        };
+        TabNavigator.OnOpenScriptChanged += _ =>
+        {
+            if (TabNavigator.OpenScript is not null)
+            {
+                // We have a script open
+                SetScript(TabNavigator.OpenScript, false);
+            }
+        };
+
+        ScrollContainer = new Container(mainGrid);
+        ScrollContainer.SetGridRow(1);
         ScrollContainer.SetDocked(true);
         ScrollContainer.SetPadding(3, 3, 14, 3);
         ScrollContainer.OnMouseMoving += e =>
         {
+            if (!TextArea.Interactable) return;
             bool InsideTextArea = ScrollContainer.Mouse.Inside && e.X - ScrollContainer.Viewport.X >= TextArea.TextXOffset;
             Input.SetCursor(InsideTextArea ? CursorType.IBeam : CursorType.Arrow);
         };
         ScrollContainer.OnMouseWheel += e =>
         {
+            if (!TextArea.Interactable) return;
             if (!Input.Press(Keycode.CTRL)) return;
             int add = Math.Sign(e.WheelY);
             TextArea.SetFont(Font.Get(Fonts.Monospace.Name, Math.Max(1, TextArea.Font.Size + add)));
@@ -48,7 +90,8 @@ public class ScriptEditorTextBox : Widget
         TextArea.MinimumSize.Height = Size.Height;
         TextArea.SetFont(Font.Get(Fonts.Monospace.Name, 16));
 
-        VScrollBar vs = new VScrollBar(this);
+        VScrollBar vs = new VScrollBar(mainGrid);
+        vs.SetGridRow(1);
         vs.SetVDocked(true);
         vs.SetRightDocked(true);
         vs.SetPadding(0, 3, 0, 3);
@@ -57,7 +100,8 @@ public class ScriptEditorTextBox : Widget
         double oldval = vs.Value;
         vs.OnValueChanged += _ => TextArea.WidgetSelected(new BaseEventArgs());
 
-        HScrollBar hs = new HScrollBar(this);
+        HScrollBar hs = new HScrollBar(mainGrid);
+        hs.SetGridRow(1);
         hs.SetHDocked(true);
         hs.SetBottomDocked(true);
         hs.SetPadding(3, 0, 13, 0);
@@ -71,6 +115,12 @@ public class ScriptEditorTextBox : Widget
         UpdateScrollBar();
     }
 
+    private void UpdateScriptState(Script script)
+    {
+        if (ScriptStates.ContainsKey(script)) ScriptStates[script] = new ScriptEditorTextArea.ScriptEditorState(TextArea);
+        else ScriptStates.Add(script, new ScriptEditorTextArea.ScriptEditorState(TextArea));
+    }
+
     public void UpdateSize()
     {
         TextArea.TokenizeUntokenizedLines();
@@ -81,9 +131,37 @@ public class ScriptEditorTextBox : Widget
         ScrollContainer.VScrollBar.SetScrollStep(TextArea.LineHeight + TextArea.LineMargins);
     }
 
-    public void SetText(string Text, bool SetCaretToEnd = false)
+    bool firstTime = true;
+
+    public void SetScript(Script? script, bool preview, bool setCaretToEnd = false)
     {
-        TextArea.SetText(Text, SetCaretToEnd);
+        if (script is null)
+        {
+            TextArea.SetInteractable(false);
+            TextArea.SetReadOnly(true);
+            TextArea.SetDrawLineNumbers(false);
+            TextArea.SetText("");
+        }
+        else
+        {
+            TextArea.SetInteractable(true);
+            TextArea.SetReadOnly(false);
+            TextArea.SetDrawLineNumbers(true);
+            TextArea.SetText(script.Content, setCaretToEnd);
+            if (ScriptStates.ContainsKey(script))
+            {
+                var state = ScriptStates[script];
+                state.Apply(false);
+            }
+            if (firstTime)
+            {
+                TabNavigator.SetOpenScripts(Data.Scripts.GetRange(0, 5));
+                TabNavigator.SetPreviewScript(Data.Scripts[5]);
+                firstTime = false;
+            }
+            else if (preview) TabNavigator.SetPreviewScript(script);
+            else TabNavigator.SetOpenScript(script);
+        }
     }
 
     public void SetFont(Font Font)

@@ -21,7 +21,7 @@ public class ScriptingWidget : Widget
         ListBox.SetVDocked(true);
         ListBox.SetWidth(192);
         ListBox.SetItems(Items);
-        ListBox.OnSelectionChanged += _ => TextBox.SetText(((Script) ListBox.SelectedItem.Object).Content);
+        ListBox.OnSelectionChanged += _ => TextBox.SetScript((Script) ListBox.SelectedItem.Object, false);
 
         TextBox = new ScriptEditorTextBox(this);
         TextBox.SetDocked(true);

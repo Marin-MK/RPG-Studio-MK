@@ -1,6 +1,8 @@
-﻿using System;
+﻿using odl;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 // TODO:
 // - Run tokenizer on separate thread on startup
@@ -14,16 +16,52 @@ public class ScriptEditorTextArea : MultilineTextArea
 {
     public Color LineTextColor { get; protected set; } = new Color(192, 192, 192);
     public Color LineTextBackgroundColor { get; protected set; } = new Color(10, 23, 37);
+    public Color HighlightColor { get; protected set; } = new Color(128, 128, 128, 96);
     public int LineTextWidth { get; protected set; } = 40;
     public int TextXOffset { get; protected set; } = 42;
+    public bool DrawLineNumbers { get; protected set; } = true;
+    public string? SelectedText
+    {
+        get
+        {
+            if (!HasSelection) return null;
+            StringBuilder sb = new StringBuilder();
+            for (int line = SelectionLeft.Line.LineIndex; line <= SelectionRight.Line.LineIndex; line++)
+            {
+                int startIndex = -1;
+                int endIndex = -1;
+                if (line == SelectionLeft.Line.LineIndex)
+                {
+                    startIndex = SelectionLeft.IndexInLine;
+                    if (line == SelectionRight.Line.LineIndex) endIndex = SelectionRight.IndexInLine;
+                    else endIndex = Lines[line].Length;
+                }
+                else if (line == SelectionRight.Line.LineIndex)
+                {
+                    startIndex = 0;
+                    endIndex = SelectionRight.IndexInLine;
+                }
+                else
+                {
+                    startIndex = 0;
+                    endIndex = Lines[line].Length;
+                }
+                sb.Append(Lines[line].Text.Substring(startIndex, endIndex - startIndex));
+            }
+            return sb.ToString();
+        }
+    }
 
     protected List<List<Token>> LineTokens = new List<List<Token>>();
     protected List<List<(int, Color)>> LineColors = new List<List<(int, Color)>>();
+    protected List<(int, Sprite)> HighlightSprites = new List<(int, Sprite)>();
     protected int OldScrolledY;
     protected int OldLineCount;
     protected bool RequireScrollAdjustment = false;
     protected int SelectedLineNumberOrigin = -1;
     protected int LastLineNumber;
+    protected string? LastSelectedText;
+    protected bool HighlightsFromSelection = false;
 
     protected new int BottomLineIndex => base.BottomLineIndex + 1;
 
@@ -109,6 +147,29 @@ public class ScriptEditorTextArea : MultilineTextArea
         }
     }
 
+    public void SetDrawLineNumbers(bool drawLineNumbers)
+    {
+        if (this.DrawLineNumbers != drawLineNumbers)
+        {
+            this.DrawLineNumbers = drawLineNumbers;
+            RedrawLineNumbers();
+        }
+    }
+
+    public override void WidgetSelected(BaseEventArgs e)
+    {
+        base.WidgetSelected(e);
+        if (!Interactable) return;
+        if (!TimerExists("highlight")) SetTimer("highlight", 100);
+    }
+
+    protected override void ResetIdle()
+    {
+        base.ResetIdle();
+        if (!Interactable) return;
+        ResetTimer("highlight");
+    }
+
     protected override void RecalculateLines(bool Now = false)
     {
         base.RecalculateLines(Now);
@@ -130,9 +191,17 @@ public class ScriptEditorTextArea : MultilineTextArea
         throw new MethodNotSupportedException(this);
     }
 
+    protected override void CancelSelection(bool Redraw = true)
+    {
+        if (!Interactable) return;
+        if (HasSelection && HighlightsFromSelection) ClearHighlights();
+        base.CancelSelection(Redraw);
+    }
+
     protected virtual void ShiftLineUp()
     {
-        // TODO: Shifting the current line, or all lines included in the active selection, one up, while moving the line that was previously there to the bottom of the shifted lines.
+        if (!Interactable || ReadOnly) return;
+        // Concept: Shifting the current line, or all lines included in the active selection, one up, while moving the line that was previously there to the bottom of the shifted lines.
         // - Swap the text in the Text field
         // - Swap the lines in the Lines list, as well as their indices
         // - Retokenize all affected lines by updating all the relevant indices, rather than actually retokenizing
@@ -234,7 +303,8 @@ public class ScriptEditorTextArea : MultilineTextArea
 
     protected virtual void ShiftLineDown()
     {
-        // TODO: Shifting the current line, or all lines included in the active selection, one down, while moving the line that was previously there to the top of the shifted lines.
+        if (!Interactable || ReadOnly) return;
+        // Concept: Shifting the current line, or all lines included in the active selection, one down, while moving the line that was previously there to the top of the shifted lines.
         // - Swap the text in the Text field
         // - Swap the lines in the Lines list, as well as their indices
         // - Retokenize all affected lines by updating all the relevant indices, rather than actually retokenizing
@@ -439,7 +509,7 @@ public class ScriptEditorTextArea : MultilineTextArea
          * That means we cannot have multi-line tokens, but those are only relevant for multi-line strings and comments
          * and the like, which are rather uncommon in Ruby.
          * If these are strictly necessary, workarounds can be created to work with these. I don't think it's worth the effort though.*/
-            TokenizeUntokenizedLines(false);
+        TokenizeUntokenizedLines(false);
         RedrawText();
     }
 
@@ -516,6 +586,7 @@ public class ScriptEditorTextArea : MultilineTextArea
 
     public override void TextInput(TextEventArgs e)
     {
+        if (!Interactable || ReadOnly) return;
         string text = this.Text;
         if (!string.IsNullOrEmpty(e.Text))
         {
@@ -595,7 +666,7 @@ public class ScriptEditorTextArea : MultilineTextArea
     protected void RedrawLineNumbers()
     {
         Sprites["nums"].Bitmap?.Dispose();
-        if (LineTextWidth < 1) return;
+        if (LineTextWidth < 1 || !DrawLineNumbers) return;
         Sprites["nums"].Bitmap = new Bitmap(LineTextWidth, Parent.Size.Height);
         Sprites["nums"].Bitmap.Unlock();
         Sprites["nums"].Bitmap.FillRect(0, 0, LineTextWidth - 1, Parent.Size.Height, LineTextBackgroundColor);
@@ -644,6 +715,11 @@ public class ScriptEditorTextArea : MultilineTextArea
             Sprites["caret"].Visible = !Sprites["caret"].Visible;
             ResetTimer("idle");
         }
+        if (TimerPassed("highlight"))
+        {
+            HighlightTick();
+            ResetTimer("highlight");
+        }
         if (TimerPassed("state"))
         {
             ResetTimer("state");
@@ -656,6 +732,88 @@ public class ScriptEditorTextArea : MultilineTextArea
             OldScrolledY = Parent.ScrolledY;
             OldLineCount = this.Lines.Count;
         }
+    }
+
+    protected void HighlightTick()
+    {
+        if (!Interactable) return;
+        string selectedText = this.SelectedText;
+        if (selectedText == LastSelectedText) return;
+        LastSelectedText = selectedText;
+        ClearHighlights();
+        if (selectedText is not null && selectedText.Length > 1 && !selectedText.Contains('\n'))
+        {
+            if (string.IsNullOrWhiteSpace(selectedText)) return;
+            Logger.WriteLine($"\"{selectedText.Replace("\n", "\\n").Replace("\"", "\\\"")}\"");
+            List<(int lineIndex, int startIndex, int endIndex)> matches = GetMatches(selectedText);
+            SetHighlights(matches, true);
+            HighlightsFromSelection = true;
+        }
+    }
+
+    protected List<(int lineIndex, int startIndex, int endIndex)> GetMatches(string stringToMatch)
+    {
+        List<(int, int, int)> results = new List<(int, int, int)>();
+        for (int i = 0; i < Lines.Count; i++)
+        {
+            List<(int startIndex, int endIndex)> lineResults = GetMatchesInLine(i, stringToMatch);
+            lineResults.ForEach(r => results.Add((i, r.startIndex, r.endIndex)));
+        }
+        return results;
+    }
+
+    protected List<(int startIndex, int endIndex)> GetMatchesInLine(int lineIndex, string stringToMatch)
+    {
+        if (stringToMatch.Length > Lines[lineIndex].Length) return new List<(int startIndex, int endIndex)>();
+        if (string.IsNullOrWhiteSpace(Lines[lineIndex].Text)) return new List<(int startIndex, int endIndex)>();
+        int currentIndex = 0;
+        List<(int, int)> results = new List<(int, int)>();
+        while (currentIndex < Lines[lineIndex].Length)
+        {
+            int foundIndex = Lines[lineIndex].Text.IndexOf(stringToMatch, currentIndex);
+            if (foundIndex != -1)
+            {
+                currentIndex = foundIndex + stringToMatch.Length;
+                results.Add((foundIndex, currentIndex));
+            }
+            else break;
+        }
+        return results;
+    }
+
+    protected void SetHighlights(List<(int lineIndex, int startIndex, int endIndex)> highlights, bool excludeSelection)
+    {
+        for (int i = 0; i < highlights.Count; i++)
+        {
+            int lineIndex = highlights[i].lineIndex;
+            int startIndex = highlights[i].startIndex;
+            int endIndex = highlights[i].endIndex;
+            if (excludeSelection && HasSelection && lineIndex == SelectionLeft.Line.LineIndex && startIndex == SelectionLeft.IndexInLine) continue;
+            Sprite sprite = new Sprite(this.Viewport);
+            int startWidth = Lines[lineIndex].WidthUpTo(startIndex);
+            int endWidth = Lines[lineIndex].WidthUpTo(endIndex);
+            sprite.X = TextXOffset + startWidth;
+            sprite.Y = lineIndex * LineHeight + lineIndex * LineMargins - Parent.ScrolledY;
+            sprite.Bitmap = new SolidBitmap(endWidth - startWidth, LineHeight, HighlightColor);
+            Sprites[$"highlight_{i}"] = sprite;
+            HighlightSprites.Add((lineIndex, sprite));
+        }
+        UpdateBounds();
+    }
+
+    protected void ClearHighlights()
+    {
+        int i = 0;
+        while (i <= HighlightSprites.Count)
+        {
+            if (Sprites.ContainsKey($"highlight_{i}"))
+            {
+                Sprites[$"highlight_{i}"].Dispose();
+                Sprites.Remove($"highlight_{i}");
+            }
+            i++;
+        }
+        HighlightSprites.Clear();
     }
 
     protected override void RedrawText(bool Now = false)
@@ -689,6 +847,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         RedrawLineNumbers();
         UpdateCaretPosition(false);
         UpdateBounds();
+        ClearHighlights();
     }
 
     protected override void RedrawSelectionBoxes()
@@ -880,6 +1039,10 @@ public class ScriptEditorTextArea : MultilineTextArea
             // but a line can fall through the cracks sometimes (think very fast scrolling)
             else if (Sprites.ContainsKey($"line{i}")) DisposeLineSprite(i);
         }
+        foreach ((int LineIndex, Sprite Sprite) Highlight in HighlightSprites)
+        {
+            Highlight.Sprite.Y = Highlight.LineIndex * LineHeight + Highlight.LineIndex * LineMargins - Parent.ScrolledY;
+        }
         TokenizeUntokenizedLines();
         // Reposition caret
         Sprites["caret"].Y = Caret.Line.LineIndex * LineHeight + Caret.Line.LineIndex * LineMargins - Parent.ScrolledY;
@@ -936,6 +1099,7 @@ public class ScriptEditorTextArea : MultilineTextArea
 
     protected override void InsertText(int Index, string Text)
     {
+        if (!Interactable || ReadOnly) return;
         Text = Text.Replace("\r", "");
         if (Text.Length == 0) return;
         SetPreviousViewState();
@@ -1015,6 +1179,7 @@ public class ScriptEditorTextArea : MultilineTextArea
 
     protected override void RemoveText(int Index, int Count)
     {
+        if (!Interactable || ReadOnly) return;
         if (Index < 0) return;
         Count = Math.Min(Text.Length - Index, Count);
         if (Count < 1) return;
@@ -1178,6 +1343,7 @@ public class ScriptEditorTextArea : MultilineTextArea
 
     protected override void DeleteSelection()
     {
+        if (!Interactable || ReadOnly) return;
         int start = SelectionLeft.Index;
         int end = SelectionRight.Index;
         int count = end - start;
@@ -1193,18 +1359,20 @@ public class ScriptEditorTextArea : MultilineTextArea
 
     protected override void Undo()
     {
+        if (!Interactable || ReadOnly) return;
         if (UndoableStates.Count < 2) return;
         ScriptEditorState PreviousState = (ScriptEditorState) UndoableStates[UndoableStates.Count - 2];
-        PreviousState.Apply();
+        PreviousState.Apply(true);
         RedoableStates.Add(UndoableStates[UndoableStates.Count - 1]);
         UndoableStates.RemoveAt(UndoableStates.Count - 1);
     }
 
     protected override void Redo()
     {
+        if (!Interactable || ReadOnly) return;
         if (RedoableStates.Count < 1) return;
         ScriptEditorState PreviousState = (ScriptEditorState) RedoableStates[RedoableStates.Count - 1];
-        PreviousState.Apply();
+        PreviousState.Apply(true);
         UndoableStates.Add(PreviousState);
         RedoableStates.RemoveAt(RedoableStates.Count - 1);
     }
@@ -1212,6 +1380,7 @@ public class ScriptEditorTextArea : MultilineTextArea
     public override void LeftMouseDown(MouseEventArgs e)
     {
         base.LeftMouseDown(e);
+        if (!Interactable) return;
         int rx = e.X - Viewport.X;
         int ry = e.Y - Viewport.Y + Parent.ScrolledY;
         if (rx >= 0 && rx < LineTextWidth && Mouse.Inside)
@@ -1224,11 +1393,13 @@ public class ScriptEditorTextArea : MultilineTextArea
             SelectedLineNumberOrigin = linenum;
             LastLineNumber = linenum;
         }
+        if (HighlightsFromSelection) ClearHighlights();
     }
 
     public override void MouseMoving(MouseEventArgs e)
     {
         base.MouseMoving(e);
+        if (!Interactable) return;
         if (!Mouse.LeftMousePressed || SelectedLineNumberOrigin == -1) return;
         int ry = e.Y - Viewport.Y + Parent.ScrolledY;
         // Clicked a line number; selected whole line
@@ -1252,6 +1423,7 @@ public class ScriptEditorTextArea : MultilineTextArea
     public override void LeftMouseUp(MouseEventArgs e)
     {
         base.LeftMouseUp(e);
+        if (!Interactable) return;
         SelectedLineNumberOrigin = -1;
         LastLineNumber = -1;
     }
@@ -1262,7 +1434,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         ((SolidBitmap) Sprites["guide"].Bitmap).SetSize(1, Size.Height);
     }
 
-    protected class ScriptEditorState : TextAreaState
+    public class ScriptEditorState : TextAreaState
     {
         protected new ScriptEditorTextArea TextArea => (ScriptEditorTextArea) base.TextArea;
 
@@ -1270,7 +1442,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         public List<List<Token>> LineTokens;
         public List<List<(int, Color)>> LineColors;
 
-        public ScriptEditorState(ScriptEditorTextArea TextArea) : base (TextArea)
+        public ScriptEditorState(ScriptEditorTextArea TextArea) : base(TextArea)
         {
             this.Lines = CloneLineList(TextArea.Lines);
             this.LineTokens = CloneLineTokenList(TextArea.LineTokens);
@@ -1297,13 +1469,14 @@ public class ScriptEditorTextArea : MultilineTextArea
             return List == null ? null : List.Select(line => line?.Select(lc => (lc.Item1, (Color) lc.Item2.Clone())).ToList()).ToList();
         }
 
-        public override void Apply()
+        public override void Apply(bool resetScroll)
         {
             List<int> ChangedLines = new List<int>();
             this.TextArea.Caret = (CaretIndex) this.Caret.Clone();
             this.TextArea.Parent.ScrolledX = this.ParentScrolledX;
             this.TextArea.Parent.ScrolledY = this.ParentScrolledY;
-            ((Widget) this.TextArea.Parent).UpdateAutoScroll();
+            ((Widget) this.TextArea.Parent).MaxChildWidth = this.MaxChildWidth;
+            ((Widget) this.TextArea.Parent).MaxChildHeight = this.MaxChildHeight;
             // We've set ScrolledX/ScrolledY, so TextArea.TopLineIndex has been updated to the old value
             // If any lines changed between TopLineIndex and BottomLineIndex, we redraw those
             // Note that this will redraw every line if newlines were involved!
@@ -1316,9 +1489,12 @@ public class ScriptEditorTextArea : MultilineTextArea
             this.TextArea.LineTokens = CloneLineTokenList(this.LineTokens);
             this.TextArea.LineColors = CloneLineColorList(this.LineColors);
             this.TextArea.AdjustLinesForScroll();
-            this.TextArea.UpdateCaretPosition(true);
+            this.TextArea.UpdateCaretPosition(resetScroll);
             ChangedLines.ForEach(line => TextArea.RedrawLine(line));
             TextArea.VerifyLines();
+            this.TextArea.UpdateHeight();
+            ((Widget) this.TextArea.Parent).UpdateAutoScroll();
+            this.TextArea.WidgetSelected(new BaseEventArgs());
         }
     }
 }
