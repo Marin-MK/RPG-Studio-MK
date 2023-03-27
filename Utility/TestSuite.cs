@@ -108,6 +108,7 @@ public class TestSuite
         Stopwatch s = Stopwatch.StartNew();
         int Count = 0;
         List<AssertionException> Exceptions = new List<AssertionException>();
+        Logger.WriteLine("Running tests...");
         foreach (Type type in Assembly.GetExecutingAssembly().GetTypes())
         {
             if (type.BaseType == typeof(TestSuite))

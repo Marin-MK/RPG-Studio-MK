@@ -294,8 +294,8 @@ public class OptimizedTreeView : Widget
                 BGSprite.Bitmap.FillRect(0, Y, BGSprite.Bitmap.Width, LineHeight, Color.ALPHA);
                 TXTSprite.Bitmap.FillRect(0, Y, TXTSprite.Bitmap.Width, LineHeight, Color.ALPHA);
                 int NewWidth = SpriteContainer.Size.Width - ExtraXScrollArea;
-                BGSprite.Bitmap = BGSprite.Bitmap.ResizeWithoutBuild(NewWidth, BGSprite.Bitmap.Height + movamt);
-                TXTSprite.Bitmap = TXTSprite.Bitmap.ResizeWithoutBuild(NewWidth, TXTSprite.Bitmap.Height + movamt);
+                BGSprite.Bitmap = BGSprite.Bitmap.Resize(NewWidth, BGSprite.Bitmap.Height + movamt);
+                TXTSprite.Bitmap = TXTSprite.Bitmap.Resize(NewWidth, TXTSprite.Bitmap.Height + movamt);
                 UpdateSize(false);
                 TXTSprite.Bitmap.Font = this.Font;
                 TXTSprite.Bitmap.BlendMode = BlendMode.Addition;
@@ -338,8 +338,8 @@ public class OptimizedTreeView : Widget
                 int movamt = Height - LineHeight;
                 BGSprite.Bitmap.ShiftVertically(movy, movh, -movamt, true);
                 TXTSprite.Bitmap.ShiftVertically(movy, movh, -movamt, true);
-                BGSprite.Bitmap = BGSprite.Bitmap.ResizeWithoutBuild(BGSprite.Bitmap.Width, BGSprite.Bitmap.Height - movamt);
-                TXTSprite.Bitmap = TXTSprite.Bitmap.ResizeWithoutBuild(TXTSprite.Bitmap.Width, TXTSprite.Bitmap.Height - movamt);
+                BGSprite.Bitmap = BGSprite.Bitmap.Resize(BGSprite.Bitmap.Width, BGSprite.Bitmap.Height - movamt);
+                TXTSprite.Bitmap = TXTSprite.Bitmap.Resize(TXTSprite.Bitmap.Width, TXTSprite.Bitmap.Height - movamt);
                 UpdateSize(false);
                 TXTSprite.Bitmap.Font = this.Font;
                 TXTSprite.Bitmap.BlendMode = BlendMode.Addition;
@@ -408,8 +408,8 @@ public class OptimizedTreeView : Widget
         int movh = BGSprite.Bitmap.Height - movy;
         int movamt = Height;
         int NewWidth = SpriteContainer.Size.Width - ExtraXScrollArea;
-        BGSprite.Bitmap = BGSprite.Bitmap.ResizeWithoutBuild(NewWidth, BGSprite.Bitmap.Height + movamt);
-        TXTSprite.Bitmap = TXTSprite.Bitmap.ResizeWithoutBuild(NewWidth, TXTSprite.Bitmap.Height + movamt);
+        BGSprite.Bitmap = BGSprite.Bitmap.Resize(NewWidth, BGSprite.Bitmap.Height + movamt);
+        TXTSprite.Bitmap = TXTSprite.Bitmap.Resize(NewWidth, TXTSprite.Bitmap.Height + movamt);
         UpdateSize(false);
         TXTSprite.Bitmap.Font = this.Font;
         TXTSprite.Bitmap.BlendMode = BlendMode.Addition;
@@ -490,8 +490,8 @@ public class OptimizedTreeView : Widget
         BGSprite.Bitmap.Lock();
         TXTSprite.Bitmap.Lock();
         int NewWidth = SpriteContainer.Size.Width - ExtraXScrollArea;
-        BGSprite.Bitmap = BGSprite.Bitmap.ResizeWithoutBuild(NewWidth, BGSprite.Bitmap.Height - shift);
-        TXTSprite.Bitmap = TXTSprite.Bitmap.ResizeWithoutBuild(NewWidth, TXTSprite.Bitmap.Height - shift);
+        BGSprite.Bitmap = BGSprite.Bitmap.Resize(NewWidth, BGSprite.Bitmap.Height - shift);
+        TXTSprite.Bitmap = TXTSprite.Bitmap.Resize(NewWidth, TXTSprite.Bitmap.Height - shift);
         UpdateSize(false);
         TXTSprite.Bitmap.Font = this.Font;
         TXTSprite.Bitmap.BlendMode = BlendMode.Addition;

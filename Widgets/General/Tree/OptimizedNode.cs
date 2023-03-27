@@ -639,12 +639,13 @@ public class OptimizedNode : IOptimizedNode
     public List<IOptimizedNode> GetAllChildren(bool IgnoreExpansion = true)
     {
         List<IOptimizedNode> List = new List<IOptimizedNode>();
-        Children.ForEach(c =>
-        {
-            List.Add(c);
-            if (c is OptimizedNode && (IgnoreExpansion || ((OptimizedNode) c).Expanded))
-                List.AddRange(((OptimizedNode) c).GetAllChildren(IgnoreExpansion));
-        });
+        if (IgnoreExpansion || this.Expanded)
+            Children.ForEach(c =>
+            {
+                List.Add(c);
+                if (c is OptimizedNode && (IgnoreExpansion || ((OptimizedNode) c).Expanded))
+                    List.AddRange(((OptimizedNode) c).GetAllChildren(IgnoreExpansion));
+            });
         return List;
     }
 
