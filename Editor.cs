@@ -559,6 +559,13 @@ public static class Editor
                 if (!Directory.Exists(KitsFolder)) Directory.CreateDirectory(KitsFolder);
                 FileDownloaderWindow window = new FileDownloaderWindow(Kit.Download, Filename, "Downloading kit...");
                 window.Download();
+                FileInfo fi = new FileInfo(Filename);
+                if (fi.Length <= 0)
+                {
+                    new MessageBox("Error", "Something went wrong while downloading the kit. The downloaded file is empty.", ButtonType.OK, IconType.Error);
+                    Logger.Error("The downloaded kit has a file size of 0. This is likely an indication that something went wrong during the downloading phase.");
+                    return;
+                }
                 CopyStep();
             }
         }
