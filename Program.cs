@@ -66,11 +66,11 @@ public class Program
                 if (ErrorBox != null && !ErrorBox.Disposed) ErrorBox.SetSize(win.Width, win.Height);
             };
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ReleaseMode)
         {
             Logger.Error("Setup failed!");
             Logger.Error(ex);
-            return;
+            throw ex;
         }
 
         // Amethyst's main UI loop

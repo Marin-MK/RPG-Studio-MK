@@ -9,6 +9,8 @@ using RPGStudioMK.Widgets;
 using System.Threading.Tasks;
 using System.Threading;
 using amethyst.Animations;
+using System.Security.AccessControl;
+using RPGStudioMK.Utility;
 
 namespace RPGStudioMK;
 
@@ -900,7 +902,7 @@ public static class Editor
                 GeneralSettings.RecentFiles.RemoveAt(i);
             }
         }
-        GeneralSettings.RecentFiles.Add(new List<string>() { ProjectSettings.ProjectName, path }); // [name, file]
+        GeneralSettings.RecentFiles.Add(new List<string>() { ProjectSettings.ProjectName, path });
     }
 
     /// <summary>
@@ -910,9 +912,10 @@ public static class Editor
     {
         GeneralSettings.SecondsUsed += (int) Math.Floor((DateTime.Now - TimeOpened).TotalSeconds);
         if (!Directory.Exists(AppDataFolder)) Directory.CreateDirectory(AppDataFolder);
+        Logger.WriteLine("Saving general settings to {0}...", SettingsFilePath);
         Stream stream = new FileStream(SettingsFilePath, FileMode.Create, FileAccess.Write);
         Utilities.WriteSerializationID(stream, 0);
-        Utilities.SerializeStream(stream, GeneralSettings);
+        Utilities.SerializeStream(stream, GeneralSettings.RawData);
         stream.Close();
     }
 
@@ -923,13 +926,26 @@ public static class Editor
     {
         if (File.Exists(SettingsFilePath))
         {
+            Logger.WriteLine("Loading general settings from {0}...", SettingsFilePath);
             Stream stream = new FileStream(SettingsFilePath, FileMode.Open, FileAccess.Read);
             Utilities.ReadSerializationID(stream, 0);
-            GeneralSettings = Utilities.DeserializeStream<GeneralSettings>(stream);
+            var dict = Utilities.DeserializeStream<Dictionary<string, object>>(stream);
+            try 
+            {
+                GeneralSettings = new GeneralSettings(dict);
+                GeneralSettings.Update(); 
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex); 
+                Logger.WriteLine("Creating new backup general settings");
+                GeneralSettings = new GeneralSettings();
+            }
             stream.Close();
         }
         else
         {
+            Logger.WriteLine("Creating new general settings ({0} did not exist)", SettingsFilePath);
             GeneralSettings = new GeneralSettings();
         }
         if (MainWindow != null && GeneralSettings.LastWidth < MainWindow.MinimumSize.Width) GeneralSettings.LastWidth = MainWindow.MinimumSize.Width;
@@ -945,9 +961,10 @@ public static class Editor
     {
         // Saves the version into the project file.
         ProjectSettings.SavedVersion = Program.CurrentVersion;
+        Logger.WriteLine("Saving project settings to {0}...", Data.ProjectPath + "/project.mkproj");
         Stream stream = new FileStream(Data.ProjectPath + "/project.mkproj", FileMode.Create, FileAccess.Write);
         Utilities.WriteSerializationID(stream, 0);
-        Utilities.SerializeStream(stream, ProjectSettings);
+        Utilities.SerializeStream(stream, ProjectSettings.RawData);
         stream.Close();
     }
 
@@ -958,14 +975,26 @@ public static class Editor
     {
         if (File.Exists(Data.ProjectPath + "/project.mkproj"))
         {
+            Logger.WriteLine("Loading project settings from {0}...", Data.ProjectPath + "/project.mkproj");
             Stream stream = new FileStream(Data.ProjectPath + "/project.mkproj", FileMode.Open, FileAccess.Read);
             Utilities.ReadSerializationID(stream, 0);
-            ProjectSettings = Utilities.DeserializeStream<ProjectSettings>(stream);
-            ProjectSettings.Update();
+            var dict = Utilities.DeserializeStream<Dictionary<string, object>>(stream);
+            try 
+            {
+                ProjectSettings = new ProjectSettings(dict); 
+                ProjectSettings.Update();
+            }
+            catch (Exception ex) 
+            {
+                Logger.Error(ex);
+                Logger.WriteLine("Creating new backup project settings"); 
+                ProjectSettings = new ProjectSettings(); 
+            }
             stream.Close();
         }
         else
         {
+            Logger.WriteLine("Creating new project settings ({0} did not exist)", Data.ProjectPath + "/project.mkproj");
             ProjectSettings = new ProjectSettings();
         }
     }
@@ -975,6 +1004,7 @@ public static class Editor
     /// </summary>
     public static void ClearProjectData()
     {
+        Logger.WriteLine("Clearing project data...");
         ProjectSettings = null;
         UndoList.Clear();
         RedoList.Clear();
@@ -988,6 +1018,7 @@ public static class Editor
         bool hasUpdater = File.Exists(updaterFile);
         if (hasUpdater)
         {
+            Logger.WriteLine("Prompt update from {0} to {1}", Program.CurrentVersion, Program.LatestVersion);
             MessageBox win = new MessageBox("Updater", $"An update for RPG Studio MK is available. Would you like to automatically install this update?\nCurrent version: {Program.CurrentVersion}\nLatest version: {Program.LatestVersion}", ButtonType.YesNo, IconType.Info);
             win.OnClosed += _ =>
             {
@@ -995,8 +1026,10 @@ public static class Editor
                 {
                     // Open updater
                     // Close program
+                    Logger.WriteLine("Closing editor...");
                     Editor.ExitEditor();
                     Directory.SetCurrentDirectory(updaterPath);
+                    Logger.WriteLine("Launching updater...");
                     Process proc = new Process();
                     proc.StartInfo = new ProcessStartInfo("cmd");
                     proc.StartInfo.ArgumentList.Add("/c");
@@ -1011,6 +1044,7 @@ public static class Editor
         }
         else
         {
+            Logger.WriteLine("Editor found an update from {0} to {1}, but the updater does not exist at {2}.", Program.CurrentVersion, Program.LatestVersion, updaterFile);
             new MessageBox("Updater", $"An update for RPG Studio MK is available. Please run the original RPG Studio MK installer again to install the new version and the automatic updater.\nCurrent version: {Program.CurrentVersion}\nLatest version: {Program.LatestVersion}", ButtonType.OK, IconType.Info);
         }
         Program.PromptedUpdate = true;
