@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets.CommandWidgets;
 
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public class ConditionalWidget : BaseCommandWidget
 {
     Label ConditionLabel;

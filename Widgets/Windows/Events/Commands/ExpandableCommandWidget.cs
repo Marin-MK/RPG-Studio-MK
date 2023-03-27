@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace RPGStudioMK.Widgets.CommandWidgets;
 
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public class ExpandableCommandWidget : BaseCommandWidget
 {
     public bool Expanded => ExpandArrow.Expanded;

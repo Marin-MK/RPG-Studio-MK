@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets.CommandWidgets;
 
-[DebuggerDisplay("{DebugItemZero}")]
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public class TextWidget : BaseCommandWidget
 {
     MultilineLabel MultilineLabel;
-    string DebugItemZero => (string) Command.Parameters[0];
 
     public TextWidget(IContainer Parent, int ParentWidgetIndex) : base(Parent, ParentWidgetIndex)
     {
