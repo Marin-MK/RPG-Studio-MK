@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using RPGStudioMK.Game;
@@ -73,6 +74,18 @@ public class BaseCommandWidget : Widget
         { CommandCode.SetMoveRoute, CommandCode.MoreMoveRoute }
     };
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BlankWidget))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ChoiceWidget))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ConditionalWidget))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ExpandableCommandWidget))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MoveRouteWidget))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(SetSelfSwitchWidget))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(SetSwitchWidget))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(SetVariableWidget))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CommandWidgets.TextWidget))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(TransferPlayerWidget))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WaitForMoveCompletionWidget))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WaitWidget))]
     static Dictionary<CommandCode, System.Type> CommandWidgetLookup = new Dictionary<CommandCode, System.Type>()
     {
         { CommandCode.Blank, typeof(BlankWidget) },
