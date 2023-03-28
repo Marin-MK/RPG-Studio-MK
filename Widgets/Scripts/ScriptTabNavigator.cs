@@ -76,9 +76,9 @@ public class ScriptTabNavigator : Widget
         }
     }
 
-    public void SetOpenScript(Script script)
+    public void SetOpenScript(Script script, bool force = false)
     {
-        if (this.OpenScript != script)
+        if (this.OpenScript != script || force)
         {
             this.OnOpenScriptChanging?.Invoke(new BaseEventArgs());
             if (!this.OpenScripts.Contains(script) && this.PreviewScript != script) this.OpenScripts.Add(script);
@@ -225,7 +225,9 @@ public class ScriptTabNavigator : Widget
             Sprites["bar"].Bitmap.FillRect(x + 1, 1, width - 2, Sprites["bar"].Bitmap.Height - 1, fillerColor);
         }
         Color textColor = data.script == this.HoveringScript ? new Color(0, 194, 255) : Color.WHITE;
-        Sprites["text"].Bitmap.DrawText(script.Name, x + 10, 4, textColor);
+        DrawOptions drawOptions = DrawOptions.LeftAlign;
+        if (script == this.PreviewScript) drawOptions |= DrawOptions.Italic;
+        Sprites["text"].Bitmap.DrawText(script.Name, x + 10, 4, textColor, drawOptions);
     }
 
     public void SetHoveringScript(Script? script)
@@ -276,7 +278,24 @@ public class ScriptTabNavigator : Widget
         base.MouseDown(e);
         if (HoveringScript is not null && !CloseButton.Mouse.Inside)
         {
-            SetOpenScript(HoveringScript);
+            if (TimerExists("double") && !TimerPassed("double") && HoveringScript == PreviewScript)
+            {
+                SetPreviewScript(null);
+                SetOpenScript(HoveringScript, true);
+                DestroyTimer("double");
+            }
+            else
+            {
+                SetOpenScript(HoveringScript);
+                if (TimerExists("double") && TimerPassed("double")) DestroyTimer("double");
+                SetTimer("double", 300);
+            }
         }
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        if (TimerExists("double") && TimerPassed("double")) DestroyTimer("double");
     }
 }
