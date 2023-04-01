@@ -4,7 +4,7 @@ using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
 
-public class ScriptEditorTextBox : Widget
+public class ScriptEditorBox : Widget
 {
     public string Text => TextArea.Text;
     public Font Font => TextArea.Font;
@@ -18,6 +18,10 @@ public class ScriptEditorTextBox : Widget
     public Color LineTextBackgroundColor => TextArea.LineTextBackgroundColor;
     public int LineTextWidth => TextArea.LineTextWidth;
     public int TextXOffset => TextArea.TextXOffset;
+    public List<Script> OpenScripts => TabNavigator.OpenScripts;
+    public Script? OpenScript => TabNavigator.OpenScript;
+    public Script? PreviewScript => TabNavigator.PreviewScript;
+    public List<Script> RecentScripts => TabNavigator.RecentScripts;
 
     //public BaseEvent OnTextChanged { get => TextArea.OnTextChanged; set => TextArea.OnTextChanged = value; }
     public BoolEvent OnCopy { get => TextArea.OnCopy; set => TextArea.OnCopy = value; }
@@ -29,7 +33,7 @@ public class ScriptEditorTextBox : Widget
     ScriptEditorTextArea TextArea;
     ScriptTabNavigator TabNavigator;
 
-    public ScriptEditorTextBox(IContainer Parent) : base(Parent)
+    public ScriptEditorBox(IContainer Parent) : base(Parent)
     {
         Sprites["bg"] = new Sprite(this.Viewport);
 
@@ -48,22 +52,18 @@ public class ScriptEditorTextBox : Widget
         };
         TabNavigator.OnScriptClosed += _ =>
         {
-            if (TabNavigator.OpenScript is null)
+            if (this.OpenScript is null)
             {
                 SetScript(null, false);
                 // No script is open; clear text area
             }
         };
-        TabNavigator.OnOpenScriptChanging += _ =>
-        {
-            if (TabNavigator.OpenScript is not null) UpdateScriptState(TabNavigator.OpenScript);
-        };
         TabNavigator.OnOpenScriptChanged += _ =>
         {
-            if (TabNavigator.OpenScript is not null)
+            if (this.OpenScript is not null)
             {
                 // We have a script open
-                SetScript(TabNavigator.OpenScript, false);
+                SetScript(this.OpenScript, false);
             }
         };
         TabNavigator.OnMouseDown += e =>
@@ -95,7 +95,13 @@ public class ScriptEditorTextBox : Widget
         TextArea.SetFont(Font.Get(Fonts.Monospace.Name, 16));
         TextArea.OnTextChanged += _ =>
         {
-            if (TextArea.Interactable) TabNavigator.OpenScript.Content = TextArea.Text;
+            if (TextArea.Interactable) this.OpenScript.Content = TextArea.Text;
+            if (this.OpenScript == this.PreviewScript)
+            {
+                Script openScript = this.OpenScript;
+                TabNavigator.SetPreviewScript(null, false);
+                TabNavigator.SetOpenScript(openScript, true);
+            }
         };
 
         VScrollBar vs = new VScrollBar(mainGrid);
@@ -139,8 +145,6 @@ public class ScriptEditorTextBox : Widget
         ScrollContainer.VScrollBar.SetScrollStep(TextArea.LineHeight + TextArea.LineMargins);
     }
 
-    bool firstTime = true;
-
     public void SetScript(Script? script, bool preview, bool setCaretToEnd = false)
     {
         if (script is null)
@@ -155,21 +159,29 @@ public class ScriptEditorTextBox : Widget
             TextArea.SetInteractable(true);
             TextArea.SetReadOnly(false);
             TextArea.SetDrawLineNumbers(true);
+            if (TabNavigator.OpenScript is not null) UpdateScriptState(TabNavigator.OpenScript);
             TextArea.SetText(script.Content, setCaretToEnd);
             if (ScriptStates.ContainsKey(script))
             {
                 var state = ScriptStates[script];
                 state.Apply(false);
             }
-            if (firstTime)
+            else
             {
-                TabNavigator.SetOpenScripts(Data.Scripts.GetRange(0, 5));
-                TabNavigator.SetPreviewScript(Data.Scripts[5], false);
-                firstTime = false;
+                TextArea.WidgetSelected(new BaseEventArgs());
             }
-            if (preview && !TabNavigator.IsOpen(script)) TabNavigator.SetPreviewScript(script, true);
+            if (preview)
+            {
+                if (TabNavigator.IsOpen(script)) TabNavigator.SetOpenScript(script);
+                else TabNavigator.SetPreviewScript(script, true);
+            }
             else TabNavigator.SetOpenScript(script);
         }
+    }
+
+    public void SetPivot(int pivot)
+    {
+        TabNavigator.SetPivot(pivot);
     }
 
     public void SetFont(Font Font)

@@ -15,6 +15,7 @@ public class ScriptTabNavigator : Widget
     public Script? OpenScript { get; protected set; }
     public Script? PreviewScript { get; protected set; }
     public Script? HoveringScript { get; protected set; }
+    public List<Script> RecentScripts { get; protected set; } = new List<Script>();
     public Font Font { get; protected set; }
     public int Pivot { get; protected set; }
 
@@ -28,8 +29,7 @@ public class ScriptTabNavigator : Widget
 
     IconButton LeftNavButton;
     IconButton RightNavButton;
-    IconButton LeftDownNavButton;
-    IconButton RightDownNavButton;
+    IconButton DownNavButton;
 
     IconButton CloseButton;
 
@@ -38,7 +38,7 @@ public class ScriptTabNavigator : Widget
         this.Font = Fonts.Paragraph;
         Sprites["bg"] = new Sprite(this.Viewport);
         Sprites["bar"] = new Sprite(this.Viewport);
-        Sprites["bar"].X = 43;
+        Sprites["bar"].X = 43 + 16;
         Sprites["text"] = new Sprite(this.Viewport);
         Sprites["text"].X = Sprites["bar"].X;
         CloseButton = new IconButton(this);
@@ -51,9 +51,25 @@ public class ScriptTabNavigator : Widget
             // Close currently open script
             CloseScript(HoveringScript);
         };
-        //LeftNavButton = new IconButton(this);
-        //LeftNavButton.SetIcon(Icon.LeftNav);
-        //LeftNavButton.SetPosition(24, 11);
+        LeftNavButton = new IconButton(this);
+        LeftNavButton.SetIcon(Icon.LeftNav);
+        LeftNavButton.SetPosition(29, 2);
+        LeftNavButton.Selectable = false;
+        LeftNavButton.OnClicked += _ => SetPivot(Pivot - 1);
+
+        RightNavButton = new IconButton(this);
+        RightNavButton.SetIcon(Icon.RightNav);
+        RightNavButton.SetRightDocked(true);
+        RightNavButton.SetPadding(0, 2, 28, 0);
+        RightNavButton.Selectable = false;
+        RightNavButton.OnClicked += _ => SetPivot(Pivot + 1);
+
+        DownNavButton = new IconButton(this);
+        DownNavButton.SetIcon(Icon.DownNav);
+        DownNavButton.SetRightDocked(true);
+        DownNavButton.SetPadding(0, 2, 4, 0);
+        DownNavButton.Selectable = false;
+        DownNavButton.OnClicked += _ => Editor.MainWindow.ScriptingWidget.ShowScriptMenu(false, true);
     }
 
     public void SetOpenScripts(List<Script> scripts)
@@ -69,11 +85,13 @@ public class ScriptTabNavigator : Widget
 
     public void SetPreviewScript(Script? script, bool open)
     {
-        if (this.PreviewScript != script)
+        if (this.PreviewScript != script || open)
         {
-            if (open) this.OpenScript = this.PreviewScript;
             this.PreviewScript = script;
+            if (open) this.OpenScript = this.PreviewScript;
+            else this.OpenScript = null;
             this.UpdateVisibleScripts();
+            if (open) MakeRecent(this.OpenScript);
         }
     }
 
@@ -86,7 +104,14 @@ public class ScriptTabNavigator : Widget
             this.OpenScript = script;
             this.UpdateVisibleScripts();
             this.OnOpenScriptChanged?.Invoke(new BaseEventArgs());
+            MakeRecent(this.OpenScript);
         }
+    }
+
+    public void MakeRecent(Script script)
+    {
+        if (RecentScripts.Contains(script)) RecentScripts.Remove(script);
+        RecentScripts.Add(script);
     }
 
     public bool IsOpen(Script script)
@@ -97,6 +122,29 @@ public class ScriptTabNavigator : Widget
     public void CloseScript(Script script)
     {
         this.OnScriptClosing?.Invoke(new GenericObjectEventArgs<Script>(script));
+        if (RecentScripts.Contains(script)) RecentScripts.Remove(script);
+        if (this.PreviewScript == script)
+        {
+            OnScriptClosed?.Invoke(new BaseEventArgs());
+            this.PreviewScript = null;
+            if (this.OpenScript == script)
+            {
+                Script? newOpenScript = null;
+                for (int i = RecentScripts.Count - 1; i >= 0; i--)
+                {
+                    if (RecentScripts[i] != script && (this.OpenScripts.Contains(RecentScripts[i]) || this.PreviewScript == RecentScripts[i]))
+                    {
+                        newOpenScript = RecentScripts[i];
+                        break;
+                    }
+                }
+                SetOpenScript(newOpenScript ?? (this.OpenScripts.Count > 0 ? this.OpenScripts[^1] : null));
+                // We don't want the last opened script to be the script we just closed
+                //LastOpenScript = null;
+            }
+            else this.UpdateVisibleScripts();
+            return;
+        }
         int index = this.OpenScripts.IndexOf(script);
         this.OpenScripts.Remove(script);
         if (script == this.OpenScript)
@@ -108,6 +156,7 @@ public class ScriptTabNavigator : Widget
             CloseButton.SetVisible(false);
             OnOpenScriptChanged?.Invoke(new BaseEventArgs());
         }
+        SetPivot(this.Pivot);
         this.UpdateVisibleScripts();
         OnScriptClosed?.Invoke(new BaseEventArgs());
     }
@@ -123,6 +172,7 @@ public class ScriptTabNavigator : Widget
 
     public void SetPivot(int pivot)
     {
+        pivot = Math.Clamp(pivot, 0, Math.Max(0, this.OpenScripts.Count - this.VisibleScripts.Count));
         if (this.Pivot != pivot)
         {
             this.Pivot = pivot;
@@ -250,6 +300,11 @@ public class ScriptTabNavigator : Widget
             Sprites["text"].Bitmap.Lock();
             OnHoveredScriptChanged?.Invoke(new BaseEventArgs());
         }
+    }
+
+    public void ShowScriptMenu(Location? anchor = null)
+    {
+
     }
 
     public override void MouseMoving(MouseEventArgs e)

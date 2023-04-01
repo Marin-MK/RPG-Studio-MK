@@ -17,8 +17,8 @@ public class ScriptEditorTextArea : MultilineTextArea
     public Color LineTextColor { get; protected set; } = new Color(192, 192, 192);
     public Color LineTextBackgroundColor { get; protected set; } = new Color(10, 23, 37);
     public Color HighlightColor { get; protected set; } = new Color(128, 128, 128, 96);
-    public int LineTextWidth { get; protected set; } = 40;
-    public int TextXOffset { get; protected set; } = 42;
+    public int LineTextWidth { get; protected set; } = 56;
+    public int TextXOffset { get; protected set; } = 58;
     public bool DrawLineNumbers { get; protected set; } = true;
     public string? SelectedText
     {
