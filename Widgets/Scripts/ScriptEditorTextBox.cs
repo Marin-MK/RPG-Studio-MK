@@ -19,7 +19,7 @@ public class ScriptEditorTextBox : Widget
     public int LineTextWidth => TextArea.LineTextWidth;
     public int TextXOffset => TextArea.TextXOffset;
 
-    public BaseEvent OnTextChanged { get => TextArea.OnTextChanged; set => TextArea.OnTextChanged = value; }
+    //public BaseEvent OnTextChanged { get => TextArea.OnTextChanged; set => TextArea.OnTextChanged = value; }
     public BoolEvent OnCopy { get => TextArea.OnCopy; set => TextArea.OnCopy = value; }
     public BoolEvent OnPaste { get => TextArea.OnPaste; set => TextArea.OnPaste = value; }
 
@@ -66,6 +66,10 @@ public class ScriptEditorTextBox : Widget
                 SetScript(TabNavigator.OpenScript, false);
             }
         };
+        TabNavigator.OnMouseDown += e =>
+        {
+            if (TabNavigator.Mouse.Inside) TextArea.WidgetSelected(new BaseEventArgs());
+        };
 
         ScrollContainer = new Container(mainGrid);
         ScrollContainer.SetGridRow(1);
@@ -89,6 +93,10 @@ public class ScriptEditorTextBox : Widget
         TextArea.SetHDocked(true);
         TextArea.MinimumSize.Height = Size.Height;
         TextArea.SetFont(Font.Get(Fonts.Monospace.Name, 16));
+        TextArea.OnTextChanged += _ =>
+        {
+            if (TextArea.Interactable) TabNavigator.OpenScript.Content = TextArea.Text;
+        };
 
         VScrollBar vs = new VScrollBar(mainGrid);
         vs.SetGridRow(1);
@@ -156,10 +164,10 @@ public class ScriptEditorTextBox : Widget
             if (firstTime)
             {
                 TabNavigator.SetOpenScripts(Data.Scripts.GetRange(0, 5));
-                TabNavigator.SetPreviewScript(Data.Scripts[5]);
+                TabNavigator.SetPreviewScript(Data.Scripts[5], false);
                 firstTime = false;
             }
-            else if (preview) TabNavigator.SetPreviewScript(script);
+            if (preview && !TabNavigator.IsOpen(script)) TabNavigator.SetPreviewScript(script, true);
             else TabNavigator.SetOpenScript(script);
         }
     }

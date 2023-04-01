@@ -67,10 +67,11 @@ public class ScriptTabNavigator : Widget
         }
     }
 
-    public void SetPreviewScript(Script? script)
+    public void SetPreviewScript(Script? script, bool open)
     {
         if (this.PreviewScript != script)
         {
+            if (open) this.OpenScript = this.PreviewScript;
             this.PreviewScript = script;
             this.UpdateVisibleScripts();
         }
@@ -86,6 +87,11 @@ public class ScriptTabNavigator : Widget
             this.UpdateVisibleScripts();
             this.OnOpenScriptChanged?.Invoke(new BaseEventArgs());
         }
+    }
+
+    public bool IsOpen(Script script)
+    {
+        return this.OpenScripts.Contains(script);
     }
 
     public void CloseScript(Script script)
@@ -280,7 +286,7 @@ public class ScriptTabNavigator : Widget
         {
             if (TimerExists("double") && !TimerPassed("double") && HoveringScript == PreviewScript)
             {
-                SetPreviewScript(null);
+                SetPreviewScript(null, false);
                 SetOpenScript(HoveringScript, true);
                 DestroyTimer("double");
             }
