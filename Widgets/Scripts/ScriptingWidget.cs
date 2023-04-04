@@ -34,7 +34,7 @@ public class ScriptingWidget : Widget
         TreeView.SetNodes(GetNodes());
         TreeView.SetLineHeight(28);
         TreeView.SetFont(Font.Get("Cabin-Medium", 10));
-        TreeView.OnSelectionChanged += _ => TextBox.SetScript((Script) ((OptimizedNode) TreeView.SelectedNode).Object, true);
+        TreeView.OnSelectionChanged += e => TextBox.SetScript((Script) ((OptimizedNode) TreeView.SelectedNode).Object, !e.Value); // e.Value: whether the node was double clicked or single-clicked
 
         TextBox = new ScriptEditorBox(this);
         TextBox.SetDocked(true);

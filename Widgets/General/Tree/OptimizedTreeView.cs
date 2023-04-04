@@ -49,7 +49,7 @@ public class OptimizedTreeView : Widget
 
     public GenericObjectEvent<IOptimizedNode> OnDragAndDropping;
     public GenericObjectEvent<IOptimizedNode> OnDragAndDropped;
-    public BaseEvent OnSelectionChanged;
+    public BoolEvent OnSelectionChanged;
     public GenericObjectEvent<OptimizedNode> OnNodeExpansionChanged;
     public GenericObjectEvent<OptimizedNode> OnNodeGlobalIndexChanged;
 
@@ -68,6 +68,7 @@ public class OptimizedTreeView : Widget
     private Point? DragOriginPoint;
     private bool ValidatedDragMovement = false;
     private IOptimizedNode OldHoveringNode;
+    private IOptimizedNode? DoubleClickNode;
 
     public OptimizedTreeView(IContainer Parent) : base(Parent)
     {
@@ -709,11 +710,11 @@ public class OptimizedTreeView : Widget
         SpriteContainer.Sprites[$"sel_{i}"].Y = GetDrawnYCoord(Node);
     }
 
-    public void SetSelectedNode(IOptimizedNode Node, bool AllowMultiple)
+    public void SetSelectedNode(IOptimizedNode Node, bool AllowMultiple, bool DoubleClicked = true)
     {
         if (!AllowMultiple) ClearSelection();
         if (Node != null) SelectIndividualNode(Node);
-        OnSelectionChanged?.Invoke(new BaseEventArgs());
+        OnSelectionChanged?.Invoke(new BoolEventArgs(DoubleClicked));
     }
 
     public void SetHoveringNode(IOptimizedNode Node)
@@ -993,7 +994,19 @@ public class OptimizedTreeView : Widget
             }
             else
             {
-                SetSelectedNode(this.ActiveNode, false); // Input.Press(Keycode.CTRL)
+                if (TimerExists("double_click") && !TimerPassed("double_click"))
+                {
+                    SetSelectedNode(this.ActiveNode, false, this.ActiveNode == DoubleClickNode); // Double click is only valid if the current node is the same node that we pressed last time
+                    DoubleClickNode = null;
+                    DestroyTimer("double_click");
+                }
+                else
+                {
+                    if (TimerExists("double_click")) DestroyTimer("double_click");
+                    SetTimer("double_click", 300);
+                    SetSelectedNode(this.ActiveNode, false, false);
+                    DoubleClickNode = this.ActiveNode;
+                }
             }
         }
         this.Dragging = false;
@@ -1008,6 +1021,11 @@ public class OptimizedTreeView : Widget
     public override void Update()
     {
         base.Update();
+        if (TimerExists("double_click") && TimerPassed("double_click"))
+        {
+            DestroyTimer("double_click");
+            DoubleClickNode = null;
+        }
         if (OldHoveringNode != HoveringNode)
         {
             if (TimerExists("long_hover")) DestroyTimer("long_hover");

@@ -156,26 +156,37 @@ public class ScriptEditorBox : Widget
         }
         else
         {
-            TextArea.SetInteractable(true);
-            TextArea.SetReadOnly(false);
-            TextArea.SetDrawLineNumbers(true);
-            if (TabNavigator.OpenScript is not null) UpdateScriptState(TabNavigator.OpenScript);
-            TextArea.SetText(script.Content, setCaretToEnd);
-            if (ScriptStates.ContainsKey(script))
+            // Only update textbox if the script changed
+            if (this.OpenScript != script)
             {
-                var state = ScriptStates[script];
-                state.Apply(false);
+                TextArea.SetInteractable(true);
+                TextArea.SetReadOnly(false);
+                TextArea.SetDrawLineNumbers(true);
+                if (TabNavigator.OpenScript is not null) UpdateScriptState(TabNavigator.OpenScript);
+                TextArea.SetText(script.Content, setCaretToEnd);
+                if (ScriptStates.ContainsKey(script))
+                {
+                    var state = ScriptStates[script];
+                    state.Apply(false);
+                }
             }
-            else
-            {
-                TextArea.WidgetSelected(new BaseEventArgs());
-            }
+            // Select the textbox
+            TextArea.WidgetSelected(new BaseEventArgs());
+            // Ensure the tab navigator is up-to-date (e.g. preview to open)
             if (preview)
             {
                 if (TabNavigator.IsOpen(script)) TabNavigator.SetOpenScript(script);
                 else TabNavigator.SetPreviewScript(script, true);
             }
-            else TabNavigator.SetOpenScript(script);
+            else
+            {
+                if (this.PreviewScript == script)
+                {
+                    TabNavigator.SetPreviewScript(null, false);
+                    TabNavigator.SetOpenScript(script, true);
+                }
+                else TabNavigator.SetOpenScript(script, false);
+            }
         }
     }
 
