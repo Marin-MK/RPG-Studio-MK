@@ -117,4 +117,22 @@ public class OptimizedNodeSeparator : IOptimizedNode
         List.Add(Parent);
         return List;
     }
+
+    /// <summary>
+    /// Makes a deep copy of the node.
+    /// </summary>
+    /// <returns>The copied new.</returns>
+    public IOptimizedNode Clone(OptimizedNode Root = null, OptimizedNode Parent = null)
+    {
+        if (Root is null) throw new ArgumentException($"Node separators cannot be root nodes.");
+        OptimizedNodeSeparator n = new OptimizedNodeSeparator(this.Height);
+        n.Root = Root;
+        n.Parent = Parent;
+        n.Depth = this.Depth;
+        n.Height = this.Height;
+        n.Selectable = this.Selectable;
+        n.Draggable = this.Draggable;
+        n.CanDragOver = this.CanDragOver;
+        return n;
+    }
 }

@@ -374,22 +374,6 @@ public static class Editor
     }
 
     /// <summary>
-    /// Get the highest order value in a node and its children.
-    /// </summary>
-    /// <param name="Node">The node to look within.</param>
-    /// <returns>The highest order within the node.</returns>
-    public static int GetHighestMapOrder(TreeNode Node)
-    {
-        int max = Data.Maps[(int)Node.Object].Order;
-        foreach (TreeNode Child in Node.Nodes)
-        {
-            int childmax = GetHighestMapOrder(Child);
-            if (childmax > max) max = childmax;
-        }
-        return max;
-    }
-
-    /// <summary>
     /// Gets the highest order value in the whole map tree overall.
     /// </summary>
     /// <returns>The highest order within all existing maps, i.e. the order value of the bottom-most map.</returns>
@@ -401,34 +385,6 @@ public static class Editor
             if (map.Order > max) max = map.Order;
         }
         return max;
-    }
-
-    /// <summary>
-    /// Updates the map data parent/order fields based on the node structure.
-    /// </summary>
-    /// <param name="Nodes">The list of nodes to update the order of.</param>
-    /// <param name="start">The integer to start counting at.</param>
-    public static int UpdateOrder(List<TreeNode> Nodes, int start = 1)
-    {
-        int order = start;
-        for (int i = 0; i < Nodes.Count; i++)
-        {
-            TreeNode n = Nodes[i];
-            // Set order
-            Data.Maps[(int)n.Object].Order = order;
-            if (start == 1) // First call; set parent to 0
-            {
-                Data.Maps[(int)n.Object].ParentID = 0;
-            }
-            order++;
-            order = UpdateOrder(n.Nodes, order);
-            foreach (TreeNode child in n.Nodes)
-            {
-                // Set parent
-                Data.Maps[(int)child.Object].ParentID = (int)n.Object;
-            }
-        }
-        return order;
     }
 
     /// <summary>

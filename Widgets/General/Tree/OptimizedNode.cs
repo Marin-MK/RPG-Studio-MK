@@ -657,4 +657,28 @@ public class OptimizedNode : IOptimizedNode
     {
         return Text;
     }
+
+    /// <summary>
+    /// Makes a deep copy of the node and all its children.
+    /// </summary>
+    /// <returns>The copied node.</returns>
+    public IOptimizedNode Clone(OptimizedNode Root = null, OptimizedNode Parent = null)
+    {
+        OptimizedNode n = new OptimizedNode(this.Text, this.Object);
+        if (Root is null)
+        {
+            Root = n;
+            Parent = null;
+        }
+        n.Root = Root;
+        n.Parent = Parent;
+        n.Children = this.Children.Select(c => c.Clone(Root, n)).ToList();
+        n.GlobalIndex = this.GlobalIndex;
+        n.Expanded = this.Expanded;
+        n.Depth = this.Depth;
+        n.Selectable = this.Selectable;
+        n.Draggable = this.Draggable;
+        n.CanDragOver = this.CanDragOver;
+        return n;
+    }
 }

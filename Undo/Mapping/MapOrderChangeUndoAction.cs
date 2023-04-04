@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RPGStudioMK.Game;
 using RPGStudioMK.Widgets;
 
 namespace RPGStudioMK.Undo;
@@ -12,18 +13,18 @@ public class MapOrderChangeUndoAction : BaseUndoAction
     public override string Title => $"Map order change";
     public override string Description => "Describes a change in the order of the map list, e.g. a map changed its parent-child relation.";
 
-    public List<TreeNode> OldNodes;
-    public List<TreeNode> NewNodes;
+    public OptimizedNode OldRoot;
+    public OptimizedNode NewRoot;
 
-    public MapOrderChangeUndoAction(List<TreeNode> OldNodes, List<TreeNode> NewNodes)
+    public MapOrderChangeUndoAction(OptimizedNode OldRoot, OptimizedNode NewRoot)
     {
-        this.OldNodes = OldNodes;
-        this.NewNodes = NewNodes;
+        this.OldRoot = OldRoot;
+        this.NewRoot = NewRoot;
     }
 
-    public static void Create(List<TreeNode> OldNodes, List<TreeNode> NewNodes)
+    public static void Create(OptimizedNode OldRoot, OptimizedNode NewRoot)
     {
-        var c = new MapOrderChangeUndoAction(OldNodes, NewNodes);
+        var c = new MapOrderChangeUndoAction(OldRoot, NewRoot);
         c.Register();
     }
 
@@ -35,10 +36,9 @@ public class MapOrderChangeUndoAction : BaseUndoAction
             return false;
         }
         // TODO
-        /*TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.MapTree;
-        int SelectedMapID = (int) mapview.SelectedNode.Object;
+        OptimizedTreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.MapTree;
         TriggerLogical(IsRedo);
-        TreeNode SelectedNode = null;
+        /*TreeNode SelectedNode = null;
         for (int i = 0; i < mapview.Nodes.Count; i++)
         {
             if ((int) mapview.Nodes[i].Object == SelectedMapID)
@@ -56,14 +56,25 @@ public class MapOrderChangeUndoAction : BaseUndoAction
                 }
             }
         }
-        if (SelectedNode == null) throw new Exception("Could not find selected node.");
+        if (SelectedNode == null) throw new Exception("Could not find selected node.");*/
         Editor.MainWindow.MapWidget.SetHint($"{(IsRedo ? "Redid" : "Undid")} map list order changes");
-        mapview.SetSelectedNode(SelectedNode);*/
+        int mapID = (int) ((OptimizedNode) mapview.SelectedNode).Object;
+        OptimizedNode root = IsRedo ? NewRoot : OldRoot;
+        OptimizedNode? newSelectedNode = root.GetNode(n => n.Object is int && (int) n.Object == mapID);
+        mapview.SetRootNode(root, newSelectedNode);
         return true;
     }
 
     public override void TriggerLogical(bool IsRedo)
     {
-        Editor.UpdateOrder(IsRedo ? NewNodes : OldNodes);
+        OptimizedNode root = IsRedo ? NewRoot : OldRoot;
+        root.GetAllChildren(true).ForEach(c =>
+        {
+            if (c is not OptimizedNode) return;
+            OptimizedNode n = (OptimizedNode) c;
+            int mapID = (int) n.Object;
+            Data.Maps[mapID].Order = n.GlobalIndex;
+            Data.Maps[mapID].ParentID = n.Parent == n.Root ? 0 : (int) n.Parent.Object;
+        });
     }
 }

@@ -48,7 +48,7 @@ public class OptimizedTreeView : Widget
     public bool VResizeToFill { get; protected set; } = true;
 
     public GenericObjectEvent<IOptimizedNode> OnDragAndDropping;
-    public GenericObjectEvent<IOptimizedNode> OnDragAndDropped;
+    public GenericObjectEvent<(IOptimizedNode DroppedNode, OptimizedNode OldRoot, OptimizedNode NewRoot)> OnDragAndDropped;
     public BoolEvent OnSelectionChanged;
     public GenericObjectEvent<OptimizedNode> OnNodeExpansionChanged;
     public GenericObjectEvent<OptimizedNode> OnNodeGlobalIndexChanged;
@@ -69,6 +69,7 @@ public class OptimizedTreeView : Widget
     private bool ValidatedDragMovement = false;
     private IOptimizedNode OldHoveringNode;
     private IOptimizedNode? DoubleClickNode;
+    private OptimizedNode? PreDragDropRootNode;
 
     public OptimizedTreeView(IContainer Parent) : base(Parent)
     {
@@ -440,7 +441,7 @@ public class OptimizedTreeView : Widget
         // If there is a new last node, then the previous last node does not have the line coming
         // from its parent indicating that there is another node.
         // So we draw that line manually here, outside of any node redrawing.
-        if (RedrawPrevSibling)
+        if (RedrawPrevSibling && NewNode.Parent != this.Root)
         {
             int x = (NewNode.Depth - 1) * DepthIndent + XOffset;
             int sy = GetDrawnYCoord(ParentNode) + LineHeight;
@@ -813,6 +814,7 @@ public class OptimizedTreeView : Widget
             if (DragOriginPoint.Distance(mp) >= 10)
             {
                 ValidatedDragMovement = true;
+                PreDragDropRootNode = (OptimizedNode) this.Root.Clone();
             }
             this.OnDragAndDropping?.Invoke(new GenericObjectEventArgs<IOptimizedNode>(this.ActiveNode));
         }
@@ -954,14 +956,14 @@ public class OptimizedTreeView : Widget
                 {
                     DeleteNode(this.ActiveNode, true);
                     InsertNode((OptimizedNode) this.HoveringNode, null, this.ActiveNode);
-                    this.OnDragAndDropped?.Invoke(new GenericObjectEventArgs<IOptimizedNode>(this.ActiveNode));
+                    this.OnDragAndDropped?.Invoke(new GenericObjectEventArgs<(IOptimizedNode, OptimizedNode, OptimizedNode)>((this.ActiveNode, PreDragDropRootNode, this.Root)));
                 }
                 else if (this.DragState == DragStates.Above || this.DragState == DragStates.SharedAbove)
                 {
                     DeleteNode(this.ActiveNode, true);
                     int HoveredIndex = this.HoveringNode.Parent.Children.IndexOf(this.HoveringNode);
                     InsertNode(this.HoveringNode.Parent, HoveredIndex, this.ActiveNode);
-                    this.OnDragAndDropped?.Invoke(new GenericObjectEventArgs<IOptimizedNode>(this.ActiveNode));
+                    this.OnDragAndDropped?.Invoke(new GenericObjectEventArgs<(IOptimizedNode, OptimizedNode, OptimizedNode)>((this.ActiveNode, PreDragDropRootNode, this.Root)));
                 }
                 else if (this.DragState == DragStates.Below || this.DragState == DragStates.SharedBelow)
                 {
@@ -977,7 +979,7 @@ public class OptimizedTreeView : Widget
                         int HoveredIndex = this.HoveringNode.Parent.Children.IndexOf(this.HoveringNode);
                         InsertNode(this.HoveringNode.Parent, HoveredIndex + 1, this.ActiveNode);
                     }
-                    this.OnDragAndDropped?.Invoke(new GenericObjectEventArgs<IOptimizedNode>(this.ActiveNode));
+                    this.OnDragAndDropped?.Invoke(new GenericObjectEventArgs<(IOptimizedNode, OptimizedNode, OptimizedNode)>((this.ActiveNode, PreDragDropRootNode, this.Root)));
                 }
                 if (this.SelectedNode != null) UpdateSelection(this.SelectedNode);
             }

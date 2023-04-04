@@ -42,4 +42,6 @@ public interface IOptimizedNode
     /// </summary>
     /// <returns>A list of nodes.</returns>
     public List<OptimizedNode> GetAncestors();
+
+    public IOptimizedNode Clone(OptimizedNode Root, OptimizedNode Parent);
 }

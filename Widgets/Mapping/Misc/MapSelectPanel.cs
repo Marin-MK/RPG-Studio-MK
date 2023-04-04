@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using RPGStudioMK.Game;
 using System.Diagnostics;
+using System.Data;
+using System.Linq;
 
 namespace RPGStudioMK.Widgets;
 
@@ -48,13 +50,14 @@ public class MapSelectPanel : Widget
                 Stopwatch.Reset();
             }
         };
-        MapTree.OnDragAndDropped += delegate (GenericObjectEventArgs<IOptimizedNode> e) { DragAndDropped((OptimizedNode) e.Object); };
+        MapTree.OnDragAndDropped += e => DragAndDropped(e.Object);
         MapTree.OnNodeExpansionChanged += delegate (GenericObjectEventArgs<OptimizedNode> e)
         {
             OptimizedNode Node = e.Object;
             int mapid = (int) Node.Object;
             Data.Maps[mapid].Expanded = Node.Expanded;
-            Undo.NodeCollapseChangeUndoAction.Create(mapid, Node.Expanded, !Node.Expanded);
+            // Works, but probably not desired
+            //Undo.NodeCollapseChangeUndoAction.Create(mapid, Node.Expanded, !Node.Expanded);
         };
         MapTree.OnNodeGlobalIndexChanged += delegate (GenericObjectEventArgs<OptimizedNode> e)
         {
@@ -123,35 +126,41 @@ public class MapSelectPanel : Widget
         SetBackgroundColor(10, 23, 37);
     }
 
-    void SortNodeList(List<OptimizedNode> Nodes)
+    public void DragAndDropped((IOptimizedNode DroppedNode, OptimizedNode OldRoot, OptimizedNode NewRoot) Data)
     {
-        Nodes.Sort((OptimizedNode n1, OptimizedNode n2) =>
-        {
-            return n1.GlobalIndex.CompareTo(n2.GlobalIndex);
-        });
+        OptimizedNode DroppedNode = (OptimizedNode) Data.DroppedNode;
+        Game.Data.Maps[(int) DroppedNode.Object].ParentID = DroppedNode.Parent == DroppedNode.Root ? 0 : Game.Data.Maps[(int) DroppedNode.Parent.Object].ID;
+        // Works, but probably not desired
+        //Undo.MapOrderChangeUndoAction.Create(Data.OldRoot, (OptimizedNode) Data.NewRoot.Clone());
     }
 
-    public void DragAndDropped(OptimizedNode Node)
+    public OptimizedNode PopulateList()
     {
-        Data.Maps[(int) Node.Object].ParentID = Node.Parent.GlobalIndex;
+        OptimizedNode root = new OptimizedNode("ROOT", null);
+        List<Map> sortedMaps = Data.Maps.Values.ToList();
+        sortedMaps.Sort((a, b) => a.Order.CompareTo(b.Order));
+        PopulateList(sortedMaps, 0).ForEach(c => root.AddChild(c));
+        MapTree.SetRootNode(root);
+        return root;
     }
 
-    public List<OptimizedNode> PopulateList(int PopulateChildrenOfID = 0)
+    private List<OptimizedNode> PopulateList(List<Map> unvisitedMaps, int PopulateChildrenOfID)
     {
         List<OptimizedNode> nodes = new List<OptimizedNode>();
-        foreach (Map map in Data.Maps.Values)
+        for (int i = 0; i < unvisitedMaps.Count; i++)
         {
+            Map map = unvisitedMaps[i];
             if (map.ParentID == PopulateChildrenOfID)
             {
                 OptimizedNode Node = new OptimizedNode(map.ToString(), map.ID);
-                List<OptimizedNode> Children = PopulateList(map.ID);
+                unvisitedMaps.RemoveAt(i);
+                i--;
+                List<OptimizedNode> Children = PopulateList(unvisitedMaps, map.ID);
                 Children.ForEach(n => Node.AddChild(n));
                 Node.SetExpanded(map.Expanded);
                 nodes.Add(Node);
             }
         }
-        SortNodeList(nodes);
-        if (PopulateChildrenOfID == 0) MapTree.SetNodes(nodes);
         return nodes;
     }
 
