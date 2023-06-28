@@ -17,23 +17,8 @@ public class ColorPickerWidget : Widget
 
 	public BaseEvent OnColorChanged;
 
-	List<Color> SliderColors = new List<Color>()
-	{
-		new Color(255, 0, 0),
-		new Color(255, 0, 255),
-		new Color(0, 0, 255),
-		new Color(0, 255, 255),
-		new Color(0, 255, 0),
-		new Color(255, 255, 0),
-		new Color(255, 0, 0),
-	};
-
-	List<(int Position, int Size)> SectionData = new List<(int, int)>();
-
 	bool InsideGradient;
 	bool InsideSlider;
-	int LastCrosshairX;
-	int LastCrosshairY;
 
 	public ColorPickerWidget(IContainer Parent) : base(Parent)
 	{
@@ -124,7 +109,6 @@ public class ColorPickerWidget : Widget
     private int LightnessToY(float lightness, float x)
     {
 		float y = (float) (lightness + 0.5f * x - 1) / (0.5f * x - 1);
-        Console.WriteLine($"y: {Math.Round(y * (Size.Height - 21))}, f: {y} ---->  L*: {XYToLightness(x, y)} x: {x} L: {lightness}");
         return Math.Clamp((int) Math.Round(y * (Size.Height - 21)), 0, Size.Height - 21);
     }
 
