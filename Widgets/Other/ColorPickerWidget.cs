@@ -122,7 +122,7 @@ public class ColorPickerWidget : Widget
             for (int x = 0; x < Size.Width - 20; x++)
             {
                 float saturation = (float) x / (Size.Width - 21);
-                float lightness = XYToLightness(saturation, (float) y / (Size.Height - 21));
+				float lightness = XYToLightness(saturation, (float) y / (Size.Height - 21));
                 Color pixColor = Color.FromHSL(this.Hue, saturation, lightness);
                 Sprites["box"].Bitmap.SetPixel(x, y, pixColor);
             }
