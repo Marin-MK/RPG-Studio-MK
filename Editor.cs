@@ -105,74 +105,76 @@ public static class Editor
 
         //Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
 
-        PopupWindow win = new PopupWindow();
-        win.SetSize(600, 600);
-        win.Center();
+        ColorPickerWindow win = new ColorPickerWindow(Color.WHITE, false);
 
-        var root = new OptimizedNode("Root");
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
-        var four = new OptimizedNode("Four");
-        var five = new OptimizedNode("Five");
-        var six = new OptimizedNode("Six");
-        var seven = new OptimizedNode("Seven");
-        var eight = new OptimizedNode("Eight");
-        var nine = new OptimizedNode("Nine");
-        var ten = new OptimizedNode("Ten");
-        var eleven = new OptimizedNode("Eleven");
-        var twelve = new OptimizedNode("Twelve");
-        var thirteen = new OptimizedNode("Thirteen");
-        var fourteen = new OptimizedNode("Fourteen");
-        var fifteen = new OptimizedNode("Fifteen");
-        var sixteen = new OptimizedNode("Sixteen");
-        var seventeen = new OptimizedNode("Seventeen");
-        var abc = new OptimizedNode("abc");
-        var def = new OptimizedNode("def");
-        var ghi = new OptimizedNode("ghi");
+        //PopupWindow win = new PopupWindow();
+        //win.SetSize(600, 600);
+        //win.Center();
 
-        nine.AddChild(ten);
-        nine.AddChild(eleven);
+        //var root = new OptimizedNode("Root");
+        //var one = new OptimizedNode("One");
+        //var two = new OptimizedNode("Two");
+        //var three = new OptimizedNode("Three");
+        //var four = new OptimizedNode("Four");
+        //var five = new OptimizedNode("Five");
+        //var six = new OptimizedNode("Six");
+        //var seven = new OptimizedNode("Seven");
+        //var eight = new OptimizedNode("Eight");
+        //var nine = new OptimizedNode("Nine");
+        //var ten = new OptimizedNode("Ten");
+        //var eleven = new OptimizedNode("Eleven");
+        //var twelve = new OptimizedNode("Twelve");
+        //var thirteen = new OptimizedNode("Thirteen");
+        //var fourteen = new OptimizedNode("Fourteen");
+        //var fifteen = new OptimizedNode("Fifteen");
+        //var sixteen = new OptimizedNode("Sixteen");
+        //var seventeen = new OptimizedNode("Seventeen");
+        //var abc = new OptimizedNode("abc");
+        //var def = new OptimizedNode("def");
+        //var ghi = new OptimizedNode("ghi");
 
-        seven.AddChild(eight);
-        seven.AddChild(nine);
-        seven.AddChild(twelve);
+        //nine.AddChild(ten);
+        //nine.AddChild(eleven);
 
-        four.AddChild(five);
-        two.AddChild(three);
-        two.AddChild(four);
-        two.AddChild(six);
+        //seven.AddChild(eight);
+        //seven.AddChild(nine);
+        //seven.AddChild(twelve);
 
-        thirteen.AddChild(fourteen);
-        fourteen.AddChild(abc);
-        fourteen.AddChild(def);
-        def.AddChild(ghi);
-        ghi.AddChild(new OptimizedNode("jkl"));
-        def.AddChild(new OptimizedNode("mno"));
+        //four.AddChild(five);
+        //two.AddChild(three);
+        //two.AddChild(four);
+        //two.AddChild(six);
 
-        one.AddChild(two);
-        one.AddChild(seven);
-        one.AddChild(thirteen);
-        one.AddChild(new OptimizedNode("pqr"));
-        one.AddChild(new OptimizedNode("Some rather long text, so that we can properly test the horizontal scrolling capabilities of the system."));
+        //thirteen.AddChild(fourteen);
+        //fourteen.AddChild(abc);
+        //fourteen.AddChild(def);
+        //def.AddChild(ghi);
+        //ghi.AddChild(new OptimizedNode("jkl"));
+        //def.AddChild(new OptimizedNode("mno"));
 
-        sixteen.AddChild(seventeen);
+        //one.AddChild(two);
+        //one.AddChild(seven);
+        //one.AddChild(thirteen);
+        //one.AddChild(new OptimizedNode("pqr"));
+        //one.AddChild(new OptimizedNode("Some rather long text, so that we can properly test the horizontal scrolling capabilities of the system."));
 
-        root.AddChild(one);
-        root.AddChild(new OptimizedNodeSeparator(8));
-        root.AddChild(fifteen);
-        root.AddChild(new OptimizedNodeSeparator(32));
-        root.AddChild(sixteen);
+        //sixteen.AddChild(seventeen);
 
-        OptimizedTreeView tree = new OptimizedTreeView(win);
-        tree.SetDocked(true);
-        tree.SetPadding(40);
-        tree.SetBackgroundColor(10, 23, 37);
-        tree.SetExtraXScrollArea(40);
-        tree.SetExtraYScrollArea(40);
-        tree.SetRootNode(root);
+        //root.AddChild(one);
+        //root.AddChild(new OptimizedNodeSeparator(8));
+        //root.AddChild(fifteen);
+        //root.AddChild(new OptimizedNodeSeparator(32));
+        //root.AddChild(sixteen);
 
-        win.CreateButton("OK", _ => win.Close());
+        //OptimizedTreeView tree = new OptimizedTreeView(win);
+        //tree.SetDocked(true);
+        //tree.SetPadding(40);
+        //tree.SetBackgroundColor(10, 23, 37);
+        //tree.SetExtraXScrollArea(40);
+        //tree.SetExtraYScrollArea(40);
+        //tree.SetRootNode(root);
+
+        //win.CreateButton("OK", _ => win.Close());
 
         //Map Map = MainWindow.MapWidget?.Map;
         //if (Map == null) return;
