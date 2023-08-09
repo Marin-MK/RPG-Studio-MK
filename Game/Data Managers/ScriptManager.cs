@@ -64,7 +64,7 @@ public class ScriptManager : BaseDataManager
         {
             Script s = Data.Scripts[i];
             Match m = Regex.Match(s.Content, "module Essentials[\t\r\n ]*VERSION[\t\r\n ]*=[\t\r\n ]*\"(.*)\"");
-            if (m.Success && !string.IsNullOrEmpty(m.Groups[1].Value)) // v19, v19.1, v20, etc.
+            if (m.Success && !string.IsNullOrEmpty(m.Groups[1].Value)) // v19 onwards
             {
                 Data.EssentialsVersion = m.Groups[1].Value switch
                 {
@@ -80,7 +80,7 @@ public class ScriptManager : BaseDataManager
                 break;
             }
             m = Regex.Match(s.Content, "(ESSENTIALS_VERSION|ESSENTIALSVERSION)[\t\r\n ]*=[\t\r\n ]*\"(.*)\"");
-            if (m.Success && !string.IsNullOrEmpty(m.Groups[2].Value)) // v17, v17.1, v17.2, v18, v18.1
+            if (m.Success && !string.IsNullOrEmpty(m.Groups[2].Value)) // v17 - v18.1
             {
                 Data.EssentialsVersion = m.Groups[2].Value switch
                 {
@@ -96,6 +96,10 @@ public class ScriptManager : BaseDataManager
             }
         }
         #endregion
+        if (Data.EssentialsVersion == EssentialsVersion.Unknown)
+        {
+            Logger.Warn("Detected Essentials version: Unknown. Some version-specific features may be disabled as a result.");
+        }
     }
 
     private void LoadScriptsExternal()

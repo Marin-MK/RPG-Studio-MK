@@ -234,6 +234,7 @@ public class Button : Widget
     {
         base.HoverChanged(e);
         if (this.Enabled) RedrawFiller();
+        if (Mouse.Inside && !e.CursorHandled) Input.SetCursor(CursorType.Arrow);
     }
 
     public override void LeftMousePress(MouseEventArgs e)

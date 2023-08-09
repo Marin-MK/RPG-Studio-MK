@@ -9,11 +9,11 @@ public class MessageBox : PopupWindow
 
     public string Message { get; protected set; }
 
-    protected MultilineLabel label;
-    protected Button Button1;
-    protected Button Button2;
-    protected Button Button3;
-    protected ImageBox Icon;
+    internal MultilineLabel label;
+    internal Button Button1;
+    internal Button Button2;
+    internal Button Button3;
+    internal ImageBox Icon;
 
     public ButtonType ButtonType;
     public new List<string> Buttons;

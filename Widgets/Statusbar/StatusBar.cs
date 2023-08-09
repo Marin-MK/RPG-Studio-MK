@@ -29,9 +29,11 @@ public class StatusBar : Widget
         Sprites["line3"].Y = 3;
         Sprites["text"] = new Sprite(this.Viewport);
         Sprites["text"].Y = 3;
-        Sprites["cursor"] = new Sprite(this.Viewport);
-        Sprites["cursor"].X = 304;
-        Sprites["cursor"].Y = 3;
+        Sprites["freetext"] = new Sprite(this.Viewport);
+        Sprites["freetext"].X = 304;
+        Sprites["freetext"].Y = 3;
+        Sprites["righttext"] = new Sprite(this.Viewport);
+        Sprites["righttext"].Y = 3;
 
         ZoomControl = new ZoomControl(this);
     }
@@ -49,7 +51,7 @@ public class StatusBar : Widget
         Sprites["map"].Bitmap.Lock();
     }
 
-    public void DrawText(string Text)
+    private void DrawText(string Text)
     {
         if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
         Size s = Fonts.Paragraph.TextSize(Text);
@@ -60,7 +62,30 @@ public class StatusBar : Widget
         Sprites["text"].Bitmap.Lock();
     }
 
-    public void RemoveText()
+    public void SetText(string Text)
+    {
+        Sprites["freetext"].Bitmap?.Dispose();
+        Size s = Fonts.Paragraph.TextSize(Text);
+        Sprites["freetext"].Bitmap = new Bitmap(s);
+        Sprites["freetext"].Bitmap.Unlock();
+        Sprites["freetext"].Bitmap.Font = Fonts.Paragraph;
+        Sprites["freetext"].Bitmap.DrawText(Text, Color.WHITE);
+        Sprites["freetext"].Bitmap.Lock();
+    }
+
+    public void SetRightText(string Text)
+    {
+		Sprites["righttext"].Bitmap?.Dispose();
+		Size s = Fonts.Paragraph.TextSize(Text);
+		Sprites["righttext"].Bitmap = new Bitmap(s);
+		Sprites["righttext"].Bitmap.Unlock();
+		Sprites["righttext"].Bitmap.Font = Fonts.Paragraph;
+		Sprites["righttext"].Bitmap.DrawText(Text, Color.WHITE);
+		Sprites["righttext"].Bitmap.Lock();
+		Sprites["righttext"].X = Size.Width - 290 - Sprites["righttext"].Bitmap.Width;
+	}
+
+    private void RemoveText()
     {
         if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
     }
@@ -71,13 +96,12 @@ public class StatusBar : Widget
         Sprites["line2"].X = Size.Width - 290 - ZoomControl.Size.Width - 6;
         Sprites["line3"].X = Size.Width - 284;
         Sprites["text"].X = Size.Width - 276;
+        Sprites["righttext"].X = Size.Width - 290 - (Sprites["righttext"].Bitmap?.Width ?? 0);
         ZoomControl.SetPosition(Size.Width - 290 - ZoomControl.Size.Width, 0);
     }
 
     public void DrawCursor(int X, int Y, int width, int height)
     {
-        if (Sprites["cursor"].Bitmap != null) Sprites["cursor"].Bitmap.Dispose();
-        Font f = Fonts.Paragraph;
         string text = $"{Utilities.Digits(X, 3)}x{Utilities.Digits(Y, 3)}";
         MapViewer mv = Editor.MainWindow.MapWidget.MapViewer;
         if (mv.Map == null) return;
@@ -96,21 +120,21 @@ public class StatusBar : Widget
                 }
             }
         }
-        Size s = f.TextSize(text);
-        Sprites["cursor"].Bitmap = new Bitmap(s);
-        Sprites["cursor"].Bitmap.Font = f;
-        Sprites["cursor"].Bitmap.Unlock();
-        Sprites["cursor"].Bitmap.DrawText(text, Color.WHITE);
-        Sprites["cursor"].Bitmap.Lock();
+        SetText(text);
         DrawnX = X;
         DrawnY = Y;
         DrawnWidth = width;
         DrawnHeight = height;
     }
 
+    public void RemoveRightText()
+    {
+        Sprites["righttext"].Bitmap?.Dispose();
+    }
+
     public void RemoveCursorText()
     {
-        if (Sprites["cursor"].Bitmap != null) Sprites["cursor"].Bitmap.Dispose();
+        Sprites["freetext"].Bitmap?.Dispose();
         DrawnX = -1;
         DrawnY = -1;
     }
@@ -148,6 +172,7 @@ public class StatusBar : Widget
         }
         if (Editor.MainWindow.MapWidget != null)
         {
+            RemoveRightText();
             MapViewer MapViewer = Editor.MainWindow.MapWidget.MapViewer;
             if (MapViewer.Mode == MapMode.Tiles && !MapViewer.MainContainer.Mouse.Inside || !MapViewer.Cursor.Visible)
             {
@@ -155,15 +180,16 @@ public class StatusBar : Widget
             }
             else if (MapViewer.TopLeftX != DrawnX || MapViewer.TopLeftY != DrawnY ||
                      MapViewer.CursorWidth != DrawnWidth || MapViewer.CursorHeight != DrawnHeight ||
-                     Sprites["cursor"].Bitmap == null)
+                     Sprites["freetext"].Bitmap == null)
             {
 
                 DrawCursor(MapViewer.TopLeftX, MapViewer.TopLeftY, MapViewer.CursorWidth, MapViewer.CursorHeight);
             }
         }
-        else
+        else if (Editor.MainWindow.ScriptingWidget == null)
         {
-            RemoveCursorText();
+			RemoveRightText();
+			RemoveCursorText();
         }
     }
 

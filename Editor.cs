@@ -103,9 +103,9 @@ public static class Editor
     {
         if (Program.ReleaseMode) return;
 
-        //Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
+        Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
 
-        ColorPickerWindow win = new ColorPickerWindow(Color.WHITE, false);
+        //ColorPickerWindow win = new ColorPickerWindow(Color.WHITE, false);
 
         //PopupWindow win = new PopupWindow();
         //win.SetSize(600, 600);

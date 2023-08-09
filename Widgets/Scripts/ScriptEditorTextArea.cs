@@ -1,6 +1,8 @@
 ﻿using odl;
+using RPGStudioMK.Utility;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -14,12 +16,12 @@ namespace RPGStudioMK.Widgets;
 
 public class ScriptEditorTextArea : MultilineTextArea
 {
-    public Color LineTextColor { get; protected set; } = new Color(192, 192, 192);
-    public Color LineTextBackgroundColor { get; protected set; } = new Color(10, 23, 37);
-    public Color HighlightColor { get; protected set; } = new Color(128, 128, 128, 96);
-    public int LineTextWidth { get; protected set; } = 56;
-    public int TextXOffset { get; protected set; } = 58;
-    public bool DrawLineNumbers { get; protected set; } = true;
+    public Color LineTextColor { get; protected set; }              = new Color(192, 192, 192);
+    public Color LineTextBackgroundColor { get; protected set; }    = new Color(10, 23, 37);
+    public Color HighlightColor { get; protected set; }             = new Color(128, 128, 128, 96);
+    public int LineTextWidth { get; protected set; }                = 56;
+    public int TextXOffset { get; protected set; }                  = 58;
+    public bool DrawLineNumbers { get; protected set; }             = true;
     public string? SelectedText
     {
         get
@@ -52,16 +54,28 @@ public class ScriptEditorTextArea : MultilineTextArea
         }
     }
 
-    protected List<List<Token>> LineTokens = new List<List<Token>>();
-    protected List<List<(int, Color)>> LineColors = new List<List<(int, Color)>>();
-    protected List<(int, Sprite)> HighlightSprites = new List<(int, Sprite)>();
+    protected List<List<Token>> LineTokens          = new List<List<Token>>();
+    protected List<List<(int, Color)>> LineColors   = new List<List<(int, Color)>>();
+    protected List<(int, Sprite)> HighlightSprites  = new List<(int, Sprite)>();
     protected int OldScrolledY;
     protected int OldLineCount;
-    protected bool RequireScrollAdjustment = false;
-    protected int SelectedLineNumberOrigin = -1;
+    protected bool RequireScrollAdjustment  = false;
+    protected int SelectedLineNumberOrigin  = -1;
     protected int LastLineNumber;
     protected string? LastSelectedText;
-    protected bool HighlightsFromSelection = false;
+    protected bool HighlightsFromSelection  = false;
+    protected bool OccurrenceSelected       = false;
+    protected List<Occurrence> Occurrences;
+    protected int OccurrenceIndex;
+    public bool HasOccurrences              => Occurrences is not null;
+
+    private int dCaretLine      = -1;
+    private int dCaretInLine    = -1;
+    private int dSLLine         = -1;
+    private int dSLInLine       = -1;
+    private int dSRLine         = -1;
+    private int dSRInLine       = -1;
+    private bool dHasSel        = false;
 
     protected new int BottomLineIndex => base.BottomLineIndex + 1;
 
@@ -191,10 +205,20 @@ public class ScriptEditorTextArea : MultilineTextArea
         throw new MethodNotSupportedException(this);
     }
 
-    protected override void CancelSelection(bool Redraw = true)
+    protected override void CancelSelection(bool Redraw = true, bool deleteAllOccurrences = true)
     {
         if (!Interactable) return;
-        if (HasSelection && HighlightsFromSelection) ClearHighlights();
+        if (HasSelection) ClearHighlights();
+        if (deleteAllOccurrences)
+        {
+            OccurrenceSelected = false;
+            OccurrenceIndex = -1;
+            Occurrences = null;
+        }
+        else if (Occurrences is not null && Occurrences.Count > 0 && OccurrenceIndex > -1)
+        {
+            Occurrences.RemoveAt(OccurrenceIndex);
+        }
         base.CancelSelection(Redraw);
     }
 
@@ -474,24 +498,28 @@ public class ScriptEditorTextArea : MultilineTextArea
         Color c = Token.Type switch
         {
             "comment" or "begin_multiline_comment" or "end_multiline_comment" => new Color(96, 160, 96),
-            "number" or "hex" or "regex" or "string" => new Color(255, 128, 128),
-            "assignment" or "symbol" or "empty_method" or "parenthesis_open" or "parenthesis_close" or
+
+            "number" or "hex" or "regex" or "string" or "symbol" => new Color(255, 128, 128),
+
+            "assignment" or "empty_method" or "parenthesis_open" or "parenthesis_close" or
             "logical_operator" or "bitwise_operator" or "relational_operator" or "arithmetic_operator" or
             "range" or "object_access" or "line_end" or "ternary_operator" or "array_initialization" or
             "hash_initialization" or "array_access" or "block" or "argument_list" or "constant_access" => new Color(96, 192, 192),
+
             "class_definition" or "module_definition" or "constant" or "instance_variable" or
             "class_variable" or "global_variable" => new Color(192, 192, 96),
+
             _ => Token.IsKeyword ? new Color(128, 128, 255) : TextColor
         };
         if (LineColors[Line.LineIndex].Count == 0 || !LineColors[Line.LineIndex].Last().Item2.Equals(c))
         {
             LineColors[Line.LineIndex].Add((pos, c));
         }
-        if (Token.Type == "symbol")
-        {
-            // Since the symbol token matches the colon as well as the name, we reset its color ourselves after 1 character, the colon.
-            LineColors[Line.LineIndex].Add((pos + 1, TextColor));
-        }
+        //if (Token.Type == "symbol")
+        //{
+        //    // Since the symbol token matches the colon as well as the name, we reset its color ourselves after 1 character, the colon.
+        //    LineColors[Line.LineIndex].Add((pos + 1, TextColor));
+        //}
     }
 
     protected void RetokenizeAll()
@@ -710,12 +738,12 @@ public class ScriptEditorTextArea : MultilineTextArea
             RequireCaretRepositioning = false;
         }
         if (RequireScrollAdjustment) AdjustLinesForScroll(true);
-        if (TimerPassed("idle"))
+        if (TimerPassed("idle") && SelectedWidget)
         {
             Sprites["caret"].Visible = !Sprites["caret"].Visible;
             ResetTimer("idle");
         }
-        if (TimerPassed("highlight"))
+        if (TimerPassed("highlight") && !OccurrenceSelected)
         {
             HighlightTick();
             ResetTimer("highlight");
@@ -732,6 +760,32 @@ public class ScriptEditorTextArea : MultilineTextArea
             OldScrolledY = Parent.ScrolledY;
             OldLineCount = this.Lines.Count;
         }
+        if (dCaretLine != Caret.Line.LineIndex || dCaretInLine != Caret.IndexInLine ||
+            HasSelection && (dSLLine != SelectionLeft.Line.LineIndex || dSLInLine != SelectionLeft.IndexInLine) ||
+            HasSelection && (dSRLine != SelectionRight.Line.LineIndex || dSRInLine != SelectionRight.IndexInLine) ||
+            dHasSel != HasSelection)
+        {
+            if (HasSelection)
+            {
+                Editor.MainWindow.StatusBar.SetText($"L{Caret.Line.LineIndex + 1}:{Caret.IndexInLine} " +
+                    $"(L{SelectionLeft.Line.LineIndex + 1}:{SelectionLeft.IndexInLine} -> " +
+                    $"L{SelectionRight.Line.LineIndex + 1}:{SelectionRight.IndexInLine}, len: {SelectionRight.Index - SelectionLeft.Index})");
+            }
+            else
+            {
+                Editor.MainWindow.StatusBar.SetText($"L{Caret.Line.LineIndex + 1}:{Caret.IndexInLine}");
+		    }
+        }
+        dCaretLine = Caret.Line.LineIndex;
+        dCaretInLine = Caret.IndexInLine;
+        dHasSel = HasSelection;
+        if (dHasSel)
+        {
+			dSLLine = SelectionLeft.Line.LineIndex;
+			dSLInLine = SelectionLeft.IndexInLine;
+			dSRLine = SelectionRight.Line.LineIndex;
+			dSRInLine = SelectionRight.IndexInLine;
+		}
     }
 
     protected void HighlightTick()
@@ -1052,13 +1106,13 @@ public class ScriptEditorTextArea : MultilineTextArea
         RedrawLineNumbers();
     }
 
-    protected override void ScrollDownPixels(int px)
+    public override void ScrollDownPixels(int px)
     {
         base.ScrollDownPixels(px);
         AdjustLinesForScroll();
     }
 
-    protected override void ScrollUpPixels(int px)
+    public override void ScrollUpPixels(int px)
     {
         base.ScrollUpPixels(px);
         AdjustLinesForScroll();
@@ -1227,7 +1281,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         if (Index < 0) return;
         Count = Math.Min(Text.Length - Index, Count);
         if (Count < 1) return;
-        if (Count == 1 && Index < this.Text.Length)
+        if (Count == 1 && Index < this.Text.Length - 1)
         {
             char c = this.Text[Index];
             char? n = this.Text[Index + 1];
@@ -1394,13 +1448,18 @@ public class ScriptEditorTextArea : MultilineTextArea
         }
     }
 
-    protected override void DeleteSelection()
+	protected override void DeleteSelection()
+	{
+        this.DeleteSelection(true);
+	}
+
+	protected void DeleteSelection(bool deleteAllOccurrences = true)
     {
         if (!Interactable || ReadOnly) return;
         int start = SelectionLeft.Index;
         int end = SelectionRight.Index;
         int count = end - start;
-        CancelSelection();
+        CancelSelection(true, deleteAllOccurrences);
         RemoveText(start, count);
     }
 
@@ -1495,6 +1554,108 @@ public class ScriptEditorTextArea : MultilineTextArea
         if (c == '"') return Caret.Line.Text.Count(lc => lc == '"') % 2 == 0;
         if (c == '\'') return Caret.Line.Text.Count(lc => lc == '\'') % 2 == 0;
         return true;
+    }
+
+    public void SetOccurrences(List<Occurrence> occurrences, int occurrenceIndex)
+    {
+        this.Occurrences = occurrences;
+        this.OccurrenceSelected = true;
+        this.OccurrenceIndex = occurrenceIndex;
+        if (this.Occurrences.Count > 0) SelectOccurrence(this.Occurrences[this.OccurrenceIndex]);
+        ClearHighlights();
+        if (this.Occurrences.Count > 0) SetHighlights(occurrences.Select(o => (o.LineNumber, o.IndexInLine, o.IndexInLine + o.Length)).ToList(), false);
+        else
+        {
+            Editor.MainWindow.StatusBar.SetRightText($"Occurrence (0 / 0)");
+            if (HasSelection) CancelSelection();
+        }
+	}
+
+    public void SelectNextOccurrence()
+    {
+        if (this.Occurrences.Count == 0) return;
+        this.OccurrenceIndex = (this.OccurrenceIndex + 1) % this.Occurrences.Count;
+        SelectOccurrence(Occurrences[OccurrenceIndex]);
+    }
+
+    public void SelectPreviousOccurrence()
+    {
+		if (this.Occurrences.Count == 0) return;
+        this.OccurrenceIndex--;
+        if (this.OccurrenceIndex < 0) this.OccurrenceIndex = this.Occurrences.Count - 1;
+		SelectOccurrence(Occurrences[OccurrenceIndex]);
+	}
+
+    public void ReplaceNextOccurrence(string pattern)
+    {
+        if (this.Occurrences.Count == 0) return;
+        Occurrence occurrence = this.Occurrences[this.OccurrenceIndex];
+        DeleteSelection(false);
+        for (int i = 0; i < occurrence.Captures.Length; i++)
+        {
+            pattern = pattern.Replace($"${i + 1}", occurrence.Captures[i]);
+        }
+        InsertText(Caret.Index, pattern);
+        if (this.OccurrenceIndex >= this.Occurrences.Count) this.OccurrenceIndex = 0;
+		SetOccurrences(this.Occurrences, this.OccurrenceIndex);
+    }
+
+    public void ReplacePreviousOccurrence(string pattern)
+    {
+        if (this.Occurrences.Count == 0) return;
+		Occurrence occurrence = this.Occurrences[this.OccurrenceIndex];
+		DeleteSelection(false);
+		for (int i = 0; i < occurrence.Captures.Length; i++)
+		{
+			pattern = pattern.Replace($"${i}", occurrence.Captures[i]);
+		}
+		InsertText(Caret.Index, pattern);
+        this.OccurrenceIndex--;
+        if (this.OccurrenceIndex < 0) this.OccurrenceIndex = this.Occurrences.Count - 1;
+		SetOccurrences(this.Occurrences, this.OccurrenceIndex);
+	}
+
+    public void ReplaceAllOccurrences(List<Occurrence> Occurrences, string pattern)
+    {
+        if (HasSelection) CancelSelection();
+        ClearHighlights();
+        int idxOffset = 0;
+        for (int i = 0; i < Occurrences.Count; i++)
+        {
+            Occurrence occ = Occurrences[i];
+            int sIdx = Lines[occ.LineNumber].StartIndex + occ.IndexInLine + idxOffset;
+            RemoveText(sIdx, occ.Length);
+            for (int j = 0; j < occ.Captures.Length; j++)
+            {
+                pattern = pattern.Replace($"${j + 1}", occ.Captures[j]);
+            }
+            Caret.Index = sIdx;
+            InsertText(sIdx, pattern);
+            int diff = pattern.Length - occ.Length;
+            idxOffset += diff;
+        }
+        ClearOccurrences();
+    }
+
+    public void SelectOccurrence(Occurrence occurrence)
+    {
+		if (!HasSelection) StartSelection();
+		SelectionStart.Index = Lines[occurrence.LineNumber].StartIndex + occurrence.IndexInLine;
+		SelectionEnd.Index = SelectionStart.Index + occurrence.Length;
+		Caret.Index = SelectionEnd.Index;
+		UpdateCaretPosition(true);
+		RedrawSelectionBoxes();
+		Editor.MainWindow.StatusBar.SetRightText($"Occurrence ({Occurrences.IndexOf(occurrence) + 1} / {Occurrences.Count})");
+	}
+
+    public void ClearOccurrences()
+    {
+        ClearHighlights();
+        this.Occurrences = null;
+        this.OccurrenceIndex = -1;
+        this.OccurrenceSelected = false;
+        HighlightTick();
+        WidgetSelected(new BaseEventArgs());
     }
 
     public class ScriptEditorState : TextAreaState
