@@ -172,6 +172,7 @@ public static partial class Data
             EssentialsVersion.v18 or EssentialsVersion.v18_1 => Version == EssentialsVersion.v18,
             EssentialsVersion.v19 or EssentialsVersion.v19_1 => Version == EssentialsVersion.v19,
             EssentialsVersion.v20 or EssentialsVersion.v20_1 => Version == EssentialsVersion.v20,
+            EssentialsVersion.v21 or EssentialsVersion.v21_1 => Version == EssentialsVersion.v21,
             _ => false
         };
     }
@@ -188,7 +189,9 @@ public enum EssentialsVersion
     v19     = 6,
     v19_1   = 7,
     v20     = 8,
-    v20_1   = 9
+    v20_1   = 9,
+    v21     = 10,
+    v21_1   = 11,
 }
 
 public enum Hardcoded

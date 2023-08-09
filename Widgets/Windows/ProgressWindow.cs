@@ -152,24 +152,31 @@ public struct ProgressSpeed
         if (Seconds >= 86400)
         {
             int days = Seconds / 86400;
-            ETA += $"{days} days ";
+            ETA += $"{days} day";
+            if (days > 1) ETA += "s";
+            ETA += " ";
             Seconds -= days * 86400;
         }
         if (Seconds >= 3600)
         {
             int hours = Seconds / 3600;
-            ETA += $"{hours} hours ";
+            ETA += $"{hours} hour";
+            if (hours > 1) ETA += "s";
+            ETA += " ";
             Seconds -= hours * 3600;
         }
         if (Seconds >= 60)
         {
             int mins = Seconds / 60;
-            ETA += $"{mins} minutes ";
+            ETA += $"{mins} minute";
+            if (mins > 1) ETA += "s";
+            ETA += " ";
             Seconds -= mins * 60;
         }
         if (Seconds > 0)
         {
-            ETA += $"{Seconds} seconds";
+            ETA += $"{Seconds} second";
+            if (Seconds > 1) ETA += "s";
         }
         return ETA;
     }

@@ -41,6 +41,10 @@ public class NewProjectWindow : PopupWindow
         kitbox.SetSize(210, 27);
         List<ListItem> Items = new List<ListItem>();
         Items.Add(new ListItem(
+            "Pokémon Essentials v21.1",
+			"https://www.dropbox.com/scl/fi/kl5a3ibsykfqh97e8sriq/Pokemon-Essentials-v21.1-2023-07-30.zip?rlkey=yy8a4foqc30wthzslh7grhl3r&dl=1"
+		));
+        Items.Add(new ListItem(
             "Pokémon Essentials v20",
             "https://www.dropbox.com/s/s7qe2vn3bpoes5j/Pokemon%20Essentials%20v20%202022-05-19.zip?dl=1"
         ));

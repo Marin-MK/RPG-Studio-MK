@@ -72,6 +72,8 @@ public class ScriptManager : BaseDataManager
                     "19.1" => EssentialsVersion.v19_1,
                     "20" => EssentialsVersion.v20,
                     "20.1" => EssentialsVersion.v20_1,
+                    "21" => EssentialsVersion.v21,
+                    "21.1" => EssentialsVersion.v21_1,
                     _ => EssentialsVersion.Unknown
                 };
                 Logger.WriteLine("Detected Essentials version: {0}", Data.EssentialsVersion);

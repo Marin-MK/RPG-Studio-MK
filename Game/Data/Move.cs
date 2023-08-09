@@ -37,6 +37,7 @@ public class Move : IGameData, ICloneable
         this.Type = (TypeResolver) hash["Type"];
         this.Category = Data.HardcodedData.Assert(hash["Category"], Data.HardcodedData.MoveCategories);
         if (hash.ContainsKey("BaseDamage")) this.BaseDamage = Convert.ToInt32(hash["BaseDamage"]);
+        else if (hash.ContainsKey("Power")) this.BaseDamage = Convert.ToInt32(hash["Power"]);
         this.Accuracy = Convert.ToInt32(hash["Accuracy"]);
         this.TotalPP = Convert.ToInt32(hash["TotalPP"]);
         this.Target = Data.HardcodedData.Assert(hash["Target"], Data.HardcodedData.MoveTargets);
@@ -77,7 +78,8 @@ public class Move : IGameData, ICloneable
         this.Name = Ruby.String.FromPtr(Ruby.GetIVar(Data, "@real_name"));
         this.Type = (TypeResolver) Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@type"));
         this.Category = Game.Data.HardcodedData.Get((int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@category")), Game.Data.HardcodedData.MoveCategories);
-        this.BaseDamage = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@base_damage"));
+        if (Game.Data.IsVersionAtLeast(EssentialsVersion.v21)) this.BaseDamage = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@power"));
+        else this.BaseDamage = (int)Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@base_damage"));
         this.Accuracy = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@accuracy"));
         this.TotalPP = (int) Ruby.Integer.FromPtr(Ruby.GetIVar(Data, "@total_pp"));
         this.Target = Game.Data.HardcodedData.Assert(Ruby.Symbol.FromPtr(Ruby.GetIVar(Data, "@target")), Game.Data.HardcodedData.MoveTargets);
@@ -115,13 +117,14 @@ public class Move : IGameData, ICloneable
         Ruby.SetIVar(e, "@real_name", Ruby.String.ToPtr(this.Name));
         Ruby.SetIVar(e, "@type", Ruby.Symbol.ToPtr(this.Type));
         Ruby.SetIVar(e, "@category", Ruby.Integer.ToPtr(Data.HardcodedData.AssertIndex(this.Category, Data.HardcodedData.MoveCategories)));
-        Ruby.SetIVar(e, "@base_damage", Ruby.Integer.ToPtr(this.BaseDamage));
-        Ruby.SetIVar(e, "@accuracy", Ruby.Integer.ToPtr(this.Accuracy));
+        if (Data.IsVersionAtLeast(EssentialsVersion.v21)) Ruby.SetIVar(e, "@power", Ruby.Integer.ToPtr(this.BaseDamage));
+        else Ruby.SetIVar(e, "@base_damage", Ruby.Integer.ToPtr(this.BaseDamage));
+		Ruby.SetIVar(e, "@accuracy", Ruby.Integer.ToPtr(this.Accuracy));
         Ruby.SetIVar(e, "@total_pp", Ruby.Integer.ToPtr(this.TotalPP));
         Ruby.SetIVar(e, "@target", Ruby.Symbol.ToPtr(this.Target));
         Ruby.SetIVar(e, "@priority", Ruby.Integer.ToPtr(this.Priority));
         Ruby.SetIVar(e, "@function_code", Ruby.String.ToPtr(this.FunctionCode));
-        if (Game.Data.IsVersionAtLeast(EssentialsVersion.v20))
+        if (Data.IsVersionAtLeast(EssentialsVersion.v20))
         {
             nint FlagsArray = Ruby.Array.Create();
             Ruby.SetIVar(e, "@flags", FlagsArray);
