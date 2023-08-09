@@ -9,13 +9,13 @@ namespace RPGStudioMK.Widgets;
 
 public class ScriptingWidget : Widget
 {
-    public List<Script> OpenScripts => TextBox.OpenScripts;
-    public Script? OpenScript => TextBox.OpenScript;
-    public Script? PreviewScript => TextBox.PreviewScript;
-    public List<Script> RecentScripts => TextBox.RecentScripts;
+    public List<Script> OpenScripts => ScriptBox.OpenScripts;
+    public Script? OpenScript => ScriptBox.OpenScript;
+    public Script? PreviewScript => ScriptBox.PreviewScript;
+    public List<Script> RecentScripts => ScriptBox.RecentScripts;
 
     OptimizedTreeView TreeView;
-    ScriptEditorBox TextBox;
+    ScriptEditorBox ScriptBox;
 
     ContextMenu ScriptMenu;
     int ScriptMenuIndex;
@@ -34,11 +34,11 @@ public class ScriptingWidget : Widget
         TreeView.SetNodes(GetNodes());
         TreeView.SetLineHeight(28);
         TreeView.SetFont(Font.Get("Cabin-Medium", 10));
-        TreeView.OnSelectionChanged += e => TextBox.SetScript((Script) ((OptimizedNode) TreeView.SelectedNode).Object, !e.Value); // e.Value: whether the node was double clicked or single-clicked
+        TreeView.OnSelectionChanged += e => ScriptBox.SetScriptBox((Script) ((OptimizedNode) TreeView.SelectedNode).Object, !e.Value); // e.Value: whether the node was double clicked or single-clicked
 
-        TextBox = new ScriptEditorBox(this);
-        TextBox.SetDocked(true);
-        TextBox.SetPadding(300, 0, 0, 0);
+        ScriptBox = new ScriptEditorBox(this);
+        ScriptBox.SetDocked(true);
+        ScriptBox.SetPadding(300, 0, 0, 0);
 
         RegisterShortcuts(new List<Shortcut>()
         {
@@ -47,7 +47,7 @@ public class ScriptingWidget : Widget
         });
 
         var coreNode = (OptimizedNode) TreeView.Root.Children[0];
-        TextBox.SetScript((Script) ((OptimizedNode) coreNode.Children[0]).Object, false);
+        ScriptBox.SetScriptBox((Script) ((OptimizedNode) coreNode.Children[0]).Object, false);
         TreeView.SetSelectedNode(coreNode.Children[0], false);
     }
 
@@ -117,21 +117,21 @@ public class ScriptingWidget : Widget
             ScriptMenu.CanMoveWithUpDown = true;
             if (centered)
                 ScriptMenu.SetPosition(
-                    TextBox.Viewport.X + TextBox.Size.Width / 2 - ScriptMenu.Size.Width / 2,
-                    TextBox.Viewport.Y + TextBox.Size.Height / 2 - ScriptMenu.Size.Height / 2
+                    ScriptBox.Viewport.X + ScriptBox.Size.Width / 2 - ScriptMenu.Size.Width / 2,
+                    ScriptBox.Viewport.Y + ScriptBox.Size.Height / 2 - ScriptMenu.Size.Height / 2
                 );
             else
                 ScriptMenu.SetPosition(
-                    TextBox.Viewport.X + TextBox.Size.Width - ScriptMenu.Size.Width - 8,
-                    TextBox.Viewport.Y + 32
+                    ScriptBox.Viewport.X + ScriptBox.Size.Width - ScriptMenu.Size.Width - 8,
+                    ScriptBox.Viewport.Y + 32
                 );
             ScriptMenu.SetMoveIndex(tabs.Count == 1 ? 0 : 1, true);
             ScriptMenu.OnDisposed += _ =>
             {
                 if (Input.Press(Keycode.ESCAPE) || (!ScriptMenu.Mouse.Inside && ScriptMenu.Mouse.LeftMouseTriggered)) return;
                 Script script = RecentScripts[RecentScripts.Count - ScriptMenu.MoveIndex - 1];
-                if (OpenScripts.Contains(script)) TextBox.SetPivot(OpenScripts.IndexOf(script));
-                TextBox.SetScript(script, this.PreviewScript == script);
+                if (OpenScripts.Contains(script)) ScriptBox.SetPivot(OpenScripts.IndexOf(script));
+                ScriptBox.SetScriptBox(script, false);
             };
             // Auto-close if tab is released within 100ms
             //if (TimerExists("short_tab")) DestroyTimer("short_tab");
@@ -160,7 +160,7 @@ public class ScriptingWidget : Widget
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-        TextBox.UpdatePositionAndSizeIfDocked();
-        TextBox.UpdateSize();
+        ScriptBox.UpdatePositionAndSizeIfDocked();
+        ScriptBox.UpdateSize();
     }
 }

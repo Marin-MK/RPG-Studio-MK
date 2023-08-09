@@ -20,7 +20,7 @@ public class ScriptTabNavigator : Widget
     public int Pivot { get; protected set; }
 
     public BaseEvent OnHoveredScriptChanged;
-    public BaseEvent OnOpenScriptChanged;
+    public ObjectEvent OnOpenScriptChanged;
     public BaseEvent OnOpenScriptChanging;
     public GenericObjectEvent<Script> OnScriptClosing;
     public BaseEvent OnScriptClosed;
@@ -85,11 +85,10 @@ public class ScriptTabNavigator : Widget
 
     public void SetPreviewScript(Script? script, bool open)
     {
-        if (this.PreviewScript != script || open)
+        if (this.PreviewScript != script || open && this.OpenScript != script)
         {
             this.PreviewScript = script;
             if (open) this.OpenScript = this.PreviewScript;
-            else this.OpenScript = null;
             this.UpdateVisibleScripts();
             if (open) MakeRecent(this.OpenScript);
         }
@@ -102,9 +101,9 @@ public class ScriptTabNavigator : Widget
             this.OnOpenScriptChanging?.Invoke(new BaseEventArgs());
             if (!this.OpenScripts.Contains(script) && this.PreviewScript != script) this.OpenScripts.Add(script);
             this.OpenScript = script;
+            this.OnOpenScriptChanged?.Invoke(new ObjectEventArgs(script));
             this.UpdateVisibleScripts();
-            this.OnOpenScriptChanged?.Invoke(new BaseEventArgs());
-            MakeRecent(this.OpenScript);
+            if (this.OpenScript is not null) MakeRecent(this.OpenScript);
         }
     }
 
@@ -125,7 +124,6 @@ public class ScriptTabNavigator : Widget
         if (RecentScripts.Contains(script)) RecentScripts.Remove(script);
         if (this.PreviewScript == script)
         {
-            OnScriptClosed?.Invoke(new BaseEventArgs());
             this.PreviewScript = null;
             if (this.OpenScript == script)
             {
@@ -143,6 +141,7 @@ public class ScriptTabNavigator : Widget
                 //LastOpenScript = null;
             }
             else this.UpdateVisibleScripts();
+            OnScriptClosed?.Invoke(new BaseEventArgs());
             return;
         }
         int index = this.OpenScripts.IndexOf(script);
@@ -150,15 +149,15 @@ public class ScriptTabNavigator : Widget
         if (script == this.OpenScript)
         {
             OnOpenScriptChanging?.Invoke(new BaseEventArgs());
-            if (index > 0) this.OpenScript = this.OpenScripts[index - 1];
-            else if (this.OpenScripts.Count > 0) this.OpenScript = this.OpenScripts[0];
-            else this.OpenScript = null;
+            Script newOpenScript = null;
+            if (index > 0) newOpenScript = this.OpenScripts[index - 1];
+            else if (this.OpenScripts.Count > 0) newOpenScript = this.OpenScripts[0];
             CloseButton.SetVisible(false);
-            OnOpenScriptChanged?.Invoke(new BaseEventArgs());
+            SetOpenScript(newOpenScript);
         }
         SetPivot(this.Pivot);
-        this.UpdateVisibleScripts();
         OnScriptClosed?.Invoke(new BaseEventArgs());
+        UpdateVisibleScripts();
     }
 
     public void SetFont(Font font)

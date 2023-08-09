@@ -55,19 +55,11 @@ public class ScriptEditorBox : Widget
         };
         TabNavigator.OnScriptClosed += _ =>
         {
-            if (this.OpenScript is null)
-            {
-                SetScript(null, false);
-                // No script is open; clear text area
-            }
+            SetScriptBox(this.OpenScript, false);
         };
-        TabNavigator.OnOpenScriptChanged += _ =>
+        TabNavigator.OnOpenScriptChanged += e =>
         {
-            if (this.OpenScript is not null)
-            {
-                // We have a script open
-                SetScript(this.OpenScript, false);
-            }
+            SetScriptBox(this.OpenScript, false);
         };
         TabNavigator.OnMouseDown += e =>
         {
@@ -191,50 +183,49 @@ public class ScriptEditorBox : Widget
         ScrollContainer.VScrollBar.SetScrollStep(TextArea.LineHeight + TextArea.LineMargins);
     }
 
-    public void SetScript(Script? script, bool preview, bool setCaretToEnd = false)
+    Script? LastShownScript;
+
+    public void SetScriptBox(Script? script, bool preview)
     {
         if (script is null)
         {
-            TextArea.SetInteractable(false);
-            TextArea.SetReadOnly(true);
-            TextArea.SetDrawLineNumbers(false);
-            TextArea.SetText("");
+			TextArea.SetInteractable(false);
+			TextArea.SetReadOnly(true);
+			TextArea.SetDrawLineNumbers(false);
+			TextArea.SetText("");
+            LastShownScript = null;
+			return;
+        }
+        if (preview)
+        {
+            if (TabNavigator.IsOpen(script)) TabNavigator.SetOpenScript(script);
+            else TabNavigator.SetPreviewScript(script, true);
         }
         else
         {
-            // Only update textbox if the script changed
-            if (this.OpenScript != script)
+            if (TabNavigator.PreviewScript == script)
             {
-                TextArea.SetInteractable(true);
-                TextArea.SetReadOnly(false);
-                TextArea.SetDrawLineNumbers(true);
-                if (TabNavigator.OpenScript is not null) UpdateScriptState(TabNavigator.OpenScript);
-                TextArea.SetText(script.Content, setCaretToEnd);
-                if (ScriptStates.ContainsKey(script))
-                {
-                    var state = ScriptStates[script];
-                    state.Apply(false);
-                }
-            }
-            // Select the textbox
-            TextArea.WidgetSelected(new BaseEventArgs());
-            // Ensure the tab navigator is up-to-date (e.g. preview to open)
-            if (preview)
-            {
-                if (TabNavigator.IsOpen(script)) TabNavigator.SetOpenScript(script);
-                else TabNavigator.SetPreviewScript(script, true);
-            }
-            else
-            {
-                if (this.PreviewScript == script)
-                {
-                    TabNavigator.SetPreviewScript(null, false);
-                    TabNavigator.SetOpenScript(script, true);
-                }
-                else TabNavigator.SetOpenScript(script, false);
-            }
+                TabNavigator.SetPreviewScript(null, false);
+				TabNavigator.SetOpenScript(script, true);
+			}
+            else TabNavigator.SetOpenScript(script);
         }
-    }
+        if (LastShownScript != script)
+        {
+			TextArea.SetInteractable(true);
+			TextArea.SetReadOnly(false);
+			TextArea.SetDrawLineNumbers(true);
+			if (LastShownScript is not null) UpdateScriptState(LastShownScript);
+			TextArea.SetText(script.Content, false);
+			if (ScriptStates.ContainsKey(script))
+			{
+			    var state = ScriptStates[script];
+			    state.Apply(false);
+			}
+			TextArea.WidgetSelected(new BaseEventArgs());
+		}
+        LastShownScript = script;
+	}
 
     public void SetPivot(int pivot)
     {
