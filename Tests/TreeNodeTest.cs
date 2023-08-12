@@ -8,7 +8,7 @@ using RPGStudioMK.Widgets;
 namespace RPGStudioMK.Tests;
 
 //[DisableTestClass]
-public class OptimizedNodeTest : TestSuite
+public class TreeNodeTest : TestSuite
 {
     [TestMethod]
     void TestNested()
