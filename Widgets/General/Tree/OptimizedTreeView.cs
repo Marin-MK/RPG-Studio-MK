@@ -577,9 +577,9 @@ public class OptimizedTreeView : Widget
         if (Root.Children.Count == 0) return;
         (int RootNodeCount, int RootSepHeight) = Root.GetChildrenHeight(false);
         int MaxWidth = CalculateMaxWidth(Root) + ExtraXScrollArea;
-        BGSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight);
+        BGSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight, Graphics.MaxTextureSize);
         BGSprite.Bitmap.Unlock();
-        TXTSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight);
+        TXTSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight, Graphics.MaxTextureSize);
         TXTSprite.Bitmap.Unlock();
         TXTSprite.Bitmap.Font = this.Font;
         UpdateSize(false); // No need to recalculate width as we just calculated it to find the bitmap width
