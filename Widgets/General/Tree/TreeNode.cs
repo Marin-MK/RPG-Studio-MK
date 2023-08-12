@@ -9,20 +9,20 @@ using System.Threading.Tasks;
 namespace RPGStudioMK.Widgets;
 
 [DebuggerDisplay("{Text}")]
-public class OptimizedNode : IOptimizedNode
+public class TreeNode : ITreeNode
 {
     /// <summary>
     /// The root node of the entire tree.
     /// </summary>
-    public OptimizedNode Root { get; protected set; }
+    public TreeNode Root { get; protected set; }
     /// <summary>
     /// A reference to the parent node of this node.
     /// </summary>
-    public OptimizedNode Parent { get; protected set; }
+    public TreeNode Parent { get; protected set; }
     /// <summary>
     /// A list of child nodes of this node.
     /// </summary>
-    public List<IOptimizedNode> Children { get; protected set; }
+    public List<ITreeNode> Children { get; protected set; }
     /// <summary>
     /// Whether this node has children.
     /// </summary>
@@ -90,7 +90,7 @@ public class OptimizedNode : IOptimizedNode
     /// Called when a node is inserted as a child of this node.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public GenericObjectEvent<IOptimizedNode> OnNodeInserted;
+    public GenericObjectEvent<ITreeNode> OnNodeInserted;
     /// <summary>
     /// Called when the global index of this node changes.
     /// </summary>
@@ -100,23 +100,23 @@ public class OptimizedNode : IOptimizedNode
     /// Called when this node gets a different parent.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public GenericObjectEvent<OptimizedNode> OnParentChanged { get; set; }
+    public GenericObjectEvent<TreeNode> OnParentChanged { get; set; }
     /// <summary>
     /// Called when this node gets a different root.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public GenericObjectEvent<OptimizedNode> OnRootChanged { get; set; }
+    public GenericObjectEvent<TreeNode> OnRootChanged { get; set; }
     /// <summary>
     /// Called when the depth of this node changes.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public GenericObjectEvent<int> OnDepthChanged { get; set; }
 
-    public OptimizedNode(string Text, object Object = null)
+    public TreeNode(string Text, object Object = null)
     {
         this.Text = Text;
         this.Object = Object;
-        Children = new List<IOptimizedNode>();
+        Children = new List<ITreeNode>();
         Root = this;
     }
 
@@ -182,14 +182,14 @@ public class OptimizedNode : IOptimizedNode
     /// Gets the next sibling of this node.
     /// </summary>
     /// <returns>The next sibling node, or null if it doesn't exist.</returns>
-    public OptimizedNode GetNextSibling()
+    public TreeNode GetNextSibling()
     {
         if (Parent == null) return null;
         int CurrentIndex = Parent.Children.IndexOf(this) + 1;
         while (CurrentIndex < Parent.Children.Count)
         {
-            if (Parent.Children[CurrentIndex] is OptimizedNode)
-                return (OptimizedNode) Parent.Children[CurrentIndex];
+            if (Parent.Children[CurrentIndex] is TreeNode)
+                return (TreeNode) Parent.Children[CurrentIndex];
             CurrentIndex++;
         }
         return null;
@@ -199,14 +199,14 @@ public class OptimizedNode : IOptimizedNode
     /// Gets the previous sibling of this node.
     /// </summary>
     /// <returns>The previous sibling node, or null if it doesn't exist.</returns>
-    public OptimizedNode GetPreviousSibling()
+    public TreeNode GetPreviousSibling()
     {
         if (Parent == null) return null;
         int CurrentIndex = Parent.Children.IndexOf(this) - 1;
         while (CurrentIndex >= 0)
         {
-            if (Parent.Children[CurrentIndex] is OptimizedNode)
-                return (OptimizedNode) Parent.Children[CurrentIndex];
+            if (Parent.Children[CurrentIndex] is TreeNode)
+                return (TreeNode) Parent.Children[CurrentIndex];
             CurrentIndex--;
         }
         return null;
@@ -216,15 +216,15 @@ public class OptimizedNode : IOptimizedNode
     /// Returns the very last node of the very last child.
     /// </summary>
     /// <returns>The last node in this node child hierarchy, or itself if no children exist.</returns>
-    public OptimizedNode GetLastNode(bool IgnoreExpansion = true)
+    public TreeNode GetLastNode(bool IgnoreExpansion = true)
     {
         if (HasChildren && (IgnoreExpansion || Expanded))
         {
             int Index = Children.Count - 1;
             while (Index >= 0)
             {
-                if (Children[Index] is OptimizedNode)
-                    return ((OptimizedNode) Children[Index]).GetLastNode(IgnoreExpansion);
+                if (Children[Index] is TreeNode)
+                    return ((TreeNode) Children[Index]).GetLastNode(IgnoreExpansion);
                 Index--;
             }
             return this;
@@ -236,12 +236,12 @@ public class OptimizedNode : IOptimizedNode
     /// Gets the node with its global index one lower than this node's.
     /// </summary>
     /// <returns>The previous node in the hierarchy, or null if it doesn't exist.</returns>
-    public OptimizedNode GetPreviousNode(bool IgnoreExpansion = true)
+    public TreeNode GetPreviousNode(bool IgnoreExpansion = true)
     {
         // The previous node can be found in one of two ways:
         // - If we have a previous sibling, the previous node is the last node of our previous sibling.
         // - If we have no previous siblings, the previous node is our parent.
-        OptimizedNode PreviousSibling = GetPreviousSibling();
+        TreeNode PreviousSibling = GetPreviousSibling();
         if (PreviousSibling != null) return PreviousSibling.GetLastNode(IgnoreExpansion);
         return Parent;
     }
@@ -250,7 +250,7 @@ public class OptimizedNode : IOptimizedNode
     /// Gets the node with its global index one higher than this node's.
     /// </summary>
     /// <returns>The next node in the hierarchy, or null if it doesn't exist.</returns>
-    public OptimizedNode GetNextNode(bool IgnoreExpansion = true)
+    public TreeNode GetNextNode(bool IgnoreExpansion = true)
     {
         // If this node has children, the next node is the first child.
         // If we don't have children, the next node is our next sibling.
@@ -260,15 +260,15 @@ public class OptimizedNode : IOptimizedNode
             int Index = 0;
             while (Index < Children.Count)
             {
-                if (Children[Index] is OptimizedNode)
-                    return (OptimizedNode) Children[Index];
+                if (Children[Index] is TreeNode)
+                    return (TreeNode) Children[Index];
                 Index++;
             }
         }
-        OptimizedNode TestNode = this;
+        TreeNode TestNode = this;
         while (TestNode != null)
         {
-            OptimizedNode NextSibling = TestNode.GetNextSibling();
+            TreeNode NextSibling = TestNode.GetNextSibling();
             if (NextSibling != null) return NextSibling;
             TestNode = TestNode.Parent;
         }
@@ -282,15 +282,15 @@ public class OptimizedNode : IOptimizedNode
     /// <param name="IgnoreSelf">Whether to ignore itself and only check its children.</param>
     /// <param name="IgnoreExpansion">Whether to ignore whether a node is expanded or not.</param>
     /// <returns>The node if it exists, or null otherwise.</returns>
-    public OptimizedNode? GetNode(Func<OptimizedNode, bool> Predicate, bool IgnoreSelf = true, bool IgnoreExpansion = true)
+    public TreeNode? GetNode(Func<TreeNode, bool> Predicate, bool IgnoreSelf = true, bool IgnoreExpansion = true)
     {
         if (!IgnoreSelf && Predicate(this)) return this;
         if (IgnoreExpansion || Expanded)
         {
-            foreach (IOptimizedNode Child in Children)
+            foreach (ITreeNode Child in Children)
             {
-                if (Child is not OptimizedNode) continue;
-                OptimizedNode? Node = ((OptimizedNode) Child).GetNode(Predicate, IgnoreExpansion);
+                if (Child is not TreeNode) continue;
+                TreeNode? Node = ((TreeNode) Child).GetNode(Predicate, IgnoreExpansion);
                 if (Node != null) return Node;
             }
         }
@@ -301,11 +301,11 @@ public class OptimizedNode : IOptimizedNode
     /// Returns a list of this node's ancestors, in order of ascending depth.
     /// </summary>
     /// <returns>A list of nodes.</returns>
-    public List<OptimizedNode> GetAncestors()
+    public List<TreeNode> GetAncestors()
     {
-        if (this == Root) return new List<OptimizedNode>() { };
-        List<OptimizedNode> List = new List<OptimizedNode>();
-        List.AddRange(((IOptimizedNode) Parent).GetAncestors());
+        if (this == Root) return new List<TreeNode>() { };
+        List<TreeNode> List = new List<TreeNode>();
+        List.AddRange(((ITreeNode) Parent).GetAncestors());
         List.Add(Parent);
         return List;
     }
@@ -315,13 +315,13 @@ public class OptimizedNode : IOptimizedNode
     /// </summary>
     /// <param name="Node">The node to search for.</param>
     /// <returns>Whether the node is part of one of this node's children.</returns>
-    public bool Contains(IOptimizedNode Node, bool IgnoreExpansion = true)
+    public bool Contains(ITreeNode Node, bool IgnoreExpansion = true)
     {
         if (IgnoreExpansion || Expanded) return Children.Any(c =>
         {
             if (c == Node) return true;
-            if (c is not OptimizedNode) return false;
-            return ((OptimizedNode) c).Contains(Node, IgnoreExpansion);
+            if (c is not TreeNode) return false;
+            return ((TreeNode) c).Contains(Node, IgnoreExpansion);
         });
         return false;
     }
@@ -337,7 +337,7 @@ public class OptimizedNode : IOptimizedNode
             GlobalIndex += Count;
             OnGlobalIndexChanged?.Invoke(new GenericObjectEventArgs<int>(GlobalIndex, GlobalIndex - Count));
         }
-        Children.FindAll(c => c is OptimizedNode).ForEach(c => ((OptimizedNode) c).ChangeIndexFrom(Index, Count));
+        Children.FindAll(c => c is TreeNode).ForEach(c => ((TreeNode) c).ChangeIndexFrom(Index, Count));
     }
 
     /// <summary>
@@ -345,7 +345,7 @@ public class OptimizedNode : IOptimizedNode
     /// </summary>
     /// <param name="Index">The index to insert the child node at.</param>
     /// <param name="NewNode">The node to insert.</param>
-    public void InsertChild(int Index, IOptimizedNode NewNode)
+    public void InsertChild(int Index, ITreeNode NewNode)
     {
         // Automatically expand a node if a child is added to it, and it did not have any children before.
         if (!HasChildren) Expanded = true;
@@ -353,21 +353,21 @@ public class OptimizedNode : IOptimizedNode
         if (Index < Children.Count)
         {
             // Increment all nodes following this node by the size of the node we're adding.
-            IOptimizedNode OldNode = Children[Index];
+            ITreeNode OldNode = Children[Index];
             // Record the old global index of the node in this position; this is where we will start
             // with setting the global index of the new node.
             int OldIndex = -1;
-            if (OldNode is OptimizedNode) OldIndex = ((OptimizedNode) OldNode).GlobalIndex;
+            if (OldNode is TreeNode) OldIndex = ((TreeNode) OldNode).GlobalIndex;
             else
             {
                 // We're inserting at a non-node object, so we find the previous node and use its global index instead.
                 int CurrentIndex = Index - 1;
                 while (CurrentIndex >= 0)
                 {
-                    if (Children[CurrentIndex] is OptimizedNode)
+                    if (Children[CurrentIndex] is TreeNode)
                     {
                         // Plus 1 because we don't want to change our previous sibling's global index.
-                        OldIndex = ((OptimizedNode) Children[CurrentIndex]).GetLastNode().GlobalIndex + 1;
+                        OldIndex = ((TreeNode) Children[CurrentIndex]).GetLastNode().GlobalIndex + 1;
                         break;
                     }
                     CurrentIndex--;
@@ -380,13 +380,13 @@ public class OptimizedNode : IOptimizedNode
                 }
             }
             // The size of the new node.
-            int Size = NewNode is OptimizedNode ? ((OptimizedNode) NewNode).GetTotalNodeCount() : 0;
+            int Size = NewNode is TreeNode ? ((TreeNode) NewNode).GetTotalNodeCount() : 0;
             // Add to the global indices of all nodes following the new node based on the size of the new node.
             Root.ChangeIndexFrom(OldIndex, Size);
             // Insert the new node.
             Children.Insert(Index, NewNode);
             // Set the proper global indices for this new node.
-            if (NewNode is OptimizedNode) ((OptimizedNode) NewNode).SetIndicesSequentially(OldIndex);
+            if (NewNode is TreeNode) ((TreeNode) NewNode).SetIndicesSequentially(OldIndex);
         }
         else
         {
@@ -394,15 +394,15 @@ public class OptimizedNode : IOptimizedNode
             // There is no node we're replacing, so we don't know the new global index yet.
             // To find this index, we find the previous node right above our current node, although this may
             // be a child buried deep into the previous sibling.
-            OptimizedNode LastNode = null;
+            TreeNode LastNode = null;
             if (HasChildren)
             {
                 int CurrentIndex = Children.Count - 1;
                 while (CurrentIndex >= 0)
                 {
-                    if (Children[CurrentIndex] is OptimizedNode)
+                    if (Children[CurrentIndex] is TreeNode)
                     {
-                        LastNode = ((OptimizedNode) Children[CurrentIndex]).GetLastNode();
+                        LastNode = ((TreeNode) Children[CurrentIndex]).GetLastNode();
                         break;
                     }
                     CurrentIndex--;
@@ -417,18 +417,18 @@ public class OptimizedNode : IOptimizedNode
             // The new global index of the node is the global index of the last node prior to the new node + 1.
             int NewIndex = LastNode.GlobalIndex + 1;
             // The size of the new node.
-            int Size = NewNode is OptimizedNode ? ((OptimizedNode) NewNode).GetTotalNodeCount() : 0;
+            int Size = NewNode is TreeNode ? ((TreeNode) NewNode).GetTotalNodeCount() : 0;
             // Add to the global indices of all nodes following the new node based on the size of the new node.
             Root.ChangeIndexFrom(NewIndex, Size);
             // Add the new node.
             Children.Add(NewNode);
             // Set the proper global indices for this new node.
-            if (NewNode is OptimizedNode) ((OptimizedNode) NewNode).SetIndicesSequentially(NewIndex);
+            if (NewNode is TreeNode) ((TreeNode) NewNode).SetIndicesSequentially(NewIndex);
         }
         NewNode.SetRoot(Root);
         NewNode.SetParent(this);
         NewNode.SetDepth(Depth + 1);
-        OnNodeInserted?.Invoke(new GenericObjectEventArgs<IOptimizedNode>(NewNode));
+        OnNodeInserted?.Invoke(new GenericObjectEventArgs<ITreeNode>(NewNode));
     }
 
     /// <summary>
@@ -465,24 +465,24 @@ public class OptimizedNode : IOptimizedNode
     /// Recursively sets the root of this node and all its children to the specified node.
     /// </summary>
     /// <param name="Root">The new root node of this node and all its children.</param>
-    public void SetRoot(OptimizedNode Root)
+    public void SetRoot(TreeNode Root)
     {
         if (this.Root != Root)
         {
-            OptimizedNode OldRoot = this.Root;
+            TreeNode OldRoot = this.Root;
             this.Root = Root;
-            OnRootChanged?.Invoke(new GenericObjectEventArgs<OptimizedNode>(this.Root, OldRoot));
+            OnRootChanged?.Invoke(new GenericObjectEventArgs<TreeNode>(this.Root, OldRoot));
         }
         Children.ForEach(c => c.SetRoot(Root));
     }
 
-    public void SetParent(OptimizedNode Parent)
+    public void SetParent(TreeNode Parent)
     {
         if (this.Parent != Parent)
         {
-            OptimizedNode OldParent = this.Parent;
+            TreeNode OldParent = this.Parent;
             this.Parent = Parent;
-            OnParentChanged?.Invoke(new GenericObjectEventArgs<OptimizedNode>(this.Parent, OldParent));
+            OnParentChanged?.Invoke(new GenericObjectEventArgs<TreeNode>(this.Parent, OldParent));
         }
     }
 
@@ -546,7 +546,7 @@ public class OptimizedNode : IOptimizedNode
     /// Adds a child node as the last in the list of children.
     /// </summary>
     /// <param name="NewNode">The node to add.</param>
-    public void AddChild(IOptimizedNode NewNode)
+    public void AddChild(ITreeNode NewNode)
     {
         InsertChild(Children.Count, NewNode);
     }
@@ -559,7 +559,7 @@ public class OptimizedNode : IOptimizedNode
     public int GetTotalNodeCount(bool IgnoreExpansion = true)
     {
         int Count = 1;
-        if (IgnoreExpansion || Expanded) Count += Children.Sum(c => c is OptimizedNode ? ((OptimizedNode) c).GetTotalNodeCount(IgnoreExpansion) : 0);
+        if (IgnoreExpansion || Expanded) Count += Children.Sum(c => c is TreeNode ? ((TreeNode) c).GetTotalNodeCount(IgnoreExpansion) : 0);
         return Count;
     }
 
@@ -573,40 +573,40 @@ public class OptimizedNode : IOptimizedNode
         int SeparatorHeight = 0;
         if (IgnoreExpansion || Expanded) Children.ForEach(c =>
         {
-            if (c is OptimizedNode)
+            if (c is TreeNode)
             {
                 NodeCount++;
-                (int NodeCount, int SepHeight) result = ((OptimizedNode) c).GetChildrenHeight(IgnoreExpansion);
+                (int NodeCount, int SepHeight) result = ((TreeNode) c).GetChildrenHeight(IgnoreExpansion);
                 NodeCount += result.NodeCount;
                 SeparatorHeight += result.SepHeight;
             }
-            else if (c is OptimizedNodeSeparator)
+            else if (c is TreeNodeSeparator)
             {
-                SeparatorHeight += ((OptimizedNodeSeparator) c).Height;
+                SeparatorHeight += ((TreeNodeSeparator) c).Height;
             }
         });
         return (NodeCount, SeparatorHeight);
     }
 
-    public (int NodeCount, int SeparatorHeight) GetChildrenHeightUntil(IOptimizedNode NodeToStopAt, bool IgnoreExpansion = true)
+    public (int NodeCount, int SeparatorHeight) GetChildrenHeightUntil(ITreeNode NodeToStopAt, bool IgnoreExpansion = true)
     {
         int NodeCount = 0;
         int SeparatorHeight = 0;
         if (IgnoreExpansion || Expanded)
         {
-            foreach (IOptimizedNode c in Children)
+            foreach (ITreeNode c in Children)
             {
                 if (c == NodeToStopAt) return (NodeCount, SeparatorHeight);
-                if (c is OptimizedNode)
+                if (c is TreeNode)
                 {
                     NodeCount++;
-                    (int NodeCount, int SepHeight) result = ((OptimizedNode) c).GetChildrenHeightUntil(NodeToStopAt, IgnoreExpansion);
+                    (int NodeCount, int SepHeight) result = ((TreeNode) c).GetChildrenHeightUntil(NodeToStopAt, IgnoreExpansion);
                     NodeCount += result.NodeCount;
                     SeparatorHeight += result.SepHeight;
                 }
-                else if (c is OptimizedNodeSeparator)
+                else if (c is TreeNodeSeparator)
                 {
-                    SeparatorHeight += ((OptimizedNodeSeparator) c).Height;
+                    SeparatorHeight += ((TreeNodeSeparator) c).Height;
                 }
             }
         }
@@ -628,23 +628,23 @@ public class OptimizedNode : IOptimizedNode
             OnGlobalIndexChanged?.Invoke(new GenericObjectEventArgs<int>(GlobalIndex, OldIndex));
         }
         CurrentIndex++;
-        foreach (IOptimizedNode Child in Children)
+        foreach (ITreeNode Child in Children)
         {
-            if (Child is not OptimizedNode) continue;
-            CurrentIndex = ((OptimizedNode) Child).SetIndicesSequentially(CurrentIndex);
+            if (Child is not TreeNode) continue;
+            CurrentIndex = ((TreeNode) Child).SetIndicesSequentially(CurrentIndex);
         }
         return CurrentIndex;
     }
 
-    public List<IOptimizedNode> GetAllChildren(bool IgnoreExpansion = true)
+    public List<ITreeNode> GetAllChildren(bool IgnoreExpansion = true)
     {
-        List<IOptimizedNode> List = new List<IOptimizedNode>();
+        List<ITreeNode> List = new List<ITreeNode>();
         if (IgnoreExpansion || this.Expanded)
             Children.ForEach(c =>
             {
                 List.Add(c);
-                if (c is OptimizedNode && (IgnoreExpansion || ((OptimizedNode) c).Expanded))
-                    List.AddRange(((OptimizedNode) c).GetAllChildren(IgnoreExpansion));
+                if (c is TreeNode && (IgnoreExpansion || ((TreeNode) c).Expanded))
+                    List.AddRange(((TreeNode) c).GetAllChildren(IgnoreExpansion));
             });
         return List;
     }
@@ -662,9 +662,9 @@ public class OptimizedNode : IOptimizedNode
     /// Makes a deep copy of the node and all its children.
     /// </summary>
     /// <returns>The copied node.</returns>
-    public IOptimizedNode Clone(OptimizedNode Root = null, OptimizedNode Parent = null)
+    public ITreeNode Clone(TreeNode Root = null, TreeNode Parent = null)
     {
-        OptimizedNode n = new OptimizedNode(this.Text, this.Object);
+        TreeNode n = new TreeNode(this.Text, this.Object);
         if (Root is null)
         {
             Root = n;

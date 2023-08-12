@@ -8,17 +8,17 @@ using System.Threading.Tasks;
 namespace RPGStudioMK.Widgets;
 
 [DebuggerDisplay("==========")]
-public class OptimizedNodeSeparator : IOptimizedNode
+public class TreeNodeSeparator : ITreeNode
 {
-    public OptimizedNode Root { get; protected set; }
-    public OptimizedNode Parent { get; protected set; }
+    public TreeNode Root { get; protected set; }
+    public TreeNode Parent { get; protected set; }
     public int Depth { get; protected set; }
     public int Height { get; protected set; }
     public bool Selectable { get; protected set; } = true;
     public bool Draggable { get; protected set; } = false;
     public bool CanDragOver { get; protected set; } = false;
 
-    public OptimizedNodeSeparator(int Height = 24)
+    public TreeNodeSeparator(int Height = 24)
     {
         this.Height = Height;
     }
@@ -27,35 +27,35 @@ public class OptimizedNodeSeparator : IOptimizedNode
     /// Called when this node gets a different parent.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public GenericObjectEvent<OptimizedNode> OnParentChanged { get; }
+    public GenericObjectEvent<TreeNode> OnParentChanged { get; }
     /// <summary>
     /// Called when this node gets a different root.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public GenericObjectEvent<OptimizedNode> OnRootChanged { get; }
+    public GenericObjectEvent<TreeNode> OnRootChanged { get; }
     /// <summary>
     /// Called when the depth of this node changes.
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public GenericObjectEvent<int> OnDepthChanged { get; }
 
-    public void SetRoot(OptimizedNode Root)
+    public void SetRoot(TreeNode Root)
     {
         if (this.Root != Root)
         {
-            OptimizedNode OldRoot = this.Root;
+            TreeNode OldRoot = this.Root;
             this.Root = Root;
-            OnRootChanged?.Invoke(new GenericObjectEventArgs<OptimizedNode>(this.Root, OldRoot));
+            OnRootChanged?.Invoke(new GenericObjectEventArgs<TreeNode>(this.Root, OldRoot));
         }
     }
 
-    public void SetParent(OptimizedNode Parent)
+    public void SetParent(TreeNode Parent)
     {
         if (this.Parent != Parent)
         {
-            OptimizedNode OldParent = this.Parent;
+            TreeNode OldParent = this.Parent;
             this.Parent = Parent;
-            OnParentChanged?.Invoke(new GenericObjectEventArgs<OptimizedNode>(this.Parent, OldParent));
+            OnParentChanged?.Invoke(new GenericObjectEventArgs<TreeNode>(this.Parent, OldParent));
         }
     }
 
@@ -110,9 +110,9 @@ public class OptimizedNodeSeparator : IOptimizedNode
     /// Returns a list of this node's ancestors, in order of ascending depth.
     /// </summary>
     /// <returns>A list of nodes.</returns>
-    public List<OptimizedNode> GetAncestors()
+    public List<TreeNode> GetAncestors()
     {
-        List<OptimizedNode> List = new List<OptimizedNode>();
+        List<TreeNode> List = new List<TreeNode>();
         List.AddRange(Parent.GetAncestors());
         List.Add(Parent);
         return List;
@@ -122,10 +122,10 @@ public class OptimizedNodeSeparator : IOptimizedNode
     /// Makes a deep copy of the node.
     /// </summary>
     /// <returns>The copied new.</returns>
-    public IOptimizedNode Clone(OptimizedNode Root = null, OptimizedNode Parent = null)
+    public ITreeNode Clone(TreeNode Root = null, TreeNode Parent = null)
     {
         if (Root is null) throw new ArgumentException($"Node separators cannot be root nodes.");
-        OptimizedNodeSeparator n = new OptimizedNodeSeparator(this.Height);
+        TreeNodeSeparator n = new TreeNodeSeparator(this.Height);
         n.Root = Root;
         n.Parent = Parent;
         n.Depth = this.Depth;

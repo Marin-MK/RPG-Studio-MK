@@ -13,16 +13,16 @@ public class MapOrderChangeUndoAction : BaseUndoAction
     public override string Title => $"Map order change";
     public override string Description => "Describes a change in the order of the map list, e.g. a map changed its parent-child relation.";
 
-    public OptimizedNode OldRoot;
-    public OptimizedNode NewRoot;
+    public TreeNode OldRoot;
+    public TreeNode NewRoot;
 
-    public MapOrderChangeUndoAction(OptimizedNode OldRoot, OptimizedNode NewRoot)
+    public MapOrderChangeUndoAction(TreeNode OldRoot, TreeNode NewRoot)
     {
         this.OldRoot = OldRoot;
         this.NewRoot = NewRoot;
     }
 
-    public static void Create(OptimizedNode OldRoot, OptimizedNode NewRoot)
+    public static void Create(TreeNode OldRoot, TreeNode NewRoot)
     {
         var c = new MapOrderChangeUndoAction(OldRoot, NewRoot);
         c.Register();
@@ -36,7 +36,7 @@ public class MapOrderChangeUndoAction : BaseUndoAction
             return false;
         }
         // TODO
-        OptimizedTreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.MapTree;
+        TreeView mapview = Editor.MainWindow.MapWidget.MapSelectPanel.MapTree;
         TriggerLogical(IsRedo);
         /*TreeNode SelectedNode = null;
         for (int i = 0; i < mapview.Nodes.Count; i++)
@@ -58,20 +58,20 @@ public class MapOrderChangeUndoAction : BaseUndoAction
         }
         if (SelectedNode == null) throw new Exception("Could not find selected node.");*/
         Editor.MainWindow.MapWidget.SetHint($"{(IsRedo ? "Redid" : "Undid")} map list order changes");
-        int mapID = (int) ((OptimizedNode) mapview.SelectedNode).Object;
-        OptimizedNode root = IsRedo ? NewRoot : OldRoot;
-        OptimizedNode? newSelectedNode = root.GetNode(n => n.Object is int && (int) n.Object == mapID);
+        int mapID = (int) ((TreeNode) mapview.SelectedNode).Object;
+        TreeNode root = IsRedo ? NewRoot : OldRoot;
+        TreeNode? newSelectedNode = root.GetNode(n => n.Object is int && (int) n.Object == mapID);
         mapview.SetRootNode(root, newSelectedNode);
         return true;
     }
 
     public override void TriggerLogical(bool IsRedo)
     {
-        OptimizedNode root = IsRedo ? NewRoot : OldRoot;
+        TreeNode root = IsRedo ? NewRoot : OldRoot;
         root.GetAllChildren(true).ForEach(c =>
         {
-            if (c is not OptimizedNode) return;
-            OptimizedNode n = (OptimizedNode) c;
+            if (c is not TreeNode) return;
+            TreeNode n = (TreeNode) c;
             int mapID = (int) n.Object;
             Data.Maps[mapID].Order = n.GlobalIndex;
             Data.Maps[mapID].ParentID = n.Parent == n.Root ? 0 : (int) n.Parent.Object;

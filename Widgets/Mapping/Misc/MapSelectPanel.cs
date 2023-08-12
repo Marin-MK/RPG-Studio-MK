@@ -9,9 +9,9 @@ namespace RPGStudioMK.Widgets;
 
 public class MapSelectPanel : Widget
 {
-    public OptimizedTreeView MapTree;
-    public Map? SelectedMap => MapTree.SelectedNode is OptimizedNode ? Data.Maps[(int) ((OptimizedNode) MapTree.SelectedNode).Object] : null;
-    public Map? HoveredMap => MapTree.HoveringNode is OptimizedNode ? Data.Maps[(int) ((OptimizedNode) MapTree.HoveringNode).Object] : null;
+    public TreeView MapTree;
+    public Map? SelectedMap => MapTree.SelectedNode is TreeNode ? Data.Maps[(int) ((TreeNode) MapTree.SelectedNode).Object] : null;
+    public Map? HoveredMap => MapTree.HoveringNode is TreeNode ? Data.Maps[(int) ((TreeNode) MapTree.HoveringNode).Object] : null;
 
     Stopwatch Stopwatch = new Stopwatch();
 
@@ -32,7 +32,7 @@ public class MapSelectPanel : Widget
 
         Sprites["block"] = new Sprite(this.Viewport, new SolidBitmap(11, 11, new Color(64, 104, 146)));
 
-        MapTree = new OptimizedTreeView(this);
+        MapTree = new TreeView(this);
         MapTree.SetDocked(true);
         MapTree.SetPadding(0, 35, 0, 0);
         MapTree.SetHResizeToFill(false);
@@ -51,15 +51,15 @@ public class MapSelectPanel : Widget
             }
         };
         MapTree.OnDragAndDropped += e => DragAndDropped(e.Object);
-        MapTree.OnNodeExpansionChanged += delegate (GenericObjectEventArgs<OptimizedNode> e)
+        MapTree.OnNodeExpansionChanged += delegate (GenericObjectEventArgs<TreeNode> e)
         {
-            OptimizedNode Node = e.Object;
+            TreeNode Node = e.Object;
             int mapid = (int) Node.Object;
             Data.Maps[mapid].Expanded = Node.Expanded;
             // Works, but probably not desired
             //Undo.NodeCollapseChangeUndoAction.Create(mapid, Node.Expanded, !Node.Expanded);
         };
-        MapTree.OnNodeGlobalIndexChanged += delegate (GenericObjectEventArgs<OptimizedNode> e)
+        MapTree.OnNodeGlobalIndexChanged += delegate (GenericObjectEventArgs<TreeNode> e)
         {
             Data.Maps[(int) e.Object.Object].Order = e.Object.GlobalIndex;
         };
@@ -108,11 +108,11 @@ public class MapSelectPanel : Widget
             new MenuSeparator(),
             new MenuItem("Expand All")
             {
-                IsClickable = e => e.Value = HoveredMap != null && MapTree.HoveringNode is OptimizedNode && ((OptimizedNode) MapTree.HoveringNode).HasChildren
+                IsClickable = e => e.Value = HoveredMap != null && MapTree.HoveringNode is TreeNode && ((TreeNode) MapTree.HoveringNode).HasChildren
             },
             new MenuItem("Collapse All")
             {
-                IsClickable = e => e.Value = HoveredMap != null && MapTree.HoveringNode is OptimizedNode && ((OptimizedNode) MapTree.HoveringNode).HasChildren
+                IsClickable = e => e.Value = HoveredMap != null && MapTree.HoveringNode is TreeNode && ((TreeNode) MapTree.HoveringNode).HasChildren
             },
             new MenuSeparator(),
             new MenuItem("Delete")
@@ -126,17 +126,17 @@ public class MapSelectPanel : Widget
         SetBackgroundColor(10, 23, 37);
     }
 
-    public void DragAndDropped((IOptimizedNode DroppedNode, OptimizedNode OldRoot, OptimizedNode NewRoot) Data)
+    public void DragAndDropped((ITreeNode DroppedNode, TreeNode OldRoot, TreeNode NewRoot) Data)
     {
-        OptimizedNode DroppedNode = (OptimizedNode) Data.DroppedNode;
+        TreeNode DroppedNode = (TreeNode) Data.DroppedNode;
         Game.Data.Maps[(int) DroppedNode.Object].ParentID = DroppedNode.Parent == DroppedNode.Root ? 0 : Game.Data.Maps[(int) DroppedNode.Parent.Object].ID;
         // Works, but probably not desired
         //Undo.MapOrderChangeUndoAction.Create(Data.OldRoot, (OptimizedNode) Data.NewRoot.Clone());
     }
 
-    public OptimizedNode PopulateList()
+    public TreeNode PopulateList()
     {
-        OptimizedNode root = new OptimizedNode("ROOT", null);
+        TreeNode root = new TreeNode("ROOT", null);
         List<Map> sortedMaps = Data.Maps.Values.ToList();
         sortedMaps.Sort((a, b) => a.Order.CompareTo(b.Order));
         PopulateList(sortedMaps, 0).ForEach(c => root.AddChild(c));
@@ -144,18 +144,18 @@ public class MapSelectPanel : Widget
         return root;
     }
 
-    private List<OptimizedNode> PopulateList(List<Map> unvisitedMaps, int PopulateChildrenOfID)
+    private List<TreeNode> PopulateList(List<Map> unvisitedMaps, int PopulateChildrenOfID)
     {
-        List<OptimizedNode> nodes = new List<OptimizedNode>();
+        List<TreeNode> nodes = new List<TreeNode>();
         for (int i = 0; i < unvisitedMaps.Count; i++)
         {
             Map map = unvisitedMaps[i];
             if (map.ParentID == PopulateChildrenOfID)
             {
-                OptimizedNode Node = new OptimizedNode(map.ToString(), map.ID);
+                TreeNode Node = new TreeNode(map.ToString(), map.ID);
                 unvisitedMaps.RemoveAt(i);
                 i--;
-                List<OptimizedNode> Children = PopulateList(unvisitedMaps, map.ID);
+                List<TreeNode> Children = PopulateList(unvisitedMaps, map.ID);
                 Children.ForEach(n => Node.AddChild(n));
                 Node.SetExpanded(map.Expanded);
                 nodes.Add(Node);
@@ -170,7 +170,7 @@ public class MapSelectPanel : Widget
         // No need to update the selected node if we already have the desired map active
         if (SelectedMap != null && SelectedMap == Map) return;
         int MapID = Map?.ID ?? -1;
-        OptimizedNode Node = MapTree.Root.GetNode(n => (int) n.Object == MapID, true, true);
+        TreeNode Node = MapTree.Root.GetNode(n => (int) n.Object == MapID, true, true);
         MapTree.SetSelectedNode(Node, false);
     }
 
@@ -208,19 +208,19 @@ public class MapSelectPanel : Widget
                     Layer Layer = new Layer($"Layer {z + 1}", mpw.Map.Width, mpw.Map.Height);
                     mpw.Map.Layers.Add(Layer);
                 }
-                InsertMap((OptimizedNode) MapTree.HoveringNode, mpw.Map);
+                InsertMap((TreeNode) MapTree.HoveringNode, mpw.Map);
             }
         };
     }
 
-    private OptimizedNode InsertMap(OptimizedNode Parent, Map Map)
+    private TreeNode InsertMap(TreeNode Parent, Map Map)
     {
-        OptimizedNode NewNode = new OptimizedNode(Map.Name, Map.ID);
+        TreeNode NewNode = new TreeNode(Map.Name, Map.ID);
         MapTree.InsertNode(Parent, null, NewNode);
         Map.Order = NewNode.GlobalIndex;
         Map.ParentID = (int) Parent.Object;
         Data.Maps.Add(Map.ID, Map);
-        NewNode.OnGlobalIndexChanged += _ => MapTree.OnNodeExpansionChanged.Invoke(new GenericObjectEventArgs<OptimizedNode>(NewNode));
+        NewNode.OnGlobalIndexChanged += _ => MapTree.OnNodeExpansionChanged.Invoke(new GenericObjectEventArgs<TreeNode>(NewNode));
         MapTree.SetSelectedNode(NewNode, false);
         // TODO: undo/redo
         return NewNode;
@@ -237,10 +237,10 @@ public class MapSelectPanel : Widget
             if (mpw.UpdateMapViewer)
             {
                 Data.Maps[Map.ID] = mpw.Map;
-                if (((OptimizedNode) MapTree.HoveringNode).Text != mpw.Map.Name)
+                if (((TreeNode) MapTree.HoveringNode).Text != mpw.Map.Name)
                 {
-                    ((OptimizedNode) MapTree.HoveringNode).SetText(mpw.Map.Name);
-                    MapTree.RedrawNodeText((OptimizedNode) MapTree.HoveringNode);
+                    ((TreeNode) MapTree.HoveringNode).SetText(mpw.Map.Name);
+                    MapTree.RedrawNodeText((TreeNode) MapTree.HoveringNode);
                 }
                 Editor.UnsavedChanges = mpw.UnsavedChanges;
                 if (activemap) Editor.MainWindow.MapWidget.SetMap(mpw.Map); // Redraw the map if it's currently active
@@ -277,12 +277,12 @@ public class MapSelectPanel : Widget
     
     private void CopyMap(bool WithChildren)
     {
-        if (MapTree.HoveringNode is not OptimizedNode) return;
+        if (MapTree.HoveringNode is not TreeNode) return;
         List<Map> Maps = new List<Map>() { HoveredMap };
-        if (WithChildren) ((OptimizedNode) MapTree.HoveringNode).GetAllChildren(true).ForEach(n =>
+        if (WithChildren) ((TreeNode) MapTree.HoveringNode).GetAllChildren(true).ForEach(n =>
         {
-            if (n is not OptimizedNode) return;
-            Map m = Data.Maps[(int) ((OptimizedNode) n).Object];
+            if (n is not TreeNode) return;
+            Map m = Data.Maps[(int) ((TreeNode) n).Object];
             Maps.Add(m);
         });
         Utilities.SetClipboard(Maps, BinaryData.MAPS);
@@ -293,16 +293,16 @@ public class MapSelectPanel : Widget
         if (!Utilities.IsClipboardValidBinary(BinaryData.MAPS)) return;
         PrintIndices();
         List<Map> maps = Utilities.GetClipboard<List<Map>>();
-        Dictionary<int, OptimizedNode> MapHash = new Dictionary<int, OptimizedNode>();
+        Dictionary<int, TreeNode> MapHash = new Dictionary<int, TreeNode>();
         // The list is maps is ordered from root to child, meaning if we encounter a node with a parent, that parent must already have been encountered or the data is invalid.
         for (int i = 0; i < maps.Count; i++)
         {
-            OptimizedNode ParentNode = null;
-            if (!MapHash.ContainsKey(maps[i].ParentID)) ParentNode = (OptimizedNode) MapTree.HoveringNode;
+            TreeNode ParentNode = null;
+            if (!MapHash.ContainsKey(maps[i].ParentID)) ParentNode = (TreeNode) MapTree.HoveringNode;
             else ParentNode = MapHash[maps[i].ParentID];
             int id = maps[i].ID;
             maps[i].ID = Editor.GetFreeMapID();
-            OptimizedNode NewNode = InsertMap(ParentNode, maps[i]);
+            TreeNode NewNode = InsertMap(ParentNode, maps[i]);
             MapHash.Add(id, NewNode);
         }
         PrintIndices();
@@ -313,8 +313,8 @@ public class MapSelectPanel : Widget
         Logger.WriteLine(">>>>> START");
         MapTree.Root.GetAllChildren(true).ForEach(c =>
         {
-            if (c is not OptimizedNode) return;
-            OptimizedNode Node = (OptimizedNode)c;
+            if (c is not TreeNode) return;
+            TreeNode Node = (TreeNode)c;
             string depth = "";
             for (int i = 0; i < Node.Depth; i++) depth += " ";
             depth += "- ";
@@ -322,15 +322,15 @@ public class MapSelectPanel : Widget
         });
     }
     
-    private void DeleteNode(IOptimizedNode Node, bool DeleteChildren)
+    private void DeleteNode(ITreeNode Node, bool DeleteChildren)
     {
-        List<IOptimizedNode> Children = new List<IOptimizedNode>();
-        if (Node is OptimizedNode) Children = new List<IOptimizedNode>(((OptimizedNode) Node).Children);
-        List<IOptimizedNode> DeletedNodes = MapTree.DeleteNode(Node, DeleteChildren);
+        List<ITreeNode> Children = new List<ITreeNode>();
+        if (Node is TreeNode) Children = new List<ITreeNode>(((TreeNode) Node).Children);
+        List<ITreeNode> DeletedNodes = MapTree.DeleteNode(Node, DeleteChildren);
         DeletedNodes.ForEach(n =>
         {
-            if (n is not OptimizedNode) return;
-            OptimizedNode Node = (OptimizedNode) n;
+            if (n is not TreeNode) return;
+            TreeNode Node = (TreeNode) n;
             Map DeletedMap = Data.Maps[(int) Node.Object];
             Data.Maps.Remove(DeletedMap.ID);
         });
@@ -339,8 +339,8 @@ public class MapSelectPanel : Widget
         // the ParentID property of the map that's associated with the node.
         if (!DeleteChildren) Children.ForEach(c =>
         {
-            if (c is not OptimizedNode) return;
-            OptimizedNode n = (OptimizedNode) c;
+            if (c is not TreeNode) return;
+            TreeNode n = (TreeNode) c;
             Data.Maps[(int) n.Object].ParentID = c.Parent.GlobalIndex;
         });
         // TODO: undo/redo
@@ -349,7 +349,7 @@ public class MapSelectPanel : Widget
     private void DeleteMap()
     {
         if (MapTree.Empty || HoveredMap == null) return;
-        bool AskDeleteChildren = MapTree.HoveringNode is OptimizedNode && ((OptimizedNode) MapTree.HoveringNode).HasChildren;
+        bool AskDeleteChildren = MapTree.HoveringNode is TreeNode && ((TreeNode) MapTree.HoveringNode).HasChildren;
         DeleteMapPopup confirm = new DeleteMapPopup(AskDeleteChildren, "Warning", "Are you sure you want to delete this map?", ButtonType.YesNoCancel, IconType.Warning);
         confirm.OnClosed += _ =>
         {

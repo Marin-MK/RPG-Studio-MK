@@ -18,10 +18,10 @@ public class OptimizedNodeTest : TestSuite
         //   - two
         //     - three
         //     - four
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
-        var four = new OptimizedNode("Four");
+        var one = new TreeNode("One");
+        var two = new TreeNode("Two");
+        var three = new TreeNode("Three");
+        var four = new TreeNode("Four");
         assertEqual(0, one.GlobalIndex);
         assertEqual(0, two.GlobalIndex);
         assertEqual(0, three.GlobalIndex);
@@ -90,10 +90,10 @@ public class OptimizedNodeTest : TestSuite
         //   - two
         //   - three
         //   - four
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
-        var four = new OptimizedNode("Four");
+        var one = new TreeNode("One");
+        var two = new TreeNode("Two");
+        var three = new TreeNode("Three");
+        var four = new TreeNode("Four");
 
         one.AddChild(two);
         one.AddChild(three);
@@ -146,11 +146,11 @@ public class OptimizedNodeTest : TestSuite
         //   - na
         //   - nb
 
-        var root = new OptimizedNode("ROOT");
-        var na = new OptimizedNode("A");
-        var nb = new OptimizedNode("B");
-        var nc = new OptimizedNode("C");
-        var nd = new OptimizedNode("D");
+        var root = new TreeNode("ROOT");
+        var na = new TreeNode("A");
+        var nb = new TreeNode("B");
+        var nc = new TreeNode("C");
+        var nd = new TreeNode("D");
 
         assertEqual(1, root.GetTotalNodeCount());
 
@@ -225,20 +225,20 @@ public class OptimizedNodeTest : TestSuite
         //   - thirteen
         //     - fourteen
 
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
-        var four = new OptimizedNode("Four");
-        var five = new OptimizedNode("Five");
-        var six = new OptimizedNode("Six");
-        var seven = new OptimizedNode("Seven");
-        var eight = new OptimizedNode("Eight");
-        var nine = new OptimizedNode("Nine");
-        var ten = new OptimizedNode("Ten");
-        var eleven = new OptimizedNode("Eleven");
-        var twelve = new OptimizedNode("Twelve");
-        var thirteen = new OptimizedNode("Thirteen");
-        var fourteen = new OptimizedNode("Fourteen");
+        var one = new TreeNode("One");
+        var two = new TreeNode("Two");
+        var three = new TreeNode("Three");
+        var four = new TreeNode("Four");
+        var five = new TreeNode("Five");
+        var six = new TreeNode("Six");
+        var seven = new TreeNode("Seven");
+        var eight = new TreeNode("Eight");
+        var nine = new TreeNode("Nine");
+        var ten = new TreeNode("Ten");
+        var eleven = new TreeNode("Eleven");
+        var twelve = new TreeNode("Twelve");
+        var thirteen = new TreeNode("Thirteen");
+        var fourteen = new TreeNode("Fourteen");
 
         nine.AddChild(ten);
         nine.AddChild(eleven);
@@ -297,20 +297,20 @@ public class OptimizedNodeTest : TestSuite
         //   - thirteen
         //     - fourteen
 
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
-        var four = new OptimizedNode("Four");
-        var five = new OptimizedNode("Five");
-        var six = new OptimizedNode("Six");
-        var seven = new OptimizedNode("Seven");
-        var eight = new OptimizedNode("Eight");
-        var nine = new OptimizedNode("Nine");
-        var ten = new OptimizedNode("Ten");
-        var eleven = new OptimizedNode("Eleven");
-        var twelve = new OptimizedNode("Twelve");
-        var thirteen = new OptimizedNode("Thirteen");
-        var fourteen = new OptimizedNode("Fourteen");
+        var one = new TreeNode("One");
+        var two = new TreeNode("Two");
+        var three = new TreeNode("Three");
+        var four = new TreeNode("Four");
+        var five = new TreeNode("Five");
+        var six = new TreeNode("Six");
+        var seven = new TreeNode("Seven");
+        var eight = new TreeNode("Eight");
+        var nine = new TreeNode("Nine");
+        var ten = new TreeNode("Ten");
+        var eleven = new TreeNode("Eleven");
+        var twelve = new TreeNode("Twelve");
+        var thirteen = new TreeNode("Thirteen");
+        var fourteen = new TreeNode("Fourteen");
 
         nine.AddChild(ten);
         nine.AddChild(eleven);
@@ -408,20 +408,20 @@ public class OptimizedNodeTest : TestSuite
         //   - thirteen (collapsed!)
         //     - fourteen
 
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
-        var four = new OptimizedNode("Four");
-        var five = new OptimizedNode("Five");
-        var six = new OptimizedNode("Six");
-        var seven = new OptimizedNode("Seven");
-        var eight = new OptimizedNode("Eight");
-        var nine = new OptimizedNode("Nine");
-        var ten = new OptimizedNode("Ten");
-        var eleven = new OptimizedNode("Eleven");
-        var twelve = new OptimizedNode("Twelve");
-        var thirteen = new OptimizedNode("Thirteen");
-        var fourteen = new OptimizedNode("Fourteen");
+        var one = new TreeNode("One");
+        var two = new TreeNode("Two");
+        var three = new TreeNode("Three");
+        var four = new TreeNode("Four");
+        var five = new TreeNode("Five");
+        var six = new TreeNode("Six");
+        var seven = new TreeNode("Seven");
+        var eight = new TreeNode("Eight");
+        var nine = new TreeNode("Nine");
+        var ten = new TreeNode("Ten");
+        var eleven = new TreeNode("Eleven");
+        var twelve = new TreeNode("Twelve");
+        var thirteen = new TreeNode("Thirteen");
+        var fourteen = new TreeNode("Fourteen");
 
         nine.AddChild(ten);
         nine.AddChild(eleven);
@@ -476,10 +476,10 @@ public class OptimizedNodeTest : TestSuite
         //   - two
         //   - XXXXX
         //   - three
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var sep = new OptimizedNodeSeparator();
-        var three = new OptimizedNode("Three");
+        var one = new TreeNode("One");
+        var two = new TreeNode("Two");
+        var sep = new TreeNodeSeparator();
+        var three = new TreeNode("Three");
 
         assertEqual(0, one.GlobalIndex);
         assertEqual(0, two.GlobalIndex);
@@ -529,10 +529,10 @@ public class OptimizedNodeTest : TestSuite
         //   - two
         //   - three
         //   - XXXXX
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
-        var sep = new OptimizedNodeSeparator();
+        var one = new TreeNode("One");
+        var two = new TreeNode("Two");
+        var three = new TreeNode("Three");
+        var sep = new TreeNodeSeparator();
 
         one.AddChild(two);
         one.AddChild(three);
@@ -576,10 +576,10 @@ public class OptimizedNodeTest : TestSuite
         //   - XXXXX
         //   - two
         //   - three
-        var one = new OptimizedNode("One");
-        var sep = new OptimizedNodeSeparator();
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
+        var one = new TreeNode("One");
+        var sep = new TreeNodeSeparator();
+        var two = new TreeNode("Two");
+        var three = new TreeNode("Three");
 
         one.AddChild(two);
         one.AddChild(three);
@@ -633,19 +633,19 @@ public class OptimizedNodeTest : TestSuite
         //   - ten
         //   - eleven
 
-        var root = new OptimizedNode("ROOT");
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
-        var xxx = new OptimizedNodeSeparator();
-        var four = new OptimizedNode("Four");
-        var five = new OptimizedNode("Five");
-        var six = new OptimizedNode("Six");
-        var seven = new OptimizedNode("Seven");
-        var eight = new OptimizedNode("Eight");
-        var nine = new OptimizedNode("Nine");
-        var ten = new OptimizedNode("Ten");
-        var eleven = new OptimizedNode("Eleven");
+        var root = new TreeNode("ROOT");
+        var one = new TreeNode("One");
+        var two = new TreeNode("Two");
+        var three = new TreeNode("Three");
+        var xxx = new TreeNodeSeparator();
+        var four = new TreeNode("Four");
+        var five = new TreeNode("Five");
+        var six = new TreeNode("Six");
+        var seven = new TreeNode("Seven");
+        var eight = new TreeNode("Eight");
+        var nine = new TreeNode("Nine");
+        var ten = new TreeNode("Ten");
+        var eleven = new TreeNode("Eleven");
 
         three.AddChild(four);
         two.AddChild(three);
@@ -711,15 +711,15 @@ public class OptimizedNodeTest : TestSuite
         //       - seven
         //         - eight
         //     - nine
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
-        var four = new OptimizedNode("Four");
-        var five = new OptimizedNode("Five");
-        var six = new OptimizedNode("Six");
-        var seven = new OptimizedNode("Seven");
-        var eight = new OptimizedNode("Eight");
-        var nine = new OptimizedNode("Nine");
+        var one = new TreeNode("One");
+        var two = new TreeNode("Two");
+        var three = new TreeNode("Three");
+        var four = new TreeNode("Four");
+        var five = new TreeNode("Five");
+        var six = new TreeNode("Six");
+        var seven = new TreeNode("Seven");
+        var eight = new TreeNode("Eight");
+        var nine = new TreeNode("Nine");
 
         three.AddChild(four);
         two.AddChild(three);
@@ -816,19 +816,19 @@ public class OptimizedNodeTest : TestSuite
         //   - ten
         //   - eleven
 
-        var root = new OptimizedNode("ROOT");
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
-        var xxx = new OptimizedNodeSeparator();
-        var four = new OptimizedNode("Four");
-        var five = new OptimizedNode("Five");
-        var six = new OptimizedNode("Six");
-        var seven = new OptimizedNode("Seven");
-        var eight = new OptimizedNode("Eight");
-        var nine = new OptimizedNode("Nine");
-        var ten = new OptimizedNode("Ten");
-        var eleven = new OptimizedNode("Eleven");
+        var root = new TreeNode("ROOT");
+        var one = new TreeNode("One");
+        var two = new TreeNode("Two");
+        var three = new TreeNode("Three");
+        var xxx = new TreeNodeSeparator();
+        var four = new TreeNode("Four");
+        var five = new TreeNode("Five");
+        var six = new TreeNode("Six");
+        var seven = new TreeNode("Seven");
+        var eight = new TreeNode("Eight");
+        var nine = new TreeNode("Nine");
+        var ten = new TreeNode("Ten");
+        var eleven = new TreeNode("Eleven");
 
         three.AddChild(four);
         two.AddChild(three);
@@ -848,12 +848,12 @@ public class OptimizedNodeTest : TestSuite
 
         six.SetExpanded(false);
 
-        List<IOptimizedNode> expectedFalse = new List<IOptimizedNode>()
+        List<ITreeNode> expectedFalse = new List<ITreeNode>()
         {
             one, two, three, xxx, four, five, six, ten, eleven
         };
 
-        List<IOptimizedNode> expectedTrue = new List<IOptimizedNode>()
+        List<ITreeNode> expectedTrue = new List<ITreeNode>()
         {
             one, two, three, xxx, four, five, six, seven, eight, nine, ten, eleven
         };
@@ -876,15 +876,15 @@ public class OptimizedNodeTest : TestSuite
         //   - eight
         //     - nine
 
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
-        var four = new OptimizedNode("Four");
-        var five = new OptimizedNode("Five");
-        var six = new OptimizedNode("Six");
-        var seven = new OptimizedNode("Seven");
-        var eight = new OptimizedNode("Eight");
-        var nine = new OptimizedNode("Nine");
+        var one = new TreeNode("One");
+        var two = new TreeNode("Two");
+        var three = new TreeNode("Three");
+        var four = new TreeNode("Four");
+        var five = new TreeNode("Five");
+        var six = new TreeNode("Six");
+        var seven = new TreeNode("Seven");
+        var eight = new TreeNode("Eight");
+        var nine = new TreeNode("Nine");
 
         three.AddChild(four);
         three.AddChild(five);
@@ -971,15 +971,15 @@ public class OptimizedNodeTest : TestSuite
         //   - eight
         //     - nine
 
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
-        var four = new OptimizedNode("Four");
-        var five = new OptimizedNode("Five");
-        var six = new OptimizedNode("Six");
-        var seven = new OptimizedNode("Seven");
-        var eight = new OptimizedNode("Eight");
-        var nine = new OptimizedNode("Nine");
+        var one = new TreeNode("One");
+        var two = new TreeNode("Two");
+        var three = new TreeNode("Three");
+        var four = new TreeNode("Four");
+        var five = new TreeNode("Five");
+        var six = new TreeNode("Six");
+        var seven = new TreeNode("Seven");
+        var eight = new TreeNode("Eight");
+        var nine = new TreeNode("Nine");
 
         three.AddChild(four);
         three.AddChild(five);
@@ -1086,13 +1086,13 @@ public class OptimizedNodeTest : TestSuite
         //   - six
         //     - seven
 
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
-        var four = new OptimizedNode("Four");
-        var five = new OptimizedNode("Five");
-        var six = new OptimizedNode("Six");
-        var seven = new OptimizedNode("Seven");
+        var one = new TreeNode("One");
+        var two = new TreeNode("Two");
+        var three = new TreeNode("Three");
+        var four = new TreeNode("Four");
+        var five = new TreeNode("Five");
+        var six = new TreeNode("Six");
+        var seven = new TreeNode("Seven");
         
         three.AddChild(four);
 
@@ -1165,13 +1165,13 @@ public class OptimizedNodeTest : TestSuite
         //   - six
         //     - seven
 
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
-        var four = new OptimizedNode("Four");
-        var five = new OptimizedNode("Five");
-        var six = new OptimizedNode("Six");
-        var seven = new OptimizedNode("Seven");
+        var one = new TreeNode("One");
+        var two = new TreeNode("Two");
+        var three = new TreeNode("Three");
+        var four = new TreeNode("Four");
+        var five = new TreeNode("Five");
+        var six = new TreeNode("Six");
+        var seven = new TreeNode("Seven");
 
         three.AddChild(four);
 
@@ -1251,27 +1251,27 @@ public class OptimizedNodeTest : TestSuite
         //   - XXX32
         //   - sixteen
 
-        var root = new OptimizedNode("Root");
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
-        var four = new OptimizedNode("Four");
-        var five = new OptimizedNode("Five");
-        var six = new OptimizedNode("Six");
-        var seven = new OptimizedNode("Seven");
-        var eight = new OptimizedNode("Eight");
-        var nine = new OptimizedNode("Nine");
-        var ten = new OptimizedNode("Ten");
-        var eleven = new OptimizedNode("Eleven");
-        var twelve = new OptimizedNode("Twelve");
-        var thirteen = new OptimizedNode("Thirteen");
-        var fourteen = new OptimizedNode("Fourteen");
-        var fifteen = new OptimizedNode("Fifteen");
-        var sixteen = new OptimizedNode("Sixteen");
-        var seventeen = new OptimizedNode("Seventeen");
-        var abc = new OptimizedNode("abc");
-        var def = new OptimizedNode("def");
-        var ghi = new OptimizedNode("ghi");
+        var root = new TreeNode("Root");
+        var one = new TreeNode("One");
+        var two = new TreeNode("Two");
+        var three = new TreeNode("Three");
+        var four = new TreeNode("Four");
+        var five = new TreeNode("Five");
+        var six = new TreeNode("Six");
+        var seven = new TreeNode("Seven");
+        var eight = new TreeNode("Eight");
+        var nine = new TreeNode("Nine");
+        var ten = new TreeNode("Ten");
+        var eleven = new TreeNode("Eleven");
+        var twelve = new TreeNode("Twelve");
+        var thirteen = new TreeNode("Thirteen");
+        var fourteen = new TreeNode("Fourteen");
+        var fifteen = new TreeNode("Fifteen");
+        var sixteen = new TreeNode("Sixteen");
+        var seventeen = new TreeNode("Seventeen");
+        var abc = new TreeNode("abc");
+        var def = new TreeNode("def");
+        var ghi = new TreeNode("ghi");
 
         nine.AddChild(ten);
         nine.AddChild(eleven);
@@ -1289,20 +1289,20 @@ public class OptimizedNodeTest : TestSuite
         fourteen.AddChild(abc);
         fourteen.AddChild(def);
         def.AddChild(ghi);
-        ghi.AddChild(new OptimizedNode("jkl"));
-        def.AddChild(new OptimizedNode("mno"));
+        ghi.AddChild(new TreeNode("jkl"));
+        def.AddChild(new TreeNode("mno"));
 
         one.AddChild(two);
         one.AddChild(seven);
         one.AddChild(thirteen);
-        one.AddChild(new OptimizedNode("pqr"));
+        one.AddChild(new TreeNode("pqr"));
 
         sixteen.AddChild(seventeen);
 
         root.AddChild(one);
-        root.AddChild(new OptimizedNodeSeparator(8));
+        root.AddChild(new TreeNodeSeparator(8));
         root.AddChild(fifteen);
-        root.AddChild(new OptimizedNodeSeparator(32));
+        root.AddChild(new TreeNodeSeparator(32));
         root.AddChild(sixteen);
 
         assertEqual(1, one.GlobalIndex);
@@ -1367,13 +1367,13 @@ public class OptimizedNodeTest : TestSuite
         //   - six
         //     - seven
 
-        var one = new OptimizedNode("One");
-        var two = new OptimizedNode("Two");
-        var three = new OptimizedNode("Three");
-        var four = new OptimizedNode("Four");
-        var five = new OptimizedNode("Five");
-        var six = new OptimizedNode("Six");
-        var seven = new OptimizedNode("Seven");
+        var one = new TreeNode("One");
+        var two = new TreeNode("Two");
+        var three = new TreeNode("Three");
+        var four = new TreeNode("Four");
+        var five = new TreeNode("Five");
+        var six = new TreeNode("Six");
+        var seven = new TreeNode("Seven");
 
         three.AddChild(four);
 
@@ -1385,13 +1385,13 @@ public class OptimizedNodeTest : TestSuite
         one.AddChild(two);
         one.AddChild(six);
 
-        assertEqual(new List<OptimizedNode>() { one, two, three }, four.GetAncestors());
-        assertEqual(new List<OptimizedNode>() { one, two }, three.GetAncestors());
-        assertEqual(new List<OptimizedNode>() { one }, two.GetAncestors());
-        assertEqual(new List<OptimizedNode>() { }, one.GetAncestors());
+        assertEqual(new List<TreeNode>() { one, two, three }, four.GetAncestors());
+        assertEqual(new List<TreeNode>() { one, two }, three.GetAncestors());
+        assertEqual(new List<TreeNode>() { one }, two.GetAncestors());
+        assertEqual(new List<TreeNode>() { }, one.GetAncestors());
 
-        assertEqual(new List<OptimizedNode>() { one, two }, five.GetAncestors());
-        assertEqual(new List<OptimizedNode>() { one, six }, seven.GetAncestors());
-        assertEqual(new List<OptimizedNode>() { one }, six.GetAncestors());
+        assertEqual(new List<TreeNode>() { one, two }, five.GetAncestors());
+        assertEqual(new List<TreeNode>() { one, six }, seven.GetAncestors());
+        assertEqual(new List<TreeNode>() { one }, six.GetAncestors());
     }
 }

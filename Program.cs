@@ -70,8 +70,8 @@ public class Program
         {
             Logger.Error("Setup failed!");
             Logger.Error(ex);
-            throw ex;
-        }
+			throw;
+		}
 
         // Amethyst's main UI loop
         Amethyst.Run(() =>

@@ -14,7 +14,7 @@ public class ScriptingWidget : Widget
     public Script? PreviewScript => ScriptBox.PreviewScript;
     public List<Script> RecentScripts => ScriptBox.RecentScripts;
 
-    OptimizedTreeView TreeView;
+    TreeView TreeView;
     ScriptEditorBox ScriptBox;
 
     ContextMenu ScriptMenu;
@@ -28,13 +28,13 @@ public class ScriptingWidget : Widget
             Items.Add(new ListItem(Data.Scripts[i].Name, Data.Scripts[i]));
         }
 
-        TreeView = new OptimizedTreeView(this);
+        TreeView = new TreeView(this);
         TreeView.SetVDocked(true);
         TreeView.SetWidth(300);
         TreeView.SetNodes(GetNodes());
         TreeView.SetLineHeight(28);
         TreeView.SetFont(Font.Get("Cabin-Medium", 10));
-        TreeView.OnSelectionChanged += e => ScriptBox.SetScriptBox((Script) ((OptimizedNode) TreeView.SelectedNode).Object, !e.Value); // e.Value: whether the node was double clicked or single-clicked
+        TreeView.OnSelectionChanged += e => ScriptBox.SetScriptBox((Script) ((TreeNode) TreeView.SelectedNode).Object, !e.Value); // e.Value: whether the node was double clicked or single-clicked
 
         ScriptBox = new ScriptEditorBox(this);
         ScriptBox.SetDocked(true);
@@ -46,27 +46,27 @@ public class ScriptingWidget : Widget
             new Shortcut(this, new Key(Keycode.TAB, Keycode.SHIFT, Keycode.CTRL), _ => ShowScriptMenu(true), true)
         });
 
-        var coreNode = (OptimizedNode) TreeView.Root.Children[0];
-        ScriptBox.SetScriptBox((Script) ((OptimizedNode) coreNode.Children[0]).Object, false);
+        var coreNode = (TreeNode) TreeView.Root.Children[0];
+        ScriptBox.SetScriptBox((Script) ((TreeNode) coreNode.Children[0]).Object, false);
         TreeView.SetSelectedNode(coreNode.Children[0], false);
     }
 
-    private static List<OptimizedNode> GetNodes()
+    private static List<TreeNode> GetNodes()
     {
-        var nodes = new List<OptimizedNode>();
-        OptimizedNode coreScripts = new OptimizedNode("Core");
+        var nodes = new List<TreeNode>();
+        TreeNode coreScripts = new TreeNode("Core");
         coreScripts.SetSelectable(false);
         coreScripts.SetDraggable(false);
         nodes.Add(coreScripts);
-        OptimizedNode? directParent = null;
-        OptimizedNode? olderParent = null;
+        TreeNode? directParent = null;
+        TreeNode? olderParent = null;
         Regex sepRegex = new Regex(@"==================");
         Regex catRegex = new Regex(@"\[\[ (.*) \]\]");
         foreach (Script script in Data.Scripts)
         {
             if (string.IsNullOrWhiteSpace(script.Content) && string.IsNullOrWhiteSpace(script.Name)) continue;
-            OptimizedNode parent = directParent is null ? coreScripts : directParent;
-            OptimizedNode newNode = new OptimizedNode(script.Name, script);
+            TreeNode parent = directParent is null ? coreScripts : directParent;
+            TreeNode newNode = new TreeNode(script.Name, script);
             if (sepRegex.IsMatch(script.Name))
             {
                 olderParent = null;
@@ -94,11 +94,11 @@ public class ScriptingWidget : Widget
             }
             parent.AddChild(newNode);
         }
-        OptimizedNode pluginScripts = new OptimizedNode("Plugins");
+        TreeNode pluginScripts = new TreeNode("Plugins");
         pluginScripts.SetSelectable(false);
         pluginScripts.SetDraggable(false);
         nodes.Add(pluginScripts);
-        OptimizedNode customScripts = new OptimizedNode("Custom");
+        TreeNode customScripts = new TreeNode("Custom");
         customScripts.SetSelectable(false);
         customScripts.SetDraggable(false);
         nodes.Add(customScripts);
