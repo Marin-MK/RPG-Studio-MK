@@ -8,6 +8,7 @@ public class DropdownBox : amethyst.TextBox
 {
     public bool ReadOnly => TextArea.ReadOnly;
     public int SelectedIndex { get; protected set; } = 0;
+    public ListItem? SelectedItem => SelectedIndex != -1 ? Items[SelectedIndex] : null;
     public List<ListItem> Items { get; protected set; } = new List<ListItem>();
     public bool Enabled { get; protected set; } = true;
 

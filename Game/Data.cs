@@ -176,6 +176,79 @@ public static partial class Data
             _ => false
         };
     }
+
+    public static class Sources
+    {
+        private static List<ListItem> _slia;
+        private static List<ListItem> _alia;
+        private static List<ListItem> _mlia;
+        private static List<ListItem> _tlia;
+        private static List<ListItem> _ilia;
+        private static List<ListItem> _ttlia;
+
+        public static List<ListItem> SpeciesListItemsAlphabetical 
+        {
+            get 
+            {
+                if (recalculateSpecies) _slia = Species.Select(spc => new ListItem(spc.Value.Name, spc.Value)).OrderBy(item => item.Name).ToList();
+                return _slia;
+            } 
+        }
+        public static List<ListItem> AbilitiesListItemsAlphabetical
+        {
+            get
+            {
+                if (recalculateAbilities) _alia = Abilities.Select(abil => new ListItem(abil.Value.Name, abil.Value)).OrderBy(item => item.Name).ToList();
+                return _alia;
+			}
+        }
+        public static List<ListItem> MovesListItemsAlphabetical
+        {
+            get
+            {
+                if (recalculateMoves) _mlia = Moves.Select(move => new ListItem(move.Value.Name, move.Value)).OrderBy(item => item.Name).ToList();
+                return _mlia;
+			}
+        }
+        public static List<ListItem> TypesListItemsAlphabetical
+        {
+            get
+            {
+                if (recalculateTypes) _tlia = Types.Select(type => new ListItem(type.Value.Name, type.Value)).OrderBy(item => item.Name).ToList();
+                return _tlia;
+			}
+        }
+        public static List<ListItem> ItemsListItemsAlphabetical
+        {
+            get
+            {
+                if (recalculateItems) _ilia = Items.Select(item => new ListItem(item.Value.Name, item.Value)).OrderBy(item => item.Name).ToList();
+                return _ilia;
+			}
+        }
+        public static List<ListItem> TrainerTypesListItemsAlphabetical
+        {
+            get
+            {
+                if (recalculateTrainerTypes) _ttlia = TrainerTypes.Select(ttype => new ListItem(ttype.Value.Name, ttype.Value)).OrderBy(item => item.Name).ToList();
+                return _ttlia;
+			}
+        }
+
+        private static bool recalculateSpecies = true;
+        private static bool recalculateAbilities = true;
+        private static bool recalculateMoves = true;
+        private static bool recalculateTypes = true;
+        private static bool recalculateItems = true;
+        private static bool recalculateTrainerTypes = true;
+
+        public static void InvalidateSpecies() => recalculateSpecies = true;
+		public static void InvalidateAbilities() => recalculateAbilities = true;
+		public static void InvalidateMoves() => recalculateMoves = true;
+		public static void InvalidateTypes() => recalculateTypes = true;
+		public static void InvalidateItems() => recalculateItems = true;
+		public static void InvalidateTrainerTypes() => recalculateTrainerTypes = true;
+	}
 }
 
 public enum EssentialsVersion

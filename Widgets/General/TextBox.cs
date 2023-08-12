@@ -32,6 +32,15 @@ public class TextBox : amethyst.TextBox
         }
     }
 
+    public void SetPopupStyle(bool PopupStyle)
+    {
+        if (this.PopupStyle != PopupStyle)
+        {
+            this.PopupStyle = PopupStyle;
+            this.Redraw();
+        }
+    }
+
     protected override void Draw()
     {
         Sprites["box"].Bitmap?.Dispose();

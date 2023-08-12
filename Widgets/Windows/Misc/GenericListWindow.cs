@@ -88,6 +88,7 @@ public class GenericListWindow : PopupWindow
         DeleteButton.SetText("Delete Item");
         DeleteButton.OnClicked += _ =>
         {
+            if (ListBox.SelectedIndex == -1) return;
             ListBox.Items.RemoveAt(ListBox.SelectedIndex);
             ListBox.SetItems(ListBox.Items);
             if (ListBox.SelectedIndex > 0) ListBox.SetSelectedIndex(ListBox.SelectedIndex - 1);

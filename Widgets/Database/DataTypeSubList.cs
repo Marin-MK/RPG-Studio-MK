@@ -5,11 +5,11 @@ namespace RPGStudioMK.Widgets;
 
 public class DataTypeSubList : Widget
 {
-    public int SelectedIndex { get { return ListDrawer.SelectedIndex; } }
-    public ListItem SelectedItem { get { return ListDrawer.SelectedItem; } }
-    public int HoveringIndex { get { return ListDrawer.HoveringIndex; } }
-    public ListItem HoveringItem { get { return ListDrawer.HoveringItem; } }
-    public List<ListItem> Items { get { return ListDrawer.Items; } }
+    public int SelectedIndex => ListDrawer.SelectedIndex;
+    public ListItem SelectedItem => ListDrawer.SelectedItem;
+    public int HoveringIndex => ListDrawer.HoveringIndex;
+    public ListItem HoveringItem => ListDrawer.HoveringItem;
+    public List<ListItem> Items => ListDrawer.Items;
 
     ListDrawer ListDrawer;
     Container ScrollContainer;

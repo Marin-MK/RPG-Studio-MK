@@ -78,24 +78,29 @@ public class DataContainer : Widget
             {
                 w.SetVisible(!this.Collapsed);
             });
-            if (this.Collapsed)
-            {
-                this.SetSize(this.Size.Width, 36);
-            }
-            else
-            {
-                int maxheight = 0;
-                foreach (Widget w in this.Widgets)
-                {
-                    int h = w.Position.Y + w.Size.Height;
-                    if (h > maxheight) maxheight = h;
-                }
-                this.SetSize(this.Size.Width, Math.Max(36, maxheight + 12));
-            }
+            UpdateSize();
             this.OnCollapsedChanged?.Invoke(new BaseEventArgs());
             ((VStackPanel)Parent).UpdateLayout();
         }
     }
+
+    public void UpdateSize()
+    {
+		if (this.Collapsed)
+		{
+			this.SetSize(this.Size.Width, 36);
+		}
+		else
+		{
+			int maxheight = 0;
+			foreach (Widget w in this.Widgets)
+			{
+				int h = w.Position.Y + w.Size.Height;
+				if (h > maxheight) maxheight = h;
+			}
+			this.SetSize(this.Size.Width, Math.Max(36, maxheight + 18));
+		}
+	}
 
     public void SetText(string Text)
     {

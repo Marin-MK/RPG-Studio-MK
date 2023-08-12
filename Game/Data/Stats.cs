@@ -14,8 +14,9 @@ public struct Stats : ICloneable
     public int SpecialAttack;
     public int SpecialDefense;
     public int Speed;
+	public int Total => this.HP + this.Attack + this.Defense + this.SpecialAttack + this.SpecialDefense + this.Speed;
 
-    public Stats()
+	public Stats()
     {
 
     }

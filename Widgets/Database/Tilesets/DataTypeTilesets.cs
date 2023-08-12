@@ -344,7 +344,6 @@ public class DataTypeTilesets : Widget
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-        Fade.SetSize(MainBox.Size);
         TagDetailLabel.SetVisible(TilesetContainer.Mode == TilesetDisplayMode.TerrainTag && Window.Width >= 1210);
         bool AutoscrollingMainBox = MainBox.VAutoScroll;
         if (Window.Width < 1036)

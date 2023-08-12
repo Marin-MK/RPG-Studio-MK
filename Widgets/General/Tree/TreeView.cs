@@ -36,7 +36,7 @@ public class TreeView : Widget
     public List<ITreeNode> SelectedNodes { get; protected set; } = new List<ITreeNode>();
     public bool MultipleSelected => SelectedNodes.Count > 1;
     public ITreeNode SelectedNode => SelectedNodes.Count > 0 ? SelectedNodes[0] : null;
-    public bool DragAndDrop { get; protected set; } = true;
+    public bool CanDragAndDrop { get; protected set; } = true;
     public bool Empty => !Root.HasChildren;
     public bool RequireSelection { get; protected set; } = true;
     public Font Font { get; protected set; }
@@ -46,6 +46,7 @@ public class TreeView : Widget
     public Padding VScrollBarPaddingShared { get; protected set; } = new Padding(0, 1, -1, 13);
     public bool HResizeToFill { get; protected set; } = false;
     public bool VResizeToFill { get; protected set; } = true;
+    public new bool AutoResize { get; protected set; } = true;
 
     public GenericObjectEvent<ITreeNode> OnDragAndDropping;
     public GenericObjectEvent<(ITreeNode DroppedNode, TreeNode OldRoot, TreeNode NewRoot)> OnDragAndDropped;
@@ -111,6 +112,24 @@ public class TreeView : Widget
         this.OnContextMenuOpening += e => e.Value = !ScrollContainer.HScrollBar.Mouse.Inside && !ScrollContainer.VScrollBar.Mouse.Inside;
     }
 
+    public void SetAutoResize(bool AutoResize)
+    {
+        if (this.AutoResize != AutoResize)
+        {
+            this.AutoResize = AutoResize;
+            ScrollContainer.VAutoScroll = AutoResize;
+            ScrollContainer.HAutoScroll = AutoResize;
+            ScrollContainer.HScrollBar.SetVisible(AutoResize);
+            ScrollContainer.VScrollBar.SetVisible(AutoResize);
+            if (!this.AutoResize)
+            {
+                ScrollContainer.SetSize(SpriteContainer.Size);
+                this.SetSize(SpriteContainer.Size);
+            }
+            ScrollContainer.UpdateAutoScroll();
+        }
+    }
+
     public void SetRootNode(TreeNode Root, ITreeNode? SelectedNode = null)
     {
         if (this.Root != Root)
@@ -147,11 +166,11 @@ public class TreeView : Widget
         }
     }
 
-    public void SetDragAndDrop(bool DragAndDrop)
+    public void SetCanDragAndDrop(bool CanDragAndDrop)
     {
-        if (this.DragAndDrop != DragAndDrop)
+        if (this.CanDragAndDrop != CanDragAndDrop)
         {
-            this.DragAndDrop = DragAndDrop;
+            this.CanDragAndDrop = CanDragAndDrop;
         }
     }
 
@@ -779,6 +798,11 @@ public class TreeView : Widget
                 bmp.SetSize(w, bmp.BitmapHeight);
             });
         }
+        if (!AutoResize)
+        {
+            ScrollContainer.SetSize(SpriteContainer.Size);
+            this.SetSize(SpriteContainer.Size);
+        }
     }
 
     public override void MouseMoving(MouseEventArgs e)
@@ -808,7 +832,7 @@ public class TreeView : Widget
                 break;
             }
         }
-        if (Dragging && !ValidatedDragMovement)
+        if (Dragging && !ValidatedDragMovement && CanDragAndDrop)
         {
             Point mp = new Point(rx, ry);
             if (DragOriginPoint.Distance(mp) >= 10)
@@ -935,7 +959,7 @@ public class TreeView : Widget
     {
         base.LeftMouseDownInside(e);
         this.ActiveNode = HoveringNode;
-        if (HoveringNode != null && HoveringNode.Draggable)
+        if (HoveringNode != null && HoveringNode.Draggable && CanDragAndDrop)
         {
             this.Dragging = true;
             int rx = e.X - Viewport.X + SpriteContainer.LeftCutOff;

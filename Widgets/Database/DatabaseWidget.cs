@@ -28,12 +28,16 @@ public class DatabaseWidget : Widget
         ActiveDatabaseWidget = null;
         Editor.ProjectSettings.LastDatabaseSubmode = Mode;
         DataTypeList.SetSelected(Mode);
-        if (Mode == DatabaseMode.Tilesets)
+        switch (Mode)
         {
-            ActiveDatabaseWidget = new DataTypeTilesets(MainGrid);
-            ActiveDatabaseWidget.SetGridColumn(1);
-            ((DataTypeTilesets) ActiveDatabaseWidget).SetSelectedIndex(0);
-        }
-    }
+            case DatabaseMode.Species:
+                ActiveDatabaseWidget = new DataTypeSpecies(MainGrid);
+                break;
+            case DatabaseMode.Tilesets:
+                ActiveDatabaseWidget = new DataTypeTilesets(MainGrid);
+                break;
+		}
+		ActiveDatabaseWidget?.SetGridColumn(1);
+	}
 }
 

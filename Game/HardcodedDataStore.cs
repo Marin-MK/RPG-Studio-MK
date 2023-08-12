@@ -27,7 +27,23 @@ public class HardcodedDataStore
     public required List<string> EggGroups { get; init; }
     public required List<string> EncounterTypes { get; init; }
 
-    public static HardcodedDataStore Create(string fileName)
+    public List<ListItem> HabitatsListItems;
+	public List<ListItem> GrowthRatesListItems;
+	public List<ListItem> GenderRatiosListItems;
+	public List<ListItem> EvolutionMethodsListItems;
+	public List<ListItem> MoveCategoriesListItems;
+	public List<ListItem> MoveTargetsListItems;
+	public List<ListItem> NaturesListItems;
+	public List<ListItem> WeathersListItems;
+	public List<ListItem> ItemPocketsListItems;
+	public List<ListItem> ItemFieldUsesListItems;
+	public List<ListItem> ItemBattleUsesListItems;
+	public List<ListItem> BodyColorsListItems;
+	public List<ListItem> BodyShapesListItems;
+	public List<ListItem> EggGroupsListItems;
+	public List<ListItem> EncounterTypesListItems;
+
+	public static HardcodedDataStore Create(string fileName)
     {
         Logger.WriteLine("Loading hardcoded data JSON from '{0}'", fileName);
         string dataText = File.ReadAllText(fileName);
@@ -49,9 +65,25 @@ public class HardcodedDataStore
             BodyColors = rawData["body_colors"],
             BodyShapes = rawData["body_shapes"],
             EggGroups = rawData["egg_groups"],
-            EncounterTypes = rawData["encounter_types"]
-        };
-        return dataStore;
+            EncounterTypes = rawData["encounter_types"],
+	    };
+		dataStore.HabitatsListItems = dataStore.Habitats.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
+		dataStore.GrowthRatesListItems = dataStore.GrowthRates.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
+		dataStore.GenderRatiosListItems = dataStore.GenderRatios.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
+		dataStore.EvolutionMethodsListItems = dataStore.EvolutionMethods.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
+		dataStore.MoveCategoriesListItems = dataStore.MoveCategories.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
+		dataStore.MoveTargetsListItems = dataStore.MoveTargets.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
+		dataStore.NaturesListItems = dataStore.Natures.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
+		dataStore.WeathersListItems = dataStore.Weathers.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
+		dataStore.ItemPocketsListItems = dataStore.ItemPockets.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
+		dataStore.ItemFieldUsesListItems = dataStore.ItemFieldUses.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
+		dataStore.ItemBattleUsesListItems = dataStore.ItemBattleUses.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
+		dataStore.BodyColorsListItems = dataStore.BodyColors.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
+		dataStore.BodyShapesListItems = dataStore.BodyShapes.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
+        dataStore.EggGroupsListItems = dataStore.EggGroups.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
+		dataStore.EncounterTypesListItems = dataStore.EncounterTypes.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
+
+		return dataStore;
     }
 
     private static void Validate(Dictionary<string, List<string>> data)
