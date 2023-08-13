@@ -749,7 +749,7 @@ public static class Editor
 
     public static void SetDatabaseSubmode(DatabaseMode Submode)
     {
-        MainWindow.DatabaseWidget.SetMode(Submode);
+        MainWindow.DatabaseWidget.SetMode(Submode, true);
     }
 
     public static void SetScriptingMode()

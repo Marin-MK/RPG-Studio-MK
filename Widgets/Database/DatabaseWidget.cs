@@ -20,9 +20,9 @@ public class DatabaseWidget : Widget
         DataTypeList = new DataTypeList(MainGrid);
     }
 
-    public void SetMode(DatabaseMode Mode)
+    public void SetMode(DatabaseMode Mode, bool Force = false)
     {
-        if (this.Mode == Mode) return;
+        if (this.Mode == Mode && !Force) return;
         this.Mode = Mode;
         ActiveDatabaseWidget?.Dispose();
         ActiveDatabaseWidget = null;

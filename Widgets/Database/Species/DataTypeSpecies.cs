@@ -140,7 +140,13 @@ public partial class DataTypeSpecies : Widget
         }
         else if (Tabs.SelectedIndex == 1) // Moves
         {
+            DataContainer levelupContainer = new DataContainer(StackPanel);
+            levelupContainer.SetText("Level-Up Moves");
+            CreateLevelContainer(levelupContainer, this.Species);
 
+            DataContainer evoMovesContainer = new DataContainer(StackPanel);
+            evoMovesContainer.SetText("Evolution Moves");
+            CreateEvoMovesContainer(evoMovesContainer, this.Species);
         }
         else if (Tabs.SelectedIndex == 2) // Evolutions
         {
