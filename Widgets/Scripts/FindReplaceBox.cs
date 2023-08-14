@@ -8,7 +8,8 @@ public class FindReplaceBox : Widget
 {
     CheckBox RegexBox;
     CheckBox CaseBox;
-    CheckBox AllTabsBox;
+    Label FindLabel;
+    Label ReplaceLabel;
     TextBox FindBox;
     TextBox ReplaceBox;
     Button FindButton;
@@ -21,8 +22,6 @@ public class FindReplaceBox : Widget
     public FindReplaceBox(ScriptEditorBox ScriptEditorBox, IContainer Parent) : base(Parent)
     {
         this.ScriptEditorBox = ScriptEditorBox;
-        MinimumSize.Height = MaximumSize.Height = 77;
-        SetHeight(77);
         SetBackgroundColor(40, 62, 84);
 
         RegexBox = new CheckBox(this);
@@ -35,11 +34,11 @@ public class FindReplaceBox : Widget
         CaseBox.SetText("Case-Sensitive");
         CaseBox.OnCheckChanged += _ => ForceRecalculate = true;
 
-        Label FindLabel = new Label(this);
+        FindLabel = new Label(this);
         FindLabel.SetText("Find:");
         FindLabel.SetPosition(180, 14);
 
-        Label ReplaceLabel = new Label(this);
+        ReplaceLabel = new Label(this);
         ReplaceLabel.SetText("Replace:");
         ReplaceLabel.SetPosition(159, 50);
 
@@ -102,6 +101,8 @@ public class FindReplaceBox : Widget
             new Shortcut(this, new Key(Keycode.ENTER, Keycode.SHIFT), _ => InvokeSearch(true))
         });
 
+        MinimumSize.Height = MaximumSize.Height = 77;
+        SetHeight(77);
         ForceSelect();
     }
 
@@ -164,4 +165,29 @@ public class FindReplaceBox : Widget
 		List<Occurrence> occurrences = finder.Find(FindBox.Text);
 		ScriptEditorBox.ReplaceAllOccurrences(occurrences, ReplaceBox.Text);
     }
+
+	public override void SizeChanged(BaseEventArgs e)
+	{
+		base.SizeChanged(e);
+        if (Window.Width < 750)
+        {
+            RegexBox.SetVisible(false);
+            CaseBox.SetVisible(false);
+            RegexBox.SetChecked(false);
+            CaseBox.SetChecked(false);
+			FindLabel.SetPosition(30, 14);
+			ReplaceLabel.SetPosition(9, 50);
+			FindBox.SetPadding(70, 7, 200, 0);
+			ReplaceBox.SetPadding(70, 44, 200, 0);
+		}
+        else
+        {
+			RegexBox.SetVisible(true);
+			CaseBox.SetVisible(true);
+			FindLabel.SetPosition(180, 14);
+			ReplaceLabel.SetPosition(159, 50);
+			FindBox.SetPadding(220, 7, 200, 0);
+			ReplaceBox.SetPadding(220, 44, 200, 0);
+		}
+	}
 }
