@@ -84,17 +84,17 @@ public static class Editor
     /// <summary>
     /// The absolute path to the application's data folder.
     /// </summary>
-    public static string AppDataFolder => Path.Combine(MKUtils.MKUtils.AppDataFolder, "RPG Studio MK");
+    public static string AppDataFolder => Path.Combine(MKUtils.MKUtils.AppDataFolder, "RPG Studio MK").Replace('\\', '/');
 
     /// <summary>
     /// The absolute path to the installed kits folder.
     /// </summary>
-    public static string KitsFolder => Path.Combine(AppDataFolder, "Kits");
+    public static string KitsFolder => Path.Combine(AppDataFolder, "Kits").Replace('\\', '/');
 
     /// <summary>
     /// The absolute path to the general settings file of the program.
     /// </summary>
-    public static string SettingsFilePath => Path.Combine(AppDataFolder, "editor.mkd");
+    public static string SettingsFilePath => Path.Combine(AppDataFolder, "editor.mkd").Replace('\\', '/');
 
     /// <summary>
     /// Debug method for quickly testing a piece of functionality.
@@ -619,6 +619,7 @@ public static class Editor
         if (!InProject) return;
         if (MainWindow != null)
         {
+            Logger.WriteLine("Saving project...");
             MainWindow.StatusBar.QueueMessage("Saving project...");
             Graphics.UpdateGraphics();
         }
@@ -630,6 +631,7 @@ public static class Editor
         if (MainWindow != null)
         {
             s.Stop();
+            Logger.WriteLine($"Saved project in {s.ElapsedMilliseconds}ms.");
             MainWindow.StatusBar.QueueMessage($"Saved project ({s.ElapsedMilliseconds}ms)", true);
         }
         MakeRecentProject();

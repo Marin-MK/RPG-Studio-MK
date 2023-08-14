@@ -100,6 +100,7 @@ public static partial class Data
         Plugins.Clear();
         StopLoading = false;
         UsesExternalScripts = false;
+        Sources.InvalidateAll();
         if (GlobalHardcodedData is not null)
         {
             // Switch the project-specific hardcoded data out for the global hardcoded data again
@@ -193,7 +194,7 @@ public static partial class Data
         {
             get 
             {
-                if (recalculateSpeciesAndForms) _saflia = Species.Select(spc => new ListItem(spc.Value.Form != 0 ? (spc.Value.Name + $" ({spc.Value.FormName ?? spc.Value.Form.ToString()})") : spc.Value.Name, spc.Value)).OrderBy(item => item.Name).ToList();
+                if (recalculateSpeciesAndForms) _saflia = Species.Select(spc => new ListItem(spc.Value.Form != 0 ? $"{spc.Value.Name} ({spc.Value.FormName ?? spc.Value.Form.ToString()})" : spc.Value.Name, spc.Value)).OrderBy(item => item.Name).ToList();
                 recalculateSpeciesAndForms = false;
                 return _saflia;
             } 
@@ -202,7 +203,7 @@ public static partial class Data
 		{
 			get
 			{
-                if (recalculateSpecies) _slia = Species.Select(spc => new ListItem(spc.Value.Name, spc.Value)).OrderBy(item => item.Name).ToList();
+                if (recalculateSpecies) _slia = Species.Where(kvp => kvp.Value.Form == 0).Select(spc => new ListItem(spc.Value.Name, spc.Value)).OrderBy(item => item.Name).ToList();
                 recalculateSpecies = false;
 				return _slia;
 			}
@@ -309,6 +310,16 @@ public static partial class Data
             recalculateHMs = true;
         }
 		public static void InvalidateTrainerTypes() => recalculateTrainerTypes = true;
+
+        public static void InvalidateAll()
+        {
+            InvalidateSpecies();
+            InvalidateAbilities();
+            InvalidateMoves();
+            InvalidateTypes();
+            InvalidateItems();
+            InvalidateTrainerTypes();
+        }
 	}
 }
 

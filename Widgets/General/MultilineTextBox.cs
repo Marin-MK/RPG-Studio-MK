@@ -25,7 +25,15 @@ public class MultilineTextBox : Widget
         ScrollContainer = new Container(this);
         ScrollContainer.SetDocked(true);
         ScrollContainer.SetPadding(3, 3, 14, 3);
-        ScrollContainer.OnHoverChanged += _ => Input.SetCursor(ScrollContainer.Mouse.Inside ? CursorType.IBeam : CursorType.Arrow);
+        ScrollContainer.OnMouseMoving += _ =>
+        {
+            if (ScrollContainer.Mouse.Inside && Input.SystemCursor != CursorType.IBeam)
+                Input.SetCursor(CursorType.IBeam);
+        };
+        ScrollContainer.OnHoverChanged += _ =>
+        {
+            if (!ScrollContainer.Mouse.Inside) Input.SetCursor(CursorType.Arrow);
+        };
 
         TextArea = new MultilineTextArea(ScrollContainer);
         TextArea.SetHDocked(true);
@@ -150,6 +158,6 @@ public class MultilineTextBox : Widget
     {
         base.LeftMouseDownInside(e);
         if (ScrollContainer.Mouse.Inside) TextArea.OnWidgetSelected.Invoke(new BaseEventArgs());
-        else Window.UI.SetSelectedWidget(null);
+        else if (TextArea.SelectedWidget) Window.UI.SetSelectedWidget(null);
     }
 }

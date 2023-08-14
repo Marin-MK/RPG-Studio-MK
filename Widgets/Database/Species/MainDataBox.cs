@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using RPGStudioMK.Game;
 
@@ -36,7 +37,17 @@ public partial class DataTypeSpecies
 		intNameBox.SetFont(Fonts.Paragraph);
 		intNameBox.SetPopupStyle(false);
 		intNameBox.SetText(spc.ID);
-		intNameBox.OnTextChanged += _ => spc.ID = intNameBox.Text;
+		intNameBox.OnTextChanged += _ =>
+		{
+			Match match = Regex.Match(intNameBox.Text, @"[A-Z][a-zA-Z_\d]*$");
+			if (match.Success) spc.ID = intNameBox.Text;
+		};
+		intNameBox.TextArea.OnWidgetDeselected += _ =>
+		{
+			Match match = Regex.Match(intNameBox.Text, @"[A-Z][a-zA-Z_\d]*$");
+			if (!match.Success) spc.ID = Internalize(nameBox.Text);
+			intNameBox.SetText(spc.ID);
+		};
 
 		Label intNameLabel = new Label(parent);
 		intNameLabel.SetPosition(116, 97);
@@ -160,6 +171,23 @@ public partial class DataTypeSpecies
 		hiddenAbilityCheckBox.SetFont(Fonts.Paragraph);
 
         parent.UpdateSize();
+	}
+
+	string Internalize(string name)
+	{
+		string str = name.ToUpper();
+		int idx = 0;
+		while (idx < str.Length)
+		{
+			char c = str[idx];
+			if ((c == '_' && idx == 0) || (c < 'A' || c > 'Z') && c != '_')
+			{
+				str = str.Remove(idx, 1);
+				continue;
+			}
+			else idx++;
+		}
+		return str;
 	}
 
 	void CreateStatsContainer(DataContainer parent, Species spc)
@@ -608,95 +636,203 @@ public partial class DataTypeSpecies
 		happinessBox.SetValue(spc.Happiness);
 		happinessBox.OnValueChanged += _ => spc.Happiness = happinessBox.Value;
 
+		bool hasIncense = spc.Incense is not null;
+
+		DropdownBox incenseBox = new DropdownBox(parent);
+		incenseBox.SetPosition(274, 227);
+		incenseBox.SetSize(160, 24);
+		incenseBox.SetItems(Data.Sources.ItemsListItemsAlphabetical);
+		if (hasIncense) incenseBox.SetSelectedIndex(Data.Sources.ItemsListItemsAlphabetical.FindIndex(item => (Item) item.Object == spc.Incense.Item));
+		incenseBox.OnSelectionChanged += _ => spc.Incense = (ItemResolver) (Item) incenseBox.SelectedItem.Object;
+		incenseBox.SetEnabled(hasIncense);
+
+		CheckBox incenseCheckBox = new CheckBox(parent);
+		incenseCheckBox.SetPosition(186, 230);
+		incenseCheckBox.SetText("Incense");
+		incenseCheckBox.SetFont(Fonts.Paragraph);
+		incenseCheckBox.SetChecked(hasIncense);
+		incenseCheckBox.OnCheckChanged += _ =>
+		{
+			if (incenseCheckBox.Checked)
+			{
+				incenseBox.SetEnabled(true);
+				spc.Incense = (ItemResolver) (Item) incenseBox.SelectedItem.Object;
+			}
+			else
+			{
+				incenseBox.SetEnabled(false);
+				spc.Incense = null;
+			}
+		};
+
+		SpeciesListWidget offspringBox = new SpeciesListWidget(true, parent);
+		offspringBox.SetText("Offspring");
+		offspringBox.SetSize(220, 216);
+		offspringBox.SetPosition(176, 270);
+		offspringBox.SetItems(spc.Offspring);
+		offspringBox.OnListChanged += _ => spc.Offspring = offspringBox.AsResolvers;
+
+		StringListWidget flagsBox = new StringListWidget(parent);
+		flagsBox.SetText("Flags");
+		flagsBox.SetSize(220, 216);
+		flagsBox.SetPosition(576, 270);
+		flagsBox.SetItems(spc.Flags);
+		flagsBox.OnListChanged += _ => spc.Flags = flagsBox.AsStrings;
+
+		parent.UpdateSize();
+	}
+
+	void CreateDexInfoContainer(DataContainer parent, Species spc)
+	{
+		Label kindLabel = new Label(parent);
+		kindLabel.SetPosition(226, 70);
+		kindLabel.SetSize(27, 18);
+		kindLabel.SetText("Kind");
+		kindLabel.SetFont(Fonts.Paragraph);
+
+		TextBox kindBox = new TextBox(parent);
+		kindBox.SetPosition(274, 67);
+		kindBox.SetSize(155, 27);
+		kindBox.SetFont(Fonts.Paragraph);
+		kindBox.SetText(spc.Category);
+		kindBox.OnTextChanged += _ => spc.Category = kindBox.Text;
+
+		Label colorLabel = new Label(parent);
+		colorLabel.SetPosition(547, 70);
+		colorLabel.SetSize(33, 18);
+		colorLabel.SetText("Color");
+		colorLabel.SetFont(Fonts.Paragraph);
+
+		DropdownBox colorBox = new DropdownBox(parent);
+		colorBox.SetPosition(604, 67);
+		colorBox.SetSize(150, 24);
+		colorBox.SetItems(Data.HardcodedData.BodyColors.Select(clr => new ListItem(clr)).ToList());
+		colorBox.SetSelectedIndex(Data.HardcodedData.BodyColors.IndexOf(spc.Color));
+		colorBox.OnSelectionChanged += _ => spc.Color = Data.HardcodedData.BodyColors[colorBox.SelectedIndex];
+
+		Label heightLabel = new Label(parent);
+		heightLabel.SetPosition(213, 110);
+		heightLabel.SetSize(40, 18);
+		heightLabel.SetText("Height");
+		heightLabel.SetFont(Fonts.Paragraph);
+
+		FloatNumericBox heightBox = new FloatNumericBox(parent);
+		heightBox.SetPosition(274, 105);
+		heightBox.SetSize(120, 30);
+		heightBox.SetValue(spc.Height);
+		heightBox.OnValueChanged += _ => spc.Height = heightBox.Value;
+
+		Label heightMetersLabel = new Label(parent);
+		heightMetersLabel.SetPosition(400, 110);
+		heightMetersLabel.SetSize(12, 18);
+		heightMetersLabel.SetText("m");
+		heightMetersLabel.SetFont(Fonts.Paragraph);
+
+		Label weightLabel = new Label(parent);
+		weightLabel.SetPosition(209, 150);
+		weightLabel.SetSize(44, 18);
+		weightLabel.SetText("Weight");
+		weightLabel.SetFont(Fonts.Paragraph);
+
+		FloatNumericBox weightBox = new FloatNumericBox(parent);
+		weightBox.SetPosition(274, 145);
+		weightBox.SetSize(120, 30);
+		weightBox.SetValue(spc.Weight);
+		weightBox.OnValueChanged += _ => spc.Weight = weightBox.Value;
+
+		Label weightKilosBox = new Label(parent);
+		weightKilosBox.SetPosition(400, 150);
+		weightKilosBox.SetSize(14, 18);
+		weightKilosBox.SetText("kg");
+		weightKilosBox.SetFont(Fonts.Paragraph);
+
+		Label habitatLabel = new Label(parent);
+		habitatLabel.SetPosition(535, 110);
+		habitatLabel.SetSize(45, 18);
+		habitatLabel.SetText("Habitat");
+		habitatLabel.SetFont(Fonts.Paragraph);
+
+		DropdownBox habitatBox = new DropdownBox(parent);
+		habitatBox.SetPosition(604, 107);
+		habitatBox.SetSize(150, 24);
+		habitatBox.SetItems(Data.HardcodedData.Habitats.Select(h => new ListItem(h)).ToList());
+		habitatBox.SetSelectedIndex(Data.HardcodedData.Habitats.IndexOf(spc.Habitat));
+		habitatBox.OnSelectionChanged += _ => spc.Habitat = Data.HardcodedData.Habitats[habitatBox.SelectedIndex];
+
+		Label shapeLabel = new Label(parent);
+		shapeLabel.SetPosition(542, 150);
+		shapeLabel.SetSize(38, 18);
+		shapeLabel.SetText("Shape");
+		shapeLabel.SetFont(Fonts.Paragraph);
+
+		DropdownBox shapeBox = new DropdownBox(parent);
+		shapeBox.SetPosition(604, 147);
+		shapeBox.SetSize(106, 24);
+		shapeBox.SetItems(Data.HardcodedData.BodyShapes.Select(s => new ListItem(s)).ToList());
+		shapeBox.SetSelectedIndex(Data.HardcodedData.BodyShapes.IndexOf(spc.Shape));
+
+		ImageBox shapePreviewBox = new ImageBox(parent);
+		shapePreviewBox.SetPosition(716, 143);
+		shapePreviewBox.SetSize(30, 30);
+		shapePreviewBox.SetBitmap("assets/img/body_shapes.png");
+		shapePreviewBox.SetSrcRect(new Rect(0, 30 * shapeBox.SelectedIndex, 30, 30));
+		shapeBox.OnSelectionChanged += _ =>
+		{
+			spc.Shape = Data.HardcodedData.BodyShapes[shapeBox.SelectedIndex];
+			shapePreviewBox.SetSrcRect(new Rect(0, 30 * shapeBox.SelectedIndex, 30, 30));
+		};
+
+		Label generationLabel = new Label(parent);
+		generationLabel.SetPosition(186, 190);
+		generationLabel.SetSize(67, 18);
+		generationLabel.SetText("Generation");
+		generationLabel.SetFont(Fonts.Paragraph);
+
+		NumericBox generationBox = new NumericBox(parent);
+		generationBox.SetPosition(274, 185);
+		generationBox.SetSize(120, 30);
+		generationBox.SetMinValue(1);
+		generationBox.SetValue(spc.Generation);
+		generationBox.OnValueChanged += _ => spc.Generation = generationBox.Value;
+
+		Label dexEntryLabel = new Label(parent);
+		dexEntryLabel.SetPosition(451, 230);
+		dexEntryLabel.SetSize(61, 18);
+		dexEntryLabel.SetText("Dex Entry");
+		dexEntryLabel.SetFont(Fonts.Paragraph);
+
+		MultilineTextBox dexEntryBox = new MultilineTextBox(parent);
+		dexEntryBox.SetPosition(150, 260);
+		dexEntryBox.SetSize(690, 107);
+		dexEntryBox.SetFont(Fonts.Paragraph);
+		dexEntryBox.SetText(spc.PokedexEntry);
+		dexEntryBox.OnTextChanged += _ => spc.PokedexEntry = dexEntryBox.Text;
+
 		parent.UpdateSize();
 	}
 
 	void CreateWildItemsContainer(DataContainer parent, Species spc)
 	{
-		bool hasCommonItem = spc.WildItemCommon.Count > 0 && spc.WildItemCommon[0] is not null;
-		bool hasUncommonItem = spc.WildItemUncommon.Count > 0 && spc.WildItemUncommon[0] is not null;
-		bool hasRareItem = spc.WildItemRare.Count > 0 && spc.WildItemRare[0] is not null;
+		ItemListWidget commonList = new ItemListWidget(parent);
+		commonList.SetPosition(126, 54);
+		commonList.SetSize(160, 216);
+		commonList.SetText("Common");
+		commonList.SetItems(spc.WildItemCommon);
+		commonList.OnListChanged += _ => spc.WildItemCommon = commonList.AsResolvers;
 
-		DropdownBox commonBox = new DropdownBox(parent);
-		commonBox.SetPosition(444, 67);
-		commonBox.SetSize(200, 24);
-		commonBox.SetItems(Data.Sources.ItemsListItemsAlphabetical);
-		if (hasCommonItem) commonBox.SetSelectedIndex(Data.Sources.ItemsListItemsAlphabetical.FindIndex(item => (Item) item.Object == spc.WildItemCommon[0].Item));
-		commonBox.SetEnabled(hasCommonItem);
-		commonBox.OnSelectionChanged += _ => spc.WildItemCommon = new List<ItemResolver>() { (ItemResolver) (Item) commonBox.SelectedItem?.Object };
+		ItemListWidget uncommonList = new ItemListWidget(parent);
+		uncommonList.SetPosition(406, 54);
+		uncommonList.SetSize(160, 216);
+		uncommonList.SetText("Uncommon");
+		uncommonList.SetItems(spc.WildItemUncommon);
+		uncommonList.OnListChanged += _ => spc.WildItemUncommon = uncommonList.AsResolvers;
 
-		DropdownBox uncommonBox = new DropdownBox(parent);
-		uncommonBox.SetPosition(444, 107);
-		uncommonBox.SetSize(200, 24);
-		uncommonBox.SetItems(Data.Sources.ItemsListItemsAlphabetical);
-		if (hasUncommonItem) uncommonBox.SetSelectedIndex(Data.Sources.ItemsListItemsAlphabetical.FindIndex(item => (Item) item.Object == spc.WildItemUncommon[0].Item));
-		uncommonBox.SetEnabled(hasUncommonItem);
-		uncommonBox.OnSelectionChanged += _ => spc.WildItemUncommon = new List<ItemResolver>() { (ItemResolver) (Item) uncommonBox.SelectedItem?.Object };
-
-		DropdownBox rareBox = new DropdownBox(parent);
-		rareBox.SetPosition(444, 147);
-		rareBox.SetSize(200, 24);
-		rareBox.SetItems(Data.Sources.ItemsListItemsAlphabetical);
-		if (hasRareItem) rareBox.SetSelectedIndex(Data.Sources.ItemsListItemsAlphabetical.FindIndex(item => (Item) item.Object == spc.WildItemRare[0].Item));
-		rareBox.SetEnabled(hasRareItem);
-		rareBox.OnSelectionChanged += _ => spc.WildItemRare = new List<ItemResolver>() { (ItemResolver) (Item) rareBox.SelectedItem?.Object };
-
-		CheckBox commonCheckBox = new CheckBox(parent);
-		commonCheckBox.SetPosition(337, 71);
-		commonCheckBox.SetText("Common");
-		commonCheckBox.SetFont(Fonts.Paragraph);
-		commonCheckBox.SetChecked(hasCommonItem);
-		commonCheckBox.OnCheckChanged += _ =>
-		{
-			if (commonCheckBox.Checked)
-			{
-				commonBox.SetEnabled(true);
-				spc.WildItemCommon = new List<ItemResolver>() { (ItemResolver) (Item) commonBox.SelectedItem?.Object };
-			}
-			else
-			{
-				commonBox.SetEnabled(false);
-				spc.WildItemCommon.Clear();
-			}
-		};
-
-		CheckBox uncommonCheckBox = new CheckBox(parent);
-		uncommonCheckBox.SetPosition(322, 111);
-		uncommonCheckBox.SetText("Uncommon");
-		uncommonCheckBox.SetFont(Fonts.Paragraph);
-		uncommonCheckBox.SetChecked(hasUncommonItem);
-		uncommonCheckBox.OnCheckChanged += _ =>
-		{
-			if (uncommonCheckBox.Checked)
-			{
-				uncommonBox.SetEnabled(true);
-				spc.WildItemUncommon = new List<ItemResolver>() { (ItemResolver) (Item) uncommonBox.SelectedItem?.Object };
-			}
-			else
-			{
-				uncommonBox.SetEnabled(false);
-				spc.WildItemUncommon.Clear();
-			}
-		};
-
-		CheckBox rareCheckBox = new CheckBox(parent);
-		rareCheckBox.SetPosition(366, 151);
-		rareCheckBox.SetText("Rare");
-		rareCheckBox.SetFont(Fonts.Paragraph);
-		rareCheckBox.SetChecked(hasRareItem);
-		rareCheckBox.OnCheckChanged += _ =>
-		{
-			if (rareCheckBox.Checked)
-			{
-				rareBox.SetEnabled(true);
-				spc.WildItemRare = new List<ItemResolver>() { (ItemResolver) (Item) rareBox.SelectedItem?.Object };
-			}
-			else
-			{
-				rareBox.SetEnabled(false);
-				spc.WildItemRare.Clear();
-			}
-		};
+		ItemListWidget rareList = new ItemListWidget(parent);
+		rareList.SetPosition(686, 54);
+		rareList.SetSize(160, 216);
+		rareList.SetText("Rare");
+		rareList.SetItems(spc.WildItemRare);
+		rareList.OnListChanged += _ => spc.WildItemRare = rareList.AsResolvers;
 
 		parent.UpdateSize();
 	}

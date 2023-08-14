@@ -34,6 +34,7 @@ public partial class DataTypeSpecies : Widget
 
 		Fade = new VignetteFade(Grid);
 		Fade.SetGrid(1, 1);
+        Fade.SetZIndex(2);
 
 		SpeciesList = new DataTypeSubTree("Species", Grid);
         SpeciesList.SetBackgroundColor(28, 50, 73);
@@ -55,7 +56,6 @@ public partial class DataTypeSpecies : Widget
         Tabs.CreateTab("Main");
         Tabs.CreateTab("Moves");
         Tabs.CreateTab("Evolutions");
-        Tabs.CreateTab("Dex Info");
         Tabs.CreateTab("Sprites");
 
         MainContainer = new Container(Grid);
@@ -65,8 +65,19 @@ public partial class DataTypeSpecies : Widget
         vs.SetRightDocked(true);
         vs.SetPadding(0, 3, 1, 3);
         vs.SetVDocked(true);
+        vs.SetZIndex(1);
+        vs.SetScrollStep(32);
         MainContainer.SetVScrollBar(vs);
         MainContainer.VAutoScroll = true;
+
+        HScrollBar hs = new HScrollBar(MainContainer);
+        hs.SetBottomDocked(true);
+        hs.SetPadding(3, 0, 3, 1);
+        hs.SetHDocked(true);
+        hs.SetZIndex(1);
+        hs.SetScrollStep(32);
+        MainContainer.SetHScrollBar(hs);
+        MainContainer.HAutoScroll = true;
 
         ScrollContainer = new Container(MainContainer);
 
@@ -125,7 +136,7 @@ public partial class DataTypeSpecies : Widget
         
         StackPanel = new VStackPanel(ScrollContainer);
         StackPanel.SetWidth(1000);
-        StackPanel.OnSizeChanged += _ => ScrollContainer.SetSize(StackPanel.Size.Width, StackPanel.Size.Height + 300);
+        StackPanel.OnSizeChanged += _ => ScrollContainer.SetSize(StackPanel.Size.Width, StackPanel.Size.Height + 200);
         StackPanel.OnChildBoundsChanged += _ => StackPanel.UpdateLayout();
 
         if (Tabs.SelectedIndex == 0) // Main
@@ -146,7 +157,11 @@ public partial class DataTypeSpecies : Widget
             miscContainer.SetText("Misc");
             CreateMiscContainer(miscContainer, this.Species);
 
-            DataContainer heldItemsContainer = new DataContainer(StackPanel);
+			DataContainer dexInfoContainer = new DataContainer(StackPanel);
+			dexInfoContainer.SetText("Dex Info");
+			CreateDexInfoContainer(dexInfoContainer, this.Species);
+
+			DataContainer heldItemsContainer = new DataContainer(StackPanel);
             heldItemsContainer.SetText("Wild Held Items");
             CreateWildItemsContainer(heldItemsContainer, this.Species);
         }
@@ -174,26 +189,29 @@ public partial class DataTypeSpecies : Widget
         }
         else if (Tabs.SelectedIndex == 2) // Evolutions
         {
+            DataContainer evoContainer = new DataContainer(StackPanel);
+            evoContainer.SetText("Evolves Into");
+            CreateEvoContainer(evoContainer, this.Species);
 
+            DataContainer prevoContainer = new DataContainer(StackPanel);
+            prevoContainer.SetText("Evolves From");
+            CreatePrevoContainer(prevoContainer, this.Species);
         }
-        else if (Tabs.SelectedIndex == 3) // Dex Info
+        else if (Tabs.SelectedIndex == 3) // Sprites
         {
 
         }
-        else if (Tabs.SelectedIndex == 4) // Sprites
-        {
 
-        }
-
-
-		ScrollContainer.SetPosition(MainContainer.Size.Width / 2 - ScrollContainer.Size.Width / 2, 0);
+        if (ScrollContainer.Size.Width < MainContainer.Size.Width) ScrollContainer.SetPosition(MainContainer.Size.Width / 2 - ScrollContainer.Size.Width / 2, 0);
+        else ScrollContainer.SetPosition(0, 0);
 	}
 
 	public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-        ScrollContainer.SetPosition(MainContainer.Size.Width / 2 - ScrollContainer.Size.Width / 2, 0);
-    }
+		if (ScrollContainer.Size.Width < MainContainer.Size.Width) ScrollContainer.SetPosition(MainContainer.Size.Width / 2 - ScrollContainer.Size.Width / 2, 0);
+		else ScrollContainer.SetPosition(0, 0);
+	}
 
     public void SetSpecies(Species Species, bool ForceUpdate = false)
     {

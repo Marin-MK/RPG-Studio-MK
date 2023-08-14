@@ -9,8 +9,9 @@ public class NumericBox : Widget
     public int MinValue { get; protected set; } = -999999;
     public int Increment { get; protected set; } = 1;
     public bool Enabled { get; protected set; } = true;
+	public bool ShowDisabledText { get; protected set; } = false;
 
-    public BaseEvent OnValueChanged;
+	public BaseEvent OnValueChanged;
     public BaseEvent OnEnterPressed { get => TextArea.OnEnterPressed; set => TextArea.OnEnterPressed = value; }
 
     Button DownButton;
@@ -139,6 +140,11 @@ public class NumericBox : Widget
         {
             this.Increment = this.Increment;
         }
+    }
+
+    public void SetShowDisabledText(bool ShowDisabledText)
+    {
+        TextArea.SetShowDisabledText(ShowDisabledText);
     }
 
     protected override void Draw()

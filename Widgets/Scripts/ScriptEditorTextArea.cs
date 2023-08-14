@@ -798,7 +798,6 @@ public class ScriptEditorTextArea : MultilineTextArea
         if (selectedText is not null && selectedText.Length > 1 && !selectedText.Contains('\n'))
         {
             if (string.IsNullOrWhiteSpace(selectedText)) return;
-            Logger.WriteLine($"\"{selectedText.Replace("\n", "\\n").Replace("\"", "\\\"")}\"");
             List<(int lineIndex, int startIndex, int endIndex)> matches = GetMatches(selectedText);
             SetHighlights(matches, true);
             HighlightsFromSelection = true;

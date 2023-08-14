@@ -294,6 +294,7 @@ public partial class MainEditorWindow : UIWindow
         Editor.SetMode(Editor.ProjectSettings.LastMode, true);
 
         s.Stop();
+        Logger.WriteLine($"Project loaded in {s.ElapsedMilliseconds}ms.");
         StatusBar.QueueMessage($"Project loaded ({s.ElapsedMilliseconds}ms)", true, 5000);
         return true;
     }

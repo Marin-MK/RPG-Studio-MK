@@ -649,7 +649,7 @@ public class TreeView : Widget
                 if (RNode.Expanded) BGSprite.Bitmap.DrawLine(x + 19, y + 17, x + 19, y + LineHeight - 1, new Color(64, 104, 146));
             }
             bool sel = SelectedNodes.Contains(RNode);
-            TXTSprite.Bitmap.DrawText(RNode.Text, x + 30, y + 2, sel ? new Color(55, 187, 255) : Color.WHITE);
+			TXTSprite.Bitmap.DrawText(RNode.Text, x + 30, y + 2, sel ? new Color(55, 187, 255) : Color.WHITE);
             if (AddData)
             {
                 if (IndexProvider != null)
