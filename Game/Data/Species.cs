@@ -16,46 +16,46 @@ public class Species : IGameData, ICloneable
     [Obsolete]
     public int? IDNumber;
 	public SpeciesResolver BaseSpecies;
-	public int Form;
-	public string Name;
-    public string? FormName;
-	public string Category;
-	public string PokedexEntry;
-	public int PokedexForm;
-	public TypeResolver Type1;
-	public TypeResolver? Type2;
-	public Stats BaseStats;
-	public Stats EVs;
-	public int BaseEXP;
-	public string GrowthRate;
-	public string GenderRatio;
-	public int CatchRate;
-	public int Happiness;
-	public List<(int Level, MoveResolver Move)> Moves;
-	public List<MoveResolver> TutorMoves;
-	public List<MoveResolver> EggMoves;
-	public List<AbilityResolver> Abilities;
-	public List<AbilityResolver> HiddenAbilities;
-	public List<ItemResolver> WildItemCommon;
-	public List<ItemResolver> WildItemUncommon;
-	public List<ItemResolver> WildItemRare;
-	public List<string> EggGroups;
-	public int HatchSteps;
+	public int Form;//form
+	public string Name;//
+    public string? FormName;//form
+	public string Category;//
+	public string PokedexEntry;//
+	public int PokedexForm;//form
+	public TypeResolver Type1;//
+	public TypeResolver? Type2;//
+	public Stats BaseStats;//
+	public Stats EVs;//
+	public int BaseEXP;//
+	public string GrowthRate;//
+	public string GenderRatio;//
+	public int CatchRate;//
+	public int Happiness;//
+	public List<(int Level, MoveResolver Move)> Moves;//
+	public List<MoveResolver> TutorMoves;//
+	public List<MoveResolver> EggMoves;//
+	public List<AbilityResolver> Abilities;//
+	public List<AbilityResolver> HiddenAbilities;//
+	public List<ItemResolver> WildItemCommon;//
+	public List<ItemResolver> WildItemUncommon;//
+	public List<ItemResolver> WildItemRare;//
+	public List<string> EggGroups;//
+	public int HatchSteps;//
 	public ItemResolver? Incense;
 	public List<SpeciesResolver> Offspring;
-	public List<Evolution> Evolutions;
-	public List<Evolution> Prevolutions;
-	public float Height;
-	public float Weight;
-	public string Color;
-	public string Shape;
-	public string Habitat;
-	public int Generation;
+	public List<Evolution> Evolutions;//
+	public List<Evolution> Prevolutions;//
+	public float Height;//
+	public float Weight;//
+	public string Color;//
+	public string Shape;//
+	public string Habitat;//
+	public int Generation;//
 	public List<string> Flags;
-	public ItemResolver? MegaStone;
-	public MoveResolver? MegaMove;
-	public int UnmegaForm;
-	public int MegaMessage;
+	public ItemResolver? MegaStone;//form
+	public MoveResolver? MegaMove;//form
+	public int UnmegaForm;//form
+	public int MegaMessage;//form
 
 	/// <summary>
 	/// DO NOT USE!

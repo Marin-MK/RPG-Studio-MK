@@ -179,8 +179,9 @@ public static partial class Data
 
     public static class Sources
     {
-        private static List<ListItem> _slia;
-        private static List<ListItem> _alia;
+        private static List<ListItem> _saflia;
+		private static List<ListItem> _slia;
+		private static List<ListItem> _alia;
         private static List<ListItem> _mlia;
         private static List<ListItem> _tlia;
         private static List<ListItem> _ilia;
@@ -188,19 +189,30 @@ public static partial class Data
         private static List<Item> _tms;
         private static List<Item> _hms;
 
-        public static List<ListItem> SpeciesListItemsAlphabetical 
+        public static List<ListItem> SpeciesAndFormsListItemsAlphabetical 
         {
             get 
             {
-                if (recalculateSpecies) _slia = Species.Select(spc => new ListItem(spc.Value.Name, spc.Value)).OrderBy(item => item.Name).ToList();
-                return _slia;
+                if (recalculateSpeciesAndForms) _saflia = Species.Select(spc => new ListItem(spc.Value.Form != 0 ? (spc.Value.Name + $" ({spc.Value.FormName ?? spc.Value.Form.ToString()})") : spc.Value.Name, spc.Value)).OrderBy(item => item.Name).ToList();
+                recalculateSpeciesAndForms = false;
+                return _saflia;
             } 
         }
-        public static List<ListItem> AbilitiesListItemsAlphabetical
+		public static List<ListItem> SpeciesListItemsAlphabetical
+		{
+			get
+			{
+                if (recalculateSpecies) _slia = Species.Select(spc => new ListItem(spc.Value.Name, spc.Value)).OrderBy(item => item.Name).ToList();
+                recalculateSpecies = false;
+				return _slia;
+			}
+		}
+		public static List<ListItem> AbilitiesListItemsAlphabetical
         {
             get
             {
                 if (recalculateAbilities) _alia = Abilities.Select(abil => new ListItem(abil.Value.Name, abil.Value)).OrderBy(item => item.Name).ToList();
+                recalculateAbilities = false;
                 return _alia;
 			}
         }
@@ -209,6 +221,7 @@ public static partial class Data
             get
             {
                 if (recalculateMoves) _mlia = Moves.Select(move => new ListItem(move.Value.Name, move.Value)).OrderBy(item => item.Name).ToList();
+                recalculateMoves = false;
                 return _mlia;
 			}
         }
@@ -217,6 +230,7 @@ public static partial class Data
             get
             {
                 if (recalculateTypes) _tlia = Types.Select(type => new ListItem(type.Value.Name, type.Value)).OrderBy(item => item.Name).ToList();
+                recalculateTypes = false;
                 return _tlia;
 			}
         }
@@ -225,6 +239,7 @@ public static partial class Data
             get
             {
                 if (recalculateItems) _ilia = Items.Select(item => new ListItem(item.Value.Name, item.Value)).OrderBy(item => item.Name).ToList();
+                recalculateItems = false;
                 return _ilia;
 			}
         }
@@ -233,6 +248,7 @@ public static partial class Data
             get
             {
                 if (recalculateTrainerTypes) _ttlia = TrainerTypes.Select(ttype => new ListItem(ttype.Value.Name, ttype.Value)).OrderBy(item => item.Name).ToList();
+                recalculateTrainerTypes = false;
                 return _ttlia;
 			}
         }
@@ -248,6 +264,7 @@ public static partial class Data
                                 .Select(kvp => kvp.Value)
                                 .ToList();
                 }
+                recalculateTMs = false;
                 return _tms;
             }
         }
@@ -262,10 +279,12 @@ public static partial class Data
                                 .Select(kvp => kvp.Value)
                                 .ToList();
                 }
+                recalculateHMs = false;
                 return _hms;
             }
         }
 
+        private static bool recalculateSpeciesAndForms = true;
         private static bool recalculateSpecies = true;
         private static bool recalculateAbilities = true;
         private static bool recalculateMoves = true;
@@ -275,11 +294,15 @@ public static partial class Data
         private static bool recalculateTMs = true;
         private static bool recalculateHMs = true;
 
-        public static void InvalidateSpecies() => recalculateSpecies = true;
+        public static void InvalidateSpecies()
+        {
+            recalculateSpeciesAndForms = true;
+            recalculateSpecies = true;
+        }
 		public static void InvalidateAbilities() => recalculateAbilities = true;
 		public static void InvalidateMoves() => recalculateMoves = true;
 		public static void InvalidateTypes() => recalculateTypes = true;
-        public static void InvalidateItems() 
+        public static void InvalidateItems()
         {
             recalculateItems = true;
             recalculateTMs = true;
