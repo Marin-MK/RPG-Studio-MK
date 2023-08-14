@@ -251,9 +251,9 @@ public class SubmodeView : Widget
         Sprites["sel"].X = Sprites["text"].X + HoveringIndex * HeaderWidth;
     }
 
-    public override void MouseDown(MouseEventArgs e)
+    public override void LeftMouseDownInside(MouseEventArgs e)
     {
-        base.MouseDown(e);
+        base.LeftMouseDownInside(e);
         if (HoveringIndex != -1)
         {
             SelectTab(HoveringIndex);

@@ -185,6 +185,8 @@ public static partial class Data
         private static List<ListItem> _tlia;
         private static List<ListItem> _ilia;
         private static List<ListItem> _ttlia;
+        private static List<Item> _tms;
+        private static List<Item> _hms;
 
         public static List<ListItem> SpeciesListItemsAlphabetical 
         {
@@ -234,6 +236,35 @@ public static partial class Data
                 return _ttlia;
 			}
         }
+        public static List<Item> TMs
+        {
+            get
+            {
+                if (recalculateTMs)
+                {
+                    _tms = Items.ToList()
+                                .FindAll(kvp => kvp.Value.Move is not null &&
+                                        (HardcodedData.Get(kvp.Value.FieldUse, HardcodedData.ItemFieldUses) == "TR" || HardcodedData.Get(kvp.Value.FieldUse, HardcodedData.ItemFieldUses) == "TM"))
+                                .Select(kvp => kvp.Value)
+                                .ToList();
+                }
+                return _tms;
+            }
+        }
+        public static List<Item> HMs
+        {
+            get
+            {
+                if (recalculateHMs)
+                {
+                    _hms = Items.ToList()
+                                .FindAll(kvp => kvp.Value.Move is not null && HardcodedData.Get(kvp.Value.FieldUse, HardcodedData.ItemFieldUses) == "HM")
+                                .Select(kvp => kvp.Value)
+                                .ToList();
+                }
+                return _hms;
+            }
+        }
 
         private static bool recalculateSpecies = true;
         private static bool recalculateAbilities = true;
@@ -241,12 +272,19 @@ public static partial class Data
         private static bool recalculateTypes = true;
         private static bool recalculateItems = true;
         private static bool recalculateTrainerTypes = true;
+        private static bool recalculateTMs = true;
+        private static bool recalculateHMs = true;
 
         public static void InvalidateSpecies() => recalculateSpecies = true;
 		public static void InvalidateAbilities() => recalculateAbilities = true;
 		public static void InvalidateMoves() => recalculateMoves = true;
 		public static void InvalidateTypes() => recalculateTypes = true;
-		public static void InvalidateItems() => recalculateItems = true;
+        public static void InvalidateItems() 
+        {
+            recalculateItems = true;
+            recalculateTMs = true;
+            recalculateHMs = true;
+        }
 		public static void InvalidateTrainerTypes() => recalculateTrainerTypes = true;
 	}
 }

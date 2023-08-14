@@ -1068,6 +1068,16 @@ pbConnectToEditor";
         }
         return false;
     }
+
+    public static bool FloatIsInt(float x)
+    {
+        return Math.Abs(x - (int) x) < float.Epsilon;
+    }
+
+    public static bool DoubleIsInt(double x)
+    {
+        return Math.Abs(x - (int) x) < double.Epsilon;
+    }
 }
 
 public enum BinaryData

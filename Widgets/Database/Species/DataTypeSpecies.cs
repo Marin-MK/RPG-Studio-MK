@@ -16,6 +16,7 @@ public partial class DataTypeSpecies : Widget
     Grid Grid;
     VignetteFade Fade;
     Container MainContainer;
+    Container ScrollContainer;
     VStackPanel StackPanel;
 
     public DataTypeSpecies(IContainer Parent) : base(Parent)
@@ -59,6 +60,15 @@ public partial class DataTypeSpecies : Widget
 
         MainContainer = new Container(Grid);
         MainContainer.SetGrid(1, 1);
+
+        VScrollBar vs = new VScrollBar(MainContainer);
+        vs.SetRightDocked(true);
+        vs.SetPadding(0, 3, 1, 3);
+        vs.SetVDocked(true);
+        MainContainer.SetVScrollBar(vs);
+        MainContainer.VAutoScroll = true;
+
+        ScrollContainer = new Container(MainContainer);
 
         SpeciesList.OnSelectionChanged += _ => UpdateSelection();
         Tabs.SelectTab(0);
@@ -113,8 +123,10 @@ public partial class DataTypeSpecies : Widget
     {
         StackPanel?.Dispose();
         
-        StackPanel = new VStackPanel(MainContainer);
+        StackPanel = new VStackPanel(ScrollContainer);
         StackPanel.SetWidth(1000);
+        StackPanel.OnSizeChanged += _ => ScrollContainer.SetSize(StackPanel.Size.Width, StackPanel.Size.Height + 300);
+        StackPanel.OnChildBoundsChanged += _ => StackPanel.UpdateLayout();
 
         if (Tabs.SelectedIndex == 0) // Main
         {
@@ -147,6 +159,18 @@ public partial class DataTypeSpecies : Widget
             DataContainer evoMovesContainer = new DataContainer(StackPanel);
             evoMovesContainer.SetText("Evolution Moves");
             CreateEvoMovesContainer(evoMovesContainer, this.Species);
+
+            DataContainer tmContainer = new DataContainer(StackPanel);
+            tmContainer.SetText("TMs & HMs");
+            CreateTMContainer(tmContainer, this.Species);
+
+            DataContainer eggMovesContainer = new DataContainer(StackPanel);
+            eggMovesContainer.SetText("Egg Moves");
+            CreateEggMovesContainer(eggMovesContainer, this.Species);
+
+            DataContainer tutorMovesContainer = new DataContainer(StackPanel);
+            tutorMovesContainer.SetText("Tutor Moves");
+            CreateTutorMovesContainer(tutorMovesContainer, this.Species);
         }
         else if (Tabs.SelectedIndex == 2) // Evolutions
         {
@@ -162,13 +186,13 @@ public partial class DataTypeSpecies : Widget
         }
 
 
-		StackPanel.SetPosition(MainContainer.Size.Width / 2 - StackPanel.Size.Width / 2, 0);
+		ScrollContainer.SetPosition(MainContainer.Size.Width / 2 - ScrollContainer.Size.Width / 2, 0);
 	}
 
 	public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-        StackPanel.SetPosition(MainContainer.Size.Width / 2 - StackPanel.Size.Width / 2, 0);
+        ScrollContainer.SetPosition(MainContainer.Size.Width / 2 - ScrollContainer.Size.Width / 2, 0);
     }
 
     public void SetSpecies(Species Species, bool ForceUpdate = false)

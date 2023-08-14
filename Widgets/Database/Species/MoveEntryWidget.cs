@@ -61,7 +61,7 @@ public class MoveEntryWidget : Widget
             _ => this.Move.Accuracy.ToString() + "%"
         };
 		Sprites["txt"].Bitmap.DrawText(acc, 550, 4, Color.WHITE);
-		Sprites["txt"].Bitmap.DrawText(this.Move.TotalPP.ToString(), 700, 4, Color.WHITE);
+		Sprites["txt"].Bitmap.DrawText(this.Move.BaseDamage == 0 ? "---" : this.Move.BaseDamage.ToString(), 690, 4, Color.WHITE);
 		Sprites["txt"].Bitmap.DrawText(this.Move.Priority.ToString(), 800, 4, Color.WHITE);
 		Sprites["txt"].Bitmap.Lock();
     }
