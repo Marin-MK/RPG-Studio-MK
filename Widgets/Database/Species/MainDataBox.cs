@@ -24,12 +24,15 @@ public partial class DataTypeSpecies
 			SpeciesList.SelectedItem.SetText(spc.Name);
 			SpeciesList.RedrawNodeText(SpeciesList.SelectedItem);
 		};
+		nameBox.SetEnabled(spc.Form == 0);
+		nameBox.SetShowDisabledText(true);
 
 		Label nameLabel = new Label(parent);
 		nameLabel.SetPosition(166, 59);
 		nameLabel.SetSize(36, 18);
 		nameLabel.SetText("Name");
 		nameLabel.SetFont(Fonts.Paragraph);
+		nameLabel.SetEnabled(spc.Form == 0);
 
 		TextBox intNameBox = new TextBox(parent);
 		intNameBox.SetPosition(217, 93);
@@ -48,12 +51,15 @@ public partial class DataTypeSpecies
 			if (!match.Success) spc.ID = Internalize(nameBox.Text);
 			intNameBox.SetText(spc.ID);
 		};
+		intNameBox.SetEnabled(spc.Form == 0);
+		intNameBox.SetShowDisabledText(true);
 
 		Label intNameLabel = new Label(parent);
 		intNameLabel.SetPosition(116, 97);
 		intNameLabel.SetSize(86, 18);
 		intNameLabel.SetText("Internal Name");
 		intNameLabel.SetFont(Fonts.Paragraph);
+		intNameLabel.SetEnabled(spc.Form == 0);
 
 		Label type1Label = new Label(parent);
 		type1Label.SetPosition(164, 139);
@@ -188,6 +194,199 @@ public partial class DataTypeSpecies
 			else idx++;
 		}
 		return str;
+	}
+
+	void CreateFormContainer(DataContainer parent, Species spc)
+	{
+		if (spc.Form == 0) throw new Exception("Cannot show form container for base forms!");
+
+		Label formNameLabel = new Label(parent);
+		formNameLabel.SetPosition(180, 93);
+		formNameLabel.SetSize(71, 18);
+		formNameLabel.SetText("Form Name");
+		formNameLabel.SetFont(Fonts.Paragraph);
+
+		TextBox formNameBox = new TextBox(parent);
+		formNameBox.SetPosition(275, 89);
+		formNameBox.SetSize(150, 27);
+		formNameBox.SetFont(Fonts.Paragraph);
+		formNameBox.SetText(spc.FormName);
+		formNameBox.OnTextChanged += _ =>
+		{
+			spc.FormName = formNameBox.Text;
+			SpeciesList.SelectedItem.SetText($"{spc.Form} - {spc.FormName ?? spc.Name}");
+			SpeciesList.RedrawNodeText(SpeciesList.SelectedItem);
+		};
+
+		Label formNumberLabel = new Label(parent);
+		formNumberLabel.SetPosition(167, 133);
+		formNumberLabel.SetSize(84, 18);
+		formNumberLabel.SetText("Form Number");
+		formNumberLabel.SetFont(Fonts.Paragraph);
+
+		NumericBox dexFormBox = new NumericBox(parent);
+
+		NumericBox formNumberBox = new NumericBox(parent);
+		formNumberBox.SetPosition(275, 128);
+		formNumberBox.SetSize(150, 30);
+		formNumberBox.SetMinValue(1);
+		formNumberBox.SetValue(spc.Form);
+		formNumberBox.OnValueChanged += _ =>
+		{
+			if (IsFormNumberFree(spc, formNumberBox.Value))
+			{
+				spc.Form = formNumberBox.Value;
+				dexFormBox.SetValue(spc.Form);
+				TreeNode item = SpeciesList.SelectedItem;
+				TreeNode parentNode = item.Parent;
+				item.SetText($"{spc.Form} - {spc.FormName ?? spc.Name}");
+				item.Delete(false);
+				int idx = parentNode.Children.FindIndex(node => spc.Form < ((Species) ((TreeNode) node).Object).Form);
+                if (idx == -1) idx = parentNode.Children.Count;
+                parentNode.InsertChild(idx, item);
+				SpeciesList.SetActiveAndSelectedNode(item);
+				SpeciesList.RedrawNode(parentNode);
+			}
+		};
+		formNumberBox.TextArea.OnWidgetDeselected += _ =>
+		{
+			if (!IsFormNumberFree(spc, formNumberBox.Value))
+			{
+				formNumberBox.SetValue(spc.Form);
+				dexFormBox.SetValue(spc.Form);
+			}
+		};
+		formNumberBox.OnPlusClicked += _ =>
+		{
+			int? newForm = GetFreeFormNumber(spc, spc.Form, 1);
+			if (newForm is null) return;
+			formNumberBox.SetValue((int) newForm);
+		};
+		formNumberBox.OnMinusClicked += _ =>
+		{
+			int? newForm = GetFreeFormNumber(spc, spc.Form, -1);
+			if (newForm is null) return;
+			formNumberBox.SetValue((int) newForm);
+		};
+
+		dexFormBox.SetPosition(275, 168);
+		dexFormBox.SetSize(150, 30);
+		dexFormBox.SetMinValue(1);
+		dexFormBox.SetValue(spc.PokedexForm);
+		dexFormBox.OnValueChanged += _ => spc.PokedexForm = dexFormBox.Value;
+
+		Label dexFormLabel = new Label(parent);
+		dexFormLabel.SetPosition(192, 174);
+		dexFormLabel.SetSize(59, 18);
+		dexFormLabel.SetText("Dex Form");
+		dexFormLabel.SetFont(Fonts.Paragraph);
+
+		bool hasMegaStone = spc.MegaStone is not null;
+
+		DropdownBox megaStoneBox = new DropdownBox(parent);
+		megaStoneBox.SetPosition(625, 70);
+		megaStoneBox.SetSize(150, 24);
+		megaStoneBox.SetItems(Data.Sources.ItemsListItemsAlphabetical.FindAll(item => ((Item) item.Object).Flags.Contains("MegaStone")).ToList());
+		if (hasMegaStone) megaStoneBox.SetSelectedIndex(megaStoneBox.Items.FindIndex(item => (Item) item.Object == spc.MegaStone.Item));
+		megaStoneBox.OnSelectionChanged += _ => spc.MegaStone = (ItemResolver) (Item) megaStoneBox.SelectedItem.Object;
+		megaStoneBox.SetEnabled(hasMegaStone);
+
+		CheckBox megaStoneCheckBox = new CheckBox(parent);
+		megaStoneCheckBox.SetPosition(510, 74);
+		megaStoneCheckBox.SetText("Mega Stone");
+		megaStoneCheckBox.SetFont(Fonts.Paragraph);
+		megaStoneCheckBox.SetChecked(hasMegaStone);
+		megaStoneCheckBox.OnCheckChanged += _ =>
+		{
+			if (megaStoneCheckBox.Checked)
+			{
+				megaStoneBox.SetEnabled(true);
+				spc.MegaStone = (ItemResolver) (Item) megaStoneBox.SelectedItem.Object;
+			}
+			else
+			{
+				megaStoneBox.SetEnabled(false);
+				spc.MegaStone = null;
+			}
+		};
+
+		bool hasMegaMove = spc.MegaMove is not null;
+
+		DropdownBox megaMoveBox = new DropdownBox(parent);
+		megaMoveBox.SetPosition(625, 110);
+		megaMoveBox.SetSize(150, 24);
+		megaMoveBox.SetItems(Data.Sources.MovesListItemsAlphabetical);
+		if (hasMegaMove) megaMoveBox.SetSelectedIndex(Data.Sources.MovesListItemsAlphabetical.FindIndex(item => (Move) item.Object == spc.MegaMove.Move));
+		megaMoveBox.OnSelectionChanged += _ => spc.MegaMove = (MoveResolver) (Move) megaMoveBox.SelectedItem.Object;
+		megaMoveBox.SetEnabled(hasMegaMove);
+
+		CheckBox megaMoveCheckBox = new CheckBox(parent);
+		megaMoveCheckBox.SetPosition(510, 114);
+		megaMoveCheckBox.SetText("Mega Move");
+		megaMoveCheckBox.SetFont(Fonts.Paragraph);
+		megaMoveCheckBox.SetChecked(hasMegaMove);
+		megaMoveCheckBox.OnCheckChanged += _ =>
+		{
+			if (megaMoveCheckBox.Checked)
+			{
+				megaMoveBox.SetEnabled(true);
+				spc.MegaMove = (MoveResolver) (Move) megaMoveBox.SelectedItem.Object;
+			}
+			else
+			{
+				megaMoveBox.SetEnabled(false);
+				spc.MegaMove = null;
+			}
+		};
+
+		DropdownBox megaMessageBox = new DropdownBox(parent);
+		megaMessageBox.SetPosition(625, 150);
+		megaMessageBox.SetSize(150, 24);
+		megaMessageBox.SetItems(new List<ListItem>()
+		{
+			new ListItem("Default"),
+			new ListItem("Fervent Wish")
+		});
+		megaMessageBox.SetSelectedIndex(spc.MegaMessage);
+		megaMessageBox.OnSelectionChanged += _ => spc.MegaMessage = megaMessageBox.SelectedIndex;
+
+		Label megaMessageLabel = new Label(parent);
+		megaMessageLabel.SetPosition(515, 154);
+		megaMessageLabel.SetSize(86, 18);
+		megaMessageLabel.SetText("Mega Message");
+		megaMessageLabel.SetFont(Fonts.Paragraph);
+
+		NumericBox unmegaFormBox = new NumericBox(parent);
+		unmegaFormBox.SetPosition(625, 187);
+		unmegaFormBox.SetSize(150, 30);
+		unmegaFormBox.SetMinValue(0);
+		unmegaFormBox.SetValue(spc.UnmegaForm);
+		unmegaFormBox.OnValueChanged += _ => spc.UnmegaForm = unmegaFormBox.Value;
+
+		Label unmegaFormLabel = new Label(parent);
+		unmegaFormLabel.SetPosition(515, 194);
+		unmegaFormLabel.SetSize(86, 18);
+		unmegaFormLabel.SetText("Unmega Form");
+		unmegaFormLabel.SetFont(Fonts.Paragraph);
+
+		parent.UpdateSize();
+	}
+
+	bool IsFormNumberFree(Species spc, int form)
+	{
+		List<Species> sameIDSpecies = Data.Species.Values.Where(s => s.ID == spc.BaseSpecies.ID || s.BaseSpecies.ID == spc.BaseSpecies.ID).ToList();
+		return !sameIDSpecies.Any(s => s.Form == form);
+	}
+
+	int? GetFreeFormNumber(Species spc, int startForm, int mod)
+	{
+		int form = startForm + mod;
+		while (!IsFormNumberFree(spc, form))
+		{
+			form += mod;
+			if (form < 1) return null;
+		}
+		return form;
 	}
 
 	void CreateStatsContainer(DataContainer parent, Species spc)
@@ -525,6 +724,7 @@ public partial class DataTypeSpecies
 		genderRatioLabel.SetSize(79, 18);
 		genderRatioLabel.SetText("Gender Ratio");
 		genderRatioLabel.SetFont(Fonts.Paragraph);
+		genderRatioLabel.SetEnabled(spc.Form == 0);
 
 		DropdownBox genderRatioBox = new DropdownBox(parent);
 		genderRatioBox.SetPosition(274, 67);
@@ -532,6 +732,8 @@ public partial class DataTypeSpecies
 		genderRatioBox.SetItems(Data.HardcodedData.GenderRatiosListItems);
 		genderRatioBox.SetSelectedIndex(Data.HardcodedData.GenderRatiosListItems.FindIndex(item => item.Name == spc.GenderRatio));
 		genderRatioBox.OnSelectionChanged += _ => spc.GenderRatio = genderRatioBox.SelectedItem.Name;
+		genderRatioBox.SetEnabled(spc.Form == 0);
+		genderRatioBox.SetShowDisabledText(true);
 
 		Label eggGroup1Label = new Label(parent);
 		eggGroup1Label.SetPosition(183, 110);
@@ -580,6 +782,7 @@ public partial class DataTypeSpecies
 		growthRateLabel.SetSize(76, 18);
 		growthRateLabel.SetText("Growth Rate");
 		growthRateLabel.SetFont(Fonts.Paragraph);
+		growthRateLabel.SetEnabled(spc.Form == 0);
 
 		DropdownBox growthRateBox = new DropdownBox(parent);
 		growthRateBox.SetPosition(664, 67);
@@ -587,6 +790,8 @@ public partial class DataTypeSpecies
 		growthRateBox.SetItems(Data.HardcodedData.GrowthRatesListItems);
 		growthRateBox.SetSelectedIndex(Data.HardcodedData.GrowthRatesListItems.FindIndex(item => item.Name == spc.GrowthRate));
 		growthRateBox.OnSelectionChanged += _ => spc.GrowthRate = growthRateBox.SelectedItem.Name;
+		growthRateBox.SetEnabled(spc.Form == 0);
+		growthRateBox.SetShowDisabledText(true);
 
 		Label catchRateLabel = new Label(parent);
 		catchRateLabel.SetPosition(574, 110);
@@ -644,13 +849,14 @@ public partial class DataTypeSpecies
 		incenseBox.SetItems(Data.Sources.ItemsListItemsAlphabetical);
 		if (hasIncense) incenseBox.SetSelectedIndex(Data.Sources.ItemsListItemsAlphabetical.FindIndex(item => (Item) item.Object == spc.Incense.Item));
 		incenseBox.OnSelectionChanged += _ => spc.Incense = (ItemResolver) (Item) incenseBox.SelectedItem.Object;
-		incenseBox.SetEnabled(hasIncense);
+		incenseBox.SetEnabled(hasIncense && spc.Form == 0);
 
 		CheckBox incenseCheckBox = new CheckBox(parent);
 		incenseCheckBox.SetPosition(186, 230);
 		incenseCheckBox.SetText("Incense");
 		incenseCheckBox.SetFont(Fonts.Paragraph);
 		incenseCheckBox.SetChecked(hasIncense);
+		incenseCheckBox.SetEnabled(spc.Form == 0);
 		incenseCheckBox.OnCheckChanged += _ =>
 		{
 			if (incenseCheckBox.Checked)

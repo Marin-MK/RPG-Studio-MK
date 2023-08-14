@@ -118,8 +118,10 @@ public partial class DataTypeSpecies : Widget
 			if (kvp.Value.Form != 0)
             {
                 TreeNode parent = SpeciesItems.Find(n => ((Species)n.Object).Name == kvp.Value.Name);
-				TreeNode item = new TreeNode($"{kvp.Value.Form}: {kvp.Value.FormName ?? kvp.Value.Name}", kvp.Value);
-                parent.AddChild(item);
+				TreeNode item = new TreeNode($"{kvp.Value.Form} - {kvp.Value.FormName ?? kvp.Value.Name}", kvp.Value);
+                int idx = parent.Children.FindIndex(node => kvp.Value.Form < ((Species) ((TreeNode) node).Object).Form);
+                if (idx == -1) idx = parent.Children.Count;
+                parent.InsertChild(idx, item);
             }
             else
             {
@@ -144,6 +146,13 @@ public partial class DataTypeSpecies : Widget
             DataContainer mainContainer = new DataContainer(StackPanel);
             mainContainer.SetText("Main");
             CreateMainContainer(mainContainer, this.Species);
+
+            if (this.Species.Form != 0)
+            {
+                DataContainer formContainer = new DataContainer(StackPanel);
+                formContainer.SetText("Form");
+                CreateFormContainer(formContainer, this.Species);
+            }
 
             DataContainer statsContainer = new DataContainer(StackPanel);
             statsContainer.SetText("Stats");

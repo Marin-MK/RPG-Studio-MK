@@ -78,4 +78,20 @@ public class DataTypeSubTree : Widget
     {
         TreeView.RedrawNodeText(node);
     }
+
+    public void RedrawNode(TreeNode node)
+    {
+        TreeView.RedrawNode(node);
+    }
+
+    public void RedrawAllNodes()
+    {
+        TreeView.RedrawAllNodes();
+    }
+
+    public void SetActiveAndSelectedNode(TreeNode node)
+    {
+        TreeView.SetActiveAndSelectedNode(node);
+
+	}
 }

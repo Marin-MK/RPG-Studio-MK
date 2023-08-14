@@ -13,11 +13,14 @@ public class NumericBox : Widget
 
 	public BaseEvent OnValueChanged;
     public BaseEvent OnEnterPressed { get => TextArea.OnEnterPressed; set => TextArea.OnEnterPressed = value; }
+    public BaseEvent? OnPlusClicked;
+    public BaseEvent? OnMinusClicked;
 
     Button DownButton;
     Button UpButton;
     Container TextBG;
-    TextArea TextArea;
+
+    public TextArea TextArea;
 
     public NumericBox(IContainer Parent) : base(Parent)
     {
@@ -27,7 +30,8 @@ public class NumericBox : Widget
         DownButton.SetRepeatable(true);
         DownButton.OnClicked += _ =>
         {
-            SetValue(Value - Increment);
+            if (OnMinusClicked is not null) OnMinusClicked.Invoke(new BaseEventArgs());
+            else SetValue(Value - Increment);
         };
 
         UpButton = new Button(this);
@@ -37,7 +41,8 @@ public class NumericBox : Widget
         UpButton.SetRepeatable(true);
         UpButton.OnClicked += _ =>
         {
-            SetValue(Value + Increment);
+            if (OnPlusClicked is not null) OnPlusClicked.Invoke(new BaseEventArgs());
+            else SetValue(Value + Increment);
         };
 
         TextBG = new Container(this);

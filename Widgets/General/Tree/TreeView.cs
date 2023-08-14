@@ -295,7 +295,13 @@ public class TreeView : Widget
         }
     }
 
-    public unsafe void SetExpanded(TreeNode Node, bool Expanded)
+    public void SetActiveAndSelectedNode(TreeNode node)
+    {
+        this.ActiveNode = node;
+        this.SelectedNodes = new List<ITreeNode>() { node };
+    }
+
+	public unsafe void SetExpanded(TreeNode Node, bool Expanded)
     {
         if (Node.Expanded != Expanded)
         {
@@ -611,6 +617,38 @@ public class TreeView : Widget
         BGSprite.Bitmap.Lock();
         TXTSprite.Bitmap.Lock();
         UpdateSize(false);
+    }
+
+    public void RedrawNode(ITreeNode node)
+    {
+        int y = GetDrawnYCoord(node);
+        int h = 0;
+        int dataIdx = LastDrawData.FindIndex(it => it.Node == node);
+        LastDrawData.RemoveAt(dataIdx);
+        if (node is TreeNode)
+        {
+            (int count, int sepHeight) = ((TreeNode) node).GetChildrenHeight(false);
+            h = (count + 1) * LineHeight + sepHeight;
+        }
+        else h = LineHeight;
+        BGSprite.Bitmap.Unlock();
+        TXTSprite.Bitmap.Unlock();
+        BGSprite.Bitmap.FillRect(0, y, BGSprite.Bitmap.Width, h, Color.ALPHA);
+        TXTSprite.Bitmap.FillRect(0, y, TXTSprite.Bitmap.Width, h, Color.ALPHA);
+        y = RedrawNode(node, y, true, () => dataIdx);
+        if (node is TreeNode)
+        {
+            List<ITreeNode> children = ((TreeNode) node).GetAllChildren(false);
+            dataIdx++;
+            LastDrawData.RemoveRange(dataIdx, children.Count);
+            children.ForEach(n =>
+            {
+                y = RedrawNode(n, y, true, () => dataIdx);
+                dataIdx++;
+            });
+        }
+        BGSprite.Bitmap.Lock();
+        TXTSprite.Bitmap.Lock();
     }
 
     private int RedrawNode(ITreeNode Node, int y, bool AddData = true, Func<int> IndexProvider = null)
