@@ -22,7 +22,14 @@ public partial class DataTypeSpecies
 		{
 			spc.Name = nameBox.Text;
 			SpeciesList.SelectedItem.SetText(spc.Name);
-			SpeciesList.RedrawNodeText(SpeciesList.SelectedItem);
+			SpeciesList.SelectedItem.Children.ForEach(c =>
+			{
+				TreeNode n = (TreeNode) c;
+				Species s = (Species) n.Object;
+				s.Name = spc.Name;
+				n.SetText($"{s.Form} - {s.FormName ?? s.Name}");
+			});
+			SpeciesList.RedrawNode(SpeciesList.SelectedItem);
 		};
 		nameBox.SetEnabled(spc.Form == 0);
 		nameBox.SetShowDisabledText(true);
@@ -731,7 +738,15 @@ public partial class DataTypeSpecies
 		genderRatioBox.SetSize(160, 24);
 		genderRatioBox.SetItems(Data.HardcodedData.GenderRatiosListItems);
 		genderRatioBox.SetSelectedIndex(Data.HardcodedData.GenderRatiosListItems.FindIndex(item => item.Name == spc.GenderRatio));
-		genderRatioBox.OnSelectionChanged += _ => spc.GenderRatio = genderRatioBox.SelectedItem.Name;
+		genderRatioBox.OnSelectionChanged += _ =>
+		{
+			spc.GenderRatio = genderRatioBox.SelectedItem.Name;
+			SpeciesList.SelectedItem.Children.ForEach(c =>
+			{
+				Species s = (Species) ((TreeNode) c).Object;
+				s.GenderRatio = spc.GenderRatio;
+			});
+		};
 		genderRatioBox.SetEnabled(spc.Form == 0);
 		genderRatioBox.SetShowDisabledText(true);
 
@@ -789,7 +804,15 @@ public partial class DataTypeSpecies
 		growthRateBox.SetSize(160, 24);
 		growthRateBox.SetItems(Data.HardcodedData.GrowthRatesListItems);
 		growthRateBox.SetSelectedIndex(Data.HardcodedData.GrowthRatesListItems.FindIndex(item => item.Name == spc.GrowthRate));
-		growthRateBox.OnSelectionChanged += _ => spc.GrowthRate = growthRateBox.SelectedItem.Name;
+		growthRateBox.OnSelectionChanged += _ =>
+		{
+			spc.GrowthRate = growthRateBox.SelectedItem.Name;
+			SpeciesList.SelectedItem.Children.ForEach(c =>
+			{
+				Species s = (Species) ((TreeNode) c).Object;
+				s.GrowthRate = spc.GrowthRate;
+			});
+		};
 		growthRateBox.SetEnabled(spc.Form == 0);
 		growthRateBox.SetShowDisabledText(true);
 
@@ -848,8 +871,17 @@ public partial class DataTypeSpecies
 		incenseBox.SetSize(160, 24);
 		incenseBox.SetItems(Data.Sources.ItemsListItemsAlphabetical);
 		if (hasIncense) incenseBox.SetSelectedIndex(Data.Sources.ItemsListItemsAlphabetical.FindIndex(item => (Item) item.Object == spc.Incense.Item));
-		incenseBox.OnSelectionChanged += _ => spc.Incense = (ItemResolver) (Item) incenseBox.SelectedItem.Object;
+		incenseBox.OnSelectionChanged += _ =>
+		{
+			spc.Incense = (ItemResolver) (Item) incenseBox.SelectedItem.Object;
+			SpeciesList.SelectedItem.Children.ForEach(c =>
+			{
+				Species s = (Species) ((TreeNode) c).Object;
+				s.Incense = spc.Incense;
+			});
+		};
 		incenseBox.SetEnabled(hasIncense && spc.Form == 0);
+		incenseBox.SetShowDisabledText(spc.Form > 0 && spc.BaseSpecies.Species.Incense is not null);
 
 		CheckBox incenseCheckBox = new CheckBox(parent);
 		incenseCheckBox.SetPosition(186, 230);
@@ -869,6 +901,11 @@ public partial class DataTypeSpecies
 				incenseBox.SetEnabled(false);
 				spc.Incense = null;
 			}
+			SpeciesList.SelectedItem.Children.ForEach(c =>
+			{
+				Species s = (Species) ((TreeNode) c).Object;
+				s.Incense = spc.Incense;
+			});
 		};
 
 		SpeciesListWidget offspringBox = new SpeciesListWidget(true, parent);
