@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RPGStudioMK.Widgets;
 
@@ -23,12 +24,103 @@ public class DropdownBox : amethyst.TextBox
         TextArea.SetPosition(6, 2);
         TextArea.SetFont(Fonts.Paragraph);
         TextArea.SetCaretColor(Color.WHITE);
-        TextArea.SetReadOnly(true);
+        TextArea.SetDeselectOnEnterPress(false);
+        TextArea.OnTextChanged += _ =>
+        {
+            if (!TextArea.SelectedWidget) return;
+            string query = TextArea.Text.ToLower();
+            // Matches to items starting with the text, and then with items containing the text.
+            List<ListItem> filtered = this.Items.FindAll(it => it.Name.ToLower().StartsWith(query)).Concat(this.Items.FindAll(it => it.Name.ToLower().Contains(query))).Distinct().ToList();
+            if (DropdownWidget is not null)
+            {
+                if (filtered.Count == 0)
+                {
+                    // Dispose
+                    DropdownWidget.SetSelectedIndex(-1, false);
+                    DropdownWidget.Dispose();
+                    DropdownWidget = null;
+                }
+                else
+                {
+                    // Update existing dropdown widget
+                    DropdownWidget.SetItems(filtered);
+                    DropdownWidget.SetSelectedIndex(0, true);
+                }
+            }
+            else if (filtered.Count > 0)
+            {
+                // Create new dropdown
+                CreateDropdownWidget(filtered, 0);
+                DropdownWidget.OnDisposed += _ =>
+                {
+                    DropdownWidget = null;
+                    Redraw();
+                };
+                DropdownWidget.OnDisposeByClick += e =>
+                {
+                    if (!e.Object && TextArea.SelectedWidget)
+                    {
+                        // This is called whenever the dropdown widget is disposed by clicking outside of the boundaries.
+                        // If this is the case, the TextArea will still be the selected widget. So we deselect it.
+                        Window.UI.SetSelectedWidget(null);
+                        // This in turn will update any stale selections in the text area.
+                    }
+                };
+            }
+        };
+        TextArea.OnEnterPressed += _ =>
+        {
+            if (DropdownWidget is not null)
+            {
+                ListItem item = DropdownWidget.Items[DropdownWidget.SelectedIndex];
+                DropdownWidget.Dispose();
+                DropdownWidget = null;
+				this.SetSelectedIndex(this.Items.IndexOf(item), false);
+                TextArea.WidgetSelected(new BaseEventArgs());
+            }
+        };
+        TextArea.OnWidgetDeselected += _ =>
+        {
+			string query = TextArea.Text.ToLower();
+            if (!SelectedItem.Name.ToLower().Contains(query))
+            {
+                // Selection is probably stale; find closest match to the typed text and select that.
+			    List<ListItem> filtered = this.Items.FindAll(it => it.Name.ToLower().StartsWith(query)).Concat(this.Items.FindAll(it => it.Name.ToLower().Contains(query))).Distinct().ToList();
+                if (filtered.Count == 0)
+                {
+                    // No close matches exist; select first possible item.
+                    SetSelectedIndex(Items.Count == 0 ? -1 : 0);
+                }
+                else
+                {
+                    // Select first close match
+                    SetSelectedIndex(this.Items.IndexOf(filtered[0]));
+                }
+            }
+            TextArea.SetText(SelectedItem.Name);
+		};
+        RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.DOWN), _ => MoveDown(), true, e => e.Value = this.SelectedWidget || TextArea.SelectedWidget),
+            new Shortcut(this, new Key(Keycode.UP), _ => MoveUp(), true, e => e.Value = this.SelectedWidget || TextArea.SelectedWidget)
+        });
         MinimumSize.Height = MaximumSize.Height = 24;
         SetHeight(24);
     }
 
-    public void SetEnabled(bool Enabled)
+    private void MoveDown()
+    {
+        if (DropdownWidget is not null || this.SelectedIndex >= this.Items.Count - 1) return;
+        this.SetSelectedIndex(this.SelectedIndex + 1, false);
+    }
+
+    private void MoveUp()
+    {
+        if (DropdownWidget is not null || this.SelectedIndex <= 0) return;
+        this.SetSelectedIndex(this.SelectedIndex - 1, false);
+    }
+
+	public void SetEnabled(bool Enabled)
     {
         if (this.Enabled != Enabled)
         {
@@ -50,11 +142,11 @@ public class DropdownBox : amethyst.TextBox
         Redraw();
     }
 
-    public void SetSelectedIndex(int Index)
+    public void SetSelectedIndex(int Index, bool callTextChangedEvent = true)
     {
         if (this.SelectedIndex != Index)
         {
-            this.TextArea.SetText(Index >= Items.Count || Index == -1 ? "" : Items[Index].Name);
+            this.TextArea.SetText(Index >= Items.Count || Index == -1 ? "" : Items[Index].Name, callTextChangedEvent);
             this.SelectedIndex = Index;
             this.OnSelectionChanged?.Invoke(new BaseEventArgs());
         }
@@ -108,34 +200,46 @@ public class DropdownBox : amethyst.TextBox
             this.OnDropDownClicked?.Invoke(new BaseEventArgs());
             if (this.Items.Count > 0)
             {
-                DropdownWidget = new DropdownWidget(Window.UI, this.Size.Width, this.Items, this);
-                DropdownWidget.SetPosition(this.Viewport.X, this.Viewport.Y + this.Viewport.Height - 2);
-                DropdownWidget.SetSelectedIndex(SelectedIndex);
-                DropdownWidget.OnDisposed += delegate (BaseEventArgs e)
-                {
-                    if (DropdownWidget.SelectedIndex != -1)
-                    {
-                        this.SetSelectedIndex(DropdownWidget.SelectedIndex);
-                    }
-                    DropdownWidget = null;
-                    Redraw();
-                };
-                Redraw();
+                CreateDropdownWidget(this.Items, this.SelectedIndex);
+				DropdownWidget.OnDisposed += delegate (BaseEventArgs e)
+				{
+					if (DropdownWidget.SelectedIndex != -1)
+					{
+						this.SetSelectedIndex(DropdownWidget.SelectedIndex);
+					}
+					DropdownWidget = null;
+					Redraw();
+				};
+				Redraw();
             }
         };
     }
+
+    private void CreateDropdownWidget(List<ListItem> items, int selectedIndex)
+    {
+        if (DropdownWidget is not null) throw new Exception("Dropdown widget exists already!");
+		DropdownWidget = new DropdownWidget(Window.UI, this.Size.Width, items, this);
+		DropdownWidget.SetPosition(this.Viewport.X, this.Viewport.Y + this.Viewport.Height - 2);
+		DropdownWidget.SetSelectedIndex(selectedIndex);
+	}
 }
 
 public class DropdownWidget : Widget
 {
-    public int SelectedIndex { get; protected set; } = -1;
+    public int SelectedIndex { get; protected set; }
+    public List<ListItem> Items => List.Items;
 
     ListDrawer List;
     DropdownBox DropdownBox;
+    Container ScrollContainer;
+    int Width;
+
+    public GenericObjectEvent<bool> OnDisposeByClick;
 
     public DropdownWidget(IContainer Parent, int Width, List<ListItem> Items, DropdownBox DropdownBox) : base(Parent)
     {
         this.DropdownBox = DropdownBox;
+        this.Width = Width;
 
         SetZIndex(Window.ActiveWidget is UIManager ? 9 : (Window.ActiveWidget as Widget).ZIndex + 9);
         SetSize(Width, Math.Min(9, Items.Count) * 20 + 3);
@@ -143,7 +247,7 @@ public class DropdownWidget : Widget
         WindowLayer = Window.ActiveWidget.WindowLayer + 1;
         Window.SetActiveWidget(this);
 
-        Container ScrollContainer = new Container(this);
+        ScrollContainer = new Container(this);
         ScrollContainer.SetDocked(true);
         ScrollContainer.SetPadding(1, 2, 12, 1);
 
@@ -160,10 +264,37 @@ public class DropdownWidget : Widget
         List.SetHDocked(true);
         List.SetItems(Items);
 
-        Sprites["bg"] = new Sprite(this.Viewport);
+		RegisterShortcuts(new List<Shortcut>()
+		{
+			new Shortcut(this, new Key(Keycode.DOWN), _ => MoveDown(), true),
+			new Shortcut(this, new Key(Keycode.UP), _ => MoveUp(), true)
+		});
+
+		Sprites["bg"] = new Sprite(this.Viewport);
     }
 
-    public override void Dispose()
+	private void MoveDown()
+	{
+		if (this.SelectedIndex >= this.Items.Count - 1) return;
+		this.SetSelectedIndex(this.SelectedIndex + 1);
+		DropdownBox.SetSelectedIndex(DropdownBox.Items.IndexOf(this.Items[this.SelectedIndex]), false);
+	}
+
+	private void MoveUp()
+	{
+		if (this.SelectedIndex <= 0) return;
+		this.SetSelectedIndex(this.SelectedIndex - 1);
+		DropdownBox.SetSelectedIndex(DropdownBox.Items.IndexOf(this.Items[this.SelectedIndex]), false);
+	}
+
+	public override void MouseMoving(MouseEventArgs e)
+	{
+        if (DropdownBox.Mouse.InsideButNotNecessarilyAccessible) Input.SetCursor(CursorType.IBeam);
+        else Input.SetCursor(CursorType.Arrow);
+		base.MouseMoving(e);
+	}
+
+	public override void Dispose()
     {
         if (this.Window.ActiveWidget == this)
         {
@@ -173,15 +304,36 @@ public class DropdownWidget : Widget
         base.Dispose();
     }
 
-    public void SetSelectedIndex(int SelectedIndex)
+    public void SetItems(List<ListItem> Items)
+    {
+        List.SetItems(Items);
+		SetSize(this.Width, Math.Min(9, Items.Count) * 20 + 3);
+        if (List.SelectedIndex >= Items.Count) List.SetSelectedIndex(Items.Count - 1);
+        this.SelectedIndex = List.SelectedIndex;
+	}
+
+    public void SetSelectedIndex(int SelectedIndex, bool ScrollToSelection = true)
     {
         List.SetSelectedIndex(SelectedIndex);
+        this.SelectedIndex = List.SelectedIndex;
+        if (ScrollToSelection)
+        {
+            // Start dropdown at the currently selected index
+            int scrolly = SelectedIndex * List.LineHeight;
+            scrolly = Math.Clamp(scrolly, 0, List.Size.Height - ScrollContainer.Size.Height);
+            ScrollContainer.ScrolledY = scrolly;
+            ScrollContainer.UpdateAutoScroll();
+        }
     }
 
     public override void MouseDown(MouseEventArgs e)
     {
         base.MouseDown(e);
-        if ((Mouse.LeftMouseTriggered || Mouse.RightMouseTriggered) && !Mouse.Inside) Dispose();
+        if ((Mouse.LeftMouseTriggered || Mouse.RightMouseTriggered) && !Mouse.Inside)
+        {
+            OnDisposeByClick?.Invoke(new GenericObjectEventArgs<bool>(false));
+            Dispose();
+        }
     }
 
     public override void LeftMouseUp(MouseEventArgs e)
@@ -191,6 +343,7 @@ public class DropdownWidget : Widget
         {
             if (Mouse.LeftStartedInside) this.SelectedIndex = List.SelectedIndex;
             if (DropdownBox.Mouse.LeftStartedInside) this.SelectedIndex = List.HoveringIndex;
+            OnDisposeByClick?.Invoke(new GenericObjectEventArgs<bool>(true));
             Dispose();
         }
     }

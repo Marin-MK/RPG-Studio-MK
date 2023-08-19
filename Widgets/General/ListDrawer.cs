@@ -45,6 +45,7 @@ public class ListDrawer : Widget
     {
         this.Items = Items;
         Redraw();
+        SetSize(Size.Width, Items.Count * LineHeight);
         if (SelectedIndex >= Items.Count) SetSelectedIndex(Items.Count - 1);
     }
 
