@@ -712,7 +712,7 @@ public class TreeView : Widget
         TXTSprite.Bitmap.Lock();
     }
 
-    private int GetDrawnYCoord(ITreeNode Node)
+    public int GetDrawnYCoord(ITreeNode Node)
     {
         (_, int Y) = LastDrawData.Find(d => d.Node == Node);
         return Y;

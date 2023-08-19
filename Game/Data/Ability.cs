@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace RPGStudioMK.Game;
@@ -94,7 +95,9 @@ public class AbilityResolver
 {
     private string _id;
     public string ID { get => _id; set { _id = value; _ability = null; } }
+    [JsonIgnore]
     private Ability _ability;
+    [JsonIgnore]
     public Ability Ability
     {
         get
@@ -103,6 +106,14 @@ public class AbilityResolver
             _ability = Data.Abilities[ID];
             return _ability;
         }
+    }
+
+    /// <summary>
+    /// DO NOT USE!
+    /// </summary>
+    public AbilityResolver()
+    {
+        
     }
 
     public AbilityResolver(string ID)

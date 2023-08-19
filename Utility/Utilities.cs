@@ -1088,5 +1088,6 @@ public enum BinaryData
     EVENT,
     EVENT_PAGE,
     EVENT_COMMANDS,
-    MOVE_COMMAND
+    MOVE_COMMAND,
+    SPECIES
 }

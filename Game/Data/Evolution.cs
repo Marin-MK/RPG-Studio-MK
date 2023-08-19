@@ -14,7 +14,7 @@ public class Evolution : ICloneable
     public object Parameter;
     public bool Prevolution;
 
-    private Evolution() { }
+    public Evolution() { }
 
     public Evolution(SpeciesResolver Species, string Type, object Parameter, bool Prevolution = false)
     {

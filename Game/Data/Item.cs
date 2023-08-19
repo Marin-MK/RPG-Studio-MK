@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace RPGStudioMK.Game;
@@ -158,7 +159,9 @@ public class ItemResolver
 {
     private string _id;
     public string ID { get => _id; set { _id = value; _item = null; } }
+    [JsonIgnore]
     private Item _item;
+    [JsonIgnore]
     public Item Item
     {
         get
@@ -167,6 +170,14 @@ public class ItemResolver
             _item = Data.Items[ID];
             return _item;
         }
+    }
+
+    /// <summary>
+    /// DO NOT USE!
+    /// </summary>
+    public ItemResolver()
+    {
+        
     }
 
     public ItemResolver(string ID)

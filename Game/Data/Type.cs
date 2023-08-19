@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace RPGStudioMK.Game;
@@ -143,7 +144,9 @@ public class TypeResolver
 {
     private string _id;
     public string ID { get => _id; set { _id = value; _type = null; } }
+    [JsonIgnore]
     private Type _type;
+    [JsonIgnore]
     public Type Type
     {
         get
@@ -152,6 +155,14 @@ public class TypeResolver
             _type = Data.Types[ID];
             return _type;
         }
+    }
+
+    /// <summary>
+    /// DO NOT USE!
+    /// </summary>
+    public TypeResolver()
+    {
+        
     }
 
     public TypeResolver(string ID)

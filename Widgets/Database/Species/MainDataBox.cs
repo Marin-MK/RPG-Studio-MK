@@ -50,7 +50,20 @@ public partial class DataTypeSpecies
 		intNameBox.OnTextChanged += _ =>
 		{
 			Match match = Regex.Match(intNameBox.Text, @"[A-Z][a-zA-Z_\d]*$");
-			if (match.Success) spc.ID = intNameBox.Text;
+			if (match.Success)
+			{
+				Data.Species.Remove(spc.ID);
+				spc.ID = intNameBox.Text;
+				Data.Species.Add(spc.ID, spc);
+				SpeciesList.SelectedItem.Children.ForEach(c =>
+				{
+					Species s = (Species) ((TreeNode) c).Object;
+					Data.Species.Remove(s.ID);
+					s.ID = spc.ID + "_" + s.Form.ToString();
+					s.BaseSpecies = (SpeciesResolver) spc.ID;
+					Data.Species.Add(s.ID, s);
+				});
+			}
 		};
 		intNameBox.TextArea.OnWidgetDeselected += _ =>
 		{
@@ -172,9 +185,7 @@ public partial class DataTypeSpecies
         hiddenAbilityBox.SetEnabled(hasHA);
         hiddenAbilityBox.OnSelectionChanged += _ =>
 		{
-            // Preserve data when more than 1 hidden ability is stored
-            if (Species.HiddenAbilities.Count == 0) Species.HiddenAbilities.Add(null);
-            Species.HiddenAbilities[0] = (AbilityResolver) (Ability) hiddenAbilityBox.SelectedItem?.Object;
+            Species.HiddenAbilities = new List<AbilityResolver>() { (AbilityResolver) (Ability) hiddenAbilityBox.SelectedItem?.Object };
 		};
 
 		CheckBox hiddenAbilityCheckBox = new CheckBox(parent);
@@ -182,6 +193,19 @@ public partial class DataTypeSpecies
 		hiddenAbilityCheckBox.SetText("Hidden Ability");
 		hiddenAbilityCheckBox.SetChecked(hasHA);
 		hiddenAbilityCheckBox.SetFont(Fonts.Paragraph);
+		hiddenAbilityCheckBox.OnCheckChanged += _ =>
+		{
+			if (hiddenAbilityCheckBox.Checked)
+			{
+				hiddenAbilityBox.SetEnabled(true);
+				Species.HiddenAbilities = new List<AbilityResolver>() { (AbilityResolver) (Ability) hiddenAbilityBox.SelectedItem?.Object };
+			}
+			else
+			{
+				hiddenAbilityBox.SetEnabled(false);
+				Species.HiddenAbilities.Clear();
+			}
+		};
 
         parent.UpdateSize();
 	}

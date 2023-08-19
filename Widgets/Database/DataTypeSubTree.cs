@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Xml;
 
 namespace RPGStudioMK.Widgets;
 
@@ -69,9 +70,19 @@ public class DataTypeSubTree : Widget
         TreeView.SetNodes(Items);
     }
 
-    public void SetSelectedNode(TreeNode SelectedNode)
+    public void SetSelectedNode(TreeNode SelectedNode, bool ScrollToSelection = false)
     {
-        TreeView.SetSelectedNode(SelectedNode, false);
+        TreeView.SetSelectedNode(SelectedNode, false, true);
+        if (ScrollToSelection)
+        {
+            int y = TreeView.GetDrawnYCoord(SelectedNode);
+            int h = ScrollContainer.Size.Height - TreeView.LineHeight;
+            if (y < ScrollContainer.ScrolledY || y >= ScrollContainer.ScrolledY + h)
+            {
+                ScrollContainer.ScrolledY = y - h;
+                ScrollContainer.UpdateAutoScroll();
+            }
+        }
     }
 
     public void RedrawNodeText(TreeNode node)

@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 
 namespace RPGStudioMK.Game;
 
@@ -64,6 +66,44 @@ public class Species : IGameData, ICloneable
 	{
 
 	}
+
+    public static Species Create()
+    {
+        Species s = new Species();
+	    s.Form = 0;
+	    s.Name = "";
+	    s.Category = "";
+	    s.PokedexEntry = "";
+	    s.Type1 = (TypeResolver) (Type) Data.Sources.TypesListItemsAlphabetical[0].Object;
+	    s.BaseStats = new Stats(45);
+	    s.EVs = new Stats(0);
+	    s.BaseEXP = 32;
+	    s.GrowthRate = Data.HardcodedData.GrowthRates[0];
+	    s.GenderRatio = Data.HardcodedData.GenderRatios[0];
+	    s.CatchRate = 255;
+	    s.Happiness = 70;
+	    s.Moves = new List<(int Level, MoveResolver Move)>();
+	    s.TutorMoves = new List<MoveResolver>();
+	    s.EggMoves = new List<MoveResolver>();
+	    s.Abilities = new List<AbilityResolver>() { (AbilityResolver) (Ability) Data.Sources.AbilitiesListItemsAlphabetical[0].Object };
+	    s.HiddenAbilities = new List<AbilityResolver>();
+	    s.WildItemCommon = new List<ItemResolver>();
+	    s.WildItemUncommon = new List<ItemResolver>();
+	    s.WildItemRare = new List<ItemResolver>();
+	    s.EggGroups = new List<string>() { Data.HardcodedData.EggGroups[0] };
+	    s.HatchSteps = 5548;
+        s.Offspring = new List<SpeciesResolver>();
+        s.Evolutions = new List<Evolution>();
+        s.Prevolutions = new List<Evolution>();
+        s.Height = 1.0f;
+        s.Weight = 1.0f;
+        s.Color = Data.HardcodedData.BodyColors[0];
+        s.Shape = Data.HardcodedData.BodyShapes[0];
+        s.Habitat = Data.HardcodedData.Habitats[0];
+        s.Generation = 0;
+        s.Flags = new List<string>();
+        return s;
+}
 
 	public Species(string ID, Dictionary<string, string> hash)
 	{
@@ -725,7 +765,9 @@ public class SpeciesResolver
 {
 	private string _id;
 	public string ID { get => _id; set { _id = value; _species = null; } }
+    [JsonIgnore]
 	private Species _species;
+    [JsonIgnore]
 	public Species Species
 	{
 		get
@@ -736,7 +778,12 @@ public class SpeciesResolver
 		}
 	}
 
-	public SpeciesResolver(string ID)
+    /// <summary>
+    /// DO NOT USE!
+    /// </summary>
+    public SpeciesResolver() { }
+
+    public SpeciesResolver(string ID)
 	{
 		this.ID = ID;
 	}

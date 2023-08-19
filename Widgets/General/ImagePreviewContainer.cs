@@ -51,6 +51,11 @@ public class ImagePreviewContainer : Widget
 
 	public void SetBitmap(string Filename)
 	{
+		if (Filename == null)
+		{
+			ImageBox.DisposeBitmap();
+			return;
+		}
 		ImageBox.SetBitmap(Filename);
 	}
 

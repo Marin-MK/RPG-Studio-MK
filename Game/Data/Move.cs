@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace RPGStudioMK.Game;
@@ -169,7 +170,9 @@ public class MoveResolver
 {
     private string _id;
     public string ID { get => _id; set { _id = value; _move = null; } }
+    [JsonIgnore]
     private Move _move;
+    [JsonIgnore]
     public Move Move
     {
         get
@@ -178,6 +181,14 @@ public class MoveResolver
             _move = Data.Moves[ID];
             return _move;
         }
+    }
+
+    /// <summary>
+    /// DO NOT USE!
+    /// </summary>
+    public MoveResolver()
+    {
+        
     }
 
     public MoveResolver(string ID)

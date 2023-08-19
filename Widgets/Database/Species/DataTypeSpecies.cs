@@ -19,6 +19,8 @@ public partial class DataTypeSpecies : Widget
     Container ScrollContainer;
     VStackPanel StackPanel;
 
+    HintWindow HintWindow;
+
     public DataTypeSpecies(IContainer Parent) : base(Parent)
     {
 		Grid = new Grid(this);
@@ -61,7 +63,14 @@ public partial class DataTypeSpecies : Widget
         MainContainer = new Container(Grid);
         MainContainer.SetGrid(1, 1);
 
-        VScrollBar vs = new VScrollBar(MainContainer);
+		HintWindow = new HintWindow(MainContainer);
+		HintWindow.ConsiderInAutoScrollCalculation = HintWindow.ConsiderInAutoScrollPositioningX = HintWindow.ConsiderInAutoScrollPositioningY = false;
+		HintWindow.SetBottomDocked(true);
+		HintWindow.SetPadding(-3, 0, 0, -9);
+		HintWindow.SetZIndex(10);
+		HintWindow.SetVisible(false);
+
+		VScrollBar vs = new VScrollBar(MainContainer);
         vs.SetRightDocked(true);
         vs.SetPadding(0, 3, 1, 3);
         vs.SetVDocked(true);
@@ -86,24 +95,37 @@ public partial class DataTypeSpecies : Widget
 
         SpeciesList.SetContextMenuList(new List<IMenuItem>()
         {
+            new MenuItem("New Species")
+            {
+                IsClickable = e => e.Value = HoveringSpecies is not null && HoveringSpecies.Form == 0,
+                OnClicked = NewSpecies
+            },
             new MenuItem("New Form")
             {
-                IsClickable = e => e.Value = HoveringSpecies is not null && HoveringSpecies.Form == 0
+                IsClickable = e => e.Value = SpeciesList.HoveringItem is not null,
+                OnClicked = NewForm
             },
             new MenuSeparator(),
+            new MenuItem("Cut")
+            {
+                IsClickable = e => e.Value = SpeciesList.HoveringItem is not null,
+                OnClicked = CutSpecies
+            },
             new MenuItem("Copy")
             {
-                //OnClicked = CopySpecies
+                IsClickable = e => e.Value = SpeciesList.HoveringItem is not null,
+                OnClicked = CopySpecies
             },
-            new MenuItem("Paste")
+            new MenuItem("Paste (smart)")
             {
-                //OnClicked = PasteSpecies,
-                //IsClickable = e => e.Value = Utilities.IsClipboardValidBinary(BinaryData.SPECIES)
+                IsClickable = e => e.Value = SpeciesList.HoveringItem is not null && Utilities.IsClipboardValidBinary(BinaryData.SPECIES),
+                OnClicked = PasteSpecies
             },
-            new MenuSeparator(),
+			new MenuSeparator(),
             new MenuItem("Delete")
             {
-                //OnClicked = DeleteSpecies
+                IsClickable = e => e.Value = SpeciesList.HoveringItem is not null,
+                OnClicked = DeleteSpecies
             }
         });
 
@@ -117,7 +139,7 @@ public partial class DataTypeSpecies : Widget
 		{
 			if (kvp.Value.Form != 0)
             {
-                TreeNode parent = SpeciesItems.Find(n => ((Species)n.Object).Name == kvp.Value.Name);
+                TreeNode parent = SpeciesItems.Find(n => ((Species) n.Object).ID == kvp.Value.BaseSpecies.ID);
 				TreeNode item = new TreeNode($"{kvp.Value.Form} - {kvp.Value.FormName ?? kvp.Value.Name}", kvp.Value);
                 int idx = parent.Children.FindIndex(node => kvp.Value.Form < ((Species) ((TreeNode) node).Object).Form);
                 if (idx == -1) idx = parent.Children.Count;
@@ -228,56 +250,147 @@ public partial class DataTypeSpecies : Widget
 		else ScrollContainer.SetPosition(0, 0);
 	}
 
-    public void SetSpecies(Species Species, bool ForceUpdate = false)
+    void NewSpecies(BaseEventArgs e)
     {
-        //ListItem Item = TilesetList.Items.Find(i => i.Object == Tileset);
-        //if (Item == null) throw new Exception("Could not find Tileset list item.");
-        //TilesetList.SetSelectedIndex(TilesetList.Items.IndexOf(Item));
-        //TilesetContainer.SetTileset(Tileset, ForceUpdate);
-        //ScrollContainer.SetHeight(MainBox.Size.Height - ScrollContainer.Position.Y - 8);
-        //if (TilesetContainer.Size.Height < ScrollContainer.Size.Height) ScrollContainer.SetHeight(TilesetContainer.Size.Height);
-        //UpdateSelection(new BaseEventArgs());
+        Species species = Species.Create();
+        species.Name = "Missingno.";
+        species.ID = EnsureUniqueID("MISSINGNO");
+        species.BaseSpecies = (SpeciesResolver) species.ID;
+        Data.Species.Add(species.ID, species);
+        RedrawList();
+        TreeNode newNode = (TreeNode) SpeciesList.Root.GetAllChildren(true).Find(n => (Species) ((TreeNode) n).Object == species);
+        SpeciesList.SetSelectedNode(newNode, true);
     }
 
-    //void CopyTileset(BaseEventArgs e)
-    //{
-    //    Tileset Tileset = (Tileset) TilesetList.HoveringItem.Object;
-    //    Utilities.SetClipboard(Tileset, BinaryData.TILESET);
-    //}
+    void NewForm(BaseEventArgs e)
+    {
+        Species parentSpecies = SpeciesList.HoveringItem.Parent == SpeciesList.Root ? HoveringSpecies : (Species) SpeciesList.HoveringItem.Parent.Object;
+        Species newForm = (Species) parentSpecies.Clone();
+        newForm.BaseSpecies = (SpeciesResolver) parentSpecies.ID;
+        newForm.Form = (int) GetFreeFormNumber(newForm.BaseSpecies, 0, 1);
+        newForm.ID = newForm.BaseSpecies.ID + "_" + newForm.Form.ToString();
+        Data.Species.Add(newForm.ID, newForm);
+        RedrawList();
+        TreeNode newNode = (TreeNode) SpeciesList.Root.GetAllChildren(true).Find(n => (Species) ((TreeNode) n).Object == newForm);
+        SpeciesList.SetSelectedNode(newNode, true);
+    }
 
-    //void PasteTileset(BaseEventArgs e)
-    //{
-    //    if (!Utilities.IsClipboardValidBinary(BinaryData.TILESET)) return;
-    //    Tileset OldTileset = (Tileset) TilesetList.HoveringItem.Object;
-    //    Tileset NewTileset = Utilities.GetClipboard<Tileset>();
-    //    Data.Tilesets[OldTileset.ID] = NewTileset;
-    //    NewTileset.ID = OldTileset.ID;
-    //    OldTileset.TilesetBitmap?.Dispose();
-    //    OldTileset.TilesetBitmap = null;
-    //    OldTileset.TilesetListBitmap?.Dispose();
-    //    OldTileset.TilesetListBitmap = null;
-    //    for (int i = 0; i < 7; i++)
-    //    {
-    //        Data.Autotiles[NewTileset.ID * 7 + i] = NewTileset.Autotiles[i];
-    //    }
-    //    RedrawList();
-    //    SetTileset(NewTileset, true);
-    //    Undo.TilesetChangeUndoAction.Create(OldTileset, NewTileset);
-    //}
+    void CutSpecies(BaseEventArgs e)
+    {
+        if (SpeciesList.HoveringItem is null || SpeciesList.HoveringItem.Parent != SpeciesList.Root) return;
+        CopySpecies(e);
+        DeleteSpecies(e);
+    }
 
-    //void DeleteTileset(BaseEventArgs e)
-    //{
-    //    Tileset OldTileset = (Tileset) TilesetList.HoveringItem.Object;
-    //    Tileset NewTileset = (Tileset) OldTileset.Clone();
-    //    NewTileset.MakeEmpty();
-    //    // Since making the tileset empty will dispose the bitmap,
-    //    // we should also set the other references to null
-    //    // or they will point to a disposed bitmap.
-    //    OldTileset.TilesetBitmap = null;
-    //    OldTileset.TilesetListBitmap = null;
-    //    Data.Tilesets[NewTileset.ID] = NewTileset;
-    //    RedrawList();
-    //    SetTileset(NewTileset, true);
-    //    Undo.TilesetChangeUndoAction.Create(OldTileset, NewTileset);
-    //}
+    void CopySpecies(BaseEventArgs e)
+	{
+		if (SpeciesList.HoveringItem is null) return;
+		List<Species> Species = new List<Species>();
+        Species.Add((Species) SpeciesList.HoveringItem.Object);
+        Species.AddRange(SpeciesList.HoveringItem.Children.Select(c => (Species) ((TreeNode) c).Object));
+        Utilities.SetClipboard(Species, BinaryData.SPECIES);
+    }
+
+    string EnsureUniqueID(string id)
+    {
+        int i = 0;
+        string query = id;
+        while (Data.Species.ContainsKey(query))
+        {
+            i++;
+            query = id + i.ToString();
+        }
+        return query;
+    }
+
+    void PasteSpecies(BaseEventArgs e)
+    {
+        if (SpeciesList.HoveringItem is null || !Utilities.IsClipboardValidBinary(BinaryData.SPECIES)) return;
+        List<Species> data = Utilities.GetClipboard<List<Species>>();
+        if (data.Count == 0) return;
+        if (data[0].Form == 0)
+        {
+            // Paste in main list
+            if (SpeciesList.HoveringItem.Parent != SpeciesList.Root)
+            {
+                // Attempted to paste a base-form amongst sub-forms. Throw an error hint and return.
+                HintWindow.SetText("Cannot paste base form as a sub-form.");
+                return;
+            }
+            for (int i = 0; i < data.Count; i++) 
+            {
+                Species s = data[i];
+			    if (s.Form == 0)
+			    {
+				    s.ID = EnsureUniqueID(s.ID);
+				    s.BaseSpecies = (SpeciesResolver) s;
+                    for (int j = i + 1; j < data.Count; j++)
+                    {
+                        if (data[j].Form != 0)
+                        {
+                            data[j].BaseSpecies = (SpeciesResolver) s.ID;
+                            data[j].ID = data[j].BaseSpecies + "_" + data[j].Form.ToString();
+                        }
+                        else break;
+                    }
+			    }
+                Data.Species.Add(s.ID, s);
+		    }
+        }
+        else
+        {
+            // Paste as form
+            Species parentSpecies = SpeciesList.HoveringItem.Parent == SpeciesList.Root ? HoveringSpecies : (Species) SpeciesList.HoveringItem.Parent.Object;
+		    for (int i = 0; i < data.Count; i++)
+		    {
+			    Species s = data[i];
+			    s.BaseSpecies = (SpeciesResolver) parentSpecies;
+                s.Form = (int) GetFreeFormNumber(parentSpecies, 0, 1);
+                s.ID = s.BaseSpecies.ID + "_" + s.Form.ToString();
+			    Data.Species.Add(s.ID, s);
+		    }
+        }
+        RedrawList();
+        TreeNode node = (TreeNode) SpeciesList.Root.GetAllChildren(true).Find(n => (Species) ((TreeNode) n).Object == data[0]);
+        SpeciesList.SetSelectedNode(node, true);
+        //Undo.TilesetChangeUndoAction.Create(OldTileset, NewTileset);
+    }
+
+	void PasteForm(BaseEventArgs e)
+	{
+		if (SpeciesList.HoveringItem is null || SpeciesList.HoveringItem.Parent == SpeciesList.Root || !Utilities.IsClipboardValidBinary(BinaryData.SPECIES)) return;
+		List<Species> data = Utilities.GetClipboard<List<Species>>();
+		if (data.Count == 0) return;
+        if (data.Any(f => f.Form == 0)) return;
+        
+		RedrawList();
+		TreeNode node = (TreeNode) SpeciesList.Root.GetAllChildren(true).Find(n => (Species) ((TreeNode) n).Object == data[0]);
+		SpeciesList.SetSelectedNode(node, true);
+		//Undo.TilesetChangeUndoAction.Create(OldTileset, NewTileset);
+	}
+
+	void DeleteSpecies(BaseEventArgs e)
+    {
+        if (SpeciesList.HoveringItem is null) return;
+        Species Species = (Species) SpeciesList.HoveringItem.Object;
+		for (int i = SpeciesList.HoveringItem.Children.Count - 1; i >= 0; i--) 
+        {
+            TreeNode c = (TreeNode) SpeciesList.HoveringItem.Children[i];
+            Species form = (Species) c.Object;
+            Data.Species.Remove(form.ID);
+            if (SpeciesList.SelectedItem == c) SpeciesList.SetSelectedNode(c.GetPreviousNode(false));
+		}
+        bool selectFirst = false;
+        if (SpeciesList.SelectedItem == SpeciesList.HoveringItem)
+        {
+            TreeNode prevNode = SpeciesList.HoveringItem.GetPreviousNode(false);
+            if (prevNode == SpeciesList.Root) selectFirst = true;
+            else SpeciesList.SetSelectedNode(prevNode);
+        }
+        Data.Species.Remove(Species.ID);
+        SpeciesList.HoveringItem.Delete(true);
+        if (selectFirst) SpeciesList.SetSelectedNode((TreeNode) SpeciesList.Root.Children[0]);
+        SpeciesList.RedrawAllNodes();
+        //Undo.TilesetChangeUndoAction.Create(OldTileset, NewTileset);
+    }
 }

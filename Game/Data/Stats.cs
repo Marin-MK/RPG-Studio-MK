@@ -32,6 +32,11 @@ public struct Stats : ICloneable
         this.Speed = Stats[5];
     }
 
+    public Stats(int Stats)
+    {
+        this.HP = this.Attack = this.Defense = this.SpecialAttack = this.SpecialDefense = this.Speed = Stats;
+    }
+
     public Stats(nint HashData)
     {
         this.HP = (int) Ruby.Integer.FromPtr(Ruby.Hash.Get(HashData, Ruby.Symbol.ToPtr("HP")));
