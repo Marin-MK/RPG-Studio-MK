@@ -24,6 +24,7 @@ public partial class DataTypeSpecies
 			eew.OnButtonClicked += _ =>
 			{
 				spc.Evolutions.Remove(evo);
+				evo.Species.Species.Prevolutions.RemoveAll(ev => ev.Species.Species == spc && ev.Type == evo.Type && ev.Parameter == evo.Parameter);
 				eew.Dispose();
 				panel.UpdateLayout();
 				parent.UpdateSize();
@@ -46,10 +47,12 @@ public partial class DataTypeSpecies
 			eew.OnButtonClicked += _ =>
 			{
 				spc.Evolutions.Remove(evo);
+				evo.Species.Species.Prevolutions.RemoveAll(ev => ev.Species.Species == spc && ev.Type == evo.Type && ev.Parameter == evo.Parameter);
 				eew.Dispose();
 				panel.UpdateLayout();
 				parent.UpdateSize();
 			};
+			evo.Species.Species.Prevolutions.Add(new Evolution((SpeciesResolver) spc, evo.Type, evo.Parameter, true));
 		};
 
 		panel.UpdateLayout();
@@ -58,25 +61,14 @@ public partial class DataTypeSpecies
 
 	void CreatePrevoContainer(DataContainer parent, Species spc)
 	{
-		List<(SpeciesResolver Base, Evolution Evo)> prevos = new List<(SpeciesResolver, Evolution)>();
-		foreach (Species candidate in Data.Species.Values)
-		{
-			foreach (Evolution evo in candidate.Evolutions)
-			{
-				if (evo.Species.Species != spc) continue;
-				if (prevos.Any(prevo => prevo.Base.Species == candidate && prevo.Evo.Type == evo.Type && prevo.Evo.Parameter.Equals(evo.Parameter))) continue;
-				prevos.Add(((SpeciesResolver) candidate, evo));
-			}
-		}
-
 		VStackPanel panel = new VStackPanel(parent);
 		panel.SetPosition(50, 50);
 		panel.SetWidth(900);
 
-		foreach ((SpeciesResolver Base, Evolution evo) in prevos)
+		foreach (Evolution evo in spc.Prevolutions)
 		{
 			EvolutionEntryWidget eew = new EvolutionEntryWidget(true, spc, panel);
-			eew.SetEvolution(evo, Base);
+			eew.SetEvolution(evo, evo.Species);
 			eew.SetMargins(0, 3);
 			eew.SetEnabled(false);
 		}

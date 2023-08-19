@@ -17,12 +17,14 @@ public class EvolutionEntryWidget : Widget
 
     bool internalSwitch = false;
     bool isPrevo = false;
+    Species currentSpecies;
 
     public BaseEvent OnButtonClicked;
 
     public EvolutionEntryWidget(bool isPrevo, Species currentSpecies, IContainer parent, int parentWidgetIndex = -1) : base(parent, parentWidgetIndex)
     {
         this.isPrevo = isPrevo;
+        this.currentSpecies = currentSpecies;
         SetSize(900, 30);
 
         speciesBox = new DropdownBox(this);
@@ -37,7 +39,9 @@ public class EvolutionEntryWidget : Widget
         speciesBox.OnSelectionChanged += _ =>
         {
             if (isPrevo) return;
-            this.Evolution.Species = (SpeciesResolver)(Species)speciesBox.SelectedItem.Object;
+            this.Evolution.Species.Species.Prevolutions.RemoveAll(ev => ev.Species.Species == currentSpecies && ev.Type == this.Evolution.Type && ev.Parameter == this.Evolution.Parameter);
+            this.Evolution.Species = (SpeciesResolver) (Species) speciesBox.SelectedItem.Object;
+            this.Evolution.Species.Species.Prevolutions.Add(new Evolution((SpeciesResolver) currentSpecies, this.Evolution.Type, this.Evolution.Parameter, true));
         };
 		speciesBox.SetShowDisabledText(true);
 
@@ -76,7 +80,10 @@ public class EvolutionEntryWidget : Widget
                     break;
             }
             this.Evolution.Parameter = param;
-            UpdateParamBox();
+			Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
+            prevo.Type = this.Evolution.Type;
+            prevo.Parameter = this.Evolution.Parameter;
+			UpdateParamBox();
         };
 		methodBox.SetShowDisabledText(true);
 
@@ -126,7 +133,12 @@ public class EvolutionEntryWidget : Widget
             case "number":
                 paramBox = new NumericBox(this);
                 if (Evolution.Parameter is not null) ((NumericBox) paramBox).SetValue((int) (long) Evolution.Parameter);
-                ((NumericBox) paramBox).OnValueChanged += _ => Evolution.Parameter = (long) ((NumericBox) paramBox).Value;
+                ((NumericBox) paramBox).OnValueChanged += _ =>
+                {
+                    Evolution.Parameter = (long) ((NumericBox) paramBox).Value;
+					Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
+					prevo.Parameter = this.Evolution.Parameter;
+				};
                 ((NumericBox) paramBox).SetShowDisabledText(true);
 				paramBox.SetHeight(30);
 				paramBox.SetPosition(580, 0);
@@ -136,7 +148,12 @@ public class EvolutionEntryWidget : Widget
                 paramBox = new DropdownBox(this);
                 ((DropdownBox) paramBox).SetItems(Data.Sources.ItemsListItemsAlphabetical);
                 ((DropdownBox) paramBox).SetSelectedIndex(Data.Sources.ItemsListItemsAlphabetical.FindIndex(item => (Item) item.Object == itemParam?.Item));
-                ((DropdownBox) paramBox).OnSelectionChanged += _ => Evolution.Parameter = ((Item) ((DropdownBox) paramBox).SelectedItem.Object).ID;
+                ((DropdownBox) paramBox).OnSelectionChanged += _ =>
+                {
+                    Evolution.Parameter = ((Item) ((DropdownBox) paramBox).SelectedItem.Object).ID;
+					Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
+					prevo.Parameter = this.Evolution.Parameter;
+				};
                 ((DropdownBox) paramBox).SetShowDisabledText(true);
 				paramBox.SetHeight(26);
 				paramBox.SetPosition(580, 3);
@@ -146,7 +163,12 @@ public class EvolutionEntryWidget : Widget
                 paramBox = new DropdownBox(this);
                 ((DropdownBox) paramBox).SetItems(Data.Sources.MovesListItemsAlphabetical);
                 ((DropdownBox) paramBox).SetSelectedIndex(Data.Sources.MovesListItemsAlphabetical.FindIndex(item => (Move) item.Object == moveParam?.Move));
-                ((DropdownBox) paramBox).OnSelectionChanged += _ => Evolution.Parameter = ((Move) ((DropdownBox) paramBox).SelectedItem.Object).ID;
+                ((DropdownBox) paramBox).OnSelectionChanged += _ =>
+                {
+                    Evolution.Parameter = ((Move) ((DropdownBox) paramBox).SelectedItem.Object).ID;
+					Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
+					prevo.Parameter = this.Evolution.Parameter;
+				};
 				((DropdownBox) paramBox).SetShowDisabledText(true);
 				paramBox.SetHeight(26);
 				paramBox.SetPosition(580, 3);
@@ -156,7 +178,12 @@ public class EvolutionEntryWidget : Widget
                 paramBox = new DropdownBox(this);
                 ((DropdownBox) paramBox).SetItems(Data.Sources.SpeciesAndFormsListItemsAlphabetical);
                 ((DropdownBox) paramBox).SetSelectedIndex(Data.Sources.SpeciesAndFormsListItemsAlphabetical.FindIndex(item => (Species) item.Object == speciesParam?.Species));
-                ((DropdownBox) paramBox).OnSelectionChanged += _ => Evolution.Parameter = ((Species) ((DropdownBox) paramBox).SelectedItem.Object).ID;
+                ((DropdownBox) paramBox).OnSelectionChanged += _ =>
+                {
+                    Evolution.Parameter = ((Species) ((DropdownBox) paramBox).SelectedItem.Object).ID;
+					Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
+					prevo.Parameter = this.Evolution.Parameter;
+				};
 				((DropdownBox) paramBox).SetShowDisabledText(true);
 				paramBox.SetHeight(26);
 				paramBox.SetPosition(580, 3);
@@ -166,7 +193,12 @@ public class EvolutionEntryWidget : Widget
                 paramBox = new DropdownBox(this);
                 ((DropdownBox) paramBox).SetItems(Data.Sources.TypesListItemsAlphabetical);
                 ((DropdownBox) paramBox).SetSelectedIndex(Data.Sources.TypesListItemsAlphabetical.FindIndex(item => (Game.Type) item.Object == typeParam?.Type));
-                ((DropdownBox) paramBox).OnSelectionChanged += _ => Evolution.Parameter = ((Game.Type) ((DropdownBox) paramBox).SelectedItem.Object).ID;
+                ((DropdownBox) paramBox).OnSelectionChanged += _ =>
+                {
+                    Evolution.Parameter = ((Game.Type) ((DropdownBox) paramBox).SelectedItem.Object).ID;
+					Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
+					prevo.Parameter = this.Evolution.Parameter;
+				};
 				((DropdownBox) paramBox).SetShowDisabledText(true);
 				paramBox.SetHeight(26);
 				paramBox.SetPosition(580, 3);
@@ -176,7 +208,12 @@ public class EvolutionEntryWidget : Widget
             default: // string and unknown methods
                 paramBox = new TextBox(this);
                 ((TextBox) paramBox).SetText((string) Evolution.Parameter);
-                ((TextBox) paramBox).OnTextChanged += _ => Evolution.Parameter = ((TextBox) paramBox).Text;
+                ((TextBox) paramBox).OnTextChanged += _ =>
+                {
+                    Evolution.Parameter = ((TextBox) paramBox).Text;
+					Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
+					prevo.Parameter = this.Evolution.Parameter;
+				};
                 ((TextBox) paramBox).SetShowDisabledText(true);
 				paramBox.SetHeight(26);
 				paramBox.SetPosition(580, 3);

@@ -26,6 +26,7 @@ public class SpeciesManager : BaseDataManager
             Species speciesdata = new Species(value);
             Data.Species.Add(speciesdata.ID, speciesdata);
         });
+        RegisterPrevolutions();
     }
 
     protected override void LoadPBS()
@@ -54,12 +55,24 @@ public class SpeciesManager : BaseDataManager
             Data.Species.Add(NewSpecies.ID, NewSpecies);
         }, Data.SetLoadProgress);
         Logger.WriteLine("Registering prevolutions");
-        Game.Species.PrevolutionsToRegister.ForEach(p =>
-        {
-            p.Item2.Species.Species.Prevolutions.Add(new Evolution((SpeciesResolver) p.Item1, p.Item2.Type, p.Item2.Parameter, true));
-        });
-        Game.Species.PrevolutionsToRegister.Clear();
+        RegisterPrevolutions();
     }
+
+    protected void RegisterPrevolutions()
+    {
+        foreach (Species spc in Data.Species.Values)
+        {
+            spc.Prevolutions.Clear();
+		    foreach (Species candidate in Data.Species.Values)
+		    {
+			    foreach (Evolution evo in candidate.Evolutions)
+			    {
+				    if (evo.Species.Species != spc) continue;
+				    spc.Prevolutions.Add(new Evolution((SpeciesResolver) candidate, evo.Type, evo.Parameter, true));
+			    }
+		    }
+        }
+	}
 
     protected override void SaveData()
     {
