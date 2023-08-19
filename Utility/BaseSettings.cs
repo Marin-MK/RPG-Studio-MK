@@ -31,8 +31,12 @@ public abstract class BaseSettings
     {
         foreach (KeyValuePair<string, object> kvp in Schema)
         {
-            if (RawData[kvp.Key] is JsonElement)
-                RawData[kvp.Key] = ((JsonElement)RawData[kvp.Key]).Deserialize(kvp.Value.GetType());
+            if (!RawData.ContainsKey(kvp.Key))
+            {
+                RawData.Add(kvp.Key, kvp.Value);
+            }
+            else if (RawData[kvp.Key] is JsonElement)
+                RawData[kvp.Key] = ((JsonElement) RawData[kvp.Key]).Deserialize(kvp.Value.GetType());
         }
     }
 

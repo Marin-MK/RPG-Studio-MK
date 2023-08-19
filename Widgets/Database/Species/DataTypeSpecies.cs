@@ -56,7 +56,7 @@ public partial class DataTypeSpecies : Widget
         Tabs.CreateTab("Main");
         Tabs.CreateTab("Moves");
         Tabs.CreateTab("Evolutions");
-        Tabs.CreateTab("Sprites");
+        Tabs.CreateTab("Media");
 
         MainContainer = new Container(Grid);
         MainContainer.SetGrid(1, 1);
@@ -206,9 +206,15 @@ public partial class DataTypeSpecies : Widget
             prevoContainer.SetText("Evolves From");
             CreatePrevoContainer(prevoContainer, this.Species);
         }
-        else if (Tabs.SelectedIndex == 3) // Sprites
+        else if (Tabs.SelectedIndex == 3) // Media
         {
+            DataContainer spritesContainer = new DataContainer(StackPanel);
+            spritesContainer.SetText("Sprites");
+            CreateSpritesContainer(spritesContainer, this.Species);
 
+            DataContainer audioContainer = new DataContainer(StackPanel);
+            audioContainer.SetText("Audio");
+            CreateAudioContainer(audioContainer, this.Species);
         }
 
         if (ScrollContainer.Size.Width < MainContainer.Size.Width) ScrollContainer.SetPosition(MainContainer.Size.Width / 2 - ScrollContainer.Size.Width / 2, 0);

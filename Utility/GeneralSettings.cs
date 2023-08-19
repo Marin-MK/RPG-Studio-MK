@@ -23,7 +23,13 @@ public class GeneralSettings : BaseSettings
         { "PREFER_RECTANGLE_FILL", false },
         { "PREFER_ELLIPSE_FILL", false },
         { "PREFER_SELECTION_ALL", false },
-        { "SECONDS_USED", 0 }
+        { "SECONDS_USED", 0 },
+        { "ANIMATE_SPECIES_ICONS", true },
+        { "ANIMATE_EGG_CRACKS", false },
+        { "ANIMATE_EGG_ICONS", true },
+        { "SHOW_SPECIES_SPRITES_AS_FEMALE", false },
+        { "SHOW_SPECIES_SPRITES_AS_SHINY", false },
+        { "SHOW_SPECIES_SPRITES_AS_SHADOW", false }
     };
 
     public GeneralSettings() : base() { }
@@ -133,5 +139,53 @@ public class GeneralSettings : BaseSettings
     {
         get => Get<int>("SECONDS_USED");
         set => Set("SECONDS_USED", value);
+	}
+	/// <summary>
+	/// Whether species icons are animated in the database.
+	/// </summary>
+	public bool AnimateSpeciesIcons
+	{
+		get => Get<bool>("ANIMATE_SPECIES_ICONS");
+		set => Set("ANIMATE_SPECIES_ICONS", value);
+	}
+    /// <summary>
+    /// Whether egg icons are animated in the database.
+    /// </summary>
+    public bool AnimateEggIcons
+    {
+        get => Get<bool>("ANIMATE_EGG_ICONS");
+        set => Set("ANIMATE_EGG_ICONS", value);
     }
+	/// <summary>
+	/// Whether egg cracks are animated in the database.
+	/// </summary>
+	public bool AnimateEggCracks
+	{
+		get => Get<bool>("ANIMATE_EGG_CRACKS");
+		set => Set("ANIMATE_EGG_CRACKS", value);
+	}
+	/// <summary>
+	/// Shows species sprites as female in the database.
+	/// </summary>
+	public bool ShowSpeciesSpritesAsFemale
+	{
+		get => Get<bool>("SHOW_SPECIES_SPRITES_AS_FEMALE");
+		set => Set("SHOW_SPECIES_SPRITES_AS_FEMALE", value);
+	}
+	/// <summary>
+	/// Shows species sprites as shiny in the database.
+	/// </summary>
+	public bool ShowSpeciesSpritesAsShiny
+	{
+		get => Get<bool>("SHOW_SPECIES_SPRITES_AS_SHINY");
+		set => Set("SHOW_SPECIES_SPRITES_AS_SHINY", value);
+	}
+	/// <summary>
+	/// Shows species sprites as shadow in the database.
+	/// </summary>
+	public bool ShowSpeciesSpritesAsShadow
+	{
+		get => Get<bool>("SHOW_SPECIES_SPRITES_AS_SHADOW");
+		set => Set("SHOW_SPECIES_SPRITES_AS_SHADOW", value);
+	}
 }
