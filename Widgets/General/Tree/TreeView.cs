@@ -110,6 +110,14 @@ public class TreeView : Widget
         this.Root = new TreeNode("ROOT");
 
         this.OnContextMenuOpening += e => e.Value = !ScrollContainer.HScrollBar.Mouse.Inside && !ScrollContainer.VScrollBar.Mouse.Inside;
+
+        this.RegisterShortcuts(new List<Shortcut>()
+        {
+            new Shortcut(this, new Key(Keycode.DOWN), _ => MoveDown()),
+            new Shortcut(this, new Key(Keycode.UP), _ => MoveUp()),
+            new Shortcut(this, new Key(Keycode.PAGEDOWN), _ => MovePageDown()),
+            new Shortcut(this, new Key(Keycode.PAGEUP), _ => MovePageUp())
+        });
     }
 
     public void SetAutoResize(bool AutoResize)
@@ -388,6 +396,109 @@ public class TreeView : Widget
             OnNodeExpansionChanged?.Invoke(new GenericObjectEventArgs<TreeNode>(Node));
         }
     }
+
+    private void MoveDown()
+    {
+        TreeNode nextNode = (TreeNode) SelectedNode;
+        nextNode = nextNode.GetNextNode(false);
+        if (nextNode == null || nextNode.Root == nextNode) return;
+        SetSelectedNode(nextNode, false);
+		this.WidgetSelected(new BaseEventArgs());
+	}
+
+    private void MoveUp()
+    {
+        TreeNode prevNode = (TreeNode) SelectedNode;
+        prevNode = prevNode.GetPreviousNode(false);
+        if (prevNode == null || prevNode.Root == prevNode) return;
+        SetSelectedNode(prevNode, false);
+		this.WidgetSelected(new BaseEventArgs());
+	}
+
+    private void MovePageDown()
+    {
+        int scrolledY = this.AutoResize ? ScrollContainer.ScrolledY : Parent.ScrolledY;
+        int height = (this.AutoResize ? ScrollContainer.Size.Height : Parent.Size.Height);
+		(ITreeNode bottomNode, int bottomY) = LastDrawData.FindLast(d => d.Y < scrolledY + height - LineHeight / 2);
+        (_, int curY) = LastDrawData.Find(d => d.Node == SelectedNode);
+        if (curY > bottomY)
+        {
+            scrolledY = curY;
+        }
+        else if (curY < bottomY)
+		{
+            int diff = scrolledY + height - bottomY;
+            if (diff < LineHeight && diff >= LineHeight / 2)
+            {
+                scrolledY += LineHeight - diff;
+            }
+            SetSelectedNode(bottomNode, false);
+        }
+        else
+        {
+            scrolledY += height;
+			(ITreeNode nextNode, int nextY) = LastDrawData.FindLast(d => d.Y < scrolledY + height - LineHeight / 2);
+            int diff = scrolledY + height - nextY;
+            if (diff < LineHeight && diff >= LineHeight / 2)
+			{
+				scrolledY += LineHeight - diff;
+			}
+			if (nextNode != null) SetSelectedNode(nextNode, false);
+		}
+		if (this.AutoResize)
+        {
+            ScrollContainer.ScrolledY = scrolledY;
+            ScrollContainer.UpdateAutoScroll();
+        }
+        else
+        {
+            Parent.ScrolledY = scrolledY;
+            ((Widget) Parent).UpdateAutoScroll();
+        }
+		this.WidgetSelected(new BaseEventArgs());
+	}
+
+    private void MovePageUp()
+    {
+		int scrolledY = this.AutoResize ? ScrollContainer.ScrolledY : Parent.ScrolledY;
+		int height = (this.AutoResize ? ScrollContainer.Size.Height : Parent.Size.Height);
+		(ITreeNode topNode, int topY) = LastDrawData.Find(d => d.Y + LineHeight / 2 > scrolledY);
+		(_, int curY) = LastDrawData.Find(d => d.Node == SelectedNode);
+		if (curY > topY)
+		{
+            if (topY < scrolledY)
+            {
+                scrolledY = topY;
+            }
+            SetSelectedNode(topNode, false);
+		}
+		else if (curY < topY)
+		{
+			scrolledY = curY;
+		}
+		else
+		{
+			scrolledY -= height;
+            if (scrolledY < 0) scrolledY = 0;
+			(ITreeNode prevNode, int prevY) = LastDrawData.Find(d => d.Y + LineHeight / 2 > scrolledY);
+			if (prevY < scrolledY)
+			{
+                scrolledY = prevY;
+			}
+			if (prevNode != null) SetSelectedNode(prevNode, false);
+		}
+		if (this.AutoResize)
+		{
+			ScrollContainer.ScrolledY = scrolledY;
+			ScrollContainer.UpdateAutoScroll();
+		}
+		else
+		{
+			Parent.ScrolledY = scrolledY;
+			((Widget) Parent).UpdateAutoScroll();
+		}
+		this.WidgetSelected(new BaseEventArgs());
+	}
 
     private int CalculateMaxWidth(TreeNode Start)
     {
@@ -996,6 +1107,7 @@ public class TreeView : Widget
     public override void LeftMouseDownInside(MouseEventArgs e)
     {
         base.LeftMouseDownInside(e);
+        this.WidgetSelected(new BaseEventArgs());
         this.ActiveNode = HoveringNode;
         if (HoveringNode != null && HoveringNode.Draggable && CanDragAndDrop)
         {
@@ -1080,7 +1192,8 @@ public class TreeView : Widget
         this.DragOriginPoint = null;
         if (this.ValidatedDragMovement) RedrawDragState();
         this.ValidatedDragMovement = false;
-    }
+        if (Mouse.LeftStartedInside) this.WidgetSelected(new BaseEventArgs());
+	}
 
     public override void Update()
     {

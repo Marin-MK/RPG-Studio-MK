@@ -241,6 +241,7 @@ public partial class DataTypeSpecies : Widget
 
         if (ScrollContainer.Size.Width < MainContainer.Size.Width) ScrollContainer.SetPosition(MainContainer.Size.Width / 2 - ScrollContainer.Size.Width / 2, 0);
         else ScrollContainer.SetPosition(0, 0);
+        StackPanel.Update();
 	}
 
 	public override void SizeChanged(BaseEventArgs e)
