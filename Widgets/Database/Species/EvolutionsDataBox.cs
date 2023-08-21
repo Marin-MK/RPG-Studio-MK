@@ -53,6 +53,8 @@ public partial class DataTypeSpecies
 				parent.UpdateSize();
 			};
 			evo.Species.Species.Prevolutions.Add(new Evolution((SpeciesResolver) spc, evo.Type, evo.Parameter, true));
+			panel.UpdateLayout();
+			parent.UpdateSize();
 		};
 
 		panel.UpdateLayout();

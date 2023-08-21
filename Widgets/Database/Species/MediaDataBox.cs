@@ -220,9 +220,10 @@ public partial class DataTypeSpecies
 		ImagePreviewContainer footprintBox = new ImagePreviewContainer(parent);
 		footprintBox.SetPosition(132, 980);
 		footprintBox.SetSize(106, 106);
-		footprintBox.SetZoomX(3);
-		footprintBox.SetZoomY(3);
+		footprintBox.SetZoomX(2);
+		footprintBox.SetZoomY(2);
 		footprintBox.SetFillMode(FillMode.Center);
+		footprintBox.SetGridVisible(false);
 
 		// Egg icon
 		Label eggIconLabel = new Label(parent);

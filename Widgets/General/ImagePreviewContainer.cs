@@ -10,6 +10,7 @@ public class ImagePreviewContainer : Widget
 {
 	ImageBox ImageBox;
 	ImageBox GridBox;
+	public bool GridVisible => GridBox.Visible;
 	public Bitmap Bitmap => ImageBox.Bitmap;
 	public int X => ImageBox.X;
 	public int Y => ImageBox.Y;
@@ -56,7 +57,7 @@ public class ImagePreviewContainer : Widget
 		Color grayOutline = new Color(115, 117, 118);
 		Sprites["bg"].Bitmap.DrawRect(2, 2, Size.Width - 4, Size.Height - 4, grayOutline);
 		Sprites["bg"].Bitmap.DrawRect(3, 3, Size.Width - 6, Size.Height - 6, grayOutline);
-		Sprites["bg"].Bitmap.DrawRect(4, 4, Size.Width - 8, Size.Height - 8, 51, 74, 97);
+		Sprites["bg"].Bitmap.FillRect(4, 4, Size.Width - 8, Size.Height - 8, 51, 74, 97);
 		Sprites["bg"].Bitmap.SetPixel(4, 4, grayOutline);
 		Sprites["bg"].Bitmap.SetPixel(Size.Width - 5, 4, grayOutline);
 		Sprites["bg"].Bitmap.SetPixel(Size.Width - 5, Size.Height - 5, grayOutline);
@@ -75,6 +76,11 @@ public class ImagePreviewContainer : Widget
 		Sprites["bg"].Bitmap.FillRect(0, 4, 2, Size.Height - 8, darkOutline);
 
 		Sprites["bg"].Bitmap.Lock();
+	}
+
+	public void SetGridVisible(bool Visible)
+	{
+		GridBox.SetVisible(Visible);
 	}
 
 	public void SetBitmap(int Width, int Height)
