@@ -132,6 +132,7 @@ public partial class DataTypeSpecies
 		shadowCheckBox.SetFont(Fonts.Paragraph);
 		shadowCheckBox.SetChecked(Editor.GeneralSettings.ShowSpeciesSpritesAsShadow);
 
+		// Front
 		Label frontLabel = new Label(parent);
 		frontLabel.SetPosition(249, 154);
 		frontLabel.SetSize(33, 18);
@@ -143,6 +144,7 @@ public partial class DataTypeSpecies
 		frontBox.SetSize(266, 266);
 		frontBox.SetFillMode(FillMode.Center);
 
+		// Back
 		Label backLabel = new Label(parent);
 		backLabel.SetPosition(711, 154);
 		backLabel.SetSize(29, 18);
@@ -154,6 +156,7 @@ public partial class DataTypeSpecies
 		backBox.SetSize(266, 266);
 		backBox.SetFillMode(FillMode.Center);
 
+		// Shiny Front
 		Label shinyFrontLabel = new Label(parent);
 		shinyFrontLabel.SetPosition(230, 474);
 		shinyFrontLabel.SetSize(71, 18);
@@ -165,6 +168,7 @@ public partial class DataTypeSpecies
 		shinyFrontBox.SetSize(266, 266);
 		shinyFrontBox.SetFillMode(FillMode.Center);
 
+		// Shiny Back
 		Label shinyBackLabel = new Label(parent);
 		shinyBackLabel.SetPosition(694, 474);
 		shinyBackLabel.SetSize(66, 18);
@@ -176,21 +180,22 @@ public partial class DataTypeSpecies
 		shinyBackBox.SetSize(266, 266);
 		shinyBackBox.SetFillMode(FillMode.Center);
 
+		// Icon
 		Label iconLabel = new Label(parent);
-		iconLabel.SetPosition(332, 794);
+		iconLabel.SetPosition(167, 794);
 		iconLabel.SetSize(26, 18);
 		iconLabel.SetText("Icon");
 		iconLabel.SetFont(Fonts.Paragraph);
 
 		CheckBox iconAnimateBox = new CheckBox(parent);
-		iconAnimateBox.SetPosition(310, 930);
+		iconAnimateBox.SetPosition(151, 928);
 		iconAnimateBox.SetText("Animate");
 		iconAnimateBox.SetFont(Fonts.Paragraph);
 		iconAnimateBox.SetChecked(Editor.GeneralSettings.AnimateSpeciesIcons);
 		iconAnimateBox.OnCheckChanged += _ => Editor.GeneralSettings.AnimateSpeciesIcons = iconAnimateBox.Checked;
 
 		ImagePreviewContainer iconBox = new ImagePreviewContainer(parent);
-		iconBox.SetPosition(292, 820);
+		iconBox.SetPosition(132, 820);
 		iconBox.SetSize(106, 106);
 		iconBox.SetFillMode(FillMode.Center);
 		iconBox.SetTimer("frame", 200);
@@ -205,19 +210,50 @@ public partial class DataTypeSpecies
 			}
 		};
 
+		// Footprint
 		Label footprintLabel = new Label(parent);
-		footprintLabel.SetPosition(157, 794);
+		footprintLabel.SetPosition(152, 956);
 		footprintLabel.SetSize(57, 18);
 		footprintLabel.SetText("Footprint");
 		footprintLabel.SetFont(Fonts.Paragraph);
 
 		ImagePreviewContainer footprintBox = new ImagePreviewContainer(parent);
-		footprintBox.SetPosition(132, 820);
+		footprintBox.SetPosition(132, 980);
 		footprintBox.SetSize(106, 106);
 		footprintBox.SetZoomX(3);
 		footprintBox.SetZoomY(3);
 		footprintBox.SetFillMode(FillMode.Center);
 
+		// Egg icon
+		Label eggIconLabel = new Label(parent);
+		eggIconLabel.SetPosition(315, 794);
+		eggIconLabel.SetSize(51, 18);
+		eggIconLabel.SetText("Egg Icon");
+		eggIconLabel.SetFont(Fonts.Paragraph);
+
+		CheckBox eggIconAnimateBox = new CheckBox(parent);
+		eggIconAnimateBox.SetPosition(310, 928);
+		eggIconAnimateBox.SetText("Animate");
+		eggIconAnimateBox.SetFont(Fonts.Paragraph);
+		eggIconAnimateBox.SetChecked(Editor.GeneralSettings.AnimateEggIcons);
+		eggIconAnimateBox.OnCheckChanged += _ => Editor.GeneralSettings.AnimateEggIcons = eggIconAnimateBox.Checked;
+
+		ImagePreviewContainer eggIconBox = new ImagePreviewContainer(parent);
+		eggIconBox.SetPosition(292, 820);
+		eggIconBox.SetSize(106, 106);
+		eggIconBox.SetFillMode(FillMode.Center);
+		eggIconBox.SetTimer("frame", 200);
+		eggIconBox.OnUpdate += _ =>
+		{
+			if (eggIconBox.TimerPassed("frame") && eggIconBox.Bitmap is not null)
+			{
+				int srcx = !eggIconAnimateBox.Checked || eggIconBox.SrcRect.X == 0 ? eggIconBox.Bitmap.Width / 2 : 0;
+				eggIconBox.SetSrcRect(new Rect(srcx, 0, eggIconBox.Bitmap.Width / 2, eggIconBox.Bitmap.Height));
+				eggIconBox.ResetTimer("frame");
+			}
+		};
+
+		// Egg
 		Label eggLabel = new Label(parent);
 		eggLabel.SetPosition(716, 794);
 		eggLabel.SetSize(23, 18);
@@ -256,34 +292,6 @@ public partial class DataTypeSpecies
 		{
 			Editor.GeneralSettings.AnimateEggCracks = eggAnimateBox.Checked;
 			crackingBox.SetVisible(eggAnimateBox.Checked);
-		};
-
-		Label eggIconLabel = new Label(parent);
-		eggIconLabel.SetPosition(160, 954);
-		eggIconLabel.SetSize(51, 18);
-		eggIconLabel.SetText("Egg Icon");
-		eggIconLabel.SetFont(Fonts.Paragraph);
-
-		CheckBox eggIconAnimateBox = new CheckBox(parent);
-		eggIconAnimateBox.SetPosition(151, 1100);
-		eggIconAnimateBox.SetText("Animate");
-		eggIconAnimateBox.SetFont(Fonts.Paragraph);
-		eggIconAnimateBox.SetChecked(Editor.GeneralSettings.AnimateEggIcons);
-		eggIconAnimateBox.OnCheckChanged += _ => Editor.GeneralSettings.AnimateEggIcons = eggIconAnimateBox.Checked;
-
-		ImagePreviewContainer eggIconBox = new ImagePreviewContainer(parent);
-		eggIconBox.SetPosition(132, 980);
-		eggIconBox.SetSize(106, 106);
-		eggIconBox.SetFillMode(FillMode.Center);
-		eggIconBox.SetTimer("frame", 200);
-		eggIconBox.OnUpdate += _ =>
-		{
-			if (eggIconBox.TimerPassed("frame") && eggIconBox.Bitmap is not null)
-			{
-				int srcx = !eggIconAnimateBox.Checked || eggIconBox.SrcRect.X == 0 ? eggIconBox.Bitmap.Width / 2 : 0;
-				eggIconBox.SetSrcRect(new Rect(srcx, 0, eggIconBox.Bitmap.Width / 2, eggIconBox.Bitmap.Height));
-				eggIconBox.ResetTimer("frame");
-			}
 		};
 
 		void UpdateAllPaths()
