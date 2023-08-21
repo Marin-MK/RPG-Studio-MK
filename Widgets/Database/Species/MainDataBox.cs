@@ -91,7 +91,8 @@ public partial class DataTypeSpecies
 		type1Box.SetPosition(217, 136);
 		type1Box.SetSize(150, 24);
         type1Box.SetItems(Data.Sources.TypesListItemsAlphabetical);
-		type1Box.SetSelectedIndex(Data.Sources.TypesListItemsAlphabetical.FindIndex(item => (Game.Type) item.Object == spc.Type1.Type));
+		if (spc.Type1.Valid) type1Box.SetSelectedIndex(Data.Sources.TypesListItemsAlphabetical.FindIndex(item => (Game.Type) item.Object == spc.Type1.Type));
+		else type1Box.SetText(spc.Type1.ID);
 		type1Box.OnSelectionChanged += _ => spc.Type1 = (TypeResolver) (Game.Type) type1Box.SelectedItem?.Object;
 
 		bool hasType2 = spc.Type2 is not null;
@@ -100,7 +101,8 @@ public partial class DataTypeSpecies
 		type2Box.SetPosition(217, 172);
 		type2Box.SetSize(150, 24);
         type2Box.SetItems(Data.Sources.TypesListItemsAlphabetical);
-		if (hasType2) type2Box.SetSelectedIndex(Data.Sources.TypesListItemsAlphabetical.FindIndex(item => (Game.Type) item.Object == spc.Type2.Type));
+		if (hasType2 && spc.Type2.Valid) type2Box.SetSelectedIndex(Data.Sources.TypesListItemsAlphabetical.FindIndex(item => (Game.Type) item.Object == spc.Type2.Type));
+		else if (hasType2) type2Box.SetText(spc.Type2.ID);
 		type2Box.SetEnabled(hasType2);
 		type2Box.OnSelectionChanged += _ => spc.Type2 = (TypeResolver) (Game.Type) type2Box.SelectedItem?.Object;
 
@@ -133,7 +135,8 @@ public partial class DataTypeSpecies
 		ability1Box.SetPosition(629, 56);
 		ability1Box.SetSize(150, 24);
         ability1Box.SetItems(Data.Sources.AbilitiesListItemsAlphabetical);
-		ability1Box.SetSelectedIndex(Data.Sources.AbilitiesListItemsAlphabetical.FindIndex(item => (Ability) item.Object == spc.Abilities[0].Ability));
+		if (spc.Abilities[0].Valid) ability1Box.SetSelectedIndex(Data.Sources.AbilitiesListItemsAlphabetical.FindIndex(item => (Ability) item.Object == spc.Abilities[0].Ability));
+		else ability1Box.SetText(spc.Abilities[0].ID);
         ability1Box.OnSelectionChanged += _ =>
 		{
 			Species.Abilities[0] = (AbilityResolver) (Ability) ability1Box.SelectedItem?.Object;
@@ -145,7 +148,8 @@ public partial class DataTypeSpecies
 		ability2Box.SetPosition(629, 96);
 		ability2Box.SetSize(150, 24);
         ability2Box.SetItems(Data.Sources.AbilitiesListItemsAlphabetical);
-		if (hasAbil2) ability2Box.SetSelectedIndex(Data.Sources.AbilitiesListItemsAlphabetical.FindIndex(item => (Ability) item.Object == spc.Abilities[1].Ability));
+		if (hasAbil2 && spc.Abilities[1].Valid) ability2Box.SetSelectedIndex(Data.Sources.AbilitiesListItemsAlphabetical.FindIndex(item => (Ability) item.Object == spc.Abilities[1].Ability));
+		else if (hasAbil2) ability2Box.SetText(spc.Abilities[1].ID);
 		ability2Box.SetEnabled(hasAbil2);
         ability2Box.OnSelectionChanged += _ =>
         {
@@ -181,7 +185,8 @@ public partial class DataTypeSpecies
 		hiddenAbilityBox.SetPosition(629, 136);
 		hiddenAbilityBox.SetSize(150, 24);
         hiddenAbilityBox.SetItems(Data.Sources.AbilitiesListItemsAlphabetical);
-		if (hasHA) hiddenAbilityBox.SetSelectedIndex(Data.Sources.AbilitiesListItemsAlphabetical.FindIndex(item => (Ability) item.Object == spc.HiddenAbilities[0].Ability));
+		if (hasHA && spc.HiddenAbilities[0].Valid) hiddenAbilityBox.SetSelectedIndex(Data.Sources.AbilitiesListItemsAlphabetical.FindIndex(item => (Ability) item.Object == spc.HiddenAbilities[0].Ability));
+		else if (hasHA) hiddenAbilityBox.SetText(spc.HiddenAbilities[0].ID);
         hiddenAbilityBox.SetEnabled(hasHA);
         hiddenAbilityBox.OnSelectionChanged += _ =>
 		{
@@ -318,7 +323,8 @@ public partial class DataTypeSpecies
 		megaStoneBox.SetPosition(625, 70);
 		megaStoneBox.SetSize(150, 24);
 		megaStoneBox.SetItems(Data.Sources.ItemsListItemsAlphabetical.FindAll(item => ((Item) item.Object).Flags.Contains("MegaStone")).ToList());
-		if (hasMegaStone) megaStoneBox.SetSelectedIndex(megaStoneBox.Items.FindIndex(item => (Item) item.Object == spc.MegaStone.Item));
+		if (hasMegaStone && spc.MegaStone.Valid) megaStoneBox.SetSelectedIndex(megaStoneBox.Items.FindIndex(item => (Item) item.Object == spc.MegaStone.Item));
+		else if (hasMegaStone) megaStoneBox.SetText(spc.MegaStone.ID);
 		megaStoneBox.OnSelectionChanged += _ => spc.MegaStone = (ItemResolver) (Item) megaStoneBox.SelectedItem.Object;
 		megaStoneBox.SetEnabled(hasMegaStone);
 
@@ -347,7 +353,8 @@ public partial class DataTypeSpecies
 		megaMoveBox.SetPosition(625, 110);
 		megaMoveBox.SetSize(150, 24);
 		megaMoveBox.SetItems(Data.Sources.MovesListItemsAlphabetical);
-		if (hasMegaMove) megaMoveBox.SetSelectedIndex(Data.Sources.MovesListItemsAlphabetical.FindIndex(item => (Move) item.Object == spc.MegaMove.Move));
+		if (hasMegaMove && spc.MegaMove.Valid) megaMoveBox.SetSelectedIndex(Data.Sources.MovesListItemsAlphabetical.FindIndex(item => (Move) item.Object == spc.MegaMove.Move));
+		else if (hasMegaMove) megaMoveBox.SetText(spc.MegaMove.ID);
 		megaMoveBox.OnSelectionChanged += _ => spc.MegaMove = (MoveResolver) (Move) megaMoveBox.SelectedItem.Object;
 		megaMoveBox.SetEnabled(hasMegaMove);
 
@@ -761,7 +768,8 @@ public partial class DataTypeSpecies
 		genderRatioBox.SetPosition(274, 67);
 		genderRatioBox.SetSize(160, 24);
 		genderRatioBox.SetItems(Data.HardcodedData.GenderRatiosListItems);
-		genderRatioBox.SetSelectedIndex(Data.HardcodedData.GenderRatiosListItems.FindIndex(item => item.Name == spc.GenderRatio));
+		if (Data.HardcodedData.GenderRatios.Contains(spc.GenderRatio)) genderRatioBox.SetSelectedIndex(Data.HardcodedData.GenderRatiosListItems.FindIndex(item => item.Name == spc.GenderRatio));
+		else genderRatioBox.SetText(spc.GenderRatio);
 		genderRatioBox.OnSelectionChanged += _ =>
 		{
 			spc.GenderRatio = genderRatioBox.SelectedItem.Name;
@@ -784,7 +792,8 @@ public partial class DataTypeSpecies
 		eggGroup1Box.SetPosition(274, 107);
 		eggGroup1Box.SetSize(160, 24);
 		eggGroup1Box.SetItems(Data.HardcodedData.EggGroupsListItems);
-		eggGroup1Box.SetSelectedIndex(Data.HardcodedData.EggGroupsListItems.FindIndex(item => item.Name == spc.EggGroups[0]));
+		if (Data.HardcodedData.EggGroups.Contains(spc.EggGroups[0])) eggGroup1Box.SetSelectedIndex(Data.HardcodedData.EggGroupsListItems.FindIndex(item => item.Name == spc.EggGroups[0]));
+		else eggGroup1Box.SetText(spc.EggGroups[0]);
 		eggGroup1Box.OnSelectionChanged += _ => spc.EggGroups[0] = eggGroup1Box.SelectedItem.Name;
 
 		bool hasEggGroup2 = spc.EggGroups.Count > 1 && spc.EggGroups[1] is not null;
@@ -794,7 +803,8 @@ public partial class DataTypeSpecies
 		eggGroup2Box.SetSize(160, 24);
 		eggGroup2Box.SetEnabled(hasEggGroup2);
 		eggGroup2Box.SetItems(Data.HardcodedData.EggGroupsListItems);
-		if (hasEggGroup2) eggGroup2Box.SetSelectedIndex(Data.HardcodedData.EggGroupsListItems.FindIndex(item => item.Name == spc.EggGroups[1]));
+		if (hasEggGroup2 && Data.HardcodedData.EggGroups.Contains(spc.EggGroups[1])) eggGroup2Box.SetSelectedIndex(Data.HardcodedData.EggGroupsListItems.FindIndex(item => item.Name == spc.EggGroups[1]));
+		else if (hasEggGroup2) eggGroup2Box.SetText(spc.EggGroups[1]);
 		eggGroup2Box.OnSelectionChanged += _ => spc.EggGroups = new List<string>() { eggGroup1Box.SelectedItem.Name, eggGroup2Box.SelectedItem.Name };
 
 		CheckBox eggGroup2CheckBox = new CheckBox(parent);
@@ -827,7 +837,8 @@ public partial class DataTypeSpecies
 		growthRateBox.SetPosition(664, 67);
 		growthRateBox.SetSize(160, 24);
 		growthRateBox.SetItems(Data.HardcodedData.GrowthRatesListItems);
-		growthRateBox.SetSelectedIndex(Data.HardcodedData.GrowthRatesListItems.FindIndex(item => item.Name == spc.GrowthRate));
+		if (Data.HardcodedData.GrowthRates.Contains(spc.GrowthRate)) growthRateBox.SetSelectedIndex(Data.HardcodedData.GrowthRatesListItems.FindIndex(item => item.Name == spc.GrowthRate));
+		else growthRateBox.SetText(spc.GrowthRate);
 		growthRateBox.OnSelectionChanged += _ =>
 		{
 			spc.GrowthRate = growthRateBox.SelectedItem.Name;
@@ -894,7 +905,8 @@ public partial class DataTypeSpecies
 		incenseBox.SetPosition(274, 227);
 		incenseBox.SetSize(160, 24);
 		incenseBox.SetItems(Data.Sources.ItemsListItemsAlphabetical);
-		if (hasIncense) incenseBox.SetSelectedIndex(Data.Sources.ItemsListItemsAlphabetical.FindIndex(item => (Item) item.Object == spc.Incense.Item));
+		if (hasIncense && spc.Incense.Valid) incenseBox.SetSelectedIndex(Data.Sources.ItemsListItemsAlphabetical.FindIndex(item => (Item) item.Object == spc.Incense.Item));
+		else if (hasIncense) incenseBox.SetText(spc.Incense.ID);
 		incenseBox.OnSelectionChanged += _ =>
 		{
 			spc.Incense = (ItemResolver) (Item) incenseBox.SelectedItem.Object;
@@ -974,7 +986,8 @@ public partial class DataTypeSpecies
 		colorBox.SetPosition(604, 67);
 		colorBox.SetSize(150, 24);
 		colorBox.SetItems(Data.HardcodedData.BodyColors.Select(clr => new ListItem(clr)).ToList());
-		colorBox.SetSelectedIndex(Data.HardcodedData.BodyColors.IndexOf(spc.Color));
+		if (Data.HardcodedData.BodyColors.Contains(spc.Color)) colorBox.SetSelectedIndex(Data.HardcodedData.BodyColors.IndexOf(spc.Color));
+		else colorBox.SetText(spc.Color);
 		colorBox.OnSelectionChanged += _ => spc.Color = Data.HardcodedData.BodyColors[colorBox.SelectedIndex];
 
 		Label heightLabel = new Label(parent);
@@ -1023,7 +1036,8 @@ public partial class DataTypeSpecies
 		habitatBox.SetPosition(604, 107);
 		habitatBox.SetSize(150, 24);
 		habitatBox.SetItems(Data.HardcodedData.Habitats.Select(h => new ListItem(h)).ToList());
-		habitatBox.SetSelectedIndex(Data.HardcodedData.Habitats.IndexOf(spc.Habitat));
+		if (Data.HardcodedData.Habitats.Contains(spc.Habitat)) habitatBox.SetSelectedIndex(Data.HardcodedData.Habitats.IndexOf(spc.Habitat));
+		else habitatBox.SetText(spc.Habitat);
 		habitatBox.OnSelectionChanged += _ => spc.Habitat = Data.HardcodedData.Habitats[habitatBox.SelectedIndex];
 
 		Label shapeLabel = new Label(parent);
@@ -1036,7 +1050,8 @@ public partial class DataTypeSpecies
 		shapeBox.SetPosition(604, 147);
 		shapeBox.SetSize(106, 24);
 		shapeBox.SetItems(Data.HardcodedData.BodyShapes.Select(s => new ListItem(s)).ToList());
-		shapeBox.SetSelectedIndex(Data.HardcodedData.BodyShapes.IndexOf(spc.Shape));
+		if (Data.HardcodedData.BodyShapes.Contains(spc.Shape)) shapeBox.SetSelectedIndex(Data.HardcodedData.BodyShapes.IndexOf(spc.Shape));
+		else shapeBox.SetText(spc.Shape);
 
 		ImageBox shapePreviewBox = new ImageBox(parent);
 		shapePreviewBox.SetPosition(716, 143);

@@ -25,7 +25,10 @@ public class Type : IGameData, ICloneable
     public int? IconPosition;
     public List<string> Flags;
 
-    private Type() { }
+    /// <summary>
+    /// DO NOT USE!
+    /// </summary>
+    public Type() { }
 
     public Type(string ID, Dictionary<string, string> hash)
     {
@@ -142,20 +145,9 @@ public class Type : IGameData, ICloneable
 [DebuggerDisplay("{ID}")]
 public class TypeResolver
 {
-    private string _id;
-    public string ID { get => _id; set { _id = value; _type = null; } }
-    [JsonIgnore]
-    private Type _type;
-    [JsonIgnore]
-    public Type Type
-    {
-        get
-        {
-            if (_type != null) return _type;
-            _type = Data.Types[ID];
-            return _type;
-        }
-    }
+    public string ID;
+    public bool Valid => !string.IsNullOrEmpty(ID) && Data.Types.ContainsKey(ID);
+    public Type Type => Data.Types[ID];
 
     /// <summary>
     /// DO NOT USE!
@@ -173,7 +165,6 @@ public class TypeResolver
     public TypeResolver(Type Type)
     {
         this.ID = Type.ID;
-        _type = Type;
     }
 
     public static implicit operator string(TypeResolver s) => s.ID;

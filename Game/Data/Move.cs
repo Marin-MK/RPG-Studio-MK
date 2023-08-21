@@ -168,20 +168,9 @@ public class Move : IGameData, ICloneable
 [DebuggerDisplay("{ID}")]
 public class MoveResolver
 {
-    private string _id;
-    public string ID { get => _id; set { _id = value; _move = null; } }
-    [JsonIgnore]
-    private Move _move;
-    [JsonIgnore]
-    public Move Move
-    {
-        get
-        {
-            if (_move != null) return _move;
-            _move = Data.Moves[ID];
-            return _move;
-        }
-    }
+    public string ID;
+	public bool Valid => !string.IsNullOrEmpty(ID) && Data.Moves.ContainsKey(ID);
+    public Move Move => Data.Moves[ID];
 
     /// <summary>
     /// DO NOT USE!
@@ -199,7 +188,6 @@ public class MoveResolver
     public MoveResolver(Move Move)
     {
         this.ID = Move.ID;
-        _move = Move;
     }
 
     public static implicit operator string(MoveResolver s) => s.ID;

@@ -157,20 +157,9 @@ public class Item : IGameData, ICloneable
 [DebuggerDisplay("{ID}")]
 public class ItemResolver
 {
-    private string _id;
-    public string ID { get => _id; set { _id = value; _item = null; } }
-    [JsonIgnore]
-    private Item _item;
-    [JsonIgnore]
-    public Item Item
-    {
-        get
-        {
-            if (_item != null) return _item;
-            _item = Data.Items[ID];
-            return _item;
-        }
-    }
+    public string ID;
+	public bool Valid => !string.IsNullOrEmpty(ID) && Data.Items.ContainsKey(ID);
+    public Item Item => Data.Items[ID];
 
     /// <summary>
     /// DO NOT USE!
@@ -188,7 +177,6 @@ public class ItemResolver
     public ItemResolver(Item Item)
     {
         this.ID = Item.ID;
-        _item = Item;
     }
 
     public static implicit operator string(ItemResolver s) => s.ID;

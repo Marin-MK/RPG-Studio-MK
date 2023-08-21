@@ -19,7 +19,7 @@ public class ItemListWidget : DropdownListWidget
 
 	public void SetItems(List<ItemResolver> items)
 	{
-		SetItems(items.Select(item => new ListItem(item.Item.Name, item.Item)).ToList());
+		SetItems(items.Select(item => new ListItem(item.Valid ? item.Item.Name : item.ID, item.Valid ? item.Item : item.ID)).ToList());
 	}
 
 	public void SetItems(List<Item> items)

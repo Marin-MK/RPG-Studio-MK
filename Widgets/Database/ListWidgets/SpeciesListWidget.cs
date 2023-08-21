@@ -21,7 +21,7 @@ public class SpeciesListWidget : DropdownListWidget
 
 	public void SetItems(List<SpeciesResolver> items)
 	{
-		SetItems(items.Select(item => new ListItem(item.Species.Name, item.Species)).ToList());
+		SetItems(items.Select(item => new ListItem(item.Valid ? item.Species.Name : item.ID, item.Valid ? item.Species : null)).ToList());
 	}
 
 	public void SetItems(List<Species> items)

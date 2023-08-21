@@ -10,7 +10,7 @@ namespace RPGStudioMK.Widgets;
 public class MoveEntryWidget : Widget
 {
     int Level;
-    Move Move;
+    MoveResolver Move;
 
     Button RemoveButton;
 
@@ -28,7 +28,7 @@ public class MoveEntryWidget : Widget
         RemoveButton.OnClicked += _ => OnButtonClicked?.Invoke(new BaseEventArgs());
     }
 
-    public void SetMove(int Level, Move Move)
+    public void SetMove(int Level, MoveResolver Move)
     {
         if (this.Level != Level || this.Move != Move)
         {
@@ -52,17 +52,17 @@ public class MoveEntryWidget : Widget
         Sprites["txt"].Bitmap.Font = Fonts.Paragraph;
         Sprites["txt"].Bitmap.Unlock();
         Sprites["txt"].Bitmap.DrawText(this.Level == 0 ? "---" : this.Level.ToString(), 16, 4, Color.WHITE);
-        Sprites["txt"].Bitmap.DrawText(this.Move.Name, 100, 4, Color.WHITE);
-		Sprites["txt"].Bitmap.DrawText(this.Move.Type.Type.Name, 250, 4, Color.WHITE);
-		Sprites["txt"].Bitmap.DrawText(this.Move.Category, 400, 4, Color.WHITE);
-        string acc = this.Move.Accuracy switch
+        Sprites["txt"].Bitmap.DrawText(this.Move.Valid ? this.Move.Move.Name : this.Move.ID, 100, 4, Color.WHITE);
+		Sprites["txt"].Bitmap.DrawText(this.Move.Valid ? this.Move.Move.Type.Type.Name : "???", 250, 4, Color.WHITE);
+		Sprites["txt"].Bitmap.DrawText(this.Move.Valid ? this.Move.Move.Category : "???", 400, 4, Color.WHITE);
+        string acc = this.Move.Valid ? (this.Move.Move.Accuracy switch
         {
             0 => "---",
-            _ => this.Move.Accuracy.ToString() + "%"
-        };
+            _ => this.Move.Move.Accuracy.ToString() + "%"
+        }) : "???";
 		Sprites["txt"].Bitmap.DrawText(acc, 550, 4, Color.WHITE);
-		Sprites["txt"].Bitmap.DrawText(this.Move.BaseDamage == 0 ? "---" : this.Move.BaseDamage.ToString(), 690, 4, Color.WHITE);
-		Sprites["txt"].Bitmap.DrawText(this.Move.Priority.ToString(), 800, 4, Color.WHITE);
+		Sprites["txt"].Bitmap.DrawText(this.Move.Valid ? (this.Move.Move.BaseDamage == 0 ? "---" : this.Move.Move.BaseDamage.ToString()) : "???", 690, 4, Color.WHITE);
+		Sprites["txt"].Bitmap.DrawText(this.Move.Valid ? this.Move.Move.Priority.ToString() : "???", 800, 4, Color.WHITE);
 		Sprites["txt"].Bitmap.Lock();
     }
 }

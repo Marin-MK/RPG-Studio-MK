@@ -38,8 +38,8 @@ public class EvolutionEntryWidget : Widget
         );
         speciesBox.OnSelectionChanged += _ =>
         {
-            if (isPrevo) return;
-            this.Evolution.Species.Species.Prevolutions.RemoveAll(ev => ev.Species.Species == currentSpecies && ev.Type == this.Evolution.Type && ev.Parameter == this.Evolution.Parameter);
+            if (internalSwitch || isPrevo) return;
+            if (this.Evolution.Species.Valid) this.Evolution.Species.Species.Prevolutions.RemoveAll(ev => ev.Species.Species == currentSpecies && ev.Type == this.Evolution.Type && ev.Parameter == this.Evolution.Parameter);
             this.Evolution.Species = (SpeciesResolver) (Species) speciesBox.SelectedItem.Object;
             this.Evolution.Species.Species.Prevolutions.Add(new Evolution((SpeciesResolver) currentSpecies, this.Evolution.Type, this.Evolution.Parameter, true));
         };
@@ -56,9 +56,9 @@ public class EvolutionEntryWidget : Widget
             int oldTypeIndex = Data.HardcodedData.EvolutionMethods.IndexOf(this.Evolution.Type);
             this.Evolution.Type = Data.HardcodedData.EvolutionMethods[typeIndex];
             // Only reset the parameter if the type of the parameter has changed, e.g. number to string
-            if (Data.HardcodedData.EvolutionMethodsAndTypes[typeIndex][1] == Data.HardcodedData.EvolutionMethodsAndTypes[oldTypeIndex][1]) return;
+            if (oldTypeIndex != -1 && Data.HardcodedData.EvolutionMethodsAndTypes[typeIndex][1] == Data.HardcodedData.EvolutionMethodsAndTypes[oldTypeIndex][1]) return;
             object param = null;
-            switch (Data.HardcodedData.EvolutionMethodsAndTypes[typeIndex][1])
+            switch (typeIndex == -1 ? null : Data.HardcodedData.EvolutionMethodsAndTypes[typeIndex][1])
             {
                 case "number":
                     param = 0L;
@@ -80,9 +80,12 @@ public class EvolutionEntryWidget : Widget
                     break;
             }
             this.Evolution.Parameter = param;
-			Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
-            prevo.Type = this.Evolution.Type;
-            prevo.Parameter = this.Evolution.Parameter;
+            if (this.Evolution.Species.Valid)
+            {
+			    Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
+                prevo.Type = this.Evolution.Type;
+                prevo.Parameter = this.Evolution.Parameter;
+            }
 			UpdateParamBox();
         };
 		methodBox.SetShowDisabledText(true);
@@ -99,11 +102,17 @@ public class EvolutionEntryWidget : Widget
         if (this.Evolution != evolution)
         {
             this.Evolution = evolution;
-            if (isPrevo && Base is not null) speciesBox.SetSelectedIndex(speciesBox.Items.FindIndex(item => (Species) item.Object == Base.Species));
-			else speciesBox.SetSelectedIndex(speciesBox.Items.FindIndex(item => (Species) item.Object == evolution.Species.Species));
-            int typeIndex = Data.HardcodedData.EvolutionMethods.IndexOf(evolution.Type);
             internalSwitch = true;
-			methodBox.SetSelectedIndex(typeIndex);
+            if (isPrevo && Base is not null && Base.Valid) speciesBox.SetSelectedIndex(speciesBox.Items.FindIndex(item => (Species) item.Object == Base.Species));
+            else if (isPrevo && Base is not null) speciesBox.SetText(Base.ID);
+			else if (evolution.Species.Valid) speciesBox.SetSelectedIndex(speciesBox.Items.FindIndex(item => (Species) item.Object == evolution.Species.Species));
+            else speciesBox.SetText(evolution.Species.ID);
+            if (Data.HardcodedData.EvolutionMethods.Contains(evolution.Type))
+            {
+                int typeIndex = Data.HardcodedData.EvolutionMethods.IndexOf(evolution.Type);
+                methodBox.SetSelectedIndex(typeIndex);
+            }
+            else methodBox.SetText(evolution.Type);
             internalSwitch = false;
             UpdateParamBox();
         }
@@ -128,7 +137,7 @@ public class EvolutionEntryWidget : Widget
 		int typeIndex = Data.HardcodedData.EvolutionMethods.IndexOf(Evolution.Type);
 		paramBox?.Dispose();
         paramBox = null;
-        switch (Data.HardcodedData.EvolutionMethodsAndTypes[typeIndex][1])
+        switch (typeIndex == -1 ? null : Data.HardcodedData.EvolutionMethodsAndTypes[typeIndex][1])
         {
             case "number":
                 paramBox = new NumericBox(this);
@@ -136,8 +145,11 @@ public class EvolutionEntryWidget : Widget
                 ((NumericBox) paramBox).OnValueChanged += _ =>
                 {
                     Evolution.Parameter = (long) ((NumericBox) paramBox).Value;
-					Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
-					prevo.Parameter = this.Evolution.Parameter;
+                    if (this.Evolution.Species.Valid)
+                    {
+					    Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
+					    prevo.Parameter = this.Evolution.Parameter;
+                    }
 				};
                 ((NumericBox) paramBox).SetShowDisabledText(true);
 				paramBox.SetHeight(30);
@@ -151,8 +163,11 @@ public class EvolutionEntryWidget : Widget
                 ((DropdownBox) paramBox).OnSelectionChanged += _ =>
                 {
                     Evolution.Parameter = ((Item) ((DropdownBox) paramBox).SelectedItem.Object).ID;
-					Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
-					prevo.Parameter = this.Evolution.Parameter;
+					if (this.Evolution.Species.Valid)
+					{
+						Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
+						prevo.Parameter = this.Evolution.Parameter;
+					}
 				};
                 ((DropdownBox) paramBox).SetShowDisabledText(true);
 				paramBox.SetHeight(26);
@@ -166,8 +181,11 @@ public class EvolutionEntryWidget : Widget
                 ((DropdownBox) paramBox).OnSelectionChanged += _ =>
                 {
                     Evolution.Parameter = ((Move) ((DropdownBox) paramBox).SelectedItem.Object).ID;
-					Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
-					prevo.Parameter = this.Evolution.Parameter;
+					if (this.Evolution.Species.Valid)
+					{
+						Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
+						prevo.Parameter = this.Evolution.Parameter;
+					}
 				};
 				((DropdownBox) paramBox).SetShowDisabledText(true);
 				paramBox.SetHeight(26);
@@ -181,8 +199,11 @@ public class EvolutionEntryWidget : Widget
                 ((DropdownBox) paramBox).OnSelectionChanged += _ =>
                 {
                     Evolution.Parameter = ((Species) ((DropdownBox) paramBox).SelectedItem.Object).ID;
-					Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
-					prevo.Parameter = this.Evolution.Parameter;
+					if (this.Evolution.Species.Valid)
+					{
+						Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
+						prevo.Parameter = this.Evolution.Parameter;
+					}
 				};
 				((DropdownBox) paramBox).SetShowDisabledText(true);
 				paramBox.SetHeight(26);
@@ -196,8 +217,11 @@ public class EvolutionEntryWidget : Widget
                 ((DropdownBox) paramBox).OnSelectionChanged += _ =>
                 {
                     Evolution.Parameter = ((Game.Type) ((DropdownBox) paramBox).SelectedItem.Object).ID;
-					Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
-					prevo.Parameter = this.Evolution.Parameter;
+					if (this.Evolution.Species.Valid)
+					{
+						Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
+						prevo.Parameter = this.Evolution.Parameter;
+					}
 				};
 				((DropdownBox) paramBox).SetShowDisabledText(true);
 				paramBox.SetHeight(26);
@@ -211,8 +235,11 @@ public class EvolutionEntryWidget : Widget
                 ((TextBox) paramBox).OnTextChanged += _ =>
                 {
                     Evolution.Parameter = ((TextBox) paramBox).Text;
-					Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
-					prevo.Parameter = this.Evolution.Parameter;
+                    if (this.Evolution.Species.Valid)
+                    {
+					    Evolution prevo = this.Evolution.Species.Species.Prevolutions.Find(ev => ev.Species.Species == currentSpecies);
+					    prevo.Parameter = this.Evolution.Parameter;
+                    }
 				};
                 ((TextBox) paramBox).SetShowDisabledText(true);
 				paramBox.SetHeight(26);

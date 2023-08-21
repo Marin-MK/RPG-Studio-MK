@@ -28,6 +28,7 @@ partial class DataTypeSpecies
 	void CreateLevelContainer(DataContainer parent, Species spc)
 	{
 		DrawMoveLabels(parent);
+		spc.Moves.Add((100, new MoveResolver("STEAMROLLING")));
 
 		VStackPanel panel = new VStackPanel(parent);
 		panel.SetPosition(50, 80);

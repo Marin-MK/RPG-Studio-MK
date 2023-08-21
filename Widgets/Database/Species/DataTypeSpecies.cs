@@ -354,8 +354,9 @@ public partial class DataTypeSpecies : Widget
         RedrawList();
         TreeNode node = (TreeNode) SpeciesList.Root.GetAllChildren(true).Find(n => (Species) ((TreeNode) n).Object == data[0]);
         SpeciesList.SetSelectedNode(node, true);
-        //Undo.TilesetChangeUndoAction.Create(OldTileset, NewTileset);
-    }
+		Data.Sources.InvalidateSpecies();
+		//Undo.TilesetChangeUndoAction.Create(OldTileset, NewTileset);
+	}
 
 	void PasteForm(BaseEventArgs e)
 	{
@@ -367,6 +368,7 @@ public partial class DataTypeSpecies : Widget
 		RedrawList();
 		TreeNode node = (TreeNode) SpeciesList.Root.GetAllChildren(true).Find(n => (Species) ((TreeNode) n).Object == data[0]);
 		SpeciesList.SetSelectedNode(node, true);
+		Data.Sources.InvalidateSpecies();
 		//Undo.TilesetChangeUndoAction.Create(OldTileset, NewTileset);
 	}
 
@@ -392,6 +394,7 @@ public partial class DataTypeSpecies : Widget
         SpeciesList.HoveringItem.Delete(true);
         if (selectFirst) SpeciesList.SetSelectedNode((TreeNode) SpeciesList.Root.Children[0]);
         SpeciesList.RedrawAllNodes();
+        Data.Sources.InvalidateSpecies();
         //Undo.TilesetChangeUndoAction.Create(OldTileset, NewTileset);
     }
 }

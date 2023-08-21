@@ -760,20 +760,9 @@ public class Species : IGameData, ICloneable
 [DebuggerDisplay("{ID}")]
 public class SpeciesResolver
 {
-	private string _id;
-	public string ID { get => _id; set { _id = value; _species = null; } }
-    [JsonIgnore]
-	private Species _species;
-    [JsonIgnore]
-	public Species Species
-	{
-		get
-		{
-			if (_species != null) return _species;
-			_species = Data.Species[ID];
-			return _species;
-		}
-	}
+	public string ID;
+	public bool Valid => !string.IsNullOrEmpty(ID) && Data.Species.ContainsKey(ID);
+    public Species Species => Data.Species[ID];
 
     /// <summary>
     /// DO NOT USE!
@@ -785,13 +774,12 @@ public class SpeciesResolver
 		this.ID = ID;
 	}
 
-	public SpeciesResolver(Species Species)
-	{
-		this.ID = Species.ID;
-		_species = Species;
-	}
+    public SpeciesResolver(Species Species)
+    {
+        this.ID = Species.ID;
+    }
 
-	public static implicit operator string(SpeciesResolver s) => s.ID;
+    public static implicit operator string(SpeciesResolver s) => s.ID;
 	public static implicit operator Species(SpeciesResolver s) => s.Species;
 	public static explicit operator SpeciesResolver(Species s) => new SpeciesResolver(s);
 	public static explicit operator SpeciesResolver(string ID) => new SpeciesResolver(ID);

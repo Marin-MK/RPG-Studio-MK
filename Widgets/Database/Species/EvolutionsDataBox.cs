@@ -24,7 +24,7 @@ public partial class DataTypeSpecies
 			eew.OnButtonClicked += _ =>
 			{
 				spc.Evolutions.Remove(evo);
-				evo.Species.Species.Prevolutions.RemoveAll(ev => ev.Species.Species == spc && ev.Type == evo.Type && ev.Parameter == evo.Parameter);
+				if (evo.Species.Valid) evo.Species.Species.Prevolutions.RemoveAll(ev => ev.Species.Species == spc && ev.Type == evo.Type && ev.Parameter == evo.Parameter);
 				eew.Dispose();
 				panel.UpdateLayout();
 				parent.UpdateSize();
@@ -47,7 +47,7 @@ public partial class DataTypeSpecies
 			eew.OnButtonClicked += _ =>
 			{
 				spc.Evolutions.Remove(evo);
-				evo.Species.Species.Prevolutions.RemoveAll(ev => ev.Species.Species == spc && ev.Type == evo.Type && ev.Parameter == evo.Parameter);
+				if (evo.Species.Valid) evo.Species.Species.Prevolutions.RemoveAll(ev => ev.Species.Species == spc && ev.Type == evo.Type && ev.Parameter == evo.Parameter);
 				eew.Dispose();
 				panel.UpdateLayout();
 				parent.UpdateSize();

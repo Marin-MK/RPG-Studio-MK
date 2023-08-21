@@ -93,20 +93,9 @@ public class Ability : IGameData, ICloneable
 [DebuggerDisplay("{ID}")]
 public class AbilityResolver
 {
-    private string _id;
-    public string ID { get => _id; set { _id = value; _ability = null; } }
-    [JsonIgnore]
-    private Ability _ability;
-    [JsonIgnore]
-    public Ability Ability
-    {
-        get
-        {
-            if (_ability != null) return _ability;
-            _ability = Data.Abilities[ID];
-            return _ability;
-        }
-    }
+    public string ID;
+	public bool Valid => !string.IsNullOrEmpty(ID) && Data.Abilities.ContainsKey(ID);
+    public Ability Ability => Data.Abilities[ID];
 
     /// <summary>
     /// DO NOT USE!
@@ -124,7 +113,6 @@ public class AbilityResolver
     public AbilityResolver(Ability Ability)
     {
         this.ID = Ability.ID;
-        _ability = Ability;
     }
 
     public static implicit operator string(AbilityResolver s) => s.ID;
