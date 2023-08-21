@@ -49,6 +49,7 @@ x64/
 *.log
 *.svclog
 *.scc
+*.bat
 
 # Visual C++ cache files
 ipch/
