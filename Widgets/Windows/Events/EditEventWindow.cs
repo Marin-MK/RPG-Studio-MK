@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
@@ -152,6 +154,14 @@ public class EditEventWindow : PopupWindow
         CreateButton("OK", _ => OK());
     }
 
+    void ConvertEventCommands(EventPage eventPage)
+    {
+        eventPage.Commands.ForEach(cmd =>
+        {
+            cmd.Parameters = cmd.Parameters.Select(p => Utilities.JsonToNative((JsonElement) p)).ToList();
+        });
+    }
+
     private void NewPage()
     {
         InsertPage(EPL.SelectedPage + 1, new EventPage());
@@ -175,6 +185,7 @@ public class EditEventWindow : PopupWindow
     {
         if (!Utilities.IsClipboardValidBinary(BinaryData.EVENT_PAGE)) return;
         EventPage Page = Utilities.GetClipboard<EventPage>();
+        ConvertEventCommands(Page);
         InsertPage(EPL.SelectedPage + 1, Page);
     }
 

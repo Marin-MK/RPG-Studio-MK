@@ -489,6 +489,36 @@ public static class Utilities
         }
     }
 
+    public static object JsonToNative(JsonElement e)
+    {
+        if (e.ValueKind == JsonValueKind.Number) return e.GetInt64();
+        else if (e.ValueKind == JsonValueKind.String) return e.GetString();
+        else if (e.ValueKind == JsonValueKind.Array) return e.EnumerateArray().Select(e => JsonToNative(e)).ToList();
+        else if (e.ValueKind == JsonValueKind.Object)
+        {
+            var enumerator = e.EnumerateObject();
+            Dictionary<string, JsonProperty> dict = new Dictionary<string, JsonProperty>();
+            while (enumerator.MoveNext())
+            {
+                JsonProperty property = enumerator.Current;
+                dict.Add(property.Name, property);
+            }
+            if (dict.ContainsKey("Name") && dict.ContainsKey("Volume") && dict.ContainsKey("Pitch"))
+            {
+                return new AudioFile(
+                    (string) JsonToNative(dict["Name"].Value),
+                    (int) (long) JsonToNative(dict["Volume"].Value),
+                    (int) (long) JsonToNative(dict["Pitch"].Value)
+                );
+            }
+            else
+            {
+                throw new NotImplementedException($"Object type not known.\nKeys: {dict.Keys.Aggregate((a, b) => a + ", " + b)}");
+            }
+        }
+        return e;
+    }
+
     public static Color RandomColor(byte Alpha = 255)
     {
         return new Color((byte) Random(0, 255), (byte) Random(0, 255), (byte) Random(0, 255), Alpha);
