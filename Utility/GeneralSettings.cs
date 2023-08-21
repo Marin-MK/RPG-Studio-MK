@@ -28,7 +28,6 @@ public class GeneralSettings : BaseSettings
         { "ANIMATE_EGG_CRACKS", false },
         { "ANIMATE_EGG_ICONS", true },
         { "SHOW_SPECIES_SPRITES_AS_FEMALE", false },
-        { "SHOW_SPECIES_SPRITES_AS_SHINY", false },
         { "SHOW_SPECIES_SPRITES_AS_SHADOW", false }
     };
 
@@ -171,14 +170,6 @@ public class GeneralSettings : BaseSettings
 	{
 		get => Get<bool>("SHOW_SPECIES_SPRITES_AS_FEMALE");
 		set => Set("SHOW_SPECIES_SPRITES_AS_FEMALE", value);
-	}
-	/// <summary>
-	/// Shows species sprites as shiny in the database.
-	/// </summary>
-	public bool ShowSpeciesSpritesAsShiny
-	{
-		get => Get<bool>("SHOW_SPECIES_SPRITES_AS_SHINY");
-		set => Set("SHOW_SPECIES_SPRITES_AS_SHINY", value);
 	}
 	/// <summary>
 	/// Shows species sprites as shadow in the database.

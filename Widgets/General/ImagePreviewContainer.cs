@@ -9,6 +9,7 @@ namespace RPGStudioMK.Widgets;
 public class ImagePreviewContainer : Widget
 {
 	ImageBox ImageBox;
+	ImageBox GridBox;
 	public Bitmap Bitmap => ImageBox.Bitmap;
 	public int X => ImageBox.X;
 	public int Y => ImageBox.Y;
@@ -28,9 +29,20 @@ public class ImagePreviewContainer : Widget
 
 	public ImagePreviewContainer(IContainer parent) : base(parent)
     {
-		SetBackgroundColor(17, 27, 38);
 		Sprites["bg"] = new Sprite(this.Viewport);
-		ImageBox = new ImageBox(this);
+		Container OffsetContainer = new Container(this);
+		OffsetContainer.SetDocked(true);
+		OffsetContainer.SetPadding(5);
+		GridBox = new ImageBox(OffsetContainer);
+		GridBox.SetFillMode(FillMode.TileAndCenter);
+		Bitmap gridBitmap = new Bitmap(16, 16);
+		gridBitmap.Unlock();
+		gridBitmap.FillRect(0, 0, 16, 16, new Color(15, 30, 44));
+		gridBitmap.FillRect(8, 0, 8, 8, new Color(51, 74, 97));
+		gridBitmap.FillRect(0, 8, 8, 8, new Color(51, 74, 97));
+		gridBitmap.Lock();
+		GridBox.SetBitmap(gridBitmap);
+		ImageBox = new ImageBox(OffsetContainer);
     }
 
 	public override void SizeChanged(BaseEventArgs e)
@@ -39,8 +51,29 @@ public class ImagePreviewContainer : Widget
 		Sprites["bg"].Bitmap?.Dispose();
 		Sprites["bg"].Bitmap = new Bitmap(Size);
 		Sprites["bg"].Bitmap.Unlock();
-		Sprites["bg"].Bitmap.DrawRect(0, 0, Size.Width, Size.Height, new Color(59, 91, 124));
-		Sprites["bg"].Bitmap.DrawRect(1, 1, Size.Width - 2, Size.Height - 2, new Color(10, 23, 37));
+
+		Color darkOutline = new Color(15, 30, 44);
+		Color grayOutline = new Color(115, 117, 118);
+		Sprites["bg"].Bitmap.DrawRect(2, 2, Size.Width - 4, Size.Height - 4, grayOutline);
+		Sprites["bg"].Bitmap.DrawRect(3, 3, Size.Width - 6, Size.Height - 6, grayOutline);
+		Sprites["bg"].Bitmap.DrawRect(4, 4, Size.Width - 8, Size.Height - 8, 51, 74, 97);
+		Sprites["bg"].Bitmap.SetPixel(4, 4, grayOutline);
+		Sprites["bg"].Bitmap.SetPixel(Size.Width - 5, 4, grayOutline);
+		Sprites["bg"].Bitmap.SetPixel(Size.Width - 5, Size.Height - 5, grayOutline);
+		Sprites["bg"].Bitmap.SetPixel(4, Size.Height - 5, grayOutline);
+		Sprites["bg"].Bitmap.DrawLine(1, 3, 3, 1, darkOutline);
+		Sprites["bg"].Bitmap.DrawLine(2, 3, 3, 2, darkOutline);
+		Sprites["bg"].Bitmap.FillRect(4, 0, Size.Width - 8, 2, darkOutline);
+		Sprites["bg"].Bitmap.DrawLine(Size.Width - 4, 1, Size.Width - 2, 3, darkOutline);
+		Sprites["bg"].Bitmap.DrawLine(Size.Width - 4, 2, Size.Width - 3, 3, darkOutline);
+		Sprites["bg"].Bitmap.FillRect(Size.Width - 2, 4, 2, Size.Height - 8, darkOutline);
+		Sprites["bg"].Bitmap.DrawLine(Size.Width - 2, Size.Height - 4, Size.Width - 4, Size.Height - 2, darkOutline);
+		Sprites["bg"].Bitmap.DrawLine(Size.Width - 3, Size.Height - 4, Size.Width - 4, Size.Height - 3, darkOutline);
+		Sprites["bg"].Bitmap.FillRect(4, Size.Height - 2, Size.Width - 8, 2, darkOutline);
+		Sprites["bg"].Bitmap.DrawLine(1, Size.Height - 4, 3, Size.Height - 2, darkOutline);
+		Sprites["bg"].Bitmap.DrawLine(2, Size.Height - 4, 3, Size.Height - 3, darkOutline);
+		Sprites["bg"].Bitmap.FillRect(0, 4, 2, Size.Height - 8, darkOutline);
+
 		Sprites["bg"].Bitmap.Lock();
 	}
 
