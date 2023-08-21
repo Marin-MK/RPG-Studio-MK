@@ -12,6 +12,7 @@ using System.Threading;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using MKUtils;
 
 namespace RPGStudioMK;
 
@@ -21,18 +22,21 @@ public class Program
     /// Whether or not exceptions should be caught and displayed, and whether unsaved changes messages should be given.
     /// If true, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
     /// </summary>
-    public static bool DebugMode = true;
+    public static bool DebugMode = false;
     public static bool ReleaseMode => !DebugMode;
     public static bool ThrownError = false;
-    public static string? LatestVersion;
-    public static bool UpdateAvailable = false;
+    public static bool ProgramUpdateAvailable = false;
+    public static bool InstallerUpdateAvailable = false;
     public static bool PromptedUpdate = false;
-    public static string CurrentVersion;
+    public static string CurrentProgramVersion;
+    public static string? LatestProgramVersion;
+    public static string CurrentInstallerVersion;
+    public static string LatestInstallerVersion;
 
     [STAThread]
     static void Main(params string[] args)
     {
-        Widgets.MessageBox ErrorBox = null;
+		Widgets.MessageBox ErrorBox = null;
         MainEditorWindow win = null;
         try
         {
@@ -44,11 +48,13 @@ public class Program
             }
             Graphics.Logger = Logger.Instance;
             MKUtils.Logger.Instance = Logger.Instance;
-            // Ensures the working directory becomes the editor directory
-            Directory.SetCurrentDirectory(Path.GetDirectoryName(Environment.ProcessPath));
+			// Ensures the working directory becomes the editor directory
+			Logger.WriteLine("Process Path: {0}", Environment.ProcessPath);
+			Directory.SetCurrentDirectory(Path.GetDirectoryName(Environment.ProcessPath));
             if (DebugMode) TestSuite.RunAll();
 
             VerifyVersions();
+
             InitializeProgram();
             Logger.WriteLine("Initializing data");
             Game.Data.Setup();
@@ -115,25 +121,46 @@ public class Program
         Logger.Stop();
     }
 
+	public static void VerifyInstallerVersions()
+    {
+        LatestInstallerVersion = VersionMetadata.InstallerVersion;
+        Logger.WriteLine("Latest installer version: {0}", LatestInstallerVersion);
+        string installerPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, VersionMetadata.InstallerInstallFilename).Replace('\\', '/');
+        bool installUpdater = false;
+        if (File.Exists(installerPath))
+        {
+            Logger.WriteLine("Found an installer at {0}", installerPath);
+			// Check existing version
+			FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(installerPath);
+            CurrentInstallerVersion = MKUtils.MKUtils.TrimTrailingZeroes(fvi.ProductVersion);
+            Logger.WriteLine("Current installer version: {0}", CurrentInstallerVersion);
+            int cmp = VersionMetadata.CompareVersions(CurrentInstallerVersion, LatestInstallerVersion);
+            if (cmp == -1)
+            {
+                // An installer update exists
+                installUpdater = true;
+                Logger.WriteLine("A newer installer exists; download it.");
+            }
+        }
+        else
+        {
+            // No existing updater; download it.
+            installUpdater = true;
+            Logger.WriteLine("No installer was found at {0}. One will be downloaded.", installerPath);
+        }
+        if (!installUpdater) return;
+        InstallerUpdateAvailable = true;
+	}
+
     public static void VerifyVersions()
     {
         // Load current version
         // Changed in Project Settings -> Package -> Package Version (stored in .csproj)
         // Try getting the version from the assembly first (debug)
         Logger.WriteLine("Determining current version...");
-        Assembly assembly = Assembly.GetExecutingAssembly();
-        if (assembly is not null && !string.IsNullOrEmpty(assembly.Location))
-        {
-            CurrentVersion = FileVersionInfo.GetVersionInfo(assembly.Location).ProductVersion;
-            if (!string.IsNullOrEmpty(CurrentVersion)) CurrentVersion = RemoveExcessZeroes(CurrentVersion);
-        }
-        if (string.IsNullOrEmpty(CurrentVersion))
-        {
-            // Try getting it from version.txt otherwise (release)
-            CurrentVersion = File.ReadAllText("version.txt").TrimEnd();
-            if (string.IsNullOrEmpty(CurrentVersion)) CurrentVersion = "Unknown";
-            else CurrentVersion = RemoveExcessZeroes(CurrentVersion);
-        }
+        CurrentProgramVersion = FileVersionInfo.GetVersionInfo(Environment.ProcessPath).ProductVersion;
+        CurrentProgramVersion = MKUtils.MKUtils.TrimTrailingZeroes(CurrentProgramVersion);
+        Logger.WriteLine("Current version: {0}", CurrentProgramVersion);
         // Load latest version
         if (DebugMode)
         {
@@ -143,29 +170,19 @@ public class Program
         Logger.WriteLine("Downloading version metadata...");
         if (MKUtils.VersionMetadata.Load())
         {
-            LatestVersion = MKUtils.VersionMetadata.ProgramVersion;
+            LatestProgramVersion = MKUtils.VersionMetadata.ProgramVersion;
             // Compare versions
-            int cmp = MKUtils.VersionMetadata.CompareVersions(CurrentVersion, LatestVersion);
-            if (!string.IsNullOrEmpty(LatestVersion) && cmp == -1)
+            int cmp = MKUtils.VersionMetadata.CompareVersions(CurrentProgramVersion, LatestProgramVersion);
+            if (!string.IsNullOrEmpty(LatestProgramVersion) && cmp == -1)
             {
                 // LatestVersion > CurrentVersion, so there is an update available.
-                UpdateAvailable = true;
-                Logger.WriteLine($"Version {CurrentVersion} is outdated. Update {LatestVersion} is available.");
+                ProgramUpdateAvailable = true;
+                Logger.WriteLine($"Version {CurrentProgramVersion} is outdated. Update {LatestProgramVersion} is available.");
             }
-            else Logger.WriteLine($"Version {CurrentVersion} is up-to-date.");
+            else Logger.WriteLine($"Version {CurrentProgramVersion} is up-to-date.");
+            VerifyInstallerVersions();
         }
-        else Logger.WriteLine($"Failed to look for updates.");
-    }
-
-    private static string RemoveExcessZeroes(string version)
-    {
-        List<string> _split = version.Split('.').ToList();
-        while (_split[^1] == "0")
-        {
-            _split.RemoveAt(_split.Count - 1);
-        }
-        if (_split.Count == 0) _split.Add("1");
-        return _split.GetRange(0, _split.Count).Aggregate((a, b) => a + "." + b);
+        else Logger.WriteLine($"Failed to download metadata.");
     }
 
     private static void InitializeProgram()

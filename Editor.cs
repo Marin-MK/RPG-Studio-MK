@@ -11,6 +11,7 @@ using System.Threading;
 using amethyst.Animations;
 using System.Security.AccessControl;
 using RPGStudioMK.Utility;
+using MKUtils;
 
 namespace RPGStudioMK;
 
@@ -195,8 +196,8 @@ public static class Editor
     public static string GetVersionString()
     {
         string VersionName = "Version";
-        if (!string.IsNullOrEmpty(Program.CurrentVersion) && Program.CurrentVersion[0] == '0') VersionName = "Alpha";
-        return VersionName + " " + Program.CurrentVersion;
+        if (!string.IsNullOrEmpty(Program.CurrentProgramVersion) && Program.CurrentProgramVersion[0] == '0') VersionName = "Alpha";
+        return VersionName + " " + Program.CurrentProgramVersion;
     }
 
     /// <summary>
@@ -928,7 +929,7 @@ public static class Editor
     public static void DumpProjectSettings()
     {
         // Saves the version into the project file.
-        ProjectSettings.SavedVersion = Program.CurrentVersion;
+        ProjectSettings.SavedVersion = Program.CurrentProgramVersion;
         Logger.WriteLine("Saving project settings to {0}...", Data.ProjectPath + "/project.mkproj");
         Stream stream = new FileStream(Data.ProjectPath + "/project.mkproj", FileMode.Create, FileAccess.Write);
         Utilities.WriteSerializationID(stream, 0);
@@ -979,41 +980,118 @@ public static class Editor
         UnsavedChanges = false;
     }
 
-    public static void AskToUpdate()
+    public static void AskToUpdateInstaller()
     {
-        string updaterPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, "MK", "Core");
-        string updaterFile = Path.Combine(updaterPath, "updater.exe");
-        bool hasUpdater = File.Exists(updaterFile);
+        Program.InstallerUpdateAvailable = false;
+        Program.PromptedUpdate = true;
+        string mboxText = $"An update for the installer for RPG Studio MK is available. Would you like to automatically install this update?\nCurrent version: {Program.CurrentInstallerVersion}\nLatest version: {Program.LatestInstallerVersion}";
+        if (Program.CurrentInstallerVersion is null)
+            mboxText = $"RPG Studio MK would like to download the installer, so that future updates to the program can be installed automatically. Would you like to download the installer?";
+		MessageBox win = new MessageBox("Updater", mboxText, ButtonType.YesNo, IconType.Info);
+        win.OnClosed += _ =>
+        {
+            if (win.Result != 0) return;
+            ProgressWindow waitBox = new ProgressWindow("Downloading", "Downloading installer...", true, false, false, true);
+            Graphics.Update();
+            Graphics.Update();
+		    Dictionary<string, string> links = VersionMetadata.InstallerDownloadLink;
+		    string tempFilename = Path.GetTempFileName();
+            try
+            {
+                string platformString = Graphics.Platform switch
+                {
+                    odl.Platform.Windows => "windows",
+                    odl.Platform.Linux => "linux",
+                    _ => "unknown"
+                };
+                var cbm = new DynamicCallbackManager<DownloadProgress>(20, e =>
+                {
+                    waitBox.SetProgress((float) e.Factor);
+                    Graphics.Update();
+                });
+				bool success = Downloader.DownloadFile(links[platformString], tempFilename, null, cbm);
+			    if (!success)
+			    {
+				    Logger.WriteLine("Failed to download new installer. Negative status code.");
+				    return;
+			    }
+		    }
+		    catch (Exception ex)
+		    {
+			    Logger.Error("Failed to download new installer.", ex);
+			    return;
+		    }
+		    string installerPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, VersionMetadata.InstallerInstallFilename).Replace('\\', '/');
+            waitBox.Dispose();
+            MessageBox adminBox = new MessageBox("Updater", "To complete installation, admin privileges must be granted.", ButtonType.OK, IconType.Info);
+            adminBox.OnClosed += _ =>
+            {
+                Logger.WriteLine("Deleting current installer...");
+                File.Delete(installerPath);
+                Logger.WriteLine("Spawn new process to copy new installer to {0}...", installerPath);
+                Process proc = new Process();
+                proc.StartInfo = new ProcessStartInfo("cmd");
+                proc.StartInfo.ArgumentList.Add("/c");
+                proc.StartInfo.ArgumentList.Add("move");
+                proc.StartInfo.ArgumentList.Add(tempFilename.Replace('/', '\\'));
+                proc.StartInfo.ArgumentList.Add(installerPath.Replace('/', '\\'));
+                proc.StartInfo.UseShellExecute = true;
+                proc.StartInfo.CreateNoWindow = true;
+                proc.StartInfo.Verb = "runas";
+                proc.Start();
+                Logger.WriteLine("Installer updated successfully.");
+                new MessageBox("Success", "The installer was downloaded successfully.", ButtonType.OK, IconType.Info);
+            };
+		};
+	}
+
+    public static void AskToUpdateProgram()
+    {
+        string updaterPath = null;
+        string updaterFilename = null;
+        string updaterName = null;
+        try
+        {
+            updaterPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath);
+            updaterName = VersionMetadata.InstallerInstallFilename;
+            updaterFilename = Path.Combine(updaterPath, updaterName);
+        }
+        catch (Exception) { }
+        if (!File.Exists(updaterFilename))
+        {
+            updaterPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, "MK", "Core");
+            updaterName = "updater.exe";
+            updaterFilename = Path.Combine(updaterPath, updaterName);
+        }
+        bool hasUpdater = File.Exists(updaterFilename);
         if (hasUpdater)
         {
-            Logger.WriteLine("Prompt update from {0} to {1}", Program.CurrentVersion, Program.LatestVersion);
-            MessageBox win = new MessageBox("Updater", $"An update for RPG Studio MK is available. Would you like to automatically install this update?\nCurrent version: {Program.CurrentVersion}\nLatest version: {Program.LatestVersion}", ButtonType.YesNo, IconType.Info);
+            Logger.WriteLine("Found an installer at {0}", updaterFilename);
+            Logger.WriteLine("Prompt update from {0} to {1}", Program.CurrentProgramVersion, Program.LatestProgramVersion);
+            MessageBox win = new MessageBox("Updater", $"An update for RPG Studio MK is available. Would you like to automatically install this update?\nCurrent version: {Program.CurrentProgramVersion}\nLatest version: {Program.LatestProgramVersion}", ButtonType.YesNo, IconType.Info);
             win.OnClosed += _ =>
             {
-                if (win.Result == 0) // Yes
-                {
-                    // Open updater
-                    // Close program
-                    Logger.WriteLine("Closing editor...");
-                    Editor.ExitEditor();
-                    Directory.SetCurrentDirectory(updaterPath);
-                    Logger.WriteLine("Launching updater...");
-                    Process proc = new Process();
-                    proc.StartInfo = new ProcessStartInfo("cmd");
-                    proc.StartInfo.ArgumentList.Add("/c");
-                    proc.StartInfo.ArgumentList.Add("updater.exe");
-                    proc.StartInfo.ArgumentList.Add("--automatic-update");
-                    proc.StartInfo.RedirectStandardOutput = true;
-                    proc.StartInfo.UseShellExecute = false;
-                    proc.StartInfo.CreateNoWindow = true;
-                    proc.Start();
-                }
+                if (win.Result != 0) return;
+                // Open updater & close the program
+                Logger.WriteLine("Closing editor...");
+                Editor.ExitEditor();
+                Directory.SetCurrentDirectory(updaterPath);
+                Logger.WriteLine("Launching updater...");
+                Process proc = new Process();
+                proc.StartInfo = new ProcessStartInfo("cmd");
+                proc.StartInfo.ArgumentList.Add("/c");
+                proc.StartInfo.ArgumentList.Add(updaterName);
+                proc.StartInfo.ArgumentList.Add("--automatic-update");
+                proc.StartInfo.RedirectStandardOutput = true;
+                proc.StartInfo.UseShellExecute = false;
+                proc.StartInfo.CreateNoWindow = true;
+                proc.Start();
             };
         }
         else
         {
-            Logger.WriteLine("Editor found an update from {0} to {1}, but the updater does not exist at {2}.", Program.CurrentVersion, Program.LatestVersion, updaterFile);
-            new MessageBox("Updater", $"An update for RPG Studio MK is available. Please run the original RPG Studio MK installer again to install the new version and the automatic updater.\nCurrent version: {Program.CurrentVersion}\nLatest version: {Program.LatestVersion}", ButtonType.OK, IconType.Info);
+            Logger.WriteLine("Editor found an update from {0} to {1}, but the updater does not exist at {2}.", Program.CurrentProgramVersion, Program.LatestProgramVersion, updaterFilename);
+            new MessageBox("Updater", $"An update for RPG Studio MK is available. Please run the original RPG Studio MK installer again to install the new version and the automatic updater.\nCurrent version: {Program.CurrentProgramVersion}\nLatest version: {Program.LatestProgramVersion}", ButtonType.OK, IconType.Info);
         }
         Program.PromptedUpdate = true;
     }
@@ -1028,9 +1106,15 @@ public static class Editor
         {
             Graphics.ShowFrames = !Graphics.ShowFrames;
         }
-        if (Program.UpdateAvailable && !Program.PromptedUpdate)
+        if (Program.InstallerUpdateAvailable && !Program.PromptedUpdate)
         {
-            AskToUpdate();
+            // Make sure we only update the installer this time around.
+            Program.ProgramUpdateAvailable = false;
+            AskToUpdateInstaller();
+        }
+        if (Program.ProgramUpdateAvailable && !Program.PromptedUpdate)
+        {
+            AskToUpdateProgram();
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
     <ApplicationIcon>logo-64x64.ico</ApplicationIcon>
     <StartupObject>RPGStudioMK.Program</StartupObject>
@@ -14,7 +14,7 @@
     <RootNamespace>RPGStudioMK</RootNamespace>
     <SignAssembly>False</SignAssembly>
     <Copyright>Marijn Herrebout</Copyright>
-    <RepositoryUrl>https://github.com/Marin-MK/RPGStudioMK</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Marin-MK/RPG-Studio-MK</RepositoryUrl>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <Nullable>disable</Nullable>
   </PropertyGroup>
@@ -22,6 +22,8 @@
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>False</Optimize>
+    <PackageProjectUrl>https://github.com/Marin-MK/RPG-Studio-MK</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
