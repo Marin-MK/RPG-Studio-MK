@@ -78,17 +78,17 @@ public class TilesetPicker : PopupWindow
                 SelectionChanged(e);
             }
         };
-        Available.ListDrawer.SetContextMenuList(new List<IMenuItem>()
-            {
-                new MenuItem("Set Tileset")
-                {
-                    IsClickable = delegate (BoolEventArgs e)
-                    {
-                        e.Value = SelectedTileset is not null;
-                    },
-                    OnClicked = ActionButtonClicked
-                }
-            });
+        //Available.ListDrawer.SetContextMenuList(new List<IMenuItem>()
+        //{
+        //    new MenuItem("Set Tileset")
+        //    {
+        //        IsClickable = delegate (BoolEventArgs e)
+        //        {
+        //            e.Value = SelectedTileset is not null;
+        //        },
+        //        OnClicked = ActionButtonClicked
+        //    }
+        //});
 
         InUse = new ListBox(this);
         InUse.SetPosition(25, 281);
