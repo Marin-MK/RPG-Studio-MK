@@ -655,6 +655,7 @@ public class TreeView : Widget
         nextNode = nextNode.GetNextNode(false);
         if (nextNode == null || nextNode.Root == nextNode) return;
         SetSelectedNode(nextNode, false);
+        EnsureSelectedNodeVisible();
 		this.WidgetSelected(new BaseEventArgs());
 	}
 
@@ -667,8 +668,40 @@ public class TreeView : Widget
         prevNode = prevNode.GetPreviousNode(false);
         if (prevNode == null || prevNode.Root == prevNode) return;
         SetSelectedNode(prevNode, false);
+        EnsureSelectedNodeVisible();
 		this.WidgetSelected(new BaseEventArgs());
 	}
+
+    /// <summary>
+    /// Ensures the selected node is within the field of view.
+    /// </summary>
+    public void EnsureSelectedNodeVisible()
+    {
+        int scrolledY = this.AutoResize ? ScrollContainer.ScrolledY : Parent.ScrolledY;
+        int height = this.AutoResize ? ScrollContainer.Size.Height : Parent.Size.Height;
+		(ITreeNode topNode, int topY) = LastDrawData.Find(d => d.Y + LineHeight / 2 > scrolledY);
+		(ITreeNode bottomNode, int bottomY) = LastDrawData.FindLast(d => d.Y < scrolledY + height - LineHeight / 2);
+        (_, int curY) = LastDrawData.Find(d => d.Node == SelectedNode);
+        if (curY < topY)
+        {
+            scrolledY = curY;
+		}
+        else if (curY > bottomY)
+		{
+            scrolledY = curY - height + LineHeight;
+            if (scrolledY < 0) scrolledY = 0;
+        }
+        if (this.AutoResize)
+        {
+            ScrollContainer.ScrolledY = scrolledY;
+            ScrollContainer.UpdateAutoScroll();
+        }
+        else
+        {
+            Parent.ScrolledY = scrolledY;
+            ((Widget) Parent).UpdateAutoScroll();
+        }
+    }
 
     /// <summary>
     /// Called whenever the Page Down key is pressed.

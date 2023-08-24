@@ -39,11 +39,29 @@ public partial class DataTypeMoves : Widget
 		MovesList = new DataTypeSubTree("Moves", Grid);
         MovesList.SetBackgroundColor(28, 50, 73);
         MovesList.SetGridRow(0, 1);
-        RedrawList();
+        MovesList.OnScrolling += _ => Editor.ProjectSettings.LastMoveScroll = MovesList.GetScroll();
 
         MainContainer = new Container(Grid);
 		MainContainer.SetBackgroundColor(23, 40, 56);
         MainContainer.SetGrid(1, 1);
+
+		VScrollBar vs = new VScrollBar(MainContainer);
+		vs.SetRightDocked(true);
+		vs.SetPadding(0, 3, 1, 3);
+		vs.SetVDocked(true);
+		vs.SetZIndex(1);
+		vs.SetScrollStep(32);
+		MainContainer.SetVScrollBar(vs);
+		MainContainer.VAutoScroll = true;
+
+		HScrollBar hs = new HScrollBar(MainContainer);
+		hs.SetBottomDocked(true);
+		hs.SetPadding(3, 0, 3, 1);
+		hs.SetHDocked(true);
+		hs.SetZIndex(1);
+		hs.SetScrollStep(32);
+		MainContainer.SetHScrollBar(hs);
+		MainContainer.HAutoScroll = true;
 
 		HintWindow = new HintWindow(MainContainer);
 		HintWindow.ConsiderInAutoScrollCalculation = HintWindow.ConsiderInAutoScrollPositioningX = HintWindow.ConsiderInAutoScrollPositioningY = false;
@@ -51,24 +69,6 @@ public partial class DataTypeMoves : Widget
 		HintWindow.SetPadding(-3, 0, 0, -9);
 		HintWindow.SetZIndex(10);
 		HintWindow.SetVisible(false);
-
-		VScrollBar vs = new VScrollBar(MainContainer);
-        vs.SetRightDocked(true);
-        vs.SetPadding(0, 3, 1, 3);
-        vs.SetVDocked(true);
-        vs.SetZIndex(1);
-        vs.SetScrollStep(32);
-        MainContainer.SetVScrollBar(vs);
-        MainContainer.VAutoScroll = true;
-
-        HScrollBar hs = new HScrollBar(MainContainer);
-        hs.SetBottomDocked(true);
-        hs.SetPadding(3, 0, 3, 1);
-        hs.SetHDocked(true);
-        hs.SetZIndex(1);
-        hs.SetScrollStep(32);
-        MainContainer.SetHScrollBar(hs);
-        MainContainer.HAutoScroll = true;
 
         ScrollContainer = new Container(MainContainer);
 
@@ -105,7 +105,8 @@ public partial class DataTypeMoves : Widget
             }
         });
 
-        MovesList.SetSelectedNode((TreeNode) MovesList.Root.Children[0]);
+        RedrawList(Editor.ProjectSettings.LastMoveID);
+        MovesList.SetScroll(Editor.ProjectSettings.LastMoveScroll);
     }
 
 	public void RedrawList(Move? moveToSelect = null)
@@ -127,8 +128,17 @@ public partial class DataTypeMoves : Widget
 		}
 	}
 
+    public void RedrawList(string moveToSelect)
+    {
+        Move mov = (Move) Data.Sources.Moves.Find(m => ((Move) m.Object).ID == moveToSelect)?.Object;
+        if (moveToSelect == null) mov = (Move) Data.Sources.Moves[0].Object;
+        RedrawList(mov);
+    }
+
     void UpdateSelection()
     {
+        Editor.ProjectSettings.LastMoveID = this.Move.ID;
+
         StackPanel?.Dispose();
         
         StackPanel = new VStackPanel(ScrollContainer);
@@ -139,14 +149,17 @@ public partial class DataTypeMoves : Widget
         DataContainer mainContainer = new DataContainer(StackPanel);
         mainContainer.SetText("Main");
         CreateMainContainer(mainContainer, this.Move);
+        mainContainer.SetID("MOVES_MAIN");
 
         DataContainer descContainer = new DataContainer(StackPanel);
         descContainer.SetText("Description");
         CreateDescContainer(descContainer, this.Move);
+        descContainer.SetID("MOVES_DESC");
 
         DataContainer effectContainer = new DataContainer(StackPanel);
         effectContainer.SetText("Effect");
         CreateEffectContainer(effectContainer, this.Move);
+        effectContainer.SetID("MOVES_EFFECT");
 
         if (ScrollContainer.Size.Width < MainContainer.Size.Width) ScrollContainer.SetPosition(MainContainer.Size.Width / 2 - ScrollContainer.Size.Width / 2, 0);
         else ScrollContainer.SetPosition(0, 0);
@@ -203,10 +216,8 @@ public partial class DataTypeMoves : Widget
         Move data = Utilities.GetClipboard<Move>();
         data.ID = EnsureUniqueID(data.ID);
 		Data.Moves.Add(data.ID, data);
-        RedrawList();
-        TreeNode node = (TreeNode) MovesList.Root.GetAllChildren(true).Find(n => (Move) ((TreeNode) n).Object == data);
-        MovesList.SetSelectedNode(node, true);
-		Data.Sources.InvalidateMoves();
+        Data.Sources.InvalidateMoves();
+        RedrawList(data);
 	}
 
 	void DeleteMove(BaseEventArgs e)

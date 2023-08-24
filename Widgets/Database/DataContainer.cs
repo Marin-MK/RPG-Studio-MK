@@ -8,6 +8,7 @@ public class DataContainer : Widget
 
     public bool Collapsed { get; protected set; } = false;
     public string Text { get; protected set; }
+    public string ID { get; protected set; }
 
     public DataContainer(IContainer Parent) : base(Parent)
     {
@@ -27,7 +28,7 @@ public class DataContainer : Widget
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-        ((SolidBitmap)Sprites["bg"].Bitmap).SetSize(Size.Width, 36);
+        ((SolidBitmap) Sprites["bg"].Bitmap).SetSize(Size.Width, 36);
     }
 
     public void SetCollapsed(bool Collapsed)
@@ -55,7 +56,8 @@ public class DataContainer : Widget
                 Sprites["dropdown"].Bitmap.SetPixel(6, 6, grey);
                 Sprites["dropdown"].Bitmap.FillRect(6, 3, 2, 3, Color.WHITE);
                 Sprites["dropdown"].Bitmap.SetPixel(8, 4, Color.WHITE);
-            }
+				if (!Editor.ProjectSettings.DatabaseCollapsedContainers.Contains(this.ID)) Editor.ProjectSettings.DatabaseCollapsedContainers.Add(this.ID);
+			}
             else
             {
                 Sprites["dropdown"].Bitmap.FillRect(1, 0, 7, 4, Color.WHITE);
@@ -72,7 +74,8 @@ public class DataContainer : Widget
                 Sprites["dropdown"].Bitmap.SetPixel(6, 6, grey);
                 Sprites["dropdown"].Bitmap.FillRect(3, 6, 3, 2, Color.WHITE);
                 Sprites["dropdown"].Bitmap.SetPixel(4, 8, Color.WHITE);
-            }
+				if (Editor.ProjectSettings.DatabaseCollapsedContainers.Contains(this.ID)) Editor.ProjectSettings.DatabaseCollapsedContainers.RemoveAll(id => id == this.ID);
+			}
             Sprites["dropdown"].Bitmap.Lock();
             this.Widgets.ForEach(w =>
             {
@@ -81,6 +84,16 @@ public class DataContainer : Widget
             UpdateSize();
             this.OnCollapsedChanged?.Invoke(new BaseEventArgs());
             ((VStackPanel)Parent).UpdateLayout();
+        }
+    }
+
+    public void SetID(string id)
+    {
+        if (this.ID != id)
+        {
+            this.ID = id;
+            if (Editor.ProjectSettings.DatabaseCollapsedContainers.Contains(this.ID))
+                SetCollapsed(true);
         }
     }
 

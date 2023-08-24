@@ -41,6 +41,7 @@ public class DataTypeSubTree : Widget
         vs.SetPosition(190, 30);
         ScrollContainer.SetVScrollBar(vs);
         ScrollContainer.VAutoScroll = true;
+        vs.OnValueChanged += e => OnScrolling?.Invoke(e);
         TreeView = new TreeView(ScrollContainer);
         TreeView.SetLineHeight(24);
         TreeView.SetFont(Fonts.Paragraph);
@@ -65,9 +66,9 @@ public class DataTypeSubTree : Widget
         Sprites["line3"].Y = Size.Height - 41;
     }
 
-    public void SetItems(List<TreeNode> Items)
+    public void SetItems(List<TreeNode> Items, TreeNode? SelectedNode = null)
     {
-        TreeView.SetNodes(Items);
+        TreeView.SetNodes(Items, SelectedNode);
     }
 
     public void SetSelectedNode(TreeNode SelectedNode, bool ScrollToSelection = false)
@@ -83,6 +84,17 @@ public class DataTypeSubTree : Widget
                 ScrollContainer.UpdateAutoScroll();
             }
         }
+    }
+
+    public int GetScroll()
+    {
+        return ScrollContainer.ScrolledY;
+    }
+
+    public void SetScroll(int scroll)
+    {
+        ScrollContainer.ScrolledY = Math.Clamp(scroll, 0, TreeView.Size.Height - ScrollContainer.Size.Height);
+        ScrollContainer.UpdateAutoScroll();
     }
 
     public void CenterOnSelectedNode()

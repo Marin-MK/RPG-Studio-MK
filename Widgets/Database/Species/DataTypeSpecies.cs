@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Xml;
 using RPGStudioMK.Game;
@@ -41,9 +42,9 @@ public partial class DataTypeSpecies : Widget
 		SpeciesList = new DataTypeSubTree("Species", Grid);
         SpeciesList.SetBackgroundColor(28, 50, 73);
         SpeciesList.SetGridRow(0, 1);
-        RedrawList();
+        SpeciesList.OnScrolling += _ => Editor.ProjectSettings.LastSpeciesScroll = SpeciesList.GetScroll();
 
-        Tabs = new SubmodeView(Grid);
+		Tabs = new SubmodeView(Grid);
         Tabs.SetBackgroundColor(23, 40, 56);
         Tabs.SetTextY(4);
         Tabs.SetHeaderHeight(29);
@@ -53,15 +54,33 @@ public partial class DataTypeSpecies : Widget
         Tabs.SetFont(Fonts.TabFont);
         Tabs.SetCentered(true);
         Tabs.SetHeaderBackgroundColor(10, 23, 37);
-        Tabs.OnSelectionChanged += _ => UpdateSelection();
-
         Tabs.CreateTab("Main");
         Tabs.CreateTab("Moves");
         Tabs.CreateTab("Evolutions");
         Tabs.CreateTab("Media");
+        Tabs.SelectTab(Editor.ProjectSettings.LastSpeciesSubmode);
+        Tabs.OnSelectionChanged += _ => UpdateSelection();
 
         MainContainer = new Container(Grid);
         MainContainer.SetGrid(1, 1);
+
+		VScrollBar vs = new VScrollBar(MainContainer);
+		vs.SetRightDocked(true);
+		vs.SetPadding(0, 3, 1, 3);
+		vs.SetVDocked(true);
+		vs.SetZIndex(1);
+		vs.SetScrollStep(32);
+		MainContainer.SetVScrollBar(vs);
+		MainContainer.VAutoScroll = true;
+
+		HScrollBar hs = new HScrollBar(MainContainer);
+		hs.SetBottomDocked(true);
+		hs.SetPadding(3, 0, 3, 1);
+		hs.SetHDocked(true);
+		hs.SetZIndex(1);
+		hs.SetScrollStep(32);
+		MainContainer.SetHScrollBar(hs);
+		MainContainer.HAutoScroll = true;
 
 		HintWindow = new HintWindow(MainContainer);
 		HintWindow.ConsiderInAutoScrollCalculation = HintWindow.ConsiderInAutoScrollPositioningX = HintWindow.ConsiderInAutoScrollPositioningY = false;
@@ -70,28 +89,9 @@ public partial class DataTypeSpecies : Widget
 		HintWindow.SetZIndex(10);
 		HintWindow.SetVisible(false);
 
-		VScrollBar vs = new VScrollBar(MainContainer);
-        vs.SetRightDocked(true);
-        vs.SetPadding(0, 3, 1, 3);
-        vs.SetVDocked(true);
-        vs.SetZIndex(1);
-        vs.SetScrollStep(32);
-        MainContainer.SetVScrollBar(vs);
-        MainContainer.VAutoScroll = true;
-
-        HScrollBar hs = new HScrollBar(MainContainer);
-        hs.SetBottomDocked(true);
-        hs.SetPadding(3, 0, 3, 1);
-        hs.SetHDocked(true);
-        hs.SetZIndex(1);
-        hs.SetScrollStep(32);
-        MainContainer.SetHScrollBar(hs);
-        MainContainer.HAutoScroll = true;
-
         ScrollContainer = new Container(MainContainer);
 
         SpeciesList.OnSelectionChanged += _ => UpdateSelection();
-        Tabs.SelectTab(0);
 
         SpeciesList.SetContextMenuList(new List<IMenuItem>()
         {
@@ -129,7 +129,8 @@ public partial class DataTypeSpecies : Widget
             }
         });
 
-        SpeciesList.SetSelectedNode((TreeNode) SpeciesList.Root.Children[0]);
+        RedrawList(Editor.ProjectSettings.LastSpeciesID);
+        SpeciesList.SetScroll(Editor.ProjectSettings.LastSpeciesScroll);
     }
 
 	public void RedrawList(Species? speciesToSelect = null)
@@ -147,25 +148,40 @@ public partial class DataTypeSpecies : Widget
                 if (idx == -1) idx = parent.Children.Count;
                 parent.InsertChild(idx, item);
                 if (speciesToSelect == spc) nodeToSelect = item;
+                if (Editor.ProjectSettings.HiddenSpeciesForms.Contains(spc.BaseSpecies.ID)) parent.Collapse();
             }
             else
             {
 				TreeNode item = new TreeNode(spc.Name, spc);
                 if (speciesToSelect == spc) nodeToSelect = item;
+                if (Editor.ProjectSettings.HiddenSpeciesForms.Contains(spc.ID)) item.Collapse();
+                item.OnExpansionChanged += _ =>
+                {
+                    if (item.Expanded) Editor.ProjectSettings.HiddenSpeciesForms.RemoveAll(id => id == spc.ID);
+                    else if (!Editor.ProjectSettings.HiddenSpeciesForms.Contains(spc.ID)) Editor.ProjectSettings.HiddenSpeciesForms.Add(spc.ID);
+                };
 				SpeciesItems.Add(item);
             }
 		}
-		SpeciesList.SetItems(SpeciesItems);
+		SpeciesList.SetItems(SpeciesItems, nodeToSelect);
         if (nodeToSelect != null)
         {
-            SpeciesList.SetSelectedNode(nodeToSelect);
             SpeciesList.CenterOnSelectedNode();
         }
 	}
 
+    public void RedrawList(string speciesToSelect)
+    {
+        Species spc = (Species) Data.Sources.SpeciesAndForms.Find(spc => ((Species) spc.Object).ID == speciesToSelect)?.Object;
+        if (spc == null) spc = (Species) Data.Sources.Species[0].Object;
+        RedrawList(spc);
+    }
+
     void UpdateSelection()
     {
-        StackPanel?.Dispose();
+		Editor.ProjectSettings.LastSpeciesSubmode = Tabs.SelectedIndex;
+        Editor.ProjectSettings.LastSpeciesID = this.Species.ID;
+		StackPanel?.Dispose();
         
         StackPanel = new VStackPanel(ScrollContainer);
         StackPanel.SetWidth(1000);
@@ -177,75 +193,91 @@ public partial class DataTypeSpecies : Widget
             DataContainer mainContainer = new DataContainer(StackPanel);
             mainContainer.SetText("Main");
             CreateMainContainer(mainContainer, this.Species);
+            mainContainer.SetID("SPECIES_MAIN");
 
             if (this.Species.Form != 0)
             {
                 DataContainer formContainer = new DataContainer(StackPanel);
                 formContainer.SetText("Form");
                 CreateFormContainer(formContainer, this.Species);
+                formContainer.SetID("SPECIES_FORM");
             }
 
             DataContainer statsContainer = new DataContainer(StackPanel);
             statsContainer.SetText("Stats");
             CreateStatsContainer(statsContainer, this.Species);
+            statsContainer.SetID("SPECIES_STATS");
 
             DataContainer evContainer = new DataContainer(StackPanel);
             evContainer.SetText("Effort Points");
             CreateEVContainer(evContainer, this.Species);
+            evContainer.SetID("SPECIES_EVS");
 
             DataContainer miscContainer = new DataContainer(StackPanel);
             miscContainer.SetText("Misc");
             CreateMiscContainer(miscContainer, this.Species);
+            miscContainer.SetID("SPECIES_MISC");
 
 			DataContainer dexInfoContainer = new DataContainer(StackPanel);
 			dexInfoContainer.SetText("Dex Info");
 			CreateDexInfoContainer(dexInfoContainer, this.Species);
+            dexInfoContainer.SetID("SPECIES_DEXINFO");
 
 			DataContainer heldItemsContainer = new DataContainer(StackPanel);
             heldItemsContainer.SetText("Wild Held Items");
             CreateWildItemsContainer(heldItemsContainer, this.Species);
+            heldItemsContainer.SetID("SPECIES_HELDITEMS");
         }
         else if (Tabs.SelectedIndex == 1) // Moves
         {
             DataContainer levelupContainer = new DataContainer(StackPanel);
             levelupContainer.SetText("Level-Up Moves");
             CreateLevelContainer(levelupContainer, this.Species);
+            levelupContainer.SetID("SPECIES_LEVELUP");
 
             DataContainer evoMovesContainer = new DataContainer(StackPanel);
             evoMovesContainer.SetText("Evolution Moves");
             CreateEvoMovesContainer(evoMovesContainer, this.Species);
+            evoMovesContainer.SetID("SPECIES_EVOMOVES");
 
             DataContainer tmContainer = new DataContainer(StackPanel);
             tmContainer.SetText("TMs & HMs");
             CreateTMContainer(tmContainer, this.Species);
+            tmContainer.SetID("SPECIES_TMS");
 
             DataContainer eggMovesContainer = new DataContainer(StackPanel);
             eggMovesContainer.SetText("Egg Moves");
             CreateEggMovesContainer(eggMovesContainer, this.Species);
+            eggMovesContainer.SetID("SPECIES_EGGMOVES");
 
             DataContainer tutorMovesContainer = new DataContainer(StackPanel);
             tutorMovesContainer.SetText("Tutor Moves");
             CreateTutorMovesContainer(tutorMovesContainer, this.Species);
+            tutorMovesContainer.SetID("SPECIES_TUTOR");
         }
         else if (Tabs.SelectedIndex == 2) // Evolutions
         {
             DataContainer evoContainer = new DataContainer(StackPanel);
             evoContainer.SetText("Evolves Into");
             CreateEvoContainer(evoContainer, this.Species);
+            evoContainer.SetID("SPECIES_EVOLUTION");
 
             DataContainer prevoContainer = new DataContainer(StackPanel);
             prevoContainer.SetText("Evolves From");
             CreatePrevoContainer(prevoContainer, this.Species);
+            prevoContainer.SetID("SPECIES_PREVO");
         }
         else if (Tabs.SelectedIndex == 3) // Media
         {
             DataContainer spritesContainer = new DataContainer(StackPanel);
             spritesContainer.SetText("Sprites");
             CreateSpritesContainer(spritesContainer, this.Species);
+            spritesContainer.SetID("SPECIES_SPRITES");
 
             DataContainer audioContainer = new DataContainer(StackPanel);
             audioContainer.SetText("Audio");
             CreateAudioContainer(audioContainer, this.Species);
+            audioContainer.SetID("SPECIES_AUDIO");
         }
 
         if (ScrollContainer.Size.Width < MainContainer.Size.Width) ScrollContainer.SetPosition(MainContainer.Size.Width / 2 - ScrollContainer.Size.Width / 2, 0);
@@ -318,6 +350,7 @@ public partial class DataTypeSpecies : Widget
         if (SpeciesList.HoveringItem is null || !Utilities.IsClipboardValidBinary(BinaryData.SPECIES)) return;
         List<Species> data = Utilities.GetClipboard<List<Species>>();
         if (data.Count == 0) return;
+        Species? speciesToSelect = null;
         if (data[0].Form == 0)
         {
             // Paste in main list
@@ -345,6 +378,7 @@ public partial class DataTypeSpecies : Widget
                     }
 			    }
                 Data.Species.Add(s.ID, s);
+                speciesToSelect = s;
 		    }
         }
         else
@@ -358,27 +392,11 @@ public partial class DataTypeSpecies : Widget
                 s.Form = (int) GetFreeFormNumber(parentSpecies, 0, 1);
                 s.ID = s.BaseSpecies.ID + "_" + s.Form.ToString();
 			    Data.Species.Add(s.ID, s);
+                speciesToSelect = s;
 		    }
         }
-        RedrawList();
-        TreeNode node = (TreeNode) SpeciesList.Root.GetAllChildren(true).Find(n => (Species) ((TreeNode) n).Object == data[0]);
-        SpeciesList.SetSelectedNode(node, true);
 		Data.Sources.InvalidateSpecies();
-		//Undo.TilesetChangeUndoAction.Create(OldTileset, NewTileset);
-	}
-
-	void PasteForm(BaseEventArgs e)
-	{
-		if (SpeciesList.HoveringItem is null || SpeciesList.HoveringItem.Parent == SpeciesList.Root || !Utilities.IsClipboardValidBinary(BinaryData.SPECIES)) return;
-		List<Species> data = Utilities.GetClipboard<List<Species>>();
-		if (data.Count == 0) return;
-        if (data.Any(f => f.Form == 0)) return;
-        
-		RedrawList();
-		TreeNode node = (TreeNode) SpeciesList.Root.GetAllChildren(true).Find(n => (Species) ((TreeNode) n).Object == data[0]);
-		SpeciesList.SetSelectedNode(node, true);
-		Data.Sources.InvalidateSpecies();
-		//Undo.TilesetChangeUndoAction.Create(OldTileset, NewTileset);
+        RedrawList(speciesToSelect);
 	}
 
 	void DeleteSpecies(BaseEventArgs e)
@@ -404,6 +422,5 @@ public partial class DataTypeSpecies : Widget
         if (selectFirst) SpeciesList.SetSelectedNode((TreeNode) SpeciesList.Root.Children[0]);
         SpeciesList.RedrawAllNodes();
         Data.Sources.InvalidateSpecies();
-        //Undo.TilesetChangeUndoAction.Create(OldTileset, NewTileset);
     }
 }
