@@ -504,7 +504,8 @@ public class ScriptEditorTextArea : MultilineTextArea
             "assignment" or "empty_method" or "parenthesis_open" or "parenthesis_close" or
             "logical_operator" or "bitwise_operator" or "relational_operator" or "arithmetic_operator" or
             "range" or "object_access" or "line_end" or "ternary_operator" or "array_initialization" or
-            "hash_initialization" or "array_access" or "block" or "argument_list" or "constant_access" => new Color(96, 192, 192),
+            "hash_initialization" or "array_access" or "block" or "argument_list" or "constant_access" or
+            "open_string_interpolation" or "close_string_interpolation" => new Color(96, 192, 192),
 
             "class_definition" or "module_definition" or "constant" or "instance_variable" or
             "class_variable" or "global_variable" => new Color(192, 192, 96),
