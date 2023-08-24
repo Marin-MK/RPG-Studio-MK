@@ -20,61 +20,189 @@ public class TreeView : Widget
     // or by creating a new bitmap and copying everything over. This would need to happen after the new content is drawn or deleted,
     // otherwise we might copy something in an overlapping region, or copy somewhere off the bitmap.
 
-    // TODO:
-    // - Deselect a node if it was selected and it is selected again with control down
-    // - Select first visible parent node if a node is collapsed and the one single selected node is within that tree
-    // - Deselect all selected nodes within a node tree if that node is collapsed
-
     static Bitmap TreeIconsBitmap;
 
+    /// <summary>
+    /// The root node of the tree. This node is not displayed.
+    /// </summary>
     public TreeNode Root { get; protected set; }
+    /// <summary>
+    /// The height allocated to each node.
+    /// </summary>
     public int LineHeight { get; protected set; } = 24;
+    /// <summary>
+    /// The depth, or x offset each child node introduces.
+    /// </summary>
     public int DepthIndent { get; protected set; } = 20;
+    /// <summary>
+    /// A global x offset for the entire displayed tree.
+    /// </summary>
     public int XOffset { get; protected set; } = 6;
+    /// <summary>
+    /// Additional horizontal scroll area.
+    /// </summary>
     public int ExtraXScrollArea { get; protected set; } = 0;
+    /// <summary>
+    /// Additional vertical scroll area.
+    /// </summary>
     public int ExtraYScrollArea { get; protected set; } = 0;
+    /// <summary>
+    /// The node that is currently being hovered over. May be null if no node is being hovered over.
+    /// </summary>
     public ITreeNode HoveringNode { get; protected set; }
+    /// <summary>
+    /// All nodes that are currently selected.
+    /// </summary>
     public List<ITreeNode> SelectedNodes { get; protected set; } = new List<ITreeNode>();
+    /// <summary>
+    /// Whether one or multiple nodes are selected.
+    /// </summary>
     public bool MultipleSelected => SelectedNodes.Count > 1;
+    /// <summary>
+    /// The currently selected node. May be null if no nodes are selected.
+    /// </summary>
     public ITreeNode SelectedNode => SelectedNodes.Count > 0 ? SelectedNodes[0] : null;
+    /// <summary>
+    /// Whether nodes can be rearranged with drag-and-drop.
+    /// </summary>
     public bool CanDragAndDrop { get; protected set; } = true;
+    /// <summary>
+    /// Whether the tree has any nodes aside from the root node.
+    /// </summary>
     public bool Empty => !Root.HasChildren;
+    /// <summary>
+    /// Whether a selection is required at all times.
+    /// </summary>
     public bool RequireSelection { get; protected set; } = true;
+    /// <summary>
+    /// The font used to display each node.
+    /// </summary>
     public Font Font { get; protected set; }
+    /// <summary>
+    /// The padding of the horizontal scrollbar when no vertical scrollbar is present.
+    /// </summary>
     public Padding HScrollBarPaddingAlone { get; protected set; } = new Padding(1, 0, 1, -1);
+    /// <summary>
+    /// The padding of the horizontal scrollbar when there is also a vertical scrollbar present.
+    /// </summary>
     public Padding HScrollBarPaddingShared { get; protected set; } = new Padding(1, 0, 13, -1);
+    /// <summary>
+    /// The padding of the vertical scrollbar when no horizontal scrollbar is present.
+    /// </summary>
     public Padding VScrollBarPaddingAlone { get; protected set; } = new Padding(0, 1, -1, 1);
+    /// <summary>
+    /// The padding of the vertical scrollbar when there is also a horizontal scrollbar present.
+    /// </summary>
     public Padding VScrollBarPaddingShared { get; protected set; } = new Padding(0, 1, -1, 13);
+    /// <summary>
+    /// Whether to auto-resize horizontally to fill the scroll container.
+    /// </summary>
     public bool HResizeToFill { get; protected set; } = false;
+    /// <summary>
+    /// Whether to auto-resize vertically to fill the scroll container.
+    /// </summary>
     public bool VResizeToFill { get; protected set; } = true;
+    /// <summary>
+    /// Whether to auto-resize in the scroll container, or to leave that to this widget's parent.
+    /// </summary>
     public new bool AutoResize { get; protected set; } = true;
 
+    /// <summary>
+    /// Called whenever drag-and-drop is initiated.
+    /// </summary>
     public GenericObjectEvent<ITreeNode> OnDragAndDropping;
+    /// <summary>
+    /// Called whenever a drag-and-drop event is completed.
+    /// </summary>
     public GenericObjectEvent<(ITreeNode DroppedNode, TreeNode OldRoot, TreeNode NewRoot)> OnDragAndDropped;
+    /// <summary>
+    /// Called whenever the active selection changes.
+    /// </summary>
     public BoolEvent OnSelectionChanged;
+    /// <summary>
+    /// Called whenever a node is expanded or collapsed.
+    /// </summary>
     public GenericObjectEvent<TreeNode> OnNodeExpansionChanged;
+    /// <summary>
+    /// Called whenever the tree structure is rearranged at any point.
+    /// </summary>
     public GenericObjectEvent<TreeNode> OnNodeGlobalIndexChanged;
 
+    /// <summary>
+    /// Keeps track of the y positioning of drawn nodes.
+    /// </summary>
     private List<(ITreeNode Node, int Y)> LastDrawData = new List<(ITreeNode, int)>();
+    /// <summary>
+    /// Keeps track of selection sprites.
+    /// </summary>
     private List<(ITreeNode Node, int SpriteIndex)> SelectionSprites = new List<(ITreeNode, int)>();
 
+    /// <summary>
+    /// The container in which the tree scrolls if <see cref="AutoResize"/> is true.
+    /// </summary>
     private Container ScrollContainer;
+    /// <summary>
+    /// The container that automatically resizes with the tree.
+    /// </summary>
     private Container SpriteContainer;
+    /// <summary>
+    /// The background sprite for the tree.
+    /// </summary>
     private Sprite BGSprite => SpriteContainer.Sprites["bg"];
+    /// <summary>
+    /// The text sprite for the tree.
+    /// </summary>
     private Sprite TXTSprite => SpriteContainer.Sprites["txt"];
 
+    /// <summary>
+    /// The active node during mouse events.
+    /// </summary>
     private ITreeNode? ActiveNode;
+    /// <summary>
+    /// Whether a node is currently being dragged.
+    /// </summary>
     private bool Dragging = false;
+    /// <summary>
+    /// The drag-and-drop state, or where it is currently being released relative to the hovered node.
+    /// </summary>
     private DragStates? DragState;
+    /// <summary>
+    /// The depth offset for drawing the drag-and-dropped node.
+    /// </summary>
     private int DragLineOffset = 0;
+    /// <summary>
+    /// The origin point where drag-and-drop began. Used to only start drag-and-drop after a certain radius outside this point.
+    /// </summary>
     private Point? DragOriginPoint;
+    /// <summary>
+    /// Whether drag-and-drop is active. The mouse must be outside a certain radius of <see cref="DragOriginPoint"/> to be valid.
+    /// </summary>
     private bool ValidatedDragMovement = false;
+    /// <summary>
+    /// The old node being hovered over.
+    /// </summary>
     private ITreeNode OldHoveringNode;
+    /// <summary>
+    /// Records the node that was clicked on the first click, in order to check if a second click was on the same node for double-click events.
+    /// </summary>
     private ITreeNode? DoubleClickNode;
+    /// <summary>
+    /// The root node before drag-and-drop takes place.
+    /// </summary>
     private TreeNode? PreDragDropRootNode;
+    /// <summary>
+    /// The query that was typed for keyboard node selection.
+    /// </summary>
 	private string query = "";
+    /// <summary>
+    /// The node currently shown as selected based on the typed query.
+    /// </summary>
 	private TreeNode queryNode;
 
+    /// <summary>
+    /// Creates a new Tree View.
+    /// </summary>
+    /// <param name="Parent">The parent widget.</param>
 	public TreeView(IContainer Parent) : base(Parent)
     {
         if (TreeIconsBitmap == null)
@@ -123,6 +251,10 @@ public class TreeView : Widget
         });
     }
 
+    /// <summary>
+    /// Sets whether to auto-resize in-widget (true) or to leave it to the parent (false).
+    /// </summary>
+    /// <param name="AutoResize"></param>
     public void SetAutoResize(bool AutoResize)
     {
         if (this.AutoResize != AutoResize)
@@ -141,6 +273,11 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Changes the root node of the tree.
+    /// </summary>
+    /// <param name="Root">The new root node.</param>
+    /// <param name="SelectedNode">The node to select in the new tree.</param>
     public void SetRootNode(TreeNode Root, ITreeNode? SelectedNode = null)
     {
         if (this.Root != Root)
@@ -159,6 +296,10 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Changes the line height allocated to each node.
+    /// </summary>
+    /// <param name="LineHeight">The new line height.</param>
     public void SetLineHeight(int LineHeight)
     {
         if (this.LineHeight != LineHeight)
@@ -168,6 +309,10 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Changes the depth indent attributed to each child node level.
+    /// </summary>
+    /// <param name="DepthIndent">The new depth indent.</param>
     public void SetDepthIndent(int DepthIndent)
     {
         if (this.DepthIndent != DepthIndent)
@@ -177,6 +322,10 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Changes whether drag-and-drop is allowed.
+    /// </summary>
+    /// <param name="CanDragAndDrop">Whether drag-and-drop is allowed.</param>
     public void SetCanDragAndDrop(bool CanDragAndDrop)
     {
         if (this.CanDragAndDrop != CanDragAndDrop)
@@ -185,6 +334,10 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Changes whether a selection is always required.
+    /// </summary>
+    /// <param name="RequireSelection">Whether a selection is always required.</param>
     public void SetRequireSelection(bool RequireSelection)
     {
         if (this.RequireSelection != RequireSelection)
@@ -197,6 +350,10 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Changes the font of the nodes.
+    /// </summary>
+    /// <param name="Font">The new font.</param>
     public void SetFont(Font Font)
     {
         if (this.Font != Font)
@@ -206,6 +363,10 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Changes the padding of the vertical scrollbar when no horizontal scrollbar is present.
+    /// </summary>
+    /// <param name="VScrollBarPaddingAlone">The new padding.</param>
     public void SetVScrollBarPaddingAlone(Padding VScrollBarPaddingAlone)
     {
         if (this.VScrollBarPaddingAlone != VScrollBarPaddingAlone)
@@ -215,6 +376,10 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Changes the padding of the vertical scrollbar when there is a horizontal scrollbar present.
+    /// </summary>
+    /// <param name="VScrollBarPaddingShared">The new padding.</param>
     public void SetVScrollBarPaddingShared(Padding VScrollBarPaddingShared)
     {
         if (this.VScrollBarPaddingShared != VScrollBarPaddingShared)
@@ -224,6 +389,10 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Changes the padding of the horizontal scrollbar when no vertical scrollbar is present.
+    /// </summary>
+    /// <param name="HScrollBarPaddingAlone">The new padding.</param>
     public void SetHScrollBarPaddingAlone(Padding HScrollBarPaddingAlone)
     {
         if (this.HScrollBarPaddingAlone != HScrollBarPaddingAlone)
@@ -233,6 +402,10 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Changes the padding of the horizontal scrollbar when there is a vertical scrollbar present.
+    /// </summary>
+    /// <param name="HScrollBarPaddingShared">Whether to auto-resize.</param>
     public void SetHScrollBarPaddingShared(Padding HScrollBarPaddingShared)
     {
         if (this.HScrollBarPaddingShared != HScrollBarPaddingShared)
@@ -242,6 +415,10 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Sets whether to automatically resize vertically to fill the container.
+    /// </summary>
+    /// <param name="VResizeToFill"></param>
     public void SetVResizeToFill(bool VResizeToFill)
     {
         if (this.VResizeToFill != VResizeToFill)
@@ -251,6 +428,10 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Changes whether to automatically resize horizontally to fill the container.
+    /// </summary>
+    /// <param name="HResizeToFill">Whether to auto-resize.</param>
     public void SetHResizeToFill(bool HResizeToFill)
     {
         if (this.HResizeToFill != HResizeToFill)
@@ -260,6 +441,11 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Changes the root node children.
+    /// </summary>
+    /// <param name="Nodes">The new child nodes.</param>
+    /// <param name="SelectedNode">The node to select afterwards, or null.</param>
     public void SetNodes(List<TreeNode> Nodes, TreeNode? SelectedNode = null)
     {
         this.Root.ClearChildren();
@@ -279,6 +465,10 @@ public class TreeView : Widget
         if (RequireSelection) SetSelectedNode(SelectedNode ?? (Root.HasChildren ? Root.Children[0] : null), false);
     }
 
+    /// <summary>
+    /// Changes the x offset of the drawn tree.
+    /// </summary>
+    /// <param name="XOffset">The new x offset.</param>
     public void SetXOffset(int XOffset)
     {
         if (this.XOffset != XOffset)
@@ -288,6 +478,10 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Changes the additional horizontal scroll area.
+    /// </summary>
+    /// <param name="ExtraXScrollArea">The new scroll area.</param>
     public void SetExtraXScrollArea(int ExtraXScrollArea)
     {
         if (this.ExtraXScrollArea != ExtraXScrollArea)
@@ -297,6 +491,10 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Changes the additional vertical scroll area.
+    /// </summary>
+    /// <param name="ExtraYScrollArea">The new scroll area.</param>
     public void SetExtraYScrollArea(int ExtraYScrollArea)
     {
         if (this.ExtraYScrollArea != ExtraYScrollArea)
@@ -306,12 +504,21 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Changes the active and selected node values. Do not use to select a node in normal operation.
+    /// </summary>
+    /// <param name="node">The node to activate and select.</param>
     public void SetActiveAndSelectedNode(TreeNode node)
     {
         this.ActiveNode = node;
         this.SelectedNodes = new List<ITreeNode>() { node };
     }
 
+    /// <summary>
+    /// Changes whether a node is expanded or collapsed.
+    /// </summary>
+    /// <param name="Node">The node to expand or collapse.</param>
+    /// <param name="Expanded">Whether the node should be expanded or collapsed.</param>
 	public unsafe void SetExpanded(TreeNode Node, bool Expanded)
     {
         if (Node.Expanded != Expanded)
@@ -400,18 +607,27 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Called whenever the widget is selected.
+    /// </summary>
 	public override void WidgetSelected(BaseEventArgs e)
 	{
 		base.WidgetSelected(e);
         Input.StartTextInput();
 	}
 
+    /// <summary>
+    /// Called whenever the widget is deselected.
+    /// </summary>
 	public override void WidgetDeselected(BaseEventArgs e)
 	{
 		base.WidgetDeselected(e);
         Input.StopTextInput();
 	}
 
+    /// <summary>
+    /// Called whenever the widget received keyboard input.
+    /// </summary>
 	public override void TextInput(TextEventArgs e)
 	{
 		base.TextInput(e);
@@ -430,6 +646,9 @@ public class TreeView : Widget
         SelectQuery(query);
 	}
 
+    /// <summary>
+    /// Called whenever the Down key is pressed.
+    /// </summary>
 	private void MoveDown()
     {
         TreeNode nextNode = (TreeNode) SelectedNode;
@@ -439,6 +658,9 @@ public class TreeView : Widget
 		this.WidgetSelected(new BaseEventArgs());
 	}
 
+    /// <summary>
+    /// Called whenever the Up key is pressed.
+    /// </summary>
     private void MoveUp()
     {
         TreeNode prevNode = (TreeNode) SelectedNode;
@@ -448,6 +670,9 @@ public class TreeView : Widget
 		this.WidgetSelected(new BaseEventArgs());
 	}
 
+    /// <summary>
+    /// Called whenever the Page Down key is pressed.
+    /// </summary>
     private void MovePageDown()
     {
         int scrolledY = this.AutoResize ? ScrollContainer.ScrolledY : Parent.ScrolledY;
@@ -491,6 +716,9 @@ public class TreeView : Widget
 		this.WidgetSelected(new BaseEventArgs());
 	}
 
+    /// <summary>
+    /// Called whenever the Page Up key is pressed.
+    /// </summary>
     private void MovePageUp()
     {
 		int scrolledY = this.AutoResize ? ScrollContainer.ScrolledY : Parent.ScrolledY;
@@ -533,7 +761,11 @@ public class TreeView : Widget
 		this.WidgetSelected(new BaseEventArgs());
 	}
 
-    private void CenterOnNode(ITreeNode centerNode)
+    /// <summary>
+    /// Center the tree list on the specified node.
+    /// </summary>
+    /// <param name="centerNode">The node to center the tree list on.</param>
+    public void CenterOnNode(ITreeNode centerNode)
     {
         int scrolledY = this.AutoResize ? ScrollContainer.ScrolledY : Parent.ScrolledY;
         int height = this.AutoResize ? ScrollContainer.Size.Height : Parent.Size.Height;
@@ -551,6 +783,11 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Calculates the maximum width of a node and its children.
+    /// </summary>
+    /// <param name="Start">The node to start calculating at.</param>
+    /// <returns>The total width of a node and its children.</returns>
     private int CalculateMaxWidth(TreeNode Start)
     {
         int MaxWidth = 0;
@@ -570,6 +807,12 @@ public class TreeView : Widget
         return MaxWidth;
     }
 
+    /// <summary>
+    /// Inserts a node as a child of a parent node and selectively redraws the tree.
+    /// </summary>
+    /// <param name="ParentNode">The parent node.</param>
+    /// <param name="InsertionIndex">The index of the parent's child list, or null to append it.</param>
+    /// <param name="NewNode">The node to insert.</param>
     public void InsertNode(TreeNode ParentNode, int? InsertionIndex, ITreeNode NewNode)
     {
         bool DidNotHaveChildren = ParentNode.HasChildren;
@@ -639,6 +882,12 @@ public class TreeView : Widget
         TXTSprite.Bitmap.Lock();
     }
 
+    /// <summary>
+    /// Deletes a node and selectively redraws the tree.
+    /// </summary>
+    /// <param name="Node">The node to delete.</param>
+    /// <param name="DeleteChildren">Whether to delete its child nodes or concatenate them in its parent.</param>
+    /// <returns>The deleted nodes.</returns>
     public List<ITreeNode> DeleteNode(ITreeNode Node, bool DeleteChildren)
     {
         TreeNode Parent = Node.Parent;
@@ -756,6 +1005,9 @@ public class TreeView : Widget
         return new List<ITreeNode>() { Node };
     }
 
+    /// <summary>
+    /// Redraws the entire tree.
+    /// </summary>
     public void RedrawAllNodes()
     {
         LastDrawData.Clear();
@@ -781,6 +1033,10 @@ public class TreeView : Widget
         UpdateSize(false);
     }
 
+    /// <summary>
+    /// Redraws a single node and its children. This may only be called if its height did not change (i.e. no children were added or removed).
+    /// </summary>
+    /// <param name="node">The node to redraw.</param>
     public void RedrawNode(ITreeNode node)
     {
         int y = GetDrawnYCoord(node);
@@ -813,6 +1069,14 @@ public class TreeView : Widget
         TXTSprite.Bitmap.Lock();
     }
 
+    /// <summary>
+    /// Redraws a single node.
+    /// </summary>
+    /// <param name="Node">The node to redraw.</param>
+    /// <param name="y">The y position to draw the node at.</param>
+    /// <param name="AddData">Whether to add the draw data to <see cref="LastDrawData"/>.</param>
+    /// <param name="IndexProvider">A function that returns the index in <see cref="LastDrawData"/> to insert the data at if <paramref name="AddData"/> is true.</param>
+    /// <returns></returns>
     private int RedrawNode(ITreeNode Node, int y, bool AddData = true, Func<int> IndexProvider = null)
     {
         int x = (Node.Depth - 1) * DepthIndent + XOffset;
@@ -864,6 +1128,10 @@ public class TreeView : Widget
         return y;
     }
 
+    /// <summary>
+    /// Redraws the text of a node.
+    /// </summary>
+    /// <param name="Node">The node to redraw the text of.</param>
     public void RedrawNodeText(TreeNode Node)
     {
         TXTSprite.Bitmap.Unlock();
@@ -874,12 +1142,20 @@ public class TreeView : Widget
         TXTSprite.Bitmap.Lock();
     }
 
+    /// <summary>
+    /// Determines the y position of a drawn node.
+    /// </summary>
+    /// <param name="Node">The node to match with.</param>
+    /// <returns>The y position of the drawn node.</returns>
     public int GetDrawnYCoord(ITreeNode Node)
     {
         (_, int Y) = LastDrawData.Find(d => d.Node == Node);
         return Y;
     }
 
+    /// <summary>
+    /// Clears all selected nodes.
+    /// </summary>
     private void ClearSelection()
     {
         SelectionSprites.ForEach(s =>
@@ -898,6 +1174,10 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Expands all ancestors of a node to make the node visible.
+    /// </summary>
+    /// <param name="Node">The node to make visible.</param>
     private void ExpandUpTo(ITreeNode Node)
     {
         List<TreeNode> Ancestors = Node.GetAncestors();
@@ -908,6 +1188,10 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Selects an individual node.
+    /// </summary>
+    /// <param name="Node">The node to select.</param>
     private void SelectIndividualNode(ITreeNode Node)
     {
         ExpandUpTo(Node);
@@ -924,12 +1208,23 @@ public class TreeView : Widget
         if (Node is TreeNode) RedrawNodeText((TreeNode) Node);
     }
 
+    /// <summary>
+    /// Updates a node's selection sprite.
+    /// </summary>
+    /// <param name="Node">The node to match with.</param>
     private void UpdateSelection(ITreeNode Node)
     {
         int i = SelectionSprites.Find(s => s.Node == Node).SpriteIndex;
         SpriteContainer.Sprites[$"sel_{i}"].Y = GetDrawnYCoord(Node);
     }
 
+    /// <summary>
+    /// Selects a node.
+    /// </summary>
+    /// <param name="Node">The node to select.</param>
+    /// <param name="AllowMultiple">Whether multiple nodes may be selected.</param>
+    /// <param name="DoubleClicked">Whether the node was double clicked.</param>
+    /// <param name="InvokeEvent">Whether to invoke the <see cref="OnSelectionChanged"/> event.</param>
     public void SetSelectedNode(ITreeNode Node, bool AllowMultiple, bool DoubleClicked = true, bool InvokeEvent = true)
     {
         if (!AllowMultiple) ClearSelection();
@@ -937,6 +1232,10 @@ public class TreeView : Widget
         if (InvokeEvent) OnSelectionChanged?.Invoke(new BoolEventArgs(DoubleClicked));
     }
 
+    /// <summary>
+    /// Sets a node as being hovered over.
+    /// </summary>
+    /// <param name="Node">The node to set as hovered.</param>
     public void SetHoveringNode(ITreeNode Node)
     {
         DragState = null;
@@ -955,6 +1254,10 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Called whenever the size of the widget changes.
+    /// </summary>
+    /// <param name="e"></param>
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
@@ -962,6 +1265,10 @@ public class TreeView : Widget
         else UpdateSize(false); // The max width of the tree itself does not depend on the size of this widget
     }
 
+    /// <summary>
+    /// Called to update the size of the tree containers.
+    /// </summary>
+    /// <param name="Recalculate">Whether to recalculate the maximum width for potential horizontal scrolling.</param>
     void UpdateSize(bool Recalculate = true)
     {
         int OldWidth = SpriteContainer.Size.Width;
@@ -1005,6 +1312,9 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Called whenever the mouse is moving.
+    /// </summary>
     public override void MouseMoving(MouseEventArgs e)
     {
         base.MouseMoving(e);
@@ -1092,6 +1402,9 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Redraws the drag-and-drop graphics.
+    /// </summary>
     private void RedrawDragState()
     {
         SpriteContainer.Sprites["drag"].Bitmap?.Dispose();
@@ -1155,6 +1468,9 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Called whenever the mouse is left-clicked inside the widget.
+    /// </summary>
     public override void LeftMouseDownInside(MouseEventArgs e)
     {
         base.LeftMouseDownInside(e);
@@ -1169,6 +1485,9 @@ public class TreeView : Widget
         }
     }
 
+    /// <summary>
+    /// Called whenever a left-mouse click is released. This finalizes drag-and-drop actions, among other things.
+    /// </summary>
     public override void LeftMouseUp(MouseEventArgs e)
     {
         base.LeftMouseUp(e);
@@ -1246,6 +1565,9 @@ public class TreeView : Widget
         if (Mouse.LeftStartedInside) this.WidgetSelected(new BaseEventArgs());
 	}
 
+    /// <summary>
+    /// Called every tick to update various states.
+    /// </summary>
     public override void Update()
     {
         base.Update();
@@ -1304,6 +1626,10 @@ public class TreeView : Widget
         OldHoveringNode = HoveringNode;
     }
 
+    /// <summary>
+    /// Selects a node that matches the query.
+    /// </summary>
+    /// <param name="query">The query to match.</param>
     protected void SelectQuery(string query)
     {
         query = query.ToLower();
@@ -1319,6 +1645,9 @@ public class TreeView : Widget
     }
 }
 
+/// <summary>
+/// The states in which drag-and-drop can be released.
+/// </summary>
 enum DragStates
 {
     Above,
