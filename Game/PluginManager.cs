@@ -24,4 +24,9 @@ public static class PluginManager
             if (WithProgress) Data.SetLoadProgress((float) i / (PluginDirs.Count - 1));
         }
     }
+
+    public static void SaveAll()
+    {
+        Data.Plugins.ForEach(p => p.Save());
+    }
 }

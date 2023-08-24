@@ -311,9 +311,8 @@ public partial class DataTypeSpecies : DataTypeBase
         species.ID = EnsureUniqueID("MISSINGNO");
         species.BaseSpecies = (SpeciesResolver) species.ID;
         Data.Species.Add(species.ID, species);
-        RedrawList();
-        TreeNode newNode = (TreeNode) SpeciesList.Root.GetAllChildren(true).Find(n => (Species) ((TreeNode) n).Object == species);
-        SpeciesList.SetSelectedNode(newNode);
+        Data.Sources.InvalidateSpecies();
+        RedrawList(species);
     }
 
     void NewForm(BaseEventArgs e)

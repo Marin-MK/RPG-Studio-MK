@@ -126,6 +126,7 @@ public static partial class Data
     public static void SaveGameData()
     {
         DataManager.Save();
+        PluginManager.SaveAll();
     }
 
     public static void SetProjectPath(string OriginalProjectFilePath)

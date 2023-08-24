@@ -22,12 +22,6 @@ public class ScriptingWidget : Widget
 
     public ScriptingWidget(IContainer Parent) : base(Parent)
     {
-        List<ListItem> Items = new List<ListItem>();
-        for (int i = 0; i < Data.Scripts.Count; i++)
-        {
-            Items.Add(new ListItem(Data.Scripts[i].Name, Data.Scripts[i]));
-        }
-
         TreeView = new TreeView(this);
         TreeView.SetVDocked(true);
         TreeView.SetWidth(300);
@@ -97,6 +91,18 @@ public class ScriptingWidget : Widget
         TreeNode pluginScripts = new TreeNode("Plugins");
         pluginScripts.SetSelectable(false);
         pluginScripts.SetDraggable(false);
+        foreach (GamePlugin plugin in Data.Plugins)
+        {
+            TreeNode pluginNode = new TreeNode(plugin.Name);
+            pluginNode.SetSelectable(false);
+            pluginNode.SetDraggable(false);
+            pluginScripts.AddChild(pluginNode);
+            foreach (Script script in plugin.Scripts)
+            {
+                TreeNode pluginScriptNode = new TreeNode(script.Name, script);
+                pluginNode.AddChild(pluginScriptNode);
+            }
+        }
         nodes.Add(pluginScripts);
         TreeNode customScripts = new TreeNode("Custom");
         customScripts.SetSelectable(false);

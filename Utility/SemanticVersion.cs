@@ -50,4 +50,14 @@ public struct SemanticVersion
         }
         throw new ArgumentException($"Invalid version format (expected A.B.C, A.B, or A), got '{Version}'.");
     }
+
+	public override string ToString()
+	{
+        if (this.Patch == 0)
+        {
+            if (this.Minor == 0) return this.Major.ToString();
+            return $"{this.Major}.{this.Minor}";
+        }
+        return $"{this.Major}.{this.Minor}.{this.Patch}";
+	}
 }

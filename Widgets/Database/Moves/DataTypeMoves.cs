@@ -184,9 +184,8 @@ public partial class DataTypeMoves : DataTypeBase
         move.Name = "Missingno.";
         move.ID = EnsureUniqueID("MISSINGNO");
         Data.Moves.Add(move.ID, move);
-        RedrawList();
-        TreeNode newNode = (TreeNode) MovesList.Root.GetAllChildren(true).Find(n => (Move) ((TreeNode) n).Object == move);
-        MovesList.SetSelectedNode(newNode);
+        Data.Sources.InvalidateMoves();
+        RedrawList(move);
     }
 
     void CutMove(BaseEventArgs e)
