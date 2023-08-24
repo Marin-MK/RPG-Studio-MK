@@ -28,7 +28,7 @@ public class ProjectSettings : BaseSettings
         { "LAST_MOVE_ID", "" },
         { "LAST_SPECIES_SCROLL", 0 },
         { "LAST_SPECIES_SUBMODE", 0 },
-        { "LAST_MOVE_SCROLL", 0 },
+        { "LAST_MOVE_SCROLL", 0 }
     };
 
     public ProjectSettings() : base() { }
