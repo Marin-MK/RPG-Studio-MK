@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RPGStudioMK.Widgets;
 
@@ -71,8 +72,10 @@ public class TreeView : Widget
     private ITreeNode OldHoveringNode;
     private ITreeNode? DoubleClickNode;
     private TreeNode? PreDragDropRootNode;
+	private string query = "";
+	private TreeNode queryNode;
 
-    public TreeView(IContainer Parent) : base(Parent)
+	public TreeView(IContainer Parent) : base(Parent)
     {
         if (TreeIconsBitmap == null)
         {
@@ -397,7 +400,37 @@ public class TreeView : Widget
         }
     }
 
-    private void MoveDown()
+	public override void WidgetSelected(BaseEventArgs e)
+	{
+		base.WidgetSelected(e);
+        Input.StartTextInput();
+	}
+
+	public override void WidgetDeselected(BaseEventArgs e)
+	{
+		base.WidgetDeselected(e);
+        Input.StopTextInput();
+	}
+
+	public override void TextInput(TextEventArgs e)
+	{
+		base.TextInput(e);
+        if (string.IsNullOrEmpty(e.Text) || e.Backspace || e.Delete || e.Tab) return;
+        if (TimerExists("idle") && !TimerPassed("idle"))
+        {
+            query += e.Text;
+            ResetTimer("idle");
+        }
+        else
+        {
+            if (TimerExists("idle")) ResetTimer("idle");
+            else SetTimer("idle", 500);
+            query = e.Text;
+        }
+        SelectQuery(query);
+	}
+
+	private void MoveDown()
     {
         TreeNode nextNode = (TreeNode) SelectedNode;
         nextNode = nextNode.GetNextNode(false);
@@ -418,7 +451,7 @@ public class TreeView : Widget
     private void MovePageDown()
     {
         int scrolledY = this.AutoResize ? ScrollContainer.ScrolledY : Parent.ScrolledY;
-        int height = (this.AutoResize ? ScrollContainer.Size.Height : Parent.Size.Height);
+        int height = this.AutoResize ? ScrollContainer.Size.Height : Parent.Size.Height;
 		(ITreeNode bottomNode, int bottomY) = LastDrawData.FindLast(d => d.Y < scrolledY + height - LineHeight / 2);
         (_, int curY) = LastDrawData.Find(d => d.Node == SelectedNode);
         if (curY > bottomY)
@@ -461,7 +494,7 @@ public class TreeView : Widget
     private void MovePageUp()
     {
 		int scrolledY = this.AutoResize ? ScrollContainer.ScrolledY : Parent.ScrolledY;
-		int height = (this.AutoResize ? ScrollContainer.Size.Height : Parent.Size.Height);
+		int height = this.AutoResize ? ScrollContainer.Size.Height : Parent.Size.Height;
 		(ITreeNode topNode, int topY) = LastDrawData.Find(d => d.Y + LineHeight / 2 > scrolledY);
 		(_, int curY) = LastDrawData.Find(d => d.Node == SelectedNode);
 		if (curY > topY)
@@ -499,6 +532,24 @@ public class TreeView : Widget
 		}
 		this.WidgetSelected(new BaseEventArgs());
 	}
+
+    private void CenterOnNode(ITreeNode centerNode)
+    {
+        int scrolledY = this.AutoResize ? ScrollContainer.ScrolledY : Parent.ScrolledY;
+        int height = this.AutoResize ? ScrollContainer.Size.Height : Parent.Size.Height;
+        (_, int nodeY) = LastDrawData.Find(d => d.Node == centerNode);
+        scrolledY = Math.Max(0, nodeY - height / 2);
+        if (this.AutoResize)
+        {
+            ScrollContainer.ScrolledY = scrolledY;
+            ScrollContainer.UpdateAutoScroll();
+        }
+        else
+        {
+            Parent.ScrolledY = scrolledY;
+            ((Widget) Parent).UpdateAutoScroll();
+        }
+    }
 
     private int CalculateMaxWidth(TreeNode Start)
     {
@@ -879,11 +930,11 @@ public class TreeView : Widget
         SpriteContainer.Sprites[$"sel_{i}"].Y = GetDrawnYCoord(Node);
     }
 
-    public void SetSelectedNode(ITreeNode Node, bool AllowMultiple, bool DoubleClicked = true)
+    public void SetSelectedNode(ITreeNode Node, bool AllowMultiple, bool DoubleClicked = true, bool InvokeEvent = true)
     {
         if (!AllowMultiple) ClearSelection();
         if (Node != null) SelectIndividualNode(Node);
-        OnSelectionChanged?.Invoke(new BoolEventArgs(DoubleClicked));
+        if (InvokeEvent) OnSelectionChanged?.Invoke(new BoolEventArgs(DoubleClicked));
     }
 
     public void SetHoveringNode(ITreeNode Node)
@@ -1229,6 +1280,18 @@ public class TreeView : Widget
         {
             if (TimerExists("long_hover")) DestroyTimer("long_hover");
         }
+        if (TimerExists("idle") && TimerPassed("idle"))
+        {
+            // Make query selection the real selection
+            if (queryNode is not null && !string.IsNullOrEmpty(query))
+            {
+                query = "";
+                queryNode = null;
+                DestroyTimer("idle");
+                OnSelectionChanged?.Invoke(new BoolEventArgs());
+                WidgetSelected(new BaseEventArgs());
+            }
+        }
         if (Input.Trigger(Keycode.ESCAPE) && this.Dragging)
         {
             this.Dragging = false;
@@ -1239,6 +1302,20 @@ public class TreeView : Widget
             this.ValidatedDragMovement = false;
         }
         OldHoveringNode = HoveringNode;
+    }
+
+    protected void SelectQuery(string query)
+    {
+        query = query.ToLower();
+        List<TreeNode> matches = Root.GetAllChildren(true).FindAll(n =>
+        {
+            if (n is TreeNode) return ((TreeNode) n).Text.ToLower().StartsWith(query);
+            return false;
+        }).Cast<TreeNode>().ToList();
+        if (matches.Count == 0) return; // Play fail sound?
+        queryNode = matches[0];
+        SetSelectedNode(queryNode, false, false, false);
+        CenterOnNode(queryNode);
     }
 }
 
