@@ -56,7 +56,7 @@ partial class DataTypeSpecies
 		DropdownBox moveBox = new DropdownBox(addContainer);
 		moveBox.SetPosition(110, 3);
 		moveBox.SetWidth(200);
-		moveBox.SetItems(Data.Sources.MovesListItemsAlphabetical);
+		moveBox.SetItems(Data.Sources.Moves);
 		moveBox.SetSelectedIndex(0);
 
 		Label setLabel = new Label(addContainer);
@@ -124,7 +124,7 @@ partial class DataTypeSpecies
 		DropdownBox moveBox = new DropdownBox(addContainer);
 		moveBox.SetPosition(110, 3);
 		moveBox.SetWidth(200);
-		moveBox.SetItems(Data.Sources.MovesListItemsAlphabetical);
+		moveBox.SetItems(Data.Sources.Moves);
 		moveBox.SetSelectedIndex(0);
 
 		addButton.OnClicked += _ =>
@@ -222,7 +222,7 @@ partial class DataTypeSpecies
 		DropdownBox moveBox = new DropdownBox(addContainer);
 		moveBox.SetPosition(110, 3);
 		moveBox.SetWidth(200);
-		moveBox.SetItems(Data.Sources.MovesListItemsAlphabetical);
+		moveBox.SetItems(Data.Sources.Moves);
 		moveBox.SetSelectedIndex(0);
 
 		addButton.OnClicked += _ =>
@@ -281,7 +281,7 @@ partial class DataTypeSpecies
 		moveBox.SetPosition(110, 3);
 		moveBox.SetWidth(200);
 		// Only list moves that are not a TM/HM, as those moves are already listed in the TM/HM section.
-		moveBox.SetItems(Data.Sources.MovesListItemsAlphabetical.FindAll(move => !Data.Sources.TMs.Any(tm => tm.Move.Move == (Move) move.Object) && !Data.Sources.HMs.Any(hm => hm.Move.Move == (Move) move.Object)));
+		moveBox.SetItems(Data.Sources.Moves.FindAll(move => !Data.Sources.TMs.Any(tm => tm.Move.Move == (Move) move.Object) && !Data.Sources.HMs.Any(hm => hm.Move.Move == (Move) move.Object)));
 		moveBox.SetSelectedIndex(0);
 
 		addButton.OnClicked += _ =>

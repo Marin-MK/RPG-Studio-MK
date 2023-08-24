@@ -1108,6 +1108,23 @@ pbConnectToEditor";
     {
         return Math.Abs(x - (int) x) < double.Epsilon;
     }
+
+    public static string Internalize(string name)
+	{
+		string str = name.ToUpper();
+		int idx = 0;
+		while (idx < str.Length)
+		{
+			char c = str[idx];
+			if ((c == '_' && idx == 0) || (c < 'A' || c > 'Z') && c != '_')
+			{
+				str = str.Remove(idx, 1);
+				continue;
+			}
+			else idx++;
+		}
+		return str;
+	}
 }
 
 public enum BinaryData
@@ -1119,5 +1136,6 @@ public enum BinaryData
     EVENT_PAGE,
     EVENT_COMMANDS,
     MOVE_COMMAND,
-    SPECIES
+    SPECIES,
+    MOVE
 }

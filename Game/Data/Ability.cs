@@ -94,7 +94,9 @@ public class Ability : IGameData, ICloneable
 public class AbilityResolver
 {
     public string ID;
+    [JsonIgnore]
 	public bool Valid => !string.IsNullOrEmpty(ID) && Data.Abilities.ContainsKey(ID);
+    [JsonIgnore]
     public Ability Ability => Data.Abilities[ID];
 
     /// <summary>

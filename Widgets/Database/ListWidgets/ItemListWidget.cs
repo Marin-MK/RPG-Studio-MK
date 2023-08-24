@@ -14,7 +14,7 @@ public class ItemListWidget : DropdownListWidget
 
     public ItemListWidget(IContainer parent) : base(parent)
     {
-		SetAvailableItems(Data.Sources.ItemsListItemsAlphabetical);
+		SetAvailableItems(Data.Sources.Items);
 	}
 
 	public void SetItems(List<ItemResolver> items)

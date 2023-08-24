@@ -39,7 +39,7 @@ public partial class DataTypeSpecies
 		addButton.SetWidth(160);
 		addButton.OnClicked += _ =>
 		{
-			Evolution evo = new Evolution((SpeciesResolver) (Species) Data.Sources.SpeciesAndFormsListItemsAlphabetical[0].Object, Data.HardcodedData.EvolutionMethods[0], "");
+			Evolution evo = new Evolution((SpeciesResolver) (Species) Data.Sources.SpeciesAndForms[0].Object, Data.HardcodedData.EvolutionMethods[0], "");
 			spc.Evolutions.Insert(0, evo);
 			EvolutionEntryWidget eew = new EvolutionEntryWidget(false, spc, panel, 0);
 			eew.SetEvolution(evo);

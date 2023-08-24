@@ -29,7 +29,19 @@ public partial class DataTypeSpecies
 				s.Name = spc.Name;
 				n.SetText($"{s.Form} - {s.FormName ?? s.Name}");
 			});
+			Data.Sources.InvalidateSpecies();
+			if (!nameBox.TimerExists("idle")) nameBox.SetTimer("idle", 1000);
+			else nameBox.ResetTimer("idle");
+			SpeciesList.SelectedItem.SetText(spc.Name);
 			SpeciesList.RedrawNode(SpeciesList.SelectedItem);
+		};
+		nameBox.OnUpdate += _ =>
+		{
+			if (nameBox.TimerExists("idle") && nameBox.TimerPassed("idle"))
+			{
+				RedrawList((Species) SpeciesList.SelectedItem.Object);
+				nameBox.DestroyTimer("idle");
+			}
 		};
 		nameBox.SetEnabled(spc.Form == 0);
 		nameBox.SetShowDisabledText(true);
@@ -41,19 +53,20 @@ public partial class DataTypeSpecies
 		nameLabel.SetFont(Fonts.Paragraph);
 		nameLabel.SetEnabled(spc.Form == 0);
 
-		TextBox intNameBox = new TextBox(parent);
-		intNameBox.SetPosition(217, 93);
-		intNameBox.SetSize(150, 27);
-		intNameBox.SetFont(Fonts.Paragraph);
-		intNameBox.SetPopupStyle(false);
-		intNameBox.SetText(spc.ID);
-		intNameBox.OnTextChanged += _ =>
+		TextBox idBox = new TextBox(parent);
+		idBox.SetPosition(217, 93);
+		idBox.SetSize(150, 27);
+		idBox.SetFont(Fonts.Paragraph);
+		idBox.SetPopupStyle(false);
+		idBox.SetText(spc.ID);
+		idBox.OnTextChanged += _ =>
 		{
-			Match match = Regex.Match(intNameBox.Text, @"[A-Z][a-zA-Z_\d]*$");
+			Match match = Regex.Match(idBox.Text, @"[A-Z][a-zA-Z_\d]*$");
 			if (match.Success)
 			{
+				if (Data.Species.ContainsKey(idBox.Text)) return;
 				Data.Species.Remove(spc.ID);
-				spc.ID = intNameBox.Text;
+				spc.ID = idBox.Text;
 				Data.Species.Add(spc.ID, spc);
 				SpeciesList.SelectedItem.Children.ForEach(c =>
 				{
@@ -65,21 +78,30 @@ public partial class DataTypeSpecies
 				});
 			}
 		};
-		intNameBox.TextArea.OnWidgetDeselected += _ =>
+		idBox.TextArea.OnWidgetDeselected += _ =>
 		{
-			Match match = Regex.Match(intNameBox.Text, @"[A-Z][a-zA-Z_\d]*$");
-			if (!match.Success) spc.ID = Internalize(nameBox.Text);
-			intNameBox.SetText(spc.ID);
+			Match match = Regex.Match(idBox.Text, @"[A-Z][a-zA-Z_\d]*$");
+			if (!match.Success)
+			{
+				string newID = Utilities.Internalize(nameBox.Text);
+				if (newID != spc.ID)
+				{
+					Data.Species.Remove(spc.ID);
+					spc.ID = newID;
+					Data.Species.Add(spc.ID, spc);
+				}
+			}
+			idBox.SetText(spc.ID);
 		};
-		intNameBox.SetEnabled(spc.Form == 0);
-		intNameBox.SetShowDisabledText(true);
+		idBox.SetEnabled(spc.Form == 0);
+		idBox.SetShowDisabledText(true);
 
-		Label intNameLabel = new Label(parent);
-		intNameLabel.SetPosition(116, 97);
-		intNameLabel.SetSize(86, 18);
-		intNameLabel.SetText("Internal Name");
-		intNameLabel.SetFont(Fonts.Paragraph);
-		intNameLabel.SetEnabled(spc.Form == 0);
+		Label idLabel = new Label(parent);
+		idLabel.SetPosition(187, 97);
+		idLabel.SetSize(86, 18);
+		idLabel.SetText("ID");
+		idLabel.SetFont(Fonts.Paragraph);
+		idLabel.SetEnabled(spc.Form == 0);
 
 		Label type1Label = new Label(parent);
 		type1Label.SetPosition(164, 139);
@@ -90,8 +112,8 @@ public partial class DataTypeSpecies
 		DropdownBox type1Box = new DropdownBox(parent);
 		type1Box.SetPosition(217, 136);
 		type1Box.SetSize(150, 24);
-        type1Box.SetItems(Data.Sources.TypesListItemsAlphabetical);
-		if (spc.Type1.Valid) type1Box.SetSelectedIndex(Data.Sources.TypesListItemsAlphabetical.FindIndex(item => (Game.Type) item.Object == spc.Type1.Type));
+        type1Box.SetItems(Data.Sources.Types);
+		if (spc.Type1.Valid) type1Box.SetSelectedIndex(Data.Sources.Types.FindIndex(item => (Game.Type) item.Object == spc.Type1.Type));
 		else type1Box.SetText(spc.Type1.ID);
 		type1Box.OnSelectionChanged += _ => spc.Type1 = (TypeResolver) (Game.Type) type1Box.SelectedItem?.Object;
 
@@ -100,8 +122,8 @@ public partial class DataTypeSpecies
 		DropdownBox type2Box = new DropdownBox(parent);
 		type2Box.SetPosition(217, 172);
 		type2Box.SetSize(150, 24);
-        type2Box.SetItems(Data.Sources.TypesListItemsAlphabetical);
-		if (hasType2 && spc.Type2.Valid) type2Box.SetSelectedIndex(Data.Sources.TypesListItemsAlphabetical.FindIndex(item => (Game.Type) item.Object == spc.Type2.Type));
+        type2Box.SetItems(Data.Sources.Types);
+		if (hasType2 && spc.Type2.Valid) type2Box.SetSelectedIndex(Data.Sources.Types.FindIndex(item => (Game.Type) item.Object == spc.Type2.Type));
 		else if (hasType2) type2Box.SetText(spc.Type2.ID);
 		type2Box.SetEnabled(hasType2);
 		type2Box.OnSelectionChanged += _ => spc.Type2 = (TypeResolver) (Game.Type) type2Box.SelectedItem?.Object;
@@ -134,8 +156,8 @@ public partial class DataTypeSpecies
 		DropdownBox ability1Box = new DropdownBox(parent);
 		ability1Box.SetPosition(629, 56);
 		ability1Box.SetSize(150, 24);
-        ability1Box.SetItems(Data.Sources.AbilitiesListItemsAlphabetical);
-		if (spc.Abilities[0].Valid) ability1Box.SetSelectedIndex(Data.Sources.AbilitiesListItemsAlphabetical.FindIndex(item => (Ability) item.Object == spc.Abilities[0].Ability));
+        ability1Box.SetItems(Data.Sources.Abilities);
+		if (spc.Abilities[0].Valid) ability1Box.SetSelectedIndex(Data.Sources.Abilities.FindIndex(item => (Ability) item.Object == spc.Abilities[0].Ability));
 		else ability1Box.SetText(spc.Abilities[0].ID);
         ability1Box.OnSelectionChanged += _ =>
 		{
@@ -147,8 +169,8 @@ public partial class DataTypeSpecies
 		DropdownBox ability2Box = new DropdownBox(parent);
 		ability2Box.SetPosition(629, 96);
 		ability2Box.SetSize(150, 24);
-        ability2Box.SetItems(Data.Sources.AbilitiesListItemsAlphabetical);
-		if (hasAbil2 && spc.Abilities[1].Valid) ability2Box.SetSelectedIndex(Data.Sources.AbilitiesListItemsAlphabetical.FindIndex(item => (Ability) item.Object == spc.Abilities[1].Ability));
+        ability2Box.SetItems(Data.Sources.Abilities);
+		if (hasAbil2 && spc.Abilities[1].Valid) ability2Box.SetSelectedIndex(Data.Sources.Abilities.FindIndex(item => (Ability) item.Object == spc.Abilities[1].Ability));
 		else if (hasAbil2) ability2Box.SetText(spc.Abilities[1].ID);
 		ability2Box.SetEnabled(hasAbil2);
         ability2Box.OnSelectionChanged += _ =>
@@ -184,8 +206,8 @@ public partial class DataTypeSpecies
 		DropdownBox hiddenAbilityBox = new DropdownBox(parent);
 		hiddenAbilityBox.SetPosition(629, 136);
 		hiddenAbilityBox.SetSize(150, 24);
-        hiddenAbilityBox.SetItems(Data.Sources.AbilitiesListItemsAlphabetical);
-		if (hasHA && spc.HiddenAbilities[0].Valid) hiddenAbilityBox.SetSelectedIndex(Data.Sources.AbilitiesListItemsAlphabetical.FindIndex(item => (Ability) item.Object == spc.HiddenAbilities[0].Ability));
+        hiddenAbilityBox.SetItems(Data.Sources.Abilities);
+		if (hasHA && spc.HiddenAbilities[0].Valid) hiddenAbilityBox.SetSelectedIndex(Data.Sources.Abilities.FindIndex(item => (Ability) item.Object == spc.HiddenAbilities[0].Ability));
 		else if (hasHA) hiddenAbilityBox.SetText(spc.HiddenAbilities[0].ID);
         hiddenAbilityBox.SetEnabled(hasHA);
         hiddenAbilityBox.OnSelectionChanged += _ =>
@@ -215,23 +237,6 @@ public partial class DataTypeSpecies
         parent.UpdateSize();
 	}
 
-	string Internalize(string name)
-	{
-		string str = name.ToUpper();
-		int idx = 0;
-		while (idx < str.Length)
-		{
-			char c = str[idx];
-			if ((c == '_' && idx == 0) || (c < 'A' || c > 'Z') && c != '_')
-			{
-				str = str.Remove(idx, 1);
-				continue;
-			}
-			else idx++;
-		}
-		return str;
-	}
-
 	void CreateFormContainer(DataContainer parent, Species spc)
 	{
 		if (spc.Form == 0) throw new Exception("Cannot show form container for base forms!");
@@ -250,8 +255,19 @@ public partial class DataTypeSpecies
 		formNameBox.OnTextChanged += _ =>
 		{
 			spc.FormName = formNameBox.Text;
+			Data.Sources.InvalidateSpecies();
+			if (!formNameBox.TimerExists("idle")) formNameBox.SetTimer("idle", 1000);
+			else formNameBox.ResetTimer("idle");
 			SpeciesList.SelectedItem.SetText($"{spc.Form} - {spc.FormName ?? spc.Name}");
 			SpeciesList.RedrawNodeText(SpeciesList.SelectedItem);
+		};
+		formNameBox.OnUpdate += _ =>
+		{
+			if (formNameBox.TimerExists("idle") && formNameBox.TimerPassed("idle"))
+			{
+				RedrawList((Species) SpeciesList.SelectedItem.Object);
+				formNameBox.DestroyTimer("idle");
+			}
 		};
 
 		Label formNumberLabel = new Label(parent);
@@ -322,7 +338,7 @@ public partial class DataTypeSpecies
 		DropdownBox megaStoneBox = new DropdownBox(parent);
 		megaStoneBox.SetPosition(625, 70);
 		megaStoneBox.SetSize(150, 24);
-		megaStoneBox.SetItems(Data.Sources.ItemsListItemsAlphabetical.FindAll(item => ((Item) item.Object).Flags.Contains("MegaStone")).ToList());
+		megaStoneBox.SetItems(Data.Sources.Items.FindAll(item => ((Item) item.Object).Flags.Contains("MegaStone")).ToList());
 		if (hasMegaStone && spc.MegaStone.Valid) megaStoneBox.SetSelectedIndex(megaStoneBox.Items.FindIndex(item => (Item) item.Object == spc.MegaStone.Item));
 		else if (hasMegaStone) megaStoneBox.SetText(spc.MegaStone.ID);
 		megaStoneBox.OnSelectionChanged += _ => spc.MegaStone = (ItemResolver) (Item) megaStoneBox.SelectedItem.Object;
@@ -352,8 +368,8 @@ public partial class DataTypeSpecies
 		DropdownBox megaMoveBox = new DropdownBox(parent);
 		megaMoveBox.SetPosition(625, 110);
 		megaMoveBox.SetSize(150, 24);
-		megaMoveBox.SetItems(Data.Sources.MovesListItemsAlphabetical);
-		if (hasMegaMove && spc.MegaMove.Valid) megaMoveBox.SetSelectedIndex(Data.Sources.MovesListItemsAlphabetical.FindIndex(item => (Move) item.Object == spc.MegaMove.Move));
+		megaMoveBox.SetItems(Data.Sources.Moves);
+		if (hasMegaMove && spc.MegaMove.Valid) megaMoveBox.SetSelectedIndex(Data.Sources.Moves.FindIndex(item => (Move) item.Object == spc.MegaMove.Move));
 		else if (hasMegaMove) megaMoveBox.SetText(spc.MegaMove.ID);
 		megaMoveBox.OnSelectionChanged += _ => spc.MegaMove = (MoveResolver) (Move) megaMoveBox.SelectedItem.Object;
 		megaMoveBox.SetEnabled(hasMegaMove);
@@ -904,8 +920,8 @@ public partial class DataTypeSpecies
 		DropdownBox incenseBox = new DropdownBox(parent);
 		incenseBox.SetPosition(274, 227);
 		incenseBox.SetSize(160, 24);
-		incenseBox.SetItems(Data.Sources.ItemsListItemsAlphabetical);
-		if (hasIncense && spc.Incense.Valid) incenseBox.SetSelectedIndex(Data.Sources.ItemsListItemsAlphabetical.FindIndex(item => (Item) item.Object == spc.Incense.Item));
+		incenseBox.SetItems(Data.Sources.Items);
+		if (hasIncense && spc.Incense.Valid) incenseBox.SetSelectedIndex(Data.Sources.Items.FindIndex(item => (Item) item.Object == spc.Incense.Item));
 		else if (hasIncense) incenseBox.SetText(spc.Incense.ID);
 		incenseBox.OnSelectionChanged += _ =>
 		{

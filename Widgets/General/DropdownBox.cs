@@ -12,6 +12,7 @@ public class DropdownBox : amethyst.TextBox
     public ListItem? SelectedItem => SelectedIndex != -1 ? Items[SelectedIndex] : null;
     public List<ListItem> Items { get; protected set; } = new List<ListItem>();
     public bool Enabled { get; protected set; } = true;
+    public bool AllowInvalidSelection { get; protected set; } = false;
 
     public BaseEvent OnDropDownClicked;
     public BaseEvent OnSelectionChanged;
@@ -89,6 +90,7 @@ public class DropdownBox : amethyst.TextBox
         };
         TextArea.OnWidgetDeselected += _ =>
         {
+            if (this.AllowInvalidSelection) return;
 			string query = TextArea.Text.ToLower();
             if (!SelectedItem.Name.ToLower().Contains(query))
             {
@@ -157,6 +159,14 @@ public class DropdownBox : amethyst.TextBox
             this.TextArea.SetText(Index >= Items.Count || Index == -1 ? "" : Items[Index].Name, callTextChangedEvent);
             this.SelectedIndex = Index;
             this.OnSelectionChanged?.Invoke(new BaseEventArgs());
+        }
+    }
+
+    public void SetAllowInvalidSelection(bool AllowInvalidSelection)
+    {
+        if (this.AllowInvalidSelection != AllowInvalidSelection)
+        {
+            this.AllowInvalidSelection = AllowInvalidSelection;
         }
     }
 

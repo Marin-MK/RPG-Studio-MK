@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace RPGStudioMK.Game;
@@ -155,18 +156,16 @@ public class TrainerType : IGameData, ICloneable
 [DebuggerDisplay("{ID}")]
 public class TrainerTypeResolver
 {
-    private string _id;
-    public string ID { get => _id; set { _id = value; _trainertype = null; } }
-    private TrainerType _trainertype;
-    public TrainerType TrainerType
-    {
-        get
-        {
-            if (_trainertype != null) return _trainertype;
-            _trainertype = Data.TrainerTypes[ID];
-            return _trainertype;
-        }
-    }
+    public string ID;
+    [JsonIgnore]
+    public bool Valid => !string.IsNullOrEmpty(this.ID) && Data.TrainerTypes.ContainsKey(this.ID);
+    [JsonIgnore]
+    public TrainerType TrainerType => Data.TrainerTypes[this.ID];
+
+    /// <summary>
+    /// DO NOT USE!
+    /// </summary>
+    public TrainerTypeResolver() { }
 
     public TrainerTypeResolver(string ID)
     {
@@ -176,7 +175,6 @@ public class TrainerTypeResolver
     public TrainerTypeResolver(TrainerType TrainerType)
     {
         this.ID = TrainerType.ID;
-        _trainertype = TrainerType;
     }
 
     public static implicit operator string(TrainerTypeResolver s) => s.ID;

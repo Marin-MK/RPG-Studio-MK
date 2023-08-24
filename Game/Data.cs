@@ -189,66 +189,67 @@ public static partial class Data
         private static List<ListItem> _ttlia;
         private static List<Item> _tms;
         private static List<Item> _hms;
+        private static List<ListItem> _fcs;
 
-        public static List<ListItem> SpeciesAndFormsListItemsAlphabetical 
+        public static List<ListItem> SpeciesAndForms 
         {
             get 
             {
-                if (recalculateSpeciesAndForms) _saflia = Species.Select(spc => new ListItem(spc.Value.Form != 0 ? $"{spc.Value.Name} ({spc.Value.FormName ?? spc.Value.Form.ToString()})" : spc.Value.Name, spc.Value)).OrderBy(item => item.Name).ToList();
+                if (recalculateSpeciesAndForms) _saflia = Data.Species.Select(spc => new ListItem(spc.Value.Form != 0 ? $"{spc.Value.Name} ({spc.Value.FormName ?? spc.Value.Form.ToString()})" : spc.Value.Name, spc.Value)).OrderBy(item => item.Name).ToList();
                 recalculateSpeciesAndForms = false;
                 return _saflia;
             } 
         }
-		public static List<ListItem> SpeciesListItemsAlphabetical
+		public static List<ListItem> Species
 		{
 			get
 			{
-                if (recalculateSpecies) _slia = Species.Where(kvp => kvp.Value.Form == 0).Select(spc => new ListItem(spc.Value.Name, spc.Value)).OrderBy(item => item.Name).ToList();
+                if (recalculateSpecies) _slia = Data.Species.Where(kvp => kvp.Value.Form == 0).Select(spc => new ListItem(spc.Value.Name, spc.Value)).OrderBy(item => item.Name).ToList();
                 recalculateSpecies = false;
 				return _slia;
 			}
 		}
-		public static List<ListItem> AbilitiesListItemsAlphabetical
+		public static List<ListItem> Abilities
         {
             get
             {
-                if (recalculateAbilities) _alia = Abilities.Select(abil => new ListItem(abil.Value.Name, abil.Value)).OrderBy(item => item.Name).ToList();
+                if (recalculateAbilities) _alia = Data.Abilities.Select(abil => new ListItem(abil.Value.Name, abil.Value)).OrderBy(item => item.Name).ToList();
                 recalculateAbilities = false;
                 return _alia;
 			}
         }
-        public static List<ListItem> MovesListItemsAlphabetical
+        public static List<ListItem> Moves
         {
             get
             {
-                if (recalculateMoves) _mlia = Moves.Select(move => new ListItem(move.Value.Name, move.Value)).OrderBy(item => item.Name).ToList();
+                if (recalculateMoves) _mlia = Data.Moves.Select(move => new ListItem(move.Value.Name, move.Value)).OrderBy(item => item.Name).ToList();
                 recalculateMoves = false;
                 return _mlia;
 			}
         }
-        public static List<ListItem> TypesListItemsAlphabetical
+        public static List<ListItem> Types
         {
             get
             {
-                if (recalculateTypes) _tlia = Types.Select(type => new ListItem(type.Value.Name, type.Value)).OrderBy(item => item.Name).ToList();
+                if (recalculateTypes) _tlia = Data.Types.Select(type => new ListItem(type.Value.Name, type.Value)).OrderBy(item => item.Name).ToList();
                 recalculateTypes = false;
                 return _tlia;
 			}
         }
-        public static List<ListItem> ItemsListItemsAlphabetical
+        public static List<ListItem> Items
         {
             get
             {
-                if (recalculateItems) _ilia = Items.Select(item => new ListItem(item.Value.Name, item.Value)).OrderBy(item => item.Name).ToList();
+                if (recalculateItems) _ilia = Data.Items.Select(item => new ListItem(item.Value.Name, item.Value)).OrderBy(item => item.Name).ToList();
                 recalculateItems = false;
                 return _ilia;
 			}
         }
-        public static List<ListItem> TrainerTypesListItemsAlphabetical
+        public static List<ListItem> TrainerTypes
         {
             get
             {
-                if (recalculateTrainerTypes) _ttlia = TrainerTypes.Select(ttype => new ListItem(ttype.Value.Name, ttype.Value)).OrderBy(item => item.Name).ToList();
+                if (recalculateTrainerTypes) _ttlia = Data.TrainerTypes.Select(ttype => new ListItem(ttype.Value.Name, ttype.Value)).OrderBy(item => item.Name).ToList();
                 recalculateTrainerTypes = false;
                 return _ttlia;
 			}
@@ -259,7 +260,7 @@ public static partial class Data
             {
                 if (recalculateTMs)
                 {
-                    _tms = Items.ToList()
+                    _tms = Data.Items.ToList()
                                 .FindAll(kvp => kvp.Value.Move is not null &&
                                         (HardcodedData.Get(kvp.Value.FieldUse, HardcodedData.ItemFieldUses) == "TR" || HardcodedData.Get(kvp.Value.FieldUse, HardcodedData.ItemFieldUses) == "TM"))
                                 .Select(kvp => kvp.Value)
@@ -275,7 +276,7 @@ public static partial class Data
             {
                 if (recalculateHMs)
                 {
-                    _hms = Items.ToList()
+                    _hms = Data.Items.ToList()
                                 .FindAll(kvp => kvp.Value.Move is not null && HardcodedData.Get(kvp.Value.FieldUse, HardcodedData.ItemFieldUses) == "HM")
                                 .Select(kvp => kvp.Value)
                                 .ToList();
@@ -284,7 +285,29 @@ public static partial class Data
                 return _hms;
             }
         }
-
+        public static List<ListItem> FunctionCodes
+        {
+            get
+            {
+                if (recalculateFunctionCodes)
+                {
+                    _fcs = new List<ListItem>();
+					foreach (Script scr in Data.Scripts)
+					{
+						foreach (string line in scr.Content.Split('\n').ToList())
+						{
+							if (!line.StartsWith("class Battle::Move::")) continue;
+							Match m = Regex.Match(line, @"^class Battle::Move::([A-Za-z0-9_]*) < Battle::Move$");
+							if (!m.Success) continue;
+							_fcs.Add(new ListItem(m.Groups[1].Value.ToString()));
+						}
+					}
+                    _fcs.Sort(delegate (ListItem a, ListItem b) { return a.Name.CompareTo(b.Name); });
+				}
+                recalculateFunctionCodes = false;
+                return _fcs;
+            }
+        }
 
         private static bool recalculateSpeciesAndForms = true;
         private static bool recalculateSpecies = true;
@@ -295,6 +318,7 @@ public static partial class Data
         private static bool recalculateTrainerTypes = true;
         private static bool recalculateTMs = true;
         private static bool recalculateHMs = true;
+        private static bool recalculateFunctionCodes = true;
 
         public static void InvalidateSpecies()
         {
@@ -311,6 +335,7 @@ public static partial class Data
             recalculateHMs = true;
         }
 		public static void InvalidateTrainerTypes() => recalculateTrainerTypes = true;
+        public static void InvalidateFunctionCodes() => recalculateFunctionCodes = true;
 
         public static void InvalidateAll()
         {
@@ -320,6 +345,7 @@ public static partial class Data
             InvalidateTypes();
             InvalidateItems();
             InvalidateTrainerTypes();
+            InvalidateFunctionCodes();
         }
 	}
 }

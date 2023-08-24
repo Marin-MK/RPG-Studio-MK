@@ -32,9 +32,9 @@ public class EvolutionEntryWidget : Widget
         speciesBox.SetPosition(0, 3);
         speciesBox.SetItems(
             isPrevo ?
-				Data.Sources.SpeciesAndFormsListItemsAlphabetical
+				Data.Sources.SpeciesAndForms
                 : 
-				Data.Sources.SpeciesAndFormsListItemsAlphabetical.FindAll(item => (Species) item.Object != currentSpecies)
+				Data.Sources.SpeciesAndForms.FindAll(item => (Species) item.Object != currentSpecies)
         );
         speciesBox.OnSelectionChanged += _ =>
         {
@@ -64,16 +64,16 @@ public class EvolutionEntryWidget : Widget
                     param = 0L;
                     break;
                 case "item":
-                    param = ((Item) Data.Sources.ItemsListItemsAlphabetical[0].Object).ID;
+                    param = ((Item) Data.Sources.Items[0].Object).ID;
                     break;
                 case "move":
-					param = ((Move) Data.Sources.MovesListItemsAlphabetical[0].Object).ID;
+					param = ((Move) Data.Sources.Moves[0].Object).ID;
 					break;
                 case "species":
-                    param = ((Species) Data.Sources.SpeciesListItemsAlphabetical[0].Object).ID;
+                    param = ((Species) Data.Sources.Species[0].Object).ID;
                     break;
                 case "type":
-                    param = ((Game.Type) Data.Sources.TypesListItemsAlphabetical[0].Object).ID;
+                    param = ((Game.Type) Data.Sources.Types[0].Object).ID;
                     break;
                 default: // string, none, and unknown methods
                     param = "";
@@ -158,8 +158,8 @@ public class EvolutionEntryWidget : Widget
             case "item":
                 ItemResolver itemParam = new ItemResolver((string) Evolution.Parameter);
                 paramBox = new DropdownBox(this);
-                ((DropdownBox) paramBox).SetItems(Data.Sources.ItemsListItemsAlphabetical);
-                ((DropdownBox) paramBox).SetSelectedIndex(Data.Sources.ItemsListItemsAlphabetical.FindIndex(item => (Item) item.Object == itemParam?.Item));
+                ((DropdownBox) paramBox).SetItems(Data.Sources.Items);
+                ((DropdownBox) paramBox).SetSelectedIndex(Data.Sources.Items.FindIndex(item => (Item) item.Object == itemParam?.Item));
                 ((DropdownBox) paramBox).OnSelectionChanged += _ =>
                 {
                     Evolution.Parameter = ((Item) ((DropdownBox) paramBox).SelectedItem.Object).ID;
@@ -176,8 +176,8 @@ public class EvolutionEntryWidget : Widget
             case "move":
                 MoveResolver moveParam = new MoveResolver((string) Evolution.Parameter);
                 paramBox = new DropdownBox(this);
-                ((DropdownBox) paramBox).SetItems(Data.Sources.MovesListItemsAlphabetical);
-                ((DropdownBox) paramBox).SetSelectedIndex(Data.Sources.MovesListItemsAlphabetical.FindIndex(item => (Move) item.Object == moveParam?.Move));
+                ((DropdownBox) paramBox).SetItems(Data.Sources.Moves);
+                ((DropdownBox) paramBox).SetSelectedIndex(Data.Sources.Moves.FindIndex(item => (Move) item.Object == moveParam?.Move));
                 ((DropdownBox) paramBox).OnSelectionChanged += _ =>
                 {
                     Evolution.Parameter = ((Move) ((DropdownBox) paramBox).SelectedItem.Object).ID;
@@ -194,8 +194,8 @@ public class EvolutionEntryWidget : Widget
             case "species":
                 SpeciesResolver speciesParam = new SpeciesResolver((string) Evolution.Parameter);
                 paramBox = new DropdownBox(this);
-                ((DropdownBox) paramBox).SetItems(Data.Sources.SpeciesAndFormsListItemsAlphabetical);
-                ((DropdownBox) paramBox).SetSelectedIndex(Data.Sources.SpeciesAndFormsListItemsAlphabetical.FindIndex(item => (Species) item.Object == speciesParam?.Species));
+                ((DropdownBox) paramBox).SetItems(Data.Sources.SpeciesAndForms);
+                ((DropdownBox) paramBox).SetSelectedIndex(Data.Sources.SpeciesAndForms.FindIndex(item => (Species) item.Object == speciesParam?.Species));
                 ((DropdownBox) paramBox).OnSelectionChanged += _ =>
                 {
                     Evolution.Parameter = ((Species) ((DropdownBox) paramBox).SelectedItem.Object).ID;
@@ -212,8 +212,8 @@ public class EvolutionEntryWidget : Widget
             case "type":
                 TypeResolver typeParam = new TypeResolver((string) Evolution.Parameter);
                 paramBox = new DropdownBox(this);
-                ((DropdownBox) paramBox).SetItems(Data.Sources.TypesListItemsAlphabetical);
-                ((DropdownBox) paramBox).SetSelectedIndex(Data.Sources.TypesListItemsAlphabetical.FindIndex(item => (Game.Type) item.Object == typeParam?.Type));
+                ((DropdownBox) paramBox).SetItems(Data.Sources.Types);
+                ((DropdownBox) paramBox).SetSelectedIndex(Data.Sources.Types.FindIndex(item => (Game.Type) item.Object == typeParam?.Type));
                 ((DropdownBox) paramBox).OnSelectionChanged += _ =>
                 {
                     Evolution.Parameter = ((Game.Type) ((DropdownBox) paramBox).SelectedItem.Object).ID;

@@ -158,7 +158,9 @@ public class Item : IGameData, ICloneable
 public class ItemResolver
 {
     public string ID;
+    [JsonIgnore]
 	public bool Valid => !string.IsNullOrEmpty(ID) && Data.Items.ContainsKey(ID);
+    [JsonIgnore]
     public Item Item => Data.Items[ID];
 
     /// <summary>

@@ -15,7 +15,7 @@ public class SpeciesListWidget : DropdownListWidget
     public SpeciesListWidget(bool includeForms, IContainer parent) : base(parent)
     {
 		SetAvailableItems(
-			includeForms ? Data.Sources.SpeciesAndFormsListItemsAlphabetical : Data.Sources.SpeciesListItemsAlphabetical
+			includeForms ? Data.Sources.SpeciesAndForms : Data.Sources.Species
 		);
 	}
 

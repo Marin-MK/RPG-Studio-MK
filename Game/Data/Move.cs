@@ -29,7 +29,28 @@ public class Move : IGameData, ICloneable
     public int EffectChance;
     public string Description;
 
-    private Move() { }
+    /// <summary>
+    /// DO NOT USE!
+    /// </summary>
+    public Move() { }
+
+    public static Move Create()
+    {
+        Move m = new Move();
+        m.Name = "";
+        m.Type = (TypeResolver) (Type) Data.Sources.Types[0].Object;
+        m.Category = Data.HardcodedData.MoveCategories[0];
+        m.BaseDamage = 60;
+        m.Accuracy = 100;
+        m.TotalPP = 25;
+        m.Target = Data.HardcodedData.MoveTargets[0];
+        m.Priority = 0;
+        m.FunctionCode = "";
+        m.Flags = new List<string>();
+        m.EffectChance = 0;
+        m.Description = "";
+        return m;
+    }
 
     public Move(string ID, Dictionary<string, string> hash)
     {
@@ -169,16 +190,15 @@ public class Move : IGameData, ICloneable
 public class MoveResolver
 {
     public string ID;
+    [JsonIgnore]
 	public bool Valid => !string.IsNullOrEmpty(ID) && Data.Moves.ContainsKey(ID);
+    [JsonIgnore]
     public Move Move => Data.Moves[ID];
 
     /// <summary>
     /// DO NOT USE!
     /// </summary>
-    public MoveResolver()
-    {
-        
-    }
+    public MoveResolver() { }
 
     public MoveResolver(string ID)
     {

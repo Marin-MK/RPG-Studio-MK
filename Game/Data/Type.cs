@@ -146,7 +146,9 @@ public class Type : IGameData, ICloneable
 public class TypeResolver
 {
     public string ID;
+    [JsonIgnore]
     public bool Valid => !string.IsNullOrEmpty(ID) && Data.Types.ContainsKey(ID);
+    [JsonIgnore]
     public Type Type => Data.Types[ID];
 
     /// <summary>

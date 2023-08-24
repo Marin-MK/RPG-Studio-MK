@@ -73,7 +73,7 @@ public class Species : IGameData, ICloneable
 	    s.Name = "";
 	    s.Category = "";
 	    s.PokedexEntry = "";
-	    s.Type1 = (TypeResolver) (Type) Data.Sources.TypesListItemsAlphabetical[0].Object;
+	    s.Type1 = (TypeResolver) (Type) Data.Sources.Types[0].Object;
 	    s.BaseStats = new Stats(45);
 	    s.EVs = new Stats(0);
 	    s.BaseEXP = 32;
@@ -84,7 +84,7 @@ public class Species : IGameData, ICloneable
 	    s.Moves = new List<(int Level, MoveResolver Move)>();
 	    s.TutorMoves = new List<MoveResolver>();
 	    s.EggMoves = new List<MoveResolver>();
-	    s.Abilities = new List<AbilityResolver>() { (AbilityResolver) (Ability) Data.Sources.AbilitiesListItemsAlphabetical[0].Object };
+	    s.Abilities = new List<AbilityResolver>() { (AbilityResolver) (Ability) Data.Sources.Abilities[0].Object };
 	    s.HiddenAbilities = new List<AbilityResolver>();
 	    s.WildItemCommon = new List<ItemResolver>();
 	    s.WildItemUncommon = new List<ItemResolver>();
@@ -761,7 +761,9 @@ public class Species : IGameData, ICloneable
 public class SpeciesResolver
 {
 	public string ID;
+    [JsonIgnore]
 	public bool Valid => !string.IsNullOrEmpty(ID) && Data.Species.ContainsKey(ID);
+    [JsonIgnore]
     public Species Species => Data.Species[ID];
 
     /// <summary>

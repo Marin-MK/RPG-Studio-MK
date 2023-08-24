@@ -132,26 +132,35 @@ public partial class DataTypeSpecies : Widget
         SpeciesList.SetSelectedNode((TreeNode) SpeciesList.Root.Children[0]);
     }
 
-	public void RedrawList()
+	public void RedrawList(Species? speciesToSelect = null)
 	{
 		List<TreeNode> SpeciesItems = new List<TreeNode>();
-		foreach (KeyValuePair<string, Species> kvp in Data.Species)
+        TreeNode? nodeToSelect = null;
+		foreach (ListItem listItem in Data.Sources.SpeciesAndForms)
 		{
-			if (kvp.Value.Form != 0)
+            Species spc = (Species) listItem.Object;
+			if (spc.Form != 0)
             {
-                TreeNode parent = SpeciesItems.Find(n => ((Species) n.Object).ID == kvp.Value.BaseSpecies.ID);
-				TreeNode item = new TreeNode($"{kvp.Value.Form} - {kvp.Value.FormName ?? kvp.Value.Name}", kvp.Value);
-                int idx = parent.Children.FindIndex(node => kvp.Value.Form < ((Species) ((TreeNode) node).Object).Form);
+                TreeNode parent = SpeciesItems.Find(n => ((Species) n.Object).ID == spc.BaseSpecies.ID);
+				TreeNode item = new TreeNode($"{spc.Form} - {spc.FormName ?? spc.Name}", spc);
+                int idx = parent.Children.FindIndex(node => spc.Form < ((Species) ((TreeNode) node).Object).Form);
                 if (idx == -1) idx = parent.Children.Count;
                 parent.InsertChild(idx, item);
+                if (speciesToSelect == spc) nodeToSelect = item;
             }
             else
             {
-				TreeNode item = new TreeNode(kvp.Value.Name, kvp.Value);
+				TreeNode item = new TreeNode(spc.Name, spc);
+                if (speciesToSelect == spc) nodeToSelect = item;
 				SpeciesItems.Add(item);
             }
 		}
 		SpeciesList.SetItems(SpeciesItems);
+        if (nodeToSelect != null)
+        {
+            SpeciesList.SetSelectedNode(nodeToSelect);
+            SpeciesList.CenterOnSelectedNode();
+        }
 	}
 
     void UpdateSelection()

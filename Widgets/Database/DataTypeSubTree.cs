@@ -85,6 +85,11 @@ public class DataTypeSubTree : Widget
         }
     }
 
+    public void CenterOnSelectedNode()
+    {
+        TreeView.CenterOnNode(SelectedItem);
+    }
+
     public void RedrawNodeText(TreeNode node)
     {
         TreeView.RedrawNodeText(node);
