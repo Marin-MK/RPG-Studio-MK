@@ -1,44 +1,43 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
-    <ApplicationIcon>logo-64x64.ico</ApplicationIcon>
-    <StartupObject>RPGStudioMK.Program</StartupObject>
-    <Authors>Marijn Herrebout</Authors>
-    <Product>RPG Studio MK</Product>
-    <Version>0.12.2</Version>
-    <Platforms>x64</Platforms>
-    <AssemblyName>RPG Studio MK</AssemblyName>
-    <Configurations>Debug;Release</Configurations>
-    <RootNamespace>RPGStudioMK</RootNamespace>
-    <SignAssembly>False</SignAssembly>
-    <Copyright>Marijn Herrebout</Copyright>
-    <RepositoryUrl>https://github.com/Marin-MK/RPG-Studio-MK</RepositoryUrl>
-    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
-    <Nullable>disable</Nullable>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ApplicationIcon>logo-64x64.ico</ApplicationIcon>
+        <StartupObject>RPGStudioMK.Program</StartupObject>
+        <Authors>Marijn Herrebout</Authors>
+        <Product>RPG Studio MK</Product>
+        <Version>0.12.2</Version>
+        <Platforms>x64</Platforms>
+        <AssemblyName>RPG Studio MK</AssemblyName>
+        <Configurations>Debug;Release</Configurations>
+        <RootNamespace>RPGStudioMK</RootNamespace>
+        <SignAssembly>False</SignAssembly>
+        <Copyright>Marijn Herrebout</Copyright>
+        <RepositoryUrl>https://github.com/Marin-MK/RPG-Studio-MK</RepositoryUrl>
+        <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+        <Nullable>disable</Nullable>
+        <RepositoryType>git</RepositoryType>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>False</Optimize>
-    <PackageProjectUrl>https://github.com/Marin-MK/RPG-Studio-MK</PackageProjectUrl>
-    <RepositoryType>git</RepositoryType>
-  </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+	    <OutputType>Exe</OutputType>
+	    <OutputPath>bin/Debug</OutputPath>
+        <Optimize>False</Optimize>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Crc32.NET" Version="1.2.0" />
-  </ItemGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+	    <OutputType>WinExe</OutputType>
+	    <OutputPath>bin/Release</OutputPath>
+		<Optimize>True</Optimize>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\amethyst\amethyst.csproj" />
-    <ProjectReference Include="..\MKUtils\MKUtils.csproj" />
-    <ProjectReference Include="..\odl\odl.csproj" />
-    <ProjectReference Include="..\rubydotnet\rubydotnet.csproj" />
-  </ItemGroup>
-
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="if exist &quot;$(TargetPath).locked&quot; del &quot;$(TargetPath).locked&quot;&#xD;&#xA;if exist &quot;$(TargetPath)&quot; if not exist &quot;$(TargetPath).locked&quot; move &quot;$(TargetPath)&quot; &quot;$(TargetPath).locked&quot;" />
-  </Target>
+    <ItemGroup>
+        <PackageReference Include="Crc32.NET" Version="1.2.0" />
+        <ProjectReference Include="..\amethyst\amethyst.csproj" />
+        <ProjectReference Include="..\MKUtils\MKUtils.csproj" />
+        <ProjectReference Include="..\odl\odl.csproj" />
+        <ProjectReference Include="..\rubydotnet\rubydotnet.csproj" />
+    </ItemGroup>
 
 </Project>

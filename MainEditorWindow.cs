@@ -99,10 +99,12 @@ public partial class MainEditorWindow : UIWindow
             if (Editor.InProject)
             {
                 // Save window when closing with the top-right X button
-                if (Program.ReleaseMode && !Program.ThrownError)
+                if (!Program.ThrownError)
                 {
+#if RELEASE
                     e.Value = true;
                     EnsureSaved(Dispose);
+#endif
                 }
                 GameRunner.Stop();
             }

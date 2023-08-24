@@ -102,7 +102,9 @@ public static class Editor
     /// </summary>
     public static void Test()
     {
-        if (Program.ReleaseMode) return;
+#if RELEASE
+        return;
+#endif
 
 		//Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
 

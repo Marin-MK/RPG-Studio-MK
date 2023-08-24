@@ -22,8 +22,6 @@ public class Program
     /// Whether or not exceptions should be caught and displayed, and whether unsaved changes messages should be given.
     /// If true, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
     /// </summary>
-    public static bool DebugMode = true;
-    public static bool ReleaseMode => !DebugMode;
     public static bool ThrownError = false;
     public static bool ProgramUpdateAvailable = false;
     public static bool InstallerUpdateAvailable = false;
@@ -36,24 +34,27 @@ public class Program
     [STAThread]
     static void Main(params string[] args)
     {
-		Widgets.MessageBox ErrorBox = null;
+        Widgets.MessageBox ErrorBox = null;
         MainEditorWindow win = null;
         try
         {
-            if (DebugMode) Logger.Start();
-            else
-            {
-                if (!Directory.Exists(Editor.AppDataFolder)) Directory.CreateDirectory(Editor.AppDataFolder);
-                Logger.Start(Path.Combine(Editor.AppDataFolder, "log.txt"));
-            }
+#if DEBUG
+            Logger.Start();
+#elif RELEASE
+            if (!Directory.Exists(Editor.AppDataFolder)) Directory.CreateDirectory(Editor.AppDataFolder);
+            Logger.Start(Path.Combine(Editor.AppDataFolder, "log.txt"));
+#endif
             Graphics.Logger = Logger.Instance;
             MKUtils.Logger.Instance = Logger.Instance;
 			// Ensures the working directory becomes the editor directory
 			Logger.WriteLine("Process Path: {0}", Environment.ProcessPath);
 			Directory.SetCurrentDirectory(Path.GetDirectoryName(Environment.ProcessPath));
-            if (DebugMode) TestSuite.RunAll();
 
+#if DEBUG
+            TestSuite.RunAll();
+#endif
             VerifyVersions();
+
 
             InitializeProgram();
             Logger.WriteLine("Initializing data");
@@ -72,7 +73,7 @@ public class Program
                 if (ErrorBox != null && !ErrorBox.Disposed) ErrorBox.SetSize(win.Width, win.Height);
             };
         }
-        catch (Exception ex) when (ReleaseMode)
+        catch (Exception ex)
         {
             Logger.Error("Setup failed!");
             Logger.Error(ex);
@@ -82,38 +83,34 @@ public class Program
         // Amethyst's main UI loop
         Amethyst.Run(() =>
         {
-            if (ReleaseMode)
+#if RELEASE
+            // Catch all errors and show them in a message box
+            try
             {
-                // Catch all errors and show them in a message box
-                try
+                if (ErrorBox != null && !ErrorBox.Disposed)
                 {
-                    if (ErrorBox != null && !ErrorBox.Disposed)
-                    {
-                        ErrorBox.MakePriorityWindow();
-                    }
-                    Graphics.Update(ThrownError);
+                    ErrorBox.MakePriorityWindow();
                 }
-                catch (Exception ex)
+                Graphics.Update(ThrownError);
+            }
+            catch (Exception ex)
+            {
+                if (!ThrownError)
                 {
-                    if (!ThrownError)
+                    Logger.Error(ex);
+                    string msg = ex.GetType() + " : " + ex.Message + "\n" + ex.StackTrace;
+                    ErrorBox = new Widgets.MessageBox("Error!", msg, new List<string>() { "Quit" }, Widgets.IconType.Error);
+                    ErrorBox.SetSize(win.Width, win.Height);
+                    ErrorBox.OnDisposed += delegate (BaseEventArgs e)
                     {
-                        Logger.Error(ex);
-                        string msg = ex.GetType() + " : " + ex.Message + "\n" + ex.StackTrace;
-                        ErrorBox = new Widgets.MessageBox("Error!", msg, new List<string>() { "Quit" }, Widgets.IconType.Error);
-                        ErrorBox.SetSize(win.Width, win.Height);
-                        ErrorBox.OnDisposed += delegate (BaseEventArgs e)
-                        {
-                            Editor.ExitEditor();
-                        };
-                        ThrownError = true;
-                    }
+                        Editor.ExitEditor();
+                    };
+                    ThrownError = true;
                 }
             }
-            else // if (DebugMode)
-            {
-                // Updates graphics
-                Graphics.Update();
-            }
+#else
+			Graphics.Update();
+#endif
         });
 
         // Stops amethyst
@@ -162,11 +159,10 @@ public class Program
         CurrentProgramVersion = MKUtils.MKUtils.TrimTrailingZeroes(CurrentProgramVersion);
         Logger.WriteLine("Current version: {0}", CurrentProgramVersion);
         // Load latest version
-        if (DebugMode)
-        {
-            Logger.WriteLine("Skipped latest version check in Debug Mode");
-            return;
-        }
+#if DEBUG
+        Logger.WriteLine("Skipped latest version check in Debug Mode");
+        return;
+#endif
         Logger.WriteLine("Downloading version metadata...");
         if (MKUtils.VersionMetadata.Load())
         {
@@ -189,10 +185,9 @@ public class Program
     {
         Logger.WriteLine("Launching RPG Studio MK.");
         Logger.WriteLine($"Editor Version: {Editor.GetVersionString()}");
-        if (!ReleaseMode)
-        {
-            Logger.WriteLine("===============================\nProgram launched in Debug mode.\n===============================");
-        }
+#if DEBUG
+        Logger.WriteLine("===============================\nProgram launched in Debug mode.\n===============================");
+#endif
         PrintPlatformInfo();
         Config.Setup();
         InitializeAmethyst();
