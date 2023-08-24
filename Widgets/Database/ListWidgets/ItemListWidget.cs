@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace RPGStudioMK.Widgets;
 
-public class ItemListWidget : DropdownListWidget
+public class ItemListWidget : DropdownListWidget<ItemDropdownBox>
 {
 	public List<ItemResolver> AsResolvers => Items.Select(item => (ItemResolver) (Item) item.Object).ToList();
 	public List<Item> AsItems => Items.Select(item => (Item) item.Object).ToList();

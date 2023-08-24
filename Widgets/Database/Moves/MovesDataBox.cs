@@ -88,13 +88,11 @@ public partial class DataTypeMoves
 		typeLabel.SetText("Type");
 		typeLabel.SetFont(Fonts.Paragraph);
 
-		DropdownBox typeBox = new DropdownBox(parent);
+		TypeDropdownBox typeBox = new TypeDropdownBox(parent);
 		typeBox.SetPosition(431, 151);
 		typeBox.SetSize(150, 24);
-		typeBox.SetItems(Data.Sources.Types);
-		if (mov.Type.Valid) typeBox.SetSelectedIndex(Data.Sources.Types.FindIndex(item => (Game.Type) item.Object == mov.Type.Type));
-		else typeBox.SetText(mov.Type.ID);
-		typeBox.OnSelectionChanged += _ => mov.Type = (TypeResolver) (Game.Type) typeBox.SelectedItem?.Object;
+		typeBox.SetType(mov.Type);
+		typeBox.OnTypeChanged += _ => mov.Type = typeBox.Type;
 
 		Label categoryLabel = new Label(parent);
 		categoryLabel.SetPosition(359, 194);

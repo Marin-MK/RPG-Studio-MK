@@ -5,7 +5,7 @@ using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
 
-public partial class DataTypeMoves : Widget
+public partial class DataTypeMoves : DataTypeBase
 {
     public DataTypeSubTree MovesList;
     public Move? Move => (Move) MovesList.SelectedItem?.Object;
@@ -21,29 +21,27 @@ public partial class DataTypeMoves : Widget
 
     public DataTypeMoves(IContainer Parent) : base(Parent)
     {
-		Grid = new Grid(this);
-		Grid.SetColumns(
-			new GridSize(201, Unit.Pixels),
-			new GridSize(1),
-			new GridSize(0, Unit.Pixels)
-		);
-		Grid.SetRows(
-			new GridSize(29, Unit.Pixels),
-			new GridSize(1)
-		);
+        Grid = new Grid(this);
+        Grid.SetColumns(
+            new GridSize(201, Unit.Pixels),
+            new GridSize(1),
+            new GridSize(0, Unit.Pixels)
+        );
 
-		Fade = new VignetteFade(Grid);
-		Fade.SetGrid(1, 1);
+        Fade = new VignetteFade(Grid);
+        Fade.SetGridColumn(1);
         Fade.SetZIndex(2);
 
-		MovesList = new DataTypeSubTree("Moves", Grid);
+        MovesList = new DataTypeSubTree("Moves", Grid);
         MovesList.SetBackgroundColor(28, 50, 73);
-        MovesList.SetGridRow(0, 1);
         MovesList.OnScrolling += _ => Editor.ProjectSettings.LastMoveScroll = MovesList.GetScroll();
+    }
 
-        MainContainer = new Container(Grid);
+	public override void Initialize()
+	{
+	    MainContainer = new Container(Grid);
 		MainContainer.SetBackgroundColor(23, 40, 56);
-        MainContainer.SetGrid(1, 1);
+        MainContainer.SetGridColumn(1);
 
 		VScrollBar vs = new VScrollBar(MainContainer);
 		vs.SetRightDocked(true);
@@ -104,9 +102,9 @@ public partial class DataTypeMoves : Widget
                 OnClicked = DeleteMove
             }
         });
+        Grid.UpdateLayout();
 
         RedrawList(Editor.ProjectSettings.LastMoveID);
-        MovesList.SetScroll(Editor.ProjectSettings.LastMoveScroll);
     }
 
 	public void RedrawList(Move? moveToSelect = null)
@@ -123,8 +121,8 @@ public partial class DataTypeMoves : Widget
 		MovesList.SetItems(MoveItems);
         if (nodeToSelect != null)
         {
+            MovesList.SetScroll(Editor.ProjectSettings.LastMoveScroll);
 			MovesList.SetSelectedNode(nodeToSelect);
-			MovesList.CenterOnSelectedNode();
 		}
 	}
 
@@ -133,6 +131,12 @@ public partial class DataTypeMoves : Widget
         Move mov = (Move) Data.Sources.Moves.Find(m => ((Move) m.Object).ID == moveToSelect)?.Object;
         if (moveToSelect == null) mov = (Move) Data.Sources.Moves[0].Object;
         RedrawList(mov);
+    }
+
+    public void SelectMove(Move mov)
+    {
+        ITreeNode node = MovesList.Root.GetAllChildren(true).Find(n => (Move) ((TreeNode) n).Object == mov);
+        MovesList.SetSelectedNode((TreeNode) node);
     }
 
     void UpdateSelection()
@@ -169,6 +173,7 @@ public partial class DataTypeMoves : Widget
 	public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
+        if (ScrollContainer is null) return;
 		if (ScrollContainer.Size.Width < MainContainer.Size.Width) ScrollContainer.SetPosition(MainContainer.Size.Width / 2 - ScrollContainer.Size.Width / 2, 0);
 		else ScrollContainer.SetPosition(0, 0);
 	}
@@ -181,7 +186,7 @@ public partial class DataTypeMoves : Widget
         Data.Moves.Add(move.ID, move);
         RedrawList();
         TreeNode newNode = (TreeNode) MovesList.Root.GetAllChildren(true).Find(n => (Move) ((TreeNode) n).Object == move);
-        MovesList.SetSelectedNode(newNode, true);
+        MovesList.SetSelectedNode(newNode);
     }
 
     void CutMove(BaseEventArgs e)

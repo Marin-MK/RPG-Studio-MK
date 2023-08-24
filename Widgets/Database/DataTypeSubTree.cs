@@ -71,19 +71,10 @@ public class DataTypeSubTree : Widget
         TreeView.SetNodes(Items, SelectedNode);
     }
 
-    public void SetSelectedNode(TreeNode SelectedNode, bool ScrollToSelection = false)
+    public void SetSelectedNode(TreeNode SelectedNode)
     {
         TreeView.SetSelectedNode(SelectedNode, false, true);
-        if (ScrollToSelection)
-        {
-            int y = TreeView.GetDrawnYCoord(SelectedNode);
-            int h = ScrollContainer.Size.Height - TreeView.LineHeight;
-            if (y < ScrollContainer.ScrolledY || y >= ScrollContainer.ScrolledY + h)
-            {
-                ScrollContainer.ScrolledY = y - h;
-                ScrollContainer.UpdateAutoScroll();
-            }
-        }
+        TreeView.EnsureSelectedNodeVisible();
     }
 
     public int GetScroll()

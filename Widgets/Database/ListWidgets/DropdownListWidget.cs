@@ -6,13 +6,15 @@ using System.Threading.Tasks;
 
 namespace RPGStudioMK.Widgets;
 
-public class DropdownListWidget : DataListWidget
+public class DropdownListWidget<T> : DataListWidget where T : DropdownBox
 {
-    protected DropdownBox DropdownBox;
+    protected T DropdownBox;
 
-    public DropdownListWidget(IContainer parent) : base(parent)
+    public DropdownListWidget(IContainer parent, object[]? args = null) : base(parent) 
     {
-        DropdownBox = new DropdownBox(this);
+        List<object> ctorArgs = args?.ToList() ?? new List<object>();
+        ctorArgs.Add(this);
+        DropdownBox = (T) Activator.CreateInstance(typeof(T), ctorArgs.ToArray());
         DropdownBox.SetBottomDocked(true);
         DropdownBox.SetPadding(2, 0, 2, 38);
         DropdownBox.SetHDocked(true);

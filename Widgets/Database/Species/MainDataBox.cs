@@ -109,24 +109,20 @@ public partial class DataTypeSpecies
 		type1Label.SetText("Type 1");
 		type1Label.SetFont(Fonts.Paragraph);
 
-		DropdownBox type1Box = new DropdownBox(parent);
+		TypeDropdownBox type1Box = new TypeDropdownBox(parent);
 		type1Box.SetPosition(217, 136);
 		type1Box.SetSize(150, 24);
-        type1Box.SetItems(Data.Sources.Types);
-		if (spc.Type1.Valid) type1Box.SetSelectedIndex(Data.Sources.Types.FindIndex(item => (Game.Type) item.Object == spc.Type1.Type));
-		else type1Box.SetText(spc.Type1.ID);
-		type1Box.OnSelectionChanged += _ => spc.Type1 = (TypeResolver) (Game.Type) type1Box.SelectedItem?.Object;
+		type1Box.SetType(spc.Type1);
+		type1Box.OnTypeChanged += _ => spc.Type1 = type1Box.Type;
 
 		bool hasType2 = spc.Type2 is not null;
 
-		DropdownBox type2Box = new DropdownBox(parent);
+		TypeDropdownBox type2Box = new TypeDropdownBox(parent);
 		type2Box.SetPosition(217, 172);
 		type2Box.SetSize(150, 24);
-        type2Box.SetItems(Data.Sources.Types);
-		if (hasType2 && spc.Type2.Valid) type2Box.SetSelectedIndex(Data.Sources.Types.FindIndex(item => (Game.Type) item.Object == spc.Type2.Type));
-		else if (hasType2) type2Box.SetText(spc.Type2.ID);
+		if (hasType2) type2Box.SetType(spc.Type2);
 		type2Box.SetEnabled(hasType2);
-		type2Box.OnSelectionChanged += _ => spc.Type2 = (TypeResolver) (Game.Type) type2Box.SelectedItem?.Object;
+		type2Box.OnTypeChanged += _ => spc.Type2 = type2Box.Type;
 
 		CheckBox type2CheckBox = new CheckBox(parent);
 		type2CheckBox.SetPosition(142, 178);
@@ -138,7 +134,7 @@ public partial class DataTypeSpecies
 			if (type2CheckBox.Checked)
 			{
 				type2Box.SetEnabled(true);
-				spc.Type2 = (TypeResolver) (Game.Type) type2Box.SelectedItem?.Object;
+				spc.Type2 = type2Box.Type;
 			}
 			else
 			{
@@ -153,30 +149,20 @@ public partial class DataTypeSpecies
 		ability1Label.SetText("Ability 1");
 		ability1Label.SetFont(Fonts.Paragraph);
 
-		DropdownBox ability1Box = new DropdownBox(parent);
+		AbilityDropdownBox ability1Box = new AbilityDropdownBox(parent);
 		ability1Box.SetPosition(629, 56);
 		ability1Box.SetSize(150, 24);
-        ability1Box.SetItems(Data.Sources.Abilities);
-		if (spc.Abilities[0].Valid) ability1Box.SetSelectedIndex(Data.Sources.Abilities.FindIndex(item => (Ability) item.Object == spc.Abilities[0].Ability));
-		else ability1Box.SetText(spc.Abilities[0].ID);
-        ability1Box.OnSelectionChanged += _ =>
-		{
-			Species.Abilities[0] = (AbilityResolver) (Ability) ability1Box.SelectedItem?.Object;
-		};
+		ability1Box.SetAbility(spc.Abilities[0]);
+		ability1Box.OnAbilityChanged += _ => spc.Abilities[0] = ability1Box.Ability;
 
 		bool hasAbil2 = spc.Abilities.Count > 1;
 
-		DropdownBox ability2Box = new DropdownBox(parent);
+		AbilityDropdownBox ability2Box = new AbilityDropdownBox(parent);
 		ability2Box.SetPosition(629, 96);
 		ability2Box.SetSize(150, 24);
-        ability2Box.SetItems(Data.Sources.Abilities);
-		if (hasAbil2 && spc.Abilities[1].Valid) ability2Box.SetSelectedIndex(Data.Sources.Abilities.FindIndex(item => (Ability) item.Object == spc.Abilities[1].Ability));
-		else if (hasAbil2) ability2Box.SetText(spc.Abilities[1].ID);
+		if (hasAbil2) ability2Box.SetAbility(spc.Abilities[1]);
 		ability2Box.SetEnabled(hasAbil2);
-        ability2Box.OnSelectionChanged += _ =>
-        {
-            Species.Abilities[1] = (AbilityResolver) (Ability) ability2Box.SelectedItem?.Object;
-        };
+		ability2Box.OnAbilityChanged += _ => spc.Abilities[1] = ability2Box.Ability;
 
 		CheckBox ability2CheckBox = new CheckBox(parent);
 		ability2CheckBox.SetPosition(544, 98);
@@ -188,32 +174,23 @@ public partial class DataTypeSpecies
             if (ability2CheckBox.Checked)
             {
                 ability2Box.SetEnabled(true);
-                Species.Abilities = new List<AbilityResolver>() 
-                {
-                    (AbilityResolver) (Ability) ability1Box.SelectedItem?.Object,
-                    (AbilityResolver) (Ability) ability2Box.SelectedItem?.Object
-                };
+                Species.Abilities = new List<AbilityResolver>() { ability1Box.Ability, ability2Box.Ability };
             }
             else
             {
                 ability2Box.SetEnabled(false);
-                Species.Abilities = new List<AbilityResolver>() { (AbilityResolver) (Ability) ability1Box.SelectedItem?.Object };
+                Species.Abilities = new List<AbilityResolver>() { ability1Box.Ability };
             }
         };
 
         bool hasHA = spc.HiddenAbilities.Count > 0;
 
-		DropdownBox hiddenAbilityBox = new DropdownBox(parent);
+		AbilityDropdownBox hiddenAbilityBox = new AbilityDropdownBox(parent);
 		hiddenAbilityBox.SetPosition(629, 136);
 		hiddenAbilityBox.SetSize(150, 24);
-        hiddenAbilityBox.SetItems(Data.Sources.Abilities);
-		if (hasHA && spc.HiddenAbilities[0].Valid) hiddenAbilityBox.SetSelectedIndex(Data.Sources.Abilities.FindIndex(item => (Ability) item.Object == spc.HiddenAbilities[0].Ability));
-		else if (hasHA) hiddenAbilityBox.SetText(spc.HiddenAbilities[0].ID);
+		if (hasHA) hiddenAbilityBox.SetAbility(spc.HiddenAbilities[0]);
         hiddenAbilityBox.SetEnabled(hasHA);
-        hiddenAbilityBox.OnSelectionChanged += _ =>
-		{
-            Species.HiddenAbilities = new List<AbilityResolver>() { (AbilityResolver) (Ability) hiddenAbilityBox.SelectedItem?.Object };
-		};
+		hiddenAbilityBox.OnAbilityChanged += _ => spc.HiddenAbilities = new List<AbilityResolver>() { hiddenAbilityBox.Ability };
 
 		CheckBox hiddenAbilityCheckBox = new CheckBox(parent);
 		hiddenAbilityCheckBox.SetPosition(504, 140);
@@ -225,7 +202,7 @@ public partial class DataTypeSpecies
 			if (hiddenAbilityCheckBox.Checked)
 			{
 				hiddenAbilityBox.SetEnabled(true);
-				Species.HiddenAbilities = new List<AbilityResolver>() { (AbilityResolver) (Ability) hiddenAbilityBox.SelectedItem?.Object };
+				Species.HiddenAbilities = new List<AbilityResolver>() { hiddenAbilityBox.Ability };
 			}
 			else
 			{
@@ -335,14 +312,13 @@ public partial class DataTypeSpecies
 
 		bool hasMegaStone = spc.MegaStone is not null;
 
-		DropdownBox megaStoneBox = new DropdownBox(parent);
+		ItemDropdownBox megaStoneBox = new ItemDropdownBox(parent);
 		megaStoneBox.SetPosition(625, 70);
 		megaStoneBox.SetSize(150, 24);
 		megaStoneBox.SetItems(Data.Sources.Items.FindAll(item => ((Item) item.Object).Flags.Contains("MegaStone")).ToList());
-		if (hasMegaStone && spc.MegaStone.Valid) megaStoneBox.SetSelectedIndex(megaStoneBox.Items.FindIndex(item => (Item) item.Object == spc.MegaStone.Item));
-		else if (hasMegaStone) megaStoneBox.SetText(spc.MegaStone.ID);
-		megaStoneBox.OnSelectionChanged += _ => spc.MegaStone = (ItemResolver) (Item) megaStoneBox.SelectedItem.Object;
+		if (hasMegaStone) megaStoneBox.SetItem(spc.MegaStone);
 		megaStoneBox.SetEnabled(hasMegaStone);
+		megaStoneBox.OnItemChanged += _ => spc.MegaStone = megaStoneBox.Item;
 
 		CheckBox megaStoneCheckBox = new CheckBox(parent);
 		megaStoneCheckBox.SetPosition(510, 74);
@@ -354,7 +330,7 @@ public partial class DataTypeSpecies
 			if (megaStoneCheckBox.Checked)
 			{
 				megaStoneBox.SetEnabled(true);
-				spc.MegaStone = (ItemResolver) (Item) megaStoneBox.SelectedItem.Object;
+				spc.MegaStone = megaStoneBox.Item;
 			}
 			else
 			{
@@ -365,14 +341,12 @@ public partial class DataTypeSpecies
 
 		bool hasMegaMove = spc.MegaMove is not null;
 
-		DropdownBox megaMoveBox = new DropdownBox(parent);
+		MoveDropdownBox megaMoveBox = new MoveDropdownBox(parent);
 		megaMoveBox.SetPosition(625, 110);
 		megaMoveBox.SetSize(150, 24);
-		megaMoveBox.SetItems(Data.Sources.Moves);
-		if (hasMegaMove && spc.MegaMove.Valid) megaMoveBox.SetSelectedIndex(Data.Sources.Moves.FindIndex(item => (Move) item.Object == spc.MegaMove.Move));
-		else if (hasMegaMove) megaMoveBox.SetText(spc.MegaMove.ID);
-		megaMoveBox.OnSelectionChanged += _ => spc.MegaMove = (MoveResolver) (Move) megaMoveBox.SelectedItem.Object;
+		if (hasMegaMove) megaMoveBox.SetMove(spc.MegaMove);
 		megaMoveBox.SetEnabled(hasMegaMove);
+		megaMoveBox.OnMoveChanged += _ => spc.MegaMove = megaMoveBox.Move;
 
 		CheckBox megaMoveCheckBox = new CheckBox(parent);
 		megaMoveCheckBox.SetPosition(510, 114);
@@ -384,7 +358,7 @@ public partial class DataTypeSpecies
 			if (megaMoveCheckBox.Checked)
 			{
 				megaMoveBox.SetEnabled(true);
-				spc.MegaMove = (MoveResolver) (Move) megaMoveBox.SelectedItem.Object;
+				spc.MegaMove = megaMoveBox.Move;
 			}
 			else
 			{
@@ -917,23 +891,21 @@ public partial class DataTypeSpecies
 
 		bool hasIncense = spc.Incense is not null;
 
-		DropdownBox incenseBox = new DropdownBox(parent);
+		ItemDropdownBox incenseBox = new ItemDropdownBox(parent);
 		incenseBox.SetPosition(274, 227);
 		incenseBox.SetSize(160, 24);
-		incenseBox.SetItems(Data.Sources.Items);
-		if (hasIncense && spc.Incense.Valid) incenseBox.SetSelectedIndex(Data.Sources.Items.FindIndex(item => (Item) item.Object == spc.Incense.Item));
-		else if (hasIncense) incenseBox.SetText(spc.Incense.ID);
-		incenseBox.OnSelectionChanged += _ =>
+		if (hasIncense) incenseBox.SetItem(spc.Incense);
+		incenseBox.SetEnabled(hasIncense && spc.Form == 0);
+		incenseBox.SetShowDisabledText(spc.Form > 0 && spc.BaseSpecies.Species.Incense is not null);
+		incenseBox.OnItemChanged += _ =>
 		{
-			spc.Incense = (ItemResolver) (Item) incenseBox.SelectedItem.Object;
+			spc.Incense = incenseBox.Item;
 			SpeciesList.SelectedItem.Children.ForEach(c =>
 			{
 				Species s = (Species) ((TreeNode) c).Object;
 				s.Incense = spc.Incense;
 			});
 		};
-		incenseBox.SetEnabled(hasIncense && spc.Form == 0);
-		incenseBox.SetShowDisabledText(spc.Form > 0 && spc.BaseSpecies.Species.Incense is not null);
 
 		CheckBox incenseCheckBox = new CheckBox(parent);
 		incenseCheckBox.SetPosition(186, 230);
@@ -946,7 +918,7 @@ public partial class DataTypeSpecies
 			if (incenseCheckBox.Checked)
 			{
 				incenseBox.SetEnabled(true);
-				spc.Incense = (ItemResolver) (Item) incenseBox.SelectedItem.Object;
+				spc.Incense = incenseBox.Item;
 			}
 			else
 			{

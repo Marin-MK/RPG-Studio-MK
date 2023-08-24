@@ -7,7 +7,7 @@ public class DatabaseWidget : Widget
     Grid MainGrid;
     DataTypeList DataTypeList;
 
-    public Widget ActiveDatabaseWidget;
+    public DataTypeBase ActiveDatabaseWidget;
 
     public DatabaseWidget(IContainer Parent) : base(Parent)
     {
@@ -36,6 +36,18 @@ public class DatabaseWidget : Widget
             _ => null
         };
 		ActiveDatabaseWidget?.SetGridColumn(1);
+        MainGrid.UpdateLayout();
+        ActiveDatabaseWidget?.Initialize();
+        //ActiveDatabaseWidget?.OnSizeChanged?.Invoke(new ObjectEventArgs(ActiveDatabaseWidget?.Size));
 	}
 }
 
+public abstract class DataTypeBase : Widget
+{
+    public DataTypeBase(IContainer parent) : base(parent)
+    {
+        
+    }
+
+    public abstract void Initialize();
+}

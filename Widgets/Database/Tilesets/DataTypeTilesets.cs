@@ -5,7 +5,7 @@ using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
 
-public class DataTypeTilesets : Widget
+public class DataTypeTilesets : DataTypeBase
 {
     public DataTypeSubList TilesetList;
     public SubmodeView Tabs;
@@ -47,7 +47,7 @@ public class DataTypeTilesets : Widget
             new GridSize(29, Unit.Pixels),
             new GridSize(1)
         );
-        
+
         TilesetList = new DataTypeSubList("Tilesets", Editor.ProjectSettings.TilesetCapacity, Grid);
         TilesetList.SetBackgroundColor(28, 50, 73);
         TilesetList.SetGridRow(0, 1);
@@ -55,7 +55,7 @@ public class DataTypeTilesets : Widget
         {
             int NewCapacity = e.Object;
             if (NewCapacity == Editor.ProjectSettings.TilesetCapacity) return;
-            List<Tileset> OldTilesets = Data.Tilesets.ConvertAll(t => (Tileset) t?.Clone());
+            List<Tileset> OldTilesets = Data.Tilesets.ConvertAll(t => (Tileset)t?.Clone());
             int OldCapacity = Editor.ProjectSettings.TilesetCapacity;
             if (NewCapacity > Editor.ProjectSettings.TilesetCapacity)
             {
@@ -78,8 +78,11 @@ public class DataTypeTilesets : Widget
             Undo.TilesetCapacityChangeUndoAction.Create(OldTilesets, Data.Tilesets, OldCapacity, NewCapacity);
             RedrawList();
         };
+    }
 
-        RedrawList();
+	public override void Initialize()
+	{
+    	RedrawList();
 
         Tabs = new SubmodeView(Grid);
         Tabs.SetBackgroundColor(23, 40, 56);

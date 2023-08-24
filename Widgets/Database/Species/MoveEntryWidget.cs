@@ -15,6 +15,8 @@ public class MoveEntryWidget : Widget
     Button RemoveButton;
 
     public BaseEvent OnButtonClicked;
+    bool IsInside = false;
+    int MoveNameWidth = 0;
 
     public MoveEntryWidget(IContainer parent, int parentWidgetIndex = -1) : base(parent, parentWidgetIndex)
     {
@@ -47,12 +49,15 @@ public class MoveEntryWidget : Widget
     public void RedrawMove()
     {
         if (this.Move == null) return;
-        Sprites["txt"].Bitmap?.Dispose();
+        string moveName = this.Move.Valid ? this.Move.Move.Name : this.Move.ID;
+        MoveNameWidth = Fonts.Paragraph.TextSize(moveName).Width;
+
+		Sprites["txt"].Bitmap?.Dispose();
         Sprites["txt"].Bitmap = new Bitmap(Size);
         Sprites["txt"].Bitmap.Font = Fonts.Paragraph;
         Sprites["txt"].Bitmap.Unlock();
         Sprites["txt"].Bitmap.DrawText(this.Level == 0 ? "---" : this.Level.ToString(), 16, 4, Color.WHITE);
-        Sprites["txt"].Bitmap.DrawText(this.Move.Valid ? this.Move.Move.Name : this.Move.ID, 100, 4, Color.WHITE);
+        Sprites["txt"].Bitmap.DrawText(moveName, 100, 4, Color.WHITE);
 		Sprites["txt"].Bitmap.DrawText(this.Move.Valid ? this.Move.Move.Type.Type.Name : "???", 250, 4, Color.WHITE);
 		Sprites["txt"].Bitmap.DrawText(this.Move.Valid ? this.Move.Move.Category : "???", 400, 4, Color.WHITE);
         string acc = this.Move.Valid ? (this.Move.Move.Accuracy switch
@@ -65,4 +70,36 @@ public class MoveEntryWidget : Widget
 		Sprites["txt"].Bitmap.DrawText(this.Move.Valid ? this.Move.Move.Priority.ToString() : "???", 800, 4, Color.WHITE);
 		Sprites["txt"].Bitmap.Lock();
     }
+
+	public override void MouseMoving(MouseEventArgs e)
+	{
+		base.MouseMoving(e);
+        int rx = e.X - Viewport.X + LeftCutOff;
+        int ry = e.Y - Viewport.Y + TopCutOff;
+        if (new Rect(90, 2, MoveNameWidth + 20, 22).Contains(rx, ry))
+        {
+            if (!IsInside)
+            {
+                IsInside = true;
+                Input.SetCursor(CursorType.Hand);
+            }
+        }
+        else if (IsInside)
+        {
+            IsInside = false;
+            Input.SetCursor(CursorType.Arrow);
+        }
+	}
+
+	public override void LeftMouseDownInside(MouseEventArgs e)
+	{
+		base.LeftMouseDownInside(e);
+        if (IsInside)
+        {
+			Editor.ProjectSettings.LastMoveID = this.Move.ID;
+			Editor.ProjectSettings.LastMoveScroll = 0;
+			Editor.MainWindow.DatabaseWidget.SetMode(DatabaseMode.Moves);
+            return;
+		}
+	}
 }

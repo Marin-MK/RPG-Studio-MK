@@ -53,10 +53,9 @@ partial class DataTypeSpecies
 		Button addButton = new Button(addContainer);
 		addButton.SetText("Add");
 		addButton.SetWidth(100);
-		DropdownBox moveBox = new DropdownBox(addContainer);
+		MoveDropdownBox moveBox = new MoveDropdownBox(addContainer);
 		moveBox.SetPosition(110, 3);
 		moveBox.SetWidth(200);
-		moveBox.SetItems(Data.Sources.Moves);
 		moveBox.SetSelectedIndex(0);
 
 		Label setLabel = new Label(addContainer);
@@ -71,7 +70,7 @@ partial class DataTypeSpecies
 
 		addButton.OnClicked += _ =>
 		{
-			(int lvl, MoveResolver mov) newItem = (levelBox.Value, (MoveResolver) (Move) moveBox.SelectedItem?.Object);
+			(int lvl, MoveResolver mov) newItem = (levelBox.Value, moveBox.Move);
 			int idx = spc.Moves.FindIndex(it => it.Level >= newItem.lvl);
 			if (idx == -1) idx = spc.Moves.Count;
 			spc.Moves.Insert(idx, newItem);
@@ -121,15 +120,14 @@ partial class DataTypeSpecies
 		Button addButton = new Button(addContainer);
 		addButton.SetText("Add");
 		addButton.SetWidth(100);
-		DropdownBox moveBox = new DropdownBox(addContainer);
+		MoveDropdownBox moveBox = new MoveDropdownBox(addContainer);
 		moveBox.SetPosition(110, 3);
 		moveBox.SetWidth(200);
-		moveBox.SetItems(Data.Sources.Moves);
 		moveBox.SetSelectedIndex(0);
 
 		addButton.OnClicked += _ =>
 		{
-			(int lvl, MoveResolver mov) newItem = (0, (MoveResolver) (Move) moveBox.SelectedItem?.Object);
+			(int lvl, MoveResolver mov) newItem = (0, moveBox.Move);
 			spc.Moves.Insert(0, newItem);
 			MoveEntryWidget mew = new MoveEntryWidget(panel, 0);
 			mew.SetMove(newItem.lvl, newItem.mov);
@@ -277,7 +275,7 @@ partial class DataTypeSpecies
 		Button addButton = new Button(addContainer);
 		addButton.SetText("Add");
 		addButton.SetWidth(100);
-		DropdownBox moveBox = new DropdownBox(addContainer);
+		MoveDropdownBox moveBox = new MoveDropdownBox(addContainer);
 		moveBox.SetPosition(110, 3);
 		moveBox.SetWidth(200);
 		// Only list moves that are not a TM/HM, as those moves are already listed in the TM/HM section.
@@ -286,7 +284,7 @@ partial class DataTypeSpecies
 
 		addButton.OnClicked += _ =>
 		{
-			MoveResolver newMove = (MoveResolver) (Move) moveBox.SelectedItem?.Object;
+			MoveResolver newMove = moveBox.Move;
 			spc.TutorMoves.Insert(0, newMove);
 			MoveEntryWidget mew = new MoveEntryWidget(panel, 0);
 			mew.SetMove(0, newMove);

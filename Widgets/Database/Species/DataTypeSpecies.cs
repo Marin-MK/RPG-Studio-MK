@@ -7,7 +7,7 @@ using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
 
-public partial class DataTypeSpecies : Widget
+public partial class DataTypeSpecies : DataTypeBase
 {
     public DataTypeSubTree SpeciesList;
     public SubmodeView Tabs;
@@ -24,27 +24,31 @@ public partial class DataTypeSpecies : Widget
 
     public DataTypeSpecies(IContainer Parent) : base(Parent)
     {
-		Grid = new Grid(this);
-		Grid.SetColumns(
-			new GridSize(201, Unit.Pixels),
-			new GridSize(1),
-			new GridSize(0, Unit.Pixels)
-		);
-		Grid.SetRows(
-			new GridSize(29, Unit.Pixels),
-			new GridSize(1)
-		);
+        Grid = new Grid(this);
+        Grid.SetColumns(
+            new GridSize(201, Unit.Pixels),
+            new GridSize(1),
+            new GridSize(0, Unit.Pixels)
+        );
+        Grid.SetRows(
+            new GridSize(29, Unit.Pixels),
+            new GridSize(1)
+        );
 
-		Fade = new VignetteFade(Grid);
-		Fade.SetGrid(1, 1);
+        Fade = new VignetteFade(Grid);
+        Fade.SetGrid(1, 1);
         Fade.SetZIndex(2);
 
-		SpeciesList = new DataTypeSubTree("Species", Grid);
+        SpeciesList = new DataTypeSubTree("Species", Grid);
         SpeciesList.SetBackgroundColor(28, 50, 73);
         SpeciesList.SetGridRow(0, 1);
         SpeciesList.OnScrolling += _ => Editor.ProjectSettings.LastSpeciesScroll = SpeciesList.GetScroll();
 
-		Tabs = new SubmodeView(Grid);
+    }
+
+	public override void Initialize()
+	{
+	    Tabs = new SubmodeView(Grid);
         Tabs.SetBackgroundColor(23, 40, 56);
         Tabs.SetTextY(4);
         Tabs.SetHeaderHeight(29);
@@ -128,9 +132,9 @@ public partial class DataTypeSpecies : Widget
                 OnClicked = DeleteSpecies
             }
         });
+        Grid.UpdateLayout();
 
         RedrawList(Editor.ProjectSettings.LastSpeciesID);
-        SpeciesList.SetScroll(Editor.ProjectSettings.LastSpeciesScroll);
     }
 
 	public void RedrawList(Species? speciesToSelect = null)
@@ -163,12 +167,19 @@ public partial class DataTypeSpecies : Widget
 				SpeciesItems.Add(item);
             }
 		}
-		SpeciesList.SetItems(SpeciesItems, nodeToSelect);
+		SpeciesList.SetItems(SpeciesItems);
         if (nodeToSelect != null)
         {
-            SpeciesList.CenterOnSelectedNode();
+            SpeciesList.SetScroll(Editor.ProjectSettings.LastSpeciesScroll);
+            SpeciesList.SetSelectedNode(nodeToSelect);
         }
 	}
+
+    public void SelectSpecies(Species spc)
+    {
+        ITreeNode node = SpeciesList.Root.GetAllChildren(true).Find(n => (Species) ((TreeNode) n).Object == spc);
+        SpeciesList.SetSelectedNode((TreeNode) node);
+    }
 
     public void RedrawList(string speciesToSelect)
     {
@@ -288,6 +299,7 @@ public partial class DataTypeSpecies : Widget
 	public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
+        if (ScrollContainer is null) return;
 		if (ScrollContainer.Size.Width < MainContainer.Size.Width) ScrollContainer.SetPosition(MainContainer.Size.Width / 2 - ScrollContainer.Size.Width / 2, 0);
 		else ScrollContainer.SetPosition(0, 0);
 	}
@@ -301,7 +313,7 @@ public partial class DataTypeSpecies : Widget
         Data.Species.Add(species.ID, species);
         RedrawList();
         TreeNode newNode = (TreeNode) SpeciesList.Root.GetAllChildren(true).Find(n => (Species) ((TreeNode) n).Object == species);
-        SpeciesList.SetSelectedNode(newNode, true);
+        SpeciesList.SetSelectedNode(newNode);
     }
 
     void NewForm(BaseEventArgs e)
@@ -314,7 +326,7 @@ public partial class DataTypeSpecies : Widget
         Data.Species.Add(newForm.ID, newForm);
         RedrawList();
         TreeNode newNode = (TreeNode) SpeciesList.Root.GetAllChildren(true).Find(n => (Species) ((TreeNode) n).Object == newForm);
-        SpeciesList.SetSelectedNode(newNode, true);
+        SpeciesList.SetSelectedNode(newNode);
     }
 
     void CutSpecies(BaseEventArgs e)
