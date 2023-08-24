@@ -65,6 +65,14 @@ public class DropdownBox : amethyst.TextBox
                         Window.UI.SetSelectedWidget(null);
                         // This in turn will update any stale selections in the text area.
                     }
+                    else if (e.Object)
+                    {
+                        // This is called whenever the dropdown widget is disposed by clicking a valid item.
+                        // This is valid selection.
+                        ListItem item = DropdownWidget.Items[DropdownWidget.SelectedIndex];
+                        this.SetSelectedIndex(this.Items.IndexOf(item), false);
+                        TextArea.WidgetSelected(new BaseEventArgs());
+                    }
                 };
             }
         };
