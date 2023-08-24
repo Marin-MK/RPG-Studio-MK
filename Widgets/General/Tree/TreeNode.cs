@@ -112,6 +112,11 @@ public class TreeNode : ITreeNode
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public GenericObjectEvent<int> OnDepthChanged { get; set; }
 
+    /// <summary>
+    /// Creates a new node.
+    /// </summary>
+    /// <param name="Text">The text of the node.</param>
+    /// <param name="Object">An object associated with this node.</param>
     public TreeNode(string Text, object Object = null)
     {
         this.Text = Text;
@@ -476,6 +481,10 @@ public class TreeNode : ITreeNode
         Children.ForEach(c => c.SetRoot(Root));
     }
 
+    /// <summary>
+    /// Updates the parent of this node.
+    /// </summary>
+    /// <param name="Parent">The new parent of this node.</param>
     public void SetParent(TreeNode Parent)
     {
         if (this.Parent != Parent)
@@ -537,6 +546,9 @@ public class TreeNode : ITreeNode
         }
     }
 
+    /// <summary>
+    /// Clears all this node's children.
+    /// </summary>
     public void ClearChildren()
     {
         this.Children.Clear();
@@ -588,6 +600,12 @@ public class TreeNode : ITreeNode
         return (NodeCount, SeparatorHeight);
     }
 
+    /// <summary>
+    /// Calculate the height of this node's children up until the specified node.
+    /// </summary>
+    /// <param name="NodeToStopAt">The node to stop calculating at.</param>
+    /// <param name="IgnoreExpansion">Whether to respect or ignore expansion states.</param>
+    /// <returns>The number of nodes and additional separator height calculated.</returns>
     public (int NodeCount, int SeparatorHeight) GetChildrenHeightUntil(ITreeNode NodeToStopAt, bool IgnoreExpansion = true)
     {
         int NodeCount = 0;
@@ -636,6 +654,11 @@ public class TreeNode : ITreeNode
         return CurrentIndex;
     }
 
+    /// <summary>
+    /// Returns all a node's children and their children.
+    /// </summary>
+    /// <param name="IgnoreExpansion">Whether to respect of ignore expansion states.</param>
+    /// <returns></returns>
     public List<ITreeNode> GetAllChildren(bool IgnoreExpansion = true)
     {
         List<ITreeNode> List = new List<ITreeNode>();
