@@ -48,6 +48,7 @@ public abstract class DataListWidget : Widget
             OnItemAdded?.Invoke(args);
             OnListChanged?.Invoke(new BaseEventArgs());
             RemoveButton.SetEnabled(true);
+            if (ListBox.Items.Count == 1 && ListBox.SelectedIndex == -1) ListBox.SetSelectedIndex(0);
             ListBox.Redraw();
         };
 

@@ -22,7 +22,7 @@ public class Program
     /// Whether or not exceptions should be caught and displayed, and whether unsaved changes messages should be given.
     /// If true, crashes will use a native (and undescriptive) console of some sort - or nothing at all and simply close.
     /// </summary>
-    public static bool DebugMode = false;
+    public static bool DebugMode = true;
     public static bool ReleaseMode => !DebugMode;
     public static bool ThrownError = false;
     public static bool ProgramUpdateAvailable = false;
