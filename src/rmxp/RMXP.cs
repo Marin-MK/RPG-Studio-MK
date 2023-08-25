@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RPGStudioMK.Compatibility;
+﻿namespace RPGStudioMK.Compatibility;
 
 public static partial class RMXP
 {

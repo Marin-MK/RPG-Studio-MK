@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using amethyst;
 using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;

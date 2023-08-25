@@ -1,15 +1,4 @@
-﻿using RPGStudioMK.Utility;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using static rubydotnet.Ruby;
-
-namespace RPGStudioMK.Game;
+﻿namespace RPGStudioMK.Game;
 
 public class PlayerMetadataManager : BaseDataManager
 {

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using RPGStudioMK.Widgets;
-
-namespace RPGStudioMK.Tests;
+﻿namespace RPGStudioMK.Tests;
 
 public class VersionComparisonTest : TestSuite
 {

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using RPGStudioMK.Game;
+﻿using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
 

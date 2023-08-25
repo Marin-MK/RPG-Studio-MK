@@ -1,5 +1,4 @@
 ﻿using RPGStudioMK.Utility;
-using System;
 using System.Collections.Generic;
 
 namespace RPGStudioMK.Widgets;

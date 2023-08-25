@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using RPGStudioMK.Game;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace RPGStudioMK.Widgets;
 

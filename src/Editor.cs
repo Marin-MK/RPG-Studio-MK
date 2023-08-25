@@ -3,13 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using RPGStudioMK.Game;
 using RPGStudioMK.Widgets;
 using System.Threading.Tasks;
 using System.Threading;
-using amethyst.Animations;
-using System.Security.AccessControl;
 using RPGStudioMK.Utility;
 using MKUtils;
 

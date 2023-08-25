@@ -1,6 +1,4 @@
-﻿using System;
-using RPGStudioMK.Game;
-using amethyst;
+﻿using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
 

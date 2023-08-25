@@ -1,5 +1,4 @@
-﻿using System;
-using RPGStudioMK.Game;
+﻿using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
 

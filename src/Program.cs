@@ -5,13 +5,9 @@ global using rubydotnet;
 using System;
 using System.IO;
 using System.Reflection;
-using System.Collections.Generic;
 using System.Runtime.Versioning;
 using NativeLibraryLoader;
-using System.Threading;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using MKUtils;
 
 namespace RPGStudioMK;
