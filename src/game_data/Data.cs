@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -108,7 +109,12 @@ public static partial class Data
         }
     }
 
-    public static void LoadGameData(Action<float> OnProgressUpdated, Action<string> OnLoadTextChanging)
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(SpeciesResolver))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ItemResolver))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(TypeResolver))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MoveResolver))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AbilityResolver))]
+	public static void LoadGameData(Action<float> OnProgressUpdated, Action<string> OnLoadTextChanging)
     {   
         Data.OnProgressUpdated = OnProgressUpdated;
         Data.OnLoadTextChanging = OnLoadTextChanging;

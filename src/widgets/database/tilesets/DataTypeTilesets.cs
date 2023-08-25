@@ -340,6 +340,7 @@ public class DataTypeTilesets : DataTypeBase
                 OnClicked = DeleteTileset
             }
         });
+        Grid.UpdateLayout();
 
         TilesetList.SetSelectedIndex(0);
     }
@@ -347,6 +348,7 @@ public class DataTypeTilesets : DataTypeBase
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
+        if (TagDetailLabel is null) return;
         TagDetailLabel.SetVisible(TilesetContainer.Mode == TilesetDisplayMode.TerrainTag && Window.Width >= 1210);
         bool AutoscrollingMainBox = MainBox.VAutoScroll;
         if (Window.Width < 1036)

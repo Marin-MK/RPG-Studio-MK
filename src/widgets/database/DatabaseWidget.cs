@@ -38,6 +38,7 @@ public class DatabaseWidget : Widget
 		ActiveDatabaseWidget?.SetGridColumn(1);
         MainGrid.UpdateLayout();
         ActiveDatabaseWidget?.Initialize();
+        ActiveDatabaseWidget?.SizeChanged(new ObjectEventArgs(ActiveDatabaseWidget?.Size));
 	}
 }
 

@@ -6,7 +6,7 @@
         <StartupObject>RPGStudioMK.Program</StartupObject>
         <Authors>Marijn Herrebout</Authors>
         <Product>RPG Studio MK</Product>
-        <Version>0.12.2</Version>
+        <Version>0.13.2</Version>
         <Platforms>x64</Platforms>
         <AssemblyName>RPG Studio MK</AssemblyName>
         <Configurations>Debug;Release</Configurations>
@@ -22,13 +22,13 @@
 
     <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
 	    <OutputType>Exe</OutputType>
-	    <OutputPath>bin/Debug</OutputPath>
+	    <OutputPath>build/Debug</OutputPath>
         <Optimize>False</Optimize>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
 	    <OutputType>WinExe</OutputType>
-	    <OutputPath>bin/Release</OutputPath>
+	    <OutputPath>build/Release</OutputPath>
 		<Optimize>True</Optimize>
     </PropertyGroup>
 
