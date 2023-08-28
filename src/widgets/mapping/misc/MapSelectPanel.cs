@@ -262,8 +262,6 @@ public class MapSelectPanel : Widget
             List<Layer> OldLayers = Map.Layers.ConvertAll(l => (Layer) l.Clone());
             Map.Shift(win.Direction, win.Value, win.ShiftEvents);
             Editor.MainWindow.MapWidget.SetMap(Map); // Redraw the map
-            Size s = new Size(Map.Width, Map.Height);
-            Undo.MapSizeChangeUndoAction.Create(Map.ID, OldLayers, s, Map.Layers.ConvertAll(l => (Layer) l.Clone()), s);
         };
     }
     

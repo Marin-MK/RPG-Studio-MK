@@ -273,10 +273,8 @@ public class MapPropertiesWindow : PopupWindow
     public void OK()
     {
         this.UpdateMapViewer = true;
-        List<Undo.BaseUndoAction> AllChanges = new List<Undo.BaseUndoAction>();
         Action Finalize = delegate
         {
-            if (MakeUndoEvent && AllChanges.Count > 0) Undo.MapPropertiesChangeUndoAction.Create(Map.ID, AllChanges);
             Close();
         };
         Action Continue = delegate
@@ -370,26 +368,22 @@ public class MapPropertiesWindow : PopupWindow
             List<Layer> OldLayers = OldMap.Layers.ConvertAll(l => (Layer) l.Clone());
             Size OldSize = new Size(OldMap.Width, OldMap.Height);
             Map.Resize(OldMap.Width, Map.Width, OldMap.Height, Map.Height);
-            AllChanges.Add(new Undo.MapSizeChangeUndoAction(Map.ID, OldLayers, OldSize, Map.Layers.ConvertAll(l => (Layer) l.Clone()), new Size(Map.Width, Map.Height)));
             UnsavedChanges = true;
         }
         // Marks name change
         if (Map.Name != OldMap.Name)
         {
             UnsavedChanges = true;
-            AllChanges.Add(new Undo.MapRenameUndoAction(Map.ID, OldMap.Name, Map.Name));
         }
         // Marks BGM changes
         if (!Map.BGM.Equals(OldMap.BGM) || Map.AutoplayBGM != OldMap.AutoplayBGM)
         {
             UnsavedChanges = true;
-            AllChanges.Add(new Undo.MapAudioFileChangeUndoAction(Map.ID, (AudioFile) OldMap.BGM.Clone(), OldMap.AutoplayBGM, (AudioFile) Map.BGM.Clone(), Map.AutoplayBGM, true));
         }
         // Marks BGS changes
         if (!Map.BGS.Equals(OldMap.BGS) || Map.AutoplayBGS != OldMap.AutoplayBGS)
         {
             UnsavedChanges = true;
-            AllChanges.Add(new Undo.MapAudioFileChangeUndoAction(Map.ID, (AudioFile) OldMap.BGS.Clone(), OldMap.AutoplayBGS, (AudioFile) Map.BGS.Clone(), Map.AutoplayBGS, false));
         }
         // Updates tilesets
         bool tilesetschanged = false;
@@ -470,7 +464,6 @@ public class MapPropertiesWindow : PopupWindow
                 Continue();
             }*/
             #endregion
-            AllChanges.Add(new Undo.MapTilesetsChangeUndoAction(Map.ID, new List<int>(OldMap.TilesetIDs), new List<int>(Map.TilesetIDs)));
             Continue();
         }
         if (!tilesetschanged) Continue();

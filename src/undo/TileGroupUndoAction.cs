@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using RPGStudioMK.Game;
+using RPGStudioMK.Undo;
 
-namespace RPGStudioMK.Undo;
+namespace RPGStudioMK.src.undo;
 
 public class TileGroupUndoAction : BaseUndoAction
 {
@@ -42,12 +43,12 @@ public class TileGroupUndoAction : BaseUndoAction
 
     public static TileGroupUndoAction GetLatest()
     {
-        return (TileGroupUndoAction) Editor.UndoList.FindLast(a => a is TileGroupUndoAction && !((TileGroupUndoAction)a).Ready);
+        return (TileGroupUndoAction)Editor.UndoList.FindLast(a => a is TileGroupUndoAction && !((TileGroupUndoAction)a).Ready);
     }
 
     public static TileGroupUndoAction GetLatestAll()
     {
-        return (TileGroupUndoAction) Editor.UndoList.FindLast(a => a is TileGroupUndoAction);
+        return (TileGroupUndoAction)Editor.UndoList.FindLast(a => a is TileGroupUndoAction);
     }
 
     public static void AddToLatest(int MapPosition, int Layer, TileData NewTile, TileData OldTile, bool FromAutotile = false)
@@ -82,12 +83,13 @@ public class TileGroupUndoAction : BaseUndoAction
         // Ensure we're on the map this action was taken on
         if (Editor.MainWindow.MapWidget.Map.ID != MapID)
         {
-            Editor.MainWindow.MapWidget.SetMap(Data.Maps[this.MapID]);
+            if (!Data.Maps.ContainsKey(MapID)) return false;
+            Editor.MainWindow.MapWidget.SetMap(Data.Maps[MapID]);
             Continue = false;
         }
         if (!Continue) return false;
 
-        Map Map = Data.Maps[this.MapID];
+        Map Map = Data.Maps[MapID];
         List<int> UnlockedLayers = new List<int>();
         foreach (TileChange tile in Tiles)
         {
@@ -120,7 +122,7 @@ public class TileGroupUndoAction : BaseUndoAction
 
     public override void TriggerLogical(bool IsRedo)
     {
-        Map Map = Data.Maps[this.MapID];
+        Map Map = Data.Maps[MapID];
         foreach (TileChange tile in Tiles)
         {
             TileData NewTile = IsRedo ? tile.NewTile : tile.OldTile;

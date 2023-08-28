@@ -157,7 +157,7 @@ public partial class MapViewer : Widget
             new Shortcut(this, new Key(Keycode.RIGHT), _ => MoveCursorRight(), false, e => e.Value = Mode == MapMode.Events),
             new Shortcut(this, new Key(Keycode.UP), _ => MoveCursorUp(), false, e => e.Value = Mode == MapMode.Events),
             new Shortcut(this, new Key(Keycode.DOWN), _ => MoveCursorDown(), false, e => e.Value = Mode == MapMode.Events),
-            new Shortcut(this, new Key(Keycode.DELETE), _ => DeleteEventCursorIsOver(true), false, e => e.Value = Mode == MapMode.Events)
+            new Shortcut(this, new Key(Keycode.DELETE), _ => DeleteEventCursorIsOver(), false, e => e.Value = Mode == MapMode.Events)
         });
     }
 

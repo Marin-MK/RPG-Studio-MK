@@ -231,34 +231,6 @@ public static class Editor
     }
 
     /// <summary>
-    /// Opens a window containing all undoable changes.
-    /// </summary>
-    public static void ShowUndoHistory()
-    {
-        UndoListWindow win = new UndoListWindow(UndoList, false);
-        win.OnClosed += _ =>
-        {
-            if (!win.Apply) return;
-            win.ActionToRevertTo.RevertToLogical(false);
-            SetMode(Mode, true);
-        };
-    }
-
-    /// <summary>
-    /// Opens a window containing all redoable changes.
-    /// </summary>
-    public static void ShowRedoHistory()
-    {
-        UndoListWindow win = new UndoListWindow(RedoList, true);
-        win.OnClosed += _ =>
-        {
-            if (!win.Apply) return;
-            win.ActionToRevertTo.RevertToLogical(true);
-            SetMode(Mode, true);
-        };
-    }
-
-    /// <summary>
     /// Closes the currently active project, if existent.
     /// </summary>
     public static void CloseProject(bool GoToHomeScreen = true)

@@ -74,7 +74,6 @@ public class DataTypeTilesets : DataTypeBase
                 }
             }
             Editor.ProjectSettings.TilesetCapacity = NewCapacity;
-            Undo.TilesetCapacityChangeUndoAction.Create(OldTilesets, Data.Tilesets, OldCapacity, NewCapacity);
             RedrawList();
         };
     }
@@ -127,10 +126,6 @@ public class DataTypeTilesets : DataTypeBase
         {
             OldText = NameBox.Text;
         };
-        NameBox.TextArea.OnWidgetDeselected += _ =>
-        {
-            Undo.TilesetNameChangeUndoAction.Create(Tileset.ID, OldText, NameBox.Text);
-        };
 
         GraphicLabel = new Label(MainBox);
         GraphicLabel.SetText("Tileset Graphic");
@@ -147,21 +142,11 @@ public class DataTypeTilesets : DataTypeBase
             {
                 if (picker.PressedOK)
                 {
-                    string OldGraphicName = Tileset.GraphicName;
-                    List<Passability> OldPassabilities = new List<Passability>(Tileset.Passabilities);
-                    List<int> OldPriorities = new List<int>(Tileset.Priorities);
-                    List<int> OldTags = new List<int>(Tileset.Tags);
-                    List<bool> OldBushFlags = new List<bool>(Tileset.BushFlags);
-                    List<bool> OldCounterFlags = new List<bool>(Tileset.CounterFlags);
                     Tileset.GraphicName = picker.ChosenFilename;
                     GraphicBox.SetText(Tileset.GraphicName);
                     Tileset.CreateBitmap(true);
                     Tileset.UpdateDataLists();
                     SetTileset(Tileset, true);
-                    Undo.TilesetGraphicChangeUndoAction.Create(Tileset.ID, OldGraphicName, Tileset.GraphicName,
-                        OldPassabilities, Tileset.Passabilities, OldPriorities, Tileset.Priorities,
-                        OldTags, Tileset.Tags, OldCounterFlags, Tileset.CounterFlags,
-                        OldBushFlags, Tileset.BushFlags);
                 }
             };
         };
@@ -185,7 +170,6 @@ public class DataTypeTilesets : DataTypeBase
                 {
                     if (picker.PressedOK)
                     {
-                        string OldGraphicName = Tileset.Autotiles[id]?.GraphicName;
                         int autotileid = Tileset.ID * 7 + id;
                         if (Data.Autotiles[autotileid] == null)
                         {
@@ -202,7 +186,6 @@ public class DataTypeTilesets : DataTypeBase
                         autotile.SetGraphic(picker.ChosenFilename ?? "");
                         AutotileBox.SetText(autotile.GraphicName);
                         TilesetContainer.SetTileset(Tileset, true);
-                        Undo.TilesetAutotileChangeUndoAction.Create(Tileset.ID, id, OldGraphicName, autotile.GraphicName);
                     }
                 };
             };
@@ -225,13 +208,6 @@ public class DataTypeTilesets : DataTypeBase
             {
                 if (picker.PressedOK)
                 {
-                    string OldFogName = Tileset.FogName;
-                    int OldFogHue = Tileset.FogHue;
-                    byte OldFogOpacity = Tileset.FogOpacity;
-                    int OldFogBlendType = Tileset.FogBlendType;
-                    int OldFogZoom = Tileset.FogZoom;
-                    int OldFogSX = Tileset.FogSX;
-                    int OldFogSY = Tileset.FogSY;
                     Tileset.FogName = picker.ChosenFogName;
                     Tileset.FogHue = picker.ChosenFogHue;
                     Tileset.FogOpacity = picker.ChosenFogOpacity;
@@ -240,9 +216,6 @@ public class DataTypeTilesets : DataTypeBase
                     Tileset.FogSX = picker.ChosenFogSX;
                     Tileset.FogSY = picker.ChosenFogSY;
                     FogBox.SetText(Tileset.FogName);
-                    Undo.TilesetFogChangeUndoAction.Create(Tileset.ID, OldFogName, Tileset.FogName, OldFogHue, Tileset.FogHue,
-                                                      OldFogOpacity, Tileset.FogOpacity, OldFogBlendType, Tileset.FogBlendType,
-                                                      OldFogZoom, Tileset.FogZoom, OldFogSX, Tileset.FogSX, OldFogSY, Tileset.FogSY);
                 }
             };
         };
@@ -262,12 +235,9 @@ public class DataTypeTilesets : DataTypeBase
             {
                 if (picker.PressedOK)
                 {
-                    string OldPanoramaName = Tileset.PanoramaName;
-                    int OldPanoramaHue = Tileset.PanoramaHue;
                     Tileset.PanoramaName = picker.ChosenPanoramaName;
                     Tileset.PanoramaHue = picker.ChosenPanoramaHue;
                     PanoramaBox.SetText(Tileset.PanoramaName);
-                    Undo.TilesetPanoramaChangeUndoAction.Create(Tileset.ID, OldPanoramaName, Tileset.PanoramaName, OldPanoramaHue, Tileset.PanoramaHue);
                 }
             };
         };
@@ -535,7 +505,6 @@ public class DataTypeTilesets : DataTypeBase
         }
         RedrawList();
         SetTileset(NewTileset, true);
-        Undo.TilesetChangeUndoAction.Create(OldTileset, NewTileset);
     }
 
     void DeleteTileset(BaseEventArgs e)
@@ -551,6 +520,5 @@ public class DataTypeTilesets : DataTypeBase
         Data.Tilesets[NewTileset.ID] = NewTileset;
         RedrawList();
         SetTileset(NewTileset, true);
-        Undo.TilesetChangeUndoAction.Create(OldTileset, NewTileset);
     }
 }

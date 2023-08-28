@@ -139,25 +139,6 @@ public partial class MainEditorWindow
                             OnClicked = _ => Editor.SetEventBoxVisibilityInTiles(!Editor.ProjectSettings.ShowEventBoxesInTilesSubmode)
                         }
                     }
-                },
-                new MenuItem("History")
-                {
-                    IsClickable = e => e.Value = Editor.InProject,
-                    Items = new List<IMenuItem>()
-                    {
-                        new MenuItem("Undo History")
-                        {
-                            HelpText = "Shows all your past undoable actions.",
-                            IsClickable = e => e.Value = Editor.UndoList.Count > 0,
-                            OnClicked = _ => Editor.ShowUndoHistory()
-                        },
-                        new MenuItem("Redo History")
-                        {
-                            HelpText = "Shows all your redoable actions.",
-                            IsClickable = e => e.Value = Editor.RedoList.Count > 0,
-                            OnClicked = _ => Editor.ShowRedoHistory()
-                        }
-                    }
                 }
             }
         },

@@ -60,7 +60,6 @@ public class LayerWidget : Widget
         {
             if (Layers[Index].Name != RenameBox.Text && !string.IsNullOrEmpty(RenameBox.Text))
             {
-                Undo.LayerRenameUndoAction.Create(Editor.MainWindow.MapWidget.Map.ID, Index, Layers[Index].Name, RenameBox.Text);
                 Layers[Index].Name = RenameBox.Text;
                 Redraw();
             }
