@@ -23,11 +23,13 @@ public class ProjectSettings : BaseSettings
         { "LAST_SPECIES_ID", "" },
         { "LAST_MOVE_ID", "" },
         { "LAST_ABILITY_ID", "" },
+        { "LAST_ITEM_ID", "" },
         { "LAST_TM_ID", "" },
         { "LAST_SPECIES_SCROLL", 0 },
         { "LAST_SPECIES_SUBMODE", 0 },
         { "LAST_MOVE_SCROLL", 0 },
         { "LAST_ABILITY_SCROLL", 0 },
+        { "LAST_ITEM_SCROLL", 0 },
         { "LAST_TM_SCROLL", 0 }
     };
 
@@ -180,6 +182,15 @@ public class ProjectSettings : BaseSettings
     }
 
     /// <summary>
+    /// The last item that was opened.
+    /// </summary>
+    public string LastItemID
+    {
+        get => Get<string>("LAST_ITEM_ID");
+        set => Set("LAST_ITEM_ID", value);
+    }
+
+    /// <summary>
     /// The last TM that was opened.
     /// </summary>
     public string LastTMID
@@ -222,6 +233,15 @@ public class ProjectSettings : BaseSettings
     {
         get => Get<int>("LAST_ABILITY_SCROLL");
         set => Set("LAST_ABILITY_SCROLL", value);
+    }
+
+    /// <summary>
+    /// The last scroll amount in the item section of the database.
+    /// </summary>
+    public int LastItemScroll
+    {
+        get => Get<int>("LAST_ITEM_SCROLL");
+        set => Set("LAST_ITEM_SCROLL", value);
     }
 
     /// <summary>
