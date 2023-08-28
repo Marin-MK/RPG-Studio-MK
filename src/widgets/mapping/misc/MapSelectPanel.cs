@@ -135,7 +135,7 @@ public class MapSelectPanel : Widget
 
     public TreeNode PopulateList()
     {
-        TreeNode root = new TreeNode("ROOT", null);
+        TreeNode root = new TreeNode("ROOT", 0);
         List<Map> sortedMaps = Data.Maps.Values.ToList();
         sortedMaps.Sort((a, b) => a.Order.CompareTo(b.Order));
         PopulateList(sortedMaps, 0).ForEach(c => root.AddChild(c));
@@ -214,6 +214,7 @@ public class MapSelectPanel : Widget
 
     private TreeNode InsertMap(TreeNode Parent, Map Map)
     {
+        if (Parent is null) Parent = MapTree.Root;
         TreeNode NewNode = new TreeNode(Map.Name, Map.ID);
         MapTree.InsertNode(Parent, null, NewNode);
         Map.Order = NewNode.GlobalIndex;
