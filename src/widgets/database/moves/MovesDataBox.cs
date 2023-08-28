@@ -198,6 +198,23 @@ public partial class DataTypeMoves
 		parent.UpdateSize();
 	}
 
+	string[] HiddenFlags = new string[]
+	{
+		"Contact",
+		"CanProtect",
+		"CanMirrorMove",
+		"ThawsUser",
+		"HighCriticalHitRate",
+		"Biting",
+		"Punching",
+		"Sound",
+		"Powder",
+		"Pulse",
+		"Bomb",
+		"Dance",
+		"TramplesMinimize"
+	};
+
 	void CreateEffectContainer(DataContainer parent, Move mov)
 	{
 		Label functionCodeLabel = new Label(parent);
@@ -407,22 +424,8 @@ public partial class DataTypeMoves
 		flagsBox.SetText("Flags");
 		flagsBox.SetPosition(401, 536);
 		flagsBox.SetSize(160, 240);
-		flagsBox.SetItems(mov.Flags.FindAll(f => !new string[]
-		{
-			"Contact",
-			"CanProtect",
-			"CanMirrorMove",
-			"ThawsUser",
-			"HighCriticalHitRate",
-			"Biting",
-			"Punching",
-			"Sound",
-			"Powder",
-			"Pulse",
-			"Bomb",
-			"Dance",
-			"TramplesMinimize"
-		}.Contains(f)).ToList());
+		flagsBox.SetItems(mov.Flags.FindAll(f => !HiddenFlags.Contains(f)).ToList());
+		flagsBox.OnListChanged += _ => mov.Flags = flagsBox.AsStrings.FindAll(f => !HiddenFlags.Contains(f));
 
 		parent.UpdateSize();
 	}
