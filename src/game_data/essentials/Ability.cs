@@ -18,10 +18,22 @@ public class Ability : IGameData, ICloneable
     public string Description;
     public List<string> Flags;
 
-    private Ability()
+    /// <summary>
+    /// DO NOT USE!
+    /// </summary>
+    public Ability()
     {
 
     }
+
+	public static Ability Create()
+	{
+        Ability a = new Ability();
+		a.Name = "";
+		a.Description = "";
+		a.Flags = new List<string>();
+		return a;
+	}
 
     public Ability(string ID, Dictionary<string, string> hash)
     {

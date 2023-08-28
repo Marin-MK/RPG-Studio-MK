@@ -53,12 +53,12 @@ public class AbilityDropdownBox : DropdownBox
 		{
 			if (Editor.MainWindow.DatabaseWidget.Mode == DatabaseMode.Abilities)
 			{
-				//((DataTypeAbilities) Editor.MainWindow.DatabaseWidget.ActiveDatabaseWidget).SelectAbility(this.Ability);
+				((DataTypeAbilities) Editor.MainWindow.DatabaseWidget.ActiveDatabaseWidget).SelectAbility(this.Ability);
 			}
 			else
 			{
-				//Editor.ProjectSettings.LastAbilityID = this.Ability.ID;
-				//Editor.ProjectSettings.LastAbilityScroll = 0;
+				Editor.ProjectSettings.LastAbilityID = this.Ability.ID;
+				Editor.ProjectSettings.LastAbilityScroll = 0;
 				Editor.MainWindow.DatabaseWidget.SetMode(DatabaseMode.Abilities);
 			}
 			return;

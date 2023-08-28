@@ -22,9 +22,11 @@ public class ProjectSettings : BaseSettings
         { "DATABASE_COLLAPSED_CONTAINERS", new List<string>() },
         { "LAST_SPECIES_ID", "" },
         { "LAST_MOVE_ID", "" },
+        { "LAST_ABILITY_ID", "" },
         { "LAST_SPECIES_SCROLL", 0 },
         { "LAST_SPECIES_SUBMODE", 0 },
-        { "LAST_MOVE_SCROLL", 0 }
+        { "LAST_MOVE_SCROLL", 0 },
+        { "LAST_ABILITY_SCROLL", 0 }
     };
 
     public ProjectSettings() : base() { }
@@ -166,6 +168,15 @@ public class ProjectSettings : BaseSettings
 		set => Set("LAST_MOVE_ID", value);
 	}
 
+    /// <summary>
+    /// The last ability the was opened.
+    /// </summary>
+    public string LastAbilityID
+    {
+        get => Get<string>("LAST_ABILITY_ID");
+        set => Set("LAST_ABILITY_ID", value);
+    }
+
 	/// <summary>
 	/// The last scroll amount in the species section of the database.
 	/// </summary>
@@ -191,5 +202,14 @@ public class ProjectSettings : BaseSettings
     {
         get => Get<int>("LAST_MOVE_SCROLL");
         set => Set("LAST_MOVE_SCROLL", value);
+    }
+
+    /// <summary>
+    /// The last scroll amount in the ability section of the database.
+    /// </summary>
+    public int LastAbilityScroll
+    {
+        get => Get<int>("LAST_ABILITY_SCROLL");
+        set => Set("LAST_ABILITY_SCROLL", value);
     }
 }
