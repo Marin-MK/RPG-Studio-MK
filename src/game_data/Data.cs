@@ -30,6 +30,7 @@ public static partial class Data
     public static Dictionary<string, Move> Moves = new Dictionary<string, Move>();
     public static Dictionary<string, Type> Types = new Dictionary<string, Type>();
     public static Dictionary<string, Item> Items = new Dictionary<string, Item>();
+    public static Dictionary<string, Item> TMsHMs = new Dictionary<string, Item>();
     public static Dictionary<string, TrainerType> TrainerTypes = new Dictionary<string, TrainerType>();
     public static Dictionary<(int Map, int Version), EncounterTable> Encounters = new Dictionary<(int, int), EncounterTable>();
     public static List<Trainer> Trainers = new List<Trainer>();
@@ -189,8 +190,7 @@ public static partial class Data
         private static List<ListItem> _tlia;
         private static List<ListItem> _ilia;
         private static List<ListItem> _ttlia;
-        private static List<Item> _tms;
-        private static List<Item> _hms;
+        private static List<ListItem> _tmshms;
         private static List<ListItem> _fcs;
 
         public static List<ListItem> SpeciesAndForms 
@@ -256,35 +256,42 @@ public static partial class Data
                 return _ttlia;
 			}
         }
-        public static List<Item> TMs
+        public static List<ListItem> TMsHMs
         {
             get
             {
-                if (recalculateTMs)
+                if (recalculateTMsHMs)
                 {
-                    _tms = Data.Items.ToList()
-                                .FindAll(kvp => kvp.Value.Move is not null &&
-                                        (HardcodedData.Get(kvp.Value.FieldUse, HardcodedData.ItemFieldUses) == "TR" || HardcodedData.Get(kvp.Value.FieldUse, HardcodedData.ItemFieldUses) == "TM"))
-                                .Select(kvp => kvp.Value)
-                                .ToList();
+                    _tmshms = Data.TMsHMs
+                        .Select(kvp => new ListItem($"{kvp.Value.Name} - {(kvp.Value.Move.Valid ? kvp.Value.Move.Move.Name : kvp.Value.Move.ID)}", kvp.Value))
+                        .ToList();
+                    _tmshms.Sort(delegate (ListItem a, ListItem b)
+                    {
+                        Item aI = (Item) a.Object;
+                        Item bI = (Item) b.Object;
+                        Match aM = Regex.Match(aI.ID, @"(TM|TR|HM)(\d+)");
+                        Match bM = Regex.Match(bI.ID, @"(TM|TR|HM)(\d+)");
+                        if (aM.Success)
+                        {
+                            if (bM.Success)
+                            {
+                                int cmp = aM.Groups[1].Value.CompareTo(bM.Groups[1].Value);
+                                if (cmp != 0) return cmp;
+                                int aNum = Convert.ToInt32(aM.Groups[2].Value);
+                                int bNum = Convert.ToInt32(bM.Groups[2].Value);
+                                return aNum.CompareTo(bNum);
+							}
+                            return 1;
+                        }
+                        else if (bM.Success)
+                        {
+                            return -1;
+                        }
+                        return aI.ID.CompareTo(bI.ID);
+                    });
                 }
-                recalculateTMs = false;
-                return _tms;
-            }
-        }
-        public static List<Item> HMs
-        {
-            get
-            {
-                if (recalculateHMs)
-                {
-                    _hms = Data.Items.ToList()
-                                .FindAll(kvp => kvp.Value.Move is not null && HardcodedData.Get(kvp.Value.FieldUse, HardcodedData.ItemFieldUses) == "HM")
-                                .Select(kvp => kvp.Value)
-                                .ToList();
-                }
-                recalculateHMs = false;
-                return _hms;
+                recalculateTMsHMs = false;
+                return _tmshms;
             }
         }
         public static List<ListItem> FunctionCodes
@@ -318,8 +325,7 @@ public static partial class Data
         private static bool recalculateTypes = true;
         private static bool recalculateItems = true;
         private static bool recalculateTrainerTypes = true;
-        private static bool recalculateTMs = true;
-        private static bool recalculateHMs = true;
+        private static bool recalculateTMsHMs = true;
         private static bool recalculateFunctionCodes = true;
 
         public static void InvalidateSpecies()
@@ -330,12 +336,8 @@ public static partial class Data
 		public static void InvalidateAbilities() => recalculateAbilities = true;
 		public static void InvalidateMoves() => recalculateMoves = true;
 		public static void InvalidateTypes() => recalculateTypes = true;
-        public static void InvalidateItems()
-        {
-            recalculateItems = true;
-            recalculateTMs = true;
-            recalculateHMs = true;
-        }
+        public static void InvalidateItems() => recalculateItems = true;
+        public static void InvalidateTMs() => recalculateTMsHMs = true;
 		public static void InvalidateTrainerTypes() => recalculateTrainerTypes = true;
         public static void InvalidateFunctionCodes() => recalculateFunctionCodes = true;
 

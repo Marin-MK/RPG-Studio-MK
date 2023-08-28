@@ -1135,5 +1135,7 @@ public enum BinaryData
     MOVE_COMMAND,
     SPECIES,
     MOVE,
-    ABILITY
+    ABILITY,
+    ITEM,
+    TM
 }

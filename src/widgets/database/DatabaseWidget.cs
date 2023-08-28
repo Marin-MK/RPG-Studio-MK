@@ -33,6 +33,7 @@ public class DatabaseWidget : Widget
             DatabaseMode.Species => new DataTypeSpecies(MainGrid),
             DatabaseMode.Moves => new DataTypeMoves(MainGrid),
             DatabaseMode.Abilities => new DataTypeAbilities(MainGrid),
+            DatabaseMode.TMs => new DataTypeTMs(MainGrid),
             DatabaseMode.Tilesets => new DataTypeTilesets(MainGrid),
             _ => null
         };

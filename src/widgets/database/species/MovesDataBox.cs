@@ -149,9 +149,8 @@ partial class DataTypeSpecies
 
 	void CreateTMContainer(DataContainer parent, Species spc)
 	{
-		List<Item> hms = Data.Sources.HMs;
-		List<Item> tms = Data.Sources.TMs;
-		tms.RemoveAll(item => hms.Any(hm => hm.Move.Move == item.Move.Move));
+		List<ListItem> tms = Data.Sources.TMsHMs.FindAll(item => Data.HardcodedData.Get(((Item) item.Object).FieldUse, Data.HardcodedData.ItemFieldUses) != "HM").ToList();
+		List<ListItem> hms = Data.Sources.TMsHMs.FindAll(item => Data.HardcodedData.Get(((Item) item.Object).FieldUse, Data.HardcodedData.ItemFieldUses) == "HM").ToList();
 
 		ColumnFormatter posHelper = new ColumnFormatter(tms.Count, 4);
 		posHelper.SetX(53);
@@ -161,7 +160,7 @@ partial class DataTypeSpecies
 		
 		for (int i = 0; i < tms.Count; i++)
 		{
-			Item item = tms[i];
+			Item item = (Item) tms[i].Object;
 			CheckBox box = new CheckBox(parent);
 			box.SetPosition(posHelper.GetPosition(i));
 			box.SetText($"{item.Name} - {item.Move.Move.Name}");
@@ -175,7 +174,7 @@ partial class DataTypeSpecies
 
 		for (int i = 0; i < hms.Count; i++)
 		{
-			Item item = hms[i];
+			Item item = (Item) hms[i].Object;
 			CheckBox box = new CheckBox(parent);
 			box.SetPosition(posHelper.X, posHelper.GetMaxY() + posHelper.YDistance * i + 30);
 			box.SetText($"{item.Name} - {item.Move.Move.Name}");
@@ -255,8 +254,7 @@ partial class DataTypeSpecies
 		foreach (MoveResolver Move in spc.TutorMoves)
 		{
 			// Do not list TMs/HMs in the tutor moves section, as they have their own section.
-			if (Data.Sources.TMs.Any(tm => tm.Move.Move == Move.Move) ||
-				Data.Sources.HMs.Any(hm => hm.Move.Move == Move.Move)) continue;
+			if (Data.Sources.TMsHMs.Any(tm => ((Item) tm.Object).Move.Move == Move.Move)) continue;
 			MoveEntryWidget mew = new MoveEntryWidget(panel);
 			mew.SetMove(0, Move);
 			mew.SetMargins(0, 3);
@@ -279,7 +277,7 @@ partial class DataTypeSpecies
 		moveBox.SetPosition(110, 3);
 		moveBox.SetWidth(200);
 		// Only list moves that are not a TM/HM, as those moves are already listed in the TM/HM section.
-		moveBox.SetItems(Data.Sources.Moves.FindAll(move => !Data.Sources.TMs.Any(tm => tm.Move.Move == (Move) move.Object) && !Data.Sources.HMs.Any(hm => hm.Move.Move == (Move) move.Object)));
+		moveBox.SetItems(Data.Sources.Moves.FindAll(move => !Data.Sources.TMsHMs.Any(tm => ((Item) tm.Object).Move.Move == (Move) move.Object)));
 		moveBox.SetSelectedIndex(0);
 
 		addButton.OnClicked += _ =>

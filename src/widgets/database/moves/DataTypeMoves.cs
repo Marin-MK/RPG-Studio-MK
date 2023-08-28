@@ -72,7 +72,7 @@ public partial class DataTypeMoves : DataTypeBase
 
         MovesList.SetContextMenuList(new List<IMenuItem>()
         {
-            new MenuItem("New Move")
+            new MenuItem("New")
             {
                 IsClickable = e => e.Value = MovesList.HoveringItem is not null,
                 OnClicked = NewMove

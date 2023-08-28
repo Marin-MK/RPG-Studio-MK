@@ -28,7 +28,44 @@ public class Item : IGameData, ICloneable
     public List<string> Flags;
     public MoveResolver? Move;
 
-    private Item() { }
+    /// <summary>
+    /// DO NOT USE!
+    /// </summary>
+    public Item() { }
+
+    public static Item Create()
+    {
+        Item i = new Item();
+        i.Name = "";
+        i.Plural = "";
+        i.Pocket = 0;
+        i.Price = 0;
+        i.SellPrice = 0;
+        i.Description = "";
+        i.FieldUse = 0;
+        i.BattleUse = 0;
+        i.UseType = 0;
+        i.Consumable = false;
+        i.Flags = new List<string>();
+        i.Move = null;
+        return i;
+    }
+
+    public static Item CreateTM()
+    {
+		Item i = new Item();
+		i.Name = "";
+		i.Plural = "";
+		i.Pocket = 0;
+		i.Price = 0;
+		i.SellPrice = 0;
+		i.Description = "";
+        i.FieldUse = Data.HardcodedData.ItemFieldUses.IndexOf("TR");
+		i.BattleUse = 0;
+		i.Consumable = false;
+		i.Flags = new List<string>();
+		return i;
+	}
 
     public Item(string ID, Dictionary<string, string> hash)
     {

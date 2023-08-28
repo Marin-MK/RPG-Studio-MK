@@ -1,4 +1,5 @@
 ﻿using RPGStudioMK.Utility;
+using System.Linq;
 
 namespace RPGStudioMK.Game;
 
@@ -39,7 +40,45 @@ public class ItemManager : BaseDataManager
         }
     }
 
-    protected override void SaveData()
+	public override void Load(bool fromPBS)
+	{
+		base.Load(fromPBS);
+        SplitTMsFromItems();
+	}
+
+    private void SplitTMsFromItems()
+    {
+        Data.TMsHMs.Clear();
+		Data.Items.Values.ToList()
+			.FindAll(item => item.Move is not null &&
+					(Data.HardcodedData.Get(item.FieldUse, Data.HardcodedData.ItemFieldUses) == "TR" ||
+					Data.HardcodedData.Get(item.FieldUse, Data.HardcodedData.ItemFieldUses) == "TM" ||
+					Data.HardcodedData.Get(item.FieldUse, Data.HardcodedData.ItemFieldUses) == "HM"))
+			.ForEach(item => {
+				Data.Items.Remove(item.ID);
+				Data.TMsHMs.Add(item.ID, item);
+			});
+	}
+
+    private void InsertTMsIntoItems()
+    {
+        Data.TMsHMs.Values.ToList()
+            .ForEach(item =>
+            {
+                Data.TMsHMs.Remove(item.ID);
+                Data.Items.Add(item.ID, item);
+            });
+        Data.TMsHMs.Clear();
+    }
+
+	public override void Save()
+	{
+        InsertTMsIntoItems();
+		base.Save();
+        SplitTMsFromItems();
+	}
+
+	protected override void SaveData()
     {
         base.SaveData();
         Logger.WriteLine("Saving items");

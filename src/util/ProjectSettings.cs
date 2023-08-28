@@ -23,10 +23,12 @@ public class ProjectSettings : BaseSettings
         { "LAST_SPECIES_ID", "" },
         { "LAST_MOVE_ID", "" },
         { "LAST_ABILITY_ID", "" },
+        { "LAST_TM_ID", "" },
         { "LAST_SPECIES_SCROLL", 0 },
         { "LAST_SPECIES_SUBMODE", 0 },
         { "LAST_MOVE_SCROLL", 0 },
-        { "LAST_ABILITY_SCROLL", 0 }
+        { "LAST_ABILITY_SCROLL", 0 },
+        { "LAST_TM_SCROLL", 0 }
     };
 
     public ProjectSettings() : base() { }
@@ -169,12 +171,21 @@ public class ProjectSettings : BaseSettings
 	}
 
     /// <summary>
-    /// The last ability the was opened.
+    /// The last ability that was opened.
     /// </summary>
     public string LastAbilityID
     {
         get => Get<string>("LAST_ABILITY_ID");
         set => Set("LAST_ABILITY_ID", value);
+    }
+
+    /// <summary>
+    /// The last TM that was opened.
+    /// </summary>
+    public string LastTMID
+    {
+        get => Get<string>("LAST_TM_ID");
+        set => Set("LAST_TM_ID", value);
     }
 
 	/// <summary>
@@ -211,5 +222,14 @@ public class ProjectSettings : BaseSettings
     {
         get => Get<int>("LAST_ABILITY_SCROLL");
         set => Set("LAST_ABILITY_SCROLL", value);
+    }
+
+    /// <summary>
+    /// The last scroll amount in the TM section of the database.
+    /// </summary>
+    public int LastTMScroll
+    {
+        get => Get<int>("LAST_TM_SCROLL");
+        set => Set("LAST_TM_SCROLL", value);
     }
 }
