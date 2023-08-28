@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RPGStudioMK.Game;
 using RPGStudioMK.Widgets;
 using System.Diagnostics;
+using System.IO;
 
 namespace RPGStudioMK;
 
@@ -56,6 +57,7 @@ public partial class MainEditorWindow : UIWindow
         Windows.Add(this);
         OnClosed += _ => Windows.Remove(this);
         this.InitializeUI(Color.ALPHA);
+
         BGWidget = new ImageBox(UI);
         MainWidget = new ImageBox(UI);
         MainWidget.SetBitmap("assets/img/home_logo.png");

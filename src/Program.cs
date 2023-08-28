@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Versioning;
+using System.Collections.Generic;
 using NativeLibraryLoader;
 using System.Diagnostics;
 using MKUtils;
@@ -26,21 +27,35 @@ public class Program
     public static string? LatestProgramVersion;
     public static string CurrentInstallerVersion;
     public static string LatestInstallerVersion;
+    public static string PendingInstallerVersion;
+    public static bool MetadataLoadSuccessful = false;
 
-    [STAThread]
+	private delegate uint GetEUID();
+    private static GetEUID geteuid;
+
+	[STAThread]
     static void Main(params string[] args)
     {
+        if (!Directory.Exists(Editor.AppDataFolder))
+        {
+            Directory.CreateDirectory(Editor.AppDataFolder);
+			if (Graphics.Platform == odl.Platform.Linux && IsLinuxAdmin())
+			{
+                // Ensure the App Data folder permits non-root access
+                SetNonRoot(Editor.AppDataFolder);
+			}
+		}
         Widgets.MessageBox ErrorBox = null;
         MainEditorWindow win = null;
+#if DEBUG
         try
         {
-#if DEBUG
             Logger.Start();
 #elif RELEASE
-            if (!Directory.Exists(Editor.AppDataFolder)) Directory.CreateDirectory(Editor.AppDataFolder);
-            Logger.Start(Path.Combine(Editor.AppDataFolder, "log.txt"));
+            string logPath = Path.Combine(Editor.AppDataFolder, "log.txt").Replace('\\', '/');
+            Logger.Start(logPath);
 #endif
-            Graphics.Logger = Logger.Instance;
+			Graphics.Logger = Logger.Instance;
             MKUtils.Logger.Instance = Logger.Instance;
 			// Ensures the working directory becomes the editor directory
 			Logger.WriteLine("Process Path: {0}", Environment.ProcessPath);
@@ -49,11 +64,51 @@ public class Program
 #if DEBUG
             TestSuite.RunAll();
 #endif
+
             VerifyVersions();
 
+            if (!InitializeProgram())
+            {
+                Logger.WriteLine("The program failed to setup properly.");
+                Logger.Stop();
+                return;
+            }
 
-            InitializeProgram();
-            Logger.WriteLine("Initializing data");
+            if (Graphics.Platform == odl.Platform.Linux)
+			{
+				NativeLibrary libc = NativeLibrary.Load("libc.so.6");
+				geteuid = libc.GetFunction<GetEUID>("geteuid");
+                string tempUpdaterPath = Path.Combine(Editor.AppDataFolder, "updater").Replace('\\', '/');
+                string desiredUpdaterPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, VersionMetadata.InstallerInstallFilename["linux"]).Replace('\\', '/');
+				string tempVersionPath = Path.Combine(Editor.AppDataFolder, "VERSION").Replace('\\', '/');
+				string desiredVersionPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, "VERSION").Replace('\\', '/');
+				if (File.Exists(tempUpdaterPath) && File.Exists(tempVersionPath))
+                {
+                    Logger.WriteLine("A pending installer update needs to be completed.");
+                    if (IsLinuxAdmin())
+                    {
+                        Logger.WriteLine("Root user, move updater from its temporary location to the desired updater path.");
+                        File.Move(tempUpdaterPath, desiredUpdaterPath, true);
+                        File.Move(tempVersionPath, desiredVersionPath, true);
+                        Logger.WriteLine("Installation complete.");
+                        Popup popup = new Popup("Success", "The updater was successfully installed. Please re-run the application as a normal user, as RPG Studio MK cannot be used as a root user.");
+                        popup.Show();
+                        return;
+                    }
+                    else
+                    {
+                        Logger.WriteLine("Non-root user, updater cannot be moved from its temporary location to the desired updater path.");
+                        odl.Popup popup = new Popup("Warning", "The recently installed update to the installer could not be completed. Please re-run the application as a root user (using 'sudo') so it can be completed.");
+                        popup.Show();
+                        PendingInstallerVersion = MKUtils.MKUtils.TrimVersion(File.ReadAllText(tempVersionPath));
+                        if (string.IsNullOrEmpty(PendingInstallerVersion)) PendingInstallerVersion = "0";
+                    }
+                }
+			}
+
+            if (MetadataLoadSuccessful) VerifyInstallerVersions();
+
+			Logger.WriteLine("Initializing data");
             Game.Data.Setup();
             string initialProjectFile = args.Length > 0 ? args[0] : null;
             win = new MainEditorWindow();
@@ -68,13 +123,23 @@ public class Program
             {
                 if (ErrorBox != null && !ErrorBox.Disposed) ErrorBox.SetSize(win.Width, win.Height);
             };
+#if DEBUG
         }
         catch (Exception ex)
         {
-            Logger.Error("Setup failed!");
-            Logger.Error(ex);
+            if (Logger.Instance is not null)
+            {
+                Logger.Error("Setup failed!");
+                Logger.Error(ex);
+            }
+            else
+            {
+                Console.WriteLine("Setup failed!");
+                Console.WriteLine(ex);
+            }
 			throw;
 		}
+#endif
 
         // Amethyst's main UI loop
         Amethyst.Run(() =>
@@ -114,19 +179,68 @@ public class Program
         Logger.Stop();
     }
 
+	private static void SetNonRoot(string path)
+	{
+		Process p = new Process();
+		p.StartInfo = new ProcessStartInfo("chmod");
+		p.StartInfo.ArgumentList.Add("0777");
+		p.StartInfo.ArgumentList.Add(path);
+		p.StartInfo.UseShellExecute = false;
+		p.StartInfo.CreateNoWindow = true;
+		p.Start();
+	}
+
+	public static bool IsLinuxAdmin()
+	{
+		return geteuid() == 0;
+	}
+
 	public static void VerifyInstallerVersions()
     {
         LatestInstallerVersion = VersionMetadata.InstallerVersion;
         Logger.WriteLine("Latest installer version: {0}", LatestInstallerVersion);
-        string installerPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, VersionMetadata.InstallerInstallFilename).Replace('\\', '/');
+        string installerPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, VersionMetadata.InstallerInstallFilename[Graphics.Platform switch
+        {
+            odl.Platform.Windows => "windows",
+            odl.Platform.Linux => "linux",
+            _ => throw new NotImplementedException()
+        }]).Replace('\\', '/');
         bool installUpdater = false;
         if (File.Exists(installerPath))
         {
             Logger.WriteLine("Found an installer at {0}", installerPath);
 			// Check existing version
-			FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(installerPath);
-            CurrentInstallerVersion = MKUtils.MKUtils.TrimTrailingZeroes(fvi.ProductVersion);
+            if (Graphics.Platform == odl.Platform.Windows)
+            {
+                FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(installerPath);
+                CurrentInstallerVersion = MKUtils.MKUtils.TrimVersion(fvi.ProductVersion);
+            }
+            else if (Graphics.Platform == odl.Platform.Linux)
+            {
+                string versionFile = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, "VERSION");
+                if (File.Exists(versionFile))
+                {
+                    CurrentInstallerVersion = File.ReadAllText(versionFile);
+                    if (!string.IsNullOrEmpty(CurrentInstallerVersion)) CurrentInstallerVersion = MKUtils.MKUtils.TrimVersion(CurrentInstallerVersion);
+                }
+                if (string.IsNullOrEmpty(CurrentInstallerVersion)) CurrentInstallerVersion = "0";
+            }
+            else throw new NotImplementedException();
+
             Logger.WriteLine("Current installer version: {0}", CurrentInstallerVersion);
+
+            if (!string.IsNullOrEmpty(PendingInstallerVersion))
+            {
+                int cmpPending = VersionMetadata.CompareVersions(PendingInstallerVersion, LatestInstallerVersion);
+                if (cmpPending >= 0)
+                {
+                    // If the pending installer is newer or the same as the latest installer version, do not update.
+                    Logger.WriteLine($"A pending installer update exists with the same version as the latest installer version. There is no need to redownload; the pending installation should be completed instead.");
+                    InstallerUpdateAvailable = false;
+                    return;
+                }
+            }
+
             int cmp = VersionMetadata.CompareVersions(CurrentInstallerVersion, LatestInstallerVersion);
             if (cmp == -1)
             {
@@ -151,8 +265,17 @@ public class Program
         // Changed in Project Settings -> Package -> Package Version (stored in .csproj)
         // Try getting the version from the assembly first (debug)
         Logger.WriteLine("Determining current version...");
-        CurrentProgramVersion = FileVersionInfo.GetVersionInfo(Environment.ProcessPath).ProductVersion;
-        CurrentProgramVersion = MKUtils.MKUtils.TrimTrailingZeroes(CurrentProgramVersion);
+        if (Graphics.Platform == odl.Platform.Windows)
+        {
+            CurrentProgramVersion = FileVersionInfo.GetVersionInfo(Environment.ProcessPath).ProductVersion;
+            CurrentProgramVersion = MKUtils.MKUtils.TrimVersion(CurrentProgramVersion);
+        }
+        else if (Graphics.Platform == odl.Platform.Linux)
+        {
+            CurrentProgramVersion = File.Exists("VERSION") ? File.ReadAllText("VERSION") : "0";
+            if (string.IsNullOrEmpty(CurrentProgramVersion)) CurrentProgramVersion = "0";
+            CurrentProgramVersion = MKUtils.MKUtils.TrimVersion(CurrentProgramVersion);
+        }
         Logger.WriteLine("Current version: {0}", CurrentProgramVersion);
         // Load latest version
 #if DEBUG
@@ -172,12 +295,12 @@ public class Program
                 Logger.WriteLine($"Version {CurrentProgramVersion} is outdated. Update {LatestProgramVersion} is available.");
             }
             else Logger.WriteLine($"Version {CurrentProgramVersion} is up-to-date.");
-            VerifyInstallerVersions();
+            MetadataLoadSuccessful = true;
         }
         else Logger.WriteLine($"Failed to download metadata.");
     }
 
-    private static void InitializeProgram()
+    private static bool InitializeProgram()
     {
         Logger.WriteLine("Launching RPG Studio MK.");
         Logger.WriteLine($"Editor Version: {Editor.GetVersionString()}");
@@ -187,7 +310,7 @@ public class Program
         PrintPlatformInfo();
         Config.Setup();
         InitializeAmethyst();
-        InitializeRuby();
+        return InitializeRuby();
     }
 
     private static void InitializeAmethyst()
@@ -197,12 +320,13 @@ public class Program
         if (Handle == 0) throw new Exception("Failed to load soundfont.");
     }
 
-    private static void InitializeRuby()
+    private static bool InitializeRuby()
     {
         Logger.WriteLine("Loading Ruby...");
         string rubyVersion = Ruby.Initialize(Config.PathInfo);
         Logger.WriteLine("Loaded Ruby ({0})", rubyVersion);
         IntPtr ruby_load_path = Ruby.GetGlobal("$LOAD_PATH");
+        
         Ruby.Array.Push(ruby_load_path, Ruby.String.ToPtr("./lib/ruby/2.7.0"));
         if (NativeLibrary.Platform == NativeLibraryLoader.Platform.Windows)
         {
@@ -212,7 +336,15 @@ public class Program
         {
             Ruby.Array.Push(ruby_load_path, Ruby.String.ToPtr("./lib/ruby/2.7.0/x86_64-linux"));
         }
-        Ruby.Require("zlib");
+
+        if (!Ruby.Require("zlib"))
+        {
+            Logger.WriteLine("Ruby failed to initialize zlib. The program cannot continue.");
+            odl.Popup popup = new Popup("Error", "Ruby failed to initialize zlib. The program cannot continue.");
+            popup.Show();
+            return false;
+        }
+        return true;
     }
 
     private static void PrintPlatformInfo()

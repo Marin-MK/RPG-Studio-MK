@@ -82,7 +82,7 @@ public static class Editor
     /// <summary>
     /// The absolute path to the application's data folder.
     /// </summary>
-    public static string AppDataFolder => Path.Combine(MKUtils.MKUtils.AppDataFolder, "RPG Studio MK").Replace('\\', '/');
+    public static string AppDataFolder => Path.Combine(MKUtils.MKUtils.AppDataFolder, Graphics.Platform == odl.Platform.Windows ? "RPG Studio MK" : ".rpg-studio-mk").Replace('\\', '/');
 
     /// <summary>
     /// The absolute path to the installed kits folder.
@@ -598,6 +598,7 @@ public static class Editor
         of.SetInitialDirectory(lastfolder);
         of.SetTitle("Choose a project file...");
         string result = of.ChooseFile();
+        Logger.WriteLine("Chosen File: {0}", result);
         if (result != null)
         {
             if (!result.EndsWith(".rxproj"))
@@ -879,9 +880,10 @@ public static class Editor
     public static void DumpGeneralSettings()
     {
         GeneralSettings.SecondsUsed += (int) Math.Floor((DateTime.Now - TimeOpened).TotalSeconds);
-        if (!Directory.Exists(AppDataFolder)) Directory.CreateDirectory(AppDataFolder);
         Logger.WriteLine("Saving general settings to {0}...", SettingsFilePath);
-        Stream stream = new FileStream(SettingsFilePath, FileMode.Create, FileAccess.Write);
+        Stream stream = null;
+        if (File.Exists(SettingsFilePath)) stream = new FileStream(SettingsFilePath, FileMode.Truncate, FileAccess.Write);
+        else stream = new FileStream(SettingsFilePath, FileMode.Create, FileAccess.Write);
         Utilities.WriteSerializationID(stream, 0);
         Utilities.SerializeStream(stream, GeneralSettings.RawData);
         stream.Close();
@@ -993,75 +995,110 @@ public static class Editor
             ProgressWindow waitBox = new ProgressWindow("Downloading", "Downloading installer...", true, false, false, true);
             Graphics.Update();
             Graphics.Update();
-		    Dictionary<string, string> links = VersionMetadata.InstallerDownloadLink;
-		    string tempFilename = Path.GetTempFileName();
+            Dictionary<string, string> links = VersionMetadata.InstallerDownloadLink;
+            string tempFilename = Path.GetTempFileName();
             try
             {
+                Logger.WriteLine("Start installer update process");
                 string platformString = Graphics.Platform switch
                 {
                     odl.Platform.Windows => "windows",
                     odl.Platform.Linux => "linux",
                     _ => "unknown"
                 };
+                Logger.WriteLine("Initialize DCBM for {0}", platformString);
                 var cbm = new DynamicCallbackManager<DownloadProgress>(20, e =>
                 {
-                    waitBox.SetProgress((float) e.Factor);
+                    Logger.WriteLine("Update : {0}", e);
+                    waitBox.SetProgress((float)e.Factor);
                     Graphics.Update();
                 });
-				bool success = Downloader.DownloadFile(links[platformString], tempFilename, null, cbm);
-			    if (!success)
-			    {
-				    Logger.WriteLine("Failed to download new installer. Negative status code.");
-				    return;
-			    }
-		    }
-		    catch (Exception ex)
-		    {
-			    Logger.Error("Failed to download new installer.", ex);
-			    return;
-		    }
-		    string installerPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, VersionMetadata.InstallerInstallFilename).Replace('\\', '/');
-            waitBox.Dispose();
-            MessageBox adminBox = new MessageBox("Updater", "To complete installation, admin privileges must be granted.", ButtonType.OK, IconType.Info);
-            adminBox.OnClosed += _ =>
+                Logger.WriteLine("File : {0}", links[platformString]);
+                Logger.WriteLine("Temp : {0}", tempFilename);
+                bool success = Downloader.DownloadFile(links[platformString], tempFilename, null, cbm);
+                if (!success)
+                {
+                    Logger.WriteLine("Failed to download new installer. Negative status code.");
+                    return;
+                }
+            }
+            catch (Exception ex)
             {
-                Logger.WriteLine("Deleting current installer...");
-                File.Delete(installerPath);
-                Logger.WriteLine("Spawn new process to copy new installer to {0}...", installerPath);
-                Process proc = new Process();
-                proc.StartInfo = new ProcessStartInfo("cmd");
-                proc.StartInfo.ArgumentList.Add("/c");
-                proc.StartInfo.ArgumentList.Add("move");
-                proc.StartInfo.ArgumentList.Add(tempFilename.Replace('/', '\\'));
-                proc.StartInfo.ArgumentList.Add(installerPath.Replace('/', '\\'));
-                proc.StartInfo.UseShellExecute = true;
-                proc.StartInfo.CreateNoWindow = true;
-                proc.StartInfo.Verb = "runas";
-                proc.Start();
-                Logger.WriteLine("Installer updated successfully.");
-                new MessageBox("Success", "The installer was downloaded successfully.", ButtonType.OK, IconType.Info);
-            };
-		};
+                Logger.WriteLine(ex.ToString());
+                Logger.Error("Failed to download new installer.", ex);
+                return;
+            }
+            string installerPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, VersionMetadata.InstallerInstallFilename[Graphics.Platform switch
+            {
+                odl.Platform.Windows => "windows",
+                odl.Platform.Linux => "linux",
+                _ => throw new NotImplementedException()
+            }]).Replace('\\', '/');
+            waitBox.Dispose();
+            if (Graphics.Platform == Platform.Windows)
+            {
+                MessageBox adminBox = new MessageBox("Updater", "To complete installation, admin privileges must be granted.", ButtonType.OK, IconType.Info);
+                adminBox.OnClosed += _ =>
+                {
+                    Logger.WriteLine("Deleting current installer...");
+                    File.Delete(installerPath);
+                    Logger.WriteLine("Spawn new process to copy new installer to {0}...", installerPath);
+                    Process proc = new Process();
+                    proc.StartInfo = new ProcessStartInfo("cmd");
+                    proc.StartInfo.ArgumentList.Add("/c");
+                    proc.StartInfo.ArgumentList.Add("move");
+                    proc.StartInfo.ArgumentList.Add(tempFilename.Replace('/', '\\'));
+                    proc.StartInfo.ArgumentList.Add(installerPath.Replace('/', '\\'));
+                    proc.StartInfo.CreateNoWindow = true;
+                    proc.StartInfo.Verb = "runas";
+                    proc.StartInfo.UseShellExecute = true;
+                    proc.Start();
+					Logger.WriteLine("Installer updated successfully.");
+					new MessageBox("Success", "The installer was downloaded successfully.", ButtonType.OK, IconType.Info);
+				};
+            }
+            else if (Graphics.Platform == Platform.Linux)
+            {
+                string tempVersionPath = Path.Combine(AppDataFolder, "VERSION").Replace('\\', '/');
+                string desiredVersionPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, "VERSION").Replace('\\', '/');
+                if (Program.IsLinuxAdmin())
+                {
+                    // Root user can copy straight into /usr/local/bin.
+                    Logger.WriteLine("Deleting current installer...");
+                    File.Delete(installerPath);
+                    Logger.WriteLine("Copying installer to {0}...", installerPath);
+                    Logger.WriteLine("Writing {0} to version file {1}...", VersionMetadata.InstallerVersion, desiredVersionPath);
+                    File.WriteAllText(desiredVersionPath, VersionMetadata.InstallerVersion);
+                    File.Move(tempFilename, installerPath);
+					Logger.WriteLine("Installer updated successfully.");
+					new MessageBox("Success", "The installer was downloaded successfully.", ButtonType.OK, IconType.Info);
+				}
+                else
+                {
+					// Non-root user so we can't copy to /usr/local/bin. Instead, copy to {Editor.AppDataFolder},
+					// and ask the user to run the program as a root user next time (without forcing them; it's optional)
+					string appDataFilename = Path.Combine(AppDataFolder, "updater");
+                    Logger.WriteLine("Non-root access, so we copy the installer to {0} instead.", appDataFilename);
+                    File.Move(tempFilename, appDataFilename, true);
+                    Logger.WriteLine("Writing {0} to temporary {1}...", VersionMetadata.InstallerVersion, tempVersionPath);
+                    File.WriteAllText(tempVersionPath, VersionMetadata.InstallerVersion);
+					Logger.WriteLine("Installer updated successfully; the program must be re-run as a root user to complete installation.");
+					new MessageBox("Note", "The installer was downloaded successfully. To complete installation, please re-run the program as a root user (using 'sudo').", ButtonType.OK, IconType.Info);
+				}
+            }
+        };
 	}
 
     public static void AskToUpdateProgram()
     {
-        string updaterPath = null;
-        string updaterFilename = null;
-        string updaterName = null;
-        try
+        string updaterPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath);
+        string updaterName = VersionMetadata.InstallerInstallFilename[Graphics.Platform switch
         {
-            updaterPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath);
-            updaterName = VersionMetadata.InstallerInstallFilename;
-            updaterFilename = Path.Combine(updaterPath, updaterName);
-        }
-        catch (Exception) { }
-        if (!File.Exists(updaterFilename))
-        {
-            updaterPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, "MK", "Core");
-            updaterName = "updater.exe";
-            updaterFilename = Path.Combine(updaterPath, updaterName);
-        }
+            odl.Platform.Windows => "windows",
+            odl.Platform.Linux => "linux",
+            _ => throw new NotImplementedException()
+        }];
+        string updaterFilename = Path.Combine(updaterPath, updaterName);
         bool hasUpdater = File.Exists(updaterFilename);
         if (hasUpdater)
         {
@@ -1070,21 +1107,52 @@ public static class Editor
             MessageBox win = new MessageBox("Updater", $"An update for RPG Studio MK is available. Would you like to automatically install this update?\nCurrent version: {Program.CurrentProgramVersion}\nLatest version: {Program.LatestProgramVersion}", ButtonType.YesNo, IconType.Info);
             win.OnClosed += _ =>
             {
-                if (win.Result != 0) return;
+                if (win.Result != 0)
+                {
+					if (Graphics.Platform == Platform.Linux && Program.IsLinuxAdmin())
+					{
+						// Force users to be non-root users, otherwise any and all files the program touches will become root/read-only.
+						odl.Popup popup = new Popup("Error", "RPG Studio MK cannot be run as a root user. Please re-run the application as a regular user.");
+						popup.Show();
+                        Editor.ExitEditor();
+					}
+					return;
+                }
                 // Open updater & close the program
                 Logger.WriteLine("Closing editor...");
-                Editor.ExitEditor();
-                Directory.SetCurrentDirectory(updaterPath);
-                Logger.WriteLine("Launching updater...");
-                Process proc = new Process();
-                proc.StartInfo = new ProcessStartInfo("cmd");
-                proc.StartInfo.ArgumentList.Add("/c");
-                proc.StartInfo.ArgumentList.Add(updaterName);
-                proc.StartInfo.ArgumentList.Add("--automatic-update");
-                proc.StartInfo.RedirectStandardOutput = true;
-                proc.StartInfo.UseShellExecute = false;
-                proc.StartInfo.CreateNoWindow = true;
-                proc.Start();
+                if (Graphics.Platform == Platform.Windows)
+                {
+                    Editor.ExitEditor();
+                    Directory.SetCurrentDirectory(updaterPath);
+                    Logger.WriteLine("Launching updater...");
+                    Process proc = new Process();
+                    proc.StartInfo = new ProcessStartInfo("cmd");
+                    proc.StartInfo.ArgumentList.Add("/c");
+                    proc.StartInfo.ArgumentList.Add(updaterName);
+                    proc.StartInfo.ArgumentList.Add("--automatic-update");
+                    proc.StartInfo.RedirectStandardOutput = true;
+                    proc.StartInfo.UseShellExecute = false;
+                    proc.StartInfo.CreateNoWindow = true;
+                    proc.Start();
+                }
+                else if (Graphics.Platform == Platform.Linux)
+                {
+                    if (Program.IsLinuxAdmin())
+                    {
+                        Editor.ExitEditor();
+                        Directory.SetCurrentDirectory(updaterPath);
+                        Process proc = new Process();
+                        proc.StartInfo = new ProcessStartInfo(updaterName);
+                        proc.StartInfo.Arguments = "--automatic-update";
+                        proc.StartInfo.RedirectStandardOutput = true;
+                        proc.StartInfo.CreateNoWindow = true;
+                        proc.Start();
+                    }
+                    else
+                    {
+                        new MessageBox("Error", "To install the latest update, please re-run the program as a root user (using 'sudo'). Alternatively, you may also re-run the installer as a root user to also install the latest update.");
+                    }
+                }
             };
         }
         else

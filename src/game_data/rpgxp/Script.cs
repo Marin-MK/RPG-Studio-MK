@@ -30,7 +30,7 @@ public class Script
         Ruby.Pin(s);
         Ruby.Array.Set(s, 0, Ruby.Integer.ToPtr(this.MagicNumber));
         Ruby.Array.Set(s, 1, Ruby.String.ToPtr(this.Name));
-        IntPtr conv = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Zlib"), "deflate", Ruby.String.ToPtr(this.Content));
+		IntPtr conv = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Zlib"), "deflate", Ruby.String.ToPtr(this.Content));
         Ruby.Array.Set(s, 2, conv);
         Ruby.Unpin(s);
         return s;
