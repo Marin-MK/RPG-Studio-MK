@@ -88,6 +88,7 @@ public class Program
                     if (IsLinuxAdmin())
                     {
                         Logger.WriteLine("Root user, move updater from its temporary location to the desired updater path.");
+                        if (!Directory.Exists(Editor.AppDataFolder)) Directory.CreateDirectory(Editor.AppDataFolder);
                         File.Move(tempUpdaterPath, desiredUpdaterPath, true);
                         File.Move(tempVersionPath, desiredVersionPath, true);
                         Logger.WriteLine("Installation complete.");

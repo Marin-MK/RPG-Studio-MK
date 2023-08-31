@@ -53,12 +53,12 @@ public class ItemDropdownBox : DropdownBox
 		{
 			if (Editor.MainWindow.DatabaseWidget.Mode == DatabaseMode.Items)
 			{
-				//((DataTypeItems) Editor.MainWindow.DatabaseWidget.ActiveDatabaseWidget).SelectItem(this.Item);
+				((DataTypeItems) Editor.MainWindow.DatabaseWidget.ActiveDatabaseWidget).SelectItem(this.Item);
 			}
 			else
 			{
-				//Editor.ProjectSettings.LastItemID = this.Item.ID;
-				//Editor.ProjectSettings.LastItemScroll = 0;
+				Editor.ProjectSettings.LastItemID = this.Item.ID;
+				Editor.ProjectSettings.LastItemScroll = 0;
 				Editor.MainWindow.DatabaseWidget.SetMode(DatabaseMode.Items);
 			}
 			return;
