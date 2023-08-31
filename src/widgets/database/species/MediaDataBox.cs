@@ -46,8 +46,8 @@ public partial class DataTypeSpecies
 						break;
 				}
 			}
-			string tryPath = path + trySubfolder + trySpecies + tryForm + tryGender + tryShadow;
-			if (Bitmap.FindRealFilename(tryPath) is not null) return tryPath;
+			string? tryPath = ODL.ImageResolver.ResolveFilename(path + trySubfolder + trySpecies + tryForm + tryGender + tryShadow, FileResolverStrategy.CaseInsensitive | FileResolverStrategy.TryWithExtension);
+			if (tryPath is not null) return tryPath;
 		}
 		return null;
 	}
@@ -71,11 +71,11 @@ public partial class DataTypeSpecies
 	{
 		if (spc.Form > 0)
 		{
-			string tryPath = Data.ProjectPath + $"/Graphics/Pokemon/Footprints/{spc.BaseSpecies.ID}_{spc.Form}";
-			if (Bitmap.FindRealFilename(tryPath) is not null) return tryPath;
+			string? tryPath = ODL.ImageResolver.ResolveFilename(Data.ProjectPath + $"/Graphics/Pokemon/Footprints/{spc.BaseSpecies.ID}_{spc.Form}", FileResolverStrategy.CaseInsensitive | FileResolverStrategy.TryWithExtension);
+			if (tryPath is not null) return tryPath;
 		}
-		string path = Data.ProjectPath + $"/Graphics/Pokemon/Footprints/{spc.BaseSpecies.ID}";
-		if (Bitmap.FindRealFilename(path) is not null) return path;
+		string? path = ODL.ImageResolver.ResolveFilename(Data.ProjectPath + $"/Graphics/Pokemon/Footprints/{spc.BaseSpecies.ID}", FileResolverStrategy.CaseInsensitive | FileResolverStrategy.TryWithExtension);
+		if (path is not null) return path;
 		return null;
 	}
 
@@ -83,13 +83,13 @@ public partial class DataTypeSpecies
 	{
 		if (spc.Form > 0)
 		{
-			string tryPath = Data.ProjectPath + $"/Graphics/Pokemon/Eggs/{spc.BaseSpecies.ID}_{spc.Form}{suffix}";
-			if (Bitmap.FindRealFilename(tryPath) is not null) return tryPath;
+			string? tryPath = ODL.ImageResolver.ResolveFilename(Data.ProjectPath + $"/Graphics/Pokemon/Eggs/{spc.BaseSpecies.ID}_{spc.Form}{suffix}", FileResolverStrategy.CaseInsensitive | FileResolverStrategy.TryWithExtension);
+			if (tryPath is not null) return tryPath;
 		}
-		string path = Data.ProjectPath + $"/Graphics/Pokemon/Eggs/{spc.BaseSpecies.ID}{suffix}";
-		if (Bitmap.FindRealFilename(path) is not null) return path;
-		path = Data.ProjectPath + $"/Graphics/Pokemon/Eggs/000{suffix}";
-		if (Bitmap.FindRealFilename(path) is not null) return path;
+		string? path = ODL.ImageResolver.ResolveFilename(Data.ProjectPath + $"/Graphics/Pokemon/Eggs/{spc.BaseSpecies.ID}{suffix}", FileResolverStrategy.CaseInsensitive | FileResolverStrategy.TryWithExtension);
+		if (path is not null) return path;
+		path = ODL.ImageResolver.ResolveFilename(Data.ProjectPath + $"/Graphics/Pokemon/Eggs/000{suffix}", FileResolverStrategy.CaseInsensitive | FileResolverStrategy.TryWithExtension);
+		if (path is not null) return path;
 		return null;
 	}
 

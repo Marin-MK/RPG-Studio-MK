@@ -42,12 +42,9 @@ public class Tileset : ICloneable
         get
         {
             if (_tb != null) return _tb;
-            string filename = $"{Data.ProjectPath}/Graphics/Tilesets/{this.GraphicName}.png";
             _tb = null;
-            if (Bitmap.FindRealFilename(filename) != null)
-            {
-                _tb = new Bitmap(filename);
-            }
+            string? filename = ODL.ImageResolver.ResolveFilename($"{Data.ProjectPath}/Graphics/Tilesets/{this.GraphicName}");
+            if (filename is not null) _tb = new Bitmap(filename);
             return _tb;
         }
         set

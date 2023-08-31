@@ -1,4 +1,6 @@
-﻿namespace RPGStudioMK.Widgets;
+﻿
+
+namespace RPGStudioMK.Widgets;
 
 public class MultilineTextBox : Widget
 {

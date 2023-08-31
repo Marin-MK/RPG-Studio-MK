@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json;
 
+
 namespace RPGStudioMK;
 
 public static class Utilities
@@ -232,16 +233,16 @@ public static class Utilities
     /// </summary>
     public static void OpenFolder(string Folder)
     {
-        string path = FormatPath(Folder, odl.Graphics.Platform);
-        if (odl.Graphics.Platform == odl.Platform.Windows)
+        string path = FormatPath(Folder, ODL.Platform);
+        if (ODL.OnWindows)
         {
             Process.Start("explorer.exe", path);
         }
-        else if (odl.Graphics.Platform == odl.Platform.Linux)
+        else if (ODL.OnLinux)
         {
             Process.Start("xdg-open", path);
         }
-        else if (odl.Graphics.Platform == odl.Platform.MacOS)
+        else if (ODL.OnMacOS)
         {
             Process.Start("open", $"-R \"{path}\"");
         }

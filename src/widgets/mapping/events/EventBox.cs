@@ -109,8 +109,8 @@ public class EventBox : Widget
             EventGraphic gfx = Event.Pages[i].Graphic;
             if (!string.IsNullOrEmpty(gfx.CharacterName))
             {
-                string filename = Bitmap.FindRealFilename(Data.ProjectPath + "/Graphics/Characters/" + gfx.CharacterName);
-                if (!string.IsNullOrEmpty(filename))
+                string? filename = ODL.ImageResolver.ResolveFilename(Data.ProjectPath + "/Graphics/Characters/" + gfx.CharacterName);
+                if (filename is not null)
                 {
                     Bitmap SourceBitmap = new Bitmap(filename);
                     int sw = SourceBitmap.Width / gfx.NumFrames;

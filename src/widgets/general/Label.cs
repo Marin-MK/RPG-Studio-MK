@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 
+
 namespace RPGStudioMK.Widgets;
 
 public class Label : Widget

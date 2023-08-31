@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using RPGStudioMK.Game;
 using RPGStudioMK.Utility;
 
@@ -88,7 +89,7 @@ public class ScriptEditorBox : Widget
             if (!TextArea.Interactable) return;
             if (!Input.Press(Keycode.CTRL)) return;
             int add = Math.Sign(e.WheelY);
-            TextArea.SetFont(Font.Get(Fonts.Monospace.Name, Math.Max(1, TextArea.Font.Size + add)));
+            TextArea.SetFont(FontCache.GetOrCreate(Fonts.Monospace.Name, Math.Max(1, TextArea.Font.Size + add)));
         };
         ScrollContainer.OnSizeChanged += _ =>
         {
@@ -99,7 +100,7 @@ public class ScriptEditorBox : Widget
 
         TextArea = new ScriptEditorTextArea(ScrollContainer);
         TextArea.SetHDocked(true);
-        TextArea.SetFont(Font.Get(Fonts.Monospace.Name, 16));
+        TextArea.SetFont(FontCache.GetOrCreate(Fonts.Monospace.Name, 16));
         TextArea.OnTextChanged += _ =>
         {
             if (TextArea.Interactable) this.OpenScript.Content = TextArea.Text;

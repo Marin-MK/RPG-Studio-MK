@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 
+
 namespace RPGStudioMK;
 
 public class Fonts
@@ -25,7 +26,7 @@ public class Fonts
 
     public Font Use(string Alias, string CodeName)
     {
-        Font f = Font.Get(this.Filename, this.Size);
+        Font f = FontCache.GetOrCreate(this.Filename, this.Size);
         AllFonts.Add((Alias, f, CodeName));
         return f;
     }

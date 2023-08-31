@@ -34,12 +34,9 @@ public class Autotile : ICloneable
         get
         {
             if (_bmp != null) return _bmp;
-            string filename = $"{Data.ProjectPath}/Graphics/Autotiles/{this.GraphicName}.png";
             _bmp = null;
-            if (Bitmap.FindRealFilename(filename) != null)
-            {
-                _bmp = new Bitmap(filename);
-            }
+            string? filename = ODL.ImageResolver.ResolveFilename($"{Data.ProjectPath}/Graphics/Autotiles/{this.GraphicName}");
+            if (filename is not null) _bmp = new Bitmap(filename);
             return _bmp;
         }
         set

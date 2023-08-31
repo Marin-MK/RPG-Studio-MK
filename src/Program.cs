@@ -39,7 +39,7 @@ public class Program
         if (!Directory.Exists(Editor.AppDataFolder))
         {
             Directory.CreateDirectory(Editor.AppDataFolder);
-			if (Graphics.Platform == odl.Platform.Linux && IsLinuxAdmin())
+			if (ODL.OnLinux && IsLinuxAdmin())
 			{
                 // Ensure the App Data folder permits non-root access
                 SetNonRoot(Editor.AppDataFolder);
@@ -55,7 +55,7 @@ public class Program
             string logPath = Path.Combine(Editor.AppDataFolder, "log.txt").Replace('\\', '/');
             Logger.Start(logPath);
 #endif
-			Graphics.Logger = Logger.Instance;
+			ODL.Logger = Logger.Instance;
             MKUtils.Logger.Instance = Logger.Instance;
 			// Ensures the working directory becomes the editor directory
 			Logger.WriteLine("Process Path: {0}", Environment.ProcessPath);
@@ -74,7 +74,7 @@ public class Program
                 return;
             }
 
-            if (Graphics.Platform == odl.Platform.Linux)
+            if (ODL.OnLinux)
 			{
 				NativeLibrary libc = NativeLibrary.Load("libc.so.6");
 				geteuid = libc.GetFunction<GetEUID>("geteuid");
@@ -113,6 +113,8 @@ public class Program
             Game.Data.Setup();
             string initialProjectFile = args.Length > 0 ? args[0] : null;
             win = new MainEditorWindow();
+            Font f = FontCache.GetOrCreate("arial", 12);
+            Size sizes = f.TextSize("hello");
             Widget.DefaultContextMenuFont = Fonts.Paragraph;
             Graphics.Update();
             win.Load(initialProjectFile);
@@ -200,7 +202,7 @@ public class Program
     {
         LatestInstallerVersion = VersionMetadata.InstallerVersion;
         Logger.WriteLine("Latest installer version: {0}", LatestInstallerVersion);
-        string installerPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, VersionMetadata.InstallerInstallFilename[Graphics.Platform switch
+        string installerPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, VersionMetadata.InstallerInstallFilename[ODL.Platform switch
         {
             odl.Platform.Windows => "windows",
             odl.Platform.Linux => "linux",
@@ -211,12 +213,12 @@ public class Program
         {
             Logger.WriteLine("Found an installer at {0}", installerPath);
 			// Check existing version
-            if (Graphics.Platform == odl.Platform.Windows)
+            if (ODL.OnWindows)
             {
                 FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(installerPath);
                 CurrentInstallerVersion = MKUtils.MKUtils.TrimVersion(fvi.ProductVersion);
             }
-            else if (Graphics.Platform == odl.Platform.Linux)
+            else if (ODL.OnLinux)
             {
                 string versionFile = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, "VERSION");
                 if (File.Exists(versionFile))
@@ -266,12 +268,12 @@ public class Program
         // Changed in Project Settings -> Package -> Package Version (stored in .csproj)
         // Try getting the version from the assembly first (debug)
         Logger.WriteLine("Determining current version...");
-        if (Graphics.Platform == odl.Platform.Windows)
+        if (ODL.OnWindows)
         {
             CurrentProgramVersion = FileVersionInfo.GetVersionInfo(Environment.ProcessPath).ProductVersion;
             CurrentProgramVersion = MKUtils.MKUtils.TrimVersion(CurrentProgramVersion);
         }
-        else if (Graphics.Platform == odl.Platform.Linux)
+        else if (ODL.OnLinux)
         {
             CurrentProgramVersion = File.Exists("VERSION") ? File.ReadAllText("VERSION") : "0";
             if (string.IsNullOrEmpty(CurrentProgramVersion)) CurrentProgramVersion = "0";
@@ -362,7 +364,7 @@ public class Program
         else Framework = "Unknown ";
         Framework += Environment.Version.ToString();
         Logger.WriteLine($"Framework: {Framework}");
-        Logger.WriteLine($"OS Platform: {os.Platform} ({Graphics.Platform}) {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}");
+        Logger.WriteLine($"OS Platform: {os.Platform} ({ODL.Platform}) {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}");
         Logger.WriteLine($"OS Version: {os.VersionString}");
     }
 }

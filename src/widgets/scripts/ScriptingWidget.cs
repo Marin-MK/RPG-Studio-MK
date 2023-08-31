@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+
 using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
@@ -26,7 +27,7 @@ public class ScriptingWidget : Widget
         TreeView.SetWidth(300);
         TreeView.SetNodes(GetNodes());
         TreeView.SetLineHeight(28);
-        TreeView.SetFont(Font.Get("Cabin-Medium", 10));
+        TreeView.SetFont(FontCache.GetOrCreate("Cabin-Medium", 10));
         TreeView.OnSelectionChanged += e => ScriptBox.SetScriptBox((Script) ((TreeNode) TreeView.SelectedNode).Object, !e.Value); // e.Value: whether the node was double clicked or single-clicked
 
         ScriptBox = new ScriptEditorBox(this);

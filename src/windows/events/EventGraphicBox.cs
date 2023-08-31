@@ -39,7 +39,7 @@ public class EventGraphicBox : Widget
         if (Graphic is null) return;
         if (!string.IsNullOrEmpty(Graphic.CharacterName))
         {
-            string filename = Bitmap.FindRealFilename(Data.ProjectPath + "/Graphics/Characters/" + Graphic.CharacterName);
+            string? filename = ODL.ImageResolver.ResolveFilename(Data.ProjectPath + "/Graphics/Characters/" + Graphic.CharacterName);
             if (!string.IsNullOrEmpty(filename))
             {
                 Bitmap SourceBitmap = new Bitmap(filename);

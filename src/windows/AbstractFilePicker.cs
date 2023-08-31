@@ -85,7 +85,7 @@ public abstract class AbstractFilePicker : PopupWindow
         image.SetSize(1, 1);
         CurrentBitmap?.Dispose();
         CurrentBitmap = null;
-        if (string.IsNullOrEmpty(filename) || !Bitmap.FileExistsCaseSensitive(filename)) return;
+        if (string.IsNullOrEmpty(filename)/* || !FileExistsCaseSensitive(filename)*/) return;
         CurrentBitmap = new Bitmap(filename);
         image.SetBitmap(CurrentBitmap);
         scroll.VScrollBar.SetValue(0);

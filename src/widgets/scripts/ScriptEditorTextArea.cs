@@ -1,4 +1,5 @@
-﻿using RPGStudioMK.Utility;
+﻿
+using RPGStudioMK.Utility;
 using rubydotnet.src;
 using System;
 using System.Collections.Generic;

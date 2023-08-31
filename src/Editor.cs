@@ -82,7 +82,7 @@ public static class Editor
     /// <summary>
     /// The absolute path to the application's data folder.
     /// </summary>
-    public static string AppDataFolder => Path.Combine(MKUtils.MKUtils.AppDataFolder, Graphics.Platform == odl.Platform.Windows ? "RPG Studio MK" : ".rpg-studio-mk").Replace('\\', '/');
+    public static string AppDataFolder => Path.Combine(MKUtils.MKUtils.AppDataFolder, ODL.OnWindows ? "RPG Studio MK" : ".rpg-studio-mk").Replace('\\', '/');
 
     /// <summary>
     /// The absolute path to the installed kits folder.
@@ -972,10 +972,10 @@ public static class Editor
             try
             {
                 Logger.WriteLine("Start installer update process");
-                string platformString = Graphics.Platform switch
+                string platformString = ODL.Platform switch
                 {
-                    odl.Platform.Windows => "windows",
-                    odl.Platform.Linux => "linux",
+                    Platform.Windows => "windows",
+                    Platform.Linux => "linux",
                     _ => "unknown"
                 };
                 Logger.WriteLine("Initialize DCBM for {0}", platformString);
@@ -1000,14 +1000,14 @@ public static class Editor
                 Logger.Error("Failed to download new installer.", ex);
                 return;
             }
-            string installerPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, VersionMetadata.InstallerInstallFilename[Graphics.Platform switch
+            string installerPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, VersionMetadata.InstallerInstallFilename[ODL.Platform switch
             {
                 odl.Platform.Windows => "windows",
                 odl.Platform.Linux => "linux",
                 _ => throw new NotImplementedException()
             }]).Replace('\\', '/');
             waitBox.Dispose();
-            if (Graphics.Platform == Platform.Windows)
+            if (ODL.OnWindows)
             {
                 MessageBox adminBox = new MessageBox("Updater", "To complete installation, admin privileges must be granted.", ButtonType.OK, IconType.Info);
                 adminBox.OnClosed += _ =>
@@ -1029,7 +1029,7 @@ public static class Editor
 					new MessageBox("Success", "The installer was downloaded successfully.", ButtonType.OK, IconType.Info);
 				};
             }
-            else if (Graphics.Platform == Platform.Linux)
+            else if (ODL.OnLinux)
             {
                 string tempVersionPath = Path.Combine(AppDataFolder, "VERSION").Replace('\\', '/');
                 string desiredVersionPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, "VERSION").Replace('\\', '/');
@@ -1064,7 +1064,7 @@ public static class Editor
     public static void AskToUpdateProgram()
     {
         string updaterPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath);
-        string updaterName = VersionMetadata.InstallerInstallFilename[Graphics.Platform switch
+        string updaterName = VersionMetadata.InstallerInstallFilename[ODL.Platform switch
         {
             odl.Platform.Windows => "windows",
             odl.Platform.Linux => "linux",
@@ -1081,7 +1081,7 @@ public static class Editor
             {
                 if (win.Result != 0)
                 {
-					if (Graphics.Platform == Platform.Linux && Program.IsLinuxAdmin())
+					if (ODL.OnLinux && Program.IsLinuxAdmin())
 					{
 						// Force users to be non-root users, otherwise any and all files the program touches will become root/read-only.
 						odl.Popup popup = new Popup("Error", "RPG Studio MK cannot be run as a root user. Please re-run the application as a regular user.");
@@ -1092,7 +1092,7 @@ public static class Editor
                 }
                 // Open updater & close the program
                 Logger.WriteLine("Closing editor...");
-                if (Graphics.Platform == Platform.Windows)
+                if (ODL.OnWindows)
                 {
                     Editor.ExitEditor();
                     Directory.SetCurrentDirectory(updaterPath);
@@ -1107,7 +1107,7 @@ public static class Editor
                     proc.StartInfo.CreateNoWindow = true;
                     proc.Start();
                 }
-                else if (Graphics.Platform == Platform.Linux)
+                else if (ODL.OnLinux)
                 {
                     if (Program.IsLinuxAdmin())
                     {
