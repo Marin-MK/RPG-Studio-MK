@@ -42,7 +42,7 @@ internal static class Config
 
         PathPlatformInfo macos = new PathPlatformInfo(NativeLibraryLoader.Platform.MacOS);
         macos.AddPath("libsdl2", "./lib/macos/SDL2.dylib");
-        macos.AddPath("libz", "libz.dylib");
+        macos.AddPath("libz", "./lib/macos/libz.dylib");
         macos.AddPath("libsdl2_image", "./lib/macos/SDL2_image.dylib");
         macos.AddPath("libpng", "./lib/macos/libpng.dylib");
         macos.AddPath("libsdl2_ttf", "./lib/macos/SDL2_ttf.dylib");
