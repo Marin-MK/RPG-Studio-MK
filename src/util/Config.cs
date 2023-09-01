@@ -25,10 +25,6 @@ internal static class Config
         windows.AddPath("libgmp", "./lib/windows/libgmp-10.dll");
         windows.AddPath("libssp", "./lib/windows/libssp-0.dll");
         windows.AddPath("libwinpthread", "./lib/windows/libwinpthread-1.dll");
-        //windows.AddPath("libcrypto", "./lib/windows/libcrypto-1_1-x64.dll");
-        //windows.AddPath("libgcc", "./lib/windows/libgcc_s_seh-1.dll");
-        //windows.AddPath("libffi", "./lib/windows/libffi-7.dll");
-        //windows.AddPath("libyaml", "./lib/windows/libyaml-0-2.dll");
 
         PathPlatformInfo linux = new PathPlatformInfo(NativeLibraryLoader.Platform.Linux);
         linux.AddPath("libsdl2", "./lib/linux/SDL2.so");
@@ -44,6 +40,19 @@ internal static class Config
         linux.AddPath("tinyfiledialogs", "./lib/linux/tinyfiledialogs64.so");
         linux.AddPath("ruby", "./lib/linux/libruby.so");
 
-        PathInfo = PathInfo.Create(windows, linux);
+        PathPlatformInfo macos = new PathPlatformInfo(NativeLibraryLoader.Platform.MacOS);
+        macos.AddPath("libsdl2", "./lib/macos/SDL2.dylib");
+        macos.AddPath("libz", "libz.dylib");
+        macos.AddPath("libsdl2_image", "./lib/macos/SDL2_image.dylib");
+        macos.AddPath("libpng", "./lib/macos/libpng.dylib");
+        macos.AddPath("libsdl2_ttf", "./lib/macos/SDL2_ttf.dylib");
+        macos.AddPath("libfreetype", "./lib/macos/libfreetype.dylib");
+        macos.AddPath("tinyfiledialogs", "./lib/macos/tinyfiledialogs.dylib");
+        macos.AddPath("bass", "./lib/macos/libbass.dylib");
+        macos.AddPath("bass_fx", "./lib/macos/libbass_fx.dylib");
+        macos.AddPath("bass_midi", "./lib/macos/libbassmidi.dylib");
+        macos.AddPath("ruby", "./lib/macos/libruby.dylib");
+
+        PathInfo = PathInfo.Create(windows, linux, macos);
     }
 }

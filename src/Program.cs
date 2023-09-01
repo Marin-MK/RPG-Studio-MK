@@ -113,8 +113,6 @@ public class Program
             Game.Data.Setup();
             string initialProjectFile = args.Length > 0 ? args[0] : null;
             win = new MainEditorWindow();
-            Font f = FontCache.GetOrCreate("arial", 12);
-            Size sizes = f.TextSize("hello");
             Widget.DefaultContextMenuFont = Fonts.Paragraph;
             Graphics.Update();
             win.Load(initialProjectFile);
@@ -331,13 +329,17 @@ public class Program
         IntPtr ruby_load_path = Ruby.GetGlobal("$LOAD_PATH");
         
         Ruby.Array.Push(ruby_load_path, Ruby.String.ToPtr("./lib/ruby/2.7.0"));
-        if (NativeLibrary.Platform == NativeLibraryLoader.Platform.Windows)
+        if (ODL.OnWindows)
         {
             Ruby.Array.Push(ruby_load_path, Ruby.String.ToPtr("./lib/ruby/2.7.0/x64-mingw32"));
         }
-        else if (NativeLibrary.Platform == NativeLibraryLoader.Platform.Linux)
+        else if (ODL.OnLinux)
         {
             Ruby.Array.Push(ruby_load_path, Ruby.String.ToPtr("./lib/ruby/2.7.0/x86_64-linux"));
+        }
+        else if (ODL.OnMacOS)
+        {
+            Ruby.Array.Push(ruby_load_path, Ruby.String.ToPtr("./lib/ruby/2.7.0/arm64-darwin22"));
         }
 
         if (!Ruby.Require("zlib"))

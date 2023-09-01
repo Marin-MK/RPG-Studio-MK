@@ -82,7 +82,7 @@ public static class Editor
     /// <summary>
     /// The absolute path to the application's data folder.
     /// </summary>
-    public static string AppDataFolder => Path.Combine(MKUtils.MKUtils.AppDataFolder, ODL.OnWindows ? "RPG Studio MK" : ".rpg-studio-mk").Replace('\\', '/');
+    public static string AppDataFolder => Path.Combine(MKUtils.MKUtils.AppDataFolder, ODL.OnLinux ? ".rpg-studio-mk" : "RPG Studio MK").Replace('\\', '/');
 
     /// <summary>
     /// The absolute path to the installed kits folder.
