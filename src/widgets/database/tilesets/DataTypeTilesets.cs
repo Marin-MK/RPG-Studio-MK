@@ -408,7 +408,7 @@ public class DataTypeTilesets : DataTypeBase
                 Grid.UpdateLayout();
             }
             MainBox.Sprites["box"].Bitmap?.Dispose();
-            MainBox.Sprites["box"].Bitmap = new Bitmap(276, ScrollContainer.Size.Height + 2, Graphics.MaxTextureSize);
+            MainBox.Sprites["box"].Bitmap = new Bitmap(276, ScrollContainer.Size.Height + 2);
             MainBox.Sprites["box"].Bitmap.Unlock();
             MainBox.Sprites["box"].Bitmap.DrawRect(276, ScrollContainer.Size.Height + 2, new Color(121, 121, 122));
             MainBox.Sprites["box"].Bitmap.DrawLine(264, 1, 264, ScrollContainer.Size.Height, new Color(121, 121, 122));

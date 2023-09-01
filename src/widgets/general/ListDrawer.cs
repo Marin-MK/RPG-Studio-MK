@@ -114,7 +114,7 @@ public class ListDrawer : Widget
     {
         if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
         SetSize(Size.Width, LineHeight * Items.Count);
-        Sprites["text"].Bitmap = new Bitmap(Size.Width, Size.Height, Graphics.MaxTextureSize.Width, Graphics.MaxTextureSize.Height);
+        Sprites["text"].Bitmap = new Bitmap(Size.Width, Size.Height);
         Sprites["text"].Bitmap.Font = this.Font;
         Sprites["text"].Bitmap.Unlock();
         for (int i = 0; i < this.Items.Count; i++)

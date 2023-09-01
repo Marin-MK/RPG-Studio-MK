@@ -63,7 +63,7 @@ public class Tileset : ICloneable
             if (_tlb != null) return _tlb;
             int tileycount = (int)Math.Floor(TilesetBitmap.Height / 32d);
 
-            _tlb = new Bitmap(TilesetBitmap.Width + 7, TilesetBitmap.Height + tileycount - 1, Graphics.MaxTextureSize);
+            _tlb = new Bitmap(TilesetBitmap.Width + 7, TilesetBitmap.Height + tileycount - 1);
             _tlb.Unlock();
 
             for (int tiley = 0; tiley < tileycount; tiley++)

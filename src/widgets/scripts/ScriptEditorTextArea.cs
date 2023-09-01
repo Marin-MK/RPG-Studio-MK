@@ -1005,7 +1005,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         Sprite sprite = new Sprite(this.Viewport);
         sprite.X = TextXOffset;
         sprite.Y = line.LineIndex * LineHeight + line.LineIndex * LineMargins - Parent.ScrolledY;
-        sprite.Bitmap = new Bitmap(line.LineWidth, LineHeight + 2, Graphics.MaxTextureSize);
+        sprite.Bitmap = new Bitmap(line.LineWidth, LineHeight + 2);
         if (TextXOffset + line.LineWidth > Size.Width) SetWidth(TextXOffset + line.LineWidth);
         sprite.Bitmap.Font = Font;
         string text = line.Text.Replace('\n', ' ');
