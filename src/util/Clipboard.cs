@@ -56,3 +56,18 @@ public static class Clipboard
     }
 }
 
+public enum BinaryData
+{
+    MAP_SELECTION,
+    MAPS,
+    TILESET,
+    EVENT,
+    EVENT_PAGE,
+    EVENT_COMMANDS,
+    MOVE_COMMAND,
+    SPECIES,
+    MOVE,
+    ABILITY,
+    ITEM,
+    TM
+}
