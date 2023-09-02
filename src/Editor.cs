@@ -856,8 +856,8 @@ public static class Editor
         Stream stream = null;
         if (File.Exists(SettingsFilePath)) stream = new FileStream(SettingsFilePath, FileMode.Truncate, FileAccess.Write);
         else stream = new FileStream(SettingsFilePath, FileMode.Create, FileAccess.Write);
-        Utilities.WriteSerializationID(stream, 0);
-        Utilities.SerializeStream(stream, GeneralSettings.RawData);
+        Serializer.WriteSerializationID(stream, 0);
+        Serializer.WriteObjectToStream(stream, GeneralSettings.RawData);
         stream.Close();
     }
 
@@ -870,8 +870,8 @@ public static class Editor
         {
             Logger.WriteLine("Loading general settings from {0}...", SettingsFilePath);
             Stream stream = new FileStream(SettingsFilePath, FileMode.Open, FileAccess.Read);
-            Utilities.ReadSerializationID(stream, 0);
-            var dict = Utilities.DeserializeStream<Dictionary<string, object>>(stream);
+            Serializer.ReadSerializationID(stream, 0);
+            var dict = Serializer.ReadObjectFromStream<Dictionary<string, object>>(stream);
             try 
             {
                 GeneralSettings = new GeneralSettings(dict);
@@ -905,8 +905,8 @@ public static class Editor
         ProjectSettings.SavedVersion = Program.CurrentProgramVersion;
         Logger.WriteLine("Saving project settings to {0}...", Data.ProjectPath + "/project.mkproj");
         Stream stream = new FileStream(Data.ProjectPath + "/project.mkproj", FileMode.Create, FileAccess.Write);
-        Utilities.WriteSerializationID(stream, 0);
-        Utilities.SerializeStream(stream, ProjectSettings.RawData);
+        Serializer.WriteSerializationID(stream, 0);
+        Serializer.WriteObjectToStream(stream, ProjectSettings.RawData);
         stream.Close();
     }
 
@@ -919,8 +919,8 @@ public static class Editor
         {
             Logger.WriteLine("Loading project settings from {0}...", Data.ProjectPath + "/project.mkproj");
             Stream stream = new FileStream(Data.ProjectPath + "/project.mkproj", FileMode.Open, FileAccess.Read);
-            Utilities.ReadSerializationID(stream, 0);
-            var dict = Utilities.DeserializeStream<Dictionary<string, object>>(stream);
+            Serializer.ReadSerializationID(stream, 0);
+            var dict = Serializer.ReadObjectFromStream<Dictionary<string, object>>(stream);
             try 
             {
                 ProjectSettings = new ProjectSettings(dict); 

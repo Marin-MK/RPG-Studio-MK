@@ -102,7 +102,7 @@ public class MapSelectPanel : Widget
             new MenuItem("Paste")
             {
                 OnClicked = _ => PasteMap(),
-                IsClickable = e => e.Value = Utilities.IsClipboardValidBinary(BinaryData.MAPS)
+                IsClickable = e => e.Value = Clipboard.IsValid(BinaryData.MAPS)
             },
             new MenuSeparator(),
             new MenuItem("Expand All")
@@ -283,14 +283,14 @@ public class MapSelectPanel : Widget
             Map m = Data.Maps[(int) ((TreeNode) n).Object];
             Maps.Add(m);
         });
-        Utilities.SetClipboard(Maps, BinaryData.MAPS);
+        Clipboard.SetObject(Maps, BinaryData.MAPS);
     }
     
     private void PasteMap()
     {
-        if (!Utilities.IsClipboardValidBinary(BinaryData.MAPS)) return;
+        if (!Clipboard.IsValid(BinaryData.MAPS)) return;
         PrintIndices();
-        List<Map> maps = Utilities.GetClipboard<List<Map>>();
+        List<Map> maps = Clipboard.GetObject<List<Map>>();
         Dictionary<int, TreeNode> MapHash = new Dictionary<int, TreeNode>();
         // The list is maps is ordered from root to child, meaning if we encounter a node with a parent, that parent must already have been encountered or the data is invalid.
         for (int i = 0; i < maps.Count; i++)

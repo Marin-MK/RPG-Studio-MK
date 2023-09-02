@@ -184,7 +184,7 @@ public class BaseCommandWidget : Widget
             new Shortcut(this, new Key(Keycode.SPACE), _ => BaseEdit(), false, e => e.Value = IsEditable()),
             new Shortcut(this, new Key(Keycode.X, Keycode.CTRL), _ => Cut(), false),
             new Shortcut(this, new Key(Keycode.C, Keycode.CTRL), _ => Copy(), false),
-            new Shortcut(this, new Key(Keycode.V, Keycode.CTRL), _ => Paste(), false, e => e.Value = Utilities.IsClipboardValidBinary(BinaryData.EVENT_COMMANDS)),
+            new Shortcut(this, new Key(Keycode.V, Keycode.CTRL), _ => Paste(), false, e => e.Value = Clipboard.IsValid(BinaryData.EVENT_COMMANDS)),
             new Shortcut(this, new Key(Keycode.A, Keycode.CTRL), _ => SelectAll(), false),
             new Shortcut(this, new Key(Keycode.DELETE), _ => DeleteMayBeMultiple()),
             new Shortcut(this, new Key(Keycode.DOWN), _ => SelectNextCommand(false)),
@@ -224,7 +224,7 @@ public class BaseCommandWidget : Widget
             },
             new MenuItem("Paste")
             {
-                IsClickable = e => e.Value = Utilities.IsClipboardValidBinary(BinaryData.EVENT_COMMANDS),
+                IsClickable = e => e.Value = Clipboard.IsValid(BinaryData.EVENT_COMMANDS),
                 OnClicked = _ => Paste(),
                 Shortcut = "Ctrl+V"
             },
@@ -875,13 +875,13 @@ public class BaseCommandWidget : Widget
         (List<EventCommand> Commands, _) = GetListOfSelectedCommands();
         if (Commands.Count == 0) return;
         List<EventCommand> data = new List<EventCommand>(Commands);
-        Utilities.SetClipboard(data, BinaryData.EVENT_COMMANDS);
+        Clipboard.SetObject(data, BinaryData.EVENT_COMMANDS);
     }
 
     protected void Paste()
     {
-        if (this.Indentation == -1 || !Utilities.IsClipboardValidBinary(BinaryData.EVENT_COMMANDS)) return;
-        List<EventCommand> data = Utilities.GetClipboard<List<EventCommand>>();
+        if (this.Indentation == -1 || !Clipboard.IsValid(BinaryData.EVENT_COMMANDS)) return;
+        List<EventCommand> data = Clipboard.GetObject<List<EventCommand>>();
         InsertMayBeMultiple(data);
     }
 

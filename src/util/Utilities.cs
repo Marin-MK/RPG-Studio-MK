@@ -205,22 +205,6 @@ public static class Utilities
     }
 
     /// <summary>
-    /// Formats the file path based on the platform.
-    /// </summary>
-    public static string FormatPath(string Path, odl.Platform Platform)
-    {
-        if (Platform == odl.Platform.Windows)
-        {
-            while (Path.Contains("/")) Path = Path.Replace("/", "\\");
-        }
-        else
-        {
-            while (Path.Contains("\\")) Path = Path.Replace("\\", "/");
-        }
-        return Path;
-    }
-
-    /// <summary>
     /// Opens the link in the browser.
     /// </summary>
     public static void OpenLink(string url)
@@ -233,28 +217,27 @@ public static class Utilities
     /// </summary>
     public static void OpenFolder(string Folder)
     {
-        string path = FormatPath(Folder, ODL.Platform);
         if (ODL.OnWindows)
         {
-            Process.Start("explorer.exe", path);
+            Process.Start("explorer.exe", Folder.Replace('/', '\\'));
         }
         else if (ODL.OnLinux)
         {
-            Process.Start("xdg-open", path);
+            Process.Start("xdg-open", Folder.Replace('\\', '/'));
         }
         else if (ODL.OnMacOS)
         {
-            Process.Start("open", $"-R \"{path}\"");
+            Process.Start("open", $"-R \"{Folder.Replace('\\', '/')}\"");
         }
         else
         {
             try
             {
-                Process.Start($"\"{Folder}\"");
+                Process.Start($"\"{Folder.Replace('\\', '/')}\"");
             }
             catch
             {
-                throw new Exception("Failed to open file explorer '" + path + "'.");
+                throw new Exception("Failed to open file explorer '" + Folder.Replace('\\', '/') + "'.");
             }
         }
     }
@@ -667,102 +650,7 @@ public static class Utilities
         return sourceTile.Equals(targetTile);
     }
 
-    public static void SetClipboard(string s)
-    {
-        Input.SetClipboard(s);
-    }
-
-    public static void SetClipboard(object o, BinaryData Type)
-    {
-        string data = Convert.ToBase64String(SerializeAndCompress(o));
-        Input.SetClipboard($"RSMKDATA.{Type}:{data}");
-    }
-
-    public static string GetClipboardString()
-    {
-        return Input.GetClipboard();
-    }
-
-    public static T GetClipboard<T>()
-    {
-        string data = GetClipboardString();
-        if (data.StartsWith("RSMKDATA.")) data = data.Substring(data.IndexOf(':') + 1);
-        else throw new Exception("Attempted to parse non-RSMK data.");
-        T obj = DeserializeAndDecompress<T>(Convert.FromBase64String(data));
-        return obj;
-    }
-
-    public static bool IsClipboardValidBinary(BinaryData Type)
-    {
-        return GetClipboardString().StartsWith($"RSMKDATA.{Type}:");
-    }
-
-    public static string Serialize<T>(T Object)
-    {
-        return JsonSerializer.Serialize<T>(Object, new JsonSerializerOptions() { IncludeFields = true });
-    }
-
-    public static T Deserialize<T>(string String)
-    {
-        return JsonSerializer.Deserialize<T>(String, new JsonSerializerOptions() { IncludeFields = true });
-    }
-
-    public static string SerializeAndCompressStr<T>(T Object)
-    {
-        return CompressGZipStr(Serialize<T>(Object));
-    }
-
-    public static byte[] SerializeAndCompress<T>(T Object)
-    {
-        return CompressGZip(Serialize<T>(Object));
-    }
-
-    public static T DeserializeAndDecompress<T>(string String)
-    {
-        return Deserialize<T>(DecompressGZipStr(String));
-    }
-
-    public static T DeserializeAndDecompress<T>(byte[] Bytes)
-    {
-        string json = DecompressGZip(Bytes);
-        return Deserialize<T>(json);
-    }
-
-    public static string DecompressGZip(byte[] Bytes)
-    {
-        MemoryStream input = new MemoryStream(Bytes);
-        MemoryStream output = new MemoryStream();
-        GZipStream zip = new GZipStream(input, CompressionMode.Decompress);
-        zip.CopyTo(output);
-        zip.Dispose();
-        string String = Encoding.UTF8.GetString(output.ToArray());
-        input.Dispose();
-        return String;
-    }
-
-    public static string DecompressGZipStr(string String)
-    {
-        return DecompressGZip(Encoding.UTF8.GetBytes(String));
-    }
-
-    public static byte[] CompressGZip(string String)
-    {
-        MemoryStream input = new MemoryStream(Encoding.UTF8.GetBytes(String));
-        MemoryStream output = new MemoryStream();
-        GZipStream zip = new GZipStream(output, CompressionLevel.Optimal);
-        input.CopyTo(zip);
-        zip.Dispose();
-        byte[] Bytes = output.ToArray();
-        input.Dispose();
-        return Bytes;
-    }
-
-    public static string CompressGZipStr(string String)
-    {
-        return Encoding.UTF8.GetString(CompressGZip(String));
-    }
-
-    public static byte[] ReadStream(Stream Stream)
+    public static byte[] ReadToEnd(this Stream Stream)
     {
         long LengthLeft = Stream.Length - Stream.Position;
         byte[] Bytes = new byte[LengthLeft];
@@ -772,27 +660,6 @@ public static class Utilities
             count += Stream.Read(Bytes, count, (int) Math.Min(8192, LengthLeft - count));
         }
         return Bytes;
-    }
-
-    public static T DeserializeStream<T>(Stream Stream)
-    {
-        return JsonSerializer.Deserialize<T>(DecompressGZip(ReadStream(Stream)));
-    }
-
-    public static void SerializeStream<T>(Stream Stream, T Object)
-    {
-        Stream.Write(CompressGZip(JsonSerializer.Serialize<T>(Object)));
-    }
-
-    public static void ReadSerializationID(Stream Stream, byte ID)
-    {
-        byte ReadID = (byte) Stream.ReadByte();
-        if (ReadID != ID) throw new Exception($"Serialization IDs do not match. Got {ReadID}, expected {ID}.");
-    }
-
-    public static void WriteSerializationID(Stream Stream, byte ID)
-    {
-        Stream.WriteByte(ID);
     }
 
     public static bool KitExists(string KitName)

@@ -363,7 +363,7 @@ public partial class MapViewer
         if (box != null)
         {
             Event ev = box.Event;
-            Utilities.SetClipboard(ev, BinaryData.EVENT);
+            Clipboard.SetObject(ev, BinaryData.EVENT);
             if (Cut) DeleteEventCursorIsOver();
         }
     }
@@ -375,7 +375,7 @@ public partial class MapViewer
 
     private partial void PasteEvents()
     {
-        if (!Utilities.IsClipboardValidBinary(BinaryData.EVENT)) return;
+        if (!Clipboard.IsValid(BinaryData.EVENT)) return;
         EventBox box = null;
         foreach (EventBox eb in EventBoxes)
         {
@@ -387,7 +387,7 @@ public partial class MapViewer
         }
         if (box == null)
         {
-            Event ev = Utilities.GetClipboard<Event>();
+            Event ev = Clipboard.GetObject<Event>();
             ev.X = MapTileX;
             ev.Y = MapTileY;
             ev.ID = Editor.GetFreeEventID(Map);

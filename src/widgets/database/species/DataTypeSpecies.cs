@@ -119,7 +119,7 @@ public partial class DataTypeSpecies : DataTypeBase
             },
             new MenuItem("Paste (smart)")
             {
-                IsClickable = e => e.Value = SpeciesList.HoveringItem is not null && Utilities.IsClipboardValidBinary(BinaryData.SPECIES),
+                IsClickable = e => e.Value = SpeciesList.HoveringItem is not null && Clipboard.IsValid(BinaryData.SPECIES),
                 OnClicked = PasteSpecies
             },
 			new MenuSeparator(),
@@ -338,7 +338,7 @@ public partial class DataTypeSpecies : DataTypeBase
 		List<Species> Species = new List<Species>();
         Species.Add((Species) SpeciesList.HoveringItem.Object);
         Species.AddRange(SpeciesList.HoveringItem.Children.Select(c => (Species) ((TreeNode) c).Object));
-        Utilities.SetClipboard(Species, BinaryData.SPECIES);
+        Clipboard.SetObject(Species, BinaryData.SPECIES);
     }
 
     string EnsureUniqueID(string id)
@@ -355,8 +355,8 @@ public partial class DataTypeSpecies : DataTypeBase
 
     void PasteSpecies(BaseEventArgs e)
     {
-        if (SpeciesList.HoveringItem is null || !Utilities.IsClipboardValidBinary(BinaryData.SPECIES)) return;
-        List<Species> data = Utilities.GetClipboard<List<Species>>();
+        if (SpeciesList.HoveringItem is null || !Clipboard.IsValid(BinaryData.SPECIES)) return;
+        List<Species> data = Clipboard.GetObject<List<Species>>();
         if (data.Count == 0) return;
         Species? speciesToSelect = null;
         if (data[0].Form == 0)

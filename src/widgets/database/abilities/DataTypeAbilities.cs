@@ -90,7 +90,7 @@ public partial class DataTypeAbilities : DataTypeBase
             },
             new MenuItem("Paste")
             {
-                IsClickable = e => e.Value = AbilitiesList.HoveringItem is not null && Utilities.IsClipboardValidBinary(BinaryData.ABILITY),
+                IsClickable = e => e.Value = AbilitiesList.HoveringItem is not null && Clipboard.IsValid(BinaryData.ABILITY),
                 OnClicked = PasteAbility
             },
 			new MenuSeparator(),
@@ -187,7 +187,7 @@ public partial class DataTypeAbilities : DataTypeBase
 	{
 		if (AbilitiesList.HoveringItem is null) return;
         Ability ability = HoveringAbility;
-        Utilities.SetClipboard(ability, BinaryData.ABILITY);
+        Clipboard.SetObject(ability, BinaryData.ABILITY);
     }
 
     string EnsureUniqueID(string id)
@@ -204,8 +204,8 @@ public partial class DataTypeAbilities : DataTypeBase
 
     void PasteAbility(BaseEventArgs e)
     {
-        if (AbilitiesList.HoveringItem is null || !Utilities.IsClipboardValidBinary(BinaryData.ABILITY)) return;
-        Ability data = Utilities.GetClipboard<Ability>();
+        if (AbilitiesList.HoveringItem is null || !Clipboard.IsValid(BinaryData.ABILITY)) return;
+        Ability data = Clipboard.GetObject<Ability>();
         data.ID = EnsureUniqueID(data.ID);
 		Data.Abilities.Add(data.ID, data);
         Data.Sources.InvalidateAbilities();

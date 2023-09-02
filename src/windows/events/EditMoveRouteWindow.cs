@@ -84,7 +84,7 @@ public class EditMoveRouteWindow : PopupWindow
             },
             new MenuItem("Paste")
             {
-                IsClickable = e => e.Value = Utilities.IsClipboardValidBinary(BinaryData.MOVE_COMMAND),
+                IsClickable = e => e.Value = Clipboard.IsValid(BinaryData.MOVE_COMMAND),
                 OnClicked = _ => PasteCommand()
             },
             new MenuSeparator(),
@@ -392,13 +392,13 @@ public class EditMoveRouteWindow : PopupWindow
     {
         if (!IsRealCommand()) return;
         MoveCommand cmd = (MoveCommand) MoveBox.Items[MoveBox.SelectedIndex].Object;
-        Utilities.SetClipboard(cmd, BinaryData.MOVE_COMMAND);
+        Clipboard.SetObject(cmd, BinaryData.MOVE_COMMAND);
     }
 
     private void PasteCommand()
     {
-        if (!Utilities.IsClipboardValidBinary(BinaryData.MOVE_COMMAND)) return;
-        MoveCommand cmd = Utilities.GetClipboard<MoveCommand>();
+        if (!Clipboard.IsValid(BinaryData.MOVE_COMMAND)) return;
+        MoveCommand cmd = Clipboard.GetObject<MoveCommand>();
         InsertCommand(MoveBox.SelectedIndex, cmd);
     }
 

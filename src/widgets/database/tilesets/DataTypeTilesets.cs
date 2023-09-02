@@ -301,7 +301,7 @@ public class DataTypeTilesets : DataTypeBase
             new MenuItem("Paste")
             {
                 OnClicked = PasteTileset,
-                IsClickable = e => e.Value = Utilities.IsClipboardValidBinary(BinaryData.TILESET)
+                IsClickable = e => e.Value = Clipboard.IsValid(BinaryData.TILESET)
             },
             new MenuSeparator(),
             new MenuItem("Delete")
@@ -485,14 +485,14 @@ public class DataTypeTilesets : DataTypeBase
     void CopyTileset(BaseEventArgs e)
     {
         Tileset Tileset = (Tileset) TilesetList.HoveringItem.Object;
-        Utilities.SetClipboard(Tileset, BinaryData.TILESET);
+        Clipboard.SetObject(Tileset, BinaryData.TILESET);
     }
 
     void PasteTileset(BaseEventArgs e)
     {
-        if (!Utilities.IsClipboardValidBinary(BinaryData.TILESET)) return;
+        if (!Clipboard.IsValid(BinaryData.TILESET)) return;
         Tileset OldTileset = (Tileset) TilesetList.HoveringItem.Object;
-        Tileset NewTileset = Utilities.GetClipboard<Tileset>();
+        Tileset NewTileset = Clipboard.GetObject<Tileset>();
         Data.Tilesets[OldTileset.ID] = NewTileset;
         NewTileset.ID = OldTileset.ID;
         OldTileset.TilesetBitmap?.Dispose();

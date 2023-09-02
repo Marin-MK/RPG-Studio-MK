@@ -177,13 +177,13 @@ public class EditEventWindow : PopupWindow
     private void CopyPage()
     {
         EventPage Page = Event.Pages[EPL.SelectedPage];
-        Utilities.SetClipboard(Page, BinaryData.EVENT_PAGE);
+        Clipboard.SetObject(Page, BinaryData.EVENT_PAGE);
     }
 
     private void PastePage()
     {
-        if (!Utilities.IsClipboardValidBinary(BinaryData.EVENT_PAGE)) return;
-        EventPage Page = Utilities.GetClipboard<EventPage>();
+        if (!Clipboard.IsValid(BinaryData.EVENT_PAGE)) return;
+        EventPage Page = Clipboard.GetObject<EventPage>();
         ConvertEventCommands(Page);
         InsertPage(EPL.SelectedPage + 1, Page);
     }

@@ -90,7 +90,7 @@ public partial class DataTypeItems : DataTypeBase
             },
             new MenuItem("Paste")
             {
-                IsClickable = e => e.Value = ItemList.HoveringItem is not null && Utilities.IsClipboardValidBinary(BinaryData.ITEM),
+                IsClickable = e => e.Value = ItemList.HoveringItem is not null && Clipboard.IsValid(BinaryData.ITEM),
                 OnClicked = PasteItem
             },
 			new MenuSeparator(),
@@ -187,7 +187,7 @@ public partial class DataTypeItems : DataTypeBase
 	{
 		if (ItemList.HoveringItem is null) return;
         Item item = HoveringItem;
-        Utilities.SetClipboard(item, BinaryData.ITEM);
+        Clipboard.SetObject(item, BinaryData.ITEM);
     }
 
     string EnsureUniqueID(string id)
@@ -204,8 +204,8 @@ public partial class DataTypeItems : DataTypeBase
 
     void PasteItem(BaseEventArgs e)
     {
-        if (ItemList.HoveringItem is null || !Utilities.IsClipboardValidBinary(BinaryData.ITEM)) return;
-        Item data = Utilities.GetClipboard<Item>();
+        if (ItemList.HoveringItem is null || !Clipboard.IsValid(BinaryData.ITEM)) return;
+        Item data = Clipboard.GetObject<Item>();
         data.ID = EnsureUniqueID(data.ID);
 		Data.Items.Add(data.ID, data);
         Data.Sources.InvalidateItems();

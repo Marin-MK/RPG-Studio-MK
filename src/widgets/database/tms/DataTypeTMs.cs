@@ -93,7 +93,7 @@ public partial class DataTypeTMs : DataTypeBase
             },
             new MenuItem("Paste")
             {
-                IsClickable = e => e.Value = TMList.HoveringItem is not null && Utilities.IsClipboardValidBinary(BinaryData.TM),
+                IsClickable = e => e.Value = TMList.HoveringItem is not null && Clipboard.IsValid(BinaryData.TM),
                 OnClicked = PasteTM
             },
 			new MenuSeparator(),
@@ -198,7 +198,7 @@ public partial class DataTypeTMs : DataTypeBase
 	{
 		if (TMList.HoveringItem is null) return;
         Item tm = HoveringTM;
-        Utilities.SetClipboard(tm, BinaryData.TM);
+        Clipboard.SetObject(tm, BinaryData.TM);
     }
 
     string EnsureUniqueID(string id)
@@ -215,8 +215,8 @@ public partial class DataTypeTMs : DataTypeBase
 
     void PasteTM(BaseEventArgs e)
     {
-        if (TMList.HoveringItem is null || !Utilities.IsClipboardValidBinary(BinaryData.TM)) return;
-        Item data = Utilities.GetClipboard<Item>();
+        if (TMList.HoveringItem is null || !Clipboard.IsValid(BinaryData.TM)) return;
+        Item data = Clipboard.GetObject<Item>();
         Match m = Regex.Match(data.ID, @"(TM|TR|HM)(\d+)");
         if (m.Success) data.ID = m.Groups[1].Value + Utilities.Digits((int) GetFreeMachineNumber(m.Groups[1].Value, Convert.ToInt32(m.Groups[2].Value) - 1, 1), 2);
         else data.ID = "TM" + Utilities.Digits((int) GetFreeMachineNumber("TM", 0, 1), 2);

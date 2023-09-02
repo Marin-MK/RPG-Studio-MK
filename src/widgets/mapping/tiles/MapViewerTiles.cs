@@ -558,7 +558,7 @@ public partial class MapViewer
                     }
                 }
             }
-            Utilities.SetClipboard(sel, BinaryData.MAP_SELECTION);
+            Clipboard.SetObject(sel, BinaryData.MAP_SELECTION);
             if (Cut)
             {
                 if (All) for (int i = 0; i < Map.Layers.Count; i++) MapWidget.SetLayerLocked(i, true);
@@ -576,10 +576,10 @@ public partial class MapViewer
 
     private partial void PasteTiles()
     {
-        if (!Utilities.IsClipboardValidBinary(BinaryData.MAP_SELECTION)) return;
+        if (!Clipboard.IsValid(BinaryData.MAP_SELECTION)) return;
         if (TilesPanel.DrawTool != DrawTools.SelectionActiveLayer) TilesPanel.DrawTool = DrawTools.SelectionActiveLayer;
         CancelSelection(new BaseEventArgs());
-        MapSelection group = Utilities.GetClipboard<MapSelection>();
+        MapSelection group = Clipboard.GetObject<MapSelection>();
         int origtilewidth = group.Width;
         int sx = MapTileX;
         if (sx < 0) sx = 0;
