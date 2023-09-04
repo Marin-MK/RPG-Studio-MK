@@ -103,90 +103,6 @@ public static class Editor
         return;
 #endif
 
-		//Widget.ShowWidgetOutlines = !Widget.ShowWidgetOutlines;
-
-		Button randomButton = new Button(MainWindow.UI);
-		randomButton.SetPosition(MainWindow.UI.Size.Width / 2, MainWindow.UI.Size.Height / 2);
-        randomButton.SetSize(200, 200);
-		randomButton.OnClicked += _ =>
-		{
-			Logger.WriteLine("Random Button clicked!");
-		};
-
-		//ColorPickerWindow win = new ColorPickerWindow(Color.WHITE, false);
-
-		//PopupWindow win = new PopupWindow();
-		//win.SetSize(600, 600);
-		//win.Center();
-
-		//var root = new OptimizedNode("Root");
-		//var one = new OptimizedNode("One");
-		//var two = new OptimizedNode("Two");
-		//var three = new OptimizedNode("Three");
-		//var four = new OptimizedNode("Four");
-		//var five = new OptimizedNode("Five");
-		//var six = new OptimizedNode("Six");
-		//var seven = new OptimizedNode("Seven");
-		//var eight = new OptimizedNode("Eight");
-		//var nine = new OptimizedNode("Nine");
-		//var ten = new OptimizedNode("Ten");
-		//var eleven = new OptimizedNode("Eleven");
-		//var twelve = new OptimizedNode("Twelve");
-		//var thirteen = new OptimizedNode("Thirteen");
-		//var fourteen = new OptimizedNode("Fourteen");
-		//var fifteen = new OptimizedNode("Fifteen");
-		//var sixteen = new OptimizedNode("Sixteen");
-		//var seventeen = new OptimizedNode("Seventeen");
-		//var abc = new OptimizedNode("abc");
-		//var def = new OptimizedNode("def");
-		//var ghi = new OptimizedNode("ghi");
-
-		//nine.AddChild(ten);
-		//nine.AddChild(eleven);
-
-		//seven.AddChild(eight);
-		//seven.AddChild(nine);
-		//seven.AddChild(twelve);
-
-		//four.AddChild(five);
-		//two.AddChild(three);
-		//two.AddChild(four);
-		//two.AddChild(six);
-
-		//thirteen.AddChild(fourteen);
-		//fourteen.AddChild(abc);
-		//fourteen.AddChild(def);
-		//def.AddChild(ghi);
-		//ghi.AddChild(new OptimizedNode("jkl"));
-		//def.AddChild(new OptimizedNode("mno"));
-
-		//one.AddChild(two);
-		//one.AddChild(seven);
-		//one.AddChild(thirteen);
-		//one.AddChild(new OptimizedNode("pqr"));
-		//one.AddChild(new OptimizedNode("Some rather long text, so that we can properly test the horizontal scrolling capabilities of the system."));
-
-		//sixteen.AddChild(seventeen);
-
-		//root.AddChild(one);
-		//root.AddChild(new OptimizedNodeSeparator(8));
-		//root.AddChild(fifteen);
-		//root.AddChild(new OptimizedNodeSeparator(32));
-		//root.AddChild(sixteen);
-
-		//OptimizedTreeView tree = new OptimizedTreeView(win);
-		//tree.SetDocked(true);
-		//tree.SetPadding(40);
-		//tree.SetBackgroundColor(10, 23, 37);
-		//tree.SetExtraXScrollArea(40);
-		//tree.SetExtraYScrollArea(40);
-		//tree.SetRootNode(root);
-
-		//win.CreateButton("OK", _ => win.Close());
-
-		//Map Map = MainWindow.MapWidget?.Map;
-		//if (Map == null) return;
-		//MapAfterEffectsWindow maew = new MapAfterEffectsWindow(Map);
 	}
 
     /// <summary>
@@ -976,17 +892,15 @@ public static class Editor
                 {
                     Platform.Windows => "windows",
                     Platform.Linux => "linux",
-                    _ => "unknown"
+                    Platform.MacOS => "macos",
+                    _ => throw new NotImplementedException()
                 };
-                Logger.WriteLine("Initialize DCBM for {0}", platformString);
-                var cbm = new DynamicCallbackManager<DownloadProgress>(20, e =>
+                var cbm = new DynamicCallbackManager<DownloadProgress>(20, e => Graphics.Schedule(() =>
                 {
                     Logger.WriteLine("Update : {0}", e);
-                    waitBox.SetProgress((float)e.Factor);
+                    if (!waitBox.Disposed) waitBox.SetProgress((float)e.Factor);
                     Graphics.Update();
-                });
-                Logger.WriteLine("File : {0}", links[platformString]);
-                Logger.WriteLine("Temp : {0}", tempFilename);
+                }));
                 bool success = Downloader.DownloadFile(links[platformString], tempFilename, null, cbm);
                 if (!success)
                 {
@@ -1004,6 +918,7 @@ public static class Editor
             {
                 odl.Platform.Windows => "windows",
                 odl.Platform.Linux => "linux",
+                odl.Platform.MacOS => "macos",
                 _ => throw new NotImplementedException()
             }]).Replace('\\', '/');
             waitBox.Dispose();
@@ -1012,8 +927,6 @@ public static class Editor
                 MessageBox adminBox = new MessageBox("Updater", "To complete installation, admin privileges must be granted.", ButtonType.OK, IconType.Info);
                 adminBox.OnClosed += _ =>
                 {
-                    Logger.WriteLine("Deleting current installer...");
-                    File.Delete(installerPath);
                     Logger.WriteLine("Spawn new process to copy new installer to {0}...", installerPath);
                     Process proc = new Process();
                     proc.StartInfo = new ProcessStartInfo("cmd");
@@ -1025,15 +938,16 @@ public static class Editor
                     proc.StartInfo.Verb = "runas";
                     proc.StartInfo.UseShellExecute = true;
                     proc.Start();
+                    proc.WaitForExit();
 					Logger.WriteLine("Installer updated successfully.");
 					new MessageBox("Success", "The installer was downloaded successfully.", ButtonType.OK, IconType.Info);
 				};
             }
-            else if (ODL.OnLinux)
+            else if (ODL.OnLinux || ODL.OnMacOS)
             {
                 string tempVersionPath = Path.Combine(AppDataFolder, "VERSION").Replace('\\', '/');
                 string desiredVersionPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, "VERSION").Replace('\\', '/');
-                if (Program.IsLinuxAdmin())
+                if (ODL.OnMacOS || Program.IsLinuxAdmin())
                 {
                     // Root user can copy straight into /usr/local/bin.
                     Logger.WriteLine("Deleting current installer...");
@@ -1042,7 +956,13 @@ public static class Editor
                     Logger.WriteLine("Writing {0} to version file {1}...", VersionMetadata.InstallerVersion, desiredVersionPath);
                     File.WriteAllText(desiredVersionPath, VersionMetadata.InstallerVersion);
                     File.Move(tempFilename, installerPath);
-					Logger.WriteLine("Installer updated successfully.");
+                    Process eprc = new Process();
+                    eprc.StartInfo = new ProcessStartInfo("chmod");
+                    eprc.StartInfo.ArgumentList.Add("+x");
+                    eprc.StartInfo.ArgumentList.Add(installerPath);
+                    eprc.Start();
+                    eprc.WaitForExit();
+                    Logger.WriteLine("Installer updated successfully.");
 					new MessageBox("Success", "The installer was downloaded successfully.", ButtonType.OK, IconType.Info);
 				}
                 else
@@ -1068,6 +988,7 @@ public static class Editor
         {
             odl.Platform.Windows => "windows",
             odl.Platform.Linux => "linux",
+            odl.Platform.MacOS => "macos",
             _ => throw new NotImplementedException()
         }];
         string updaterFilename = Path.Combine(updaterPath, updaterName);
@@ -1107,11 +1028,12 @@ public static class Editor
                     proc.StartInfo.CreateNoWindow = true;
                     proc.Start();
                 }
-                else if (ODL.OnLinux)
+                else if (ODL.OnLinux || ODL.OnMacOS)
                 {
-                    if (Program.IsLinuxAdmin())
+                    if (ODL.OnMacOS || Program.IsLinuxAdmin())
                     {
                         Editor.ExitEditor();
+                        Logger.WriteLine("Updater path: {0}, updater name: {1}", updaterPath, updaterName);
                         Directory.SetCurrentDirectory(updaterPath);
                         Process proc = new Process();
                         proc.StartInfo = new ProcessStartInfo(updaterName);

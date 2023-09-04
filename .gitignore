@@ -52,6 +52,7 @@ x64/
 *.scc
 *.bat
 *.sh
+*.command
 
 # Visual C++ cache files
 ipch/

@@ -77,7 +77,12 @@ public class Program
                 return;
             }
 
-            if (ODL.OnLinux)
+            if (ODL.OnWindows)
+            {
+				NativeLibraryLoader.NativeLibrary shell = NativeLibraryLoader.NativeLibrary.Load("shell32.dll");
+				IsUserAnAdmin = shell.GetFunction<IsUserAnAdminFunc>("IsUserAnAdmin");
+			}
+            else if (ODL.OnLinux)
 			{
 				NativeLibrary libc = NativeLibrary.Load("libc.so.6");
 				geteuid = libc.GetFunction<GetEUID>("geteuid");
@@ -194,6 +199,14 @@ public class Program
 		p.Start();
 	}
 
+    delegate bool IsUserAnAdminFunc();
+    static IsUserAnAdminFunc IsUserAnAdmin;
+
+    public static bool IsWindowsAdmin()
+    {
+        return IsUserAnAdmin();
+    }
+
 	public static bool IsLinuxAdmin()
 	{
 		return geteuid() == 0;
@@ -207,6 +220,7 @@ public class Program
         {
             odl.Platform.Windows => "windows",
             odl.Platform.Linux => "linux",
+            odl.Platform.MacOS => "macos",
             _ => throw new NotImplementedException()
         }]).Replace('\\', '/');
         bool installUpdater = false;
@@ -219,7 +233,7 @@ public class Program
                 FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(installerPath);
                 CurrentInstallerVersion = MKUtils.MKUtils.TrimVersion(fvi.ProductVersion);
             }
-            else if (ODL.OnLinux)
+            else if (ODL.OnLinux || ODL.OnMacOS)
             {
                 string versionFile = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, "VERSION");
                 if (File.Exists(versionFile))
@@ -274,12 +288,13 @@ public class Program
             CurrentProgramVersion = FileVersionInfo.GetVersionInfo(Environment.ProcessPath).ProductVersion;
             CurrentProgramVersion = MKUtils.MKUtils.TrimVersion(CurrentProgramVersion);
         }
-        else if (ODL.OnLinux)
+        else if (ODL.OnLinux || ODL.OnMacOS)
         {
             CurrentProgramVersion = File.Exists("VERSION") ? File.ReadAllText("VERSION") : "0";
             if (string.IsNullOrEmpty(CurrentProgramVersion)) CurrentProgramVersion = "0";
             CurrentProgramVersion = MKUtils.MKUtils.TrimVersion(CurrentProgramVersion);
         }
+        else throw new NotImplementedException();
         Logger.WriteLine("Current version: {0}", CurrentProgramVersion);
         // Load latest version
 #if DEBUG
