@@ -47,6 +47,7 @@ public class Program
 		}
         Widgets.MessageBox ErrorBox = null;
         MainEditorWindow win = null;
+
 #if DEBUG
         try
         {
@@ -55,11 +56,13 @@ public class Program
             string logPath = Path.Combine(Editor.AppDataFolder, "log.txt").Replace('\\', '/');
             Logger.Start(logPath);
 #endif
+
 			ODL.Logger = Logger.Instance;
             MKUtils.Logger.Instance = Logger.Instance;
 			// Ensures the working directory becomes the editor directory
 			Logger.WriteLine("Process Path: {0}", Environment.ProcessPath);
 			Directory.SetCurrentDirectory(Path.GetDirectoryName(Environment.ProcessPath));
+            PrintPlatformInfo();
 
 #if DEBUG
             TestSuite.RunAll();
@@ -308,7 +311,6 @@ public class Program
 #if DEBUG
         Logger.WriteLine("===============================\nProgram launched in Debug mode.\n===============================");
 #endif
-        PrintPlatformInfo();
         Config.Setup();
         InitializeAmethyst();
         return InitializeRuby();
@@ -366,7 +368,7 @@ public class Program
         else Framework = "Unknown ";
         Framework += Environment.Version.ToString();
         Logger.WriteLine($"Framework: {Framework}");
-        Logger.WriteLine($"OS Platform: {os.Platform} ({ODL.Platform}) {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}");
+        Logger.WriteLine($"OS Platform: {ODL.Platform} ({os.Platform}) {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}");
         Logger.WriteLine($"OS Version: {os.VersionString}");
     }
 }

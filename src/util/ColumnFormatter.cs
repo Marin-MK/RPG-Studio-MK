@@ -20,8 +20,8 @@ public class ColumnFormatter
 	/// <param name="n">The number of items to split up.</param>
 	/// <param name="columns">The number of columns to split the items up in.</param>
 	public ColumnFormatter(int n, int columns)
-    {
-        this.N = n;
+	{
+		this.N = n;
         this.Columns = columns;
 		counts = new int[columns];
 
@@ -33,6 +33,7 @@ public class ColumnFormatter
 			if (Utilities.FloatIsInt(count))
 			{
 				Array.Fill(counts, (int) count, i, remc);
+				break;
 			}
 			else
 			{
