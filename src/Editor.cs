@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Threading;
 using RPGStudioMK.Utility;
 using MKUtils;
+using System.IO.Compression;
+using System.Security.Cryptography;
 
 namespace RPGStudioMK;
 
@@ -347,55 +349,94 @@ public static class Editor
         {
             if (window.PressedOK)
             {
-                CreateNewProject(window.Name, window.Kit, window.Folder);
+                string projectName = window.Name;
+                string projectFolder = Path.Combine(window.Folder, projectName).Replace('\\', '/');
+                Kit kit = window.Kit;
+                EnsureFolderChoice(projectFolder, () =>
+				{
+                    EnsureKitExistsAndValid(kit, () =>
+                    {
+                        EnsureCopySucceeds(kit, projectFolder, () =>
+                        {
+							CloseProject(false);
+			                Data.SetProjectPath(Path.Combine(projectFolder, "Game.rxproj"));
+			                string mkprojPath = Path.Combine(projectFolder, "project.mkproj");
+			                if (MainWindow.CreateEditor())
+			                {
+				                MakeRecentProject();
+				                if (!File.Exists(mkprojPath))
+				                {
+					                DumpProjectSettings();
+				                }
+			                }
+                        });
+                    });
+				});
             }
         };
     }
 
-    public static void DeleteProject()
+    public static void EnsureKitExistsAndValid(Kit kit, Action continueCallback)
     {
-        string ProjectPath = Data.ProjectPath;
-        string ProjectRMXPGamePath = Data.ProjectRMXPGamePath;
-        GeneralSettings.RecentFiles.RemoveAll(rf => rf[1] == ProjectRMXPGamePath);
-        CloseProject();
-        try
+        if (kit.IsInstalled() && kit.IsValid())
         {
-            Directory.Delete(ProjectPath, true);
+            continueCallback();
+            return;
         }
-        catch (Exception ex)
+        string kitFilename = Path.Combine(KitManager.KitFolder, kit.Filename).Replace('\\', '/');
+        if (kit.IsInstalled())
         {
-            new MessageBox("Error", $"Something went wrong while trying to delete the project.\n\n{ex.Message}\n{ex.StackTrace}", ButtonType.OK, IconType.Error);
+            Logger.WriteLine("Kit '{0}' is invalid as its calculated sha256 is not equal to the expected sha256 value. It will be redownloaded.", kit.DisplayName);
+            File.Delete(kitFilename);
         }
+        KitManager.Download(kit, continueCallback);
     }
 
-    public static void CreateNewProject(string ProjectName, (string Name, string Download) Kit, string Folder)
+    public static void EnsureCopySucceeds(Kit kit, string projectFolder, Action continueCallback)
     {
-        // Make the desktop the current directory, in case a relative path was specified.
-        string OldCurrentDirectory = Directory.GetCurrentDirectory();
-        Directory.SetCurrentDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+		ProgressWindow window = new ProgressWindow("Copying", "Copying files...", true, true, true, true);
+		CancellationTokenSource src = new CancellationTokenSource();
+		window.OnCancelled += () => src.Cancel();
+        DynamicCallbackManager<SimpleProgress> dcm = new DynamicCallbackManager<SimpleProgress>(TimeSpan.FromMilliseconds(100), p =>
+        {
+            window.SetProgress((float) p.Factor);
+            Graphics.Update();
+        });
+        try
+        {
+            KitManager.Copy(kit, projectFolder, src, dcm);
+            continueCallback();
+        }
+        catch (OperationCanceledException) { }
+	}
 
-        // Create the folder that was specified if it did not already exist
-        Folder = Path.Combine(Folder, Utilities.LegalizeFilename(ProjectName));
-
+    public static void EnsureFolderChoice(string Folder, Action ContinueCallback)
+    {
+        
         if (Directory.Exists(Folder))
         {
-            // Restore current directory to what it was before to load the message box icons
-            Directory.SetCurrentDirectory(OldCurrentDirectory);
             MessageBox win = new MessageBox("Warning", $"The folder you are trying to create a new project in, '{Folder}' already exists. Are you sure you want to continue creating a project here? This may overwrite other files.", ButtonType.YesNoCancel, IconType.Warning);
             win.OnClosed += _ =>
             {
                 if (win.Result != 0) return;
-                // Set the directory back to the new project folder
-                Directory.SetCurrentDirectory(Folder);
-                ContinueAfterCreatingFolder();
+                ContinueCallback();
             };
         }
         else
         {
-            Directory.CreateDirectory(Folder);
-            ContinueAfterCreatingFolder();
+            try
+            {
+                Directory.CreateDirectory(Folder);
+                ContinueCallback();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                new MessageBox("Error", "You do not have access to create a folder at '{0}'. Please pick a different location, or re-run the program as an administrator and try again.", ButtonType.OK, IconType.Error);
+            }
         }
+    }
 
+    /*void unknown() {
         void ContinueAfterCreatingFolder()
         {
             // Turn the (potentially) local folder name to an absolute one for further use
@@ -404,16 +445,26 @@ public static class Editor
             Directory.SetCurrentDirectory(OldCurrentDirectory);
 
             // The kit we've chosen has been downloaded in the past, so we can copy that to our game folder.
-            if (Utilities.KitExists(Kit.Name))
+            if (Kit.IsInstalled() && Kit.IsValid())
+            {
+                // Copy kit
+            }
+            else
+            {
+                // Download kit
+                // Copy kit
+            }
+
+            if (Utilities.KitExists(Kit.DisplayName))
             {
                 CopyStep();
             }
             else
             {
                 // The kit has not been downloaded before, so we download it now.
-                string Filename = Path.Combine(KitsFolder, Kit.Name + ".zip");
+                string Filename = Path.Combine(KitsFolder, Kit.DisplayName + ".zip");
                 if (!Directory.Exists(KitsFolder)) Directory.CreateDirectory(KitsFolder);
-                FileDownloaderWindow window = new FileDownloaderWindow(Kit.Download, Filename, "Downloading kit...");
+                FileDownloaderWindow window = new FileDownloaderWindow(Kit.URL, Filename, "Downloading kit...");
                 window.Download();
                 FileInfo fi = new FileInfo(Filename);
                 if (fi.Length <= 0)
@@ -451,7 +502,7 @@ public static class Editor
             window.SetProgress(0f);
             Stopwatch stopwatch = Stopwatch.StartNew();
             int updateFrequency = 16; // Update the screen every x ms
-            await Utilities.CopyKit(Kit.Name, Folder, src, e =>
+            await Utilities.CopyKit(Kit.DisplayName, Folder, src, e =>
             {
                 if (stopwatch.ElapsedMilliseconds > updateFrequency || e == 1) 
                 {
@@ -461,6 +512,22 @@ public static class Editor
                     });
                 }
             });
+        }
+    }*/
+
+							public static void DeleteProject()
+    {
+        string ProjectPath = Data.ProjectPath;
+        string ProjectRMXPGamePath = Data.ProjectRMXPGamePath;
+        GeneralSettings.RecentFiles.RemoveAll(rf => rf[1] == ProjectRMXPGamePath);
+        CloseProject();
+        try
+        {
+            Directory.Delete(ProjectPath, true);
+        }
+        catch (Exception ex)
+        {
+            new MessageBox("Error", $"Something went wrong while trying to delete the project.\n\n{ex.Message}\n{ex.StackTrace}", ButtonType.OK, IconType.Error);
         }
     }
 
@@ -526,15 +593,60 @@ public static class Editor
         MakeRecentProject();
     }
 
-    public static void MakeGame()
+    public static void PublishProject()
     {
-        // That's your job.
+        PublishWindow win = new PublishWindow();
+        win.OnClosed += _ =>
+        {
+            if (!win.Apply) return;
+            string zipFilename = Path.Combine(ProjectSettings.LastExportLocation, win.Filename).Replace('\\', '/');
+            if (!zipFilename.EndsWith(".zip")) zipFilename += ".zip";
+            RunConditionally(File.Exists(zipFilename), cont =>
+            {
+                MessageBox mbox = new MessageBox("Warning", $"The filename '{zipFilename}' you want to publish to already exists. Are you sure you want to overwrite this file?", ButtonType.YesNoCancel, IconType.Warning);
+                mbox.OnClosed += _ =>
+                {
+                    if (mbox.Result == 0) cont();
+                };
+            }, () =>
+            {
+                ProjectPublisher publisher = new ProjectPublisher(ProjectSettings.ProjectName, ProjectSettings.ProjectVersion, zipFilename, Editor.ProjectSettings.LastExportSettings);
+                ProgressWindow pwin = new ProgressWindow("Publisher", "Discovering files...", true, true, false, true);
+                pwin.OnCancelled += () => publisher.Cancel();
+                pwin.OnFinished += () =>
+                {
+                    string sha = publisher.CalculateSHA();
+                    PublishFinishedWindow pfwin = new PublishFinishedWindow(zipFilename, sha);
+                };
+                var dcm = new DynamicCallbackManager<SimpleProgress>(TimeSpan.FromMilliseconds(50), p =>
+                {
+                    pwin.SetProgress((float) p.Factor);
+                    Graphics.Update();
+                });
+                dcm.OnStatusChanged += status =>
+                {
+                    pwin.SetMessage(status);
+                    Graphics.Update();
+                };
+                publisher.Run(dcm);
+                publisher.Dispose();
+            });
+        };
+    }
+
+    public static void RunConditionally(bool conditionValue, Action<Action> precondition, Action runAfter)
+    {
+        if (conditionValue)
+        {
+            precondition(runAfter);
+        }
+        else runAfter();
     }
 
     /// <summary>
     /// Runs the current project.
     /// </summary>
-    public static void StartGame()
+    public static void StartProject()
     {
         SaveProject();
         GameRunner.Start();
@@ -543,7 +655,7 @@ public static class Editor
     /// <summary>
     /// Opens the game folder corresponding with the current project.
     /// </summary>
-    public static void OpenGameFolder()
+    public static void OpenProjectFolder()
     {
         Utilities.OpenFolder(Data.ProjectPath);
     }
