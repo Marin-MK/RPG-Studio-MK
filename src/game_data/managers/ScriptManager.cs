@@ -20,38 +20,36 @@ public class ScriptManager : BaseDataManager
         // Injects code at the top of the script list
         if (Inject)
         {
-            string startcode = Utilities.GetInjectedCodeStart();
             if (Data.Scripts[0].Name != "RPG Studio MK1")
             {
-                if (!string.IsNullOrEmpty(startcode))
+                if (!string.IsNullOrEmpty(CodeInjector.FirstScript))
                 {
                     Script script = new Script();
                     script.Name = "RPG Studio MK1";
-                    script.Content = startcode;
+                    script.Content = CodeInjector.FirstScript;
                     Data.Scripts.Insert(0, script);
                 }
             }
             else
             {
-                if (string.IsNullOrEmpty(startcode)) Data.Scripts.RemoveAt(0);
-                else Data.Scripts[0].Content = startcode;
+                if (string.IsNullOrEmpty(CodeInjector.FirstScript)) Data.Scripts.RemoveAt(0);
+                else Data.Scripts[0].Content = CodeInjector.FirstScript;
             }
             // Injects code at the bottom of the script list, above Main
-            string maincode = Utilities.GetInjectedCodeAboveMain();
             if (Data.Scripts.Count < 3 || Data.Scripts[Data.Scripts.Count - 2].Name != "RPG Studio MK2")
             {
-                if (!string.IsNullOrEmpty(maincode))
+                if (!string.IsNullOrEmpty(CodeInjector.MainScript))
                 {
                     Script script = new Script();
                     script.Name = "RPG Studio MK2";
-                    script.Content = maincode;
+                    script.Content = CodeInjector.MainScript;
                     Data.Scripts.Insert(Data.Scripts.Count - 1, script);
                 }
             }
             else
             {
-                if (string.IsNullOrEmpty(maincode)) Data.Scripts.RemoveAt(Data.Scripts.Count - 2);
-                else Data.Scripts[Data.Scripts.Count - 2].Content = maincode;
+                if (string.IsNullOrEmpty(CodeInjector.MainScript)) Data.Scripts.RemoveAt(Data.Scripts.Count - 2);
+                else Data.Scripts[Data.Scripts.Count - 2].Content = CodeInjector.MainScript;
             }
         }
         #endregion
@@ -255,10 +253,10 @@ public class ScriptManager : BaseDataManager
         }
     }
 
-    private void SaveScriptsRXDATA()
+    public void SaveScriptsRXDATA(string? filename = null)
     {
         Logger.WriteLine("Saving scripts to RXDATA file");
-        SafeSave(Filename, File =>
+        SafeSave(filename ?? Filename, File =>
         {
             IntPtr scripts = Ruby.Array.Create();
             Ruby.Pin(scripts);
@@ -269,7 +267,7 @@ public class ScriptManager : BaseDataManager
             }
             Ruby.Marshal.Dump(scripts, File);
             Ruby.Unpin(scripts);
-        });
+        }, !string.IsNullOrEmpty(filename));
     }
 
     public override void Clear()

@@ -78,6 +78,7 @@ public class TestSuite
                 }
                 catch (AssertionException ex)
                 {
+                    throw;
                     string[] lines = ex.StackTrace.Split('\n');
                     int? line = null;
                     Match m = Regex.Match(lines[0], @":line (\d+)");

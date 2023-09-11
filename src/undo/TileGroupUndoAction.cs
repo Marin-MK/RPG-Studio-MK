@@ -4,7 +4,7 @@ using System.Text;
 using RPGStudioMK.Game;
 using RPGStudioMK.Undo;
 
-namespace RPGStudioMK.src.undo;
+namespace RPGStudioMK;
 
 public class TileGroupUndoAction : BaseUndoAction
 {

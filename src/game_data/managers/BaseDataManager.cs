@@ -174,17 +174,17 @@ public class BaseDataManager
         // the prospect of losing all data in memory if the issue is only something minor, in a small section of the program.
     }
 
-    protected static (bool Success, string Error) SafeLoad(string Filename, Action<IntPtr> Action)
+    protected static (bool Success, string Error) SafeLoad(string Filename, Action<IntPtr> Action, bool isAbsoluteFilename = false)
     {
-        (bool Success, string Error) = SafelyOpenAndCloseFile(Data.DataPath + "/" + Filename, "rb", Action);
-        if (!Success) LoadError("Data/" + Filename, Error);
+        (bool Success, string Error) = SafelyOpenAndCloseFile(isAbsoluteFilename ? Filename : Data.DataPath + "/" + Filename, "rb", Action);
+        if (!Success) LoadError(isAbsoluteFilename ? Filename : "Data/" + Filename, Error);
         return (Success, Error);
     }
 
-    protected static (bool Success, string Error) SafeSave(string Filename, Action<IntPtr> Action)
+    protected static (bool Success, string Error) SafeSave(string Filename, Action<IntPtr> Action, bool isAbsoluteFilename = false)
     {
-        (bool Success, string Error) = SafelyOpenAndCloseFile(Data.DataPath + "/" + Filename, "wb", Action);
-        if (!Success) SaveError("Data/" + Filename, Error);
+        (bool Success, string Error) = SafelyOpenAndCloseFile(isAbsoluteFilename ? Filename : Data.DataPath + "/" + Filename, "wb", Action);
+        if (!Success) SaveError(isAbsoluteFilename ? Filename : "Data/" + Filename, Error);
         return (Success, Error);
     }
 

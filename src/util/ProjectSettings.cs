@@ -8,9 +8,12 @@ public class ProjectSettings : BaseSettings
     {
         { "SAVED_VERSION", "1.0.0" },
         { "PROJECT_NAME", "Untitled Game" },
+        { "PROJECT_VERSION", "1.0.0" },
+        { "LAST_EXPORT_LOCATION", "" },
+        { "LAST_EXPORT_SETTINGS", new List<string>() },
         { "LAST_MODE", EditorMode.Mapping },
         { "LAST_MAPPING_SUBMODE", MapMode.Tiles },
-        { "LAST_DATABASE_SUBMODE", DatabaseMode.Tilesets },
+        { "LAST_DATABASE_SUBMODE", DatabaseMode.Species },
         { "LAST_MAP_ID", 1 },
         { "LAST_LAYER", 1 },
         { "LAST_ZOOM_FACTOR", 1d },
@@ -52,6 +55,30 @@ public class ProjectSettings : BaseSettings
     {
         get => Get<string>("PROJECT_NAME");
         set => Set("PROJECT_NAME", value);
+    }
+    /// <summary>
+    /// The version of the project.
+    /// </summary>
+    public string ProjectVersion
+    {
+        get => Get<string>("PROJECT_VERSION");
+        set => Set("PROJECT_VERSION", value);
+    }
+    /// <summary>
+    /// The last-used location to export the project to.
+    /// </summary>
+    public string LastExportLocation
+    {
+        get => Get<string>("LAST_EXPORT_LOCATION");
+        set => Set("LAST_EXPORT_LOCATION", value);
+    }
+    /// <summary>
+    /// The last-used settings used for exporting the project.
+    /// </summary>
+    public List<string> LastExportSettings
+    {
+        get => Get<List<string>>("LAST_EXPORT_SETTINGS");
+        set => Set("LAST_EXPORT_SETTINGS", value);
     }
     /// <summary>
     /// The last-active mode of the project.

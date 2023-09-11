@@ -151,13 +151,13 @@ public partial class MainEditorWindow
                     Shortcut = "F12",
                     HelpText = "Play the game.",
                     IsClickable = e => e.Value = Editor.InProject,
-                    OnClicked = _ => Editor.StartGame()
+                    OnClicked = _ => Editor.StartProject()
                 },
                 new MenuItem("Open Game Folder")
                 {
                     HelpText = "Opens the file explorer and navigates to the project folder.",
                     IsClickable = e => e.Value = Editor.InProject,
-                    OnClicked = _ => Editor.OpenGameFolder()
+                    OnClicked = _ => Editor.OpenProjectFolder()
                 },
                 new MenuItem("Change Title")
                 {

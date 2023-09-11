@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json;
-
+using MKUtils;
 
 namespace RPGStudioMK;
 
@@ -169,6 +169,29 @@ public static class Utilities
         int missing = Digits - num.Length;
         for (int i = 0; i < missing; i++) num = "0" + num;
         return neg ? "-" + num : num;
+    }
+
+    /// <summary>
+    /// Formats integers with a dot character, e.g. 1234567 -> 1,234,567
+    /// </summary>
+    /// <param name="Number">The number to format.</param>
+    /// <param name="DotChar">The separation character to use.</param>
+    /// <returns>A prettier string representation of the number.</returns>
+    public static string PrettyInt(int Number, string DotChar = ",")
+    {
+        string Result = Number.ToString();
+        if (Result.Length <= 3) return Result;
+        int count = 0;
+        for (int i = Result.Length - 1; i >= 0; i--)
+        {
+            count++;
+            if (count == 3 && i != 0)
+            {
+                Result = Result.Insert(i, DotChar);
+                count = 0;
+            }
+        }
+        return Result;
     }
 
     /// <summary>
@@ -662,129 +685,9 @@ public static class Utilities
         return Bytes;
     }
 
-    public static bool KitExists(string KitName)
-    {
-        string Filename = Path.Combine(Editor.KitsFolder, KitName + ".zip");
-        if (!File.Exists(Filename)) return false;
-        FileInfo fi = new FileInfo(Filename);
-        return fi.Length > 0;
-    }
-
-    public static async Task CopyKit(string KitName, string DestinationFolder, CancellationTokenSource Source, Action<float> OnProgress)
-    {
-        string Filename = Path.Combine(Editor.KitsFolder, KitName + ".zip");
-        MKUtils.Archive archive = new MKUtils.Archive(Filename);
-        string MainFolder = null;
-        if (!Directory.Exists(DestinationFolder)) Directory.CreateDirectory(DestinationFolder);
-        foreach (MKUtils.ArchiveEntry entry in archive.Files)
-        {
-            if (entry.Filename.Contains('\\') || entry.Filename.Contains('/')) continue;
-            if (MainFolder != null)
-            {
-                MainFolder = null;
-                break;
-            }
-            MainFolder = entry.Filename;
-        }
-        // if MainFolder is null, then there either are no entries,
-        // or there is more than one file/folder in the main archive,
-        // meaning we extract it as-is.
-        if (MainFolder == null)
-        {
-            float total = archive.Files.Count;
-            float count = 0;
-            foreach (MKUtils.ArchiveEntry entry in archive.Files)
-            {
-                await entry.ExtractAsync(DestinationFolder);
-                Source.Token.ThrowIfCancellationRequested();
-                count++;
-                OnProgress(count / total);
-            }
-            if (count != total) OnProgress(1);
-        }
-        else
-        {
-            // If MainFolder is not null, that means the archive has one single folder at its root.
-            // We want to ignore this folder as we've already created our own folder in which we want
-            // all the files to reside, thus we purge this part of the path for all the other entries.
-            float total = archive.Files.Count - 1;
-            float count = 0;
-            foreach (MKUtils.ArchiveEntry entry in archive.Files)
-            {
-                if (entry.Filename == MainFolder) continue;
-                if (entry.Filename.Contains(MainFolder)) entry.Rename(entry.Filename.Substring(MainFolder.Length + 1));
-                await entry.ExtractAsync(DestinationFolder);
-                Source.Token.ThrowIfCancellationRequested();
-                count++;
-                OnProgress(count / total);
-            }
-            if (count != total) OnProgress(1);
-        }
-        archive.Dispose();
-    }
-
     public static string LegalizeFilename(string Filename)
     {
         return string.Concat(Filename.Split(Path.GetInvalidFileNameChars()));
-    }
-
-    public static string GetInjectedCodeStart()
-    {
-        return @"require 'socket'
-
-def pbConnectToEditor
-  $Editor = nil
-  $EditorReady = false
-  t = Thread.new do
-    begin
-      $Editor = server = TCPSocket.open(""localhost"", 59995)
-      puts ""Server connected.""
-      begin
-        while true
-          data = server.gets.chomp
-          puts ""Server :: #{data}""
-          if data == ""ping""
-            server.puts ""keep-alive""
-            server.flush
-          elsif data == ""close""
-            break
-          elsif data == ""ready""
-            $EditorReady = true
-          else
-            # Handle arbitrary message
-          end
-        end
-      ensure
-        server.close
-        puts ""Server disconnected.""
-      end
-    rescue
-      # Likely no server open at port 59995,
-      # or the server quit when the game is still running.
-    end
-  end
-  t.abort_on_exception = true
-end
-
-def pbMessageEditor(txt)
-  if $Editor && $EditorReady
-    $Editor.puts(txt)
-    $Editor.flush
-  end
-end
-
-def pbDisconnectFromEditor
-  $Editor.close if $Editor
-  $Editor = nil
-  $EditorReady = false
-end
-
-pbConnectToEditor";
-    }
-
-    public static string GetInjectedCodeAboveMain()
-    {
-        return @"";
     }
 
     public static bool DoesDirectoryHaveAnyFiles(string Path)

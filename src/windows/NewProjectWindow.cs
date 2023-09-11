@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RPGStudioMK.Widgets;
 
@@ -8,7 +9,7 @@ public class NewProjectWindow : PopupWindow
     public bool PressedOK;
 
     public string Name;
-    public (string Name, string Download) Kit;
+    public Kit Kit;
     public string Folder;
 
     TextBox namebox;
@@ -39,19 +40,7 @@ public class NewProjectWindow : PopupWindow
         kitbox.SetFont(Fonts.Paragraph);
         kitbox.SetPosition(70, 73);
         kitbox.SetSize(210, 27);
-        List<ListItem> Items = new List<ListItem>();
-        Items.Add(new ListItem(
-            "Pokémon Essentials v21.1",
-			"https://www.dropbox.com/scl/fi/kl5a3ibsykfqh97e8sriq/Pokemon-Essentials-v21.1-2023-07-30.zip?rlkey=yy8a4foqc30wthzslh7grhl3r&dl=1"
-		));
-        Items.Add(new ListItem(
-            "Pokémon Essentials v20",
-            "https://www.dropbox.com/s/s7qe2vn3bpoes5j/Pokemon%20Essentials%20v20%202022-05-19.zip?dl=1"
-        ));
-        Items.Add(new ListItem(
-            "Pokémon Essentials v19.1",
-            "https://www.dropbox.com/s/vlxkcwtcejpa1w3/Pokemon%20Essentials%20v19.1%202021-05-22.zip?dl=1"
-        ));
+        List<ListItem> Items = KitManager.GetAvailableKits().Select(kit => new ListItem(kit.DisplayName, kit)).ToList();
         kitbox.SetItems(Items);
 
         Label folderlabel = new Label(this);
@@ -98,8 +87,7 @@ public class NewProjectWindow : PopupWindow
         }
         PressedOK = true;
         Name = namebox.Text;
-        ListItem Item = kitbox.Items[kitbox.SelectedIndex];
-        Kit = (Item.Name, (string) Item.Object);
+        Kit = (Kit) kitbox.Items[kitbox.SelectedIndex].Object;
         Folder = folderbox.Text;
         Close();
     }

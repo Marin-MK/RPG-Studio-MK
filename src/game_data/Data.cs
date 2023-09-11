@@ -50,7 +50,7 @@ public static partial class Data
     // - Maps must be loaded before map metadata
     // - Metadata must be loaded before player metadata (this is not a strict requirement,
     //   but player metadata will discard data if metadata loads from PBS, so excessive data loading)
-    static DataManager DataManager = new DataManager(new List<BaseDataManager>()
+    public static DataManager DataManager = new DataManager(new List<BaseDataManager>()
     {
         // RMXP Data
         new ScriptManager(),
@@ -129,6 +129,11 @@ public static partial class Data
     {
         DataManager.Save();
         PluginManager.SaveAll();
+    }
+
+    public static void SaveScriptsRXDATA(string filename)
+    {
+        DataManager.SaveScriptsRXDATA(filename);
     }
 
     public static void SetProjectPath(string OriginalProjectFilePath)

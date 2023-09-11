@@ -13,6 +13,7 @@ public class ToolBar : Widget
 
     GradientButton PlayButton;
     GradientButton SaveButton;
+    GradientButton PublishButton;
 
     public ToolBar(IContainer Parent) : base(Parent)
     {
@@ -59,10 +60,21 @@ public class ToolBar : Widget
 
         PlayButton = new GradientButton(this, "Play");
         PlayButton.SetButtonColor(GradientButton.Colors.Green);
-        PlayButton.OnLeftMouseDownInside = _ => Editor.StartGame();
+        PlayButton.OnLeftMouseDownInside = _ => Editor.StartProject();
+        PlayButton.SetPadding(0, 2, 6, 0);
+        PlayButton.SetRightDocked(true);
+
         SaveButton = new GradientButton(this, "Save");
         SaveButton.SetButtonColor(GradientButton.Colors.Red);
         SaveButton.OnLeftMouseDownInside = _ => Editor.SaveProject();
+        SaveButton.SetPadding(0, 2, 12 + PlayButton.Size.Width, 0);
+        SaveButton.SetRightDocked(true);
+
+        PublishButton = new GradientButton(this, "Publish");
+        PublishButton.SetButtonColor(GradientButton.Colors.Blue);
+        PublishButton.OnLeftMouseDownInside = _ => Editor.PublishProject();
+        PublishButton.SetPadding(0, 2, 18 + PlayButton.Size.Width + SaveButton.Size.Width, 0);
+        PublishButton.SetRightDocked(true);
     }
 
     public void Refresh()
@@ -73,8 +85,8 @@ public class ToolBar : Widget
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-        PlayButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width, 2);
-        SaveButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width - 12 - SaveButton.Size.Width, 2);
+        //PlayButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width, 2);
+        //SaveButton.SetPosition(Size.Width - 6 - PlayButton.Size.Width - 12 - SaveButton.Size.Width, 2);
         if (Size.Width < 800)
         {
 

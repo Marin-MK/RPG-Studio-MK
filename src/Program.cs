@@ -36,6 +36,13 @@ public class Program
 	[STAThread]
     static void Main(params string[] args)
     {
+        // Calculate SHA of new Essentials releases
+        //FileStream fs = File.OpenRead("link-to-file.zip");
+        //string sha = Convert.ToBase64String(System.Security.Cryptography.SHA256.HashData(fs));
+        //Console.WriteLine(sha);
+        //Console.ReadKey();
+        //return;
+
         if (!Directory.Exists(Editor.AppDataFolder))
         {
             Directory.CreateDirectory(Editor.AppDataFolder);
@@ -115,7 +122,9 @@ public class Program
                 }
 			}
 
-            if (MetadataLoadSuccessful) VerifyInstallerVersions();
+#if RELEASE
+			if (MetadataLoadSuccessful) VerifyInstallerVersions();
+#endif
 
 			Logger.WriteLine("Initializing data");
             Game.Data.Setup();
@@ -297,14 +306,14 @@ public class Program
         else throw new NotImplementedException();
         Logger.WriteLine("Current version: {0}", CurrentProgramVersion);
         // Load latest version
-#if DEBUG
-        Logger.WriteLine("Skipped latest version check in Debug Mode");
-        return;
-#endif
         Logger.WriteLine("Downloading version metadata...");
         if (MKUtils.VersionMetadata.Load())
         {
-            LatestProgramVersion = MKUtils.VersionMetadata.ProgramVersion;
+#if DEBUG
+			Logger.WriteLine("Skipped latest version check in Debug Mode");
+			return;
+#endif
+			LatestProgramVersion = MKUtils.VersionMetadata.ProgramVersion;
             // Compare versions
             int cmp = MKUtils.VersionMetadata.CompareVersions(CurrentProgramVersion, LatestProgramVersion);
             if (!string.IsNullOrEmpty(LatestProgramVersion) && cmp == -1)

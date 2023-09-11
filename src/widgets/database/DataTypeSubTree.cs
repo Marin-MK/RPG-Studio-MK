@@ -83,7 +83,7 @@ public class DataTypeSubTree : Widget
 
     public void SetScroll(int scroll)
     {
-        ScrollContainer.ScrolledY = Math.Clamp(scroll, 0, TreeView.Size.Height - ScrollContainer.Size.Height);
+        ScrollContainer.ScrolledY = Math.Clamp(scroll, 0, Math.Max(0, TreeView.Size.Height - ScrollContainer.Size.Height));
         ScrollContainer.UpdateAutoScroll();
     }
 
