@@ -4,7 +4,7 @@ using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
 
-public class TilesetPicker : PopupWindow
+public class TilesetPickerWindow : PopupWindow
 {
     List<int> OldIDs;
 
@@ -17,7 +17,7 @@ public class TilesetPicker : PopupWindow
     ListBox InUse;
     Container TilesetContainer;
 
-    public TilesetPicker(Map Map)
+    public TilesetPickerWindow(Map Map)
     {
         SetTitle("Change Tileset");
         MinimumSize = MaximumSize = new Size(506, 505);

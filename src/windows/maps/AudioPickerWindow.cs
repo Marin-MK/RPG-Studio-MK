@@ -22,7 +22,7 @@ public class AudioPicker : PopupWindow
     public AudioPicker(string Folder, string File, int Volume, int Pitch)
     {
         SetTitle("Pick Audio");
-        MinimumSize = MaximumSize = new Size(442, 418);
+        MinimumSize = MaximumSize = new Size(442, 380);
         SetSize(MaximumSize);
         Center();
 
@@ -36,7 +36,7 @@ public class AudioPicker : PopupWindow
 
         FileList = new ListBox(this);
         FileList.SetPosition(25, 51);
-        FileList.SetSize(151, 355);
+        FileList.SetSize(151, 261);
         List<ListItem> items = new List<ListItem>() { new ListItem("(None)", null) };
         int i = 1;
         int selidx = 0;
