@@ -19,38 +19,41 @@ public class NewProjectWindow : PopupWindow
     public NewProjectWindow()
     {
         SetTitle("New Project");
-        MinimumSize = MaximumSize = new Size(300, 190);
+        MinimumSize = MaximumSize = new Size(456, 223);
         SetSize(MaximumSize);
         Center();
 
         Label namelabel = new Label(this);
-        namelabel.SetPosition(16, 42);
+        namelabel.SetPosition(25, 44);
         namelabel.SetFont(Fonts.Paragraph);
-        namelabel.SetText("Name:");
+        namelabel.SetText("Game Title:");
+
         namebox = new TextBox(this);
         namebox.SetFont(Fonts.Paragraph);
-        namebox.SetPosition(70, 39);
-        namebox.SetSize(210, 27);
+        namebox.SetPosition(25, 70);
+        namebox.SetSize(190, 27);
 
         Label kitlabel = new Label(this);
-        kitlabel.SetPosition(16, 76);
+        kitlabel.SetPosition(246, 44);
         kitlabel.SetFont(Fonts.Paragraph);
         kitlabel.SetText("Kit:");
+
         kitbox = new DropdownBox(this);
         kitbox.SetFont(Fonts.Paragraph);
-        kitbox.SetPosition(70, 73);
-        kitbox.SetSize(210, 27);
+        kitbox.SetPosition(246, 70);
+        kitbox.SetSize(190, 24);
         List<ListItem> Items = KitManager.GetAvailableKits().Select(kit => new ListItem(kit.DisplayName, kit)).ToList();
         kitbox.SetItems(Items);
 
         Label folderlabel = new Label(this);
-        folderlabel.SetPosition(16, 110);
+        folderlabel.SetPosition(25, 111);
         folderlabel.SetFont(Fonts.Paragraph);
-        folderlabel.SetText("Folder:");
+        folderlabel.SetText("Project Location:");
+
         folderbox = new BrowserBox(this);
         folderbox.SetFont(Fonts.Paragraph);
-        folderbox.SetPosition(70, 107);
-        folderbox.SetSize(210, 27);
+        folderbox.SetPosition(25, 135);
+        folderbox.SetSize(411, 25);
         folderbox.SetText(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
         folderbox.OnDropDownClicked += _ =>
         {
@@ -64,8 +67,8 @@ public class NewProjectWindow : PopupWindow
             }
         };
 
-        CreateButton("OK", _ => OK());
         CreateButton("Cancel", _ => Cancel());
+        CreateButton("OK", _ => OK());
 
         RegisterShortcuts(new List<Shortcut>()
         {
