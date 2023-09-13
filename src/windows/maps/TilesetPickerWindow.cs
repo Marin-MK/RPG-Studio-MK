@@ -1,160 +1,63 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using RPGStudioMK.Game;
-
 namespace RPGStudioMK.Widgets;
 
 public class TilesetPickerWindow : PopupWindow
 {
-    List<int> OldIDs;
+    public bool Apply = true;
+    public Tileset Tileset;
 
-    public List<int> ResultIDs;
+    ListBox TilesetList;
+    Container PreviewContainer;
 
-    Tileset SelectedTileset { get { return Available.SelectedItem is null ? InUse.SelectedItem.Object as Tileset : Available.SelectedItem.Object as Tileset; } }
+    List<ImageBox> TilesetPreviewBoxes = new List<ImageBox>();
 
-    Button ActionButton;
-    ListBox Available;
-    ListBox InUse;
-    Container TilesetContainer;
-
-    public TilesetPickerWindow(Map Map)
+    public TilesetPickerWindow(Tileset? defaultTileset, bool ShowIDs = true)
     {
-        SetTitle("Change Tileset");
-        MinimumSize = MaximumSize = new Size(506, 505);
+        SetTitle("Tileset Picker");
+        MinimumSize = MaximumSize = new Size(600, 490);
         SetSize(MaximumSize);
         Center();
 
-        OldIDs = new List<int>(Map.TilesetIDs);
-
-        ColoredBox box1 = new ColoredBox(this);
-        box1.SetOuterColor(59, 91, 124);
-        box1.SetInnerColor(17, 27, 38);
-        box1.SetPosition(200, 51);
-        box1.SetSize(280, 409);
-
-        ColoredBox box2 = new ColoredBox(this);
-        box2.SetOuterColor(24, 38, 53);
-        box2.SetPosition(201, 52);
-        box2.SetSize(278, 407);
-
-        TilesetContainer = new Container(this);
-        TilesetContainer.SetPosition(203, 54);
-        TilesetContainer.SetSize(274, 403);
-        TilesetContainer.VAutoScroll = true;
-        VScrollBar vs = new VScrollBar(this);
-        vs.SetPosition(469, 54);
-        vs.SetSize(10, 403);
-        TilesetContainer.SetVScrollBar(vs);
-
-        Label labelavail = new Label(this);
-        labelavail.SetText("Available");
-        labelavail.SetPosition(16, 31);
-        labelavail.SetFont(Fonts.Paragraph);
-
-        Label labelinuse = new Label(this);
-        labelinuse.SetText("In-use");
-        labelinuse.SetPosition(16, 257);
-        labelinuse.SetFont(Fonts.Paragraph);
-
-        Label labelprev = new Label(this);
-        labelprev.SetText("Preview");
-        labelprev.SetPosition(192, 31);
-        labelprev.SetFont(Fonts.Paragraph);
-
-        ActionButton = new Button(this);
-        ActionButton.SetPosition(52, 232);
-        ActionButton.SetSize(85, 30);
-        ActionButton.SetText("Set");
-        ActionButton.OnClicked += ActionButtonClicked;
-
-        Available = new ListBox(this);
-        Available.SetPosition(25, 51);
-        Available.SetSize(151, 179);
-        Available.OnSelectionChanged += delegate (BaseEventArgs e)
-        {
-            if (Available.SelectedIndex != -1)
-            {
-                InUse.SetSelectedIndex(-1);
-                SelectionChanged(e);
-            }
-        };
-        //Available.ListDrawer.SetContextMenuList(new List<IMenuItem>()
-        //{
-        //    new MenuItem("Set Tileset")
-        //    {
-        //        IsClickable = delegate (BoolEventArgs e)
-        //        {
-        //            e.Value = SelectedTileset is not null;
-        //        },
-        //        OnClicked = ActionButtonClicked
-        //    }
-        //});
-
-        InUse = new ListBox(this);
-        InUse.SetPosition(25, 281);
-        InUse.SetSize(151, 179);
-        InUse.OnSelectionChanged += delegate (BaseEventArgs e)
-        {
-            if (InUse.SelectedIndex != -1)
-            {
-                Available.SetSelectedIndex(-1);
-                SelectionChanged(e);
-            }
-        };
-        /*InUse.ListDrawer.SetContextMenuList(new List<IMenuItem>()
-        {
-            new MenuItem("Move Tileset Up")
-            {
-                IsClickable = delegate (BoolEventArgs e)
-                {
-                    e.Value = InUse.SelectedIndex > 0;
-                },
-                OnLeftClick = MoveTilesetUp
-            },
-            new MenuItem("Move Tileset Down")
-            {
-                IsClickable = delegate (BoolEventArgs e)
-                {
-                    e.Value = InUse.SelectedIndex < InUse.Items.Count - 1;
-                },
-                OnLeftClick = MoveTilesetDown
-            },
-            new MenuSeparator(),
-            new MenuItem("Remove Tileset")
-            {
-                OnLeftClick = ActionButtonClicked
-            }
-        });*/
-
-        List<ListItem> AvailableList = new List<ListItem>();
-        List<ListItem> InUseList = new List<ListItem>();
-
-        // Populate lists
-        for (int i = 0; i < Map.TilesetIDs.Count; i++)
-        {
-            InUseList.Add(new ListItem($"{Utilities.Digits(Map.TilesetIDs[i], 3)}: {Data.Tilesets[Map.TilesetIDs[i]].Name}", Data.Tilesets[Map.TilesetIDs[i]]));
-        }
+        Label pickerlabel = new Label(this);
+        pickerlabel.SetText("Tilesets");
+        pickerlabel.SetPosition(18, 34);
+        pickerlabel.SetFont(Fonts.Paragraph);
+        TilesetList = new ListBox(this);
+        TilesetList.SetPosition(25, 56);
+        TilesetList.SetSize(151, 380);
+        List<ListItem> items = new List<ListItem>();
         for (int i = 1; i < Data.Tilesets.Count; i++)
         {
-            if (!Map.TilesetIDs.Contains(i))
-            {
-                AvailableList.Add(new ListItem($"{Utilities.Digits(i, 3)}: {Data.Tilesets[i]?.Name}", Data.Tilesets[i]));
-            }
+            Tileset tileset = Data.Tilesets[i];
+            string Name = ShowIDs ? $"{Utilities.Digits(i, 2)}: {tileset.Name}" : tileset.Name;
+            items.Add(new ListItem(Name, tileset));
         }
+        TilesetList.SetItems(items);
+        TilesetList.OnSelectionChanged += _ => UpdatePreview();
 
-        Available.SetItems(AvailableList);
-        InUse.SetItems(InUseList);
+        Label previewlabel = new Label(this);
+        previewlabel.SetText("Preview");
+        previewlabel.SetPosition(192, 34);
+        previewlabel.SetFont(Fonts.Paragraph);
 
-        if (Available.Items.Count > 0)
-        {
-            Available.SetSelectedIndex(0);
-        }
-        else
-        {
-            InUse.SetSelectedIndex(0);
-        }
+        ColoredBox outline = new ColoredBox(this);
+        outline.SetPosition(194, 56);
+        outline.SetSize(380, 380);
+        outline.SetOuterColor(59, 91, 124);
+        outline.SetInnerColor(24, 38, 53);
 
-        SetTimer("frame", (long)Math.Round(1000 / 60d));
+        PreviewContainer = new Container(outline);
+        PreviewContainer.SetDocked(true);
+        PreviewContainer.SetPadding(3, 3, 10, 3);
+        PreviewContainer.SetBackgroundColor(17, 27, 38);
+
+        VScrollBar vs = new VScrollBar(outline);
+        vs.SetVDocked(true);
+        vs.SetPadding(0, 3, 1, 3);
+        vs.SetRightDocked(true);
+        PreviewContainer.SetVScrollBar(vs);
+        PreviewContainer.VAutoScroll = true;
 
         CreateButton("Cancel", _ => Cancel());
         CreateButton("OK", _ => OK());
@@ -163,123 +66,66 @@ public class TilesetPickerWindow : PopupWindow
         {
             new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
         });
+
+        if (defaultTileset is not null)
+        {
+            int idx = TilesetList.Items.FindIndex(item => (Tileset) item.Object == defaultTileset);
+            if (idx >= 0) TilesetList.SetSelectedIndex(idx);
+            else if (TilesetList.Items.Count > 0) TilesetList.SetSelectedIndex(0);
+        }
+        else if (TilesetList.Items.Count > 0) TilesetList.SetSelectedIndex(0);
     }
 
-    private void OK()
+    public void UpdatePreview()
     {
-        ResultIDs = new List<int>();
-        for (int i = 0; i < InUse.Items.Count; i++)
-        {
-            ResultIDs.Add(Data.Tilesets.IndexOf((InUse.Items[i].Object as Tileset)));
-        }
-        Close();
-    }
-
-    private void Cancel()
-    {
-        ResultIDs = OldIDs;
-        Close();
-    }
-
-    public void SelectionChanged(BaseEventArgs e)
-    {
-        if (InUse.SelectedIndex == -1)
-        {
-            //ActionButton.SetText("Add");
-            ActionButton.SetEnabled(true);
-        }
-        else
-        {
-            //ActionButton.SetText("Remove");
-            ActionButton.SetEnabled(false);
-        }
-        Tileset tileset = SelectedTileset;
-        TilesetContainer.Widgets.FindAll(w => w is ImageBox).ForEach(w => w.Dispose());
-        if (tileset is null || tileset.TilesetListBitmap is null)
-        {
-            ActionButton.SetEnabled(false);
-        }
-        else if (tileset.TilesetListBitmap.IsChunky)
+        Tileset? ts = TilesetList.SelectedItem.Object as Tileset;
+        PreviewContainer.ScrolledY = 0;
+        TilesetPreviewBoxes.ForEach(b => b.Dispose());
+        TilesetPreviewBoxes.Clear();
+        if (ts == null) return;
+        if (ts.TilesetListBitmap.IsChunky)
         {
             int y = 0;
-            foreach (Bitmap b in tileset.TilesetListBitmap.InternalBitmaps)
+            foreach (Bitmap b in ts.TilesetListBitmap.InternalBitmaps)
             {
-                ImageBox img = new ImageBox(TilesetContainer);
+                ImageBox img = new ImageBox(PreviewContainer);
                 img.SetPosition(0, y);
                 img.SetBitmap(b);
                 if (!b.Locked) b.Lock();
                 img.SetDestroyBitmap(false);
-                img.SetSize(b.Width, b.Height);
+                img.SetFillMode(FillMode.CenterX);
                 y += b.Height;
+                TilesetPreviewBoxes.Add(img);
             }
         }
         else
         {
-            ImageBox img = new ImageBox(TilesetContainer);
-            img.SetBitmap(tileset.TilesetListBitmap);
+            ImageBox img = new ImageBox(PreviewContainer);
+            img.SetBitmap(ts.TilesetListBitmap);
             img.SetDestroyBitmap(false);
+            img.SetFillMode(FillMode.CenterX);
+            TilesetPreviewBoxes.Add(img);
         }
     }
 
-    private void ActionButtonClicked(BaseEventArgs e)
+    public void OK()
     {
-        ListItem item = Available.SelectedItem;
-        Available.Items.Remove(item);
-        Available.Items.Add(new ListItem($"{Utilities.Digits(((Tileset)InUse.Items[0].Object).ID, 3)}: {((Tileset)InUse.Items[0].Object).Name}", InUse.Items[0].Object));
-        Available.Items.Sort((ListItem i1, ListItem i2) => { return ((Tileset)i1.Object).ID.CompareTo(((Tileset)i2.Object).ID); });
-        Available.SetItems(Available.Items);
-        InUse.Items.Clear();
-        InUse.Items.Add(item);
-        InUse.SetItems(InUse.Items);
-        /*if (InUse.SelectedIndex == -1) // Add
+        if (TilesetList.SelectedIndex >= 0)
         {
-            if (SelectedTileset is null) return;
-            ListItem item = Available.SelectedItem;
-            Available.Items.Remove(item);
-            InUse.Items.Add(item);
-            Available.SetItems(Available.Items);
-            InUse.SetItems(InUse.Items);
-            if (Available.SelectedIndex == -1 && InUse.SelectedIndex == -1)
-                InUse.SetSelectedIndex(0);
+            Tileset tileset = (Tileset) TilesetList.SelectedItem.Object;
+            this.Tileset = tileset;
         }
-        else // Remove
+        else
         {
-            if (SelectedTileset is null) return;
-            ListItem item = InUse.SelectedItem;
-            InUse.Items.Remove(item);
-            List<ListItem> availitems = new List<ListItem>();
-            for (int i = 1; i < Data.Tilesets.Count; i++)
-            {
-                if (InUse.Items.Find(item => item.Object == Data.Tilesets[i]) is null)
-                {
-                    availitems.Add(new ListItem($"{Utilities.Digits(i, 3)}: {Data.Tilesets[i]?.Name}", Data.Tilesets[i]));
-                }
-            }
-            Available.SetItems(availitems);
-            InUse.SetItems(InUse.Items);
-            if (Available.SelectedIndex == -1 && InUse.SelectedIndex == -1)
-                Available.SetSelectedIndex(0);
-        }*/
-        SelectionChanged(e);
+            this.Tileset = null;
+        }
+        Close();
     }
 
-    public void MoveTilesetUp(BaseEventArgs e)
+    public void Cancel()
     {
-        if (InUse.SelectedIndex > 0)
-        {
-            InUse.Items.Swap(InUse.SelectedIndex - 1, InUse.SelectedIndex);
-            InUse.Redraw();
-            InUse.SetSelectedIndex(InUse.SelectedIndex - 1);
-        }
-    }
-
-    public void MoveTilesetDown(BaseEventArgs e)
-    {
-        if (InUse.SelectedIndex < InUse.Items.Count - 1)
-        {
-            InUse.Items.Swap(InUse.SelectedIndex + 1, InUse.SelectedIndex);
-            InUse.Redraw();
-            InUse.SetSelectedIndex(InUse.SelectedIndex + 1);
-        }
+        this.Tileset = null;
+        this.Apply = false;
+        Close();
     }
 }

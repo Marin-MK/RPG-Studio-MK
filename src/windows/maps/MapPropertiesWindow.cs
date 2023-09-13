@@ -147,12 +147,12 @@ public class MapPropertiesWindow : PopupWindow
         Tilesets.SetText(Data.Tilesets[this.Map.TilesetIDs[0]]?.Name ?? "");
         Tilesets.OnDropDownClicked += _ =>
         {
-            TilesetPickerWindow win = new TilesetPickerWindow(this.Map);
+            TilesetPickerWindow win = new TilesetPickerWindow(Data.Tilesets[this.Map.TilesetIDs[0]]);
             win.OnClosed += _ =>
             {
-                if (win.ResultIDs.Equals(this.Map.TilesetIDs)) return;
-                this.Map.TilesetIDs = win.ResultIDs;
-                Tilesets.SetText(Data.Tilesets[this.Map.TilesetIDs[0]]?.Name ?? "");
+                if (!win.Apply) return;
+                this.Map.TilesetIDs = new List<int>() { win.Tileset.ID };
+                Tilesets.SetText(win.Tileset.Name);
             };
         };
 
