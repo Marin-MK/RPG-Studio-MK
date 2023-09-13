@@ -89,30 +89,18 @@ public partial class DataTypeSpecies
 		string? path = ODL.ImageResolver.ResolveFilename(Data.ProjectPath + $"/Graphics/Pokemon/Eggs/{spc.BaseSpecies.ID}{suffix}", FileResolverStrategy.CaseInsensitive | FileResolverStrategy.TryWithExtension);
 		if (path is not null) return path;
 		path = ODL.ImageResolver.ResolveFilename(Data.ProjectPath + $"/Graphics/Pokemon/Eggs/000{suffix}", FileResolverStrategy.CaseInsensitive | FileResolverStrategy.TryWithExtension);
-		if (path is not null) return path;
-		return null;
+		return path;
 	}
 
 	string ResolveCry(Species spc, string suffix = "")
 	{
 		if (spc.Form > 0)
 		{
-			string tryPath = Data.ProjectPath + $"/Audio/SE/Cries/{spc.BaseSpecies.ID}_{spc.Form}{suffix}";
-			if (Path.Exists(tryPath) ||
-				Path.Exists(tryPath + ".mp3") ||
-				Path.Exists(tryPath + ".ogg") ||
-				Path.Exists(tryPath + ".mid") ||
-				Path.Exists(tryPath + ".midi") ||
-				Path.Exists(tryPath + ".wav")) return tryPath;
+			string? tryPath = ODL.AudioResolver.ResolveFilename(Data.ProjectPath + $"/Audio/SE/Cries/{spc.BaseSpecies.ID}_{spc.Form}{suffix}");
+			if (tryPath is not null) return tryPath;
 		}
-		string path = Data.ProjectPath + $"/Audio/SE/Cries/{spc.BaseSpecies.ID}{suffix}";
-		if (Path.Exists(path) ||
-			Path.Exists(path + ".mp3") ||
-			Path.Exists(path + ".ogg") ||
-			Path.Exists(path + ".mid") ||
-			Path.Exists(path + ".midi") ||
-			Path.Exists(path + ".wav")) return path;
-		return null;
+		string? path = ODL.AudioResolver.ResolveFilename(Data.ProjectPath + $"/Audio/SE/Cries/{spc.BaseSpecies.ID}{suffix}");
+		return path;
 	}
 
 	void CreateSpritesContainer(DataContainer parent, Species spc)
@@ -338,7 +326,9 @@ public partial class DataTypeSpecies
 		playCry.SetText("Play");
 		playCry.OnClicked += _ =>
 		{
-			Audio.Play(ResolveCry(spc));
+			string? cryFile = ResolveCry(spc);
+			if (cryFile is null) return;
+            Audio.Play(cryFile);
 		};
 
 		Label faintCryLabel = new Label(parent);
@@ -354,7 +344,10 @@ public partial class DataTypeSpecies
 		playFaintCry.SetText("Play");
 		playFaintCry.OnClicked += _ =>
 		{
-			Audio.Play(ResolveCry(spc, "_faint") ?? ResolveCry(spc));
+			string? cryFile = ResolveCry(spc, "_faint");
+			cryFile ??= ResolveCry(spc);
+			if (cryFile is null) return;
+			Audio.Play(cryFile);
 		};
 
 		parent.UpdateSize();
