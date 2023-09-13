@@ -17,11 +17,9 @@ public class MapPropertiesWindow : PopupWindow
     TextBox MapName;
     NumericBox Width;
     NumericBox Height;
-    DropdownBox BGM;
-    DropdownBox BGS;
-    ListBox Tilesets;
-    Button EditTilesetsButton;
-    //ListBox Autotiles;
+    BrowserBox BGM;
+    BrowserBox BGS;
+    BrowserBox Tilesets;
 
     public MapPropertiesWindow(Map OldMap, bool MakeUndoEvent = true)
     {
@@ -29,53 +27,44 @@ public class MapPropertiesWindow : PopupWindow
         this.Map = (Map) OldMap.Clone();
         this.MakeUndoEvent = MakeUndoEvent;
         this.SetTitle($"Map Properties");
-        MinimumSize = MaximumSize = new Size(387, 312);
+        MinimumSize = MaximumSize = new Size(578, 344);
         SetSize(MaximumSize);
         this.Center();
 
-        Label settings = new Label(this);
-        settings.SetText("Info");
-        settings.SetFont(Fonts.ParagraphBold);
-        settings.SetPosition(19, 33);
-
-        GroupBox box1 = new GroupBox(this);
-        box1.SetPosition(19, 54);
-        box1.SetSize(350, 213);
-
-        Label namelabel = new Label(box1);
+        Label namelabel = new Label(this);
         namelabel.SetText("Map Name:");
         namelabel.SetFont(Fonts.Paragraph);
-        namelabel.SetPosition(7, 6);
-        MapName = new TextBox(box1);
-        MapName.SetPosition(6, 22);
-        MapName.SetSize(186, 27);
+        namelabel.SetPosition(27, 41);
+        MapName = new TextBox(this);
+        MapName.SetPosition(27, 65);
+        MapName.SetSize(225, 27);
         MapName.SetText(this.Map.Name);
         MapName.OnTextChanged += _ =>
         {
             this.Map.Name = MapName.Text;
         };
 
-        Label widthlabel = new Label(box1);
+        Label widthlabel = new Label(this);
         widthlabel.SetText("Width:");
         widthlabel.SetFont(Fonts.Paragraph);
-        widthlabel.SetPosition(7, 54);
-        Width = new NumericBox(box1);
-        Width.SetPosition(6, 70);
+        widthlabel.SetPosition(27, 112);
+        Width = new NumericBox(this);
+        Width.SetPosition(27, 134);
         Width.SetMinValue(1);
         Width.SetMaxValue(255);
-        Width.SetSize(90, 27);
+        Width.SetSize(97, 30);
         Width.SetValue(this.Map.Width);
         Width.OnValueChanged += delegate (BaseEventArgs e)
         {
             this.Map.Width = Width.Value;
         };
 
-        Label heightlabel = new Label(box1);
+        Label heightlabel = new Label(this);
         heightlabel.SetText("Height:");
         heightlabel.SetFont(Fonts.Paragraph);
-        heightlabel.SetPosition(108, 54);
-        Height = new NumericBox(box1);
-        Height.SetPosition(107, 70);
+        heightlabel.SetPosition(155, 112);
+        Height = new NumericBox(this);
+        Height.SetPosition(155, 132);
         Height.SetMinValue(1);
         Height.SetMaxValue(255);
         Height.SetSize(90, 27);
@@ -85,8 +74,8 @@ public class MapPropertiesWindow : PopupWindow
             this.Map.Height = Height.Value;
         };
 
-        CheckBox autoplaybgm = new CheckBox(box1);
-        autoplaybgm.SetPosition(7, 106);
+        CheckBox autoplaybgm = new CheckBox(this);
+        autoplaybgm.SetPosition(27, 187);
         autoplaybgm.SetText("Autoplay BGM");
         autoplaybgm.SetFont(Fonts.Paragraph);
         autoplaybgm.SetChecked(this.Map.AutoplayBGM);
@@ -96,16 +85,15 @@ public class MapPropertiesWindow : PopupWindow
             BGM.SetEnabled(autoplaybgm.Checked);
             BGM.SetText(autoplaybgm.Checked ? Map.BGM.Name : "");
         };
-        BGM = new DropdownBox(box1);
-        BGM.SetPosition(6, 123);
-        BGM.SetSize(186, 27);
+        BGM = new BrowserBox(this);
+        BGM.SetPosition(27, 209);
+        BGM.SetSize(225, 24);
         BGM.SetText(this.Map.AutoplayBGM ? this.Map.BGM.Name : "");
         BGM.SetEnabled(this.Map.AutoplayBGM);
-        BGM.SetReadOnly(true);
-        BGM.OnDropDownClicked += delegate (BaseEventArgs e)
+        BGM.OnDropDownClicked += _ =>
         {
             AudioPicker picker = new AudioPicker("Audio/BGM", this.Map.BGM.Name, this.Map.BGM.Volume, this.Map.BGM.Pitch);
-            picker.OnClosed += delegate (BaseEventArgs _)
+            picker.OnClosed += _ =>
             {
                 if (picker.Result != null)
                 {
@@ -117,8 +105,8 @@ public class MapPropertiesWindow : PopupWindow
             };
         };
 
-        CheckBox autoplaybgs = new CheckBox(box1);
-        autoplaybgs.SetPosition(7, 161);
+        CheckBox autoplaybgs = new CheckBox(this);
+        autoplaybgs.SetPosition(27, 240);
         autoplaybgs.SetText("Autoplay BGS");
         autoplaybgs.SetFont(Fonts.Paragraph);
         autoplaybgs.SetChecked(this.Map.AutoplayBGS);
@@ -128,16 +116,15 @@ public class MapPropertiesWindow : PopupWindow
             BGS.SetEnabled(autoplaybgs.Checked);
             BGS.SetText(autoplaybgs.Checked ? this.Map.BGS.Name : "");
         };
-        BGS = new DropdownBox(box1);
-        BGS.SetPosition(6, 178);
-        BGS.SetSize(186, 27);
+        BGS = new BrowserBox(this);
+        BGS.SetPosition(27, 262);
+        BGS.SetSize(225, 24);
         BGS.SetText(this.Map.AutoplayBGS ? this.Map.BGS.Name : "");
         BGS.SetEnabled(this.Map.AutoplayBGS);
-        BGS.SetReadOnly(true);
-        BGS.OnDropDownClicked += delegate (BaseEventArgs e)
+        BGS.OnDropDownClicked += _ =>
         {
             AudioPicker picker = new AudioPicker("Audio/BGS", this.Map.BGS.Name, this.Map.BGS.Volume, this.Map.BGS.Pitch);
-            picker.OnClosed += delegate (BaseEventArgs _)
+            picker.OnClosed += _ =>
             {
                 if (picker.Result != null)
                 {
@@ -149,46 +136,25 @@ public class MapPropertiesWindow : PopupWindow
             };
         };
 
-        Tilesets = new ListBox(box1);
-        Tilesets.SetPosition(212, 22);
-        List<ListItem> tilesetitems = new List<ListItem>();
-        for (int i = 0; i < this.Map.TilesetIDs.Count; i++)
-        {
-            int id = this.Map.TilesetIDs[i];
-            Tileset tileset = Data.Tilesets[id];
-            tilesetitems.Add(new ListItem(tileset));
-        }
-        Tilesets.SetSize(132, 150);
-        Tilesets.SetItems(tilesetitems);
-
-        EditTilesetsButton = new Button(box1);
-        EditTilesetsButton.SetPosition(206, 176);
-        EditTilesetsButton.SetSize(144, 32);
-        EditTilesetsButton.SetText("Edit Tileset");
-        EditTilesetsButton.OnClicked += _ => AddTileset();
-
-        /*Autotiles = new ListBox(box1);
-        Autotiles.SetPosition(312, 22);
-        List<ListItem> autotileitems = new List<ListItem>();
-        for (int i = 0; i < this.Map.AutotileIDs.Count; i++)
-        {
-            int id = this.Map.AutotileIDs[i];
-            Autotile autotile = Data.Autotiles[id];
-            autotileitems.Add(new ListItem(autotile));
-        }
-        Autotiles.SetItems(autotileitems);
-        Autotiles.SetButtonText("Add Autotile");
-        Autotiles.ListDrawer.OnButtonClicked += AddAutotile;*/
-
-        Label tilesetslabel = new Label(box1);
+        Label tilesetslabel = new Label(this);
         tilesetslabel.SetText("Tileset:");
         tilesetslabel.SetFont(Fonts.Paragraph);
-        tilesetslabel.SetPosition(213, 6);
+        tilesetslabel.SetPosition(324, 41);
 
-        //Label autotileslabel = new Label(box1);
-        //autotileslabel.SetText("Autotiles:");
-        //autotileslabel.SetFont(f);
-        //autotileslabel.SetPosition(313, 6);
+        Tilesets = new BrowserBox(this);
+        Tilesets.SetPosition(324, 65);
+        Tilesets.SetSize(225, 25);
+        Tilesets.SetText(Data.Tilesets[this.Map.TilesetIDs[0]]?.Name ?? "");
+        Tilesets.OnDropDownClicked += _ =>
+        {
+            TilesetPickerWindow win = new TilesetPickerWindow(this.Map);
+            win.OnClosed += _ =>
+            {
+                if (win.ResultIDs.Equals(this.Map.TilesetIDs)) return;
+                this.Map.TilesetIDs = win.ResultIDs;
+                Tilesets.SetText(Data.Tilesets[this.Map.TilesetIDs[0]]?.Name ?? "");
+            };
+        };
 
         CreateButton("Cancel", _ => Cancel());
         CreateButton("OK", _ => OK());
@@ -198,77 +164,6 @@ public class MapPropertiesWindow : PopupWindow
             new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
         });
     }
-
-    public void AddTileset()
-    {
-        TilesetPicker picker = new TilesetPicker(Map);
-        picker.OnClosed += delegate (BaseEventArgs e2)
-        {
-            bool update = false;
-            if (Map.TilesetIDs.Count != picker.ResultIDs.Count) update = true;
-            if (!update)
-            {
-                for (int i = 0; i < picker.ResultIDs.Count; i++)
-                {
-                    if (picker.ResultIDs[i] != Map.TilesetIDs[i])
-                    {
-                        update = true;
-                        break;
-                    }
-                }
-            }
-            if (update)
-            {
-                Map.TilesetIDs = picker.ResultIDs;
-                List<ListItem> tilesetitems = new List<ListItem>();
-                for (int i = 0; i < this.Map.TilesetIDs.Count; i++)
-                {
-                    int id = this.Map.TilesetIDs[i];
-                    Tileset tileset = Data.Tilesets[id];
-                    tilesetitems.Add(new ListItem(tileset));
-                }
-                Tilesets.SetItems(tilesetitems);
-                Map.AutotileIDs.Clear();
-                for (int i = 0; i < 7; i++)
-                {
-                    Map.AutotileIDs.Add(Data.Tilesets[Map.TilesetIDs[0]].ID * 7 + i);
-                }
-            }
-        };
-    }
-
-    /*public void AddAutotile(BaseEventArgs e)
-    {
-        AutotilePicker picker = new AutotilePicker(Map);
-        picker.OnClosed += delegate (BaseEventArgs e2)
-        {
-            bool update = false;
-            if (Map.AutotileIDs.Count != picker.ResultIDs.Count) update = true;
-            if (!update)
-            {
-                for (int i = 0; i < picker.ResultIDs.Count; i++)
-                {
-                    if (picker.ResultIDs[i] != Map.AutotileIDs[i])
-                    {
-                        update = true;
-                        break;
-                    }
-                }
-            }
-            if (update)
-            {
-                Map.AutotileIDs = picker.ResultIDs;
-                List<ListItem> autotileitems = new List<ListItem>();
-                for (int i = 0; i < this.Map.AutotileIDs.Count; i++)
-                {
-                    int id = this.Map.AutotileIDs[i];
-                    Autotile autotile = Data.Autotiles[id];
-                    autotileitems.Add(new ListItem(autotile));
-                }
-                Autotiles.SetItems(autotileitems);
-            }
-        };
-    }*/
 
     public void OK()
     {
