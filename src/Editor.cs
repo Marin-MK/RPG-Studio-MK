@@ -811,7 +811,7 @@ public static class Editor
     /// </summary>
     public static void RenameGame()
     {
-        GenericTextBoxWindow win = new GenericTextBoxWindow("Title", "Title:", ProjectSettings.ProjectName, true);
+        GenericTextBoxWindow win = new GenericTextBoxWindow("Change Title", "Game Title:", ProjectSettings.ProjectName);
         win.OnClosed += _ =>
         {
             if (!win.Apply) return;

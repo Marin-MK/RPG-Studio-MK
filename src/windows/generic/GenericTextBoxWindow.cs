@@ -9,24 +9,25 @@ public class GenericTextBoxWindow : PopupWindow
 
     TextBox TextBox;
 
-    public GenericTextBoxWindow(string Title, string Label, string Text, bool Wide = false)
+    public GenericTextBoxWindow(string Title, string Label, string Text, bool useMonospace = false)
     {
         this.Value = Text;
 
         SetTitle(Title);
-        MinimumSize = MaximumSize = new Size(Wide ? 300 : 200, 110);
+        MinimumSize = MaximumSize = new Size(350, 156);
         SetSize(MaximumSize);
         Center();
 
         TextBox = new TextBox(this);
-        TextBox.SetPosition(87, 30);
-        TextBox.SetSize(Wide ? 196 : 96, 27);
+        TextBox.SetPosition(25, 70);
+        TextBox.SetSize(302, 27);
         TextBox.SetText(Text);
+        TextBox.SetFont(useMonospace ? Fonts.Monospace : Fonts.Paragraph);
 
         Label TextLabel = new Label(this);
         TextLabel.SetFont(Fonts.Paragraph);
         TextLabel.SetText(Label);
-        TextLabel.SetPosition(TextBox.Position.X - TextLabel.Size.Width - 8, 34);
+        TextLabel.SetPosition(25, 44);
 
         CreateButton("Cancel", _ => Cancel());
         CreateButton("OK", _ => OK());
