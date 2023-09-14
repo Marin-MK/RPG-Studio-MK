@@ -33,7 +33,7 @@ It is important that users know all the relevant files and folders should they n
 
 ## Related projects
 Two new projects were created to help in development and distribution of RPG Studio MK: the Visual Designer program, and the Dynamic Installer.
-- [**Visual Designer**](https://github.com/Marin-MK/VisualDesigner) - This tool allows the user to very easily create widgets in the style and theme of RPG Studio MK, and allows users to create comprehensive windows and widgets, and manipulate almost all of their properties.
+- [**Visual Designer**](https://github.com/Marin-MK/MK-Visual-Designer) - This tool allows the user to very easily create widgets in the style and theme of RPG Studio MK, and allows users to create comprehensive windows and widgets, and manipulate almost all of their properties.
 The resulting widget or window can be saved as a PNG file, and this PNG file will have all the relevant data stored as metadata so that it can be opened in VisualDesigner again to edit it once more. It also allows users to export their work to basic C#, following the traditional popup-window code conventions.
 - [**Dynamic Installer**](https://github.com/Marin-MK/DynamicInstaller) - This tool allows users to install RPG Studio MK with the click of a button, and also serves as the automatic updater. When running this program, it is automatically stored and saved for use as the automatic updater.
 It will then attempt to install or update RPG Studio MK, depending on whether it was installed previously.
