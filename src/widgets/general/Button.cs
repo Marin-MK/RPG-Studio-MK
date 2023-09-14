@@ -18,6 +18,9 @@ public class Button : Widget
     public BaseEvent OnClicked;
 
     int MaxWidth;
+
+    bool isInside = false;
+    bool startedInside = false;
     bool DrawnText = false;
 
     public Button(IContainer Parent) : base(Parent)
@@ -181,9 +184,9 @@ public class Button : Widget
         Sprites["filler"].Bitmap.Unlock();
         if (this.Enabled)
         {
-            if (Mouse.LeftMousePressed && Mouse.LeftStartedInside && Mouse.Inside)
+            if (Mouse.LeftMousePressed && startedInside && isInside)
                 Sprites["filler"].Bitmap.FillRect(0, 0, w, h, new Color(32, 170, 221));
-            else if (Mouse.Inside || Mouse.LeftMousePressed && Mouse.LeftStartedInside)
+            else if (isInside || Mouse.LeftMousePressed && startedInside)
                 Sprites["filler"].Bitmap.FillGradientRect(0, 0, w, h, new Color(51, 86, 121), new Color(51, 86, 121), new Color(32, 170, 221), new Color(32, 170, 221));
             else Sprites["filler"].Bitmap.FillRect(0, 0, w, h, new Color(51, 86, 121));
         }
@@ -231,18 +234,35 @@ public class Button : Widget
         }
     }
 
-    public override void HoverChanged(MouseEventArgs e)
-    {
-        base.HoverChanged(e);
-        if (this.Enabled) RedrawFiller();
-        if (Mouse.Inside && !e.CursorHandled) Input.SetCursor(CursorType.Arrow);
-    }
+	public override void MouseMoving(MouseEventArgs e)
+	{
+		base.MouseMoving(e);
+        int rx = e.X - Viewport.X + LeftCutOff;
+        int ry = e.Y - Viewport.Y + TopCutOff;
+        bool newInside;
+        if (rx < 5 || rx >= Size.Width - 5 || ry < 5 || ry >= Size.Height - 5)
+        {
+            if (!e.CursorHandled) Input.SetCursor(CursorType.Arrow);
+            newInside = false;
+        }
+        else
+        {
+            newInside = true;
+        }
+        if (newInside != isInside)
+        {
+            isInside = newInside;
+            RedrawFiller();
+        }
+        else isInside = newInside;
+	}
 
-    public override void LeftMousePress(MouseEventArgs e)
+	public override void LeftMousePress(MouseEventArgs e)
     {
         base.LeftMousePress(e);
-        if (Mouse.Inside && Repeatable && this.Enabled)
+        if (isInside && Repeatable && this.Enabled)
         {
+            startedInside = true;
             if (TimerPassed("press"))
             {
                 OnClicked?.Invoke(new BaseEventArgs());
@@ -257,9 +277,11 @@ public class Button : Widget
         }
     }
 
-    public override void LeftMouseDownInside(MouseEventArgs e)
+    public override void LeftMouseDown(MouseEventArgs e)
     {
-        base.LeftMouseDownInside(e);
+        base.LeftMouseDown(e);
+        if (!isInside) return;
+        startedInside = true;
         if (!this.Enabled) return;
         if (Repeatable)
         {
@@ -274,14 +296,15 @@ public class Button : Widget
         base.LeftMouseUp(e);
         if (TimerExists("press")) DestroyTimer("press");
         if (TimerExists("initial")) DestroyTimer("initial");
-        if (Mouse.LeftStartedInside && !Repeatable && this.Enabled)
+        if (startedInside && !Repeatable && this.Enabled)
         {
-            if (Mouse.Inside)
+            if (isInside)
             {
                 this.OnClicked?.Invoke(new BaseEventArgs());
                 if (!Disposed && !this.Enabled) RedrawText();
             }
         }
+        startedInside = false;
         if (!Disposed && Graphics.CanUpdate()) RedrawFiller();
     }
 }

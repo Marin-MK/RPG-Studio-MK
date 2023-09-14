@@ -104,7 +104,14 @@ public static class Editor
 #if RELEASE
         return;
 #endif
+        PopupWindow win = new PopupWindow();
+        win.SetSize(200, 200);
+        win.Center();
 
+        Button btn = new Button(win);
+        btn.SetPosition(50, 100);
+        btn.SetSize(100, 40);
+        btn.SetText("Press!");
 	}
 
     /// <summary>
