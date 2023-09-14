@@ -5,6 +5,9 @@ RPG Studio MK is a game creation program that is tailored to the creation of 2D 
 
 The program was written in C# using .NET 7, and uses Ruby 2.7 at runtime.
 
+## License
+RPG Studio MK is licensed under the [**GNU General Public License v3.0 (GPLv3)**](https://github.com/Marin-MK/RPG-Studio-MK/blob/master/LICENSE).
+
 ## Support
 RPG Studio MK is guaranteed to have bugs, oversights, missing features, and other issues. [**Please report them here**](https://github.com/Marin-MK/RPG-Studio-MK/issues), and I will look at them at my earliest convenience.
 
