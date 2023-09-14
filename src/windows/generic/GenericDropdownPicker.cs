@@ -15,20 +15,20 @@ public class GenericDropdownPicker : PopupWindow
         this.Value = Index;
 
         SetTitle(Title);
-        MinimumSize = MaximumSize = new Size(200, 110);
+        MinimumSize = MaximumSize = new Size(272, 166);
         SetSize(MaximumSize);
         Center();
 
         DropdownBox = new DropdownBox(this);
-        DropdownBox.SetPosition(87, 30);
-        DropdownBox.SetSize(96, 27);
+        DropdownBox.SetPosition(31, 74);
+        DropdownBox.SetSize(210, 24);
         DropdownBox.SetItems(Items.Select(i => new ListItem(i)).ToList());
         DropdownBox.SetSelectedIndex(Value);
 
         Label TextLabel = new Label(this);
         TextLabel.SetFont(Fonts.Paragraph);
         TextLabel.SetText(Label);
-        TextLabel.SetPosition(DropdownBox.Position.X - TextLabel.Size.Width - 8, 34);
+        TextLabel.SetPosition(31, 50);
 
         CreateButton("Cancel", _ => Cancel());
         CreateButton("OK", _ => OK());

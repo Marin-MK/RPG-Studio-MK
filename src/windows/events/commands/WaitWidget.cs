@@ -24,7 +24,7 @@ public class WaitWidget : BaseCommandWidget
 
     protected override void Edit(EditEvent Continue)
     {
-        GenericNumberPicker win = new GenericNumberPicker("Wait", "Frames:", (int) (long) Command.Parameters[0], 1, null);
+        GenericNumberPicker win = new GenericNumberPicker("Wait", "Wait Time:", (int) (long) Command.Parameters[0], 1, null, "frames");
         win.OnClosed += _ =>
         {
             if (!win.Apply)

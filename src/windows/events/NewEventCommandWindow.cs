@@ -125,7 +125,7 @@ public class NewEventCommandWindow : PopupWindow
         });
         Add(CommandCode.Wait, "Wait", 0, Insert =>
         {
-            GenericNumberPicker win = new GenericNumberPicker("Wait", "Frames", 4, 1, null);
+            GenericNumberPicker win = new GenericNumberPicker("Wait", "Wait Time:", 4, 1, null, "frames");
             win.OnClosed += _ =>
             {
                 if (!win.Apply) return;

@@ -38,15 +38,17 @@ public class EditMoveRouteWindow : PopupWindow
         this.OnWidgetSelected += WidgetSelected;
 
         TargetBox = new DropdownBox(this);
-        TargetBox.SetPosition(15, 35);
+        TargetBox.SetPosition(15, 40);
         TargetBox.SetSize(180, 25);
         TargetBox.SetText("This event");
         TargetBox.SetEnabled(!ThisEventOnly);
 
-        List<ListItem> Items = new List<ListItem>();
-        Items.Add(new ListItem("This event"));
-        Items.Add(new ListItem("Player"));
-        List<int> keys = Map.Events.Keys.ToList();
+		List<ListItem> Items = new List<ListItem>
+		{
+			new ListItem("This event"),
+			new ListItem("Player")
+		};
+		List<int> keys = Map.Events.Keys.ToList();
         keys.Sort();
         for (int i = 0; i < keys.Count; i++)
         {
@@ -62,7 +64,7 @@ public class EditMoveRouteWindow : PopupWindow
 
         MoveBox = new ListBox(this);
         MoveBox.SetVDocked(true);
-        MoveBox.SetPadding(15, 64, 0, 64);
+        MoveBox.SetPadding(15, 71, 0, 100);
         MoveBox.SetWidth(180);
         MoveBox.SetContextMenuList(new List<IMenuItem>()
         {
@@ -97,7 +99,7 @@ public class EditMoveRouteWindow : PopupWindow
 
         CheckBox RepeatBox = new CheckBox(this);
         RepeatBox.SetBottomDocked(true);
-        RepeatBox.SetPadding(20, 0, 0, 42);
+        RepeatBox.SetPadding(20, 0, 0, 78);
         RepeatBox.SetFont(Fonts.Paragraph);
         RepeatBox.SetText("Repeat");
         RepeatBox.SetChecked(MoveRoute.Repeat);
@@ -105,7 +107,7 @@ public class EditMoveRouteWindow : PopupWindow
 
         CheckBox SkippableBox = new CheckBox(this);
         SkippableBox.SetBottomDocked(true);
-        SkippableBox.SetPadding(20, 0, 0, 22);
+        SkippableBox.SetPadding(20, 0, 0, 58);
         SkippableBox.SetFont(Fonts.Paragraph);
         SkippableBox.SetText("Skippable");
         SkippableBox.SetChecked(MoveRoute.Skippable);
@@ -118,7 +120,7 @@ public class EditMoveRouteWindow : PopupWindow
             new GridSize(1)
         );
         ButtonGrid.SetDocked(true);
-        ButtonGrid.SetPadding(MoveBox.Padding.Left + MoveBox.Size.Width + 8, TargetBox.Position.Y, 15, 48);
+        ButtonGrid.SetPadding(MoveBox.Padding.Left + MoveBox.Size.Width + 8, TargetBox.Position.Y - 5, 15, 48);
 
         VStackPanel Column1 = new VStackPanel(ButtonGrid);
         VStackPanel Column2 = new VStackPanel(ButtonGrid);
@@ -181,7 +183,7 @@ public class EditMoveRouteWindow : PopupWindow
         });
         AddButtonElaborate("Wait...", 0, MoveCode.Wait, (code, cmd, Add) =>
         {
-            GenericNumberPicker win = new GenericNumberPicker("Wait", "Wait time:", (int) (long) (cmd?.Parameters[0] ?? 4L), 1, null);
+            GenericNumberPicker win = new GenericNumberPicker("Wait", "Wait time:", (int) (long) (cmd?.Parameters[0] ?? 4L), 1, null, "frames");
             win.OnClosed += _ =>
             {
                 if (!win.Apply) return;

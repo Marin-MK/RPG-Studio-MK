@@ -17,13 +17,13 @@ public class GenericDoubleNumberPicker : PopupWindow
         this.Value2 = Value2;
 
         SetTitle(Title);
-        MinimumSize = MaximumSize = new Size(200, 150);
+        MinimumSize = MaximumSize = new Size(337, 169);
         SetSize(MaximumSize);
         Center();
 
         Number1Box = new NumericBox(this);
-        Number1Box.SetPosition(90, 30);
-        Number1Box.SetSize(90, 27);
+        Number1Box.SetPosition(36, 69);
+        Number1Box.SetSize(116, 30);
         if (MinValue1 != null) Number1Box.SetMinValue((int) MinValue1);
         if (MaxValue1 != null) Number1Box.SetMaxValue((int) MaxValue1);
         Number1Box.SetValue(Value1);
@@ -31,12 +31,11 @@ public class GenericDoubleNumberPicker : PopupWindow
         Label Text1Label = new Label(this);
         Text1Label.SetFont(Fonts.Paragraph);
         Text1Label.SetText(Label1);
-        Text1Label.RedrawText(true);
-        Text1Label.SetPosition(Number1Box.Position.X - Text1Label.Size.Width - 8, 34);
+        Text1Label.SetPosition(36, 50);
 
         Number2Box = new NumericBox(this);
-        Number2Box.SetPosition(90, 70);
-        Number2Box.SetSize(90, 27);
+        Number2Box.SetPosition(188, 69);
+        Number2Box.SetSize(116, 30);
         if (MinValue2 != null) Number2Box.SetMinValue((int) MinValue2);
         if (MaxValue2 != null) Number2Box.SetMaxValue((int) MaxValue2);
         Number2Box.SetValue(Value2);
@@ -44,8 +43,7 @@ public class GenericDoubleNumberPicker : PopupWindow
         Label Text2Label = new Label(this);
         Text2Label.SetFont(Fonts.Paragraph);
         Text2Label.SetText(Label2);
-        Text2Label.RedrawText(true);
-        Text2Label.SetPosition(Number2Box.Position.X - Text2Label.Size.Width - 8, 74);
+        Text2Label.SetPosition(188, 50);
 
         CreateButton("Cancel", _ => Cancel());
         CreateButton("OK", _ => OK());

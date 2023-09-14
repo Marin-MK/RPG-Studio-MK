@@ -17,33 +17,31 @@ public class GenericTextNumberWindow : PopupWindow
         this.Value2 = Value2;
 
         SetTitle(Title);
-        MinimumSize = MaximumSize = new Size(230, 150);
+        MinimumSize = MaximumSize = new Size(337, 169);
         SetSize(MaximumSize);
         Center();
 
         TextBox = new TextBox(this);
-        TextBox.SetPosition(90, 30);
-        TextBox.SetSize(120, 27);
-        TextBox.SetText(Value1);
+        TextBox.SetPosition(36, 69);
+        TextBox.SetSize(116, 30);
+		TextBox.SetText(Value1);
 
         Label Text1Label = new Label(this);
         Text1Label.SetFont(Fonts.Paragraph);
         Text1Label.SetText(Label1);
-        Text1Label.RedrawText(true);
-        Text1Label.SetPosition(TextBox.Position.X - Text1Label.Size.Width - 8, 34);
+		Text1Label.SetPosition(36, 50);
 
-        NumericBox = new NumericBox(this);
-        NumericBox.SetPosition(90, 70);
-        NumericBox.SetSize(120, 27);
-        if (MinValue2 != null) NumericBox.SetMinValue((int) MinValue2);
+		NumericBox = new NumericBox(this);
+		NumericBox.SetPosition(188, 69);
+		NumericBox.SetSize(116, 30);
+		if (MinValue2 != null) NumericBox.SetMinValue((int) MinValue2);
         if (MaxValue2 != null) NumericBox.SetMaxValue((int) MaxValue2);
         NumericBox.SetValue(Value2);
 
         Label Text2Label = new Label(this);
         Text2Label.SetFont(Fonts.Paragraph);
         Text2Label.SetText(Label2);
-        Text2Label.RedrawText(true);
-        Text2Label.SetPosition(NumericBox.Position.X - Text2Label.Size.Width - 8, 74);
+		Text2Label.SetPosition(188, 50);
 
         CreateButton("Cancel", _ => Cancel());
         CreateButton("OK", _ => OK());
