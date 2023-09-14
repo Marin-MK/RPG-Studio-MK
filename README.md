@@ -11,6 +11,8 @@ RPG Studio MK is licensed under the [**GNU General Public License v3.0 (GPLv3)**
 ## Support
 RPG Studio MK is guaranteed to have bugs, oversights, missing features, and other issues. [**Please report them here**](https://github.com/Marin-MK/RPG-Studio-MK/issues), and I will look at them at my earliest convenience.
 
+You can also find us on [**Discord**](https://discord.gg/Mmt3a3Y)!
+
 ## Installation
 RPG Studio MK runs on all major platforms; Windows, Linux, and macOS. It can be installed by running the installer program for your platform:
 - [**Windows Installer**](https://reliccastle.com/rpg-studio-mk/rpg-studio-mk-installer-win.exe)
