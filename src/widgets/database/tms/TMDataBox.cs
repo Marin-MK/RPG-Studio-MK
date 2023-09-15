@@ -22,14 +22,14 @@ public partial class DataTypeTMs
 		DropdownBox typeBox = new DropdownBox(parent);
 		typeBox.SetPosition(431, 71);
 		typeBox.SetSize(150, 24);
-		typeBox.SetItems(new List<ListItem>()
+		typeBox.SetItems(new List<TreeNode>()
 		{
-			new ListItem("TM"),
-			new ListItem("TR"),
-			new ListItem("HM")
+			new TreeNode("TM"),
+			new TreeNode("TR"),
+			new TreeNode("HM")
 		});
 		Match m = Regex.Match(tm.ID, @"(TM|TR|HM)(\d+)");
-		if (m.Success) typeBox.SetSelectedIndex(typeBox.Items.FindIndex(item => item.Name == m.Groups[1].Value));
+		if (m.Success) typeBox.SetSelectedIndex(typeBox.Items.FindIndex(item => item.Text == m.Groups[1].Value));
 
 		Label numberLabel = new Label(parent);
 		numberLabel.SetPosition(366, 114);
@@ -45,7 +45,7 @@ public partial class DataTypeTMs
 		numberBox.OnPlusClicked += _ =>
 		{
 			// Update name, num, id
-			string type = typeBox.SelectedItem.Name;
+			string type = typeBox.SelectedItem.Text;
 			Match m = Regex.Match(tm.ID, @"(TM|TR|HM)(\d+)");
 			int num = Convert.ToInt32(m.Groups[2].Value);
 			int? result = GetFreeMachineNumber(type, num, 1);
@@ -66,7 +66,7 @@ public partial class DataTypeTMs
 		numberBox.OnMinusClicked += _ =>
 		{
 			// Update name, num, id
-			string type = typeBox.SelectedItem.Name;
+			string type = typeBox.SelectedItem.Text;
 			Match m = Regex.Match(tm.ID, @"(TM|TR|HM)(\d+)");
 			int num = Convert.ToInt32(m.Groups[2].Value);
 			if (num <= 0) return;
@@ -88,7 +88,7 @@ public partial class DataTypeTMs
 		numberBox.OnValueChanged += _ =>
 		{
 			// Update name, num, id
-			string type = typeBox.SelectedItem.Name;
+			string type = typeBox.SelectedItem.Text;
 			Match m = Regex.Match(tm.ID, @"(TM|TR|HM)(\d+)");
 			int currentNum = Convert.ToInt32(m.Groups[2].Value);
 			int boxNum = numberBox.Value;
@@ -164,7 +164,7 @@ public partial class DataTypeTMs
 		typeBox.OnSelectionChanged += _ =>
 		{
 			Data.TMsHMs.Remove(tm.ID);
-			tm.ID = typeBox.SelectedItem.Name + "00";
+			tm.ID = typeBox.SelectedItem.Text + "00";
 			Data.TMsHMs.Add(tm.ID, tm);
 			numberBox.OnPlusClicked?.Invoke(new BaseEventArgs());
 		};

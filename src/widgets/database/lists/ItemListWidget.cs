@@ -16,11 +16,11 @@ public class ItemListWidget : DropdownListWidget<ItemDropdownBox>
 
 	public void SetItems(List<ItemResolver> items)
 	{
-		SetItems(items.Select(item => new ListItem(item.Valid ? item.Item.Name : item.ID, item.Valid ? item.Item : item.ID)).ToList());
+		SetItems(items.Select(item => new TreeNode(item.Valid ? item.Item.Name : item.ID, item.Valid ? item.Item : item.ID)).ToList());
 	}
 
 	public void SetItems(List<Item> items)
 	{
-		SetItems(items.Select(item => new ListItem(item.Name, item)).ToList());
+		SetItems(items.Select(item => new TreeNode(item.Name, item)).ToList());
 	}
 }

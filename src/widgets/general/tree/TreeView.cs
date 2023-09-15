@@ -128,6 +128,18 @@ public class TreeView : Widget
     /// Called whenever the tree structure is rearranged at any point.
     /// </summary>
     public GenericObjectEvent<TreeNode> OnNodeGlobalIndexChanged;
+    /// <summary>
+    /// Called whenever the visibility of the vertical scrollbar changes.
+    /// </summary>
+    public BoolEvent OnVScrollBarVisibilityChanged;
+    /// <summary>
+    /// Called whenever either the horizontal or vertical scrollbar visility changes.
+    /// </summary>
+    public GenericObjectEvent<(bool, bool)> OnScrollBarVisiblityChanged;
+    /// <summary>
+    /// Called whenever the visiblity of the horizontal scrollbar changes.
+    /// </summary>
+    public BoolEvent OnHScrollBarVisibilityChanged;
 
     /// <summary>
     /// Keeps track of the y positioning of drawn nodes.
@@ -226,6 +238,18 @@ public class TreeView : Widget
         hs.SetBottomDocked(true);
         ScrollContainer.SetHScrollBar(hs);
         ScrollContainer.HAutoScroll = true;
+
+        vs.OnVisibilityChanged += _ =>
+        {
+            OnVScrollBarVisibilityChanged?.Invoke(new BoolEventArgs(vs.Visible));
+            OnScrollBarVisiblityChanged?.Invoke(new GenericObjectEventArgs<(bool, bool)>((vs.Visible, hs.Visible)));
+        };
+        hs.OnVisibilityChanged += _ =>
+        {
+            OnHScrollBarVisibilityChanged?.Invoke(new BoolEventArgs(hs.Visible));
+            OnScrollBarVisiblityChanged?.Invoke(new GenericObjectEventArgs<(bool, bool)>((vs.Visible, hs.Visible)));
+        };
+
 
         SpriteContainer = new Container(ScrollContainer);
         SpriteContainer.Sprites["hover"] = new Sprite(SpriteContainer.Viewport, new SolidBitmap(1, 1, new Color(55, 187, 255)));
@@ -650,7 +674,7 @@ public class TreeView : Widget
     /// <summary>
     /// Called whenever the Down key is pressed.
     /// </summary>
-	private void MoveDown()
+	public void MoveDown()
     {
         TreeNode nextNode = (TreeNode) SelectedNode;
         nextNode = nextNode.GetNextNode(false);
@@ -663,7 +687,7 @@ public class TreeView : Widget
     /// <summary>
     /// Called whenever the Up key is pressed.
     /// </summary>
-    private void MoveUp()
+    public void MoveUp()
     {
         TreeNode prevNode = (TreeNode) SelectedNode;
         prevNode = prevNode.GetPreviousNode(false);
@@ -707,7 +731,7 @@ public class TreeView : Widget
     /// <summary>
     /// Called whenever the Page Down key is pressed.
     /// </summary>
-    private void MovePageDown()
+    public void MovePageDown()
     {
         int scrolledY = this.AutoResize ? ScrollContainer.ScrolledY : Parent.ScrolledY;
         int height = this.AutoResize ? ScrollContainer.Size.Height : Parent.Size.Height;
@@ -753,7 +777,7 @@ public class TreeView : Widget
     /// <summary>
     /// Called whenever the Page Up key is pressed.
     /// </summary>
-    private void MovePageUp()
+    public void MovePageUp()
     {
 		int scrolledY = this.AutoResize ? ScrollContainer.ScrolledY : Parent.ScrolledY;
 		int height = this.AutoResize ? ScrollContainer.Size.Height : Parent.Size.Height;
@@ -849,13 +873,25 @@ public class TreeView : Widget
     /// <param name="NewNode">The node to insert.</param>
     public void InsertNode(TreeNode ParentNode, int? InsertionIndex, ITreeNode NewNode)
     {
+        if (InsertionIndex == -1) InsertionIndex = null;
         bool DidNotHaveChildren = ParentNode.HasChildren;
         bool RedrawPrevSibling = ParentNode.HasChildren && (InsertionIndex == null || InsertionIndex == ParentNode.Children.Count);
         if (!ParentNode.Expanded && ParentNode.HasChildren) SetExpanded(ParentNode, true);
+        ParentNode.InsertChild(InsertionIndex ?? ParentNode.Children.Count, NewNode);
+        if (BGSprite.Bitmap is null || BGSprite.Bitmap.Disposed)
+        {
+			// We need to recreate the bitmaps first before we can draw
+			// Redrawing all nodes now that we've added our new node, has the effect of 
+			LastDrawData.Clear();
+			(int RootNodeCount, int RootSepHeight) = Root.GetChildrenHeight(false);
+			int MaxWidth = CalculateMaxWidth(Root) + ExtraXScrollArea;
+			BGSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight);
+			TXTSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight);
+			TXTSprite.Bitmap.Font = this.Font;
+		}
+        UpdateSize();
         BGSprite.Bitmap.Unlock();
         TXTSprite.Bitmap.Unlock();
-        ParentNode.InsertChild(InsertionIndex ?? ParentNode.Children.Count, NewNode);
-        UpdateSize();
         (int CountUntil, int SepHeightUntil) = ParentNode.GetChildrenHeightUntil(NewNode, false);
         int Y = GetDrawnYCoord(ParentNode) + CountUntil * LineHeight + SepHeightUntil;
         if (ParentNode != NewNode.Root) Y += LineHeight; // Add the height of the parent node itself, unless the parent node is the root (because it is not displayed)
@@ -895,7 +931,7 @@ public class TreeView : Widget
             Index++;
             Y = RedrawNode(n, Y, true, () => Index);
         });
-        if (!DidNotHaveChildren)
+        if (!DidNotHaveChildren && ParentNode != Root)
         {
             BGSprite.Bitmap.FillRect(0, movy - LineHeight, BGSprite.Bitmap.Width, LineHeight, Color.ALPHA);
             TXTSprite.Bitmap.FillRect(0, movy - LineHeight, TXTSprite.Bitmap.Width, LineHeight, Color.ALPHA);
@@ -914,6 +950,7 @@ public class TreeView : Widget
         }
         BGSprite.Bitmap.Lock();
         TXTSprite.Bitmap.Lock();
+        if (SelectedNode == null && RequireSelection) SetSelectedNode(NewNode, false);
     }
 
     /// <summary>
@@ -925,6 +962,7 @@ public class TreeView : Widget
     public List<ITreeNode> DeleteNode(ITreeNode Node, bool DeleteChildren)
     {
         TreeNode Parent = Node.Parent;
+        TreeNode? PreviousSibling = (Node as TreeNode)?.GetPreviousSibling();
         TreeNode? NextSibling = (Node as TreeNode)?.GetNextSibling();
         int OldDepth = Node.Depth;
         int ChildIndex = Parent.Children.IndexOf(Node);
@@ -964,6 +1002,7 @@ public class TreeView : Widget
         int NewWidth = SpriteContainer.Size.Width - ExtraXScrollArea;
         BGSprite.Bitmap = BGSprite.Bitmap.Resize(NewWidth, BGSprite.Bitmap.Height - shift);
         TXTSprite.Bitmap = TXTSprite.Bitmap.Resize(NewWidth, TXTSprite.Bitmap.Height - shift);
+        bool wasRelocked = false;
         UpdateSize(false);
         TXTSprite.Bitmap.Font = this.Font;
         TXTSprite.Bitmap.BlendMode = BlendMode.Addition;
@@ -989,11 +1028,13 @@ public class TreeView : Widget
                 Y = RedrawNode(n, Y, true, () => Index);
                 Index++;
             });
+            wasRelocked = true;
             BGSprite.Bitmap.Lock();
             TXTSprite.Bitmap.Lock();
             NodeToSelect = ((TreeNode) Node).Children[0];
         }
         else if (NextSibling != null) NodeToSelect = NextSibling;
+        else if (PreviousSibling != null) NodeToSelect = PreviousSibling;
         else NodeToSelect = Parent;
         if (ChildIndex == Parent.Children.Count) // We deleted the last node in the parent's list of nodes
         {
@@ -1013,12 +1054,13 @@ public class TreeView : Widget
                 // to get the proper line to show up.
                 // Or if we're smart about it, similarly to what we did for inserting nodes, we can delete just the line, since we know its start and end point.
                 // We can simply delete the part of the line that's no longer accurate and save ourselves the trouble of redrawing god knows how many nodes.
-                ITreeNode PreviousSibling = Parent.Children[ChildIndex - 1];
+                ITreeNode prevNode = Parent.Children[ChildIndex - 1];
                 int x = (OldDepth - 1) * DepthIndent + XOffset;
-                int sy = GetDrawnYCoord(PreviousSibling) + 12;
+                int sy = GetDrawnYCoord(prevNode) + 12;
                 int ey = movy - shift - 1;
                 BGSprite.Bitmap.DrawLine(x + 19 - DepthIndent, sy, x + 19 - DepthIndent, ey, Color.ALPHA);
             }
+            wasRelocked = true;
             BGSprite.Bitmap.Lock();
             TXTSprite.Bitmap.Lock();
         }
@@ -1030,6 +1072,7 @@ public class TreeView : Widget
             else NodeToSelect = null;
         }
         if (!this.Root.Contains(SelectedNode)) SetSelectedNode(NodeToSelect, false);
+        if (!wasRelocked) BGSprite.Bitmap.Relock();
         if (DeleteChildren && Node is TreeNode)
         {
             List<ITreeNode> List = ((TreeNode) Node).GetAllChildren(true);

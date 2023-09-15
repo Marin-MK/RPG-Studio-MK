@@ -138,7 +138,7 @@ public partial class DataTypeSpecies : DataTypeBase
 	{
 		List<TreeNode> SpeciesItems = new List<TreeNode>();
         TreeNode? nodeToSelect = null;
-		foreach (ListItem listItem in Data.Sources.SpeciesAndForms)
+		foreach (TreeNode listItem in Data.Sources.SpeciesAndForms)
 		{
             Species spc = (Species) listItem.Object;
 			if (spc.Form != 0)

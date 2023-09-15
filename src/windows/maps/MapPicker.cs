@@ -43,11 +43,11 @@ public class MapPicker : PopupWindow
         Maps = new ListBox(this);
         Maps.SetPosition(25, 44);
         Maps.SetSize(151, 380);
-        List<ListItem> items = new List<ListItem>();
+        List<TreeNode> items = new List<TreeNode>();
         foreach (Map Map in this.MapList)
         {
             string Name = ShowIDs ? $"{Utilities.Digits(Map.ID, 3)}: {Map.Name}" : Map.Name;
-            items.Add(new ListItem(Name, Map));
+            items.Add(new TreeNode(Name, Map));
         }
         Maps.SetItems(items);
         Maps.OnSelectionChanged += delegate (BaseEventArgs e)
@@ -87,7 +87,7 @@ public class MapPicker : PopupWindow
     public void UpdatePreview()
     {
         Map data = null;
-        if (Maps.SelectedIndex >= 0) data = Maps.Items[Maps.SelectedIndex].Object as Map;
+        if (Maps.SelectedIndex >= 0) data = (Map) Maps.SelectedItem.Object;
         MapBox.SetSize(1, 1);
         if (data == null) return;
         MapBox.DisposeBitmap();
@@ -98,7 +98,7 @@ public class MapPicker : PopupWindow
     {
         if (Maps.SelectedIndex >= 0)
         {
-            Map map = (Maps.Items[Maps.SelectedIndex].Object as Map);
+            Map map = (Map)Maps.SelectedItem.Object;
             this.ChosenMap = map;
         }
         else

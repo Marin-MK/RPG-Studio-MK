@@ -42,7 +42,7 @@ public class NewProjectWindow : PopupWindow
         kitbox.SetFont(Fonts.Paragraph);
         kitbox.SetPosition(246, 70);
         kitbox.SetSize(190, 24);
-        List<ListItem> Items = KitManager.GetAvailableKits().Select(kit => new ListItem(kit.DisplayName, kit)).ToList();
+        List<TreeNode> Items = KitManager.GetAvailableKits().Select(kit => new TreeNode(kit.DisplayName, kit)).ToList();
         kitbox.SetItems(Items);
 
         Label folderlabel = new Label(this);

@@ -426,11 +426,11 @@ public class DataTypeTilesets : DataTypeBase
 
     public void RedrawList()
     {
-        List<ListItem> TilesetItems = new List<ListItem>();
+        List<TreeNode> TilesetItems = new List<TreeNode>();
         for (int i = 1; i <= Editor.ProjectSettings.TilesetCapacity; i++)
         {
             string name = $"{Utilities.Digits(i, 3)}: {Data.Tilesets[i]?.Name}";
-            ListItem item = new ListItem(name, Data.Tilesets[i]);
+			TreeNode item = new TreeNode(name, Data.Tilesets[i]);
             TilesetItems.Add(item);
         }
         TilesetList.SetItems(TilesetItems);
@@ -444,7 +444,7 @@ public class DataTypeTilesets : DataTypeBase
 
     public void SetTileset(Tileset Tileset, bool ForceUpdate = false)
     {
-        ListItem Item = TilesetList.Items.Find(i => i.Object == Tileset);
+		TreeNode Item = TilesetList.Items.Find(i => i.Object == Tileset);
         if (Item == null) throw new Exception("Could not find Tileset list item.");
         TilesetList.SetSelectedIndex(TilesetList.Items.IndexOf(Item));
         TilesetContainer.SetTileset(Tileset, ForceUpdate);

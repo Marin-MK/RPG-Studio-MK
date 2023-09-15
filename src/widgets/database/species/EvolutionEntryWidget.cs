@@ -48,7 +48,7 @@ public class EvolutionEntryWidget : Widget
 		methodBox = new DropdownBox(this);
         methodBox.SetPosition(290, 3);
         methodBox.SetWidth(280);
-        methodBox.SetItems(Data.HardcodedData.EvolutionMethods.Select(m => new ListItem(m)).ToList());
+        methodBox.SetItems(Data.HardcodedData.EvolutionMethods.Select(m => new TreeNode(m)).ToList());
         methodBox.OnSelectionChanged += _ =>
         {
             if (internalSwitch || isPrevo) return;

@@ -126,19 +126,19 @@ public class MultipleTilesetPickerWindow : PopupWindow
             }
         });*/
 
-        List<ListItem> AvailableList = new List<ListItem>();
-        List<ListItem> InUseList = new List<ListItem>();
+        List<TreeNode> AvailableList = new List<TreeNode>();
+        List<TreeNode> InUseList = new List<TreeNode>();
 
         // Populate lists
         for (int i = 0; i < Map.TilesetIDs.Count; i++)
         {
-            InUseList.Add(new ListItem($"{Utilities.Digits(Map.TilesetIDs[i], 3)}: {Data.Tilesets[Map.TilesetIDs[i]].Name}", Data.Tilesets[Map.TilesetIDs[i]]));
+            InUseList.Add(new TreeNode($"{Utilities.Digits(Map.TilesetIDs[i], 3)}: {Data.Tilesets[Map.TilesetIDs[i]].Name}", Data.Tilesets[Map.TilesetIDs[i]]));
         }
         for (int i = 1; i < Data.Tilesets.Count; i++)
         {
             if (!Map.TilesetIDs.Contains(i))
             {
-                AvailableList.Add(new ListItem($"{Utilities.Digits(i, 3)}: {Data.Tilesets[i]?.Name}", Data.Tilesets[i]));
+                AvailableList.Add(new TreeNode($"{Utilities.Digits(i, 3)}: {Data.Tilesets[i]?.Name}", Data.Tilesets[i]));
             }
         }
 
@@ -223,10 +223,10 @@ public class MultipleTilesetPickerWindow : PopupWindow
 
     private void ActionButtonClicked(BaseEventArgs e)
     {
-        ListItem item = Available.SelectedItem;
+		TreeNode item = Available.SelectedItem;
         Available.Items.Remove(item);
-        Available.Items.Add(new ListItem($"{Utilities.Digits(((Tileset)InUse.Items[0].Object).ID, 3)}: {((Tileset)InUse.Items[0].Object).Name}", InUse.Items[0].Object));
-        Available.Items.Sort((ListItem i1, ListItem i2) => { return ((Tileset)i1.Object).ID.CompareTo(((Tileset)i2.Object).ID); });
+        Available.Items.Add(new TreeNode($"{Utilities.Digits(((Tileset)InUse.Items[0].Object).ID, 3)}: {((Tileset) InUse.Items[0].Object).Name}", InUse.Items[0].Object));
+        Available.Items.Sort((TreeNode i1, TreeNode i2) => { return ((Tileset) i1.Object).ID.CompareTo(((Tileset) i2.Object).ID); });
         Available.SetItems(Available.Items);
         InUse.Items.Clear();
         InUse.Items.Add(item);

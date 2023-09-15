@@ -119,19 +119,19 @@ public class AutotilePicker : PopupWindow
                 }
             });
 
-        List<ListItem> AvailableList = new List<ListItem>();
-        List<ListItem> InUseList = new List<ListItem>();
+        List<TreeNode> AvailableList = new List<TreeNode>();
+        List<TreeNode> InUseList = new List<TreeNode>();
 
         // Populate lists
         for (int i = 0; i < Map.AutotileIDs.Count; i++)
         {
-            InUseList.Add(new ListItem($"{Utilities.Digits(Map.AutotileIDs[i], 3)}: {Data.Autotiles[Map.AutotileIDs[i]].Name}", Data.Autotiles[Map.AutotileIDs[i]]));
+            InUseList.Add(new TreeNode($"{Utilities.Digits(Map.AutotileIDs[i], 3)}: {Data.Autotiles[Map.AutotileIDs[i]].Name}", Data.Autotiles[Map.AutotileIDs[i]]));
         }
         for (int i = 1; i < Data.Autotiles.Count; i++)
         {
             if (!Map.AutotileIDs.Contains(i))
             {
-                AvailableList.Add(new ListItem($"{Utilities.Digits(i, 3)}: {Data.Autotiles[i]?.Name}", Data.Autotiles[i]));
+                AvailableList.Add(new TreeNode($"{Utilities.Digits(i, 3)}: {Data.Autotiles[i]?.Name}", Data.Autotiles[i]));
             }
         }
 
@@ -242,26 +242,22 @@ public class AutotilePicker : PopupWindow
         {
             if (SelectedAutotile is null) return;
             Autotile autotile = SelectedAutotile;
-            ListItem item = Available.SelectedItem;
-            Available.Items.Remove(item);
-            InUse.Items.Add(item);
-            Available.SetItems(Available.Items);
-            InUse.SetItems(InUse.Items);
-            if (Available.SelectedIndex == -1 && InUse.SelectedIndex == -1)
-                InUse.SetSelectedIndex(0);
+			TreeNode item = Available.SelectedItem;
+            Available.RemoveItem(item);
+            InUse.AddItem(item);
         }
         else // Remove
         {
             if (SelectedAutotile is null) return;
             Autotile autotile = SelectedAutotile;
-            ListItem item = InUse.SelectedItem;
+			TreeNode item = InUse.SelectedItem;
             InUse.Items.Remove(item);
-            List<ListItem> availitems = new List<ListItem>();
+            List<TreeNode> availitems = new List<TreeNode>();
             for (int i = 1; i < Data.Autotiles.Count; i++)
             {
                 if (InUse.Items.Find(item => item.Object == Data.Autotiles[i]) is null)
                 {
-                    availitems.Add(new ListItem($"{Utilities.Digits(i, 3)}: {Data.Autotiles[i]?.Name}", Data.Autotiles[i]));
+                    availitems.Add(new TreeNode($"{Utilities.Digits(i, 3)}: {Data.Autotiles[i]?.Name}", Data.Autotiles[i]));
                 }
             }
             Available.SetItems(availitems);
@@ -277,7 +273,7 @@ public class AutotilePicker : PopupWindow
         if (InUse.SelectedIndex > 0)
         {
             InUse.Items.Swap(InUse.SelectedIndex - 1, InUse.SelectedIndex);
-            InUse.Redraw();
+            InUse.SetItems(InUse.Items);
             InUse.SetSelectedIndex(InUse.SelectedIndex - 1);
         }
     }
@@ -287,7 +283,7 @@ public class AutotilePicker : PopupWindow
         if (InUse.SelectedIndex < InUse.Items.Count - 1)
         {
             InUse.Items.Swap(InUse.SelectedIndex + 1, InUse.SelectedIndex);
-            InUse.Redraw();
+            InUse.SetItems(InUse.Items);
             InUse.SetSelectedIndex(InUse.SelectedIndex + 1);
         }
     }

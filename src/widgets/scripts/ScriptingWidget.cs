@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 using RPGStudioMK.Game;
+using RPGStudioMK.Utility;
 
 namespace RPGStudioMK.Widgets;
 
@@ -13,12 +14,16 @@ public class ScriptingWidget : Widget
     public Script? OpenScript => ScriptBox.OpenScript;
     public Script? PreviewScript => ScriptBox.PreviewScript;
     public List<Script> RecentScripts => ScriptBox.RecentScripts;
+    public TreeNode CoreScriptNode => (TreeNode) TreeView.Root.Children[0];
+    public TreeNode PluginScriptNode => (TreeNode) TreeView.Root.Children[1];
+    public TreeNode CustomScriptNode => (TreeNode) TreeView.Root.Children[2];
 
     TreeView TreeView;
     ScriptEditorBox ScriptBox;
+    GlobalFindReplaceWidget GlobalFindReplaceBox;
+    Grid MainGrid;
 
     ContextMenu ScriptMenu;
-    int ScriptMenuIndex;
 
     public ScriptingWidget(IContainer Parent) : base(Parent)
     {
@@ -30,9 +35,17 @@ public class ScriptingWidget : Widget
         TreeView.SetFont(FontCache.GetOrCreate("Cabin-Medium", 10));
         TreeView.OnSelectionChanged += e => ScriptBox.SetScriptBox((Script) ((TreeNode) TreeView.SelectedNode).Object, !e.Value); // e.Value: whether the node was double clicked or single-clicked
 
-        ScriptBox = new ScriptEditorBox(this);
-        ScriptBox.SetDocked(true);
-        ScriptBox.SetPadding(300, 0, 0, 0);
+        MainGrid = new Grid(this);
+        MainGrid.SetPadding(300, 0, 0, 0);
+        MainGrid.SetDocked(true);
+        MainGrid.SetColumns(
+            new GridSize(1),
+            new GridSize(500, Unit.Pixels)
+        );
+
+        ScriptBox = new ScriptEditorBox(MainGrid);
+        GlobalFindReplaceBox = new GlobalFindReplaceWidget(MainGrid);
+        GlobalFindReplaceBox.SetGridColumn(1);
 
         RegisterShortcuts(new List<Shortcut>()
         {
@@ -168,5 +181,10 @@ public class ScriptingWidget : Widget
         base.SizeChanged(e);
         ScriptBox.UpdatePositionAndSizeIfDocked();
         ScriptBox.UpdateSize();
+    }
+
+    public void PreviewOccurrence(Script script, Occurrence occurrence)
+    {
+        ScriptBox.PreviewOccurrence(script, occurrence);
     }
 }

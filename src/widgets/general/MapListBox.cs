@@ -11,10 +11,10 @@ public class MapListBox : ListBox
 
     public MapListBox(IContainer Parent) : base(Parent)
     {
-        List<ListItem> Items = new List<ListItem>();
+        List<TreeNode> Items = new List<TreeNode>();
         foreach (KeyValuePair<int, Map> kvp in Data.Maps)
         {
-            Items.Add(new ListItem($"{Utilities.Digits(kvp.Key, 3)}: {kvp.Value}", kvp.Value));
+            Items.Add(new TreeNode($"{Utilities.Digits(kvp.Key, 3)}: {kvp.Value}", kvp.Value));
         }
         SetItems(Items);
         OnSelectionChanged += _ => OnMapChanged?.Invoke(new BaseEventArgs());

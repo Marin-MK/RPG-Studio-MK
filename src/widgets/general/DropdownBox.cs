@@ -9,8 +9,8 @@ public class DropdownBox : amethyst.TextBox
 {
     public bool ReadOnly => TextArea.ReadOnly;
     public int SelectedIndex { get; protected set; } = 0;
-    public ListItem? SelectedItem => SelectedIndex != -1 ? Items[SelectedIndex] : null;
-    public List<ListItem> Items { get; protected set; } = new List<ListItem>();
+    public TreeNode? SelectedItem => SelectedIndex != -1 ? Items[SelectedIndex] : null;
+    public List<TreeNode> Items { get; protected set; } = new List<TreeNode>();
     public bool Enabled { get; protected set; } = true;
     public bool AllowInvalidSelection { get; protected set; } = false;
 
@@ -31,7 +31,7 @@ public class DropdownBox : amethyst.TextBox
             if (!TextArea.SelectedWidget) return;
             string query = TextArea.Text.ToLower();
             // Matches to items starting with the text, and then with items containing the text.
-            List<ListItem> filtered = this.Items.FindAll(it => it.Name.ToLower().StartsWith(query)).Concat(this.Items.FindAll(it => it.Name.ToLower().Contains(query))).Distinct().ToList();
+            List<TreeNode> filtered = this.Items.FindAll(it => it.Text.ToLower().StartsWith(query)).Concat(this.Items.FindAll(it => it.Text.ToLower().Contains(query))).Distinct().ToList();
             if (DropdownWidget is not null)
             {
                 if (filtered.Count == 0)
@@ -68,9 +68,9 @@ public class DropdownBox : amethyst.TextBox
                     }
                     else if (e.Object)
                     {
-                        // This is called whenever the dropdown widget is disposed by clicking a valid item.
-                        // This is valid selection.
-                        ListItem item = DropdownWidget.Items[DropdownWidget.SelectedIndex];
+						// This is called whenever the dropdown widget is disposed by clicking a valid item.
+						// This is valid selection.
+						TreeNode item = DropdownWidget.Items[DropdownWidget.SelectedIndex];
                         this.SetSelectedIndex(this.Items.IndexOf(item), false);
                         TextArea.WidgetSelected(new BaseEventArgs());
                     }
@@ -81,7 +81,7 @@ public class DropdownBox : amethyst.TextBox
         {
             if (DropdownWidget is not null)
             {
-                ListItem item = DropdownWidget.Items[DropdownWidget.SelectedIndex];
+				TreeNode item = DropdownWidget.Items[DropdownWidget.SelectedIndex];
                 DropdownWidget.Dispose();
                 DropdownWidget = null;
 				this.SetSelectedIndex(this.Items.IndexOf(item), false);
@@ -92,10 +92,10 @@ public class DropdownBox : amethyst.TextBox
         {
             if (this.AllowInvalidSelection) return;
 			string query = TextArea.Text.ToLower();
-            if (!SelectedItem.Name.ToLower().Contains(query))
+            if (!SelectedItem.Text.ToLower().Contains(query))
             {
                 // Selection is probably stale; find closest match to the typed text and select that.
-			    List<ListItem> filtered = this.Items.FindAll(it => it.Name.ToLower().StartsWith(query)).Concat(this.Items.FindAll(it => it.Name.ToLower().Contains(query))).Distinct().ToList();
+			    List<TreeNode> filtered = this.Items.FindAll(it => it.Text.ToLower().StartsWith(query)).Concat(this.Items.FindAll(it => it.Text.ToLower().Contains(query))).Distinct().ToList();
                 if (filtered.Count == 0)
                 {
                     // No close matches exist; select first possible item.
@@ -107,7 +107,7 @@ public class DropdownBox : amethyst.TextBox
                     SetSelectedIndex(this.Items.IndexOf(filtered[0]));
                 }
             }
-            TextArea.SetText(SelectedItem.Name);
+            TextArea.SetText(SelectedItem.Text);
 		};
         RegisterShortcuts(new List<Shortcut>()
         {
@@ -156,7 +156,7 @@ public class DropdownBox : amethyst.TextBox
     {
         if (this.SelectedIndex != Index)
         {
-            this.TextArea.SetText(Index >= Items.Count || Index == -1 ? "" : Items[Index].Name, callTextChangedEvent);
+            this.TextArea.SetText(Index >= Items.Count || Index == -1 ? "" : Items[Index].Text, callTextChangedEvent);
             this.SelectedIndex = Index;
             this.OnSelectionChanged?.Invoke(new BaseEventArgs());
         }
@@ -170,10 +170,10 @@ public class DropdownBox : amethyst.TextBox
         }
     }
 
-    public void SetItems(List<ListItem> Items)
+    public void SetItems(List<TreeNode> Items)
     {
         this.Items = Items;
-        this.TextArea.SetText(SelectedIndex >= Items.Count || SelectedIndex == -1 ? "" : Items[SelectedIndex].Name);
+        this.TextArea.SetText(SelectedIndex >= Items.Count || SelectedIndex == -1 ? "" : Items[SelectedIndex].Text);
     }
 
     protected override void Draw()
@@ -233,7 +233,7 @@ public class DropdownBox : amethyst.TextBox
         };
     }
 
-    private void CreateDropdownWidget(List<ListItem> items, int selectedIndex)
+    private void CreateDropdownWidget(List<TreeNode> items, int selectedIndex)
     {
         if (DropdownWidget is not null) throw new Exception("Dropdown widget exists already!");
 		DropdownWidget = new DropdownWidget(Window.UI, this.Size.Width, items, this);
@@ -245,7 +245,7 @@ public class DropdownBox : amethyst.TextBox
 public class DropdownWidget : Widget
 {
     public int SelectedIndex { get; protected set; }
-    public List<ListItem> Items => List.Items;
+    public List<TreeNode> Items => List.Items;
 
     ListDrawer List;
     DropdownBox DropdownBox;
@@ -254,7 +254,7 @@ public class DropdownWidget : Widget
 
     public GenericObjectEvent<bool> OnDisposeByClick;
 
-    public DropdownWidget(IContainer Parent, int Width, List<ListItem> Items, DropdownBox DropdownBox) : base(Parent)
+    public DropdownWidget(IContainer Parent, int Width, List<TreeNode> Items, DropdownBox DropdownBox) : base(Parent)
     {
         this.DropdownBox = DropdownBox;
         this.Width = Width;
@@ -277,8 +277,8 @@ public class DropdownWidget : Widget
         ScrollContainer.VAutoScroll = true;
 
         List = new ListDrawer(ScrollContainer);
-        List.ForceMouseStart = true; // Allows the mouse to be captured immediately,
-                                     // rather than having to press within the listbox boundaries for it to be captured
+        //List.ForceMouseStart = true; // Allows the mouse to be captured immediately,
+        //                             // rather than having to press within the listbox boundaries for it to be captured
         List.SetHDocked(true);
         List.SetItems(Items);
 
@@ -322,7 +322,7 @@ public class DropdownWidget : Widget
         base.Dispose();
     }
 
-    public void SetItems(List<ListItem> Items)
+    public void SetItems(List<TreeNode> Items)
     {
         List.SetItems(Items);
 		SetSize(this.Width, Math.Min(9, Items.Count) * 20 + 3);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RPGStudioMK.Widgets;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -26,21 +27,21 @@ public class HardcodedDataStore
 
     public List<string> EvolutionMethods;
 
-    public List<ListItem> HabitatsListItems;
-	public List<ListItem> GrowthRatesListItems;
-	public List<ListItem> GenderRatiosListItems;
-	public List<ListItem> EvolutionMethodsListItems;
-	public List<ListItem> MoveCategoriesListItems;
-	public List<ListItem> MoveTargetsListItems;
-	public List<ListItem> NaturesListItems;
-	public List<ListItem> WeathersListItems;
-	public List<ListItem> ItemPocketsListItems;
-	public List<ListItem> ItemFieldUsesListItems;
-	public List<ListItem> ItemBattleUsesListItems;
-	public List<ListItem> BodyColorsListItems;
-	public List<ListItem> BodyShapesListItems;
-	public List<ListItem> EggGroupsListItems;
-	public List<ListItem> EncounterTypesListItems;
+    public List<TreeNode> HabitatsListItems;
+	public List<TreeNode> GrowthRatesListItems;
+	public List<TreeNode> GenderRatiosListItems;
+	public List<TreeNode> EvolutionMethodsListItems;
+	public List<TreeNode> MoveCategoriesListItems;
+	public List<TreeNode> MoveTargetsListItems;
+	public List<TreeNode> NaturesListItems;
+	public List<TreeNode> WeathersListItems;
+	public List<TreeNode> ItemPocketsListItems;
+	public List<TreeNode> ItemFieldUsesListItems;
+	public List<TreeNode> ItemBattleUsesListItems;
+	public List<TreeNode> BodyColorsListItems;
+	public List<TreeNode> BodyShapesListItems;
+	public List<TreeNode> EggGroupsListItems;
+	public List<TreeNode> EncounterTypesListItems;
 
 	public static HardcodedDataStore Create(string fileName)
     {
@@ -68,21 +69,21 @@ public class HardcodedDataStore
 	    };
 		PostValidate(dataStore);
         dataStore.EvolutionMethods = dataStore.EvolutionMethodsAndTypes.Select(list => list[0]).ToList();
-		dataStore.HabitatsListItems = dataStore.Habitats.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
-		dataStore.GrowthRatesListItems = dataStore.GrowthRates.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
-		dataStore.GenderRatiosListItems = dataStore.GenderRatios.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
-		dataStore.EvolutionMethodsListItems = dataStore.EvolutionMethods.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
-		dataStore.MoveCategoriesListItems = dataStore.MoveCategories.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
-		dataStore.MoveTargetsListItems = dataStore.MoveTargets.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
-		dataStore.NaturesListItems = dataStore.Natures.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
-		dataStore.WeathersListItems = dataStore.Weathers.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
-		dataStore.ItemPocketsListItems = dataStore.ItemPockets.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
-		dataStore.ItemFieldUsesListItems = dataStore.ItemFieldUses.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
-		dataStore.ItemBattleUsesListItems = dataStore.ItemBattleUses.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
-		dataStore.BodyColorsListItems = dataStore.BodyColors.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
-		dataStore.BodyShapesListItems = dataStore.BodyShapes.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
-        dataStore.EggGroupsListItems = dataStore.EggGroups.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
-		dataStore.EncounterTypesListItems = dataStore.EncounterTypes.Select(item => new ListItem(item)).OrderBy(item => item.Name).ToList();
+		dataStore.HabitatsListItems = dataStore.Habitats.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		dataStore.GrowthRatesListItems = dataStore.GrowthRates.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		dataStore.GenderRatiosListItems = dataStore.GenderRatios.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		dataStore.EvolutionMethodsListItems = dataStore.EvolutionMethods.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		dataStore.MoveCategoriesListItems = dataStore.MoveCategories.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		dataStore.MoveTargetsListItems = dataStore.MoveTargets.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		dataStore.NaturesListItems = dataStore.Natures.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		dataStore.WeathersListItems = dataStore.Weathers.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		dataStore.ItemPocketsListItems = dataStore.ItemPockets.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		dataStore.ItemFieldUsesListItems = dataStore.ItemFieldUses.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		dataStore.ItemBattleUsesListItems = dataStore.ItemBattleUses.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		dataStore.BodyColorsListItems = dataStore.BodyColors.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		dataStore.BodyShapesListItems = dataStore.BodyShapes.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+        dataStore.EggGroupsListItems = dataStore.EggGroups.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		dataStore.EncounterTypesListItems = dataStore.EncounterTypes.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
 
 		return dataStore;
     }

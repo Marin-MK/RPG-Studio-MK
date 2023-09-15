@@ -242,8 +242,8 @@ public class Button : Widget
         bool newInside;
         if (rx < 5 || rx >= Size.Width - 5 || ry < 5 || ry >= Size.Height - 5)
         {
-            if (!e.CursorHandled) Input.SetCursor(CursorType.Arrow);
             newInside = false;
+            if (!e.CursorHandled && newInside != isInside) Input.SetCursor(CursorType.Arrow);
         }
         else
         {

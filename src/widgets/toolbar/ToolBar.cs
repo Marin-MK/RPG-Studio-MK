@@ -69,12 +69,6 @@ public class ToolBar : Widget
         SaveButton.OnLeftMouseDownInside = _ => Editor.SaveProject();
         SaveButton.SetPadding(0, 2, 12 + PlayButton.Size.Width, 0);
         SaveButton.SetRightDocked(true);
-
-        PublishButton = new GradientButton(this, "Publish");
-        PublishButton.SetButtonColor(GradientButton.Colors.Blue);
-        PublishButton.OnLeftMouseDownInside = _ => Editor.PublishProject();
-        PublishButton.SetPadding(0, 2, 18 + PlayButton.Size.Width + SaveButton.Size.Width, 0);
-        PublishButton.SetRightDocked(true);
     }
 
     public void Refresh()

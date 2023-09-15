@@ -5,110 +5,52 @@ namespace RPGStudioMK.Widgets;
 
 public class ListBox : Widget
 {
-    public int SelectedIndex { get { return ListDrawer.SelectedIndex; } }
-    public ListItem SelectedItem { get { return ListDrawer.SelectedItem; } }
-    public List<ListItem> Items { get { return ListDrawer.Items; } }
-    public bool Enabled { get; protected set; } = true;
-    public Color SelectedItemColor { get { return ListDrawer.SelectedItemColor; } }
+    public int SelectedIndex => ListDrawer.SelectedIndex;
+    public TreeNode SelectedItem => ListDrawer.SelectedItem;
+    public List<TreeNode> Items => ListDrawer.Items;
+    public int LineHeight => ListDrawer.LineHeight;
+    public bool Enabled => ListDrawer.Enabled;
 
-    public BaseEvent OnSelectionChanged
-    {
-        get
-        {
-            return ListDrawer.OnSelectionChanged;
-        }
-        set
-        {
-            ListDrawer.OnSelectionChanged = value;
-        }
-    }
-    public BaseEvent OnDoubleClicked
-    {
-        get
-        {
-            return ListDrawer.OnDoubleClicked;
-        }
-        set
-        {
-            ListDrawer.OnDoubleClicked = value;
-        }
-    }
+    public BaseEvent OnSelectionChanged { get => ListDrawer.OnSelectionChanged; set => ListDrawer.OnSelectionChanged = value; }
+    public BaseEvent OnDoubleClicked { get => ListDrawer.OnDoubleClicked; set => ListDrawer.OnDoubleClicked = value; }
 
-    public Container MainContainer;
     public ListDrawer ListDrawer;
 
-    public ListBox(IContainer Parent) : base(Parent)
+    bool wasVscrollBarVisible = true;
+    bool wasHScrolLBarVisible = true;
+
+    public ListBox(IContainer parent) : base(parent)
     {
         Sprites["bg"] = new Sprite(this.Viewport);
-        MainContainer = new Container(this);
-        MainContainer.SetPosition(1, 2);
-        MainContainer.VAutoScroll = true;
-        ListDrawer = new ListDrawer(MainContainer);
-        VScrollBar vs = new VScrollBar(this);
-        MainContainer.SetVScrollBar(vs);
+
+        ListDrawer = new ListDrawer(this);
+        ListDrawer.SetDocked(true);
+        ListDrawer.SetPadding(2, 2, 1, 2);
+        ListDrawer.SetDocked(true);
+        ListDrawer.OnScrollBarVisiblityChanged += e =>
+        {
+            RedrawBox(e.Object.Item1, e.Object.Item2);
+        };
+
         SetSize(132, 174);
     }
 
-    public void SetEnabled(bool Enabled)
+    public void SetFont(Font font)
     {
-        if (this.Enabled != Enabled)
-        {
-            this.Enabled = Enabled;
-            RedrawBox();
-            ListDrawer.SetEnabled(Enabled);
-        }
+        ListDrawer.SetFont(font);
     }
 
-    public void SetFont(Font Font)
+    public void SetItems(List<TreeNode> items)
     {
-        ListDrawer.SetFont(Font);
+        ListDrawer.SetItems(items);
     }
 
-    public void SetItems(List<ListItem> Items)
+    public void SetLineHeight(int lineHeight)
     {
-        ListDrawer.SetItems(Items);
+        ListDrawer.SetLineHeight(lineHeight);
     }
 
-    public void SetSelectedItemColor(Color SelectedItemColor)
-    {
-        ListDrawer.SetSelectedItemColor(SelectedItemColor);
-    }
-
-    public override void SetContextMenuList(List<IMenuItem> Items)
-    {
-        base.SetContextMenuList(Items);
-        ListDrawer.CountRightMouseClicks = true;
-    }
-
-    public void MoveDown()
-    {
-        if (ListDrawer.SelectedIndex < ListDrawer.Items.Count - 1)
-        {
-            ListDrawer.SetSelectedIndex(ListDrawer.SelectedIndex + 1);
-            int newy = (ListDrawer.SelectedIndex + 1) * ListDrawer.LineHeight - MainContainer.ScrolledY;
-            if (newy >= MainContainer.Size.Height)
-            {
-                MainContainer.ScrolledY += newy - MainContainer.Size.Height;
-                MainContainer.UpdateAutoScroll();
-            }
-        }
-    }
-
-    public void MoveUp()
-    {
-        if (ListDrawer.SelectedIndex > 0)
-        {
-            ListDrawer.SetSelectedIndex(ListDrawer.SelectedIndex - 1);
-            int newy = ListDrawer.SelectedIndex * ListDrawer.LineHeight - MainContainer.ScrolledY;
-            if (newy < 0)
-            {
-                MainContainer.ScrolledY += newy;
-                MainContainer.UpdateAutoScroll();
-            }
-        }
-    }
-
-    public void RedrawBox()
+    public void RedrawBox(bool vScrollBarVisible, bool hScrollBarVisible)
     {
         Sprites["bg"].Bitmap?.Dispose();
         Sprites["bg"].Bitmap = new Bitmap(Size);
@@ -125,40 +67,71 @@ public class ListBox : Widget
         Sprites["bg"].Bitmap.SetPixel(1, Size.Height - 2, DarkOutline);
         Sprites["bg"].Bitmap.SetPixel(Size.Width - 2, Size.Height - 2, DarkOutline);
         Sprites["bg"].Bitmap.DrawLine(Size.Width - 12, 1, Size.Width - 12, Size.Height - 2, DarkOutline);
-        Sprites["bg"].Bitmap.Lock();
+
+        if (hScrollBarVisible)
+        {
+            Sprites["bg"].Bitmap.DrawLine(1, Size.Height - 12, Size.Width - 2, Size.Height - 12, DarkOutline);
+		    Sprites["bg"].Bitmap.FillRect(Size.Width - 12, Size.Height - 12, 11, 11, new Color(64, 104, 146));
+        }
+
+		Sprites["bg"].Bitmap.Lock();
+        wasVscrollBarVisible = vScrollBarVisible;
+        wasHScrolLBarVisible = hScrollBarVisible;
     }
 
     public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
-        RedrawBox();
-        MainContainer.SetSize(Size.Width - 13, Size.Height - 4);
-        MainContainer.VScrollBar.SetPosition(Size.Width - 10, 2);
-        ListDrawer.SetWidth(MainContainer.Size.Width);
-        MainContainer.VScrollBar.SetSize(8, Size.Height - 4);
+        RedrawBox(wasVscrollBarVisible, wasHScrolLBarVisible);
     }
 
-    public void SetSelectedIndex(int idx, bool ForceRefresh = false)
+    public void SetSelectedIndex(int idx)
     {
-        ListDrawer.SetSelectedIndex(idx, ForceRefresh);
+        ListDrawer.SetSelectedIndex(idx);
     }
 
-    public override void Redraw()
+    public void SetSelectedItem(TreeNode item)
     {
-        base.Redraw();
-        ListDrawer.Redraw();
+        ListDrawer.SetSelectedItem(item);
     }
 
-    public override void MouseDown(MouseEventArgs e)
+    public void InsertItem(int index, TreeNode item)
     {
-        base.MouseDown(e);
-        if (Mouse.Inside && (Mouse.LeftMouseTriggered || Mouse.RightMouseTriggered))
-        {
-            int ry = e.Y - Viewport.Y;
-            if (!ListDrawer.Mouse.Inside && ry >= MainContainer.Position.Y + ListDrawer.Size.Height)
-            {
-                ListDrawer.SetSelectedIndex(ListDrawer.Items.Count - 1);
-            }
-        }
+        ListDrawer.InsertItem(index, item);
     }
+
+    public void AddItem(TreeNode item)
+    {
+        ListDrawer.AddItem(item);
+    }
+
+    public void RedrawItem(TreeNode item)
+    {
+        ListDrawer.RedrawItem(item);
+    }
+
+    public void RemoveItem(TreeNode item)
+    {
+        ListDrawer.RemoveItem(item);
+    }
+
+	public void MoveDown()
+	{
+		ListDrawer.MoveDown();
+	}
+
+	public void MoveUp()
+	{
+		ListDrawer.MoveUp();
+	}
+
+	public void MovePageDown()
+	{
+		ListDrawer.MovePageDown();
+	}
+
+	public void MovePageUp()
+	{
+		ListDrawer.MovePageUp();
+	}
 }

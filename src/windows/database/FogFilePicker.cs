@@ -58,11 +58,11 @@ public class FogFilePicker : AbstractFilePicker
         blendlabel.SetFont(Fonts.Paragraph);
         blendlabel.SetText("Blending");
         BlendBox = new DropdownBox(this);
-        BlendBox.SetItems(new List<ListItem>()
+        BlendBox.SetItems(new List<TreeNode>()
         {
-            new ListItem("Normal"),
-            new ListItem("Add"),
-            new ListItem("Sub")
+            new TreeNode("Normal"),
+            new TreeNode("Add"),
+            new TreeNode("Sub")
         });
         BlendBox.SetSize(80, 27);
         BlendBox.SetSelectedIndex(FogBlendType);
@@ -142,7 +142,7 @@ public class FogFilePicker : AbstractFilePicker
 
     public override void OK()
     {
-        ChosenFogName = List.SelectedItem.Object == null ? "" : List.SelectedItem.Name;
+        ChosenFogName = List.SelectedItem.Object == null ? "" : List.SelectedItem.Text;
         ChosenFogHue = HueBox.Value;
         ChosenFogOpacity = (byte) OpacityBox.Value;
         ChosenFogBlendType = BlendBox.SelectedIndex;

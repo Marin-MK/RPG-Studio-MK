@@ -64,7 +64,7 @@ public class PanoramaFilePicker : AbstractFilePicker
 
     public override void OK()
     {
-        ChosenPanoramaName = List.SelectedItem.Object == null ? "" : List.SelectedItem.Name;
+        ChosenPanoramaName = List.SelectedItem.Object == null ? "" : List.SelectedItem.Text;
         ChosenPanoramaHue = HueBox.Value;
         base.OK();
     }

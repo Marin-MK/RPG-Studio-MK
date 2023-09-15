@@ -87,12 +87,12 @@ public class SwitchPicker : PopupWindow
     {
         int capacity = Data.System.Switches.Count;
         int groups = (int) Math.Ceiling(capacity / (double) SwitchesPerGroup);
-        List<ListItem> Items = new List<ListItem>();
+        List<TreeNode> Items = new List<TreeNode>();
         for (int i = 0; i < groups; i++)
         {
             int start = i * SwitchesPerGroup;
             int end = Math.Min((i + 1) * SwitchesPerGroup, capacity);
-            Items.Add(new ListItem($"[{Utilities.Digits(start + 1, 3)} - {Utilities.Digits(end, 3)}]"));
+            Items.Add(new TreeNode($"[{Utilities.Digits(start + 1, 3)} - {Utilities.Digits(end, 3)}]"));
         }
         GroupListBox.SetItems(Items);
         if (GroupListBox.SelectedIndex == -1) GroupListBox.SetSelectedIndex(0);
@@ -103,10 +103,10 @@ public class SwitchPicker : PopupWindow
         int capacity = Data.System.Switches.Count;
         int start = GroupListBox.SelectedIndex * SwitchesPerGroup;
         int end = Math.Min((GroupListBox.SelectedIndex + 1) * SwitchesPerGroup, capacity);
-        List<ListItem> Items = new List<ListItem>();
+        List<TreeNode> Items = new List<TreeNode>();
         for (int i = start; i < end; i++)
         {
-            Items.Add(new ListItem($"{Utilities.Digits(i + 1, 3)}: {Data.System.Switches[i]}"));
+            Items.Add(new TreeNode($"{Utilities.Digits(i + 1, 3)}: {Data.System.Switches[i]}"));
         }
         SwitchListBox.SetItems(Items);
         if (SwitchListBox.SelectedIndex == -1) SwitchListBox.SetSelectedIndex(0);

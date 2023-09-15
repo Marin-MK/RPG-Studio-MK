@@ -43,16 +43,16 @@ public class EditMoveRouteWindow : PopupWindow
         TargetBox.SetText("This event");
         TargetBox.SetEnabled(!ThisEventOnly);
 
-		List<ListItem> Items = new List<ListItem>
+		List<TreeNode> Items = new List<TreeNode>
 		{
-			new ListItem("This event"),
-			new ListItem("Player")
+			new TreeNode("This event"),
+			new TreeNode("Player")
 		};
 		List<int> keys = Map.Events.Keys.ToList();
         keys.Sort();
         for (int i = 0; i < keys.Count; i++)
         {
-            Items.Add(new ListItem($"{Utilities.Digits(keys[i], 3)}: {Map.Events[keys[i]].Name}", keys[i]));
+            Items.Add(new TreeNode($"{Utilities.Digits(keys[i], 3)}: {Map.Events[keys[i]].Name}", keys[i]));
         }
         TargetBox.SetItems(Items);
         if (!ThisEventOnly)
@@ -328,11 +328,11 @@ public class EditMoveRouteWindow : PopupWindow
 
     private void RedrawMoves()
     {
-        List<ListItem> Items = new List<ListItem>();
+        List<TreeNode> Items = new List<TreeNode>();
         for (int i = 0; i < this.MoveRoute.Commands.Count; i++)
         {
             MoveCommand cmd = this.MoveRoute.Commands[i];
-            Items.Add(new ListItem(cmd.ToString(), cmd));
+            Items.Add(new TreeNode(cmd.ToString(), cmd));
         }
         MoveBox.SetItems(Items);
         if (MoveBox.SelectedIndex == -1) MoveBox.SetSelectedIndex(0);
@@ -352,20 +352,15 @@ public class EditMoveRouteWindow : PopupWindow
     {
         if (!IsRealCommand()) return;
         this.MoveRoute.Commands.RemoveAt(MoveBox.SelectedIndex);
-        this.MoveBox.Items.RemoveAt(MoveBox.SelectedIndex);
-        if (MoveBox.SelectedIndex == MoveBox.Items.Count) MoveBox.SetSelectedIndex(MoveBox.Items.Count - 1);
-        MoveBox.Redraw();
+        this.MoveBox.RemoveItem(MoveBox.SelectedItem);
     }
 
     private void InsertCommand(int Index, MoveCommand Command)
     {
         MoveRoute.Commands.Insert(Index, Command);
-        ListItem Item = new ListItem(Command.ToString(), Command);
-        MoveBox.Items.Insert(Index, Item);
-        MoveBox.SetSelectedIndex(Index + 1);
-        // Ensure the box scrolls with the new commands
-        MoveBox.MoveUp();
-        MoveBox.MoveDown();
+		TreeNode Item = new TreeNode(Command.ToString(), Command);
+        MoveBox.InsertItem(Index, Item);
+        MoveBox.SetSelectedIndex(MoveBox.Items.IndexOf(Item) + 1);
     }
 
     private void EditCommand()
@@ -377,8 +372,10 @@ public class EditMoveRouteWindow : PopupWindow
         {
             int idx = MoveRoute.Commands.IndexOf(cmd);
             MoveRoute.Commands[idx] = newcmd;
-            MoveBox.Items[idx] = new ListItem(newcmd.ToString(), newcmd);
-            MoveBox.Redraw();
+            TreeNode node = MoveBox.Items[idx];
+            node.SetText(newcmd.ToString());
+            node.SetObject(newcmd);
+            MoveBox.RedrawItem(node);
             Window.UI.SetSelectedWidget(this);
         });
     }

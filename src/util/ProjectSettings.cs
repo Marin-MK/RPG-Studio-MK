@@ -10,7 +10,6 @@ public class ProjectSettings : BaseSettings
         { "PROJECT_NAME", "Untitled Game" },
         { "PROJECT_VERSION", "1.0.0" },
         { "LAST_EXPORT_LOCATION", "" },
-        { "LAST_EXPORT_SETTINGS", new List<string>() },
         { "LAST_MODE", EditorMode.Mapping },
         { "LAST_MAPPING_SUBMODE", MapMode.Tiles },
         { "LAST_DATABASE_SUBMODE", DatabaseMode.Species },
@@ -40,10 +39,10 @@ public class ProjectSettings : BaseSettings
 
     public ProjectSettings(Dictionary<string, object> dict) : base(dict) { }
 
-    /// <summary>
-    /// The last-used version of the editor to save the project. Can be used to programmatically port old data formats to new formats upon an update.
-    /// </summary>
-    public string SavedVersion
+	/// <summary>
+	/// The last-used version of the editor to save the project. Can be used to programmatically port old data formats to new formats upon an update.
+	/// </summary>
+	public string SavedVersion
     {
         get => Get<string>("SAVED_VERSION");
         set => Set("SAVED_VERSION", value);
@@ -71,14 +70,6 @@ public class ProjectSettings : BaseSettings
     {
         get => Get<string>("LAST_EXPORT_LOCATION");
         set => Set("LAST_EXPORT_LOCATION", value);
-    }
-    /// <summary>
-    /// The last-used settings used for exporting the project.
-    /// </summary>
-    public List<string> LastExportSettings
-    {
-        get => Get<List<string>>("LAST_EXPORT_SETTINGS");
-        set => Set("LAST_EXPORT_SETTINGS", value);
     }
     /// <summary>
     /// The last-active mode of the project.

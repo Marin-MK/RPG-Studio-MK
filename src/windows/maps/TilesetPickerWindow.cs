@@ -26,12 +26,12 @@ public class TilesetPickerWindow : PopupWindow
         TilesetList = new ListBox(this);
         TilesetList.SetPosition(25, 56);
         TilesetList.SetSize(151, 380);
-        List<ListItem> items = new List<ListItem>();
+        List<TreeNode> items = new List<TreeNode>();
         for (int i = 1; i < Data.Tilesets.Count; i++)
         {
             Tileset tileset = Data.Tilesets[i];
             string Name = ShowIDs ? $"{Utilities.Digits(i, 2)}: {tileset.Name}" : tileset.Name;
-            items.Add(new ListItem(Name, tileset));
+            items.Add(new TreeNode(Name, tileset));
         }
         TilesetList.SetItems(items);
         TilesetList.OnSelectionChanged += _ => UpdatePreview();

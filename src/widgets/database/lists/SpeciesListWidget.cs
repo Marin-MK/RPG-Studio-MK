@@ -18,11 +18,11 @@ public class SpeciesListWidget : DropdownListWidget<SpeciesDropdownBox>
 
 	public void SetItems(List<SpeciesResolver> items)
 	{
-		SetItems(items.Select(item => new ListItem(item.Valid ? item.Species.Name : item.ID, item.Valid ? item.Species : null)).ToList());
+		SetItems(items.Select(item => new TreeNode(item.Valid ? item.Species.Name : item.ID, item.Valid ? item.Species : null)).ToList());
 	}
 
 	public void SetItems(List<Species> items)
 	{
-		SetItems(items.Select(item => new ListItem(item.Form == 0 ? item.Name : $"{item.Name} ({item.FormName ?? item.Form.ToString()})", item)).ToList());
+		SetItems(items.Select(item => new TreeNode(item.Form == 0 ? item.Name : $"{item.Name} ({item.FormName ?? item.Form.ToString()})", item)).ToList());
 	}
 }

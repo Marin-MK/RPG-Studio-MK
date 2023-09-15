@@ -1,186 +1,110 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Linq;
 
 namespace RPGStudioMK.Widgets;
 
 public class ListDrawer : Widget
 {
+    public Font Font => tree.Font;
+    public int LineHeight => tree.LineHeight;
+    public List<TreeNode> Items => tree.Root.Children.Select(n => (TreeNode) n).ToList();
+    public int SelectedIndex => tree.Root.Children.IndexOf(tree.SelectedNode);
+    public int HoveringIndex => tree.Root.Children.IndexOf(tree.HoveringNode);
+    public TreeNode SelectedItem => (TreeNode) tree.SelectedNode;
+    public TreeNode HoveringItem => (TreeNode) tree.HoveringNode;
+    public bool Enabled { get; protected set; } = true;
+
     public BaseEvent OnSelectionChanged;
     public BaseEvent OnDoubleClicked;
+    public BoolEvent OnVScrollBarVisiblityChanged { get => tree.OnVScrollBarVisibilityChanged; set => tree.OnVScrollBarVisibilityChanged = value; }
+	public BoolEvent OnHScrollBarVisiblityChanged { get => tree.OnHScrollBarVisibilityChanged; set => tree.OnHScrollBarVisibilityChanged = value; }
+    public GenericObjectEvent<(bool, bool)> OnScrollBarVisiblityChanged { get => tree.OnScrollBarVisiblityChanged; set => tree.OnScrollBarVisiblityChanged = value; }
 
-    public Font Font { get; protected set; }
-    public int LineHeight { get; protected set; } = 20;
-    public List<ListItem> Items { get; protected set; } = new List<ListItem>();
-    public bool Enabled { get; protected set; } = true;
-    public int SelectedIndex { get; protected set; } = -1;
-    public int HoveringIndex { get; protected set; } = -1;
-    public bool ForceMouseStart = false;
-    public ListItem SelectedItem { get { return SelectedIndex == -1 ? null : Items[SelectedIndex]; } }
-    public ListItem HoveringItem { get { return HoveringIndex == -1 ? null : Items[HoveringIndex]; } }
-    public Color SelectedItemColor { get; protected set; } = new Color(55, 187, 255);
+	TreeView tree;
 
-    public bool CountRightMouseClicks = false;
-    int DraggingIndex = -1;
-
-    public ListDrawer(IContainer Parent) : base(Parent)
+    public ListDrawer(IContainer parent) : base(parent)
     {
-        this.Font = Fonts.Paragraph;
-        Sprites["selection"] = new Sprite(this.Viewport, new SolidBitmap(Size.Width, 20, new Color(28, 50, 73)));
-        Sprites["selection"].Visible = false;
-        Sprites["text"] = new Sprite(this.Viewport);
-        Sprites["hover"] = new Sprite(this.Viewport, new SolidBitmap(2, 20, new Color(59, 227, 255)));
-        Sprites["hover"].Visible = false;
-    }
-
-    public void SetEnabled(bool Enabled)
-    {
-        if (this.Enabled != Enabled)
+        tree = new TreeView(this);
+        tree.SetDocked(true);
+        tree.SetXOffset(-12);
+        tree.SetLineHeight(24);
+        tree.SetCanDragAndDrop(false);
+        tree.SetHScrollBarPaddingAlone(new Padding(tree.HScrollBarPaddingAlone.Left, tree.HScrollBarPaddingAlone.Up, tree.HScrollBarPaddingAlone.Right, tree.HScrollBarPaddingAlone.Down - 1));
+		tree.SetHScrollBarPaddingShared(new Padding(tree.HScrollBarPaddingShared.Left, tree.HScrollBarPaddingShared.Up, tree.HScrollBarPaddingShared.Right, tree.HScrollBarPaddingShared.Down - 1));
+		tree.OnSelectionChanged += e =>
         {
-            this.Enabled = Enabled;
-            this.Redraw();
-        }
+            if (e.Value) OnDoubleClicked?.Invoke(new BaseEventArgs());
+            OnSelectionChanged?.Invoke(new BaseEventArgs());
+        };
     }
 
-    public void SetItems(List<ListItem> Items)
+    public void SetItems(List<TreeNode> items)
     {
-        this.Items = Items;
-        Redraw();
-        SetSize(Size.Width, Items.Count * LineHeight);
-        if (SelectedIndex >= Items.Count) SetSelectedIndex(Items.Count - 1);
+        tree.SetNodes(items);
     }
 
     public void SetFont(Font f)
     {
-        if (this.Font != f)
-        {
-            this.Font = f;
-            Redraw();
-        }
+        tree.SetFont(f);
     }
 
-    public void SetLineHeight(int Height)
+    public void SetLineHeight(int height)
     {
-        if (this.LineHeight != Height)
-        {
-            this.LineHeight = Height;
-            if (SelectedIndex != -1) Sprites["selection"].Y = LineHeight * SelectedIndex;
-            ((SolidBitmap)Sprites["hover"].Bitmap).SetSize(2, LineHeight);
-            Redraw();
-        }
+        tree.SetLineHeight(height);
     }
 
-    public void SetSelectedItemColor(Color SelectedItemColor)
+    public void SetSelectedIndex(int Index)
     {
-        if (this.SelectedItemColor != SelectedItemColor)
-        {
-            this.SelectedItemColor = SelectedItemColor;
-            Redraw();
-        }
+        TreeNode node = (TreeNode) tree.Root.Children[Index];
+        tree.SetSelectedNode(node, false);
     }
 
-    public override void SizeChanged(BaseEventArgs e)
+    public void SetSelectedItem(TreeNode node)
     {
-        base.SizeChanged(e);
-        (Sprites["selection"].Bitmap as SolidBitmap).SetSize(Size.Width, LineHeight);
+        tree.SetSelectedNode(node, false);
+        tree.EnsureSelectedNodeVisible();
     }
 
-    public void SetSelectedIndex(int Index, bool ForceRefresh = false)
+    public void InsertItem(int? index, TreeNode item)
     {
-        if (this.SelectedIndex != Index || ForceRefresh)
-        {
-            this.SelectedIndex = Index;
-            if (Index == -1)
-            {
-                Sprites["selection"].Visible = false;
-            }
-            else
-            {
-                Sprites["selection"].Visible = true;
-                Sprites["selection"].Y = LineHeight * Index;
-            }
-            this.Redraw();
-            this.OnSelectionChanged?.Invoke(new BaseEventArgs());
-        }
+        tree.InsertNode(tree.Root, index, item);
+        tree.SetSelectedNode(tree.SelectedNode, false);
+        tree.EnsureSelectedNodeVisible();
     }
 
-    public void ForceRedraw()
+    public void AddItem(TreeNode item)
     {
-        this.Draw();
-        MouseMoving(Graphics.LastMouseEvent);
+        InsertItem(null, item);
     }
 
-    protected override void Draw()
+    public void RedrawItem(TreeNode item)
     {
-        if (Sprites["text"].Bitmap != null) Sprites["text"].Bitmap.Dispose();
-        SetSize(Size.Width, LineHeight * Items.Count);
-        Sprites["text"].Bitmap = new Bitmap(Size.Width, Size.Height);
-        Sprites["text"].Bitmap.Font = this.Font;
-        Sprites["text"].Bitmap.Unlock();
-        for (int i = 0; i < this.Items.Count; i++)
-        {
-            bool sel = i == SelectedIndex;
-            if (DraggingIndex != -1) sel = i == DraggingIndex;
-            Color c = this.Enabled ? (sel ? this.SelectedItemColor : Color.WHITE) : new Color(72, 72, 72);
-            Sprites["text"].Bitmap.DrawText(this.Items[i].ToString(), 10, LineHeight * i + LineHeight / 2 - 10, c);
-        }
-        Sprites["text"].Bitmap.Lock();
-        base.Draw();
+        tree.RedrawNode(item);
     }
 
-    public override void MouseMoving(MouseEventArgs e)
+    public void RemoveItem(TreeNode item)
     {
-        base.MouseMoving(e);
-        if (!Parent.Mouse.LeftStartedInside && !Parent.Mouse.RightStartedInside && !ForceMouseStart) return;
-        int rx = e.X - Viewport.X;
-        int ry = e.Y - Viewport.Y + Position.Y - ScrolledPosition.Y;
-        int index = (int) Math.Floor(ry / (double)LineHeight);
-        int oldhover = HoveringIndex;
-        HoveringIndex = -1;
-        Sprites["hover"].Visible = false;
-        if (ry < 0 || index >= this.Items.Count) return;
-        int olddrag = DraggingIndex;
-        if (Mouse.Inside)
-        {
-            Sprites["hover"].Visible = true;
-            Sprites["hover"].Y = index * LineHeight;
-            HoveringIndex = index;
-            if (Mouse.LeftMousePressed || CountRightMouseClicks && Mouse.RightMousePressed)
-            {
-                Sprites["selection"].Y = Sprites["hover"].Y;
-                Sprites["selection"].Visible = true;
-                DraggingIndex = HoveringIndex;
-            }
-        }
-        if (HoveringIndex != oldhover || DraggingIndex != olddrag) Redraw();
+        tree.DeleteNode(item, true);
     }
 
-    public override void HoverChanged(MouseEventArgs e)
+    public void MoveDown()
     {
-        base.HoverChanged(e);
-        if (!Mouse.Inside) Sprites["hover"].Visible = false;
+        tree.MoveDown();
     }
 
-    public override void MouseDown(MouseEventArgs e)
+    public void MoveUp()
     {
-        base.MouseDown(e);
-        MouseMoving(e);
+        tree.MoveUp();
     }
 
-    public override void DoubleLeftMouseDownInside(MouseEventArgs e)
+    public void MovePageDown()
     {
-        base.DoubleLeftMouseDownInside(e);
-        this.OnDoubleClicked?.Invoke(new BaseEventArgs());
+        tree.MovePageDown();
     }
 
-    public override void MouseUp(MouseEventArgs e)
+    public void MovePageUp()
     {
-        base.MouseUp(e);
-        if (DraggingIndex != -1 && ((Parent.Mouse.LeftStartedInside || ForceMouseStart) && Mouse.LeftMouseReleased || Parent.Mouse.RightStartedInside && Mouse.RightMouseReleased && CountRightMouseClicks))
-        {
-            int idx = DraggingIndex;
-            DraggingIndex = -1;
-            this.SetSelectedIndex(idx);
-        }
+        tree.MovePageUp();
     }
 }

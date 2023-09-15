@@ -204,28 +204,30 @@ public class EditVariableCommandWindow : PopupWindow
         CharacterBox = new DropdownBox(ValueContainer);
         CharacterBox.SetPosition(84, 100);
         CharacterBox.SetSize(125, 24);
-        List<ListItem> Items = new List<ListItem>();
-        Items.Add(new ListItem("Player", -1));
-        Items.Add(new ListItem("This Event", 0));
-        foreach (KeyValuePair<int, Event> kvp in Map.Events)
+		List<TreeNode> Items = new List<TreeNode>
+		{
+			new TreeNode("Player", -1),
+			new TreeNode("This Event", 0)
+		};
+		foreach (KeyValuePair<int, Event> kvp in Map.Events)
         {
             int id = kvp.Key;
             Event e = kvp.Value;
-            Items.Add(new ListItem(Utilities.Digits(id, 3) + ": " + e.Name, id));
+            Items.Add(new TreeNode(Utilities.Digits(id, 3) + ": " + e.Name, id));
         }
         CharacterBox.SetItems(Items);
 
         CharacterValueBox = new DropdownBox(ValueContainer);
         CharacterValueBox.SetPosition(215, 100);
         CharacterValueBox.SetSize(125, 24);
-        CharacterValueBox.SetItems(new List<ListItem>()
+        CharacterValueBox.SetItems(new List<TreeNode>()
         {
-            new ListItem("Map X"),
-            new ListItem("Map Y"),
-            new ListItem("Direction"),
-            new ListItem("Screen X"),
-            new ListItem("Screen Y"),
-            new ListItem("Terrain Tag")
+            new TreeNode("Map X"),
+            new TreeNode("Map Y"),
+            new TreeNode("Direction"),
+            new TreeNode("Screen X"),
+            new TreeNode("Screen Y"),
+            new TreeNode("Terrain Tag")
         });
 
         OtherRadioBox = new RadioBox(ValueContainer);
@@ -237,14 +239,14 @@ public class EditVariableCommandWindow : PopupWindow
         OtherBox = new DropdownBox(ValueContainer);
         OtherBox.SetPosition(84, 132);
         OtherBox.SetSize(150, 24);
-        OtherBox.SetItems(new List<ListItem>()
+        OtherBox.SetItems(new List<TreeNode>()
         {
-            new ListItem("Map ID"),
-            new ListItem("Party size"),
-            new ListItem("Money"),
-            new ListItem("Play time"),
-            new ListItem("Timer"),
-            new ListItem("Save count")
+            new TreeNode("Map ID"),
+            new TreeNode("Party size"),
+            new TreeNode("Money"),
+            new TreeNode("Play time"),
+            new TreeNode("Timer"),
+            new TreeNode("Save count")
         });
 
         CreateButton("Cancel", _ => Cancel());
@@ -270,7 +272,7 @@ public class EditVariableCommandWindow : PopupWindow
         else if (Opnd == 6)
         {
             CharacterRadioBox.SetChecked(true);
-            ListItem item = CharacterBox.Items.Find(i => (int) i.Object == Val);
+			TreeNode item = CharacterBox.Items.Find(i => (int) i.Object == Val);
             CharacterBox.SetSelectedIndex(CharacterBox.Items.IndexOf(item));
             int Val2 = (int) (long) Command.Parameters[5];
             CharacterValueBox.SetSelectedIndex(Val2);

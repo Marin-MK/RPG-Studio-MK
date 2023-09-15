@@ -109,12 +109,10 @@ public partial class DataTypeMoves : DataTypeBase
 	{
 		List<TreeNode> MoveItems = new List<TreeNode>();
         TreeNode? nodeToSelect = null;
-		foreach (ListItem listItem in Data.Sources.Moves)
+		foreach (TreeNode listItem in Data.Sources.Moves)
 		{
-            Move mov = (Move) listItem.Object;
-			TreeNode item = new TreeNode(mov.Name, mov);
-            if (mov == moveToSelect) nodeToSelect = item;
-			MoveItems.Add(item);
+            if ((Move) listItem.Object == moveToSelect) nodeToSelect = listItem;
+			MoveItems.Add(listItem);
 		}
 		MovesList.SetItems(MoveItems);
         if (nodeToSelect != null)

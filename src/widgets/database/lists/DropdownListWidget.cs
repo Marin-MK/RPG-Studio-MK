@@ -20,7 +20,7 @@ public class DropdownListWidget<T> : DataListWidget where T : DropdownBox
         GetListItemToAdd = e => e.Object = DropdownBox.SelectedItem;
     }
 
-    public void SetAvailableItems(List<ListItem> items)
+    public void SetAvailableItems(List<TreeNode> items)
     {
         DropdownBox.SetItems(items);
     }

@@ -22,7 +22,7 @@ public class GenericDropdownPicker : PopupWindow
         DropdownBox = new DropdownBox(this);
         DropdownBox.SetPosition(31, 74);
         DropdownBox.SetSize(210, 24);
-        DropdownBox.SetItems(Items.Select(i => new ListItem(i)).ToList());
+        DropdownBox.SetItems(Items.Select(i => new TreeNode(i)).ToList());
         DropdownBox.SetSelectedIndex(Value);
 
         Label TextLabel = new Label(this);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RPGStudioMK.Widgets;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -188,89 +189,89 @@ public static partial class Data
 
     public static class Sources
     {
-        private static List<ListItem> _saflia;
-		private static List<ListItem> _slia;
-		private static List<ListItem> _alia;
-        private static List<ListItem> _mlia;
-        private static List<ListItem> _tlia;
-        private static List<ListItem> _ilia;
-        private static List<ListItem> _ttlia;
-        private static List<ListItem> _tmshms;
-        private static List<ListItem> _fcs;
+        private static List<TreeNode> _saflia;
+		private static List<TreeNode> _slia;
+		private static List<TreeNode> _alia;
+        private static List<TreeNode> _mlia;
+        private static List<TreeNode> _tlia;
+        private static List<TreeNode> _ilia;
+        private static List<TreeNode> _ttlia;
+        private static List<TreeNode> _tmshms;
+        private static List<TreeNode> _fcs;
 
-        public static List<ListItem> SpeciesAndForms 
+        public static List<TreeNode> SpeciesAndForms 
         {
             get 
             {
-                if (recalculateSpeciesAndForms) _saflia = Data.Species.Select(spc => new ListItem(spc.Value.Form != 0 ? $"{spc.Value.Name} ({spc.Value.FormName ?? spc.Value.Form.ToString()})" : spc.Value.Name, spc.Value)).OrderBy(item => item.Name).ToList();
+                if (recalculateSpeciesAndForms) _saflia = Data.Species.Select(spc => new TreeNode(spc.Value.Form != 0 ? $"{spc.Value.Name} ({spc.Value.FormName ?? spc.Value.Form.ToString()})" : spc.Value.Name, spc.Value)).OrderBy(item => item.Text).ToList();
                 recalculateSpeciesAndForms = false;
                 return _saflia;
             } 
         }
-		public static List<ListItem> Species
+		public static List<TreeNode> Species
 		{
 			get
 			{
-                if (recalculateSpecies) _slia = Data.Species.Where(kvp => kvp.Value.Form == 0).Select(spc => new ListItem(spc.Value.Name, spc.Value)).OrderBy(item => item.Name).ToList();
+                if (recalculateSpecies) _slia = Data.Species.Where(kvp => kvp.Value.Form == 0).Select(spc => new TreeNode(spc.Value.Name, spc.Value)).OrderBy(item => item.Text).ToList();
                 recalculateSpecies = false;
 				return _slia;
 			}
 		}
-		public static List<ListItem> Abilities
+		public static List<TreeNode> Abilities
         {
             get
             {
-                if (recalculateAbilities) _alia = Data.Abilities.Select(abil => new ListItem(abil.Value.Name, abil.Value)).OrderBy(item => item.Name).ToList();
+                if (recalculateAbilities) _alia = Data.Abilities.Select(abil => new TreeNode(abil.Value.Name, abil.Value)).OrderBy(item => item.Text).ToList();
                 recalculateAbilities = false;
                 return _alia;
 			}
         }
-        public static List<ListItem> Moves
+        public static List<TreeNode> Moves
         {
             get
             {
-                if (recalculateMoves) _mlia = Data.Moves.Select(move => new ListItem(move.Value.Name, move.Value)).OrderBy(item => item.Name).ToList();
+                if (recalculateMoves) _mlia = Data.Moves.Select(move => new TreeNode(move.Value.Name, move.Value)).OrderBy(item => item.Text).ToList();
                 recalculateMoves = false;
                 return _mlia;
 			}
         }
-        public static List<ListItem> Types
+        public static List<TreeNode> Types
         {
             get
             {
-                if (recalculateTypes) _tlia = Data.Types.Select(type => new ListItem(type.Value.Name, type.Value)).OrderBy(item => item.Name).ToList();
+                if (recalculateTypes) _tlia = Data.Types.Select(type => new TreeNode(type.Value.Name, type.Value)).OrderBy(item => item.Text).ToList();
                 recalculateTypes = false;
                 return _tlia;
 			}
         }
-        public static List<ListItem> Items
+        public static List<TreeNode> Items
         {
             get
             {
-                if (recalculateItems) _ilia = Data.Items.Select(item => new ListItem(item.Value.Name, item.Value)).OrderBy(item => item.Name).ToList();
+                if (recalculateItems) _ilia = Data.Items.Select(item => new TreeNode(item.Value.Name, item.Value)).OrderBy(item => item.Text).ToList();
                 recalculateItems = false;
                 return _ilia;
 			}
         }
-        public static List<ListItem> TrainerTypes
+        public static List<TreeNode> TrainerTypes
         {
             get
             {
-                if (recalculateTrainerTypes) _ttlia = Data.TrainerTypes.Select(ttype => new ListItem(ttype.Value.Name, ttype.Value)).OrderBy(item => item.Name).ToList();
+                if (recalculateTrainerTypes) _ttlia = Data.TrainerTypes.Select(ttype => new TreeNode(ttype.Value.Name, ttype.Value)).OrderBy(item => item.Text).ToList();
                 recalculateTrainerTypes = false;
                 return _ttlia;
 			}
         }
-        public static List<ListItem> TMsHMs
+        public static List<TreeNode> TMsHMs
         {
             get
             {
                 if (recalculateTMsHMs)
                 {
                     _tmshms = Data.TMsHMs
-                        .Select(kvp => new ListItem($"{kvp.Value.Name} - {(kvp.Value.Move.Valid ? kvp.Value.Move.Move.Name : kvp.Value.Move.ID)}", kvp.Value))
+                        .Select(kvp => new TreeNode($"{kvp.Value.Name} - {(kvp.Value.Move.Valid ? kvp.Value.Move.Move.Name : kvp.Value.Move.ID)}", kvp.Value))
                         .ToList();
-                    _tmshms.Sort(delegate (ListItem a, ListItem b)
+                    _tmshms.Sort(delegate (TreeNode a, TreeNode b)
                     {
                         Item aI = (Item) a.Object;
                         Item bI = (Item) b.Object;
@@ -299,13 +300,13 @@ public static partial class Data
                 return _tmshms;
             }
         }
-        public static List<ListItem> FunctionCodes
+        public static List<TreeNode> FunctionCodes
         {
             get
             {
                 if (recalculateFunctionCodes)
                 {
-                    _fcs = new List<ListItem>();
+                    _fcs = new List<TreeNode>();
 					foreach (Script scr in Data.Scripts)
 					{
 						foreach (string line in scr.Content.Split('\n').ToList())
@@ -313,10 +314,10 @@ public static partial class Data
 							if (!line.StartsWith("class Battle::Move::")) continue;
 							Match m = Regex.Match(line, @"^class Battle::Move::([A-Za-z0-9_]*) < Battle::Move$");
 							if (!m.Success) continue;
-							_fcs.Add(new ListItem(m.Groups[1].Value.ToString()));
+							_fcs.Add(new TreeNode(m.Groups[1].Value.ToString()));
 						}
 					}
-                    _fcs.Sort(delegate (ListItem a, ListItem b) { return a.Name.CompareTo(b.Name); });
+                    _fcs.Sort(delegate (TreeNode a, TreeNode b) { return a.Text.CompareTo(b.Text); });
 				}
                 recalculateFunctionCodes = false;
                 return _fcs;

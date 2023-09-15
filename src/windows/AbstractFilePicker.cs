@@ -25,13 +25,13 @@ public abstract class AbstractFilePicker : PopupWindow
         pickerlabel.SetFont(Fonts.ParagraphBold);
         List = new ListBox(this);
         List.SetPosition(32, 51);
-        List<ListItem> items = new List<ListItem>();
+        List<TreeNode> items = new List<TreeNode>();
         foreach (string filename in System.IO.Directory.GetFiles(Directory))
         {
-            items.Add(new ListItem(Path.GetFileNameWithoutExtension(filename), filename));
+            items.Add(new TreeNode(Path.GetFileNameWithoutExtension(filename), filename));
         }
-        items.Sort(delegate (ListItem l1, ListItem l2) { return l1.Name.CompareTo(l2.Name); });
-        items.Insert(0, new ListItem("(None)", null));
+        items.Sort(delegate (TreeNode l1, TreeNode l2) { return l1.Text.CompareTo(l2.Text); });
+        items.Insert(0, new TreeNode("(None)", null));
         List.SetItems(items);
         List.OnSelectionChanged += delegate (BaseEventArgs e)
         {
@@ -68,7 +68,7 @@ public abstract class AbstractFilePicker : PopupWindow
 
         if (!string.IsNullOrEmpty(InitialFilename))
         {
-            ListItem item = List.Items.Find(i => i.Name == InitialFilename);
+			TreeNode item = List.Items.Find(i => i.Text == InitialFilename);
             if (item == null) List.SetSelectedIndex(0);
             else List.SetSelectedIndex(List.Items.IndexOf(item));
         }
@@ -95,7 +95,7 @@ public abstract class AbstractFilePicker : PopupWindow
     public virtual void OK()
     {
         this.PressedOK = true;
-        this.ChosenFilename = List.SelectedItem.Object == null ? "" : List.SelectedItem.Name;
+        this.ChosenFilename = List.SelectedItem.Object == null ? "" : List.SelectedItem.Text;
         Close();
     }
 

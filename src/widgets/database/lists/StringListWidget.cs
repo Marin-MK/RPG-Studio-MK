@@ -5,7 +5,7 @@ namespace RPGStudioMK.Widgets;
 
 public class StringListWidget : DataListWidget
 {
-    public List<string> AsStrings => Items.Select(item => item.Name).ToList();
+    public List<string> AsStrings => Items.Select(item => item.Text).ToList();
 
     protected TextBox TextBox;
 
@@ -17,11 +17,11 @@ public class StringListWidget : DataListWidget
         TextBox.SetHeight(24);
         TextBox.SetHDocked(true);
 
-        GetListItemToAdd = e => e.Object = new ListItem(TextBox.Text);
+        GetListItemToAdd = e => e.Object = new TreeNode(TextBox.Text);
     }
 
     public void SetItems(List<string> items)
     {
-        SetItems(items.Select(item => new ListItem(item)).ToList());
+        SetItems(items.Select(item => new TreeNode(item)).ToList());
     }
 }

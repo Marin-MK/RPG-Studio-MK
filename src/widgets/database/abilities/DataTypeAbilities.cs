@@ -109,12 +109,10 @@ public partial class DataTypeAbilities : DataTypeBase
 	{
 		List<TreeNode> AbilityItems = new List<TreeNode>();
         TreeNode? nodeToSelect = null;
-		foreach (ListItem listItem in Data.Sources.Abilities)
+		foreach (TreeNode listItem in Data.Sources.Abilities)
 		{
-            Ability abil = (Ability) listItem.Object;
-			TreeNode item = new TreeNode(abil.Name, abil);
-            if (abil == abilityToSelect) nodeToSelect = item;
-			AbilityItems.Add(item);
+            if ((Ability) listItem.Object == abilityToSelect) nodeToSelect = listItem;
+			AbilityItems.Add(listItem);
 		}
 		AbilitiesList.SetItems(AbilityItems);
         if (nodeToSelect != null)

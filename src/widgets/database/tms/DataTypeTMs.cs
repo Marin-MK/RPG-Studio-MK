@@ -112,12 +112,10 @@ public partial class DataTypeTMs : DataTypeBase
 	{
 		List<TreeNode> TMItems = new List<TreeNode>();
         TreeNode? nodeToSelect = null;
-		foreach (ListItem listItem in Data.Sources.TMsHMs)
+		foreach (TreeNode listItem in Data.Sources.TMsHMs)
 		{
-            Item tm = (Item) listItem.Object;
-			TreeNode item = new TreeNode(listItem.Name, tm);
-            if (tm == tmToSelect) nodeToSelect = item;
-			TMItems.Add(item);
+            if ((Item) listItem.Object == tmToSelect) nodeToSelect = listItem;
+			TMItems.Add(listItem);
 		}
 		TMList.SetItems(TMItems);
         if (nodeToSelect != null)
@@ -172,7 +170,7 @@ public partial class DataTypeTMs : DataTypeBase
     void NewTM(BaseEventArgs e)
     {
         Item item = Game.Item.CreateTM();
-        foreach (ListItem listItem in Data.Sources.Moves)
+        foreach (TreeNode listItem in Data.Sources.Moves)
         {
             Move move = (Move) listItem.Object;
             if (Data.TMsHMs.Any(tm => tm.Value.Move.ID == move.ID)) continue;

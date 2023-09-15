@@ -29,6 +29,12 @@ public partial class MainEditorWindow
                     OnClicked = _ => Editor.SaveProject()
                 },
                 new MenuSeparator(),
+                new MenuItem("Publish Project")
+                {
+                    HelpText = "Publishes this project for distribution.",
+                    IsClickable = e => e.Value = e.Value = Editor.InProject,
+                    OnClicked = _ => Editor.PublishProject()
+                },
                 new MenuItem("Delete Project")
                 {
                     HelpText = "Deletes this project and all associated files.",

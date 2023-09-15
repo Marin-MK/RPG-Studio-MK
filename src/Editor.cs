@@ -105,14 +105,51 @@ public static class Editor
         return;
 #endif
         PopupWindow win = new PopupWindow();
-        win.SetSize(200, 200);
+        win.SetSize(400, 400);
         win.Center();
 
-        Button btn = new Button(win);
-        btn.SetPosition(50, 100);
-        btn.SetSize(100, 40);
-        btn.SetText("Press!");
-	}
+        ListBox list = new ListBox(win);
+        list.SetPosition(50, 50);
+        list.SetSize(300, 300);
+        list.SetItems(new List<TreeNode>()
+        {
+            new TreeNode("One"),
+            new TreeNode("Two"),
+            new TreeNode("Three"),
+            new TreeNode("Four"),
+            new TreeNode("Five"),
+            new TreeNode("Six"),
+            new TreeNode("Seven"),
+            new TreeNode("Eight"),
+            new TreeNode("Nine"),
+            new TreeNode("Ten"),
+            new TreeNode("This is some relatively long node text, that I'm pretty sure will require horizontal scrolling to fully see."),
+            new TreeNode("Twelve"),
+            new TreeNode("Thirteen"),
+            new TreeNode("Fourteen"),
+            new TreeNode("Fifteen")
+        });
+
+        Button addButton = new Button(win);
+        addButton.SetPosition(50, 352);
+        addButton.SetSize(140, 30);
+        addButton.SetText("Add Item");
+        addButton.OnClicked += _ =>
+        {
+            string num = Utilities.Random(10, 10000).ToString();
+            TreeNode newNode = new TreeNode(num);
+            list.InsertItem(list.SelectedIndex, newNode);
+        };
+
+        Button removeButton = new Button(win);
+        removeButton.SetPosition(210, 352);
+        removeButton.SetSize(140, 30);
+        removeButton.SetText("Delete Item");
+        removeButton.OnClicked += _ =>
+        {
+            list.RemoveItem(list.SelectedItem);
+        };
+    }
 
     /// <summary>
     /// Returns the displayed string for the current editor version.
@@ -443,86 +480,7 @@ public static class Editor
         }
     }
 
-    /*void unknown() {
-        void ContinueAfterCreatingFolder()
-        {
-            // Turn the (potentially) local folder name to an absolute one for further use
-            Folder = Path.GetFullPath(Folder);
-            // Restore current directory to what it was before to load the message box icons
-            Directory.SetCurrentDirectory(OldCurrentDirectory);
-
-            // The kit we've chosen has been downloaded in the past, so we can copy that to our game folder.
-            if (Kit.IsInstalled() && Kit.IsValid())
-            {
-                // Copy kit
-            }
-            else
-            {
-                // Download kit
-                // Copy kit
-            }
-
-            if (Utilities.KitExists(Kit.DisplayName))
-            {
-                CopyStep();
-            }
-            else
-            {
-                // The kit has not been downloaded before, so we download it now.
-                string Filename = Path.Combine(KitsFolder, Kit.DisplayName + ".zip");
-                if (!Directory.Exists(KitsFolder)) Directory.CreateDirectory(KitsFolder);
-                FileDownloaderWindow window = new FileDownloaderWindow(Kit.URL, Filename, "Downloading kit...");
-                window.Download();
-                FileInfo fi = new FileInfo(Filename);
-                if (fi.Length <= 0)
-                {
-                    new MessageBox("Error", "Something went wrong while downloading the kit. The downloaded file is empty.", ButtonType.OK, IconType.Error);
-                    Logger.Error("The downloaded kit has a file size of 0. This is likely an indication that something went wrong during the downloading phase.");
-                    return;
-                }
-                CopyStep();
-            }
-        }
-
-        async Task CopyStep()
-        {
-            ProgressWindow window = new ProgressWindow("Copying", "Copying files...", true, true, true, true);
-            CancellationTokenSource src = new CancellationTokenSource();
-            window.OnCancelled += () =>
-            {
-                src.Cancel();
-            };
-            window.OnFinished += () => Graphics.Schedule(() =>
-            {
-                CloseProject(false);
-                Data.SetProjectPath(Path.Combine(Folder, "Game.rxproj"));
-                string mkprojPath = Path.Combine(Folder, "project.mkproj");
-                if (MainWindow.CreateEditor())
-                {
-                    MakeRecentProject();
-                    if (!File.Exists(mkprojPath))
-                    {
-                        DumpProjectSettings();
-                    }
-                }
-            });
-            window.SetProgress(0f);
-            Stopwatch stopwatch = Stopwatch.StartNew();
-            int updateFrequency = 16; // Update the screen every x ms
-            await Utilities.CopyKit(Kit.DisplayName, Folder, src, e =>
-            {
-                if (stopwatch.ElapsedMilliseconds > updateFrequency || e == 1) 
-                {
-                    stopwatch.Restart();
-                    Graphics.Schedule(() => {
-                        if (!src.IsCancellationRequested) window.SetProgress(e);
-                    });
-                }
-            });
-        }
-    }*/
-
-							public static void DeleteProject()
+	public static void DeleteProject()
     {
         string ProjectPath = Data.ProjectPath;
         string ProjectRMXPGamePath = Data.ProjectRMXPGamePath;
@@ -617,7 +575,7 @@ public static class Editor
                 };
             }, () =>
             {
-                ProjectPublisher publisher = new ProjectPublisher(ProjectSettings.ProjectName, ProjectSettings.ProjectVersion, zipFilename, Editor.ProjectSettings.LastExportSettings);
+                ProjectPublisher publisher = new ProjectPublisher(ProjectSettings.ProjectName, ProjectSettings.ProjectVersion, zipFilename, win.Options);
                 ProgressWindow pwin = new ProgressWindow("Publisher", "Discovering files...", true, true, false, true);
                 pwin.OnCancelled += () => publisher.Cancel();
                 pwin.OnFinished += () =>
@@ -625,7 +583,7 @@ public static class Editor
                     string sha = publisher.CalculateSHA();
                     PublishFinishedWindow pfwin = new PublishFinishedWindow(zipFilename, sha);
                 };
-                var dcm = new DynamicCallbackManager<SimpleProgress>(TimeSpan.FromMilliseconds(50), p =>
+                var dcm = new DynamicCallbackManager<SimpleProgress>(TimeSpan.FromMilliseconds(200), p =>
                 {
                     pwin.SetProgress((float) p.Factor);
                     Graphics.Update();

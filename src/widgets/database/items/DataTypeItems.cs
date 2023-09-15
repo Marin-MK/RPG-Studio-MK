@@ -109,12 +109,10 @@ public partial class DataTypeItems : DataTypeBase
 	{
 		List<TreeNode> ItemItems = new List<TreeNode>();
         TreeNode? nodeToSelect = null;
-		foreach (ListItem listItem in Data.Sources.Items)
+		foreach (TreeNode listItem in Data.Sources.Items)
 		{
-            Item itmObj = (Item) listItem.Object;
-			TreeNode item = new TreeNode(itmObj.Name, itmObj);
-            if (itmObj == itemToSelect) nodeToSelect = item;
-			ItemItems.Add(item);
+            if ((Item) listItem.Object == itemToSelect) nodeToSelect = listItem;
+			ItemItems.Add(listItem);
 		}
 		ItemList.SetItems(ItemItems);
         if (nodeToSelect != null)

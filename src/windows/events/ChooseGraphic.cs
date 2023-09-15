@@ -96,12 +96,12 @@ public class ChooseGraphic : PopupWindow
         DirectionBox = new DropdownBox(this);
         DirectionBox.SetPosition(609, 295);
         DirectionBox.SetSize(110, 25);
-        DirectionBox.SetItems(new List<ListItem>()
+        DirectionBox.SetItems(new List<TreeNode>()
         {
-            new ListItem("Down"),
-            new ListItem("Left"),
-            new ListItem("Right"),
-            new ListItem("Up")
+            new TreeNode("Down"),
+            new TreeNode("Left"),
+            new TreeNode("Right"),
+            new TreeNode("Up")
         });
         DirectionBox.SetSelectedIndex(Graphic.Direction / 2 - 1);
         DirectionBox.SetEnabled(Graphic.TileID < 384 && !string.IsNullOrEmpty(Graphic.CharacterName));
@@ -137,10 +137,10 @@ public class ChooseGraphic : PopupWindow
         NumDirectionsBox = new DropdownBox(this);
         NumDirectionsBox.SetPosition(679, 356);
         NumDirectionsBox.SetSize(40, 25);
-        NumDirectionsBox.SetItems(new List<ListItem>()
+        NumDirectionsBox.SetItems(new List<TreeNode>()
         {
-            new ListItem("1"),
-            new ListItem("4")
+            new TreeNode("1"),
+            new TreeNode("4")
         });
         
         NumDirectionsBox.SetSelectedIndex(Graphic.NumDirections == 1 ? 0 : 1);

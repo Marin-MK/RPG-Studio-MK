@@ -89,10 +89,10 @@ public class EventPageControl : Widget
         SelfSwitchVarBox.SetFont(Fonts.Paragraph);
         SelfSwitchVarBox.SetPosition(20, 162);
         SelfSwitchVarBox.SetSize(177, 25);
-        SelfSwitchVarBox.SetItems(new List<ListItem>()
+        SelfSwitchVarBox.SetItems(new List<TreeNode>()
         {
-            new ListItem("A"), new ListItem("B"), new ListItem("C"),
-            new ListItem("D"), new ListItem("E"), new ListItem("F")
+            new TreeNode("A"), new TreeNode("B"), new TreeNode("C"),
+            new TreeNode("D"), new TreeNode("E"), new TreeNode("F")
         });
         SelfSwitchVarBox.SetEnabled(false);
         SelfSwitchVarBox.OnSelectionChanged += _ => Page.Condition.SelfSwitchChar = (char)('A' + SelfSwitchVarBox.SelectedIndex);
@@ -137,13 +137,13 @@ public class EventPageControl : Widget
         TriggerBox = new DropdownBox(RightBox);
         TriggerBox.SetPosition(21, 319);
         TriggerBox.SetSize(147, 25);
-        TriggerBox.SetItems(new List<ListItem>()
+        TriggerBox.SetItems(new List<TreeNode>()
         {
-            new ListItem("Action Button"),
-            new ListItem("Player Touch"),
-            new ListItem("Event Touch"),
-            new ListItem("Autorun"),
-            new ListItem("Parallel Process")
+            new TreeNode("Action Button"),
+            new TreeNode("Player Touch"),
+            new TreeNode("Event Touch"),
+            new TreeNode("Autorun"),
+            new TreeNode("Parallel Process")
         });
         TriggerBox.OnSelectionChanged += _ => { Page.TriggerMode = (TriggerMode) TriggerBox.SelectedIndex; };
 
@@ -181,10 +181,10 @@ public class EventPageControl : Widget
         AutoMoveSpeedBox.SetPosition(19, 307);
         AutoMoveSpeedBox.SetSize(128, 25);
         AutoMoveSpeedBox.SetFont(Fonts.Paragraph);
-        AutoMoveSpeedBox.SetItems(new List<ListItem>()
+        AutoMoveSpeedBox.SetItems(new List<TreeNode>()
         {
-            new ListItem("1: Slowest"), new ListItem("2: Slower"), new ListItem("3: Slow"),
-            new ListItem("4: Fast"), new ListItem("5: Faster"), new ListItem("6: Fastest")
+            new TreeNode("1: Slowest"), new TreeNode("2: Slower"), new TreeNode("3: Slow"),
+            new TreeNode("4: Fast"), new TreeNode("5: Faster"), new TreeNode("6: Fastest")
         });
         AutoMoveSpeedBox.OnSelectionChanged += _ =>
         {
@@ -198,10 +198,10 @@ public class EventPageControl : Widget
         AutoMoveFrequencyBox.SetPosition(19, 363);
         AutoMoveFrequencyBox.SetSize(128, 25);
         AutoMoveFrequencyBox.SetFont(Fonts.Paragraph);
-        AutoMoveFrequencyBox.SetItems(new List<ListItem>()
+        AutoMoveFrequencyBox.SetItems(new List<TreeNode>()
         {
-            new ListItem("1: Lowest"), new ListItem("2: Lower"), new ListItem("3: Low"),
-            new ListItem("4: High"), new ListItem("5: Higher"), new ListItem("6: Highest")
+            new TreeNode("1: Lowest"), new TreeNode("2: Lower"), new TreeNode("3: Low"),
+            new TreeNode("4: High"), new TreeNode("5: Higher"), new TreeNode("6: Highest")
         });
         AutoMoveFrequencyBox.OnSelectionChanged += _ =>
         {
@@ -215,10 +215,10 @@ public class EventPageControl : Widget
         AutoMoveTypeBox.SetPosition(19, 419);
         AutoMoveTypeBox.SetSize(128, 25);
         AutoMoveTypeBox.SetFont(Fonts.Paragraph);
-        AutoMoveTypeBox.SetItems(new List<ListItem>()
+        AutoMoveTypeBox.SetItems(new List<TreeNode>()
         {
-            new ListItem("Fixed"), new ListItem("Random"),
-            new ListItem("Approach"), new ListItem("Custom")
+            new TreeNode("Fixed"), new TreeNode("Random"),
+            new TreeNode("Approach"), new TreeNode("Custom")
         });
         AutoMoveTypeBox.OnSelectionChanged += _ =>
         {

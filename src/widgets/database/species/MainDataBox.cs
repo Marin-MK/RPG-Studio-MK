@@ -368,10 +368,10 @@ public partial class DataTypeSpecies
 		DropdownBox megaMessageBox = new DropdownBox(parent);
 		megaMessageBox.SetPosition(625, 150);
 		megaMessageBox.SetSize(150, 24);
-		megaMessageBox.SetItems(new List<ListItem>()
+		megaMessageBox.SetItems(new List<TreeNode>()
 		{
-			new ListItem("Default"),
-			new ListItem("Fervent Wish")
+			new TreeNode("Default"),
+			new TreeNode("Fervent Wish")
 		});
 		megaMessageBox.SetSelectedIndex(spc.MegaMessage);
 		megaMessageBox.OnSelectionChanged += _ => spc.MegaMessage = megaMessageBox.SelectedIndex;
@@ -756,11 +756,11 @@ public partial class DataTypeSpecies
 		genderRatioBox.SetPosition(274, 67);
 		genderRatioBox.SetSize(160, 24);
 		genderRatioBox.SetItems(Data.HardcodedData.GenderRatiosListItems);
-		if (Data.HardcodedData.GenderRatios.Contains(spc.GenderRatio)) genderRatioBox.SetSelectedIndex(Data.HardcodedData.GenderRatiosListItems.FindIndex(item => item.Name == spc.GenderRatio));
+		if (Data.HardcodedData.GenderRatios.Contains(spc.GenderRatio)) genderRatioBox.SetSelectedIndex(Data.HardcodedData.GenderRatiosListItems.FindIndex(item => item.Text == spc.GenderRatio));
 		else genderRatioBox.SetText(spc.GenderRatio);
 		genderRatioBox.OnSelectionChanged += _ =>
 		{
-			spc.GenderRatio = genderRatioBox.SelectedItem.Name;
+			spc.GenderRatio = genderRatioBox.SelectedItem.Text;
 			SpeciesList.SelectedItem.Children.ForEach(c =>
 			{
 				Species s = (Species) ((TreeNode) c).Object;
@@ -780,9 +780,9 @@ public partial class DataTypeSpecies
 		eggGroup1Box.SetPosition(274, 107);
 		eggGroup1Box.SetSize(160, 24);
 		eggGroup1Box.SetItems(Data.HardcodedData.EggGroupsListItems);
-		if (Data.HardcodedData.EggGroups.Contains(spc.EggGroups[0])) eggGroup1Box.SetSelectedIndex(Data.HardcodedData.EggGroupsListItems.FindIndex(item => item.Name == spc.EggGroups[0]));
+		if (Data.HardcodedData.EggGroups.Contains(spc.EggGroups[0])) eggGroup1Box.SetSelectedIndex(Data.HardcodedData.EggGroupsListItems.FindIndex(item => item.Text == spc.EggGroups[0]));
 		else eggGroup1Box.SetText(spc.EggGroups[0]);
-		eggGroup1Box.OnSelectionChanged += _ => spc.EggGroups[0] = eggGroup1Box.SelectedItem.Name;
+		eggGroup1Box.OnSelectionChanged += _ => spc.EggGroups[0] = eggGroup1Box.SelectedItem.Text;
 
 		bool hasEggGroup2 = spc.EggGroups.Count > 1 && spc.EggGroups[1] is not null;
 
@@ -791,9 +791,9 @@ public partial class DataTypeSpecies
 		eggGroup2Box.SetSize(160, 24);
 		eggGroup2Box.SetEnabled(hasEggGroup2);
 		eggGroup2Box.SetItems(Data.HardcodedData.EggGroupsListItems);
-		if (hasEggGroup2 && Data.HardcodedData.EggGroups.Contains(spc.EggGroups[1])) eggGroup2Box.SetSelectedIndex(Data.HardcodedData.EggGroupsListItems.FindIndex(item => item.Name == spc.EggGroups[1]));
+		if (hasEggGroup2 && Data.HardcodedData.EggGroups.Contains(spc.EggGroups[1])) eggGroup2Box.SetSelectedIndex(Data.HardcodedData.EggGroupsListItems.FindIndex(item => item.Text == spc.EggGroups[1]));
 		else if (hasEggGroup2) eggGroup2Box.SetText(spc.EggGroups[1]);
-		eggGroup2Box.OnSelectionChanged += _ => spc.EggGroups = new List<string>() { eggGroup1Box.SelectedItem.Name, eggGroup2Box.SelectedItem.Name };
+		eggGroup2Box.OnSelectionChanged += _ => spc.EggGroups = new List<string>() { eggGroup1Box.SelectedItem.Text, eggGroup2Box.SelectedItem.Text };
 
 		CheckBox eggGroup2CheckBox = new CheckBox(parent);
 		eggGroup2CheckBox.SetPosition(162, 151);
@@ -805,12 +805,12 @@ public partial class DataTypeSpecies
 			if (eggGroup2CheckBox.Checked)
 			{
 				eggGroup2Box.SetEnabled(true);
-				spc.EggGroups = new List<string>() { eggGroup1Box.SelectedItem.Name, eggGroup2Box.SelectedItem.Name };
+				spc.EggGroups = new List<string>() { eggGroup1Box.SelectedItem.Text, eggGroup2Box.SelectedItem.Text };
 			}
 			else
 			{
 				eggGroup2Box.SetEnabled(false);
-				spc.EggGroups = new List<string>() { eggGroup1Box.SelectedItem.Name };
+				spc.EggGroups = new List<string>() { eggGroup1Box.SelectedItem.Text };
 			}
 		};
 
@@ -825,11 +825,11 @@ public partial class DataTypeSpecies
 		growthRateBox.SetPosition(664, 67);
 		growthRateBox.SetSize(160, 24);
 		growthRateBox.SetItems(Data.HardcodedData.GrowthRatesListItems);
-		if (Data.HardcodedData.GrowthRates.Contains(spc.GrowthRate)) growthRateBox.SetSelectedIndex(Data.HardcodedData.GrowthRatesListItems.FindIndex(item => item.Name == spc.GrowthRate));
+		if (Data.HardcodedData.GrowthRates.Contains(spc.GrowthRate)) growthRateBox.SetSelectedIndex(Data.HardcodedData.GrowthRatesListItems.FindIndex(item => item.Text == spc.GrowthRate));
 		else growthRateBox.SetText(spc.GrowthRate);
 		growthRateBox.OnSelectionChanged += _ =>
 		{
-			spc.GrowthRate = growthRateBox.SelectedItem.Name;
+			spc.GrowthRate = growthRateBox.SelectedItem.Text;
 			SpeciesList.SelectedItem.Children.ForEach(c =>
 			{
 				Species s = (Species) ((TreeNode) c).Object;
@@ -971,7 +971,7 @@ public partial class DataTypeSpecies
 		DropdownBox colorBox = new DropdownBox(parent);
 		colorBox.SetPosition(604, 67);
 		colorBox.SetSize(150, 24);
-		colorBox.SetItems(Data.HardcodedData.BodyColors.Select(clr => new ListItem(clr)).ToList());
+		colorBox.SetItems(Data.HardcodedData.BodyColors.Select(clr => new TreeNode(clr)).ToList());
 		if (Data.HardcodedData.BodyColors.Contains(spc.Color)) colorBox.SetSelectedIndex(Data.HardcodedData.BodyColors.IndexOf(spc.Color));
 		else colorBox.SetText(spc.Color);
 		colorBox.OnSelectionChanged += _ => spc.Color = Data.HardcodedData.BodyColors[colorBox.SelectedIndex];
@@ -1021,7 +1021,7 @@ public partial class DataTypeSpecies
 		DropdownBox habitatBox = new DropdownBox(parent);
 		habitatBox.SetPosition(604, 107);
 		habitatBox.SetSize(150, 24);
-		habitatBox.SetItems(Data.HardcodedData.Habitats.Select(h => new ListItem(h)).ToList());
+		habitatBox.SetItems(Data.HardcodedData.Habitats.Select(h => new TreeNode(h)).ToList());
 		if (Data.HardcodedData.Habitats.Contains(spc.Habitat)) habitatBox.SetSelectedIndex(Data.HardcodedData.Habitats.IndexOf(spc.Habitat));
 		else habitatBox.SetText(spc.Habitat);
 		habitatBox.OnSelectionChanged += _ => spc.Habitat = Data.HardcodedData.Habitats[habitatBox.SelectedIndex];
@@ -1035,7 +1035,7 @@ public partial class DataTypeSpecies
 		DropdownBox shapeBox = new DropdownBox(parent);
 		shapeBox.SetPosition(604, 147);
 		shapeBox.SetSize(106, 24);
-		shapeBox.SetItems(Data.HardcodedData.BodyShapes.Select(s => new ListItem(s)).ToList());
+		shapeBox.SetItems(Data.HardcodedData.BodyShapes.Select(s => new TreeNode(s)).ToList());
 		if (Data.HardcodedData.BodyShapes.Contains(spc.Shape)) shapeBox.SetSelectedIndex(Data.HardcodedData.BodyShapes.IndexOf(spc.Shape));
 		else shapeBox.SetText(spc.Shape);
 

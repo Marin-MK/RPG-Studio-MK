@@ -5,10 +5,10 @@ namespace RPGStudioMK.Widgets;
 public class DataTypeSubList : Widget
 {
     public int SelectedIndex => ListDrawer.SelectedIndex;
-    public ListItem SelectedItem => ListDrawer.SelectedItem;
+    public TreeNode SelectedItem => ListDrawer.SelectedItem;
     public int HoveringIndex => ListDrawer.HoveringIndex;
-    public ListItem HoveringItem => ListDrawer.HoveringItem;
-    public List<ListItem> Items => ListDrawer.Items;
+    public TreeNode HoveringItem => ListDrawer.HoveringItem;
+    public List<TreeNode> Items => ListDrawer.Items;
 
     ListDrawer ListDrawer;
     Container ScrollContainer;
@@ -81,7 +81,7 @@ public class DataTypeSubList : Widget
         ChangeMaxBtn.SetSize(Size.Width - 8, 33);
     }
 
-    public void SetItems(List<ListItem> Items)
+    public void SetItems(List<TreeNode> Items)
     {
         ListDrawer.SetItems(Items);
     }

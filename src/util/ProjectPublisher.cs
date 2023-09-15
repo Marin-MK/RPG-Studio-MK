@@ -17,11 +17,11 @@ public class ProjectPublisher : IDisposable
 {
 	public static List<(string ID, string Text, bool Checked)> PublishOptions = new List<(string ID, string Text, bool Checked)>()
 	{
-		("species-assets", "Remove unused species assets", true),
-		("item-assets", "Remove unused item assets", true),
-		("trainer-assets", "Remove unused trainer assets", true),
-		("autotile-assets", "Remove unused autotile assets", true),
-		("tileset-assets", "Remove unused tileset assets", true),
+		("species-assets", "Exclude unused species assets", true),
+		("item-assets", "Exclude unused item assets", true),
+		("trainer-assets", "Exclude unused trainer assets", true),
+		("autotile-assets", "Exclude unused autotile assets", true),
+		("tileset-assets", "Exclude unused tileset assets", true),
 
 		//("encrypt", "Encrypt the project")
 	};

@@ -67,6 +67,8 @@ public class ScriptEditorBox : Widget
             if (TabNavigator.Mouse.Inside) TextArea.WidgetSelected(new BaseEventArgs());
         };
 
+        bool wasPreviouslyInsideTextArea = false;
+
         ScrollContainer = new Container(MainGrid);
         ScrollContainer.SetGridRow(1);
         ScrollContainer.SetMargins(3, 3, 18, 18);
@@ -75,14 +77,8 @@ public class ScriptEditorBox : Widget
             if (!TextArea.Interactable) return;
             bool InsideTextArea = ScrollContainer.Mouse.Inside && e.X - ScrollContainer.Viewport.X >= TextArea.TextXOffset;
             if (InsideTextArea && Input.SystemCursor == CursorType.Arrow) Input.SetCursor(CursorType.IBeam);
-            else
-            {
-                if (FindReplaceBox is not null)
-                {
-                    if (!ScrollContainer.Mouse.Inside && !FindReplaceBox.Mouse.Inside && Input.SystemCursor != CursorType.Arrow) Input.SetCursor(CursorType.Arrow);
-                }
-                else if (!ScrollContainer.Mouse.Inside && Input.SystemCursor != CursorType.Arrow) Input.SetCursor(CursorType.Arrow);
-            }
+            else if (!InsideTextArea && wasPreviouslyInsideTextArea && Input.SystemCursor != CursorType.Arrow) Input.SetCursor(CursorType.Arrow);
+            wasPreviouslyInsideTextArea = InsideTextArea;
         };
         ScrollContainer.OnMouseWheel += e =>
         {
@@ -370,7 +366,16 @@ public class ScriptEditorBox : Widget
 		    caret = (MultilineTextArea.CaretIndex) TextArea.Caret.Clone();
 			caret.Index += TextArea.SelectedText.Length;
         }
-        return new ScriptFinderAndReplacer(TextArea.Lines, caret);
+        ScriptFinderAndReplacer finder = new ScriptFinderAndReplacer();
+        finder.SetScript(TextArea.Lines);
+        return finder;
+    }
+
+    public void PreviewOccurrence(Script script, Occurrence occurrence)
+    {
+        // Open the containing script as a preview, jump to the relevant line, and select the occurrence
+        SetScriptBox(script, OpenScripts.Contains(script));
+        TextArea.SelectOccurrence(occurrence, false);
     }
 
     public void SetOccurrences(List<Occurrence> occurrences)

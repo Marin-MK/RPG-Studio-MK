@@ -25,7 +25,7 @@ public class GenericListWindow : PopupWindow
         ListBox = new ListBox(this);
         ListBox.SetDocked(true);
         ListBox.SetPadding(16, 36, 16, 160);
-        ListBox.SetItems(Items.Select(i => new ListItem(i)).ToList());
+        ListBox.SetItems(Items.Select(i => new TreeNode(i)).ToList());
 
         if (NumericAndOrdered)
         {
@@ -64,11 +64,11 @@ public class GenericListWindow : PopupWindow
         AddButton.OnClicked += _ =>
         {
             int Idx = ListBox.SelectedIndex;
-            ListItem Item = new ListItem(NumericAndOrdered ? NumberBox.Value.ToString() : NameBox.Text);
+			TreeNode Item = new TreeNode(NumericAndOrdered ? NumberBox.Value.ToString() : NameBox.Text);
             if (NumericAndOrdered)
             {
                 ListBox.Items.Add(Item);
-                ListBox.Items.Sort((ListItem a, ListItem B) => Convert.ToInt32(a.Name).CompareTo(Convert.ToInt32(B.Name)));
+                ListBox.Items.Sort((TreeNode a, TreeNode b) => Convert.ToInt32(a.Text).CompareTo(Convert.ToInt32(b.Text)));
                 Idx = ListBox.Items.IndexOf(Item);
             }
             else
@@ -89,9 +89,7 @@ public class GenericListWindow : PopupWindow
         DeleteButton.OnClicked += _ =>
         {
             if (ListBox.SelectedIndex == -1) return;
-            ListBox.Items.RemoveAt(ListBox.SelectedIndex);
-            ListBox.SetItems(ListBox.Items);
-            if (ListBox.SelectedIndex > 0) ListBox.SetSelectedIndex(ListBox.SelectedIndex - 1);
+            ListBox.RemoveItem(ListBox.SelectedItem);
             if (ListBox.Items.Count == 0) DeleteButton.SetEnabled(false);
         };
 
@@ -107,7 +105,7 @@ public class GenericListWindow : PopupWindow
     private void OK()
     {
         Apply = true;
-        this.Value = ListBox.Items.Select(i => i.Name).ToList();
+        this.Value = ListBox.Items.Select(i => i.Text).ToList();
         Close();
     }
 

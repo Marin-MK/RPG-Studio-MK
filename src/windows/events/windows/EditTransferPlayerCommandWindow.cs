@@ -108,13 +108,13 @@ public class EditTransferPlayerCommandWindow : PopupWindow
 
         DirectionBox = new DropdownBox(this);
         DirectionBox.SetFont(Fonts.Paragraph);
-        DirectionBox.SetItems(new List<ListItem>()
+        DirectionBox.SetItems(new List<TreeNode>()
         {
-            new ListItem("Retain"),
-            new ListItem("Down"),
-            new ListItem("Left"),
-            new ListItem("Right"),
-            new ListItem("Up")
+            new TreeNode("Retain"),
+            new TreeNode("Down"),
+            new TreeNode("Left"),
+            new TreeNode("Right"),
+            new TreeNode("Up")
         });
         DirectionBox.SetWidth(90);
         DirectionBox.SetPosition(80, 232);

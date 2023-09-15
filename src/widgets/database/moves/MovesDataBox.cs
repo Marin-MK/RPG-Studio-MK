@@ -99,10 +99,10 @@ public partial class DataTypeMoves
 		DropdownBox categoryBox = new DropdownBox(parent);
 		categoryBox.SetPosition(431, 191);
 		categoryBox.SetSize(150, 24);
-		categoryBox.SetItems(Data.HardcodedData.MoveCategories.Select(c => new ListItem(c)).ToList());
+		categoryBox.SetItems(Data.HardcodedData.MoveCategories.Select(c => new TreeNode(c)).ToList());
 		if (Data.HardcodedData.MoveCategories.Contains(mov.Category)) categoryBox.SetSelectedIndex(Data.HardcodedData.MoveCategories.IndexOf(mov.Category));
 		else categoryBox.SetText(mov.Category);
-		categoryBox.OnSelectionChanged += _ => mov.Category = categoryBox.SelectedItem.Name;
+		categoryBox.OnSelectionChanged += _ => mov.Category = categoryBox.SelectedItem.Text;
 
 		Label powerLabel = new Label(parent);
 		powerLabel.SetPosition(333, 234);
@@ -172,10 +172,10 @@ public partial class DataTypeMoves
 		DropdownBox targetBox = new DropdownBox(parent);
 		targetBox.SetPosition(431, 391);
 		targetBox.SetSize(150, 24);
-		targetBox.SetItems(Data.HardcodedData.MoveTargets.Select(t => new ListItem(t)).ToList());
+		targetBox.SetItems(Data.HardcodedData.MoveTargets.Select(t => new TreeNode(t)).ToList());
 		if (Data.HardcodedData.MoveTargets.Contains(mov.Target)) targetBox.SetSelectedIndex(Data.HardcodedData.MoveTargets.IndexOf(mov.Target));
 		else targetBox.SetText(mov.Target);
-		targetBox.OnSelectionChanged += _ => mov.Target = targetBox.SelectedItem.Name;
+		targetBox.OnSelectionChanged += _ => mov.Target = targetBox.SelectedItem.Text;
 
 		parent.UpdateSize();
 	}
@@ -232,7 +232,7 @@ public partial class DataTypeMoves
 		int idx = Data.Sources.FunctionCodes.FindIndex(fc => (string) fc.Object == mov.FunctionCode);
 		if (idx != -1) functionCodeBox.SetSelectedIndex(idx);
 		else functionCodeBox.SetText(mov.FunctionCode);
-		functionCodeBox.OnSelectionChanged += _ => mov.FunctionCode = functionCodeBox.SelectedItem.Name;
+		functionCodeBox.OnSelectionChanged += _ => mov.FunctionCode = functionCodeBox.SelectedItem.Text;
 		functionCodeBox.OnTextChanged += _ => mov.FunctionCode = functionCodeBox.Text;
 
 		Button updateFunctionCodes = new Button(parent);

@@ -25,9 +25,9 @@ public class ShiftMapWindow : PopupWindow
         DirectionBox = new DropdownBox(this);
         DirectionBox.SetPosition(88, 30);
         DirectionBox.SetSize(80, 27);
-        DirectionBox.SetItems(new List<ListItem>()
+        DirectionBox.SetItems(new List<TreeNode>()
         {
-            new ListItem("Down"), new ListItem("Left"), new ListItem("Right"), new ListItem("Up")
+            new TreeNode("Down"), new TreeNode("Left"), new TreeNode("Right"), new TreeNode("Up")
         });
         DirectionBox.OnSelectionChanged += _ =>
         {

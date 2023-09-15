@@ -105,7 +105,7 @@ public partial class DataTypeItems
 		DropdownBox pocketBox = new DropdownBox(parent);
 		pocketBox.SetPosition(431, 191);
 		pocketBox.SetSize(150, 24);
-		pocketBox.SetItems(Data.HardcodedData.ItemPockets.Select(p => new ListItem(p)).ToList());
+		pocketBox.SetItems(Data.HardcodedData.ItemPockets.Select(p => new TreeNode(p)).ToList());
 		pocketBox.SetSelectedIndex(item.Pocket - 1);
 		pocketBox.OnSelectionChanged += _ => item.Pocket = pocketBox.SelectedIndex + 1;
 
@@ -152,7 +152,7 @@ public partial class DataTypeItems
 		DropdownBox fieldUseBox = new DropdownBox(parent);
 		fieldUseBox.SetPosition(431, 351);
 		fieldUseBox.SetSize(150, 24);
-		fieldUseBox.SetItems(Data.HardcodedData.ItemFieldUses.Select(u => new ListItem(u)).ToList());
+		fieldUseBox.SetItems(Data.HardcodedData.ItemFieldUses.Select(u => new TreeNode(u)).ToList());
 		fieldUseBox.SetSelectedIndex(item.FieldUse);
 		fieldUseBox.OnSelectionChanged += _ => item.FieldUse = fieldUseBox.SelectedIndex;
 
@@ -165,7 +165,7 @@ public partial class DataTypeItems
 		DropdownBox battleUseBox = new DropdownBox(parent);
 		battleUseBox.SetPosition(431, 391);
 		battleUseBox.SetSize(150, 24);
-		battleUseBox.SetItems(Data.HardcodedData.ItemBattleUses.Select(u => new ListItem(u)).ToList());
+		battleUseBox.SetItems(Data.HardcodedData.ItemBattleUses.Select(u => new TreeNode(u)).ToList());
 		battleUseBox.SetSelectedIndex(item.BattleUse);
 		battleUseBox.OnSelectionChanged += _ => item.BattleUse = battleUseBox.SelectedIndex;
 

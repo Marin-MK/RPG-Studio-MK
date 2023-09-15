@@ -86,12 +86,12 @@ public class VariablePicker : PopupWindow
     {
         int capacity = Data.System.Variables.Count;
         int groups = (int) Math.Ceiling(capacity / (double) VariablesPerGroup);
-        List<ListItem> Items = new List<ListItem>();
+        List<TreeNode> Items = new List<TreeNode>();
         for (int i = 0; i < groups; i++)
         {
             int start = i * VariablesPerGroup;
             int end = Math.Min((i + 1) * VariablesPerGroup, capacity);
-            Items.Add(new ListItem($"[{Utilities.Digits(start + 1, 3)} - {Utilities.Digits(end, 3)}]"));
+            Items.Add(new TreeNode($"[{Utilities.Digits(start + 1, 3)} - {Utilities.Digits(end, 3)}]"));
         }
         GroupListBox.SetItems(Items);
         if (GroupListBox.SelectedIndex == -1) GroupListBox.SetSelectedIndex(0);
@@ -102,10 +102,10 @@ public class VariablePicker : PopupWindow
         int capacity = Data.System.Variables.Count;
         int start = GroupListBox.SelectedIndex * VariablesPerGroup;
         int end = Math.Min((GroupListBox.SelectedIndex + 1) * VariablesPerGroup, capacity);
-        List<ListItem> Items = new List<ListItem>();
+        List<TreeNode> Items = new List<TreeNode>();
         for (int i = start; i < end; i++)
         {
-            Items.Add(new ListItem($"{Utilities.Digits(i + 1, 3)}: {Data.System.Variables[i]}"));
+            Items.Add(new TreeNode($"{Utilities.Digits(i + 1, 3)}: {Data.System.Variables[i]}"));
         }
         VariableListBox.SetItems(Items);
         if (VariableListBox.SelectedIndex == -1) VariableListBox.SetSelectedIndex(0);

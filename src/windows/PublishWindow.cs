@@ -13,24 +13,24 @@ public class PublishWindow : PopupWindow
 
 	List<(string ID, CheckBox CheckBox)> CheckBoxes = new List<(string, CheckBox)>();
 
-	GroupBox aboutBox;
+	Label aboutLabel;
+	Container aboutBox;
 	Label gameTitleLabel;
 	Label gameTitleBox;
-	Label gameVersionLabel;
-	TextBox gameVersionBox;
+	//Label gameVersionLabel;
+	//TextBox gameVersionBox;
 	Label locationLabel;
 	BrowserBox locationBox;
 	Label filenameLabel;
 	TextBox filenameBox;
 
-	Label aboutLabel;
-	GroupBox optionsBox;
+	Container optionsBox;
 	Label optionsLabel;
 
 	public PublishWindow()
 	{
 		SetTitle("Publisher");
-		MinimumSize = MaximumSize = new Size(463, 340 + ProjectPublisher.PublishOptions.Count * 30);
+		MinimumSize = MaximumSize = new Size(463, 300 + ProjectPublisher.PublishOptions.Count * 30);
 		SetSize(MinimumSize);
 		Center();
 
@@ -40,47 +40,47 @@ public class PublishWindow : PopupWindow
 		aboutLabel.SetText("About");
 		aboutLabel.SetFont(Fonts.ParagraphBold);
 
-		aboutBox = new GroupBox(this);
+		aboutBox = new Container(this);
 		aboutBox.SetPosition(47, 79);
 		aboutBox.SetSize(362, 163);
 
 		gameTitleLabel = new Label(aboutBox);
-		gameTitleLabel.SetPosition(28, 12);
+		gameTitleLabel.SetPosition(4, 12);
 		gameTitleLabel.SetSize(67, 18);
 		gameTitleLabel.SetText("Game Title:");
 		gameTitleLabel.SetFont(Fonts.Paragraph);
 
-		gameVersionLabel = new Label(aboutBox);
-		gameVersionLabel.SetPosition(8, 52);
-		gameVersionLabel.SetSize(87, 18);
-		gameVersionLabel.SetText("Game Version:");
-		gameVersionLabel.SetFont(Fonts.Paragraph);
+		//gameVersionLabel = new Label(aboutBox);
+		//gameVersionLabel.SetPosition(4, 52);
+		//gameVersionLabel.SetSize(87, 18);
+		//gameVersionLabel.SetText("Game Version:");
+		//gameVersionLabel.SetFont(Fonts.Paragraph);
 
 		locationLabel = new Label(aboutBox);
-		locationLabel.SetPosition(40, 92);
+		locationLabel.SetPosition(4, 52);
 		locationLabel.SetSize(55, 18);
 		locationLabel.SetText("Location:");
 		locationLabel.SetFont(Fonts.Paragraph);
 
 		filenameLabel = new Label(aboutBox);
-		filenameLabel.SetPosition(38, 133);
+		filenameLabel.SetPosition(4, 93);
 		filenameLabel.SetSize(57, 18);
 		filenameLabel.SetText("Filename:");
 		filenameLabel.SetFont(Fonts.Paragraph);
 
-		gameVersionBox = new TextBox(aboutBox);
-		gameVersionBox.SetPosition(108, 48);
-		gameVersionBox.SetSize(240, 27);
-		gameVersionBox.SetFont(Fonts.Paragraph);
-		gameVersionBox.SetText(Editor.ProjectSettings.ProjectVersion);
-		gameVersionBox.OnTextChanged += _ =>
-		{
-			if (filenameBox.Text == GenerateFilename())
-			{
-				Editor.ProjectSettings.ProjectVersion = gameVersionBox.Text;
-				filenameBox.SetText(GenerateFilename());
-			}
-		};
+		//gameVersionBox = new TextBox(aboutBox);
+		//gameVersionBox.SetPosition(108, 48);
+		//gameVersionBox.SetSize(240, 27);
+		//gameVersionBox.SetFont(Fonts.Paragraph);
+		//gameVersionBox.SetText(Editor.ProjectSettings.ProjectVersion);
+		//gameVersionBox.OnTextChanged += _ =>
+		//{
+		//	if (filenameBox.Text == GenerateFilename())
+		//	{
+		//		Editor.ProjectSettings.ProjectVersion = gameVersionBox.Text;
+		//		filenameBox.SetText(GenerateFilename());
+		//	}
+		//};
 
 		gameTitleBox = new Label(aboutBox);
 		gameTitleBox.SetPosition(108, 12);
@@ -89,7 +89,7 @@ public class PublishWindow : PopupWindow
 		gameTitleBox.SetFont(Fonts.Paragraph);
 
 		locationBox = new BrowserBox(aboutBox);
-		locationBox.SetPosition(108, 89);
+		locationBox.SetPosition(108, 49);
 		locationBox.SetSize(240, 25);
 		locationBox.SetFont(Fonts.Paragraph);
 		if (!string.IsNullOrEmpty(Editor.ProjectSettings.LastExportLocation) && Directory.Exists(Editor.ProjectSettings.LastExportLocation))
@@ -110,7 +110,7 @@ public class PublishWindow : PopupWindow
 		};
 
 		filenameBox = new TextBox(aboutBox);
-		filenameBox.SetPosition(108, 130);
+		filenameBox.SetPosition(108, 90);
 		filenameBox.SetSize(240, 25);
 		filenameBox.SetFont(Fonts.Paragraph);
 		filenameBox.SetText(GenerateFilename());
@@ -124,13 +124,13 @@ public class PublishWindow : PopupWindow
 		};
 
 		optionsLabel = new Label(this);
-		optionsLabel.SetPosition(31, 251);
+		optionsLabel.SetPosition(31, 211);
 		optionsLabel.SetSize(53, 17);
 		optionsLabel.SetText("Options");
 		optionsLabel.SetFont(Fonts.ParagraphBold);
 
-		optionsBox = new GroupBox(this);
-		optionsBox.SetPosition(47, 276);
+		optionsBox = new Container(this);
+		optionsBox.SetPosition(47, 236);
 		optionsBox.SetSize(362, ProjectPublisher.PublishOptions.Count * 30 - 4);
 
 		int y = 4;
@@ -141,7 +141,6 @@ public class PublishWindow : PopupWindow
 			cbox.SetText(o.Text);
 			cbox.SetChecked(o.Checked);
 			cbox.SetFont(Fonts.Paragraph);
-			cbox.SetChecked(Editor.ProjectSettings.LastExportSettings.Contains(o.ID));
 			y += 30;
 			CheckBoxes.Add((o.ID, cbox));
 		});
@@ -165,7 +164,7 @@ public class PublishWindow : PopupWindow
 	private void OK()
 	{
 		Apply = true;
-		Editor.ProjectSettings.LastExportSettings = CheckBoxes.Where(o => o.CheckBox.Checked).Select(o => o.ID).ToList();
+		Options = CheckBoxes.Where(o => o.CheckBox.Checked).Select(o => o.ID).ToList();
 		Filename = filenameBox.Text;
 		Close();
 	}

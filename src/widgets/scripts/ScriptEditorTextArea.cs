@@ -1637,7 +1637,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         ClearOccurrences();
     }
 
-    public void SelectOccurrence(Occurrence occurrence)
+    public void SelectOccurrence(Occurrence occurrence, bool updateStatusBarText = true)
     {
 		if (!HasSelection) StartSelection();
 		SelectionStart.Index = Lines[occurrence.LineNumber].StartIndex + occurrence.IndexInLine;
@@ -1645,7 +1645,7 @@ public class ScriptEditorTextArea : MultilineTextArea
 		Caret.Index = SelectionEnd.Index;
 		UpdateCaretPosition(true);
 		RedrawSelectionBoxes();
-		Editor.MainWindow.StatusBar.SetRightText($"Occurrence ({Occurrences.IndexOf(occurrence) + 1} / {Occurrences.Count})");
+		if (updateStatusBarText) Editor.MainWindow.StatusBar.SetRightText($"Occurrence ({Occurrences.IndexOf(occurrence) + 1} / {Occurrences.Count})");
 	}
 
     public void ClearOccurrences()

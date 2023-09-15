@@ -35,14 +35,16 @@ public class EditSelfSwitchCommandWindow : PopupWindow
         EventBox.SetFont(Fonts.Paragraph);
         EventBox.SetPosition(80, 0);
         EventBox.SetSize(160, 25);
-        List<ListItem> Items = new List<ListItem>();
-        Items.Add(new ListItem("This event", -1));
+        List<TreeNode> Items = new List<TreeNode>()
+        {
+            new TreeNode("This event", -1)
+        };
         List<int> keys = Map.Events.Keys.ToList();
         keys.Sort();
         for (int i = 0; i < keys.Count; i++)
         {
             if (keys[i] == Event.ID) continue;
-            Items.Add(new ListItem($"{Utilities.Digits(keys[i], 3)}: {Map.Events[keys[i]].Name}", keys[i]));
+            Items.Add(new TreeNode($"{Utilities.Digits(keys[i], 3)}: {Map.Events[keys[i]].Name}", keys[i]));
         }
         EventBox.SetItems(Items);
         if (Command.Parameters.Count == 3)
@@ -61,10 +63,10 @@ public class EditSelfSwitchCommandWindow : PopupWindow
         SelfSwitchBox.SetFont(Fonts.Paragraph);
         SelfSwitchBox.SetPosition(80, 35);
         SelfSwitchBox.SetSize(48, 25);
-        SelfSwitchBox.SetItems(new List<ListItem>()
+        SelfSwitchBox.SetItems(new List<TreeNode>()
         {
-            new ListItem("A"), new ListItem("B"), new ListItem("C"),
-            new ListItem("D"), new ListItem("E"), new ListItem("F")
+            new TreeNode("A"), new TreeNode("B"), new TreeNode("C"),
+            new TreeNode("D"), new TreeNode("E"), new TreeNode("F")
         });
         SelfSwitchBox.SetSelectedIndex(((string) Command.Parameters[0])[0] - 'A');
 

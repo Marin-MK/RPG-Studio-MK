@@ -37,7 +37,7 @@ public class AudioPicker : PopupWindow
         FileList = new ListBox(this);
         FileList.SetPosition(25, 51);
         FileList.SetSize(151, 261);
-        List<ListItem> items = new List<ListItem>() { new ListItem("(None)", null) };
+        List<TreeNode> items = new List<TreeNode>() { new TreeNode("(None)", null) };
         int i = 1;
         int selidx = 0;
         foreach (string origfile in Directory.GetFiles(Game.Data.ProjectPath + "/" + Folder))
@@ -46,7 +46,7 @@ public class AudioPicker : PopupWindow
             while (file.Contains('\\')) file = file.Replace('\\', '/');
             string name = Path.GetFileNameWithoutExtension(file);
             if (name == File) selidx = i;
-            items.Add(new ListItem(name, file));
+            items.Add(new TreeNode(name, file));
             i++;
         }
         FileList.SetItems(items);
@@ -162,7 +162,7 @@ public class AudioPicker : PopupWindow
     public void OK()
     {
         StopSound();
-        this.Result = (FileList.SelectedItem.Object == null ? "" : FileList.SelectedItem.Name, this.Volume, this.Pitch);
+        this.Result = (FileList.SelectedItem.Object == null ? "" : FileList.SelectedItem.Text, this.Volume, this.Pitch);
         Close();
     }
 

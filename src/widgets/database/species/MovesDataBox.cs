@@ -149,8 +149,8 @@ partial class DataTypeSpecies
 
 	void CreateTMContainer(DataContainer parent, Species spc)
 	{
-		List<ListItem> tms = Data.Sources.TMsHMs.FindAll(item => Data.HardcodedData.Get(((Item) item.Object).FieldUse, Data.HardcodedData.ItemFieldUses) != "HM").ToList();
-		List<ListItem> hms = Data.Sources.TMsHMs.FindAll(item => Data.HardcodedData.Get(((Item) item.Object).FieldUse, Data.HardcodedData.ItemFieldUses) == "HM").ToList();
+		List<TreeNode> tms = Data.Sources.TMsHMs.FindAll(item => Data.HardcodedData.Get(((Item) item.Object).FieldUse, Data.HardcodedData.ItemFieldUses) != "HM").ToList();
+		List<TreeNode> hms = Data.Sources.TMsHMs.FindAll(item => Data.HardcodedData.Get(((Item) item.Object).FieldUse, Data.HardcodedData.ItemFieldUses) == "HM").ToList();
 
 		ColumnFormatter posHelper = new ColumnFormatter(tms.Count, 4);
 		posHelper.SetX(53);

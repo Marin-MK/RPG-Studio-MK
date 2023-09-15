@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using RPGStudioMK.Game;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using static amethyst.MultilineTextArea;
@@ -7,16 +8,33 @@ namespace RPGStudioMK.Utility;
 
 public class ScriptFinderAndReplacer
 {
-    public List<Line> Lines { get; protected set; }
-    public CaretIndex StartIndex { get; protected set; }
-
+    public List<string> Lines { get; protected set; }
     public bool UseRegex { get; protected set; } = false;
     public bool CaseSensitive { get; protected set; } = false;
 
-    public ScriptFinderAndReplacer(List<Line> lines, CaretIndex startIndex)
+    public ScriptFinderAndReplacer()
+    {
+
+    }
+
+    public void SetScript(List<Line> lines)
+    {
+        this.Lines = lines.Select(l => l.Text).ToList();
+    }
+
+    public void SetScript(List<string> lines)
     {
         this.Lines = lines;
-        this.StartIndex = startIndex;
+    }
+
+    public void SetScript(string content)
+    {
+        this.Lines = content.Split('\n').ToList();
+    }
+
+    public void SetScript(Script script)
+    {
+        this.Lines = script.Content.Split('\n').ToList();
     }
 
     public void SetUseRegex(bool useRegex)
@@ -35,14 +53,14 @@ public class ScriptFinderAndReplacer
         if (!CaseSensitive) query = query.ToLower();
         for (int i = 0; i < Lines.Count; i++)
         {
-            Line line = Lines[i];
+            string lineContent = Lines[i];
             int sIdx = 0;
-            while (sIdx < line.Length)
+            while (sIdx < lineContent.Length)
             {
-                Occurrence? occ = FindInLine(line, query, sIdx);
+                Occurrence? occ = FindInLine(lineContent, i, query, sIdx);
                 if (occ is not null)
                 {
-                    Occurrence rOcc = (Occurrence)occ;
+                    Occurrence rOcc = (Occurrence) occ;
                     occurrences.Add(rOcc);
                     sIdx = rOcc.IndexInLine + rOcc.Length;
                 }
@@ -52,9 +70,9 @@ public class ScriptFinderAndReplacer
         return occurrences;
     }
 
-    private Occurrence? FindInLine(Line line, string query, int lineStartIndex = 0)
+    private Occurrence? FindInLine(string lineContent, int lineNumber, string query, int lineStartIndex = 0)
     {
-        string lineToSearch = line.Text.Substring(lineStartIndex);
+        string lineToSearch = lineContent.Substring(lineStartIndex);
         if (!CaseSensitive) lineToSearch = lineToSearch.ToLower();
         if (UseRegex)
         {
@@ -63,7 +81,7 @@ public class ScriptFinderAndReplacer
             {
                 return new Occurrence()
                 {
-                    LineNumber = line.LineIndex,
+                    LineNumber = lineNumber,
                     IndexInLine = lineStartIndex + match.Index,
                     Length = match.Length,
                     Content = match.Value,
@@ -76,7 +94,7 @@ public class ScriptFinderAndReplacer
         if (index == -1) return null;
         return new Occurrence()
         {
-            LineNumber = line.LineIndex,
+            LineNumber = lineNumber,
             IndexInLine = index + lineStartIndex,
             Length = query.Length,
             Content = query,
@@ -85,8 +103,9 @@ public class ScriptFinderAndReplacer
     }
 }
 
-public struct Occurrence
+public class Occurrence
 {
+    public int ID;
     public int LineNumber;
     public int IndexInLine;
     public int Length;
