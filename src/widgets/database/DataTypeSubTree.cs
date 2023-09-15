@@ -10,6 +10,7 @@ public class DataTypeSubTree : Widget
     public List<TreeNode> SelectedItems => TreeView.SelectedNodes.Select(n => (TreeNode) n).ToList();
     public TreeNode HoveringItem => (TreeNode) TreeView.HoveringNode;
     public TreeNode Root => TreeView.Root;
+    public int XOffset => TreeView.XOffset;
 
     TreeView TreeView;
     Container ScrollContainer;
@@ -47,7 +48,7 @@ public class DataTypeSubTree : Widget
         TreeView.SetLineHeight(24);
         TreeView.SetFont(Fonts.Paragraph);
         TreeView.SetCanDragAndDrop(false);
-        TreeView.SetXOffset(-6);
+        TreeView.SetXOffset(-18);
         TreeView.SetAutoResize(false);
         TreeView.SetCanMultiSelect(true);
         SetWidth(201);
@@ -66,6 +67,11 @@ public class DataTypeSubTree : Widget
     public override void SetContextMenuList(List<IMenuItem> Items)
     {
         TreeView.SetContextMenuList(Items);
+    }
+
+    public void SetXOffset(int xOffset)
+    {
+        TreeView.SetXOffset(xOffset);
     }
 
     public override void SizeChanged(BaseEventArgs e)

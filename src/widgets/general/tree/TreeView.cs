@@ -36,6 +36,10 @@ public class TreeView : Widget
     /// </summary>
     public int DepthIndent { get; protected set; } = 20;
     /// <summary>
+    /// The depth at which connecting lines start.
+    /// </summary>
+    public int? LineStartDepth { get; protected set; } = 0;
+    /// <summary>
     /// A global x offset for the entire displayed tree.
     /// </summary>
     public int XOffset { get; protected set; } = 6;
@@ -1063,7 +1067,7 @@ public class TreeView : Widget
             int x = (NewNode.Depth - 1) * DepthIndent + XOffset;
             int sy = GetDrawnYCoord(ParentNode) + LineHeight;
             int ey = movy;
-            BGSprite.Bitmap.DrawLine(x + 19 - DepthIndent, sy, x + 19 - DepthIndent, ey, new Color(46, 104, 146));
+            BGSprite.Bitmap.DrawLine(x + 19 - DepthIndent, sy, x + 19 - DepthIndent, ey, new Color(64, 104, 146));
         }
         BGSprite.Bitmap.Lock();
         TXTSprite.Bitmap.Lock();
@@ -1279,7 +1283,6 @@ public class TreeView : Widget
             ITreeNode Current = Node;
             while (Current.Parent != null && Current.Parent != Root)
             {
-                int Index = Current.Parent.Children.IndexOf(Current);
                 TreeNode RCurr = Current as TreeNode;
                 if (Current is not TreeNode || RCurr.GetNextSibling() != null)
                 {
@@ -1307,7 +1310,7 @@ public class TreeView : Widget
                 if (RNode.Expanded) BGSprite.Bitmap.DrawLine(x + 19, y + 17, x + 19, y + LineHeight - 1, new Color(64, 104, 146));
             }
             bool sel = SelectedNodes.Contains(RNode);
-			TXTSprite.Bitmap.DrawText(RNode.Text, x + 30, y + 2, sel ? new Color(55, 187, 255) : Color.WHITE);
+			TXTSprite.Bitmap.DrawText(RNode.Text, x + 30, y + LineHeight / 2 - 10, sel ? new Color(55, 187, 255) : Color.WHITE);
             if (AddData)
             {
                 if (IndexProvider != null)
@@ -1332,7 +1335,7 @@ public class TreeView : Widget
         int x = (Node.Depth - 1) * DepthIndent + XOffset;
         int y = GetDrawnYCoord(Node);
         TXTSprite.Bitmap.FillRect(0, y, TXTSprite.Bitmap.Width, LineHeight, Color.ALPHA);
-        TXTSprite.Bitmap.DrawText(Node.Text, x + 30, y + 2, SelectedNodes.Contains(Node) ? new Color(55, 187, 255) : Color.WHITE);
+        TXTSprite.Bitmap.DrawText(Node.Text, x + 30, y + LineHeight / 2 - 10, SelectedNodes.Contains(Node) ? new Color(55, 187, 255) : Color.WHITE);
         if (LockBitmaps) TXTSprite.Bitmap.Lock();
     }
 
@@ -1916,7 +1919,7 @@ public class TreeView : Widget
         query = query.ToLower();
         List<TreeNode> matches = Root.GetAllChildren(true).FindAll(n =>
         {
-            if (n is TreeNode) return ((TreeNode) n).Text.ToLower().StartsWith(query);
+            if (n is TreeNode) return ((TreeNode) n).Selectable && ((TreeNode) n).Text.ToLower().StartsWith(query);
             return false;
         }).Cast<TreeNode>().ToList();
         if (matches.Count == 0) return; // Play fail sound?

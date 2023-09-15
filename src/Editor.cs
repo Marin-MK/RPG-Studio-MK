@@ -579,12 +579,13 @@ public static class Editor
             if (!zipFilename.EndsWith(".zip")) zipFilename += ".zip";
             RunConditionally(File.Exists(zipFilename), cont =>
             {
-                MessageBox mbox = new MessageBox("Warning", $"The filename '{zipFilename}' you want to publish to already exists. Are you sure you want to overwrite this file?", ButtonType.YesNoCancel, IconType.Warning);
+				MessageBox mbox = new MessageBox("Warning", $"The filename '{zipFilename}' you want to publish to already exists. Are you sure you want to overwrite this file?", ButtonType.YesNoCancel, IconType.Warning);
                 mbox.OnClosed += _ =>
                 {
-                    if (mbox.Result == 0) cont();
+                    if (mbox.Result != 0) return;
+                    cont();
                 };
-            }, () =>
+			}, () =>
             {
                 ProjectPublisher publisher = new ProjectPublisher(ProjectSettings.ProjectName, ProjectSettings.ProjectVersion, zipFilename, win.Options);
                 ProgressWindow pwin = new ProgressWindow("Publisher", "Discovering files...", true, true, false, true);

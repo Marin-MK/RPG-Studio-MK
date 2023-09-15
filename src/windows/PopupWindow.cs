@@ -1,7 +1,6 @@
-﻿using amethyst.Animations;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
+using amethyst.Animations;
 
 namespace RPGStudioMK.Widgets;
 

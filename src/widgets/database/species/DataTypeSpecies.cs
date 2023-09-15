@@ -73,6 +73,7 @@ public partial class DataTypeSpecies : GenericDataTypeBase<Species>
 		DataList = new DataTypeSubTree("Species", Grid);
 		DataList.SetBackgroundColor(28, 50, 73);
 		DataList.SetGridRow(0, 1);
+		DataList.SetXOffset(-6);
 		DataList.OnScrolling += _ => SetLastScroll(DataList.GetScroll());
 	}
 
