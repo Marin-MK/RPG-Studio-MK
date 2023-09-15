@@ -274,9 +274,14 @@ public class TreeView : Widget
         this.RegisterShortcuts(new List<Shortcut>()
         {
             new Shortcut(this, new Key(Keycode.DOWN), _ => MoveDown()),
-            new Shortcut(this, new Key(Keycode.UP), _ => MoveUp()),
-            new Shortcut(this, new Key(Keycode.PAGEDOWN), _ => MovePageDown()),
-            new Shortcut(this, new Key(Keycode.PAGEUP), _ => MovePageUp())
+			new Shortcut(this, new Key(Keycode.DOWN, Keycode.SHIFT), _ => MoveDown(true), false, e => e.Value = CanMultiSelect),
+			new Shortcut(this, new Key(Keycode.UP), _ => MoveUp()),
+			new Shortcut(this, new Key(Keycode.UP, Keycode.SHIFT), _ => MoveUp(true), false, e => e.Value = CanMultiSelect),
+			new Shortcut(this, new Key(Keycode.PAGEDOWN), _ => MovePageDown()),
+			new Shortcut(this, new Key(Keycode.PAGEDOWN, Keycode.SHIFT), _ => MovePageDown(true), false, e => e.Value = CanMultiSelect),
+			new Shortcut(this, new Key(Keycode.PAGEUP), _ => MovePageUp()),
+			new Shortcut(this, new Key(Keycode.PAGEUP, Keycode.SHIFT), _ => MovePageUp(true), false, e => e.Value = CanMultiSelect),
+			new Shortcut(this, new Key(Keycode.A, Keycode.CTRL), _ => SelectAll(), false, e => e.Value = CanMultiSelect)
         });
     }
 
@@ -709,12 +714,30 @@ public class TreeView : Widget
     /// <summary>
     /// Called whenever the Down key is pressed.
     /// </summary>
-	public void MoveDown()
+	public void MoveDown(bool shift = false)
     {
-        TreeNode nextNode = (TreeNode) SelectedNode;
-        nextNode = nextNode.GetNextNode(false);
-        if (nextNode == null || nextNode.Root == nextNode) return;
-        SetSelectedNode(nextNode, false);
+        if (shift)
+        {
+            SelectionAnchor ??= this.SelectedNode;
+            TreeNode downNode = ((TreeNode) this.SelectedNode).GetNextNode(false);
+            if (downNode is null) return;
+			BGSprite.Bitmap.Unlock();
+			TXTSprite.Bitmap.Unlock();
+			ClearSelection(null, false);
+			SetSelectedNode(downNode, true, true, true, false);
+            GetNodeRange(SelectionAnchor, downNode).ForEach(n => SetSelectedNode(n, true, true, false, false));
+			SetSelectedNode(SelectionAnchor, true, true, false, false);
+			BGSprite.Bitmap.Lock();
+			TXTSprite.Bitmap.Lock();
+        }
+        else
+        {
+            SelectionAnchor = null;
+            TreeNode nextNode = (TreeNode) SelectedNode;
+            nextNode = nextNode.GetNextNode(false);
+            if (nextNode == null || nextNode.Root == nextNode) return;
+            SetSelectedNode(nextNode, false);
+        }
         EnsureSelectedNodeVisible();
 		this.WidgetSelected(new BaseEventArgs());
 	}
@@ -722,12 +745,30 @@ public class TreeView : Widget
     /// <summary>
     /// Called whenever the Up key is pressed.
     /// </summary>
-    public void MoveUp()
+    public void MoveUp(bool shift = false)
     {
-        TreeNode prevNode = (TreeNode) SelectedNode;
-        prevNode = prevNode.GetPreviousNode(false);
-        if (prevNode == null || prevNode.Root == prevNode) return;
-        SetSelectedNode(prevNode, false);
+        if (shift)
+        {
+            SelectionAnchor ??= this.SelectedNode;
+            TreeNode upNode = ((TreeNode) this.SelectedNode).GetPreviousNode(false);
+            if (upNode is null || upNode.Root == upNode) return;
+			BGSprite.Bitmap.Unlock();
+			TXTSprite.Bitmap.Unlock();
+			ClearSelection(null, false);
+			SetSelectedNode(upNode, true, true, true, false);
+            GetNodeRange(SelectionAnchor, upNode).ForEach(n => SetSelectedNode(n, true, true, false, false));
+			SetSelectedNode(SelectionAnchor, true, true, false, false);
+			BGSprite.Bitmap.Lock();
+			TXTSprite.Bitmap.Lock();
+        }
+        else
+        {
+            SelectionAnchor = null;
+            TreeNode prevNode = (TreeNode) SelectedNode;
+            prevNode = prevNode.GetPreviousNode(false);
+            if (prevNode == null || prevNode.Root == prevNode) return;
+            SetSelectedNode(prevNode, false);
+        }
         EnsureSelectedNodeVisible();
 		this.WidgetSelected(new BaseEventArgs());
 	}
@@ -766,12 +807,13 @@ public class TreeView : Widget
     /// <summary>
     /// Called whenever the Page Down key is pressed.
     /// </summary>
-    public void MovePageDown()
+    public void MovePageDown(bool shift = false)
     {
         int scrolledY = this.AutoResize ? ScrollContainer.ScrolledY : Parent.ScrolledY;
         int height = this.AutoResize ? ScrollContainer.Size.Height : Parent.Size.Height;
 		(ITreeNode bottomNode, int bottomY) = LastDrawData.FindLast(d => d.Y < scrolledY + height - LineHeight / 2);
         (_, int curY) = LastDrawData.Find(d => d.Node == SelectedNode);
+        ITreeNode oldSelectedNode = this.SelectedNode;
         if (curY > bottomY)
         {
             scrolledY = curY;
@@ -794,8 +836,20 @@ public class TreeView : Widget
 			{
 				scrolledY += LineHeight - diff;
 			}
-			if (nextNode != null) SetSelectedNode(nextNode, false);
+            if (nextNode != null) SetSelectedNode(nextNode, false);
+            else return;
 		}
+        if (shift)
+        {
+            SelectionAnchor ??= oldSelectedNode;
+            BGSprite.Bitmap.Unlock();
+            TXTSprite.Bitmap.Unlock();
+            GetNodeRange(SelectionAnchor, this.SelectedNode).ForEach(n => SetSelectedNode(n, true, true, false, false));
+            SetSelectedNode(SelectionAnchor, true, true, false, false);
+            BGSprite.Bitmap.Lock();
+            TXTSprite.Bitmap.Lock();
+        }
+        else SelectionAnchor = null;
 		if (this.AutoResize)
         {
             ScrollContainer.ScrolledY = scrolledY;
@@ -812,12 +866,13 @@ public class TreeView : Widget
     /// <summary>
     /// Called whenever the Page Up key is pressed.
     /// </summary>
-    public void MovePageUp()
+    public void MovePageUp(bool shift = false)
     {
 		int scrolledY = this.AutoResize ? ScrollContainer.ScrolledY : Parent.ScrolledY;
 		int height = this.AutoResize ? ScrollContainer.Size.Height : Parent.Size.Height;
 		(ITreeNode topNode, int topY) = LastDrawData.Find(d => d.Y + LineHeight / 2 > scrolledY);
 		(_, int curY) = LastDrawData.Find(d => d.Node == SelectedNode);
+		ITreeNode oldSelectedNode = this.SelectedNode;
 		if (curY > topY)
 		{
             if (topY < scrolledY)
@@ -839,8 +894,20 @@ public class TreeView : Widget
 			{
                 scrolledY = prevY;
 			}
-			if (prevNode != null) SetSelectedNode(prevNode, false);
+            if (prevNode != null) SetSelectedNode(prevNode, false);
+            else return;
 		}
+        if (shift)
+        {
+			SelectionAnchor ??= oldSelectedNode;
+			BGSprite.Bitmap.Unlock();
+			TXTSprite.Bitmap.Unlock();
+			GetNodeRange(SelectionAnchor, this.SelectedNode).ForEach(n => SetSelectedNode(n, true, true, false, false));
+			SetSelectedNode(SelectionAnchor, true, true, false, false);
+			BGSprite.Bitmap.Lock();
+			TXTSprite.Bitmap.Lock();
+		}
+        else SelectionAnchor = null;
 		if (this.AutoResize)
 		{
 			ScrollContainer.ScrolledY = scrolledY;
@@ -852,6 +919,21 @@ public class TreeView : Widget
 			((Widget) Parent).UpdateAutoScroll();
 		}
 		this.WidgetSelected(new BaseEventArgs());
+	}
+
+    /// <summary>
+    /// Selects all nodes.
+    /// </summary>
+    public void SelectAll()
+    {
+		BGSprite.Bitmap.Unlock();
+		TXTSprite.Bitmap.Unlock();
+        ClearSelection(null, false);
+        List<ITreeNode> nodes = Root.GetAllChildren(true);
+        SetSelectedNode(nodes[^1], true, true, true, false);
+		nodes.Take(nodes.Count - 1).ToList().ForEach(n => SetSelectedNode(n, true, true, false, false));
+		BGSprite.Bitmap.Lock();
+		TXTSprite.Bitmap.Lock();
 	}
 
     /// <summary>
@@ -1750,6 +1832,7 @@ public class TreeView : Widget
 
     private List<ITreeNode> GetNodeRange(ITreeNode startNode, ITreeNode endNode)
     {
+        if (startNode == endNode) return new List<ITreeNode>();
         List<ITreeNode> allNodes = Root.GetAllChildren(true);
         List<ITreeNode> nodeRange = new List<ITreeNode>();
         ITreeNode? finishNode = null;

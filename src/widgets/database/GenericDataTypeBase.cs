@@ -140,9 +140,9 @@ public abstract class GenericDataTypeBase<T> : SimpleDataTypeBase
 
 	protected abstract T CreateData();
 
-	protected virtual void UpdateSelection()
+	protected virtual void UpdateSelection(bool forceUpdate = false)
 	{
-		if (LastDisplayedData is not null && LastDisplayedData.Equals(this.SelectedItem)) return;
+		if (!forceUpdate && LastDisplayedData is not null && LastDisplayedData.Equals(this.SelectedItem)) return;
 		SetLastID(GetID(this.SelectedItem));
 
 		StackPanel?.Dispose();

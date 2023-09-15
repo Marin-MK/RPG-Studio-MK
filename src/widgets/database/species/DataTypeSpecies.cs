@@ -212,12 +212,12 @@ public partial class DataTypeSpecies : GenericDataTypeBase<Species>
 		throw new NotImplementedException();
 	}
 
-	protected override void UpdateSelection()
+	protected override void UpdateSelection(bool forceUpdate = false)
     {
 		Editor.ProjectSettings.LastSpeciesSubmode = Tabs.SelectedIndex;
-		if (LastDisplayedData is not null && LastDisplayedData.Equals(this.SelectedItem) &&
+		if (!forceUpdate && LastDisplayedData is not null && LastDisplayedData.Equals(this.SelectedItem) &&
 			LastTabIndex is not null && LastTabIndex == Tabs.SelectedIndex) return;
-        base.UpdateSelection();
+        base.UpdateSelection(true);
 		LastTabIndex = Tabs.SelectedIndex;
 	}
 
