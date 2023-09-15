@@ -105,12 +105,23 @@ public static class Editor
         return;
 #endif
         PopupWindow win = new PopupWindow();
-        win.SetSize(400, 400);
+        win.SetSize(400, 530);
         win.Center();
+        win.CreateButton("OK", _ => win.Close());
+
+        MultilineLabel selLabel = new MultilineLabel(win);
+        selLabel.SetPosition(50, 20);
+        selLabel.SetFont(Fonts.Paragraph);
+        selLabel.SetWidth(350);
 
         ListBox list = new ListBox(win);
-        list.SetPosition(50, 50);
+        list.SetPosition(50, 150);
         list.SetSize(300, 300);
+        list.SetCanMultiSelect(true);
+        list.OnSelectionChanged += _ =>
+        {
+            selLabel.SetText($"SelectedNode: {list.SelectedItem}\n{list.SelectedItems.Select(n => n.ToString()).Aggregate((a, b) => a + ", " + b)}");
+        };
         list.SetItems(new List<TreeNode>()
         {
             new TreeNode("One"),
@@ -131,7 +142,7 @@ public static class Editor
         });
 
         Button addButton = new Button(win);
-        addButton.SetPosition(50, 352);
+        addButton.SetPosition(50, 452);
         addButton.SetSize(140, 30);
         addButton.SetText("Add Item");
         addButton.OnClicked += _ =>
@@ -142,7 +153,7 @@ public static class Editor
         };
 
         Button removeButton = new Button(win);
-        removeButton.SetPosition(210, 352);
+        removeButton.SetPosition(210, 452);
         removeButton.SetSize(140, 30);
         removeButton.SetText("Delete Item");
         removeButton.OnClicked += _ =>

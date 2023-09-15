@@ -68,6 +68,10 @@ public class TreeView : Widget
     /// </summary>
     public bool CanDragAndDrop { get; protected set; } = true;
     /// <summary>
+    /// Whether multiple selections are allowed.
+    /// </summary>
+    public bool CanMultiSelect { get; protected set; } = false;
+    /// <summary>
     /// Whether the tree has any nodes aside from the root node.
     /// </summary>
     public bool Empty => !Root.HasChildren;
@@ -277,6 +281,24 @@ public class TreeView : Widget
     }
 
     /// <summary>
+    /// Exposes the mechanism for unlocking graphics, to make bulk drawing faster.
+    /// </summary>
+    public void UnlockGraphics()
+    {
+        BGSprite.Bitmap.Unlock();
+        TXTSprite.Bitmap.Unlock();
+    }
+
+    /// <summary>
+    /// Exposes the mechanism for locking graphics, to make bulk drawing faster.
+    /// </summary>
+    public void LockGraphics()
+    {
+        BGSprite.Bitmap.Lock();
+        TXTSprite.Bitmap.Lock();
+    }
+
+    /// <summary>
     /// Sets whether to auto-resize in-widget (true) or to leave it to the parent (false).
     /// </summary>
     /// <param name="AutoResize"></param>
@@ -356,6 +378,18 @@ public class TreeView : Widget
         if (this.CanDragAndDrop != CanDragAndDrop)
         {
             this.CanDragAndDrop = CanDragAndDrop;
+        }
+    }
+
+    /// <summary>
+    /// Changes whether multiple selection are allowed.
+    /// </summary>
+    /// <param name="CanMultiSelect">Whether multiple selection are allowed.</param>
+    public void SetCanMultiSelect(bool CanMultiSelect)
+    {
+        if (this.CanMultiSelect != CanMultiSelect)
+        {
+            this.CanMultiSelect = CanMultiSelect;
         }
     }
 
@@ -1210,14 +1244,14 @@ public class TreeView : Widget
     /// Redraws the text of a node.
     /// </summary>
     /// <param name="Node">The node to redraw the text of.</param>
-    public void RedrawNodeText(TreeNode Node)
+    public void RedrawNodeText(TreeNode Node, bool LockBitmaps = true)
     {
-        TXTSprite.Bitmap.Unlock();
+        if (LockBitmaps) TXTSprite.Bitmap.Unlock();
         int x = (Node.Depth - 1) * DepthIndent + XOffset;
         int y = GetDrawnYCoord(Node);
         TXTSprite.Bitmap.FillRect(0, y, TXTSprite.Bitmap.Width, LineHeight, Color.ALPHA);
         TXTSprite.Bitmap.DrawText(Node.Text, x + 30, y + 2, SelectedNodes.Contains(Node) ? new Color(55, 187, 255) : Color.WHITE);
-        TXTSprite.Bitmap.Lock();
+        if (LockBitmaps) TXTSprite.Bitmap.Lock();
     }
 
     /// <summary>
@@ -1234,22 +1268,64 @@ public class TreeView : Widget
     /// <summary>
     /// Clears all selected nodes.
     /// </summary>
-    private void ClearSelection()
+    public void ClearSelection(ITreeNode? exceptFor = null, bool LockBitmaps = true)
     {
-        SelectionSprites.ForEach(s =>
+        if (LockBitmaps && BGSprite.Bitmap is not null && !BGSprite.Bitmap.Disposed)
         {
-            SpriteContainer.Sprites[$"sel_{s.SpriteIndex}"].Dispose();
-            SpriteContainer.Sprites.Remove($"sel_{s.SpriteIndex}");
-        });
-        SelectionSprites.Clear();
-        while (SelectedNodes.Count > 0)
+            BGSprite.Bitmap.Unlock();
+            TXTSprite.Bitmap.Unlock();
+        }
+        for (int i = 0; i < SelectionSprites.Count; i++)
         {
-            ITreeNode n = SelectedNodes[0];
-            SelectedNodes.RemoveAt(0);
+            if (SelectionSprites[i].Node == exceptFor) continue;
+            SpriteContainer.Sprites[$"sel_{SelectionSprites[i].SpriteIndex}"].Dispose();
+            SpriteContainer.Sprites.Remove($"sel_{SelectionSprites[i].SpriteIndex}");
+            SelectionSprites.RemoveAt(i);
+            i--;
+        }
+        for (int i = 0; i < SelectedNodes.Count; i++)
+        {
+            ITreeNode n = SelectedNodes[i];
+            if (n == exceptFor) continue;
+            SelectedNodes.RemoveAt(i);
+            i--;
             if (n.Root == n) continue; // This node was deleted
             if (n is not TreeNode) continue;
-            RedrawNodeText((TreeNode) n);
+            RedrawNodeText((TreeNode) n, false);
         }
+        if (LockBitmaps && BGSprite.Bitmap is not null && !BGSprite.Bitmap.Disposed)
+        {
+            BGSprite.Bitmap.Lock();
+            TXTSprite.Bitmap.Lock();
+        }
+    }
+
+    /// <summary>
+    /// Deselects a single node.
+    /// </summary>
+    /// <param name="node">The node to deselect.</param>
+    public void DeselectNode(ITreeNode node)
+    {
+        for (int i = 0; i < SelectionSprites.Count; i++)
+        {
+            if (SelectionSprites[i].Node == node)
+            {
+                SpriteContainer.Sprites[$"sel_{SelectionSprites[i].SpriteIndex}"].Dispose();
+                SpriteContainer.Sprites.Remove($"sel_{SelectionSprites[i].SpriteIndex}");
+                SelectionSprites.RemoveAt(i);
+                break;
+            }
+        }
+        for (int i = 0; i < SelectedNodes.Count; i++)
+        {
+            if (SelectedNodes[i] == node)
+            {
+                SelectedNodes.RemoveAt(i);
+                if (node is TreeNode) RedrawNodeText((TreeNode) node);
+                break;
+            }
+        }
+        OnSelectionChanged?.Invoke(new BoolEventArgs(false));
     }
 
     /// <summary>
@@ -1270,7 +1346,7 @@ public class TreeView : Widget
     /// Selects an individual node.
     /// </summary>
     /// <param name="Node">The node to select.</param>
-    private void SelectIndividualNode(ITreeNode Node)
+    private void SelectIndividualNode(ITreeNode Node, bool LockBitmaps = true)
     {
         ExpandUpTo(Node);
         int i = 0;
@@ -1283,7 +1359,7 @@ public class TreeView : Widget
         SpriteContainer.Sprites[$"sel_{i}"].Y = y;
         SpriteContainer.UpdateBounds();
         SelectionSprites.Add((Node, i));
-        if (Node is TreeNode) RedrawNodeText((TreeNode) Node);
+        if (Node is TreeNode) RedrawNodeText((TreeNode) Node, LockBitmaps);
     }
 
     /// <summary>
@@ -1303,10 +1379,10 @@ public class TreeView : Widget
     /// <param name="AllowMultiple">Whether multiple nodes may be selected.</param>
     /// <param name="DoubleClicked">Whether the node was double clicked.</param>
     /// <param name="InvokeEvent">Whether to invoke the <see cref="OnSelectionChanged"/> event.</param>
-    public void SetSelectedNode(ITreeNode Node, bool AllowMultiple, bool DoubleClicked = true, bool InvokeEvent = true)
+    public void SetSelectedNode(ITreeNode Node, bool AllowMultiple, bool DoubleClicked = true, bool InvokeEvent = true, bool LockBitmaps = true)
     {
-        if (!AllowMultiple) ClearSelection();
-        if (Node != null) SelectIndividualNode(Node);
+        if (!AllowMultiple) ClearSelection(null, LockBitmaps);
+        if (Node != null) SelectIndividualNode(Node, LockBitmaps);
         if (InvokeEvent) OnSelectionChanged?.Invoke(new BoolEventArgs(DoubleClicked));
     }
 
@@ -1618,18 +1694,45 @@ public class TreeView : Widget
             }
             else
             {
-                if (TimerExists("double_click") && !TimerPassed("double_click"))
+                if (CanMultiSelect && Input.Press(Keycode.SHIFT))
                 {
-                    SetSelectedNode(this.ActiveNode, false, this.ActiveNode == DoubleClickNode); // Double click is only valid if the current node is the same node that we pressed last time
-                    DoubleClickNode = null;
-                    DestroyTimer("double_click");
+                    // Mark the anchor of the shift region selection
+                    SelectionAnchor ??= this.SelectedNode;
+                    List<ITreeNode> nodesInSelection = GetNodeRange(SelectionAnchor, this.ActiveNode);
+                    BGSprite.Bitmap.Unlock();
+                    TXTSprite.Bitmap.Unlock();
+                    ClearSelection(null, false);
+                    SetSelectedNode(SelectionAnchor, true, true, false, false);
+                    nodesInSelection.ForEach(n => SetSelectedNode(n, true, true, false, false));
+                    SetSelectedNode(this.ActiveNode, true, true, true, false);
+                    BGSprite.Bitmap.Lock();
+                    TXTSprite.Bitmap.Lock();
                 }
                 else
                 {
-                    if (TimerExists("double_click")) DestroyTimer("double_click");
-                    SetTimer("double_click", 300);
-                    SetSelectedNode(this.ActiveNode, false, false);
-                    DoubleClickNode = this.ActiveNode;
+                    if (CanMultiSelect && Input.Press(Keycode.CTRL))
+                    {
+                        SelectionAnchor = this.ActiveNode;
+                        if (SelectedNodes.Contains(this.ActiveNode)) DeselectNode(this.ActiveNode);
+                        else SetSelectedNode(this.ActiveNode, true, false);
+                    }
+                    else
+                    {
+                        SelectionAnchor = null;
+                        if (TimerExists("double_click") && !TimerPassed("double_click"))
+                        {
+                            SetSelectedNode(this.ActiveNode, false, this.ActiveNode == DoubleClickNode); // Double click is only valid if the current node is the same node that we pressed last time
+                            DoubleClickNode = null;
+                            DestroyTimer("double_click");
+                        }
+                        else
+                        {
+                            if (TimerExists("double_click")) DestroyTimer("double_click");
+                            SetTimer("double_click", 300);
+                            SetSelectedNode(this.ActiveNode, false, false);
+                            DoubleClickNode = this.ActiveNode;
+                        }
+                    }
                 }
             }
         }
@@ -1642,6 +1745,23 @@ public class TreeView : Widget
         this.ValidatedDragMovement = false;
         if (Mouse.LeftStartedInside) this.WidgetSelected(new BaseEventArgs());
 	}
+
+    private ITreeNode? SelectionAnchor;
+
+    private List<ITreeNode> GetNodeRange(ITreeNode startNode, ITreeNode endNode)
+    {
+        List<ITreeNode> allNodes = Root.GetAllChildren(true);
+        List<ITreeNode> nodeRange = new List<ITreeNode>();
+        ITreeNode? finishNode = null;
+        foreach (ITreeNode node in allNodes)
+        {
+            if (finishNode is not null && node == finishNode) break;
+            if (node == startNode) finishNode = endNode;
+            else if (node == endNode) finishNode = startNode;
+            else if (finishNode is not null) nodeRange.Add(node);
+        }
+        return nodeRange;
+    }
 
     /// <summary>
     /// Called every tick to update various states.

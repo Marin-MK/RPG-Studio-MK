@@ -90,7 +90,7 @@ public partial class DataTypeMoves : DataTypeBase
             },
             new MenuItem("Paste")
             {
-                IsClickable = e => e.Value = MovesList.HoveringItem is not null && Clipboard.IsValid(BinaryData.MOVE),
+                IsClickable = e => e.Value = MovesList.HoveringItem is not null && Clipboard.IsValid(BinaryData.MOVES),
                 OnClicked = PasteMove
             },
 			new MenuSeparator(),
@@ -195,7 +195,7 @@ public partial class DataTypeMoves : DataTypeBase
 	{
 		if (MovesList.HoveringItem is null) return;
         Move move = HoveringMove;
-        Clipboard.SetObject(move, BinaryData.MOVE);
+        Clipboard.SetObject(move, BinaryData.MOVES);
     }
 
     string EnsureUniqueID(string id)
@@ -212,7 +212,7 @@ public partial class DataTypeMoves : DataTypeBase
 
     void PasteMove(BaseEventArgs e)
     {
-        if (MovesList.HoveringItem is null || !Clipboard.IsValid(BinaryData.MOVE)) return;
+        if (MovesList.HoveringItem is null || !Clipboard.IsValid(BinaryData.MOVES)) return;
         Move data = Clipboard.GetObject<Move>();
         data.ID = EnsureUniqueID(data.ID);
 		Data.Moves.Add(data.ID, data);

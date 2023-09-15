@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RPGStudioMK.Widgets;
 
 public class DataTypeSubTree : Widget
 {
     public TreeNode SelectedItem => (TreeNode) TreeView.SelectedNode;
+    public List<TreeNode> SelectedItems => TreeView.SelectedNodes.Select(n => (TreeNode) n).ToList();
     public TreeNode HoveringItem => (TreeNode) TreeView.HoveringNode;
     public TreeNode Root => TreeView.Root;
 
@@ -47,7 +49,18 @@ public class DataTypeSubTree : Widget
         TreeView.SetCanDragAndDrop(false);
         TreeView.SetXOffset(-6);
         TreeView.SetAutoResize(false);
+        TreeView.SetCanMultiSelect(true);
         SetWidth(201);
+    }
+
+    public void UnlockGraphics()
+    {
+        TreeView.UnlockGraphics();
+    }
+
+    public void LockGraphics()
+    {
+        TreeView.LockGraphics();
     }
 
     public override void SetContextMenuList(List<IMenuItem> Items)
@@ -70,10 +83,15 @@ public class DataTypeSubTree : Widget
         TreeView.SetNodes(Items, SelectedNode);
     }
 
-    public void SetSelectedNode(TreeNode SelectedNode)
+    public void SetSelectedNode(TreeNode SelectedNode, bool AllowMultiple = false, bool DoubleClicked = true, bool InvokeEvent = true, bool LockBitmaps = true)
     {
-        TreeView.SetSelectedNode(SelectedNode, false, true);
+        TreeView.SetSelectedNode(SelectedNode, AllowMultiple, DoubleClicked, InvokeEvent, LockBitmaps);
         TreeView.EnsureSelectedNodeVisible();
+    }
+
+    public void ClearSelection(ITreeNode? exceptFor = null)
+    {
+        TreeView.ClearSelection(exceptFor);
     }
 
     public int GetScroll()

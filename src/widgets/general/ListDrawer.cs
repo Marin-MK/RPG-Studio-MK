@@ -12,7 +12,9 @@ public class ListDrawer : Widget
     public int SelectedIndex => tree.Root.Children.IndexOf(tree.SelectedNode);
     public int HoveringIndex => tree.Root.Children.IndexOf(tree.HoveringNode);
     public TreeNode SelectedItem => (TreeNode) tree.SelectedNode;
+    public List<TreeNode> SelectedItems => tree.SelectedNodes.Select(n => (TreeNode) n).ToList();
     public TreeNode HoveringItem => (TreeNode) tree.HoveringNode;
+    public bool CanMultiSelect => tree.CanMultiSelect;
     public bool Enabled { get; protected set; } = true;
 
     public BaseEvent OnSelectionChanged;
@@ -54,10 +56,20 @@ public class ListDrawer : Widget
         tree.SetLineHeight(height);
     }
 
-    public void SetSelectedIndex(int Index)
+    public void SetSelectedIndex(int index)
     {
-        TreeNode node = (TreeNode) tree.Root.Children[Index];
+        TreeNode node = (TreeNode) tree.Root.Children[index];
         tree.SetSelectedNode(node, false);
+    }
+
+    public void SetCanMultiSelect(bool canMultiSelect)
+    {
+        tree.SetCanMultiSelect(canMultiSelect);
+    }
+
+    public void ClearSelection()
+    {
+        tree.ClearSelection();
     }
 
     public void SetSelectedItem(TreeNode node)

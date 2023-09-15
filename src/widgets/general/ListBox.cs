@@ -7,8 +7,10 @@ public class ListBox : Widget
 {
     public int SelectedIndex => ListDrawer.SelectedIndex;
     public TreeNode SelectedItem => ListDrawer.SelectedItem;
+    public List<TreeNode> SelectedItems => ListDrawer.SelectedItems;
     public List<TreeNode> Items => ListDrawer.Items;
     public int LineHeight => ListDrawer.LineHeight;
+    public bool CanMultiSelect => ListDrawer.CanMultiSelect;
     public bool Enabled => ListDrawer.Enabled;
 
     public BaseEvent OnSelectionChanged { get => ListDrawer.OnSelectionChanged; set => ListDrawer.OnSelectionChanged = value; }
@@ -48,6 +50,16 @@ public class ListBox : Widget
     public void SetLineHeight(int lineHeight)
     {
         ListDrawer.SetLineHeight(lineHeight);
+    }
+
+    public void SetCanMultiSelect(bool canMultiSelect)
+    {
+        ListDrawer.SetCanMultiSelect(canMultiSelect);
+    }
+
+    public void ClearSelection()
+    {
+        ListDrawer.ClearSelection();
     }
 
     public void RedrawBox(bool vScrollBarVisible, bool hScrollBarVisible)

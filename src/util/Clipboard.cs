@@ -66,8 +66,8 @@ public enum BinaryData
     EVENT_COMMANDS,
     MOVE_COMMAND,
     SPECIES,
-    MOVE,
-    ABILITY,
-    ITEM,
-    TM
+    MOVES,
+    ABILITIES,
+    ITEMS,
+    TMS
 }

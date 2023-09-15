@@ -48,6 +48,7 @@ public class DataTypeSubList : Widget
         ListDrawer = new ListDrawer(ScrollContainer);
         ListDrawer.SetLineHeight(24);
         ListDrawer.SetFont(Fonts.Paragraph);
+        ListDrawer.SetCanMultiSelect(true);
         ChangeMaxBtn = new Button(this);
         ChangeMaxBtn.SetText("Change Maximum");
         ChangeMaxBtn.OnClicked += _ =>

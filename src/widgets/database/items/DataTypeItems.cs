@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
@@ -90,7 +91,7 @@ public partial class DataTypeItems : DataTypeBase
             },
             new MenuItem("Paste")
             {
-                IsClickable = e => e.Value = ItemList.HoveringItem is not null && Clipboard.IsValid(BinaryData.ITEM),
+                IsClickable = e => e.Value = ItemList.HoveringItem is not null && Clipboard.IsValid(BinaryData.ITEMS),
                 OnClicked = PasteItem
             },
 			new MenuSeparator(),
@@ -184,8 +185,16 @@ public partial class DataTypeItems : DataTypeBase
     void CopyItem(BaseEventArgs e)
 	{
 		if (ItemList.HoveringItem is null) return;
-        Item item = HoveringItem;
-        Clipboard.SetObject(item, BinaryData.ITEM);
+		List<Item> items = new List<Item>();
+		// If we have more than 1 node selected, and the hovering node is part of the selection, delete the whole selection
+		if (ItemList.SelectedItems.Count > 1 && ItemList.SelectedItems.Contains(ItemList.HoveringItem)) items = ItemList.SelectedItems.Select(n => (Item) n.Object).ToList();
+		else
+		{
+			// Otherwise, if we have 1 node selected or the hovering node is not part of the selection,
+			// then we only delete the hovering node.
+			items.Add((Item) ItemList.HoveringItem.Object);
+		}
+        Clipboard.SetObject(items, BinaryData.ITEMS);
     }
 
     string EnsureUniqueID(string id)
@@ -202,27 +211,49 @@ public partial class DataTypeItems : DataTypeBase
 
     void PasteItem(BaseEventArgs e)
     {
-        if (ItemList.HoveringItem is null || !Clipboard.IsValid(BinaryData.ITEM)) return;
-        Item data = Clipboard.GetObject<Item>();
-        data.ID = EnsureUniqueID(data.ID);
-		Data.Items.Add(data.ID, data);
+        if (ItemList.HoveringItem is null || !Clipboard.IsValid(BinaryData.ITEMS)) return;
+        List<Item> data = Clipboard.GetObject<List<Item>>();
+        foreach (Item itm in data)
+        {
+            itm.ID = EnsureUniqueID(itm.ID);
+		    Data.Items.Add(itm.ID, itm);
+        }
         Data.Sources.InvalidateItems();
-        RedrawList(data);
+        RedrawList(data[0]);
+        ItemList.UnlockGraphics();
+        ItemList.Root.GetAllChildren(true).ForEach(n =>
+        {
+            if (data.Contains((Item) ((TreeNode) n).Object)) ItemList.SetSelectedNode((TreeNode) n, true, true, true, false);
+        });
+        ItemList.LockGraphics();
 	}
 
 	void DeleteItem(BaseEventArgs e)
     {
         if (ItemList.HoveringItem is null) return;
-        Item itm = (Item) ItemList.HoveringItem.Object;
-        bool selectFirst = false;
-        if (ItemList.SelectedItem == ItemList.HoveringItem)
+        List<(TreeNode, Item)> items = new List<(TreeNode, Item)>();
+        // If we have more than 1 node selected, and the hovering node is part of the selection, delete the whole selection
+        if (ItemList.SelectedItems.Count > 1 && ItemList.SelectedItems.Contains(ItemList.HoveringItem)) items = ItemList.SelectedItems.Select(n => (n, (Item) n.Object)).ToList();
+        else
         {
-            TreeNode prevNode = ItemList.HoveringItem.GetPreviousNode(false);
+            // Otherwise, if we have 1 node selected or the hovering node is not part of the selection,
+            // then we only delete the hovering node.
+            items.Add((ItemList.HoveringItem, (Item) ItemList.HoveringItem.Object));
+            ItemList.ClearSelection(ItemList.SelectedItem);
+        }
+        bool selectFirst = false;
+        // If the selected item will also be deleted, we need to change our selection.
+        if (items.Any(e => e.Item2 == (Item) ItemList.SelectedItem.Object))
+        {
+            TreeNode prevNode = ItemList.SelectedItems[0].GetPreviousNode(false);
             if (prevNode == ItemList.Root) selectFirst = true;
             else ItemList.SetSelectedNode(prevNode);
         }
-        Data.Items.Remove(itm.ID);
-        ItemList.HoveringItem.Delete(true);
+        foreach ((TreeNode node, Item itm) in items)
+        {
+            Data.Items.Remove(itm.ID);
+            node.Delete(true);
+        }
         if (selectFirst) ItemList.SetSelectedNode((TreeNode) ItemList.Root.Children[0]);
         ItemList.RedrawAllNodes();
         Data.Sources.InvalidateItems();
