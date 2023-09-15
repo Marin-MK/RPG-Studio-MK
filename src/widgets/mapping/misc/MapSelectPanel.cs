@@ -34,9 +34,8 @@ public class MapSelectPanel : Widget
         MapTree = new TreeView(this);
         MapTree.SetDocked(true);
         MapTree.SetPadding(0, 35, 0, 0);
-        MapTree.SetHResizeToFill(false);
-        MapTree.SetExtraXScrollArea(24);
-        MapTree.SetExtraYScrollArea(32);
+        MapTree.SetHScrollBarPaddingAlone(MapTree.HScrollBarPaddingShared);
+        MapTree.SetVScrollBarPaddingAlone(MapTree.VScrollBarPaddingShared);
         MapTree.OnSelectionChanged += e =>
         {
             if (MapTree.SelectedNode == null) Editor.MainWindow.MapWidget.SetMap(null);
@@ -55,8 +54,6 @@ public class MapSelectPanel : Widget
             TreeNode Node = e.Object;
             int mapid = (int) Node.Object;
             Data.Maps[mapid].Expanded = Node.Expanded;
-            // Works, but probably not desired
-            //Undo.NodeCollapseChangeUndoAction.Create(mapid, Node.Expanded, !Node.Expanded);
         };
         MapTree.OnNodeGlobalIndexChanged += delegate (GenericObjectEventArgs<TreeNode> e)
         {
@@ -129,8 +126,6 @@ public class MapSelectPanel : Widget
     {
         TreeNode DroppedNode = (TreeNode) Data.DroppedNode;
         Game.Data.Maps[(int) DroppedNode.Object].ParentID = DroppedNode.Parent == DroppedNode.Root ? 0 : Game.Data.Maps[(int) DroppedNode.Parent.Object].ID;
-        // Works, but probably not desired
-        //Undo.MapOrderChangeUndoAction.Create(Data.OldRoot, (OptimizedNode) Data.NewRoot.Clone());
     }
 
     public TreeNode PopulateList()
@@ -222,7 +217,6 @@ public class MapSelectPanel : Widget
         Data.Maps.Add(Map.ID, Map);
         NewNode.OnGlobalIndexChanged += _ => MapTree.OnNodeExpansionChanged.Invoke(new GenericObjectEventArgs<TreeNode>(NewNode));
         MapTree.SetSelectedNode(NewNode, false);
-        // TODO: undo/redo
         return NewNode;
     }
 
@@ -289,7 +283,6 @@ public class MapSelectPanel : Widget
     private void PasteMap()
     {
         if (!Clipboard.IsValid(BinaryData.MAPS)) return;
-        PrintIndices();
         List<Map> maps = Clipboard.GetObject<List<Map>>();
         Dictionary<int, TreeNode> MapHash = new Dictionary<int, TreeNode>();
         // The list is maps is ordered from root to child, meaning if we encounter a node with a parent, that parent must already have been encountered or the data is invalid.
@@ -303,23 +296,8 @@ public class MapSelectPanel : Widget
             TreeNode NewNode = InsertMap(ParentNode, maps[i]);
             MapHash.Add(id, NewNode);
         }
-        PrintIndices();
     }
 
-    void PrintIndices()
-    {
-        Logger.WriteLine(">>>>> START");
-        MapTree.Root.GetAllChildren(true).ForEach(c =>
-        {
-            if (c is not TreeNode) return;
-            TreeNode Node = (TreeNode)c;
-            string depth = "";
-            for (int i = 0; i < Node.Depth; i++) depth += " ";
-            depth += "- ";
-            Logger.WriteLine($"{depth}{Node.GlobalIndex}: {Node.Text} ({Node.Parent.GlobalIndex})");
-        });
-    }
-    
     private void DeleteNode(ITreeNode Node, bool DeleteChildren)
     {
         List<ITreeNode> Children = new List<ITreeNode>();
@@ -341,7 +319,6 @@ public class MapSelectPanel : Widget
             TreeNode n = (TreeNode) c;
             Data.Maps[(int) n.Object].ParentID = c.Parent.GlobalIndex;
         });
-        // TODO: undo/redo
     }
 
     private void DeleteMap()

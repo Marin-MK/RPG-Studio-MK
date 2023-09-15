@@ -608,8 +608,9 @@ public class TreeView : Widget
                 int movamt = Height - LineHeight;
                 BGSprite.Bitmap.ShiftVertically(movy, movh, -movamt, true);
                 TXTSprite.Bitmap.ShiftVertically(movy, movh, -movamt, true);
-                BGSprite.Bitmap = BGSprite.Bitmap.Resize(BGSprite.Bitmap.Width, BGSprite.Bitmap.Height - movamt);
-                TXTSprite.Bitmap = TXTSprite.Bitmap.Resize(TXTSprite.Bitmap.Width, TXTSprite.Bitmap.Height - movamt);
+				int NewWidth = SpriteContainer.Size.Width - ExtraXScrollArea;
+				BGSprite.Bitmap = BGSprite.Bitmap.Resize(NewWidth, BGSprite.Bitmap.Height - movamt);
+                TXTSprite.Bitmap = TXTSprite.Bitmap.Resize(NewWidth, TXTSprite.Bitmap.Height - movamt);
                 UpdateSize(false);
                 TXTSprite.Bitmap.Font = this.Font;
                 TXTSprite.Bitmap.BlendMode = BlendMode.Addition;
