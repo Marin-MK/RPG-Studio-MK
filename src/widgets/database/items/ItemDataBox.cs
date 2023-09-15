@@ -31,14 +31,14 @@ public partial class DataTypeItems
 			Data.Sources.InvalidateItems();
 			if (!nameBox.TimerExists("idle")) nameBox.SetTimer("idle", 1000);
 			else nameBox.ResetTimer("idle");
-			ItemList.SelectedItem.SetText(item.Name);
-			ItemList.RedrawNode(ItemList.SelectedItem);
+			DataList.SelectedItem.SetText(item.Name);
+			DataList.RedrawNode(DataList.SelectedItem);
 		};
 		nameBox.OnUpdate += _ =>
 		{
 			if (nameBox.TimerExists("idle") && nameBox.TimerPassed("idle"))
 			{
-				RedrawList((Item) ItemList.SelectedItem.Object);
+				RedrawList((Item) DataList.SelectedItem.Object);
 				nameBox.DestroyTimer("idle");
 			}
 		};

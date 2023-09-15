@@ -1,4 +1,9 @@
-﻿namespace RPGStudioMK.Widgets;
+﻿using RPGStudioMK.Game;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace RPGStudioMK.Widgets;
 
 public class DatabaseWidget : Widget
 {
@@ -7,7 +12,7 @@ public class DatabaseWidget : Widget
     Grid MainGrid;
     DataTypeList DataTypeList;
 
-    public DataTypeBase ActiveDatabaseWidget;
+    public SimpleDataTypeBase ActiveDatabaseWidget;
 
     public DatabaseWidget(IContainer Parent) : base(Parent)
     {
@@ -43,14 +48,4 @@ public class DatabaseWidget : Widget
         ActiveDatabaseWidget?.Initialize();
         ActiveDatabaseWidget?.SizeChanged(new ObjectEventArgs(ActiveDatabaseWidget?.Size));
 	}
-}
-
-public abstract class DataTypeBase : Widget
-{
-    public DataTypeBase(IContainer parent) : base(parent)
-    {
-        
-    }
-
-    public abstract void Initialize();
 }

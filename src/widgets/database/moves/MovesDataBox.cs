@@ -27,14 +27,14 @@ public partial class DataTypeMoves
 			Data.Sources.InvalidateMoves();
 			if (!nameBox.TimerExists("idle")) nameBox.SetTimer("idle", 1000);
 			else nameBox.ResetTimer("idle");
-			MovesList.SelectedItem.SetText(mov.Name);
-			MovesList.RedrawNode(MovesList.SelectedItem);
+			DataList.SelectedItem.SetText(mov.Name);
+			DataList.RedrawNode(DataList.SelectedItem);
 		};
 		nameBox.OnUpdate += _ =>
 		{
 			if (nameBox.TimerExists("idle") && nameBox.TimerPassed("idle"))
 			{
-				RedrawList((Move) MovesList.SelectedItem.Object);
+				RedrawList((Move) DataList.SelectedItem.Object);
 				nameBox.DestroyTimer("idle");
 			}
 		};

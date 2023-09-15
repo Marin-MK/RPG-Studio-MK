@@ -53,7 +53,7 @@ public class AbilityDropdownBox : DropdownBox
 		{
 			if (Editor.MainWindow.DatabaseWidget.Mode == DatabaseMode.Abilities)
 			{
-				((DataTypeAbilities) Editor.MainWindow.DatabaseWidget.ActiveDatabaseWidget).SelectAbility(this.Ability);
+				Editor.MainWindow.DatabaseWidget.ActiveDatabaseWidget.SelectData(this.Ability);
 			}
 			else
 			{

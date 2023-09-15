@@ -14,6 +14,7 @@ public class HintWindow : HelpText
         foreach (Sprite s in Sprites.Values) s.Opacity = 255;
         this.Opacity = 255;
         SetVisible(true);
+        UpdatePositionAndSizeIfDocked();
     }
 
     public override void Update()

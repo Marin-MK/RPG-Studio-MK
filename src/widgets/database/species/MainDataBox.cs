@@ -19,8 +19,8 @@ public partial class DataTypeSpecies
 		nameBox.OnTextChanged += _ =>
 		{
 			spc.Name = nameBox.Text;
-			SpeciesList.SelectedItem.SetText(spc.Name);
-			SpeciesList.SelectedItem.Children.ForEach(c =>
+			DataList.SelectedItem.SetText(spc.Name);
+			DataList.SelectedItem.Children.ForEach(c =>
 			{
 				TreeNode n = (TreeNode) c;
 				Species s = (Species) n.Object;
@@ -30,14 +30,14 @@ public partial class DataTypeSpecies
 			Data.Sources.InvalidateSpecies();
 			if (!nameBox.TimerExists("idle")) nameBox.SetTimer("idle", 1000);
 			else nameBox.ResetTimer("idle");
-			SpeciesList.SelectedItem.SetText(spc.Name);
-			SpeciesList.RedrawNode(SpeciesList.SelectedItem);
+			DataList.SelectedItem.SetText(spc.Name);
+			DataList.RedrawNode(DataList.SelectedItem);
 		};
 		nameBox.OnUpdate += _ =>
 		{
 			if (nameBox.TimerExists("idle") && nameBox.TimerPassed("idle"))
 			{
-				RedrawList((Species) SpeciesList.SelectedItem.Object);
+				RedrawList((Species) DataList.SelectedItem.Object);
 				nameBox.DestroyTimer("idle");
 			}
 		};
@@ -66,7 +66,7 @@ public partial class DataTypeSpecies
 				Data.Species.Remove(spc.ID);
 				spc.ID = idBox.Text;
 				Data.Species.Add(spc.ID, spc);
-				SpeciesList.SelectedItem.Children.ForEach(c =>
+				DataList.SelectedItem.Children.ForEach(c =>
 				{
 					Species s = (Species) ((TreeNode) c).Object;
 					Data.Species.Remove(s.ID);
@@ -172,12 +172,12 @@ public partial class DataTypeSpecies
             if (ability2CheckBox.Checked)
             {
                 ability2Box.SetEnabled(true);
-                Species.Abilities = new List<AbilityResolver>() { ability1Box.Ability, ability2Box.Ability };
+                spc.Abilities = new List<AbilityResolver>() { ability1Box.Ability, ability2Box.Ability };
             }
             else
             {
                 ability2Box.SetEnabled(false);
-                Species.Abilities = new List<AbilityResolver>() { ability1Box.Ability };
+                spc.Abilities = new List<AbilityResolver>() { ability1Box.Ability };
             }
         };
 
@@ -200,12 +200,12 @@ public partial class DataTypeSpecies
 			if (hiddenAbilityCheckBox.Checked)
 			{
 				hiddenAbilityBox.SetEnabled(true);
-				Species.HiddenAbilities = new List<AbilityResolver>() { hiddenAbilityBox.Ability };
+				spc.HiddenAbilities = new List<AbilityResolver>() { hiddenAbilityBox.Ability };
 			}
 			else
 			{
 				hiddenAbilityBox.SetEnabled(false);
-				Species.HiddenAbilities.Clear();
+				spc.HiddenAbilities.Clear();
 			}
 		};
 
@@ -233,14 +233,14 @@ public partial class DataTypeSpecies
 			Data.Sources.InvalidateSpecies();
 			if (!formNameBox.TimerExists("idle")) formNameBox.SetTimer("idle", 1000);
 			else formNameBox.ResetTimer("idle");
-			SpeciesList.SelectedItem.SetText($"{spc.Form} - {spc.FormName ?? spc.Name}");
-			SpeciesList.RedrawNodeText(SpeciesList.SelectedItem);
+			DataList.SelectedItem.SetText($"{spc.Form} - {spc.FormName ?? spc.Name}");
+			DataList.RedrawNodeText(DataList.SelectedItem);
 		};
 		formNameBox.OnUpdate += _ =>
 		{
 			if (formNameBox.TimerExists("idle") && formNameBox.TimerPassed("idle"))
 			{
-				RedrawList((Species) SpeciesList.SelectedItem.Object);
+				RedrawList((Species) DataList.SelectedItem.Object);
 				formNameBox.DestroyTimer("idle");
 			}
 		};
@@ -264,15 +264,15 @@ public partial class DataTypeSpecies
 			{
 				spc.Form = formNumberBox.Value;
 				dexFormBox.SetValue(spc.Form);
-				TreeNode item = SpeciesList.SelectedItem;
+				TreeNode item = DataList.SelectedItem;
 				TreeNode parentNode = item.Parent;
 				item.SetText($"{spc.Form} - {spc.FormName ?? spc.Name}");
 				item.Delete(false);
 				int idx = parentNode.Children.FindIndex(node => spc.Form < ((Species) ((TreeNode) node).Object).Form);
                 if (idx == -1) idx = parentNode.Children.Count;
                 parentNode.InsertChild(idx, item);
-				SpeciesList.SetActiveAndSelectedNode(item);
-				SpeciesList.RedrawNode(parentNode);
+				DataList.SetActiveAndSelectedNode(item);
+				DataList.RedrawNode(parentNode);
 			}
 		};
 		formNumberBox.TextArea.OnWidgetDeselected += _ =>
@@ -761,7 +761,7 @@ public partial class DataTypeSpecies
 		genderRatioBox.OnSelectionChanged += _ =>
 		{
 			spc.GenderRatio = genderRatioBox.SelectedItem.Text;
-			SpeciesList.SelectedItem.Children.ForEach(c =>
+			DataList.SelectedItem.Children.ForEach(c =>
 			{
 				Species s = (Species) ((TreeNode) c).Object;
 				s.GenderRatio = spc.GenderRatio;
@@ -830,7 +830,7 @@ public partial class DataTypeSpecies
 		growthRateBox.OnSelectionChanged += _ =>
 		{
 			spc.GrowthRate = growthRateBox.SelectedItem.Text;
-			SpeciesList.SelectedItem.Children.ForEach(c =>
+			DataList.SelectedItem.Children.ForEach(c =>
 			{
 				Species s = (Species) ((TreeNode) c).Object;
 				s.GrowthRate = spc.GrowthRate;
@@ -898,7 +898,7 @@ public partial class DataTypeSpecies
 		incenseBox.OnItemChanged += _ =>
 		{
 			spc.Incense = incenseBox.Item;
-			SpeciesList.SelectedItem.Children.ForEach(c =>
+			DataList.SelectedItem.Children.ForEach(c =>
 			{
 				Species s = (Species) ((TreeNode) c).Object;
 				s.Incense = spc.Incense;
@@ -923,7 +923,7 @@ public partial class DataTypeSpecies
 				incenseBox.SetEnabled(false);
 				spc.Incense = null;
 			}
-			SpeciesList.SelectedItem.Children.ForEach(c =>
+			DataList.SelectedItem.Children.ForEach(c =>
 			{
 				Species s = (Species) ((TreeNode) c).Object;
 				s.Incense = spc.Incense;

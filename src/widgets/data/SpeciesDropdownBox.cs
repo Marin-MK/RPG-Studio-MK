@@ -53,7 +53,7 @@ public class SpeciesDropdownBox : DropdownBox
 		{
 			if (Editor.MainWindow.DatabaseWidget.Mode == DatabaseMode.Species)
 			{
-				((DataTypeSpecies) Editor.MainWindow.DatabaseWidget.ActiveDatabaseWidget).SelectSpecies(this.Species);
+				Editor.MainWindow.DatabaseWidget.ActiveDatabaseWidget.SelectData(this.Species);
 			}
 			else
 			{

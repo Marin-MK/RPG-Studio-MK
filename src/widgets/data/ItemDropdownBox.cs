@@ -53,7 +53,7 @@ public class ItemDropdownBox : DropdownBox
 		{
 			if (Editor.MainWindow.DatabaseWidget.Mode == DatabaseMode.Items)
 			{
-				((DataTypeItems) Editor.MainWindow.DatabaseWidget.ActiveDatabaseWidget).SelectItem(this.Item);
+				Editor.MainWindow.DatabaseWidget.ActiveDatabaseWidget.SelectData(this.Item);
 			}
 			else
 			{

@@ -53,7 +53,7 @@ public class MoveDropdownBox : DropdownBox
 		{
 			if (Editor.MainWindow.DatabaseWidget.Mode == DatabaseMode.Moves)
 			{
-				((DataTypeMoves) Editor.MainWindow.DatabaseWidget.ActiveDatabaseWidget).SelectMove(this.Move);
+				Editor.MainWindow.DatabaseWidget.ActiveDatabaseWidget.SelectData(this.Move);
 			}
 			else
 			{

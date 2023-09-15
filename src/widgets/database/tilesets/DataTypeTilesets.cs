@@ -4,7 +4,7 @@ using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
 
-public class DataTypeTilesets : DataTypeBase
+public class DataTypeTilesets : SimpleDataTypeBase
 {
     public DataTypeSubList TilesetList;
     public SubmodeView Tabs;
@@ -314,7 +314,12 @@ public class DataTypeTilesets : DataTypeBase
         TilesetList.SetSelectedIndex(0);
     }
 
-    public override void SizeChanged(BaseEventArgs e)
+	public override void SelectData<T>(T data)
+	{
+		throw new NotImplementedException();
+	}
+
+	public override void SizeChanged(BaseEventArgs e)
     {
         base.SizeChanged(e);
         if (TagDetailLabel is null) return;

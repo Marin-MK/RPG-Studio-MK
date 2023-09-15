@@ -56,8 +56,8 @@ public partial class DataTypeTMs
 			Data.TMsHMs.Add(tm.ID, tm);
 			tm.Name = tm.ID;
 			tm.Plural = tm.Name + "s";
-			TMList.SelectedItem.SetText($"{tm.Name} - {(tm.Move.Valid ? tm.Move.Move.Name : tm.Move.ID)}");
-			TMList.RedrawNodeText(TMList.SelectedItem);
+			DataList.SelectedItem.SetText($"{tm.Name} - {(tm.Move.Valid ? tm.Move.Move.Name : tm.Move.ID)}");
+			DataList.RedrawNodeText(DataList.SelectedItem);
 			numberBox.SetValue(num);
 			Data.Sources.InvalidateTMs();
 			if (!TimerExists("idle")) SetTimer("idle", 1000);
@@ -78,8 +78,8 @@ public partial class DataTypeTMs
 			Data.TMsHMs.Add(tm.ID, tm);
 			tm.Name = tm.ID;
 			tm.Plural = tm.Name + "s";
-			TMList.SelectedItem.SetText($"{tm.Name} - {(tm.Move.Valid ? tm.Move.Move.Name : tm.Move.ID)}");
-			TMList.RedrawNodeText(TMList.SelectedItem);
+			DataList.SelectedItem.SetText($"{tm.Name} - {(tm.Move.Valid ? tm.Move.Move.Name : tm.Move.ID)}");
+			DataList.RedrawNodeText(DataList.SelectedItem);
 			numberBox.SetValue(num);
 			Data.Sources.InvalidateTMs();
 			if (!TimerExists("idle")) SetTimer("idle", 1000);
@@ -99,8 +99,8 @@ public partial class DataTypeTMs
 				Data.TMsHMs.Add(tm.ID, tm);
 				tm.Name = tm.ID;
 				tm.Plural = tm.Name + "s";
-				TMList.SelectedItem.SetText($"{tm.Name} - {(tm.Move.Valid ? tm.Move.Move.Name : tm.Move.ID)}");
-				TMList.RedrawNodeText(TMList.SelectedItem);
+				DataList.SelectedItem.SetText($"{tm.Name} - {(tm.Move.Valid ? tm.Move.Move.Name : tm.Move.ID)}");
+				DataList.RedrawNodeText(DataList.SelectedItem);
 				Data.Sources.InvalidateTMs();
 				if (!TimerExists("idle")) SetTimer("idle", 1000);
 				else ResetTimer("idle");
@@ -156,8 +156,8 @@ public partial class DataTypeTMs
 		moveBox.OnMoveChanged += _ =>
 		{
 			tm.Move = moveBox.Move;
-			TMList.SelectedItem.SetText($"{tm.Name} - {(tm.Move.Valid ? tm.Move.Move.Name : tm.Move.ID)}");
-			TMList.RedrawNodeText(TMList.SelectedItem);
+			DataList.SelectedItem.SetText($"{tm.Name} - {(tm.Move.Valid ? tm.Move.Move.Name : tm.Move.ID)}");
+			DataList.RedrawNodeText(DataList.SelectedItem);
 			Data.Sources.InvalidateTMs();
 		};
 
@@ -172,7 +172,7 @@ public partial class DataTypeTMs
 		{
 			if (TimerExists("idle") && TimerPassed("idle"))
 			{
-				RedrawList((Item) TMList.SelectedItem.Object);
+				RedrawList((Item) DataList.SelectedItem.Object);
 				DestroyTimer("idle");
 			}
 		};

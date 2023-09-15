@@ -31,14 +31,14 @@ public partial class DataTypeAbilities
 			Data.Sources.InvalidateAbilities();
 			if (!nameBox.TimerExists("idle")) nameBox.SetTimer("idle", 1000);
 			else nameBox.ResetTimer("idle");
-			AbilitiesList.SelectedItem.SetText(abil.Name);
-			AbilitiesList.RedrawNode(AbilitiesList.SelectedItem);
+			DataList.SelectedItem.SetText(abil.Name);
+			DataList.RedrawNode(DataList.SelectedItem);
 		};
 		nameBox.OnUpdate += _ =>
 		{
 			if (nameBox.TimerExists("idle") && nameBox.TimerPassed("idle"))
 			{
-				RedrawList((Ability) AbilitiesList.SelectedItem.Object);
+				RedrawList((Ability) DataList.SelectedItem.Object);
 				nameBox.DestroyTimer("idle");
 			}
 		};
