@@ -920,8 +920,8 @@ public class TreeView : Widget
 			LastDrawData.Clear();
 			(int RootNodeCount, int RootSepHeight) = Root.GetChildrenHeight(false);
 			int MaxWidth = CalculateMaxWidth(Root) + ExtraXScrollArea;
-			BGSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight);
-			TXTSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight);
+			BGSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight, Graphics.MaxTextureSize.Width, 1024);
+			TXTSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight, Graphics.MaxTextureSize.Width, 1024);
 			TXTSprite.Bitmap.Font = this.Font;
 		}
         UpdateSize();
@@ -1128,9 +1128,9 @@ public class TreeView : Widget
         if (Root.Children.Count == 0) return;
         (int RootNodeCount, int RootSepHeight) = Root.GetChildrenHeight(false);
         int MaxWidth = CalculateMaxWidth(Root) + ExtraXScrollArea;
-        BGSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight);
+        BGSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight, Graphics.MaxTextureSize.Width, 1024);
         BGSprite.Bitmap.Unlock();
-        TXTSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight);
+        TXTSprite.Bitmap = new Bitmap(MaxWidth, RootNodeCount * LineHeight + RootSepHeight, Graphics.MaxTextureSize.Width, 1024);
         TXTSprite.Bitmap.Unlock();
         TXTSprite.Bitmap.Font = this.Font;
         UpdateSize(false); // No need to recalculate width as we just calculated it to find the bitmap width

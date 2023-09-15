@@ -8,6 +8,7 @@ namespace RPGStudioMK.Widgets;
 public partial class DataTypeSpecies : GenericDataTypeBase<Species>
 {
     protected SubmodeView Tabs;
+	protected int? LastTabIndex;
 
     public DataTypeSpecies(IContainer Parent) : base(Parent)
 	{
@@ -50,14 +51,6 @@ public partial class DataTypeSpecies : GenericDataTypeBase<Species>
 		};
 
 		LateConstructor();
-	}
-
-	protected override Species CreateData()
-	{
-        throw new NotImplementedException();
-		Species species = Species.Create();
-		species.Name = "Missingno.";
-		return species;
 	}
 
 	protected override void LateConstructor()
@@ -181,28 +174,30 @@ public partial class DataTypeSpecies : GenericDataTypeBase<Species>
 		foreach (TreeNode listItem in Data.Sources.SpeciesAndForms)
 		{
             Species spc = (Species) listItem.Object;
-			if (spc.Form != 0)
+			// Skip subforms for now
+			if (spc.Form != 0) continue;
+			TreeNode item = new TreeNode(spc.Name, spc);
+            if (speciesToSelect == spc) nodeToSelect = item;
+            if (Editor.ProjectSettings.HiddenSpeciesForms.Contains(spc.ID)) item.Collapse();
+            item.OnExpansionChanged += _ =>
             {
-                TreeNode parent = SpeciesItems.Find(n => ((Species) n.Object).ID == spc.BaseSpecies.ID);
-				TreeNode item = new TreeNode($"{spc.Form} - {spc.FormName ?? spc.Name}", spc);
-                int idx = parent.Children.FindIndex(node => spc.Form < ((Species) ((TreeNode) node).Object).Form);
-                if (idx == -1) idx = parent.Children.Count;
-                parent.InsertChild(idx, item);
-                if (speciesToSelect == spc) nodeToSelect = item;
-                if (Editor.ProjectSettings.HiddenSpeciesForms.Contains(spc.BaseSpecies.ID)) parent.Collapse();
-            }
-            else
-            {
-				TreeNode item = new TreeNode(spc.Name, spc);
-                if (speciesToSelect == spc) nodeToSelect = item;
-                if (Editor.ProjectSettings.HiddenSpeciesForms.Contains(spc.ID)) item.Collapse();
-                item.OnExpansionChanged += _ =>
-                {
-                    if (item.Expanded) Editor.ProjectSettings.HiddenSpeciesForms.RemoveAll(id => id == spc.ID);
-                    else if (!Editor.ProjectSettings.HiddenSpeciesForms.Contains(spc.ID)) Editor.ProjectSettings.HiddenSpeciesForms.Add(spc.ID);
-                };
-				SpeciesItems.Add(item);
-            }
+                if (item.Expanded) Editor.ProjectSettings.HiddenSpeciesForms.RemoveAll(id => id == spc.ID);
+                else if (!Editor.ProjectSettings.HiddenSpeciesForms.Contains(spc.ID)) Editor.ProjectSettings.HiddenSpeciesForms.Add(spc.ID);
+            };
+			SpeciesItems.Add(item);
+		}
+		foreach (TreeNode listItem in Data.Sources.SpeciesAndForms)
+		{
+			Species spc = (Species) listItem.Object;
+			// Skip base forms
+			if (spc.Form == 0) continue;
+			TreeNode parent = SpeciesItems.Find(n => ((Species) n.Object).ID == spc.BaseSpecies.ID);
+			TreeNode item = new TreeNode($"{spc.Form} - {spc.FormName ?? spc.Name}", spc);
+            int idx = parent.Children.FindIndex(node => spc.Form < ((Species) ((TreeNode) node).Object).Form);
+            if (idx == -1) idx = parent.Children.Count;
+            parent.InsertChild(idx, item);
+            if (speciesToSelect == spc) nodeToSelect = item;
+            if (Editor.ProjectSettings.HiddenSpeciesForms.Contains(spc.BaseSpecies.ID)) parent.Collapse();
 		}
 		DataList.SetItems(SpeciesItems);
         if (nodeToSelect != null)
@@ -212,10 +207,18 @@ public partial class DataTypeSpecies : GenericDataTypeBase<Species>
         }
 	}
 
-    protected override void UpdateSelection()
+	protected override Species CreateData()
+	{
+		throw new NotImplementedException();
+	}
+
+	protected override void UpdateSelection()
     {
 		Editor.ProjectSettings.LastSpeciesSubmode = Tabs.SelectedIndex;
+		if (LastDisplayedData is not null && LastDisplayedData.Equals(this.SelectedItem) &&
+			LastTabIndex is not null && LastTabIndex == Tabs.SelectedIndex) return;
         base.UpdateSelection();
+		LastTabIndex = Tabs.SelectedIndex;
 	}
 
     void NewSpecies(BaseEventArgs e)

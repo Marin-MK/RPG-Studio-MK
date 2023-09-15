@@ -40,6 +40,7 @@ public abstract class GenericDataTypeBase<T> : SimpleDataTypeBase
 	protected Container ScrollContainer;
 	protected HintWindow HintWindow;
 	protected VStackPanel StackPanel;
+	protected T? LastDisplayedData;
 
 	public T? SelectedItem => (T) DataList.SelectedItem?.Object;
 	public T? HoveringItem => (T) DataList.HoveringItem?.Object;
@@ -141,6 +142,7 @@ public abstract class GenericDataTypeBase<T> : SimpleDataTypeBase
 
 	protected virtual void UpdateSelection()
 	{
+		if (LastDisplayedData is not null && LastDisplayedData.Equals(this.SelectedItem)) return;
 		SetLastID(GetID(this.SelectedItem));
 
 		StackPanel?.Dispose();
@@ -164,6 +166,7 @@ public abstract class GenericDataTypeBase<T> : SimpleDataTypeBase
 		if (ScrollContainer.Size.Width < MainContainer.Size.Width) ScrollContainer.SetPosition(MainContainer.Size.Width / 2 - ScrollContainer.Size.Width / 2, 0);
 		else ScrollContainer.SetPosition(0, 0);
 		StackPanel.Update();
+		LastDisplayedData = this.SelectedItem;
 	}
 
 	public override void SizeChanged(BaseEventArgs e)
