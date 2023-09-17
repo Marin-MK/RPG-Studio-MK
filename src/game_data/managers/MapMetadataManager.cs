@@ -35,6 +35,7 @@ public class MapMetadataManager : BaseDataManager
                 if (value == Ruby.Nil) return null;
                 return Ruby.String.FromPtr(value);
             }
+            if (!Data.Maps.ContainsKey(ckey)) return;
             Map Map = Data.Maps[ckey];
             Map.InGameName = GetStrOrNull("@real_name");
             Map.OutdoorMap = GetDefaultFalse("@outdoor_map");
