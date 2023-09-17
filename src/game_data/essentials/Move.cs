@@ -185,9 +185,9 @@ public class Move : IGameData, ICloneable
 }
 
 [DebuggerDisplay("{ID}")]
-public class MoveResolver
+public class MoveResolver : IDataResolver
 {
-    public string ID;
+    public string ID { get; set; }
     [JsonIgnore]
 	public bool Valid => !string.IsNullOrEmpty(ID) && Data.Moves.ContainsKey(ID);
     [JsonIgnore]

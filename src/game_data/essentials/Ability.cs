@@ -101,9 +101,9 @@ public class Ability : IGameData, ICloneable
 }
 
 [DebuggerDisplay("{ID}")]
-public class AbilityResolver
+public class AbilityResolver : IDataResolver
 {
-    public string ID;
+    public string ID { get; set; }
     [JsonIgnore]
 	public bool Valid => !string.IsNullOrEmpty(ID) && Data.Abilities.ContainsKey(ID);
     [JsonIgnore]

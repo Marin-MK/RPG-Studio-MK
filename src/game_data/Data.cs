@@ -360,6 +360,12 @@ public static partial class Data
 	}
 }
 
+public interface IDataResolver
+{
+	public string ID { get; set; }
+	public bool Valid { get; }
+}
+
 public enum EssentialsVersion
 {
     Unknown = 0,

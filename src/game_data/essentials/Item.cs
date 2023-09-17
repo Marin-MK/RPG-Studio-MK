@@ -188,9 +188,9 @@ public class Item : IGameData, ICloneable
 }
 
 [DebuggerDisplay("{ID}")]
-public class ItemResolver
+public class ItemResolver : IDataResolver
 {
-    public string ID;
+    public string ID { get; set; }
     [JsonIgnore]
 	public bool Valid => !string.IsNullOrEmpty(ID) && Data.Items.ContainsKey(ID);
     [JsonIgnore]

@@ -1,22 +1,12 @@
-﻿using RPGStudioMK.Widgets;
+﻿using RPGStudioMK.Game;
+using RPGStudioMK.Widgets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RPGStudioMK;
-
-public abstract class SimpleDataTypeBase : Widget
-{
-    public SimpleDataTypeBase(IContainer parent) : base(parent)
-    {
-        
-    }
-
-	public abstract void Initialize();
-	public abstract void SelectData<T>(T data);
-}
+namespace RPGStudioMK.Widgets;
 
 public abstract class GenericDataTypeBase<T> : SimpleDataTypeBase
 {
@@ -47,7 +37,7 @@ public abstract class GenericDataTypeBase<T> : SimpleDataTypeBase
 
 	public GenericDataTypeBase(IContainer parent) : base(parent)
     {
-        
+
     }
 
 	protected virtual void LateConstructor()
@@ -216,7 +206,7 @@ public abstract class GenericDataTypeBase<T> : SimpleDataTypeBase
 
 	public override void SelectData<D>(D dat)
 	{
-		ITreeNode node = DataList.Root.GetAllChildren(true).Find(n => ((T) ((TreeNode) n).Object).Equals(dat));
+		ITreeNode node = DataList.Root.GetAllChildren(true).Find(n => GetID((T) ((TreeNode) n).Object) == dat.ID);
 		DataList.SetSelectedNode((TreeNode) node);
 	}
 
