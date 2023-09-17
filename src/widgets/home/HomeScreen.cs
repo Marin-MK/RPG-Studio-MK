@@ -7,8 +7,7 @@ namespace RPGStudioMK.Widgets;
 
 public class HomeScreen : Widget
 {
-    public int SelectedIndex = -1;
-    int RecentCapacity = 0;
+    RecentProjectsWidget RecentProjectsWidget;
 
     HomeScreenButton NewProjectButton;
     HomeScreenButton OpenProjectButton;
@@ -18,8 +17,6 @@ public class HomeScreen : Widget
 
     ImageBox YoutubeButton;
     ImageBox TwitterButton;
-
-    MultilineLabel NoProjects;
 
     public HomeScreen(IContainer Parent) : base(Parent)
     {
@@ -43,12 +40,12 @@ public class HomeScreen : Widget
         Sprites["text"].Bitmap.Font = Fonts.HomeTitle;
         Sprites["text"].Bitmap.DrawText("Recent Projects:", 38, 126, Color.WHITE, DrawOptions.Underlined);
         Sprites["text"].Bitmap.Lock();
-        Sprites["filesel"] = new Sprite(this.Viewport, new SolidBitmap(2, 38, new Color(0, 205, 255)));
-        Sprites["filesel"].X = 30;
-        Sprites["filesel"].Visible = false;
-        Sprites["files"] = new Sprite(this.Viewport);
-        Sprites["files"].X = 42;
-        Sprites["files"].Y = 168;
+
+        RecentProjectsWidget = new RecentProjectsWidget(this);
+        RecentProjectsWidget.SetWidth(350);
+        RecentProjectsWidget.SetVDocked(true);
+        RecentProjectsWidget.SetPadding(42, 168);
+        RecentProjectsWidget.OnProjectClicked += _ => LoadRecentProject(RecentProjectsWidget.HoveringIndex);
 
         NewProjectButton = new HomeScreenButton(this);
         NewProjectButton.SetPosition(445, 108);
@@ -93,12 +90,6 @@ public class HomeScreen : Widget
             else TwitterButton.SetBitmap("assets/img/home_icon_twitter.png");
         };
 
-        NoProjects = new MultilineLabel(this);
-        NoProjects.SetSize(320, 100);
-        NoProjects.SetPosition(40, 170);
-        NoProjects.SetText("You haven't opened any projects recently.\nGet started by creating or opening a project!");
-        NoProjects.SetFont(Fonts.Paragraph);
-
         VignetteFade = new VignetteFade(this);
         VignetteFade.SetDocked(true);
     }
@@ -115,46 +106,6 @@ public class HomeScreen : Widget
             double factor = Size.Height / (double)Sprites["sidebar"].Bitmap.Height;
             Sprites["sidebar"].ZoomY = factor;
         }
-        #endregion
-
-        #region Recent Files
-        if (Sprites["files"].Bitmap != null) Sprites["files"].Bitmap.Dispose();
-        int height = Size.Height - 190;
-        if (height < 1) return;
-        RecentCapacity = (int)Math.Floor(height / 48d);
-        Sprites["files"].Bitmap = new Bitmap(314, 48 * RecentCapacity);
-        Sprites["files"].Bitmap.Unlock();
-        int count = Editor.GeneralSettings.RecentFiles.Count;
-        for (int i = 0; i < count; i++)
-        {
-            if (i >= RecentCapacity) break;
-            string name = Editor.GeneralSettings.RecentFiles[count - i - 1][0]; // Project name
-            string projectpath = Editor.GeneralSettings.RecentFiles[count - i - 1][1]; // Project file
-            while (projectpath.Contains("\\")) projectpath = projectpath.Replace("\\", "/");
-            Sprites["files"].Bitmap.Font = Fonts.HomeFont;
-            Sprites["files"].Bitmap.DrawText(name, 0, 54 * i + 4, Color.WHITE);
-            Sprites["files"].Bitmap.Font = Fonts.Paragraph;
-            List<string> folders = projectpath.Split('/').ToList();
-            string path = "";
-            for (int j = folders.Count - 2; j >= 0; j--)
-            {
-                string add = "/";
-                if (folders[j].Contains(":")) add = "";
-                Size s = Sprites["files"].Bitmap.Font.TextSize(add + folders[j] + path);
-                if (s.Width > Sprites["files"].Bitmap.Width - 39)
-                {
-                    path = "..." + path;
-                    break;
-                }
-                else
-                {
-                    path = add + folders[j] + path;
-                }
-            }
-            Sprites["files"].Bitmap.DrawText(path, 30, 54 * i + 26, Color.WHITE);
-        }
-        Sprites["files"].Bitmap.Lock();
-        NoProjects.SetVisible(Editor.GeneralSettings.RecentFiles.Count == 0);
         #endregion
 
         #region Buttons
@@ -289,48 +240,6 @@ public class HomeScreen : Widget
         #endregion
     }
 
-    public override void HoverChanged(MouseEventArgs e)
-    {
-        base.HoverChanged(e);
-        if (!Mouse.Inside)
-        {
-            Sprites["filesel"].Visible = false;
-            SelectedIndex = -1;
-        }
-    }
-
-    public override void MouseMoving(MouseEventArgs e)
-    {
-        base.MouseMoving(e);
-        if (!Mouse.Inside)
-        {
-            Sprites["filesel"].Visible = false;
-            SelectedIndex = -1;
-            return;
-        }
-        int rx = e.X - Viewport.X;
-        int ry = e.Y - Viewport.Y - Sprites["files"].Y;
-        int index = (int)Math.Floor(ry / 48d);
-        if (rx < 30 || rx >= 340 || ry <= 0 || index >= RecentCapacity || ry % 48 >= 38 || index >= Editor.GeneralSettings.RecentFiles.Count)
-        {
-            Sprites["filesel"].Visible = false;
-            SelectedIndex = -1;
-            return;
-        }
-        Sprites["filesel"].Visible = true;
-        Sprites["filesel"].Y = 2 + Sprites["files"].Y + index * 48;
-        SelectedIndex = index;
-    }
-
-    public override void MouseDown(MouseEventArgs e)
-    {
-        base.MouseDown(e);
-        if (Sprites["filesel"].Visible && SelectedIndex > -1)
-        {
-            LoadRecentProject(SelectedIndex);
-        }
-    }
-
     public void NewProject()
     {
         Editor.NewProject();
@@ -352,7 +261,7 @@ public class HomeScreen : Widget
                 if (mbox.Result == 0) // Yes, remove project from list of recent projects
                 {
                     Editor.GeneralSettings.RecentFiles.RemoveAt(Editor.GeneralSettings.RecentFiles.Count - index - 1);
-                    SizeChanged(new BaseEventArgs());
+                    RecentProjectsWidget.DrawProjects();
                 }
             };
         }
