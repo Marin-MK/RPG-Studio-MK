@@ -251,7 +251,7 @@ public class EditMoveRouteWindow : PopupWindow
         AddButton("Always on Top OFF", 2, MoveCode.AlwaysOnTopOff);
         AddButtonElaborate("Change Graphic...", 2, MoveCode.Graphic, (code, cmd, Add) =>
         {
-            EventGraphic gr = new EventGraphic();
+            EventGraphic gr = new EventGraphic("");
             if (cmd != null)
             {
                 gr.CharacterName = (string) cmd.Parameters[0];
