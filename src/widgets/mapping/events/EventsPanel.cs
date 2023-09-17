@@ -89,10 +89,12 @@ public class EventsPanel : Widget
             {
                 SelectLabel(label);
                 SelectEventOnMap(label.Event);
+                label.UpdateHoverLabel();
             };
             label.OnDoubleLeftMouseDownInside += _ =>
             {
                 OpenEvent(label.Event);
+                label.UpdateHoverLabel();
             };
         }
     }

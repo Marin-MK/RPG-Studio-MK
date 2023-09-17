@@ -146,14 +146,7 @@ public class HardcodedDataStore
     {
         if (!IsValid(value, dataStore))
         {
-            string ary = "[";
-            for (int i = 0; i < dataStore.Count; i++)
-            {
-                ary += dataStore[i];
-                if (i < dataStore.Count - 1) ary += ", ";
-            }
-            ary += "]";
-            throw new Exception($"The value '{value}' is invalid. It must be one of {ary}.");
+            throw new Exception($"The value '{value}' is invalid. It must be one of [{dataStore.Aggregate((a, b) => a + ", " + b)}].");
         }
         return value;
     }

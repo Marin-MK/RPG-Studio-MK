@@ -29,6 +29,11 @@ public class EventLabel : Widget
         Sprites["hover"].Visible = Mouse.Inside;
     }
 
+    public void UpdateHoverLabel()
+    {
+        Sprites["hover"].Visible = Mouse.Inside;
+    }
+
     public void SetSelected(bool Selected)
     {
         if (this.Selected != Selected)
