@@ -1189,10 +1189,11 @@ public enum DatabaseMode
     Abilities,
     Items,
     TMs,
-    Tilesets,
-    Autotiles,
     Types,
     Trainers,
+    Dexes,
+    Tilesets,
+    CommonEvents,
     Animations,
     System
 }

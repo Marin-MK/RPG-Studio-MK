@@ -18,7 +18,7 @@ public class DatabaseWidget : Widget
     {
         MainGrid = new Grid(this);
         MainGrid.SetColumns(
-            new GridSize(183, Unit.Pixels),
+            new GridSize(200, Unit.Pixels),
             new GridSize(1)
         );
 
