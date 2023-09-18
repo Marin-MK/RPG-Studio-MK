@@ -109,19 +109,9 @@ public static class Editor
         win.Center();
         win.CreateButton("OK", _ => win.Close());
 
-        MultilineLabel selLabel = new MultilineLabel(win);
-        selLabel.SetPosition(50, 20);
-        selLabel.SetFont(Fonts.Paragraph);
-        selLabel.SetWidth(350);
-
-        ListBox list = new ListBox(win);
-        list.SetPosition(50, 150);
-        list.SetSize(300, 300);
-        list.SetCanMultiSelect(true);
-        list.OnSelectionChanged += _ =>
-        {
-            selLabel.SetText($"SelectedNode: {list.SelectedItem}\n{list.SelectedItems.Select(n => n.ToString()).Aggregate((a, b) => a + ", " + b)}");
-        };
+        ListDrawer list = new ListDrawer(win);
+        list.SetPosition(50, 50);
+        list.SetSize(300, 400);
         list.SetItems(new List<TreeNode>()
         {
             new TreeNode("One"),
@@ -140,26 +130,6 @@ public static class Editor
             new TreeNode("Fourteen"),
             new TreeNode("Fifteen")
         });
-
-        Button addButton = new Button(win);
-        addButton.SetPosition(50, 452);
-        addButton.SetSize(140, 30);
-        addButton.SetText("Add Item");
-        addButton.OnClicked += _ =>
-        {
-            string num = Utilities.Random(10, 10000).ToString();
-            TreeNode newNode = new TreeNode(num);
-            list.InsertItem(list.SelectedIndex, newNode);
-        };
-
-        Button removeButton = new Button(win);
-        removeButton.SetPosition(210, 452);
-        removeButton.SetSize(140, 30);
-        removeButton.SetText("Delete Item");
-        removeButton.OnClicked += _ =>
-        {
-            list.RemoveItem(list.SelectedItem);
-        };
     }
 
     /// <summary>

@@ -245,11 +245,10 @@ public class DropdownBox : amethyst.TextBox
 public class DropdownWidget : Widget
 {
     public int SelectedIndex { get; protected set; }
-    public List<TreeNode> Items => List.Items;
+    public List<TreeNode> Items => Tree.Root.Children.Select(n => (TreeNode) n).ToList();
 
-    ListDrawer List;
+    TreeView Tree;
     DropdownBox DropdownBox;
-    Container ScrollContainer;
     int Width;
 
     public GenericObjectEvent<bool> OnDisposeByClick;
@@ -259,28 +258,22 @@ public class DropdownWidget : Widget
         this.DropdownBox = DropdownBox;
         this.Width = Width;
 
+        int lineHeight = 24;
+
         SetZIndex(Window.ActiveWidget is UIManager ? 9 : (Window.ActiveWidget as Widget).ZIndex + 9);
-        SetSize(Width, Math.Min(9, Items.Count) * 20 + 3);
+        SetSize(Width, Math.Min(9, Items.Count) * lineHeight + 3);
 
         WindowLayer = Window.ActiveWidget.WindowLayer + 1;
         Window.SetActiveWidget(this);
 
-        ScrollContainer = new Container(this);
-        ScrollContainer.SetDocked(true);
-        ScrollContainer.SetPadding(1, 2, 12, 1);
-
-        VScrollBar vs = new VScrollBar(this);
-        vs.SetVDocked(true);
-        vs.SetRightDocked(true);
-        vs.SetPadding(0, 3, 0, 2);
-        ScrollContainer.SetVScrollBar(vs);
-        ScrollContainer.VAutoScroll = true;
-
-        List = new ListDrawer(ScrollContainer);
-        //List.ForceMouseStart = true; // Allows the mouse to be captured immediately,
-        //                             // rather than having to press within the listbox boundaries for it to be captured
-        List.SetHDocked(true);
-        List.SetItems(Items);
+		Tree = new TreeView(this);
+		Tree.SetDocked(true);
+        Tree.SetPadding(1, 2, 1, 1);
+		Tree.SetXOffset(-12);
+		Tree.SetLineHeight(lineHeight);
+		Tree.SetCanDragAndDrop(false);
+        Tree.SetHScrollable(false);
+        Tree.SetNodes(Items);
 
 		RegisterShortcuts(new List<Shortcut>()
 		{
@@ -324,24 +317,17 @@ public class DropdownWidget : Widget
 
     public void SetItems(List<TreeNode> Items)
     {
-        List.SetItems(Items);
-		SetSize(this.Width, Math.Min(9, Items.Count) * 20 + 3);
-        if (List.SelectedIndex >= Items.Count) List.SetSelectedIndex(Items.Count - 1);
-        this.SelectedIndex = List.SelectedIndex;
+        Tree.SetNodes(Items);
+		SetSize(this.Width, Math.Min(9, Items.Count) * Tree.LineHeight + 3);
+        if (Tree.Root.Children.IndexOf(Tree.SelectedNode) >= Items.Count) Tree.SetSelectedNode(this.Items[Items.Count - 1], false);
+        this.SelectedIndex = Tree.Root.Children.IndexOf(Tree.SelectedNode);
 	}
 
     public void SetSelectedIndex(int SelectedIndex, bool ScrollToSelection = true)
     {
-        List.SetSelectedIndex(SelectedIndex);
-        this.SelectedIndex = List.SelectedIndex;
-        if (ScrollToSelection)
-        {
-            // Start dropdown at the currently selected index
-            int scrolly = SelectedIndex * List.LineHeight;
-            scrolly = Math.Clamp(scrolly, 0, List.Size.Height - ScrollContainer.Size.Height);
-            ScrollContainer.ScrolledY = scrolly;
-            ScrollContainer.UpdateAutoScroll();
-        }
+        Tree.SetSelectedNode(Tree.Root.Children[SelectedIndex], false);
+        this.SelectedIndex = SelectedIndex;
+        if (ScrollToSelection) Tree.CenterOnNode(Tree.SelectedNode);
     }
 
     public override void MouseDown(MouseEventArgs e)
@@ -357,10 +343,10 @@ public class DropdownWidget : Widget
     public override void LeftMouseUp(MouseEventArgs e)
     {
         base.LeftMouseUp(e);
-        if (List.Mouse.Inside && List.HoveringIndex != -1)
+        if (Tree.Mouse.Inside && Tree.HoveringNode is not null)
         {
-            if (Mouse.LeftStartedInside) this.SelectedIndex = List.SelectedIndex;
-            if (DropdownBox.Mouse.LeftStartedInside) this.SelectedIndex = List.HoveringIndex;
+            if (Mouse.LeftStartedInside) this.SelectedIndex = Tree.Root.Children.IndexOf(Tree.SelectedNode);
+            if (DropdownBox.Mouse.LeftStartedInside) this.SelectedIndex = Tree.Root.Children.IndexOf(Tree.HoveringNode);
             OnDisposeByClick?.Invoke(new GenericObjectEventArgs<bool>(true));
             Dispose();
         }

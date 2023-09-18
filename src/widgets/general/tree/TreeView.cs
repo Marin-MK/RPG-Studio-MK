@@ -258,7 +258,6 @@ public class TreeView : Widget
             OnScrollBarVisiblityChanged?.Invoke(new GenericObjectEventArgs<(bool, bool)>((vs.Visible, hs.Visible)));
         };
 
-
         SpriteContainer = new Container(ScrollContainer);
         SpriteContainer.Sprites["hover"] = new Sprite(SpriteContainer.Viewport, new SolidBitmap(1, 1, new Color(55, 187, 255)));
         SpriteContainer.Sprites["hover"].Visible = false;
@@ -287,6 +286,15 @@ public class TreeView : Widget
 			new Shortcut(this, new Key(Keycode.PAGEUP, Keycode.SHIFT), _ => MovePageUp(true), false, e => e.Value = CanMultiSelect),
 			new Shortcut(this, new Key(Keycode.A, Keycode.CTRL), _ => SelectAll(), false, e => e.Value = CanMultiSelect)
         });
+    }
+
+    /// <summary>
+    /// Whether the tree view can scroll horizontally if it needs to.
+    /// </summary>
+    /// <param name="hScrollable"></param>
+    public void SetHScrollable(bool hScrollable)
+    {
+        ScrollContainer.HAutoScroll = hScrollable;
     }
 
     /// <summary>

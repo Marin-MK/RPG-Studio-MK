@@ -41,6 +41,11 @@ public class ListDrawer : Widget
         };
     }
 
+    public void SetAutoResize(bool autoResize)
+    {
+        tree.SetAutoResize(autoResize);
+    }
+
     public void SetItems(List<TreeNode> items)
     {
         tree.SetNodes(items);
