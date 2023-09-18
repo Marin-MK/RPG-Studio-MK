@@ -12,7 +12,8 @@ public class AbilityManager : BaseDataManager
         Logger.WriteLine("Loading abilities");
         LoadAsHash((key, value) =>
         {
-            string ckey = Ruby.Symbol.FromPtr(key);
+			if (!Ruby.Is(key, "Symbol", "String")) return;
+			string ckey = Ruby.Symbol.FromPtr(key);
             Data.Abilities.Add(ckey, new Ability(value));
         });
     }

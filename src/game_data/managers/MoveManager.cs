@@ -13,7 +13,8 @@ public class MoveManager : BaseDataManager
         Logger.WriteLine("Loading moves");
         LoadAsHash((key, value) =>
         {
-            string ckey = Ruby.Symbol.FromPtr(key);
+			if (!Ruby.Is(key, "Symbol", "String")) return;
+			string ckey = Ruby.Symbol.FromPtr(key);
             Data.Moves.Add(ckey, new Move(value));
         });
     }

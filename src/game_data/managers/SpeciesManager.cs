@@ -14,7 +14,8 @@ public class SpeciesManager : BaseDataManager
         Logger.WriteLine("Loading species");
         LoadAsHash((key, value) =>
         {
-            string realID = Ruby.Symbol.FromPtr(Ruby.GetIVar(value, "@id"));
+			if (!Ruby.Is(key, "Symbol", "String")) return;
+			string realID = Ruby.Symbol.FromPtr(Ruby.GetIVar(value, "@id"));
             if (Data.Species.ContainsKey(realID)) return;
             Species speciesdata = new Species(value);
             Data.Species.Add(speciesdata.ID, speciesdata);

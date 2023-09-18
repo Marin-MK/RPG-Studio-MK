@@ -13,6 +13,7 @@ public class ItemManager : BaseDataManager
         Logger.WriteLine("Loading items");
         LoadAsHash((key, value) =>
         {
+            if (!Ruby.Is(key, "Symbol", "String")) return;
             string item = Ruby.Symbol.FromPtr(key);
             Data.Items.Add(item, new Item(value));
         });
