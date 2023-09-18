@@ -1,4 +1,7 @@
+![home_logo](https://github.com/Marin-MK/RPG-Studio-MK/assets/25814892/b000346a-a4df-4dc5-8353-8862d685dd1b)
+
 # RPG Studio MK
+
 Welcome to the GitHub repository for RPG Studio MK.
 
 RPG Studio MK is a game creation program that is tailored to the creation of 2D Pokémon-style games, similar to FRLG. It is intended to replace and supersede the traditional game creation tool used, RPG Maker XP. This program is the culmination of almost 6 years of development, with its official inception being December 4th, 2017.
