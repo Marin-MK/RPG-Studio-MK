@@ -33,6 +33,7 @@ public class ScriptingWidget : Widget
         TreeView.SetNodes(GetNodes());
         TreeView.SetLineHeight(28);
         TreeView.SetFont(FontCache.GetOrCreate("Cabin-Medium", 10));
+        TreeView.SetBackgroundColor(10, 23, 37);
         TreeView.OnSelectionChanged += e => ScriptBox.SetScriptBox((Script) ((TreeNode) TreeView.SelectedNode).Object, !e.Value); // e.Value: whether the node was double clicked or single-clicked
 
         MainGrid = new Grid(this);
