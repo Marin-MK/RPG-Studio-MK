@@ -259,7 +259,7 @@ public class EditMoveRouteWindow : PopupWindow
                 gr.Direction = (int) (long) cmd.Parameters[2];
                 gr.Pattern = (int) (long) cmd.Parameters[3];
             }
-            ChooseGraphic win = new ChooseGraphic(Map, Event, Page, gr, true, "Graphics/Characters");
+            ChooseGraphicFileExplorerWindow win = new ChooseGraphicFileExplorerWindow(Map, Event, Page, gr, true, "Graphics/Characters");
             win.OnClosed += _ =>
             {
                 if (!win.Apply) return;

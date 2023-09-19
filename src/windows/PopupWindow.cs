@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using amethyst.Animations;
 
 namespace RPGStudioMK.Widgets;
@@ -47,6 +48,7 @@ public class PopupWindow : Widget, IPopupWindow
     {
         if (!HasAnimated)
         {
+            HasAnimated = true;
             // Do this in the update method rather than the constructor, because some window constructors
             StartAnimation(new SigmoidAnimation("zoom_in", 400, x =>
             {
@@ -54,7 +56,6 @@ public class PopupWindow : Widget, IPopupWindow
                 Center();
                 SetVisible(true);
             }));
-            HasAnimated = true;
         }
         base.Update();
     }
@@ -147,7 +148,7 @@ public class PopupWindow : Widget, IPopupWindow
             this.OnClosed?.Invoke(new BaseEventArgs());
             return;
         }
-        StartAnimation(new SigmoidAnimation("zoom_in", 400, x =>
+        StartAnimation(new SigmoidAnimation("zoom_out", 400, x =>
         {
             if (Disposed) return;
             SetGlobalZoom(1 - (float) x);

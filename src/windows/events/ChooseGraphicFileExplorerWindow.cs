@@ -5,7 +5,7 @@ using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
 
-public class ChooseGraphic : PopupWindow
+public class ChooseGraphicFileExplorerWindow : PopupWindow
 {
     public bool Apply = false;
     public EventGraphic Graphic;
@@ -30,7 +30,7 @@ public class ChooseGraphic : PopupWindow
 
     bool CursorOnly = false;
 
-    public ChooseGraphic(Map Map, Event Event, EventPage Page, EventGraphic gr, bool FromMoveRouteEditor, string RelativeFolder)
+    public ChooseGraphicFileExplorerWindow(Map Map, Event Event, EventPage Page, EventGraphic gr, bool FromMoveRouteEditor, string RelativeFolder)
     {
         this.Map = Map;
         this.Event = Event;

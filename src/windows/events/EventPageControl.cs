@@ -163,11 +163,10 @@ public class EventPageControl : Widget
         {
             if (EventGraphicBox.Mouse.LeftStartedInside && EventGraphicBox.Mouse.Inside)
             {
-                ChooseGraphic cg = new ChooseGraphic(Map, Event, Page, Page.Graphic, false, "Graphics/Characters");
-                cg.OnClosed += _ =>
+                CharacterGraphicPickerWindow cgpw = new CharacterGraphicPickerWindow(Map, Page.Graphic);
+                cgpw.OnClosed += _ =>
                 {
-                    if (!cg.Apply) return;
-                    Page.Graphic = cg.Graphic;
+                    if (!cgpw.Apply) return;
                     EventGraphicBox.SetGraphic(Map, Event, Page.Graphic);
                 };
             }

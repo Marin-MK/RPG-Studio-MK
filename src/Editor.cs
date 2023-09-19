@@ -109,7 +109,7 @@ public static class Editor
         win.Center();
         win.CreateButton("OK", _ => win.Close());
 
-        ListDrawer list = new ListDrawer(win);
+        ListBox list = new ListBox(win);
         list.SetPosition(50, 50);
         list.SetSize(300, 400);
         list.SetItems(new List<TreeNode>()
@@ -128,7 +128,12 @@ public static class Editor
             new TreeNode("Twelve"),
             new TreeNode("Thirteen"),
             new TreeNode("Fourteen"),
-            new TreeNode("Fifteen")
+            new TreeNode("Fifteen"),
+            new TreeNode("Sixteen"),
+            new TreeNode("Seventeen"),
+            new TreeNode("Eighteen"),
+            new TreeNode("Nineteen"),
+            new TreeNode("Twenty")
         });
     }
 
