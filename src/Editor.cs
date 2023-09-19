@@ -214,7 +214,7 @@ public static class Editor
     public static void ToggleMapAnimations()
     {
         GeneralSettings.ShowMapAnimations = !GeneralSettings.ShowMapAnimations;
-        MainWindow.MapWidget.SetMapAnimations(GeneralSettings.ShowMapAnimations);
+        MainWindow.MapWidget?.SetMapAnimations(GeneralSettings.ShowMapAnimations);
     }
 
     /// <summary>
@@ -223,7 +223,7 @@ public static class Editor
     public static void ToggleGrid()
     {
         GeneralSettings.ShowGrid = !GeneralSettings.ShowGrid;
-        if (MainWindow.MapWidget != null) MainWindow.MapWidget.SetGridVisibility(GeneralSettings.ShowGrid);
+        MainWindow.MapWidget?.SetGridVisibility(GeneralSettings.ShowGrid);
     }
 
     /// <summary>

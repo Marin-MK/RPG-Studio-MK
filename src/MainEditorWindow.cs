@@ -17,15 +17,15 @@ public partial class MainEditorWindow : UIWindow
     /// <summary>
     /// The MappingWidget object of the mapping mode. Null if not active.
     /// </summary>
-    public MappingWidget MapWidget { get { return MainEditorWidget as MappingWidget; } }
+    public MappingWidget MapWidget => MainEditorWidget as MappingWidget;
     /// <summary>
     /// The DatabaseWidget object of the database mode. Null if not active.
     /// </summary>
-    public DatabaseWidget DatabaseWidget { get { return MainEditorWidget as DatabaseWidget; } }
+    public DatabaseWidget DatabaseWidget => MainEditorWidget as DatabaseWidget;
     /// <summary>
     /// The ScriptingWidget object of the scripting mode. Null if not active.
     /// </summary>
-    public ScriptingWidget ScriptingWidget { get { return MainEditorWidget as ScriptingWidget; } }
+    public ScriptingWidget ScriptingWidget => MainEditorWidget as ScriptingWidget;
 
     /// <summary>
     /// The main grid layout which divides menubar, toolbar, main area and statusbar from one another.
