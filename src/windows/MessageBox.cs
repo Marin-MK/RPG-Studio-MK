@@ -154,12 +154,12 @@ public class MessageBox : PopupWindow
         {
             x += 50;
         }
-        label.SetSize(Size.Width - 10 - x, 1);
+        label.SetSize(Size.Width - 30 - x, 1);
         label.RedrawText(true);
         label.SetPosition(x, Size.Height / 2 - label.Size.Height / 2 - 2);
         if (Icon != null)
         {
-            Icon.SetPosition(14, Size.Height / 2 - 24);
+            Icon.SetPosition(24, Size.Height / 2 - 16);
         }
         if (Size.Height - label.Size.Height < 100)
         {
