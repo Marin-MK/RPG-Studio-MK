@@ -87,6 +87,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         ConsiderInAutoScrollPositioningY = false;
         Sprites["nums"] = new Sprite(this.Viewport);
         Sprites["guide"] = new Sprite(this.Viewport, new SolidBitmap(1, Size.Height, new Color(64, 64, 128)));
+        Sprites["caretline"] = new Sprite(this.Viewport);
 
         RegisterShortcuts(new List<Shortcut>()
         {
@@ -200,7 +201,14 @@ public class ScriptEditorTextArea : MultilineTextArea
         if (!OverlaySelectedText) throw new MethodNotSupportedException(this);
     }
 
-    public override void SetTextColorSelected(Color TextColorSelected)
+	public override void SetLineHeight(int LineHeight)
+	{
+        int oldLineHeight = this.LineHeight;
+		base.SetLineHeight(LineHeight);
+        if (oldLineHeight != this.LineHeight) RedrawCaretLine();
+	}
+
+	public override void SetTextColorSelected(Color TextColorSelected)
     {
         throw new MethodNotSupportedException(this);
     }
@@ -539,7 +547,7 @@ public class ScriptEditorTextArea : MultilineTextArea
          * and the like, which are rather uncommon in Ruby.
          * If these are strictly necessary, workarounds can be created to work with these. I don't think it's worth the effort though.*/
         TokenizeUntokenizedLines(false);
-        RedrawText();
+        RedrawText(true);
     }
 
     (int Indentation, bool IsBlank) GetLineIndentation(int LineIndex)
@@ -1099,7 +1107,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         }
         TokenizeUntokenizedLines();
         // Reposition caret
-        Sprites["caret"].Y = Caret.Line.LineIndex * LineHeight + Caret.Line.LineIndex * LineMargins - Parent.ScrolledY;
+        UpdateCaretPosition(false);
         RedrawSelectionBoxes();
         RequireScrollAdjustment = false;
         OldScrolledY = Parent.ScrolledY;
@@ -1122,6 +1130,8 @@ public class ScriptEditorTextArea : MultilineTextArea
     {
         Sprites["caret"].X = TextXOffset + Caret.Line.WidthUpTo(Caret.IndexInLine);
         Sprites["caret"].Y = Caret.Line.LineIndex * LineHeight + Caret.Line.LineIndex * LineMargins - Parent.ScrolledY;
+        Sprites["caretline"].X = TextXOffset;
+        Sprites["caretline"].Y = Sprites["caret"].Y - 1;
         if (ResetScroll) RequireCaretRepositioning = true;
     }
 
@@ -1544,7 +1554,22 @@ public class ScriptEditorTextArea : MultilineTextArea
     {
         base.SizeChanged(e);
         ((SolidBitmap) Sprites["guide"].Bitmap).SetSize(1, Size.Height);
+        RedrawCaretLine();
+        RedrawLineNumbers();
+        TokenizeUntokenizedLines();
     }
+
+    private void RedrawCaretLine()
+    {
+        Color clr = new Color(86, 108, 134, 128);
+		Sprites["caretline"].Bitmap?.Dispose();
+		Sprites["caretline"].Bitmap = new Bitmap(Size.Width - Sprites["caretline"].X, LineHeight + 4);
+        Sprites["caretline"].Bitmap.Unlock();
+        Sprites["caretline"].Bitmap.DrawRect(0, 0, Sprites["caretline"].Bitmap.Width, LineHeight + 4, clr);
+		Sprites["caretline"].Bitmap.DrawRect(0, 1, Sprites["caretline"].Bitmap.Width, LineHeight + 2, clr);
+		Sprites["caretline"].Bitmap.Lock();
+        Sprites["caretline"].Y = Sprites["caret"].Y - 1;
+	}
 
     public bool LineSyntaxIsCorrectFor(char c)
     {
@@ -1637,15 +1662,17 @@ public class ScriptEditorTextArea : MultilineTextArea
         ClearOccurrences();
     }
 
-    public void SelectOccurrence(Occurrence occurrence, bool updateStatusBarText = true)
+    public void SelectOccurrence(Occurrence occurrence, bool updateStatusBarText = true, bool center = false)
     {
-		if (!HasSelection) StartSelection();
+        Console.WriteLine(SelBoxSprites);
+        if (!HasSelection) StartSelection();
 		SelectionStart.Index = Lines[occurrence.LineNumber].StartIndex + occurrence.IndexInLine;
 		SelectionEnd.Index = SelectionStart.Index + occurrence.Length;
 		Caret.Index = SelectionEnd.Index;
 		UpdateCaretPosition(true);
 		RedrawSelectionBoxes();
 		if (updateStatusBarText) Editor.MainWindow.StatusBar.SetRightText($"Occurrence ({Occurrences.IndexOf(occurrence) + 1} / {Occurrences.Count})");
+        if (center) CenterOnLine(Caret.Line.LineIndex);
 	}
 
     public void ClearOccurrences()
@@ -1656,6 +1683,17 @@ public class ScriptEditorTextArea : MultilineTextArea
         this.OccurrenceSelected = false;
         HighlightTick();
         WidgetSelected(new BaseEventArgs());
+    }
+
+    public void CenterOnLine(int line)
+    {
+        int currentCenter = (BottomLineIndex + TopLineIndex) / 2;
+        int diff = line - currentCenter;
+        // diff represents the number of lines we need to scroll down
+        Parent.ScrolledY += diff * (LineHeight + LineMargins);
+        Parent.ScrolledY = Math.Max(0, Parent.ScrolledY);
+        ((Widget) Parent).UpdateAutoScroll();
+        AdjustLinesForScroll(true);
     }
 
     public class ScriptEditorState : TextAreaState

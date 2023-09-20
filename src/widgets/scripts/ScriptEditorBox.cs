@@ -89,13 +89,15 @@ public class ScriptEditorBox : Widget
         };
         ScrollContainer.OnSizeChanged += _ =>
         {
-            TextArea.MinimumSize.Height = ScrollContainer.Size.Height;
+            TextArea.MinimumSize = ScrollContainer.Size;
             // Enforce update if size shrunk
             TextArea.SetSize(TextArea.Size);
         };
 
         TextArea = new ScriptEditorTextArea(ScrollContainer);
         TextArea.SetHDocked(true);
+        TextArea.MinimumSize = ScrollContainer.Size;
+        TextArea.SetSize(TextArea.Size);
         TextArea.SetFont(FontCache.GetOrCreate(Fonts.Monospace.Name, 16));
         TextArea.OnTextChanged += _ =>
         {
@@ -374,8 +376,8 @@ public class ScriptEditorBox : Widget
     public void PreviewOccurrence(Script script, Occurrence occurrence)
     {
         // Open the containing script as a preview, jump to the relevant line, and select the occurrence
-        SetScriptBox(script, OpenScripts.Contains(script));
-        TextArea.SelectOccurrence(occurrence, false);
+        SetScriptBox(script, !OpenScripts.Contains(script));
+        TextArea.SelectOccurrence(occurrence, false, true);
     }
 
     public void SetOccurrences(List<Occurrence> occurrences)

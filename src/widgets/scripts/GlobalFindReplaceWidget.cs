@@ -184,7 +184,7 @@ public class GlobalFindReplaceWidget : Widget
 		{
 			Script script = scriptsToSearch[o.ID];
 			string text = script.Name;
-			text += ":" + o.LineNumber.ToString();
+			text += ":" + (o.LineNumber + 1).ToString();
 			text += " | ";
 			text += scriptsToLines[o.ID][o.LineNumber].Trim();
 			return new TreeNode(text, (script, o));
