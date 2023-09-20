@@ -899,7 +899,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         if (h >= Parent.Size.Height) h += (h - Parent.Size.Height) % LineHeight;
         if (h % LineHeight != 0) h += (LineHeight + LineMargins) - (h % (LineHeight + LineMargins));
         if (LineWrapping) SetHeight(h);
-        else SetSize(TextXOffset + Lines.Max(l => l.LineWidth) + 3, h);
+        else SetSize(TextXOffset + Lines.Max(l => l.LineWidth), h);
         Lines.ForEach(line =>
         {
             if (line.LineIndex < TopLineIndex || line.LineIndex > BottomLineIndex) return;
@@ -1233,6 +1233,7 @@ public class ScriptEditorTextArea : MultilineTextArea
             UpdateLineText(LineIndex, Lines[LineIndex].Text.Insert(IndexOfLine, Text));
             RetokenizeLine(LineIndex);
             RedrawLine(LineIndex);
+            UpdateWidth();
             UpdateCaretPosition(true);
         }
         else
@@ -1253,6 +1254,7 @@ public class ScriptEditorTextArea : MultilineTextArea
                 UpdateLineText(LineIndex, NewCurrentLineText);
                 RetokenizeLine(LineIndex);
                 RedrawLine(LineIndex);
+                UpdateWidth();
             }
             // Insert a line for each newline character we find
             int startidx = Lines[LineIndex].StartIndex + Lines[LineIndex].Length;
@@ -1323,6 +1325,7 @@ public class ScriptEditorTextArea : MultilineTextArea
             UpdateLineText(TopLineIndex, Lines[TopLineIndex].Text.Remove(IndexInLine, Count));
             RetokenizeLine(TopLineIndex);
             RedrawLine(TopLineIndex);
+            UpdateWidth();
             UpdateCaretPosition(true);
         }
         else
@@ -1334,6 +1337,7 @@ public class ScriptEditorTextArea : MultilineTextArea
             UpdateLineText(TopLineIndex, TopLineNewText);
             RetokenizeLine(TopLineIndex);
             RedrawLine(TopLineIndex);
+            UpdateWidth();
             // Delete from last to first, otherwise line indexes would shift and we delete the wrong lines
             for (int i = BottomLineIndex; i > TopLineIndex; i--)
             {
@@ -1365,7 +1369,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         if (h >= Parent.Size.Height) h += (h - Parent.Size.Height) % LineHeight;
         if (h % LineHeight != 0) h += (LineHeight + LineMargins) - (h % (LineHeight + LineMargins));
         if (LineWrapping) SetHeight(h);
-        else SetSize(TextXOffset + Lines.Max(l => l.LineWidth) + 3, h);
+        else SetSize(TextXOffset + Lines.Max(l => l.LineWidth), h);
     }
 
     protected void UpdateLineText(int LineIndex, string NewText)
@@ -1443,6 +1447,7 @@ public class ScriptEditorTextArea : MultilineTextArea
             }
         }
         Lines.RemoveAt(LineIndex);
+        UpdateWidth();
         LineTokens.RemoveAt(LineIndex);
         LineColors.RemoveAt(LineIndex);
     }
@@ -1621,9 +1626,16 @@ public class ScriptEditorTextArea : MultilineTextArea
             pattern = pattern.Replace($"${i + 1}", occurrence.Captures[i]);
         }
         InsertText(Caret.Index, pattern);
+        int diff = pattern.Length - occurrence.Length;
         if (this.OccurrenceIndex >= this.Occurrences.Count) this.OccurrenceIndex = 0;
+        Occurrences.ForEach(occ =>
+        {
+            if (occ.LineNumber == occurrence.LineNumber && occ.IndexInLine > occurrence.IndexInLine)
+                occ.IndexInLine += diff;
+        });
 		SetOccurrences(this.Occurrences, this.OccurrenceIndex);
-    }
+		OnTextChanged?.Invoke(new BaseEventArgs());
+	}
 
     public void ReplacePreviousOccurrence(string pattern)
     {
@@ -1635,19 +1647,44 @@ public class ScriptEditorTextArea : MultilineTextArea
 			pattern = pattern.Replace($"${i}", occurrence.Captures[i]);
 		}
 		InsertText(Caret.Index, pattern);
+        int diff = pattern.Length - occurrence.Length;
         this.OccurrenceIndex--;
         if (this.OccurrenceIndex < 0) this.OccurrenceIndex = this.Occurrences.Count - 1;
+		Occurrences.ForEach(occ =>
+		{
+			if (occ.LineNumber == occurrence.LineNumber && occ.IndexInLine > occurrence.IndexInLine)
+				occ.IndexInLine += diff;
+		});
 		SetOccurrences(this.Occurrences, this.OccurrenceIndex);
+		OnTextChanged?.Invoke(new BaseEventArgs());
 	}
 
-    public void ReplaceAllOccurrences(List<Occurrence> Occurrences, string pattern)
+	public int ReplaceSingleOccurrence(Occurrence occurrence, string pattern)
+	{
+		if (HasSelection) CancelSelection();
+		ClearHighlights();
+		int sIdx = Lines[occurrence.LineNumber].StartIndex + occurrence.IndexInLine;
+		RemoveText(sIdx, occurrence.Length);
+		for (int j = 0; j < occurrence.Captures.Length; j++)
+		{
+			pattern = pattern.Replace($"${j + 1}", occurrence.Captures[j]);
+		}
+		Caret.Index = sIdx;
+		InsertText(sIdx, pattern);
+		int diff = pattern.Length - occurrence.Length;
+		ClearOccurrences();
+		OnTextChanged?.Invoke(new BaseEventArgs());
+		return diff;
+	}
+
+	public void ReplaceAllOccurrences(List<Occurrence> occurrences, string pattern)
     {
         if (HasSelection) CancelSelection();
         ClearHighlights();
         int idxOffset = 0;
-        for (int i = 0; i < Occurrences.Count; i++)
+        for (int i = 0; i < occurrences.Count; i++)
         {
-            Occurrence occ = Occurrences[i];
+            Occurrence occ = occurrences[i];
             int sIdx = Lines[occ.LineNumber].StartIndex + occ.IndexInLine + idxOffset;
             RemoveText(sIdx, occ.Length);
             for (int j = 0; j < occ.Captures.Length; j++)
@@ -1660,11 +1697,11 @@ public class ScriptEditorTextArea : MultilineTextArea
             idxOffset += diff;
         }
         ClearOccurrences();
+        OnTextChanged?.Invoke(new BaseEventArgs());
     }
 
     public void SelectOccurrence(Occurrence occurrence, bool updateStatusBarText = true, bool center = false)
     {
-        Console.WriteLine(SelBoxSprites);
         if (!HasSelection) StartSelection();
 		SelectionStart.Index = Lines[occurrence.LineNumber].StartIndex + occurrence.IndexInLine;
 		SelectionEnd.Index = SelectionStart.Index + occurrence.Length;
@@ -1694,6 +1731,17 @@ public class ScriptEditorTextArea : MultilineTextArea
         Parent.ScrolledY = Math.Max(0, Parent.ScrolledY);
         ((Widget) Parent).UpdateAutoScroll();
         AdjustLinesForScroll(true);
+    }
+
+    private void UpdateWidth()
+    {
+        int newMaxWidth = TextXOffset + GetMaxLineWidth();
+        if (newMaxWidth < Size.Width) SetWidth(newMaxWidth);
+    }
+
+    private int GetMaxLineWidth()
+    {
+        return Lines.Max(line => line.LineWidth);
     }
 
     public class ScriptEditorState : TextAreaState
@@ -1754,6 +1802,7 @@ public class ScriptEditorTextArea : MultilineTextArea
             this.TextArea.UpdateCaretPosition(resetScroll);
             ChangedLines.ForEach(line => TextArea.RedrawLine(line));
             TextArea.VerifyLines();
+            this.TextArea.UpdateWidth();
             this.TextArea.UpdateHeight();
             ((Widget) this.TextArea.Parent).UpdateAutoScroll();
             this.TextArea.WidgetSelected(new BaseEventArgs());

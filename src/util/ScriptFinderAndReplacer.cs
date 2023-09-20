@@ -19,7 +19,7 @@ public class ScriptFinderAndReplacer
 
     public void SetScript(List<Line> lines)
     {
-        this.Lines = lines.Select(l => l.Text).ToList();
+        this.Lines = lines.Select(l => l.Text.Substring(0, l.Text.EndsWith('\n') ? l.Text.Length - 1 : l.Text.Length)).ToList();
     }
 
     public void SetScript(List<string> lines)
@@ -50,7 +50,7 @@ public class ScriptFinderAndReplacer
     public List<Occurrence> Find(string query)
     {
         List<Occurrence> occurrences = new List<Occurrence>();
-        if (!CaseSensitive) query = query.ToLower();
+        if (!CaseSensitive && !UseRegex) query = query.ToLower();
         for (int i = 0; i < Lines.Count; i++)
         {
             string lineContent = Lines[i];
@@ -60,9 +60,9 @@ public class ScriptFinderAndReplacer
                 Occurrence? occ = FindInLine(lineContent, i, query, sIdx);
                 if (occ is not null)
                 {
-                    Occurrence rOcc = (Occurrence) occ;
-                    occurrences.Add(rOcc);
-                    sIdx = rOcc.IndexInLine + rOcc.Length;
+                    occurrences.Add(occ);
+                    occ.GlobalIndex = Lines.GetRange(0, i).Select(l => l.Length).Sum() + i + occ.IndexInLine;
+                    sIdx = occ.IndexInLine + occ.Length;
                 }
                 else break;
             }
@@ -73,7 +73,7 @@ public class ScriptFinderAndReplacer
     private Occurrence? FindInLine(string lineContent, int lineNumber, string query, int lineStartIndex = 0)
     {
         string lineToSearch = lineContent.Substring(lineStartIndex);
-        if (!CaseSensitive) lineToSearch = lineToSearch.ToLower();
+        if (!CaseSensitive && !UseRegex) lineToSearch = lineToSearch.ToLower();
         if (UseRegex)
         {
             Match match = Regex.Match(lineToSearch, query);
@@ -105,6 +105,7 @@ public class ScriptFinderAndReplacer
 
 public class Occurrence
 {
+    public int GlobalIndex;
     public int ID;
     public int LineNumber;
     public int IndexInLine;

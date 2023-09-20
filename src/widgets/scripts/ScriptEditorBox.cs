@@ -415,6 +415,11 @@ public class ScriptEditorBox : Widget
 		TextArea.ReplacePreviousOccurrence(pattern);
 	}
 
+    public int ReplaceSingleOccurrence(Occurrence occurrence, string pattern)
+    {
+        return TextArea.ReplaceSingleOccurrence(occurrence, pattern);
+    }
+
     public void ReplaceAllOccurrences(List<Occurrence> occurrences, string pattern)
     {
         TextArea.ReplaceAllOccurrences(occurrences, pattern);

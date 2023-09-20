@@ -188,4 +188,14 @@ public class ScriptingWidget : Widget
     {
         ScriptBox.PreviewOccurrence(script, occurrence);
     }
+
+    public int ReplaceSingleOccurrence(Occurrence occurrence, string pattern)
+    {
+        return ScriptBox.ReplaceSingleOccurrence(occurrence, pattern);
+    }
+
+    public void ReplaceAllOccurrences(List<Occurrence> occurrences, string pattern)
+    {
+        ScriptBox.ReplaceAllOccurrences(occurrences, pattern);
+    }
 }

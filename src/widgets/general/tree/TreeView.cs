@@ -1384,7 +1384,8 @@ public class TreeView : Widget
             i--;
             if (n.Root == n) continue; // This node was deleted
             if (n is not TreeNode) continue;
-            RedrawNodeText((TreeNode) n, false);
+            // Only redraw the node if the root has children
+            if (Root.HasChildren) RedrawNodeText((TreeNode) n, false);
         }
         if (LockBitmaps && BGSprite.Bitmap is not null && !BGSprite.Bitmap.Disposed)
         {
