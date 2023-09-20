@@ -139,7 +139,7 @@ public class EventGraphicBox : Widget
         OC.Sprites["overlay"].Bitmap.Lock();
     }
 
-    void RedrawOverlay(bool Lock = true)
+    public void RedrawOverlay(bool Lock = true)
     {
         if (Lock) OC.Sprites["overlay"].Bitmap.Unlock();
         OC.Sprites["overlay"].Bitmap.FillRect(15, 15, Size.Width - 30, Size.Height - 30, Color.ALPHA);
@@ -178,6 +178,6 @@ public class EventGraphicBox : Widget
     public override void LeftMouseUp(MouseEventArgs e)
     {
         base.LeftMouseUp(e);
-        if (Mouse.LeftStartedInside) RedrawOverlay();
+        if (Mouse.LeftStartedInside && Mouse.Accessible) RedrawOverlay();
     }
 }

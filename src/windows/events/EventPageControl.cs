@@ -163,9 +163,10 @@ public class EventPageControl : Widget
         {
             if (EventGraphicBox.Mouse.LeftStartedInside && EventGraphicBox.Mouse.Inside)
             {
-                CharacterGraphicPickerWindow cgpw = new CharacterGraphicPickerWindow(Map, Page.Graphic);
+                CharacterGraphicPickerWindow cgpw = new CharacterGraphicPickerWindow(Map, Event, Page.Graphic);
                 cgpw.OnClosed += _ =>
                 {
+                    EventGraphicBox.RedrawOverlay();
                     if (!cgpw.Apply) return;
                     EventGraphicBox.SetGraphic(Map, Event, Page.Graphic);
                 };
