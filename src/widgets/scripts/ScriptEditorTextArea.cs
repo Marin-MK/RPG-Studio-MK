@@ -1176,24 +1176,21 @@ public class ScriptEditorTextArea : MultilineTextArea
         bool reduceCaretIndexByOne = false;
         if (Text == "(" || Text == "[" || Text == "{")
         {
-            if (Caret.Index < this.Text.Length)
+            char? nextChar = (Caret.Index + 1 < this.Text.Length) ? this.Text[Caret.Index + 1] : null;
+            if (nextChar is null || nextChar == ' ' || nextChar == '\n' || nextChar == '\t')
             {
-                char nextChar = this.Text[Caret.Index + 1];
-                if (nextChar == ' ' || nextChar == '\n' || nextChar == '\t')
-                {
-                    if (Text == "(") Text = "()";
-                    else if (Text == "[") Text = "[]";
-                    else if (Text == "{") Text = "{}";
-                    else if (Text == "\"") Text = "\"\"";
-                    else if (Text == "'") Text = "''";
-                    reduceCaretIndexByOne = true;
-                }
+                if (Text == "(") Text = "()";
+                else if (Text == "[") Text = "[]";
+                else if (Text == "{") Text = "{}";
+                else if (Text == "\"") Text = "\"\"";
+                else if (Text == "'") Text = "''";
+                reduceCaretIndexByOne = true;
             }
         }
         else if (Text == ")" || Text == "]" || Text == "}")
         {
-            char nextChar = this.Text[Caret.Index];
-            if (nextChar == Text[0] && LineSyntaxIsCorrectFor(Text[0]))
+            char? nextChar = Caret.Index < this.Text.Length ? this.Text[Caret.Index] : null;
+            if (nextChar is not null && nextChar == Text[0] && LineSyntaxIsCorrectFor(Text[0]))
             {
                 Caret.Index++;
                 UpdateCaretPosition(true);
@@ -1202,14 +1199,14 @@ public class ScriptEditorTextArea : MultilineTextArea
         }
         else if ((Text == "\"" || Text == "'") && LineSyntaxIsCorrectFor(Text[0]))
         {
-            char? nextChar = Caret.Index < this.Text.Length ? this.Text[Caret.Index + 1] : null;
-            if (this.Text[Caret.Index] == Text[0])
+            char? nextChar = (Caret.Index + 1 < this.Text.Length) ? this.Text[Caret.Index + 1] : null;
+            if (Caret.Index < this.Text.Length && this.Text[Caret.Index] == Text[0])
             {
                 Caret.Index++;
                 UpdateCaretPosition(true);
                 return;
             }
-            else if (nextChar == ' ' || nextChar == '\n' || nextChar == '\t')
+            else if (Caret.Index >= this.Text.Length - 1 || nextChar == ' ' || nextChar == '\n' || nextChar == '\t')
             {
                 Text += Text;
                 reduceCaretIndexByOne = true;
