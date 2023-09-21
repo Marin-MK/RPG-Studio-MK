@@ -43,11 +43,18 @@ public class AbilityManager : BaseDataManager
     protected override void SaveData()
     {
         base.SaveData();
-        Logger.WriteLine("Saving abilities");
-        SaveAsHash(Data.Abilities.Values, abil => Ruby.Symbol.ToPtr(abil.ID));
+        Logger.WriteLine("Saving abilities data");
+        SaveDataAsHash(Data.Abilities.Values, abil => Ruby.Symbol.ToPtr(abil.ID));
     }
 
-    public override void Clear()
+	protected override void SavePBS()
+	{
+		base.SavePBS();
+        Logger.WriteLine("Saving abilities PBS");
+        SaveAsPBS(Data.Abilities.Values);
+	}
+
+	public override void Clear()
     {
         base.Clear();
         Logger.WriteLine("Clearing abilities");

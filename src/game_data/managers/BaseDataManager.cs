@@ -2,6 +2,7 @@
 using RPGStudioMK.Widgets;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using static rubydotnet.Ruby;
@@ -81,7 +82,7 @@ public class BaseDataManager
         });
     }
 
-    protected virtual void SaveAsHash<T>(IEnumerable<T> Collection, Func<T, nint> OnKeySaved) where T : IGameData
+    protected virtual void SaveDataAsHash<T>(IEnumerable<T> Collection, Func<T, nint> OnKeySaved) where T : IGameData
     {
         SafeSave(Filename, File =>
         {
@@ -98,7 +99,7 @@ public class BaseDataManager
         });
     }
 
-    protected virtual void SaveAsArray<T>(IEnumerable<T> Collection, bool StartAt1 = false) where T : IGameData
+    protected virtual void SaveDataAsArray<T>(IEnumerable<T> Collection, bool StartAt1 = false) where T : IGameData
     {
         SafeSave(Filename, File =>
         {
@@ -113,6 +114,16 @@ public class BaseDataManager
             Ruby.Marshal.Dump(list, File);
             Ruby.Unpin(list);
         });
+    }
+
+    protected virtual void SaveAsPBS<T>(IEnumerable<T> Collection) where T : IGameData
+    {
+        StreamWriter sw = new StreamWriter(global::System.IO.File.Open(Data.ProjectPath + "/PBS/" + this.PBSFilename, FileMode.Create));
+        foreach (var item in Collection)
+        {
+            sw.Write(item.SaveToString());
+        }
+        sw.Close();
     }
 
     public virtual void Load(bool fromPBS)
@@ -135,9 +146,15 @@ public class BaseDataManager
     public virtual void Save()
     {
         SaveData();
+        SavePBS();
     }
 
     protected virtual void SaveData()
+    {
+
+    }
+
+    protected virtual void SavePBS()
     {
 
     }
@@ -228,4 +245,5 @@ public class BaseDataManager
 public interface IGameData
 {
     public nint Save();
+    public string SaveToString();
 }

@@ -83,10 +83,16 @@ public class ItemManager : BaseDataManager
     {
         base.SaveData();
         Logger.WriteLine("Saving items");
-        SaveAsHash(Data.Items.Values, e => Ruby.Symbol.ToPtr(e.ID));
+        SaveDataAsHash(Data.Items.Values, e => Ruby.Symbol.ToPtr(e.ID));
     }
 
-    public override void Clear()
+	protected override void SavePBS()
+	{
+		base.SavePBS();
+        SaveAsPBS(Data.Items.Values);
+	}
+
+	public override void Clear()
     {
         base.Clear();
         Logger.WriteLine("Clearing items");

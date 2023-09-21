@@ -21,7 +21,7 @@ public class Script
         this.Name = Ruby.String.FromPtr(Ruby.Array.Get(data, 1));
         IntPtr raw = Ruby.Array.Get(data, 2);
         IntPtr conv = Ruby.Funcall(Ruby.GetConst(Ruby.Object.Class, "Zlib"), "inflate", raw);
-        this.Content = Ruby.String.FromPtr(conv);
+        this.Content = Ruby.String.FromPtr(conv).ReplaceLineEndings("\n");
     }
 
     public IntPtr Save()

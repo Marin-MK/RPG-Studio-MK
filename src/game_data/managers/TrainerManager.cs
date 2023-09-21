@@ -27,7 +27,7 @@ public class TrainerManager : BaseDataManager
     {
         base.SaveData();
         Logger.WriteLine("Saving trainers");
-        SaveAsHash(Data.Trainers, t =>
+        SaveDataAsHash(Data.Trainers, t =>
         {
             nint Array = Ruby.Array.Create();
             Ruby.Pin(Array);

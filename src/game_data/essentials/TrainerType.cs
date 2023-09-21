@@ -133,9 +133,14 @@ public class TrainerType : IGameData, ICloneable
         Ruby.SetIVar(e, victoryVariable, this.VictoryBGM == null ? Ruby.Nil : Ruby.String.ToPtr(this.VictoryBGM));
         Ruby.Unpin(e);
         return e;
-    }
+	}
 
-    public object Clone()
+	public string SaveToString()
+	{
+		throw new NotImplementedException();
+	}
+
+	public object Clone()
     {
         TrainerType t = new TrainerType();
         t.ID = this.ID;

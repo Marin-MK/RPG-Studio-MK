@@ -122,9 +122,14 @@ public class Type : IGameData, ICloneable
         if (this.IconPosition.HasValue) Ruby.SetIVar(e, "@icon_position", Ruby.Integer.ToPtr(this.IconPosition.Value));
         Ruby.Unpin(e);
         return e;
-    }
+	}
 
-    public object Clone()
+	public string SaveToString()
+	{
+		throw new NotImplementedException();
+	}
+
+	public object Clone()
     {
         Type t = new Type();
         t.ID = this.ID;

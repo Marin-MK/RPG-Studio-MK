@@ -162,9 +162,14 @@ public class Move : IGameData, ICloneable
         Ruby.SetIVar(e, "@real_description", Ruby.String.ToPtr(this.Description));
         Ruby.Unpin(e);
         return e;
-    }
+	}
 
-    public object Clone()
+	public string SaveToString()
+	{
+		throw new NotImplementedException();
+	}
+
+	public object Clone()
     {
         Move m = new Move();
         m.ID = this.ID;

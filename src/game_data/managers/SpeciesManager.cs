@@ -72,7 +72,7 @@ public class SpeciesManager : BaseDataManager
     {
         base.SaveData();
         Logger.WriteLine("Saving species");
-        SaveAsHash(Data.Species.Values, s => Ruby.Symbol.ToPtr(s.ID));
+        SaveDataAsHash(Data.Species.Values, s => Ruby.Symbol.ToPtr(s.ID));
     }
 
     public override void Clear()

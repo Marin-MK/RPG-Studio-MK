@@ -31,7 +31,7 @@ public class TypeManager : BaseDataManager
     {
         base.SaveData();
         Logger.WriteLine("Saving types");
-        SaveAsHash(Data.Types.Values, t => Ruby.Symbol.ToPtr(t.ID));
+        SaveDataAsHash(Data.Types.Values, t => Ruby.Symbol.ToPtr(t.ID));
     }
 
     public override void Clear()

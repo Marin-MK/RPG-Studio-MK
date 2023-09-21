@@ -44,7 +44,7 @@ public class TrainerTypeManager : BaseDataManager
     {
         base.SaveData();
         Logger.WriteLine("Saving trainer types");
-        SaveAsHash(Data.TrainerTypes.Values, t => Ruby.Symbol.ToPtr(t.ID));
+        SaveDataAsHash(Data.TrainerTypes.Values, t => Ruby.Symbol.ToPtr(t.ID));
     }
 
     public override void Clear()

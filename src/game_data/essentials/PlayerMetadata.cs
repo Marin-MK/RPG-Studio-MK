@@ -122,9 +122,14 @@ public class PlayerMetadata : IGameData, ICloneable
         Ruby.SetIVar(e, "@home", HomeArray);
         Ruby.Unpin(e);
         return e;
-    }
+	}
 
-    public object Clone()
+	public string SaveToString()
+	{
+		throw new NotImplementedException();
+	}
+
+	public object Clone()
     {
         PlayerMetadata p = new PlayerMetadata();
         p.ID = this.ID;

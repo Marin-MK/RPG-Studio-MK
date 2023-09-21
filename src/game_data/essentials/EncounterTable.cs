@@ -136,9 +136,14 @@ public class EncounterTable : IGameData
         }
         Ruby.Unpin(e);
         return e;
-    }
+	}
 
-    public object Clone()
+	public string SaveToString()
+	{
+		throw new NotImplementedException();
+	}
+
+	public object Clone()
     {
         EncounterTable t = new EncounterTable();
         t.ID = this.ID;

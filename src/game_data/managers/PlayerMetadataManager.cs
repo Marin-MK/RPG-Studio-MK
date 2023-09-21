@@ -37,7 +37,7 @@ public class PlayerMetadataManager : BaseDataManager
     {
         base.SaveData();
         Logger.WriteLine("Saving player metadata");
-        SaveAsHash(Data.PlayerMetadata.Values, m => Ruby.Integer.ToPtr(m.ID));
+        SaveDataAsHash(Data.PlayerMetadata.Values, m => Ruby.Integer.ToPtr(m.ID));
     }
 
     public override void Clear()

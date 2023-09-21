@@ -148,7 +148,7 @@ public class ScriptManager : BaseDataManager
         {
             Script Script = new Script();
             Script.Name = Name;
-            Script.Content = Code;
+            Script.Content = Code.ReplaceLineEndings("\n");
             Data.Scripts.Add(Script);
         }
         Data.UsesExternalScripts = true;

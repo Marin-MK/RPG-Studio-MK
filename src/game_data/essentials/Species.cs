@@ -704,9 +704,14 @@ public class Species : IGameData, ICloneable
         }
         Ruby.Unpin(e);
         return e;
-    }
+	}
 
-    public object Clone()
+	public string SaveToString()
+	{
+		throw new NotImplementedException();
+	}
+
+	public object Clone()
     {
         Species s = new Species();
 		s.ID = this.ID;

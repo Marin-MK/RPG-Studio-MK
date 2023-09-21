@@ -45,7 +45,7 @@ public class MoveManager : BaseDataManager
     {
         base.SaveData();
         Logger.WriteLine("Saving moves");
-        SaveAsHash(Data.Moves.Values, m => Ruby.Symbol.ToPtr(m.ID));
+        SaveDataAsHash(Data.Moves.Values, m => Ruby.Symbol.ToPtr(m.ID));
     }
 
     public override void Clear()

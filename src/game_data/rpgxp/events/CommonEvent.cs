@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace RPGStudioMK.Game;
 
@@ -48,5 +49,10 @@ public class CommonEvent : IGameData
         }
 
         return c;
+    }
+
+    public string SaveToString()
+    {
+        throw new NotImplementedException();
     }
 }

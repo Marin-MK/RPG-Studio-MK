@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace RPGStudioMK.Game;
@@ -87,6 +88,17 @@ public class Ability : IGameData, ICloneable
         }
         Ruby.Unpin(e);
         return e;
+    }
+
+    public string SaveToString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("#-------------------------------");
+        sb.AppendLine($"[{this.ID}]");
+        sb.AppendLine($"Name = {this.Name}");
+        sb.AppendLine($"Description = {this.Description}");
+        if (this.Flags.Count > 0) sb.AppendLine($"Flags = {this.Flags.Aggregate((a, b) => a + "," + b)}");
+        return sb.ToString();
     }
 
     public object Clone()

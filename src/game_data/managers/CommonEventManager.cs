@@ -16,7 +16,7 @@ public class CommonEventManager : BaseDataManager
     {
         base.Save();
         Logger.WriteLine("Saving common events");
-        SaveAsArray(Data.CommonEvents, true);
+        SaveDataAsArray(Data.CommonEvents, true);
     }
 
     public override void Clear()

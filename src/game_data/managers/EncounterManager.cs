@@ -49,7 +49,7 @@ public class EncounterManager : BaseDataManager
     {
         base.SaveData();
         Logger.WriteLine("Saving encounters");
-        SaveAsHash(Data.Encounters.Values, enc => Ruby.Symbol.ToPtr(enc.ID));
+        SaveDataAsHash(Data.Encounters.Values, enc => Ruby.Symbol.ToPtr(enc.ID));
     }
 
     public override void Clear()

@@ -106,9 +106,14 @@ public class Metadata : IGameData, ICloneable
         Ruby.SetIVar(e, "@bicycle_BGM", this.BicycleBGM == null ? Ruby.Nil : Ruby.String.ToPtr(this.BicycleBGM));
         Ruby.Unpin(e);
         return e;
-    }
+	}
 
-    public object Clone()
+	public string SaveToString()
+	{
+		throw new NotImplementedException();
+	}
+
+	public object Clone()
     {
         Metadata m = new Metadata();
         m.ID = this.ID;
