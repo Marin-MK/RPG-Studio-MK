@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace RPGStudioMK.Game;
@@ -137,7 +138,18 @@ public class TrainerType : IGameData, ICloneable
 
 	public string SaveToString()
 	{
-		throw new NotImplementedException();
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine($"#-------------------------------");
+        sb.AppendLine($"[{this.ID}]");
+        sb.AppendLine($"Name = {this.Name}");
+        sb.AppendLine($"Gender = {(this.Gender == 0 ? "Male" : "Female")}");
+        sb.AppendLine($"BaseMoney = {this.BaseMoney}");
+        if (this.SkillLevel != this.BaseMoney) sb.AppendLine($"SkillLevel = {this.SkillLevel}");
+        if (this.Flags.Count > 0) sb.AppendLine($"Flags = {this.Flags.Aggregate((a, b) => a + "," + b)}");
+        if (!string.IsNullOrEmpty(this.IntroBGM)) sb.AppendLine($"IntroBGM = {this.IntroBGM}");
+        if (!string.IsNullOrEmpty(this.BattleBGM)) sb.AppendLine($"BattleBGM = {this.BattleBGM}");
+        if (!string.IsNullOrEmpty(this.VictoryBGM)) sb.AppendLine($"VictoryBGM = {this.VictoryBGM}");
+		return sb.ToString();
 	}
 
 	public object Clone()
