@@ -174,6 +174,8 @@ public class ScriptEditorBox : Widget
 
     private void UpdateScriptState(Script script)
     {
+        // Do not save the state if the script was not currently open.
+        if (OpenScript != script) return;
         if (ScriptStates.ContainsKey(script)) ScriptStates[script] = new ScriptEditorTextArea.ScriptEditorState(TextArea);
         else ScriptStates.Add(script, new ScriptEditorTextArea.ScriptEditorState(TextArea));
     }
