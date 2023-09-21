@@ -677,6 +677,11 @@ public class ScriptEditorTextArea : MultilineTextArea
                     {
                         int Count = 1;
                         if (Input.Press(Keycode.CTRL)) Count = TextArea.FindNextCtrlIndex(this.Text, this.Caret.Index, false) - Caret.Index;
+                        string substr = Caret.Line.Text.Substring(Caret.IndexInLine, Caret.Line.Length - Caret.IndexInLine);
+						if (substr.Trim().Length == 0)
+                        {
+                            Count = Caret.Line.Length - Caret.IndexInLine;
+                        }
                         RemoveText(this.Caret.Index, Count);
                     }
                 }
@@ -1173,7 +1178,7 @@ public class ScriptEditorTextArea : MultilineTextArea
             if (Index > SelectionLeft.Index) Index -= count;
             DeleteSelection();
         }
-        bool reduceCaretIndexByOne = false;
+        int caretIndexReduction = 0;
         if (Text == "(" || Text == "[" || Text == "{")
         {
             char? nextChar = Caret.Index < this.Text.Length? this.Text[Caret.Index] : null;
@@ -1184,7 +1189,7 @@ public class ScriptEditorTextArea : MultilineTextArea
                 else if (Text == "{") Text = "{}";
                 else if (Text == "\"") Text = "\"\"";
                 else if (Text == "'") Text = "''";
-                reduceCaretIndexByOne = true;
+                caretIndexReduction = 1;
             }
         }
         else if (Text == ")" || Text == "]" || Text == "}")
@@ -1209,8 +1214,24 @@ public class ScriptEditorTextArea : MultilineTextArea
             else if (Caret.Index == this.Text.Length || nextChar is not null && " \n,()[]{}".Contains((char) nextChar))
             {
                 Text += Text;
-                reduceCaretIndexByOne = true;
+                caretIndexReduction = 1;
             }
+        }
+        else if (Text[0] == '\n')
+        {
+            char currChar = this.Text[Caret.Index - 1];
+            char? nextChar = Caret.Index < this.Text.Length ? this.Text[Caret.Index] : null;
+            if (nextChar is not null &&
+                (currChar == '(' && nextChar == ')') ||
+                (currChar == '[' && nextChar == ']') ||
+                (currChar == '{' && nextChar == '}'))
+            {
+				(string Indentation, int SplitIndex) = GetIndentation();
+                // Splits [] open into [\n  \n]
+                string add = "  \n" + Indentation;
+				Text += add;
+                caretIndexReduction = Text.Length - add.Length;
+			}
         }
         if (Text.Length == 0) return;
         bool InsertedNewlines = Text.Contains('\n');
@@ -1221,7 +1242,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         if (Index <= Caret.Index) Caret.Index += Text.Length;
         if (Text == "\n") Caret.AtEndOfLine = false;
         int EndIndex = Caret.Index;
-        if (reduceCaretIndexByOne) Caret.Index--;
+        if (caretIndexReduction != 0) Caret.Index -= caretIndexReduction;
         ResetIdle();
         ShiftTokens(StartIndex, EndIndex - StartIndex);
         if (!InsertedNewlines)
