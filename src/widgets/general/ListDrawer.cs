@@ -41,7 +41,12 @@ public class ListDrawer : Widget
         };
     }
 
-    public void SetAutoResize(bool autoResize)
+	public override void RegisterShortcuts(List<Shortcut> Shortcuts, bool DeregisterExisting = false)
+	{
+        tree.RegisterShortcuts(Shortcuts, DeregisterExisting);
+	}
+
+	public void SetAutoResize(bool autoResize)
     {
         tree.SetAutoResize(autoResize);
     }

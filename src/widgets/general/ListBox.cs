@@ -5,6 +5,8 @@ namespace RPGStudioMK.Widgets;
 
 public class ListBox : Widget
 {
+    public int HoveringIndex => ListDrawer.HoveringIndex;
+    public TreeNode HoveringItem => ListDrawer.HoveringItem;
     public int SelectedIndex => ListDrawer.SelectedIndex;
     public TreeNode SelectedItem => ListDrawer.SelectedItem;
     public List<TreeNode> SelectedItems => ListDrawer.SelectedItems;
@@ -37,7 +39,12 @@ public class ListBox : Widget
         SetSize(132, 174);
     }
 
-    public void SetFont(Font font)
+	public override void RegisterShortcuts(List<Shortcut> Shortcuts, bool DeregisterExisting = false)
+	{
+        ListDrawer.RegisterShortcuts(Shortcuts, DeregisterExisting);
+	}
+
+	public void SetFont(Font font)
     {
         ListDrawer.SetFont(font);
     }

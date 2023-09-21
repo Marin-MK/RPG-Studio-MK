@@ -70,30 +70,30 @@ public class EditMoveRouteWindow : PopupWindow
         {
             new MenuItem("Edit")
             {
-                IsClickable = e => e.Value = IsCommandEditable((MoveCommand) MoveBox.SelectedItem.Object),
-                OnClicked = _ => EditCommand()
+                IsClickable = e => e.Value = MoveBox.HoveringItem is not null && IsCommandEditable((MoveCommand) MoveBox.HoveringItem.Object),
+                OnClicked = _ => EditCommand(MoveBox.HoveringItem)
             },
             new MenuSeparator(),
             new MenuItem("Cut")
             {
-                IsClickable = e => e.Value = IsRealCommand(),
-                OnClicked = _ => CutCommand()
+                IsClickable = e => e.Value = IsRealCommand(MoveBox.HoveringItem),
+                OnClicked = _ => CutCommand(MoveBox.HoveringItem)
             },
             new MenuItem("Copy")
             {
-                IsClickable = e => e.Value = IsRealCommand(),
-                OnClicked = _ => CopyCommand()
+                IsClickable = e => e.Value = IsRealCommand(MoveBox.HoveringItem),
+                OnClicked = _ => CopyCommand(MoveBox.HoveringItem)
             },
             new MenuItem("Paste")
             {
                 IsClickable = e => e.Value = Clipboard.IsValid(BinaryData.MOVE_COMMAND),
-                OnClicked = _ => PasteCommand()
+                OnClicked = _ => PasteCommand(MoveBox.HoveringItem)
             },
             new MenuSeparator(),
             new MenuItem("Delete")
             {
-                IsClickable = e => e.Value = IsRealCommand(),
-                OnClicked = _ => DeleteCommand()
+                IsClickable = e => e.Value = IsRealCommand(MoveBox.HoveringItem),
+                OnClicked = _ => DeleteCommand(MoveBox.HoveringItem)
             }
         });
 
@@ -311,13 +311,13 @@ public class EditMoveRouteWindow : PopupWindow
         CreateButton("Cancel", _ => Cancel());
         CreateButton("OK", _ => OK());
 
-        RegisterShortcuts(new List<Shortcut>()
+        MoveBox.RegisterShortcuts(new List<Shortcut>()
         {
-            new Shortcut(this, new Key(Keycode.DELETE), _ => DeleteCommand()),
-            new Shortcut(this, new Key(Keycode.SPACE), _ => EditCommand()),
-            new Shortcut(this, new Key(Keycode.X, Keycode.CTRL), _ => CutCommand()),
-            new Shortcut(this, new Key(Keycode.C, Keycode.CTRL), _ => CopyCommand()),
-            new Shortcut(this, new Key(Keycode.V, Keycode.CTRL), _ => PasteCommand()),
+            new Shortcut(this, new Key(Keycode.DELETE), _ => DeleteCommand(MoveBox.SelectedItem)),
+            new Shortcut(this, new Key(Keycode.SPACE), _ => EditCommand(MoveBox.SelectedItem)),
+            new Shortcut(this, new Key(Keycode.X, Keycode.CTRL), _ => CutCommand(MoveBox.SelectedItem)),
+            new Shortcut(this, new Key(Keycode.C, Keycode.CTRL), _ => CopyCommand(MoveBox.SelectedItem)),
+            new Shortcut(this, new Key(Keycode.V, Keycode.CTRL), _ => PasteCommand(MoveBox.SelectedItem)),
             new Shortcut(this, new Key(Keycode.DOWN), _ => MoveBox.MoveDown()),
             new Shortcut(this, new Key(Keycode.UP), _ => MoveBox.MoveUp()),
             new Shortcut(this, new Key(Keycode.ENTER, Keycode.CTRL), _ => OK(), true)
@@ -338,9 +338,9 @@ public class EditMoveRouteWindow : PopupWindow
         if (MoveBox.SelectedIndex == -1) MoveBox.SetSelectedIndex(0);
     }
 
-    private bool IsRealCommand()
+    private bool IsRealCommand(TreeNode item)
     {
-        return ((MoveCommand) MoveBox.SelectedItem.Object).Code != MoveCode.None;
+        return item is not null && ((MoveCommand) item.Object).Code != MoveCode.None;
     }
 
     private bool IsCommandEditable(MoveCommand Command)
@@ -348,11 +348,11 @@ public class EditMoveRouteWindow : PopupWindow
         return CommandEditFunctions.ContainsKey(Command.Code);
     }
 
-    private void DeleteCommand()
+    private void DeleteCommand(TreeNode item)
     {
-        if (!IsRealCommand()) return;
-        this.MoveRoute.Commands.RemoveAt(MoveBox.SelectedIndex);
-        this.MoveBox.RemoveItem(MoveBox.SelectedItem);
+        if (!IsRealCommand(item)) return;
+        this.MoveRoute.Commands.RemoveAt(MoveBox.Items.IndexOf(item));
+        this.MoveBox.RemoveItem(item);
     }
 
     private void InsertCommand(int Index, MoveCommand Command)
@@ -363,10 +363,10 @@ public class EditMoveRouteWindow : PopupWindow
         MoveBox.SetSelectedIndex(MoveBox.Items.IndexOf(Item) + 1);
     }
 
-    private void EditCommand()
+    private void EditCommand(TreeNode item)
     {
-        if (!IsCommandEditable((MoveCommand) MoveBox.SelectedItem.Object) || !IsRealCommand()) return;
-        MoveCommand cmd = (MoveCommand) MoveBox.SelectedItem.Object;
+        if (!IsCommandEditable((MoveCommand) item.Object) || !IsRealCommand(item)) return;
+        MoveCommand cmd = (MoveCommand) item.Object;
         Action<MoveCode, MoveCommand, Action<MoveCommand>> edit = CommandEditFunctions[cmd.Code];
         edit(cmd.Code, cmd, newcmd =>
         {
@@ -380,25 +380,25 @@ public class EditMoveRouteWindow : PopupWindow
         });
     }
 
-    private void CutCommand()
+    private void CutCommand(TreeNode item)
     {
-        if (!IsRealCommand()) return;
-        CopyCommand();
-        DeleteCommand();
+        if (!IsRealCommand(item)) return;
+        CopyCommand(item);
+        DeleteCommand(item);
     }
 
-    private void CopyCommand()
+    private void CopyCommand(TreeNode item)
     {
-        if (!IsRealCommand()) return;
-        MoveCommand cmd = (MoveCommand) MoveBox.Items[MoveBox.SelectedIndex].Object;
+        if (!IsRealCommand(item)) return;
+        MoveCommand cmd = (MoveCommand) item.Object;
         Clipboard.SetObject(cmd, BinaryData.MOVE_COMMAND);
     }
 
-    private void PasteCommand()
+    private void PasteCommand(TreeNode item)
     {
         if (!Clipboard.IsValid(BinaryData.MOVE_COMMAND)) return;
         MoveCommand cmd = Clipboard.GetObject<MoveCommand>();
-        InsertCommand(MoveBox.SelectedIndex, cmd);
+        InsertCommand(item is null ? MoveBox.Items.Count - 1 : MoveBox.Items.IndexOf(item), cmd);
     }
 
     private void OK()
@@ -410,8 +410,10 @@ public class EditMoveRouteWindow : PopupWindow
             else if (TargetBox.SelectedIndex == 1) this.EventID = -1;
             else this.EventID = (int) TargetBox.Items[TargetBox.SelectedIndex].Object;
         }
-        NewCommands = new List<EventCommand>();
-        NewCommands.Add(new EventCommand(CommandCode.SetMoveRoute, 0, new List<object>() { (long) EventID, MoveRoute }));
+        NewCommands = new List<EventCommand>()
+        {
+            new EventCommand(CommandCode.SetMoveRoute, 0, new List<object>() { (long) EventID, MoveRoute })
+        };
         for (int i = 0; i < MoveRoute.Commands.Count; i++)
         {
             NewCommands.Add(new EventCommand(CommandCode.MoreMoveRoute, 0, new List<object>() { MoveRoute.Commands[i] }));

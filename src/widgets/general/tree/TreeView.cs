@@ -1201,6 +1201,7 @@ public class TreeView : Widget
             else NodeToSelect = null;
         }
         if (!this.Root.Contains(SelectedNode)) SetSelectedNode(NodeToSelect, false);
+        else SelectedNodes.ForEach(n => UpdateSelection(n));
         if (!wasRelocked) BGSprite.Bitmap.Relock();
         if (DeleteChildren && Node is TreeNode)
         {
