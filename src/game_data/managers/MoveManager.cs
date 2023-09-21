@@ -48,7 +48,13 @@ public class MoveManager : BaseDataManager
         SaveDataAsHash(Data.Moves.Values, m => Ruby.Symbol.ToPtr(m.ID));
     }
 
-    public override void Clear()
+	protected override void SavePBS()
+	{
+		base.SavePBS();
+        SaveAsPBS(Data.Moves.Values);
+	}
+
+	public override void Clear()
     {
         base.Clear();
         Logger.WriteLine("Clearing moves");

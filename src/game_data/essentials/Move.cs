@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace RPGStudioMK.Game;
@@ -166,7 +167,22 @@ public class Move : IGameData, ICloneable
 
 	public string SaveToString()
 	{
-		throw new NotImplementedException();
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine($"#-------------------------------");
+        sb.AppendLine($"[{this.ID}]");
+        sb.AppendLine($"Name = {this.Name}");
+        sb.AppendLine($"Type = {this.Type.ID}");
+        sb.AppendLine($"Category = {this.Category}");
+        if (this.BaseDamage != 0) sb.AppendLine($"Power = {this.BaseDamage}");
+        sb.AppendLine($"Accuracy = {this.Accuracy}");
+        sb.AppendLine($"TotalPP = {this.TotalPP}");
+        sb.AppendLine($"Target = {this.Target}");
+        if (this.Priority != 0) sb.AppendLine($"Priority = {this.Priority}");
+        sb.AppendLine($"FunctionCode = {this.FunctionCode}");
+        if (this.Flags.Count > 0) sb.AppendLine($"Flags = {this.Flags.Aggregate((a, b) => a + "," + b)}");
+        if (this.EffectChance != 0) sb.AppendLine($"EffectChance = {this.EffectChance}");
+        sb.AppendLine($"Description = {this.Description}");
+		return sb.ToString();
 	}
 
 	public object Clone()
