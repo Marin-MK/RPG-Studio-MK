@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace RPGStudioMK.Game;
 
@@ -114,7 +115,13 @@ public class Trainer : IGameData, ICloneable
 
 	public string SaveToString()
 	{
-		throw new NotImplementedException();
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine($"#-------------------------------");
+        sb.AppendLine($"[{this.TrainerType.ID},{this.Name}{(this.Version != 0 ? $",{this.Version}" : "")}]");
+        if (this.Items.Count > 0) sb.AppendLine($"Items = {this.Items.Select(i => i.ID).Aggregate((a, b) => a + "," + b)}");
+        if (!string.IsNullOrEmpty(this.LoseText)) sb.AppendLine($"LoseText = {this.LoseText}");
+        this.Party.ForEach(x => sb.Append("Pokemon = " + x.SaveToString()));
+		return sb.ToString();
 	}
 
 	public object Clone()
@@ -131,7 +138,7 @@ public class Trainer : IGameData, ICloneable
 }
 
 [DebuggerDisplay("{Species} {Level}")]
-public class TrainerPokemon : ICloneable
+public class TrainerPokemon : IGameData, ICloneable
 {
     public SpeciesResolver Species;
     public int Level;
@@ -237,7 +244,7 @@ public class TrainerPokemon : ICloneable
         this.Level = (int) Ruby.Integer.FromPtr(Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("level")));
         nint rform = Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("form"));
         if (rform != Ruby.Nil) this.Form = (int) Ruby.Integer.FromPtr(rform);
-        nint rname = Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("name"));
+        nint rname = Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("real_name"));
         if (rname != Ruby.Nil) this.Name = Ruby.String.FromPtr(rname);
         nint rmoves = Ruby.Hash.Get(Hash, Ruby.Symbol.ToPtr("moves"));
         if (rmoves != Ruby.Nil)
@@ -282,7 +289,7 @@ public class TrainerPokemon : ICloneable
         Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("species"), Ruby.Symbol.ToPtr(this.Species));
         Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("level"), Ruby.Integer.ToPtr(this.Level));
         if (this.Form != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("form"), Ruby.Integer.ToPtr((int) this.Form));
-        if (this.Name != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("name"), Ruby.String.ToPtr(this.Name));
+        if (this.Name != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("real_name"), Ruby.String.ToPtr(this.Name));
         if (this.Moves != null)
         {
             nint MovesArray = Ruby.Array.Create();
@@ -296,9 +303,9 @@ public class TrainerPokemon : ICloneable
         if (this.AbilityIndex != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("ability_index"), Ruby.Integer.ToPtr((int) this.AbilityIndex));
         if (this.Item != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("item"), Ruby.Symbol.ToPtr(this.Item));
         if (this.Gender != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("gender"), Ruby.Integer.ToPtr((int) this.Gender));
-        if (this.Nature != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("nature"), Ruby.Symbol.ToPtr(this.Nature));
         if (this.IVs != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("iv"), this.IVs.Value.Save());
         if (this.EVs != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("ev"), this.EVs.Value.Save());
+        if (this.Nature != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("nature"), Ruby.Symbol.ToPtr(this.Nature));
         if (this.Happiness != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("happiness"), Ruby.Integer.ToPtr((int) this.Happiness));
         if (this.Shiny != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("shininess"), this.Shiny == true ? Ruby.True : Ruby.False);
         if (this.SuperShiny != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("super_shininess"), this.SuperShiny == true ? Ruby.True : Ruby.False);
@@ -306,6 +313,28 @@ public class TrainerPokemon : ICloneable
         if (this.Ball != null) Ruby.Hash.Set(e, Ruby.Symbol.ToPtr("poke_ball"), Ruby.Symbol.ToPtr(this.Ball));
         Ruby.Unpin(e);
         return e;
+    }
+
+    public string SaveToString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine($"{this.Species.ID},{this.Level}");
+        if (this.Form is not null) sb.AppendLine($"    Form = {this.Form}");
+        if (this.Name is not null) sb.AppendLine($"    Name = {this.Name}");
+        if (this.Moves is not null) sb.AppendLine($"    Moves = {this.Moves.Select(m => m.ID).Aggregate((a, b) => a + "," + b)}");
+        if (this.Ability is not null) sb.AppendLine($"    Ability = {this.Ability.ID}");
+        if (this.AbilityIndex is not null) sb.AppendLine($"    AbilityIndex = {this.AbilityIndex}");
+        if (this.Item is not null) sb.AppendLine($"    Item = {this.Item.ID}");
+        if (this.Gender is not null) sb.AppendLine($"    Gender = {(this.Gender == 0 ? "male" : this.Gender == 1 ? "female" : "genderless")}");
+        if (this.IVs is not null) sb.AppendLine($"    IV = {this.IVs.ToString()}");
+        if (this.EVs is not null) sb.AppendLine($"    EV = {this.EVs.ToString()}");
+        if (this.Nature is not null) sb.AppendLine($"    Nature = {this.Nature}");
+        if (this.Happiness is not null) sb.AppendLine($"    Happiness = {this.Happiness}");
+        if (this.Shiny is not null) sb.AppendLine($"    Shiny = {this.Shiny.ToString().ToLower()}");
+        if (this.SuperShiny is not null) sb.AppendLine($"    SuperShiny = {this.SuperShiny.ToString().ToLower()}");
+        if (this.Shadow is not null) sb.AppendLine($"    Shadow = {this.Shadow.ToString().ToLower()}");
+        if (this.Ball is not null) sb.AppendLine($"    Ball = {this.Ball.ID}");
+        return sb.ToString();
     }
 
     public object Clone()

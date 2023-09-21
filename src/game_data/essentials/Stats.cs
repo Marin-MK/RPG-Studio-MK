@@ -58,7 +58,12 @@ public struct Stats : ICloneable
         return e;
     }
 
-    public object Clone()
+	public override string ToString()
+	{
+        return $"{HP},{Attack},{Defense},{SpecialAttack},{SpecialDefense},{Speed}";
+    }
+
+	public object Clone()
     {
         Stats s = new Stats();
         s.HP = this.HP;

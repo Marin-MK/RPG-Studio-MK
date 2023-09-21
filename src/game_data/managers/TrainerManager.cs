@@ -39,7 +39,13 @@ public class TrainerManager : BaseDataManager
         });
     }
 
-    public override void Clear()
+	protected override void SavePBS()
+	{
+		base.SavePBS();
+        SaveAsPBS(Data.Trainers);
+	}
+
+	public override void Clear()
     {
         base.Clear();
         Logger.WriteLine("Clearing trainers");
