@@ -34,7 +34,13 @@ public class TypeManager : BaseDataManager
         SaveDataAsHash(Data.Types.Values, t => Ruby.Symbol.ToPtr(t.ID));
     }
 
-    public override void Clear()
+	protected override void SavePBS()
+	{
+		base.SavePBS();
+        SaveAsPBS(Data.Types.Values);
+	}
+
+	public override void Clear()
     {
         base.Clear();
         Logger.WriteLine("Clearing types");

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace RPGStudioMK.Game;
@@ -126,7 +127,18 @@ public class Type : IGameData, ICloneable
 
 	public string SaveToString()
 	{
-		throw new NotImplementedException();
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine($"#-------------------------------");
+        sb.AppendLine($"[{this.ID}]");
+        sb.AppendLine($"Name = {this.Name}");
+        sb.AppendLine($"IconPosition = {this.IconPosition}");
+        if (this.SpecialType) sb.AppendLine($"IsSpecialType = true");
+        if (this.PseudoType) sb.AppendLine($"IsPseudoType = true");
+        if (this.Weaknesses.Count > 0) sb.AppendLine($"Weaknesses = {this.Weaknesses.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+		if (this.Resistances.Count > 0) sb.AppendLine($"Resistances = {this.Resistances.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+		if (this.Immunities.Count > 0) sb.AppendLine($"Immunities = {this.Immunities.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        if (this.Flags.Count > 0) sb.AppendLine($"Flags = {this.Flags.Aggregate((a, b) => a + "," + b)}");
+		return sb.ToString();
 	}
 
 	public object Clone()

@@ -145,8 +145,8 @@ public class BaseDataManager
 
     public virtual void Save()
     {
-        SaveData();
         SavePBS();
+        SaveData();
     }
 
     protected virtual void SaveData()
