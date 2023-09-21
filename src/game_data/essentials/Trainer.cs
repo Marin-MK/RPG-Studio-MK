@@ -56,7 +56,7 @@ public class Trainer : IGameData, ICloneable
                 }
             }
         }
-        if (sidx != pairs.Count - 1)
+        if (sidx != -1)
         {
             this.Party.Add(new TrainerPokemon(pairs.GetRange(sidx, pairs.Count - sidx)));
         }

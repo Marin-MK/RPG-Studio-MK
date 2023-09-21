@@ -40,25 +40,24 @@ public class EncounterTable : IGameData
         {
             string line = lines[i];
             string[] split = line.Split(',');
-            try
+            if (Data.HardcodedData.IsValid(split[0], Data.HardcodedData.EncounterTypes))
             {
-                string type = Data.HardcodedData.Assert(split[0], Data.HardcodedData.EncounterTypes);
-                if (split.Length == 2) StepChances.Add(type, Convert.ToInt32(split[1]));
-                else StepChances.Add(type, 0);
+                if (split.Length == 2) StepChances.Add(split[0], Convert.ToInt32(split[1]));
+                else StepChances.Add(split[0], 0);
                 if (CurrentType != null)
                 {
                     // Add previous encounter list
                     this.Encounters.Add(CurrentType, CurrentEncounters);
                     CurrentEncounters = new List<Encounter>();
                 }
-                CurrentType = type;
+                CurrentType = split[0];
             }
-            catch (Exception)
+            else
             {
-                // Not a valid encounter type
-                if (split.Length < 3) // But it was supposed to be
+                // Not a valid encounter entry
+                if (split.Length < 3)
                 {
-                    throw; // Rethrow exception
+                    throw new Exception($"Invalid encounter table entry: '{line}'");
                 }
                 Encounter enc = new Encounter(split);
                 CurrentEncounters.Add(enc);
@@ -143,7 +142,7 @@ public class EncounterTable : IGameData
 	{
         StringBuilder sb = new StringBuilder();
         sb.AppendLine($"#-------------------------------");
-        sb.AppendLine($"[{Utilities.Digits(this.MapID, 3)}{(this.Version == 0 ? "" : this.Version)}]");
+        sb.AppendLine($"[{Utilities.Digits(this.MapID, 3)}{(this.Version == 0 ? "" : ","+this.Version)}]");
         foreach (KeyValuePair<string, List<Encounter>> kvp in this.Encounters)
         {
             int stepChance = this.StepChances[kvp.Key];

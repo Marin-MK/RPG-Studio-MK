@@ -207,8 +207,12 @@ public class Species : IGameData, ICloneable
 			{
 				string species = _evos[i];
 				string method = _evos[i + 1];
-				string param = _evos[i + 2];
-				Evolution evo = new Evolution((SpeciesResolver) species, method, string.IsNullOrEmpty(param) ? new List<object>() : new List<object>() { param }, false);
+                object param = Data.HardcodedData.EvolutionMethodsAndTypes[Data.HardcodedData.AssertIndex(method, Data.HardcodedData.EvolutionMethods)].DataType switch
+                {
+                    "number" => Convert.ToInt32(_evos[i + 2]),
+                    _ => _evos[i + 2]
+                };
+				Evolution evo = new Evolution((SpeciesResolver) species, method, param, false);
 				this.Evolutions.Add(evo);
 			}
 		}
@@ -217,6 +221,7 @@ public class Species : IGameData, ICloneable
 		this.Color = Data.HardcodedData.Assert(hash["Color"], Data.HardcodedData.BodyColors);
 		this.Shape = Data.HardcodedData.Assert(hash["Shape"], Data.HardcodedData.BodyShapes);
 		if (hash.ContainsKey("Habitat")) this.Habitat = Data.HardcodedData.Assert(hash["Habitat"], Data.HardcodedData.Habitats);
+        else this.Habitat = "None";
 		this.Generation = Convert.ToInt32(hash["Generation"]);
 		if (hash.ContainsKey("Flags")) this.Flags = hash["Flags"].Split(',').ToList();
 		else this.Flags = new List<string>();
@@ -356,6 +361,7 @@ public class Species : IGameData, ICloneable
         {
             this.Habitat = Data.HardcodedData.Assert(hash["Habitat"], Data.HardcodedData.Habitats);
         }
+        else this.Habitat = "None";
         if (hash.ContainsKey("Category"))
         {
             this.Category = hash["Category"];
