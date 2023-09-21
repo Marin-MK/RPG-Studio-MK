@@ -52,7 +52,13 @@ public class EncounterManager : BaseDataManager
         SaveDataAsHash(Data.Encounters.Values, enc => Ruby.Symbol.ToPtr(enc.ID));
     }
 
-    public override void Clear()
+	protected override void SavePBS()
+	{
+		base.SavePBS();
+        SaveAsPBS(Data.Encounters.Values);
+	}
+
+	public override void Clear()
     {
         base.Clear();
         Logger.WriteLine("Clearing encounters");

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace RPGStudioMK.Game;
 
@@ -140,7 +141,16 @@ public class EncounterTable : IGameData
 
 	public string SaveToString()
 	{
-		throw new NotImplementedException();
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine($"#-------------------------------");
+        sb.AppendLine($"[{Utilities.Digits(this.MapID, 3)}{(this.Version == 0 ? "" : this.Version)}]");
+        foreach (KeyValuePair<string, List<Encounter>> kvp in this.Encounters)
+        {
+            int stepChance = this.StepChances[kvp.Key];
+            sb.AppendLine($"{kvp.Key}{(stepChance == 0 ? "" : "," + stepChance)}");
+            kvp.Value.ForEach(e => sb.AppendLine($"    {e.SaveToString()}"));
+        }
+		return sb.ToString();
 	}
 
 	public object Clone()
@@ -161,7 +171,7 @@ public class EncounterTable : IGameData
 }
 
 [DebuggerDisplay("{Probability},{Species},{MinLevel}..{MaxLevel}")]
-public class Encounter
+public class Encounter : IGameData
 {
     public int Probability;
     public SpeciesResolver Species;
@@ -197,6 +207,13 @@ public class Encounter
         Ruby.Array.Set(e, 3, Ruby.Integer.ToPtr(this.MaxLevel));
         Ruby.Unpin(e);
         return e;
+    }
+
+    public string SaveToString()
+    {
+        if (this.MaxLevel == this.MinLevel)
+            return $"{this.Probability},{this.Species.ID},{this.MinLevel}";
+        return $"{this.Probability},{this.Species.ID},{this.MinLevel},{this.MaxLevel}";
     }
 
     public object Clone()
