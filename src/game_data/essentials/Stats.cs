@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Text;
 
 namespace RPGStudioMK.Game;
 
@@ -58,10 +61,36 @@ public struct Stats : ICloneable
         return e;
     }
 
-	public override string ToString()
+	public string SaveToString(bool writtenOut)
 	{
-        return $"{HP},{Attack},{Defense},{SpecialAttack},{SpecialDefense},{Speed}";
+        if (writtenOut)
+        {
+            List<string> values = new List<string>();
+            if (this.HP != 0) values.Add($"HP,{this.HP}");
+			if (this.Attack != 0) values.Add($"ATTACK,{this.Attack}");
+			if (this.Defense != 0) values.Add($"DEFENSE,{this.Defense}");
+			if (this.SpecialAttack != 0) values.Add($"SPECIAL_ATTACK,{this.SpecialAttack}");
+			if (this.SpecialDefense != 0) values.Add($"SPECIAL_DEFENSE,{this.SpecialDefense}");
+			if (this.Speed != 0) values.Add($"SPEED,{this.Speed}");
+            return values.Count > 0 ? values.Aggregate((a, b) => a + "," + b) : "";
+		}
+        return $"{HP},{Attack},{Defense},{Speed},{SpecialAttack},{SpecialDefense}";
     }
+
+	public override bool Equals(object obj)
+	{
+        if (obj is Stats)
+        {
+            Stats s = (Stats) obj;
+            return this.HP == s.HP &&
+                this.Attack == s.Attack &&
+                this.Defense == s.Defense &&
+                this.SpecialAttack == s.SpecialAttack &&
+                this.SpecialDefense == s.SpecialDefense &&
+                this.Speed == s.Speed;
+        }
+        return false;
+	}
 
 	public object Clone()
     {

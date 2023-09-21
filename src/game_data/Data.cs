@@ -348,10 +348,25 @@ public static partial class Data
 	}
 }
 
-public interface IDataResolver
+public abstract class DataResolver
 {
 	public string ID { get; set; }
-	public bool Valid { get; }
+    public abstract bool Valid { get; }
+
+	public override bool Equals(object obj)
+	{
+		if (obj is DataResolver)
+        {
+            DataResolver d = (DataResolver) obj;
+            return this.GetType() == obj.GetType() && this.ID == d.ID;
+        }
+        return false;
+	}
+
+	public override int GetHashCode()
+	{
+        return base.GetHashCode();
+	}
 }
 
 public enum EssentialsVersion

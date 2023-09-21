@@ -158,11 +158,10 @@ public class Type : IGameData, ICloneable
 }
 
 [DebuggerDisplay("{ID}")]
-public class TypeResolver
+public class TypeResolver : DataResolver
 {
-    public string ID;
     [JsonIgnore]
-    public bool Valid => !string.IsNullOrEmpty(ID) && Data.Types.ContainsKey(ID);
+    public override bool Valid => !string.IsNullOrEmpty(ID) && Data.Types.ContainsKey(ID);
     [JsonIgnore]
     public Type Type => Data.Types[ID];
 

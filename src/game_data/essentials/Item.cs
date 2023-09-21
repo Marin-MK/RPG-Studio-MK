@@ -240,11 +240,10 @@ public class Item : IGameData, ICloneable
 }
 
 [DebuggerDisplay("{ID}")]
-public class ItemResolver : IDataResolver
+public class ItemResolver : DataResolver
 {
-    public string ID { get; set; }
     [JsonIgnore]
-	public bool Valid => !string.IsNullOrEmpty(ID) && Data.Items.ContainsKey(ID);
+	public override bool Valid => !string.IsNullOrEmpty(ID) && Data.Items.ContainsKey(ID);
     [JsonIgnore]
     public Item Item => Data.Items[ID];
 

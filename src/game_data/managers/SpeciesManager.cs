@@ -1,5 +1,6 @@
 ﻿using RPGStudioMK.Utility;
 using System;
+using System.IO;
 using System.Linq;
 
 namespace RPGStudioMK.Game;
@@ -75,7 +76,19 @@ public class SpeciesManager : BaseDataManager
         SaveDataAsHash(Data.Species.Values, s => Ruby.Symbol.ToPtr(s.ID));
     }
 
-    public override void Clear()
+	protected override void SavePBS()
+	{
+		base.SavePBS();
+        SaveAsPBS(Data.Species.Values.Where(s => s.Form == 0));
+		StreamWriter sw = new StreamWriter(File.Open(Data.ProjectPath + "/PBS/pokemon_forms.txt", FileMode.Create));
+		foreach (var item in Data.Species.Values.Where(s => s.Form != 0))
+		{
+			sw.Write(item.SaveToString());
+		}
+		sw.Close();
+	}
+
+	public override void Clear()
     {
         base.Clear();
         Logger.WriteLine("Clearing species");

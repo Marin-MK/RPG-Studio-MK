@@ -206,11 +206,10 @@ public class Move : IGameData, ICloneable
 }
 
 [DebuggerDisplay("{ID}")]
-public class MoveResolver : IDataResolver
+public class MoveResolver : DataResolver
 {
-    public string ID { get; set; }
     [JsonIgnore]
-	public bool Valid => !string.IsNullOrEmpty(ID) && Data.Moves.ContainsKey(ID);
+	public override bool Valid => !string.IsNullOrEmpty(ID) && Data.Moves.ContainsKey(ID);
     [JsonIgnore]
     public Move Move => Data.Moves[ID];
 

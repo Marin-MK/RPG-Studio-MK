@@ -2,7 +2,7 @@
 
 namespace RPGStudioMK.Game;
 
-public class Evolution : ICloneable
+public class Evolution : IGameData, ICloneable
 {
     public SpeciesResolver Species;
     public string Type;
@@ -40,7 +40,24 @@ public class Evolution : ICloneable
         return e;
     }
 
-    public object Clone()
+    public string SaveToString()
+    {
+        return $"{Species.ID},{Type},{Parameter}";
+    }
+
+	public override bool Equals(object obj)
+	{
+		if (obj is Evolution)
+        {
+            Evolution e = (Evolution) obj;
+            return this.Species.ID == e.Species.ID &&
+                this.Type == e.Type &&
+                (this.Parameter is null && e.Parameter is null || this.Parameter is not null && e.Parameter is not null && this.Parameter.Equals(e.Parameter));
+        }
+        return false;
+	}
+
+	public object Clone()
     {
         Evolution e = new Evolution();
         e.Species = (SpeciesResolver)this.Species.ID;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace RPGStudioMK.Game;
@@ -64,7 +65,12 @@ public class Species : IGameData, ICloneable
 
 	}
 
-    public static Species Create()
+	public override string ToString()
+	{
+		return base.ToString();
+	}
+
+	public static Species Create()
     {
         Species s = new Species();
 	    s.Form = 0;
@@ -708,7 +714,89 @@ public class Species : IGameData, ICloneable
 
 	public string SaveToString()
 	{
-		throw new NotImplementedException();
+        if (this.Form != 0) return SaveToStringSubform();
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine($"#-------------------------------");
+        sb.AppendLine($"[{this.ID}]");
+        sb.AppendLine($"Name = {this.Name}");
+        if (!string.IsNullOrEmpty(this.FormName)) sb.AppendLine($"FormName = {this.FormName}");
+        sb.AppendLine($"Types = {this.Type1.ID}{(this.Type2 is not null && this.Type2.ID != this.Type1.ID ? "," + this.Type2.ID : "")}");
+        sb.AppendLine($"BaseStats = {this.BaseStats.SaveToString(false)}");
+        sb.AppendLine($"GenderRatio = {this.GenderRatio}");
+        sb.AppendLine($"GrowthRate = {this.GrowthRate}");
+        sb.AppendLine($"BaseExp = {this.BaseEXP}");
+        sb.AppendLine($"EVs = {this.EVs.SaveToString(true)}");
+        sb.AppendLine($"CatchRate = {this.CatchRate}");
+        sb.AppendLine($"Happiness = {this.Happiness}");
+        if (this.Abilities.Count > 0) sb.AppendLine($"Abilities = {this.Abilities.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        if (this.HiddenAbilities.Count > 0) sb.AppendLine($"HiddenAbilities = {this.HiddenAbilities.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        if (this.Moves.Count > 0) sb.AppendLine($"Moves = {this.Moves.Select(m => m.Level.ToString() + "," + m.Move.ID).Aggregate((a, b) => a + "," + b)}");
+        if (this.TutorMoves.Count > 0) sb.AppendLine($"TutorMoves = {this.TutorMoves.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        if (this.EggMoves.Count > 0) sb.AppendLine($"EggMoves = {this.EggMoves.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        if (this.EggGroups.Count > 0) sb.AppendLine($"EggGroups = {this.EggGroups.Aggregate((a, b) => a + "," + b)}");
+        sb.AppendLine($"HatchSteps = {this.HatchSteps}");
+        if (this.Incense is not null) sb.AppendLine($"Incense = {this.Incense.ID}");
+        if (this.Offspring.Count > 0) sb.AppendLine($"Offspring = {this.Offspring.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        sb.AppendLine($"Height = {this.Height.ToString() + (this.Height.ToString().Contains(".") ? "" : ".0")}");
+        sb.AppendLine($"Weight = {this.Weight.ToString() + (this.Weight.ToString().Contains(".") ? "" : ".0")}");
+        sb.AppendLine($"Color = {this.Color}");
+        sb.AppendLine($"Shape = {this.Shape}");
+        if (this.Habitat != "None") sb.AppendLine($"Habitat = {this.Habitat}");
+        sb.AppendLine($"Category = {this.Category}");
+        sb.AppendLine($"Pokedex = {this.PokedexEntry}");
+        sb.AppendLine($"Generation = {this.Generation}");
+        if (this.Flags.Count > 0) sb.AppendLine($"Flags = {this.Flags.Aggregate((a, b) => a + "," + b)}");
+        if (this.WildItemCommon.Count > 0) sb.AppendLine($"WildItemCommon = {this.WildItemCommon.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        if (this.WildItemUncommon.Count > 0) sb.AppendLine($"WildItemUncommon = {this.WildItemUncommon.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        if (this.WildItemRare.Count > 0) sb.AppendLine($"WildItemRare = {this.WildItemRare.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        if (this.Evolutions.Count > 0) sb.AppendLine($"Evolutions = {this.Evolutions.Select(e => e.SaveToString()).Aggregate((a, b) => a + "," + b)}");
+        return sb.ToString();
+	}
+
+    public string SaveToStringSubform()
+	{
+        if (this.Form == 0) throw new Exception("Cannot save form as pokemon.txt entry.");
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine($"#-------------------------------");
+        sb.AppendLine($"[{this.BaseSpecies.ID},{this.Form}]");
+        if (this.FormName != this.BaseSpecies.Species.FormName && !string.IsNullOrEmpty(this.FormName)) sb.AppendLine($"FormName = {this.FormName}");
+        if (this.PokedexForm != this.Form) sb.AppendLine($"PokedexForm = {this.PokedexForm}");
+        if (this.MegaStone is not null) sb.AppendLine($"MegaStone = {this.MegaStone.ID}");
+        if (this.MegaMove is not null) sb.AppendLine($"MegaMove = {this.MegaMove.ID}");
+        if (this.UnmegaForm != 0) sb.AppendLine($"UnmegaForm = {this.UnmegaForm}");
+        if (this.MegaMessage != 0) sb.AppendLine($"MegaMessage = {this.MegaMessage}");
+        if (!this.Type1.Equals(this.BaseSpecies.Species.Type1) || this.Type2 is null && this.BaseSpecies.Species.Type2 is not null ||
+            this.Type2 is not null && this.BaseSpecies.Species.Type2 is null || this.Type2 is not null && !this.Type2.Equals(this.BaseSpecies.Species.Type2))
+            sb.AppendLine($"Types = {this.Type1.ID}{(this.Type2 is not null && this.Type2.ID != this.Type1.ID ? "," + this.Type2.ID : "")}");
+        if (!this.BaseStats.Equals(this.BaseSpecies.Species.BaseStats))
+            sb.AppendLine($"BaseStats = {this.BaseStats.SaveToString(false)}");
+        if (this.BaseEXP != this.BaseSpecies.Species.BaseEXP) sb.AppendLine($"BaseExp = {this.BaseEXP}");
+        if (!this.EVs.Equals(this.BaseSpecies.Species.EVs)) sb.AppendLine($"EVs = {this.EVs.SaveToString(true)}");
+        if (this.CatchRate != this.BaseSpecies.Species.CatchRate) sb.AppendLine($"CatchRate = {this.CatchRate}");
+        if (this.Happiness != this.BaseSpecies.Species.Happiness) sb.AppendLine($"Happiness = {this.Happiness}");
+        if (!this.Abilities.SequenceEqual(this.BaseSpecies.Species.Abilities) && this.Abilities.Count > 0) sb.AppendLine($"Abilities = {this.Abilities.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        if (!this.HiddenAbilities.SequenceEqual(this.BaseSpecies.Species.HiddenAbilities) && this.HiddenAbilities.Count > 0)
+            sb.AppendLine($"HiddenAbilities = {this.HiddenAbilities.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        if (!this.Moves.SequenceEqual(this.BaseSpecies.Species.Moves) && this.Moves.Count > 0) sb.AppendLine($"Moves = {this.Moves.Select(m => m.Level.ToString() + "," + m.Move.ID).Aggregate((a, b) => a + "," + b)}");
+        if (!this.TutorMoves.SequenceEqual(this.BaseSpecies.Species.TutorMoves) && this.TutorMoves.Count > 0) sb.AppendLine($"TutorMoves = {this.TutorMoves.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        if (!this.EggMoves.SequenceEqual(this.BaseSpecies.Species.EggMoves) && this.EggMoves.Count > 0) sb.AppendLine($"EggMoves = {this.EggMoves.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        if (!this.EggGroups.SequenceEqual(this.BaseSpecies.Species.EggGroups) && this.EggGroups.Count > 0) sb.AppendLine($"EggGroups = {this.EggGroups.Aggregate((a, b) => a + "," + b)}");
+        if (this.HatchSteps != this.BaseSpecies.Species.HatchSteps) sb.AppendLine($"HatchSteps = {this.HatchSteps}");
+        if (!this.Offspring.SequenceEqual(this.BaseSpecies.Species.Offspring) && this.Offspring.Count > 0) sb.AppendLine($"Offspring = {this.Offspring.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        if (this.Height != this.BaseSpecies.Species.Height) sb.AppendLine($"Height = {this.Height.ToString() + (this.Height.ToString().Contains(".") ? "" : ".0")}");
+        if (this.Weight != this.BaseSpecies.Species.Weight) sb.AppendLine($"Weight = {this.Weight.ToString() + (this.Weight.ToString().Contains(".") ? "" : ".0")}");
+        if (this.Color != this.BaseSpecies.Species.Color) sb.AppendLine($"Color = {this.Color}");
+        if (this.Shape != this.BaseSpecies.Species.Shape) sb.AppendLine($"Shape = {this.Shape}");
+        if (this.Habitat != this.BaseSpecies.Species.Habitat && this.Habitat != "None") sb.AppendLine($"Habitat = {this.Habitat}");
+        if (this.Category != this.BaseSpecies.Species.Category) sb.AppendLine($"Category = {this.Category}");
+        if (this.PokedexEntry != this.BaseSpecies.Species.PokedexEntry) sb.AppendLine($"Pokedex = {this.PokedexEntry}");
+        if (this.Generation != this.BaseSpecies.Species.Generation) sb.AppendLine($"Generation = {this.Generation}");
+        if (!this.Flags.SequenceEqual(this.BaseSpecies.Species.Flags) && this.Flags.Count > 0) sb.AppendLine($"Flags = {this.Flags.Aggregate((a, b) => a + "," + b)}");
+        if (!this.WildItemCommon.SequenceEqual(this.BaseSpecies.Species.WildItemCommon) && this.WildItemCommon.Count > 0) sb.AppendLine($"WildItemCommon = {this.WildItemCommon.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        if (!this.WildItemUncommon.SequenceEqual(this.BaseSpecies.Species.WildItemUncommon) && this.WildItemUncommon.Count > 0) sb.AppendLine($"WildItemUncommon = {this.WildItemUncommon.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        if (!this.WildItemRare.SequenceEqual(this.BaseSpecies.Species.WildItemRare) && this.WildItemRare.Count > 0) sb.AppendLine($"WildItemRare = {this.WildItemRare.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        if (!this.Evolutions.SequenceEqual(this.BaseSpecies.Species.Evolutions) && this.Evolutions.Count > 0) sb.AppendLine($"Evolutions = {this.Evolutions.Select(e => e.SaveToString()).Aggregate((a, b) => a + "," + b)}");
+        return sb.ToString();
 	}
 
 	public object Clone()
@@ -761,11 +849,10 @@ public class Species : IGameData, ICloneable
 }
 
 [DebuggerDisplay("{ID}")]
-public class SpeciesResolver : IDataResolver
+public class SpeciesResolver : DataResolver
 {
-	public string ID { get; set; }
-    [JsonIgnore]
-	public bool Valid => !string.IsNullOrEmpty(ID) && Data.Species.ContainsKey(ID);
+	[JsonIgnore]
+	public override bool Valid => !string.IsNullOrEmpty(ID) && Data.Species.ContainsKey(ID);
     [JsonIgnore]
     public Species Species => Data.Species[ID];
 

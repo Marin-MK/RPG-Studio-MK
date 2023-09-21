@@ -10,5 +10,5 @@ public abstract class SimpleDataTypeBase : Widget
 	}
 
 	public abstract void Initialize();
-	public abstract void SelectData<T>(T data) where T : IDataResolver;
+	public abstract void SelectData<T>(T data) where T : DataResolver;
 }

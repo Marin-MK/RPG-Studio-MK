@@ -326,8 +326,8 @@ public class TrainerPokemon : IGameData, ICloneable
         if (this.AbilityIndex is not null) sb.AppendLine($"    AbilityIndex = {this.AbilityIndex}");
         if (this.Item is not null) sb.AppendLine($"    Item = {this.Item.ID}");
         if (this.Gender is not null) sb.AppendLine($"    Gender = {(this.Gender == 0 ? "male" : this.Gender == 1 ? "female" : "genderless")}");
-        if (this.IVs is not null) sb.AppendLine($"    IV = {this.IVs.ToString()}");
-        if (this.EVs is not null) sb.AppendLine($"    EV = {this.EVs.ToString()}");
+        if (this.IVs is not null) sb.AppendLine($"    IV = {this.IVs.Value.SaveToString(false)}");
+        if (this.EVs is not null) sb.AppendLine($"    EV = {this.EVs.Value.SaveToString(false)}");
         if (this.Nature is not null) sb.AppendLine($"    Nature = {this.Nature}");
         if (this.Happiness is not null) sb.AppendLine($"    Happiness = {this.Happiness}");
         if (this.Shiny is not null) sb.AppendLine($"    Shiny = {this.Shiny.ToString().ToLower()}");
