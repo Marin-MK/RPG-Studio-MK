@@ -10,6 +10,8 @@ namespace RPGStudioMK.Widgets;
 
 public class GlobalFindReplaceWidget : Widget
 {
+	public int SelectedTab => TabControl.SelectedIndex;
+
 	SubmodeView TabControl;
 	Label findLabel;
 	TextBox findBox;
@@ -33,6 +35,8 @@ public class GlobalFindReplaceWidget : Widget
 	{
 		SetBackgroundColor(40, 62, 84);
 		SetSize(500, 500);
+
+		OnWidgetSelected += WidgetSelected;
 
 		Sprites["bg"] = new Sprite(this.Viewport, new SolidBitmap(500, 1, new Color(86, 108, 134)));
 		Sprites["bg"].Y = 29;
@@ -159,6 +163,34 @@ public class GlobalFindReplaceWidget : Widget
 		replaceAllButton.OnClicked = _ => ReplaceAll();
 
 		UpdateWidgetPositions();
+
+		RegisterShortcuts(new List<Shortcut>()
+		{
+			new Shortcut(this, new Key(Keycode.ESCAPE), _ => Dispose(), true),
+			new Shortcut(this, new Key(Keycode.TAB), _ =>
+			{
+				replaceBox.TextArea.WidgetSelected(new BaseEventArgs());
+				replaceBox.Redraw();
+			}, true, e => e.Value = findBox.TextArea.SelectedWidget && TabControl.SelectedIndex == 1),
+			new Shortcut(this, new Key(Keycode.TAB, Keycode.SHIFT), _ =>
+			{
+				findBox.TextArea.WidgetSelected(new BaseEventArgs());
+				findBox.Redraw();
+			}, true, e => e.Value = replaceBox.TextArea.SelectedWidget),
+			new Shortcut(this, new Key(Keycode.ENTER), _ => FindAll()),
+			new Shortcut(this, new Key(Keycode.ENTER, Keycode.SHIFT), _ => FindAll())
+		});
+	}
+
+	public void FocusFindBox()
+	{
+		findBox.TextArea.WidgetSelected(new BaseEventArgs());
+		//findBox.Redraw();
+	}
+
+	public void SelectTab(int index)
+	{
+		TabControl.SelectTab(index);
 	}
 
 	void UpdateWidgetPositions()
@@ -268,7 +300,11 @@ public class GlobalFindReplaceWidget : Widget
 				occurrencesLabel.RedrawText(true);
 				occurrencesLabel.UpdatePositionAndSizeIfDocked();
 			}
-			else occurrencesLabel.SetVisible(false);
+			else
+			{
+				occurrencesLabel.SetVisible(false);
+				new MessageBox("Find", "No occurrences found.", ButtonType.OK, IconType.Info);
+			}
 		}
 		useFindAllCache = true;
 		return occurrences.Select(occ => (scriptsToSearch[occ.ID], occ)).ToList();

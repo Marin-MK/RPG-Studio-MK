@@ -1733,7 +1733,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         AdjustLinesForScroll(true);
     }
 
-    private void UpdateWidth()
+    public void UpdateWidth()
     {
         int newMaxWidth = TextXOffset + GetMaxLineWidth();
         if (newMaxWidth < Size.Width) SetWidth(newMaxWidth);

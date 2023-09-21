@@ -39,25 +39,64 @@ public class ScriptingWidget : Widget
         MainGrid = new Grid(this);
         MainGrid.SetPadding(300, 0, 0, 0);
         MainGrid.SetDocked(true);
-        MainGrid.SetColumns(
-            new GridSize(1),
-            new GridSize(500, Unit.Pixels)
-        );
+        MainGrid.SetColumns(new GridSize(1));
 
         ScriptBox = new ScriptEditorBox(MainGrid);
-        GlobalFindReplaceBox = new GlobalFindReplaceWidget(MainGrid);
-        GlobalFindReplaceBox.SetGridColumn(1);
 
         RegisterShortcuts(new List<Shortcut>()
         {
             new Shortcut(this, new Key(Keycode.TAB, Keycode.CTRL), _ => ShowScriptMenu(true), true),
-            new Shortcut(this, new Key(Keycode.TAB, Keycode.SHIFT, Keycode.CTRL), _ => ShowScriptMenu(true), true)
+            new Shortcut(this, new Key(Keycode.TAB, Keycode.SHIFT, Keycode.CTRL), _ => ShowScriptMenu(true), true),
+            new Shortcut(this, new Key(Keycode.F, Keycode.CTRL, Keycode.SHIFT), _ => ShowGlobalFindReplace(false), true),
+            new Shortcut(this, new Key(Keycode.H, Keycode.CTRL, Keycode.SHIFT), _ => ShowGlobalFindReplace(true), true)
         });
 
         var coreNode = (TreeNode) TreeView.Root.Children[0];
         ScriptBox.SetScriptBox((Script) ((TreeNode) coreNode.Children[0]).Object, false);
         TreeView.SetSelectedNode(coreNode.Children[0], false);
     }
+
+    private void ShowGlobalFindReplace(bool openOnReplaceTab)
+    {
+        if (GlobalFindReplaceBox is not null && !GlobalFindReplaceBox.Disposed)
+        {
+            if (GlobalFindReplaceBox.SelectedTab == 0 && openOnReplaceTab || GlobalFindReplaceBox.SelectedTab == 1 && !openOnReplaceTab)
+            {
+                GlobalFindReplaceBox.SelectTab(openOnReplaceTab ? 1 : 0);
+                GlobalFindReplaceBox.FocusFindBox();
+                return;
+            }
+        }
+        if (GlobalFindReplaceBox is not null && !GlobalFindReplaceBox.Disposed)
+        {
+    		MainGrid.SetColumns(new GridSize(1));
+            GlobalFindReplaceBox.Dispose();
+            GlobalFindReplaceBox = null;
+            MainGrid.UpdateContainers();
+            MainGrid.UpdateLayout();
+			ScriptBox.UpdateWidth();
+			return;
+        }
+		MainGrid.SetColumns(
+			new GridSize(1),
+			new GridSize(500, Unit.Pixels)
+		);
+		GlobalFindReplaceBox = new GlobalFindReplaceWidget(MainGrid);
+        GlobalFindReplaceBox.SetGridColumn(1);
+        GlobalFindReplaceBox.SelectTab(openOnReplaceTab ? 1 : 0);
+        GlobalFindReplaceBox.OnDisposed += _ =>
+        {
+            MainGrid.SetColumns(new GridSize(1));
+            GlobalFindReplaceBox = null;
+            MainGrid.UpdateContainers();
+            MainGrid.UpdateLayout();
+			ScriptBox.UpdateWidth();
+		};
+        MainGrid.UpdateContainers();
+        MainGrid.UpdateLayout();
+        ScriptBox.UpdateWidth();
+		GlobalFindReplaceBox.FocusFindBox();
+	}
 
     private static List<TreeNode> GetNodes()
     {

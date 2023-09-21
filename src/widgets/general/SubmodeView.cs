@@ -27,6 +27,7 @@ public class SubmodeView : Widget
         Sprites["header"] = new Sprite(this.Viewport, new SolidBitmap(1, 1, HeaderBackgroundColor));
         Sprites["sel"] = new Sprite(this.Viewport, new SolidBitmap(HeaderWidth, 2, new Color(55, 187, 255)));
         Sprites["sel"].Y = HeaderHeight - HeaderSelHeight - 2;
+        Sprites["sel"].Visible = false;
         Sprites["selbg"] = new Sprite(this.Viewport, new SolidBitmap(HeaderWidth, HeaderHeight, HeaderSelBackgroundColor));
         Sprites["selbg"].Visible = false;
         Sprites["text"] = new Sprite(this.Viewport);

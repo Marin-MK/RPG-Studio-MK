@@ -137,6 +137,12 @@ public class ScriptEditorBox : Widget
         });
     }
 
+    public void UpdateWidth()
+    {
+		TextArea.MinimumSize = ScrollContainer.Size;
+		TextArea.UpdateWidth();
+    }
+
     private void ShowFindReplaceMenu()
     {
         if (FindReplaceBox is not null && !FindReplaceBox.Disposed)
