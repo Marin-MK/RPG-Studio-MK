@@ -1176,7 +1176,7 @@ public class ScriptEditorTextArea : MultilineTextArea
         bool reduceCaretIndexByOne = false;
         if (Text == "(" || Text == "[" || Text == "{")
         {
-            char? nextChar = (Caret.Index + 1 < this.Text.Length) ? this.Text[Caret.Index + 1] : null;
+            char? nextChar = Caret.Index < this.Text.Length? this.Text[Caret.Index] : null;
             if (nextChar is null || nextChar == ' ' || nextChar == '\n' || nextChar == '\t')
             {
                 if (Text == "(") Text = "()";
@@ -1199,14 +1199,14 @@ public class ScriptEditorTextArea : MultilineTextArea
         }
         else if ((Text == "\"" || Text == "'") && LineSyntaxIsCorrectFor(Text[0]))
         {
-            char? nextChar = (Caret.Index + 1 < this.Text.Length) ? this.Text[Caret.Index + 1] : null;
+            char? nextChar = Caret.Index < this.Text.Length ? this.Text[Caret.Index] : null;
             if (Caret.Index < this.Text.Length && this.Text[Caret.Index] == Text[0])
             {
                 Caret.Index++;
                 UpdateCaretPosition(true);
                 return;
             }
-            else if (Caret.Index >= this.Text.Length - 1 || nextChar == ' ' || nextChar == '\n' || nextChar == '\t')
+            else if (Caret.Index == this.Text.Length || nextChar is not null && " \n,()[]{}".Contains((char) nextChar))
             {
                 Text += Text;
                 reduceCaretIndexByOne = true;
