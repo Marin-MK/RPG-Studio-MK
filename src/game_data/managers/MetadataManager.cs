@@ -1,6 +1,7 @@
 ﻿using RPGStudioMK.Utility;
 using System;
 using System.Linq;
+using System.Text;
 using static rubydotnet.Ruby;
 
 namespace RPGStudioMK.Game;
@@ -102,5 +103,17 @@ public class MetadataManager : BaseDataManager
             Ruby.Marshal.Dump(Data, File);
             Ruby.Unpin(Data);
         });
+    }
+
+	protected override void SavePBS()
+	{
+		base.SavePBS();
+        StringBuilder sb = new StringBuilder();
+        sb.Append(Data.Metadata.SaveToString());
+        foreach (PlayerMetadata playerMetadata in Data.PlayerMetadata.Values)
+        {
+            sb.Append(playerMetadata.SaveToString());
+        }
+        SaveAsPBS(sb.ToString());
     }
 }

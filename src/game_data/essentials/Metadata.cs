@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace RPGStudioMK.Game;
 
@@ -110,7 +111,21 @@ public class Metadata : IGameData, ICloneable
 
 	public string SaveToString()
 	{
-		throw new NotImplementedException();
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("#-------------------------------");
+        sb.AppendLine("[0]");
+        if (this.StartMoney is not null) sb.AppendLine($"StartMoney = {this.StartMoney}");
+        if (this.StartItemStorage is not null) sb.AppendLine($"StartItemStorage = {this.StartItemStorage.Select(x => x.ID).Aggregate((a, b) => a + "," + b)}");
+        sb.AppendLine($"Home = {this.Home.MapID},{this.Home.X},{this.Home.Y},{(int) this.Home.Dir}");
+        if (this.RealStorageCreator is not null) sb.AppendLine($"StorageCreator = {this.RealStorageCreator}");
+        if (this.WildBattleBGM is not null) sb.AppendLine($"WildBattleBGM = {this.WildBattleBGM}");
+        if (this.TrainerBattleBGM is not null) sb.AppendLine($"TrainerBattleBGM = {this.TrainerBattleBGM}");
+        if (this.WildVictoryBGM is not null) sb.AppendLine($"WildVictoryBGM = {this.WildVictoryBGM}");
+        if (this.TrainerVictoryBGM is not null) sb.AppendLine($"TrainerVictoryBGM = {this.TrainerVictoryBGM}");
+        if (this.WildCaptureME is not null) sb.AppendLine($"WildCaptureME = {this.WildCaptureME}");
+        if (this.SurfBGM is not null) sb.AppendLine($"SurfBGM = {this.SurfBGM}");
+        if (this.BicycleBGM is not null) sb.AppendLine($"BicycleBGM = {this.BicycleBGM}");
+        return sb.ToString();
 	}
 
 	public object Clone()

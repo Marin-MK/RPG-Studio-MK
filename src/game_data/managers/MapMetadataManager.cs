@@ -281,7 +281,13 @@ public class MapMetadataManager : BaseDataManager
         });
     }
 
-    public override void Clear()
+	protected override void SavePBS()
+	{
+		base.SavePBS();
+        SaveAsPBS(Data.Maps.Values.Select(m => m.MetadataToString()).Aggregate((a, b) => a + b));
+	}
+
+	public override void Clear()
     {
         base.Clear();
         // Clearing this data happens when all maps are cleared,

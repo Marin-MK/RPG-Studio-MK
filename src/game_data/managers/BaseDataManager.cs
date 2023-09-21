@@ -116,7 +116,14 @@ public class BaseDataManager
         });
     }
 
-    protected virtual void SaveAsPBS<T>(IEnumerable<T> Collection) where T : IGameData
+	protected virtual void SaveAsPBS(string data)
+	{
+		StreamWriter sw = new StreamWriter(global::System.IO.File.Open(Data.ProjectPath + "/PBS/" + this.PBSFilename, FileMode.Create));
+        sw.Write(data);
+		sw.Close();
+	}
+
+	protected virtual void SaveAsPBS<T>(IEnumerable<T> Collection) where T : IGameData
     {
         StreamWriter sw = new StreamWriter(global::System.IO.File.Open(Data.ProjectPath + "/PBS/" + this.PBSFilename, FileMode.Create));
         foreach (var item in Collection)

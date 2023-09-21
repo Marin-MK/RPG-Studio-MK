@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace RPGStudioMK.Game;
 
@@ -126,7 +127,19 @@ public class PlayerMetadata : IGameData, ICloneable
 
 	public string SaveToString()
 	{
-		throw new NotImplementedException();
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine($"#-------------------------------");
+        sb.AppendLine($"[{this.ID}]");
+        sb.AppendLine($"TrainerType = {this.TrainerType.ID}");
+        sb.AppendLine($"WalkCharset = {this.WalkCharset}");
+        sb.AppendLine($"RunCharset = {this.RunCharset}");
+        sb.AppendLine($"CycleCharset = {this.CycleCharset}");
+        sb.AppendLine($"SurfCharset = {this.SurfCharset}");
+        sb.AppendLine($"DiveCharset = {this.DiveCharset}");
+        sb.AppendLine($"FishCharset = {this.FishCharset}");
+        sb.AppendLine($"SurfFishCharset = {this.SurfFishCharset}");
+        if (this.Home is not null && this.Home.HasValue) sb.AppendLine($"Home = {Home.Value.MapID},{Home.Value.X},{Home.Value.Y},{(int) Home.Value.Dir}");
+		return sb.ToString();
 	}
 
 	public object Clone()

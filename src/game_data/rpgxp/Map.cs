@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace RPGStudioMK.Game;
 
@@ -195,6 +197,36 @@ public class Map : ICloneable
         return map;
     }
 
+    public string MetadataToString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine($"#-------------------------------");
+        sb.AppendLine($"[{Utilities.Digits(this.ID, 3)}]");
+        if (this.InGameName is not null) sb.AppendLine($"Name = {this.InGameName}");
+        if (this.OutdoorMap) sb.AppendLine($"Outdoor = true");
+        if (this.AnnounceLocation) sb.AppendLine($"ShowArea = true");
+        if (!this.OutdoorMap && this.CanBicycle) sb.AppendLine($"Bicycle = true");
+        if (this.AlwaysBicycle) sb.AppendLine($"BicycleAlways = true");
+        if (this.HealingSpot is not null && this.HealingSpot.HasValue) sb.AppendLine($"HealingSpot = {this.HealingSpot.Value.MapID},{this.HealingSpot.Value.X},{this.HealingSpot.Value.Y}");
+        if (this.Weather is not null && this.Weather.HasValue) sb.AppendLine($"Weather = {this.Weather.Value.Weather},{this.Weather.Value.Intensity}");
+        if (this.TownMapPosition is not null && this.TownMapPosition.HasValue) sb.AppendLine($"MapPosition = {this.TownMapPosition.Value.Region},{this.TownMapPosition.Value.X},{this.TownMapPosition.Value.Y}");
+        if (this.DiveMapID is not null) sb.AppendLine($"DiveMap = {this.DiveMapID}");
+        if (this.DarkMap) sb.AppendLine($"DarkMap = true");
+        if (this.SafariMap) sb.AppendLine($"SafariMap = true");
+        if (this.SnapEdges) sb.AppendLine($"SnapEdges = true");
+        if (this.RandomDungeon) sb.AppendLine($"Dungeon = true");
+        if (this.BattleBackground is not null) sb.AppendLine($"BattleBack = {this.BattleBackground}");
+        if (this.WildBattleBGM is not null) sb.AppendLine($"WildBattleBGM = {this.WildBattleBGM}");
+        if (this.TrainerBattleBGM is not null) sb.AppendLine($"TrainerBattleBGM = {this.TrainerBattleBGM}");
+        if (this.WildVictoryBGM is not null) sb.AppendLine($"WildVictoryBGM = {this.WildVictoryBGM}");
+        if (this.TrainerVictoryBGM is not null) sb.AppendLine($"TrainerVictoryBGM = {this.TrainerVictoryBGM}");
+        if (this.WildCaptureME is not null) sb.AppendLine($"WildCaptureME = {this.WildCaptureME}");
+        if (this.TownMapSize is not null && this.TownMapSize.HasValue) sb.AppendLine($"MapSize = {this.TownMapSize.Value.Width},{this.TownMapSize.Value.Included}");
+        if (this.BattleEnvironment is not null) sb.AppendLine($"Environment = {this.BattleEnvironment}");
+        if (this.Flags.Count > 0) sb.AppendLine($"Flags = {this.Flags.Aggregate((a, b) => a + "," + b)}");
+        return sb.ToString();
+    }
+
     public void SetSize(int width, int height)
     {
         this.Width = width;
@@ -272,7 +304,7 @@ public class Map : ICloneable
                  * 0 1 2 3
                  * 4 5 6 7
                  */
-                int startidx = y * Width;
+	int startidx = y * Width;
                 List<TileData> tiles = Layers[z].Tiles.GetRange(startidx, Value);
                 Layers[z].Tiles.RemoveRange(startidx, Value);
                 Layers[z].Tiles.InsertRange(startidx + Width - Value, tiles);
