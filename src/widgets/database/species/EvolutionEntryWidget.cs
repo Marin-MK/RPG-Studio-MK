@@ -56,9 +56,9 @@ public class EvolutionEntryWidget : Widget
             int oldTypeIndex = Data.HardcodedData.EvolutionMethods.IndexOf(this.Evolution.Type);
             this.Evolution.Type = Data.HardcodedData.EvolutionMethods[typeIndex];
             // Only reset the parameter if the type of the parameter has changed, e.g. number to string
-            if (oldTypeIndex != -1 && Data.HardcodedData.EvolutionMethodsAndTypes[typeIndex][1] == Data.HardcodedData.EvolutionMethodsAndTypes[oldTypeIndex][1]) return;
+            if (oldTypeIndex != -1 && Data.HardcodedData.EvolutionMethodsAndTypes[typeIndex].DataType == Data.HardcodedData.EvolutionMethodsAndTypes[oldTypeIndex].DataType) return;
             object param = null;
-            switch (typeIndex == -1 ? null : Data.HardcodedData.EvolutionMethodsAndTypes[typeIndex][1])
+            switch (typeIndex == -1 ? null : Data.HardcodedData.EvolutionMethodsAndTypes[typeIndex].DataType)
             {
                 case "number":
                     param = 0L;
@@ -137,7 +137,7 @@ public class EvolutionEntryWidget : Widget
 		int typeIndex = Data.HardcodedData.EvolutionMethods.IndexOf(Evolution.Type);
 		paramBox?.Dispose();
         paramBox = null;
-        switch (typeIndex == -1 ? null : Data.HardcodedData.EvolutionMethodsAndTypes[typeIndex][1])
+        switch (typeIndex == -1 ? null : Data.HardcodedData.EvolutionMethodsAndTypes[typeIndex].DataType)
         {
             case "number":
                 paramBox = new NumericBox(this);

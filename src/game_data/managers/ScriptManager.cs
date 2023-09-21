@@ -91,6 +91,7 @@ public class ScriptManager : BaseDataManager
             }
         }
         #endregion
+        Data.HardcodedData = ScriptDataExtractor.Run();
         if (Data.EssentialsVersion == EssentialsVersion.Unknown)
         {
             Logger.Warn("Detected Essentials version: Unknown. Some version-specific features may be disabled as a result.");

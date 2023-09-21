@@ -37,7 +37,6 @@ public static partial class Data
     public static List<Trainer> Trainers = new List<Trainer>();
     // Other Project Data & Settings
     public static HardcodedDataStore HardcodedData;
-    private static HardcodedDataStore GlobalHardcodedData;
     public static List<GamePlugin> Plugins = new List<GamePlugin>();
     public static EssentialsVersion EssentialsVersion = EssentialsVersion.Unknown;
     public static bool UsesExternalScripts = false;
@@ -84,8 +83,8 @@ public static partial class Data
         Compatibility.RMXP.Setup();
         Logger.WriteLine("Creating Data Managers");
         DataManager.Setup();
-        if (!File.Exists("hardcoded_data.json")) throw new Exception("The global harcoded_data.json file is missing. The program can not continue.");
-        HardcodedData = HardcodedDataStore.Create("hardcoded_data.json");
+        //if (!File.Exists("hardcoded_data.json")) throw new Exception("The global harcoded_data.json file is missing. The program can not continue.");
+        //HardcodedData = HardcodedDataStore.Create("hardcoded_data.json");
     }
 
     public static void ClearProjectData()
@@ -99,11 +98,6 @@ public static partial class Data
         StopLoading = false;
         UsesExternalScripts = false;
         Sources.InvalidateAll();
-        if (GlobalHardcodedData is not null)
-        {
-            // Switch the project-specific hardcoded data out for the global hardcoded data again
-            HardcodedData = GlobalHardcodedData;
-        }
     }
 
 	[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(SpeciesResolver))]
@@ -145,12 +139,6 @@ public static partial class Data
         DataPath = path + "/Data";
         ProjectFilePath = path + "/project.mkproj";
         ProjectRMXPGamePath = path + "/Game.rxproj";
-        if (File.Exists(ProjectPath + "/hardcoded_data.json"))
-        {
-            // Swap the global harcoded data out for project-specific hardcoded data
-            GlobalHardcodedData = HardcodedData;
-            HardcodedData = HardcodedDataStore.Create(ProjectPath + "/hardcoded_data.json");
-        }
     }
 
     public static void SetLoadProgress(float Progress)

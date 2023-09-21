@@ -772,6 +772,14 @@ public static class Editor
     }
 
     /// <summary>
+    /// Refreshes the hardcoded data store by parsing the scripts again.
+    /// </summary>
+    public static void RefreshHardcodedData()
+    {
+        Data.HardcodedData = ScriptDataExtractor.Run();
+    }
+
+    /// <summary>
     /// Changes the view mode of event boxes in the map viewer.
     /// </summary>
     /// <param name="ViewMode">The new view mode of event boxes.</param>

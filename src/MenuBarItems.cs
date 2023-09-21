@@ -170,6 +170,13 @@ public partial class MainEditorWindow
                     HelpText = "Change the title of your game.",
                     IsClickable = e => e.Value = Editor.InProject,
                     OnClicked = _ => Editor.RenameGame()
+                },
+                new MenuSeparator(),
+                new MenuItem("Refresh Hardcoded Data")
+                {
+                    HelpText = "Parse the scripts to update the hardcoded data store.",
+                    IsClickable = e => e.Value = Editor.InProject,
+                    OnClicked = _ => Editor.RefreshHardcodedData()
                 }
             }
         },

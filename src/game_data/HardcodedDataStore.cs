@@ -12,7 +12,7 @@ public class HardcodedDataStore
     public required List<string> Habitats { get; init; }
     public required List<string> GrowthRates { get; init; }
     public required List<string> GenderRatios { get; init; }
-    public required List<List<string>> EvolutionMethodsAndTypes { get; init; }
+    public required List<(string Method, string DataType)> EvolutionMethodsAndTypes { get; init; }
     public required List<string> MoveCategories { get; init; }
     public required List<string> MoveTargets { get; init; }
     public required List<string> Natures { get; init; }
@@ -43,88 +43,26 @@ public class HardcodedDataStore
 	public List<TreeNode> EggGroupsListItems;
 	public List<TreeNode> EncounterTypesListItems;
 
-	public static HardcodedDataStore Create(string fileName)
+	public HardcodedDataStore Finalize()
     {
-        Logger.WriteLine("Loading hardcoded data JSON from '{0}'", fileName);
-        string dataText = File.ReadAllText(fileName);
-        var rawData = JsonSerializer.Deserialize<Dictionary<string, object>>(dataText, new JsonSerializerOptions() { AllowTrailingCommas = true });
-        PreValidate(rawData);
-		var dataStore = new HardcodedDataStore()
-        {
-            Habitats = JsonSerializer.Deserialize<List<string>>((JsonElement) rawData["habitats"]),
-            GrowthRates = JsonSerializer.Deserialize<List<string>>((JsonElement) rawData["growth_rates"]),
-            GenderRatios = JsonSerializer.Deserialize<List<string>>((JsonElement) rawData["gender_ratios"]),
-            EvolutionMethodsAndTypes = JsonSerializer.Deserialize<List<List<string>>>((JsonElement) rawData["evolution_methods"]),
-            MoveCategories = JsonSerializer.Deserialize<List<string>>((JsonElement) rawData["move_categories"]),
-            MoveTargets = JsonSerializer.Deserialize<List<string>>((JsonElement) rawData["move_targets"]),
-            Natures = JsonSerializer.Deserialize<List<string>>((JsonElement) rawData["natures"]),
-            Weathers = JsonSerializer.Deserialize<List<string>>((JsonElement) rawData["weathers"]),
-            ItemPockets = JsonSerializer.Deserialize<List<string>>((JsonElement) rawData["item_pockets"]),
-            ItemFieldUses = JsonSerializer.Deserialize<List<string>>((JsonElement) rawData["item_field_uses"]),
-            ItemBattleUses = JsonSerializer.Deserialize<List<string>>((JsonElement) rawData["item_battle_uses"]),
-            BodyColors = JsonSerializer.Deserialize<List<string>>((JsonElement) rawData["body_colors"]),
-            BodyShapes = JsonSerializer.Deserialize<List<string>>((JsonElement) rawData["body_shapes"]),
-            EggGroups = JsonSerializer.Deserialize<List<string>>((JsonElement) rawData["egg_groups"]),
-            EncounterTypes = JsonSerializer.Deserialize<List<string>>((JsonElement) rawData["encounter_types"]),
-	    };
-		PostValidate(dataStore);
-        dataStore.EvolutionMethods = dataStore.EvolutionMethodsAndTypes.Select(list => list[0]).ToList();
-		dataStore.HabitatsListItems = dataStore.Habitats.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
-		dataStore.GrowthRatesListItems = dataStore.GrowthRates.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
-		dataStore.GenderRatiosListItems = dataStore.GenderRatios.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
-		dataStore.EvolutionMethodsListItems = dataStore.EvolutionMethods.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
-		dataStore.MoveCategoriesListItems = dataStore.MoveCategories.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
-		dataStore.MoveTargetsListItems = dataStore.MoveTargets.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
-		dataStore.NaturesListItems = dataStore.Natures.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
-		dataStore.WeathersListItems = dataStore.Weathers.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
-		dataStore.ItemPocketsListItems = dataStore.ItemPockets.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
-		dataStore.ItemFieldUsesListItems = dataStore.ItemFieldUses.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
-		dataStore.ItemBattleUsesListItems = dataStore.ItemBattleUses.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
-		dataStore.BodyColorsListItems = dataStore.BodyColors.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
-		dataStore.BodyShapesListItems = dataStore.BodyShapes.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
-        dataStore.EggGroupsListItems = dataStore.EggGroups.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
-		dataStore.EncounterTypesListItems = dataStore.EncounterTypes.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
-
-		return dataStore;
+        this.EvolutionMethods = this.EvolutionMethodsAndTypes.Select(list => list.Item1).ToList();
+		this.HabitatsListItems = this.Habitats.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		this.GrowthRatesListItems = this.GrowthRates.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		this.GenderRatiosListItems = this.GenderRatios.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		this.EvolutionMethodsListItems = this.EvolutionMethods.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		this.MoveCategoriesListItems = this.MoveCategories.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		this.MoveTargetsListItems = this.MoveTargets.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		this.NaturesListItems = this.Natures.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		this.WeathersListItems = this.Weathers.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		this.ItemPocketsListItems = this.ItemPockets.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		this.ItemFieldUsesListItems = this.ItemFieldUses.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		this.ItemBattleUsesListItems = this.ItemBattleUses.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		this.BodyColorsListItems = this.BodyColors.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		this.BodyShapesListItems = this.BodyShapes.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+        this.EggGroupsListItems = this.EggGroups.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+		this.EncounterTypesListItems = this.EncounterTypes.Select(item => new TreeNode(item)).OrderBy(item => item.Text).ToList();
+        return this;
     }
-
-    private static void PreValidate(Dictionary<string, object> data)
-    {
-        if (!data.ContainsKey("habitats")) throw new HardcodedDataException("habitats");
-        if (!data.ContainsKey("growth_rates")) throw new HardcodedDataException("growth_rates");
-        if (!data.ContainsKey("gender_ratios")) throw new HardcodedDataException("gender_ratios");
-        if (!data.ContainsKey("evolution_methods")) throw new HardcodedDataException("evolution_methods");
-        if (!data.ContainsKey("move_categories")) throw new HardcodedDataException("move_categories");
-        if (!data.ContainsKey("move_targets")) throw new HardcodedDataException("move_targets");
-        if (!data.ContainsKey("natures")) throw new HardcodedDataException("natures");
-        if (!data.ContainsKey("weathers")) throw new HardcodedDataException("weathers");
-        if (!data.ContainsKey("item_pockets")) throw new HardcodedDataException("item_pockets");
-        if (!data.ContainsKey("item_field_uses")) throw new HardcodedDataException("item_field_uses");
-        if (!data.ContainsKey("item_battle_uses")) throw new HardcodedDataException("item_battle_uses");
-        if (!data.ContainsKey("body_colors")) throw new HardcodedDataException("body_colors");
-        if (!data.ContainsKey("body_shapes")) throw new HardcodedDataException("body_shapes");
-        if (!data.ContainsKey("egg_groups")) throw new HardcodedDataException("egg_groups");
-        if (!data.ContainsKey("encounter_types")) throw new HardcodedDataException("encounter_types");
-    }
-
-	private static void PostValidate(HardcodedDataStore dataStore)
-	{
-		if (dataStore.Habitats.Count == 0) throw new HardcodedDataException("habitats");
-		if (dataStore.GrowthRates.Count == 0) throw new HardcodedDataException("growth_rates");
-		if (dataStore.GenderRatios.Count == 0) throw new HardcodedDataException("gender_ratios");
-		if (dataStore.EvolutionMethodsAndTypes.Count == 0) throw new HardcodedDataException("evolution_methods");
-		if (dataStore.MoveCategories.Count == 0) throw new HardcodedDataException("move_categories");
-		if (dataStore.MoveTargets.Count == 0) throw new HardcodedDataException("move_targets");
-		if (dataStore.Natures.Count == 0) throw new HardcodedDataException("natures");
-		if (dataStore.Weathers.Count == 0) throw new HardcodedDataException("weathers");
-		if (dataStore.ItemPockets.Count == 0) throw new HardcodedDataException("item_pockets");
-		if (dataStore.ItemFieldUses.Count == 0) throw new HardcodedDataException("item_field_uses");
-		if (dataStore.ItemBattleUses.Count == 0) throw new HardcodedDataException("item_battle_uses");
-		if (dataStore.BodyColors.Count == 0) throw new HardcodedDataException("body_colors");
-		if (dataStore.BodyShapes.Count == 0) throw new HardcodedDataException("body_shapes");
-		if (dataStore.EggGroups.Count == 0) throw new HardcodedDataException("egg_groups");
-		if (dataStore.EncounterTypes.Count == 0) throw new HardcodedDataException("encounter_types");
-	}
 
 	public string Get(int index, List<string> dataStore)
     {
