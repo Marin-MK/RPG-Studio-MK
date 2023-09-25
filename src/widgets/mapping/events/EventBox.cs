@@ -74,14 +74,32 @@ public class EventBox : Widget
         // Positioning
         int tx = MapWidget.Position.X + (int) Math.Round(EventX * 32 * MapWidget.ZoomFactor);
         int ty = MapWidget.Position.Y + (int) Math.Round(EventY * 32 * MapWidget.ZoomFactor);
-        ty -= (int) Math.Round(32 * (Event.Height - 1) * MapWidget.ZoomFactor);
+        ty -= (int) Math.Round(32 * ((Event?.Height ?? 1) - 1) * MapWidget.ZoomFactor);
 
         Sprites["box"].Bitmap?.Dispose();
-        Sprites["box"].Bitmap = new Bitmap((int) Math.Round(Event.Width * 32 * MapWidget.ZoomFactor), (int) Math.Round(Event.Height * 32 * MapWidget.ZoomFactor));
+        Sprites["box"].Bitmap = new Bitmap((int) Math.Round((Event?.Width ?? 1) * 32 * MapWidget.ZoomFactor), (int) Math.Round((Event?.Height ?? 1) * 32 * MapWidget.ZoomFactor));
         Sprites["box"].Bitmap.Unlock();
         int pad = 2;
-        Sprites["box"].Bitmap.DrawRect(pad, pad, Sprites["box"].Bitmap.Width - 2 * pad, Sprites["box"].Bitmap.Height - 2 * pad, new Color(255, 255, 255));
-        Sprites["box"].Bitmap.FillRect(pad + 1, pad + 1, Sprites["box"].Bitmap.Width - 2 * pad - 2, Sprites["box"].Bitmap.Height - 2 * pad - 2, new Color(255, 255, 255, 96));
+        Color bgColor = new Color(255, 255, 255, 96);
+        Sprites["box"].Bitmap.DrawRect(pad, pad, Sprites["box"].Bitmap.Width - 2 * pad, Sprites["box"].Bitmap.Height - 2 * pad, Color.WHITE);
+        Sprites["box"].Bitmap.FillRect(pad + 1, pad + 1, Sprites["box"].Bitmap.Width - 2 * pad - 2, Sprites["box"].Bitmap.Height - 2 * pad - 2, bgColor);
+        if (Event == null)
+        {
+            // Start Event; draw S icon
+            int ix = 8;
+            int iy = 8;
+            int iw = 16;
+            int ih = 16;
+            Sprites["box"].Bitmap.FillRect(ix + 1, iy, iw - 2, 2, Color.WHITE);
+            Sprites["box"].Bitmap.SetPixel(ix + iw - 1, iy + 1, Color.WHITE);
+            Sprites["box"].Bitmap.FillRect(ix, iy + 1, 3, 7, Color.WHITE);
+            Sprites["box"].Bitmap.DrawLine(ix + 2, iy + 3, ix + 2, iy + 5, bgColor);
+            Sprites["box"].Bitmap.FillRect(ix + 1, iy + 7, iw - 2, 2, Color.WHITE);
+            Sprites["box"].Bitmap.FillRect(ix + iw - 3, iy + 8, 3, 7, Color.WHITE);
+            Sprites["box"].Bitmap.DrawLine(ix + iw - 3, iy + 10, ix + iw - 3, iy + 12, bgColor);
+            Sprites["box"].Bitmap.FillRect(ix + 1, iy + ih - 2, iw - 2, 2, Color.WHITE);
+            Sprites["box"].Bitmap.SetPixel(ix, iy + ih - 2, Color.WHITE);
+        }
         Sprites["box"].Bitmap.Lock();
         Sprites["box"].X = tx;
         Sprites["box"].Y = ty;
@@ -104,6 +122,12 @@ public class EventBox : Widget
         this.Event = Event;
         if (Sprites["gfx"].DestroyBitmap) Sprites["gfx"].Bitmap?.Dispose();
         else Sprites["gfx"].Bitmap = null;
+        if (Event == null)
+        {
+            // Used for the Start Event; only show an S icon.
+            // This is drawn in RepositionSprites().
+            return;
+        }
         for (int i = 0; i < Event.Pages.Count; i++)
         {
             EventGraphic gfx = Event.Pages[i].Graphic;

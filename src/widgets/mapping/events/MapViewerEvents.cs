@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using RPGStudioMK.Game;
 
 namespace RPGStudioMK.Widgets;
@@ -11,6 +12,7 @@ public partial class MapViewer
 
     bool MovedSinceLastClick = true;
     EventBox DraggingEvent = null;
+    EventBox StartEventBox;
 
     private partial void ConstructorEvents()
     {
@@ -23,32 +25,97 @@ public partial class MapViewer
         };
     }
 
-    private void DrawEvents()
+	private partial void RegisterMenuEvents()
+	{
+        if (Map == null || Mode != MapMode.Events) return;
+        MapWidget.SetContextMenuList(new List<IMenuItem>()
+        {
+            new MenuItem("New")
+            {
+                IsClickable = e => e.Value = !EventBoxes.Any(eb => eb.Event.X == MapTileX && eb.Event.Y == MapTileY) && (Map.ID != Data.System.StartMapID || MapTileX != Data.System.StartX && MapTileY != Data.System.StartY),
+                OnClicked = _ => OpenOrCreateEventCursorIsOver()
+            },
+            new MenuItem("Edit")
+            {
+                IsClickable = e => e.Value = EventBoxes.Any(eb => eb.Event.X == MapTileX && eb.Event.Y == MapTileY),
+                OnClicked = _ => OpenOrCreateEventCursorIsOver()
+			},
+            new MenuSeparator(),
+            new MenuItem("Cut")
+            {
+                IsClickable = e => e.Value = EventBoxes.Any(eb => eb.Event.X == MapTileX && eb.Event.Y == MapTileY),
+                OnClicked = _ => CutEvents()
+			},
+            new MenuItem("Copy")
+            {
+                IsClickable = e => e.Value = EventBoxes.Any(eb => eb.Event.X == MapTileX && eb.Event.Y == MapTileY),
+                OnClicked = _ => CopyEvents(false)
+			},
+            new MenuItem("Paste")
+            {
+                IsClickable = e => e.Value = Clipboard.IsValid(BinaryData.EVENT) &&
+                                                !EventBoxes.Any(eb => eb.Event.X == MapTileX && eb.Event.Y == MapTileY) && (Map.ID != Data.System.StartMapID || MapTileX != Data.System.StartX && MapTileY != Data.System.StartY),
+                OnClicked = _ => PasteEvents()
+			},
+            new MenuSeparator(),
+            new MenuItem("Game Starting Position")
+            {
+                IsClickable = e => e.Value = !EventBoxes.Any(eb => eb.Event.X == MapTileX && eb.Event.Y == MapTileY) && (Map.ID != Data.System.StartMapID || MapTileX != Data.System.StartX && MapTileY != Data.System.StartY),
+                OnClicked = _ => SetStartPosition()
+			},
+            new MenuSeparator(),
+            new MenuItem("Delete")
+            {
+                IsClickable = e => e.Value = EventBoxes.Any(eb => eb.Event.X == MapTileX && eb.Event.Y == MapTileY),
+                OnClicked = _ => DeleteEventCursorIsOver()
+            },
+        });
+	}
+
+	private void DrawEvents()
     {
         for (int i = 0; i < EventBoxes.Count; i++) EventBoxes[i].Dispose();
         EventBoxes.Clear();
+        StartEventBox?.Dispose();
+        StartEventBox = null;
         if (Map == null) return;
         foreach (KeyValuePair<int, Event> kvp in Map.Events)
         {
             CreateEventBox(kvp.Value);
         }
+        CreateStartEventBox();
         RepositionEvents();
     }
 
     public void HideEventBoxes()
     {
         EventBoxes.ForEach(eb => eb.SetVisible(false));
+        StartEventBox?.SetVisible(false);
     }
 
     public void ShowEventBoxes()
     {
         EventBoxes.ForEach(eb => eb.SetVisible(true));
+        StartEventBox?.SetVisible(true);
         RepositionEvents();
     }
 
     public void UpdateEventBoxesViewMode()
     {
         EventBoxes.ForEach(eb => eb.RepositionSprites(MapWidget, eb.Event.X, eb.Event.Y));
+        StartEventBox?.RepositionSprites(MapWidget, Data.System.StartX, Data.System.StartY);
+    }
+
+    private void CreateStartEventBox()
+    {
+        if (this.Map.ID != Data.System.StartMapID) return;
+        StartEventBox?.Dispose();
+        StartEventBox = new EventBox(MainContainer);
+        StartEventBox.SetSize(DummyWidget.Size);
+        StartEventBox.ConsiderInAutoScrollCalculation = false;
+        StartEventBox.SetZIndex(3);
+        StartEventBox.SetEvent(Map, null);
+        StartEventBox.RepositionSprites(MapWidget, Data.System.StartX, Data.System.StartY);
     }
 
     private void CreateEventBox(Event Event)
@@ -81,6 +148,8 @@ public partial class MapViewer
             eb.RepositionSprites(MapWidget, eb.Event.X, eb.Event.Y);
             eb.SetSize(DummyWidget.Size);
         });
+        StartEventBox?.RepositionSprites(MapWidget, Data.System.StartX, Data.System.StartY);
+        StartEventBox?.SetSize(DummyWidget.Size);
         UpdateCursorPosition();
     }
 
@@ -108,6 +177,10 @@ public partial class MapViewer
                 break;
             }
         }
+        if (StartEventBox != null && box == null)
+        {
+            if (MapTileX == Data.System.StartX && MapTileY == Data.System.StartY) box = StartEventBox;
+        }
         UpdateCursorPosition();
         return box;
     }
@@ -125,6 +198,7 @@ public partial class MapViewer
                 break;
             }
         }
+        if (!found && StartEventBox is not null && MapTileX == Data.System.StartX && MapTileY == Data.System.StartY) return;
         if (!found && MapTileX >= 0 && MapTileX < Map.Width && MapTileY >= 0 && MapTileY < Map.Height)
         {
             Event ev = new Event(Editor.GetFreeEventID(Map));
@@ -197,27 +271,12 @@ public partial class MapViewer
         };
     }
 
-    public void DeleteEventFromUndo(Event Event)
+    private void SetStartPosition()
     {
-        EventBox box = EventBoxes.Find(eb => eb.Event == Event);
-        box.Dispose();
-        EventBoxes.Remove(box);
-        EventsPanel.RedrawEvents();
-        SelectEventBoxCursorIsOver();
-    }
-
-    public void CreateEventFromUndo(Event Event)
-    {
-        CreateEventBox(Event);
-        EventsPanel.RedrawEvents();
-        SelectEventBoxCursorIsOver();
-    }
-
-    public void MoveEventFromUndo(Event Event)
-    {
-        EventBox box = EventBoxes.Find(eb => eb.Event == Event);
-        box.RepositionSprites(MapWidget, Event.X, Event.Y);
-        SelectEventBoxCursorIsOver();
+        Data.System.StartMapID = Map.ID;
+        Data.System.StartX = MapTileX;
+        Data.System.StartY = MapTileY;
+        CreateStartEventBox();
     }
 
     public void MoveCursorLeft()
@@ -271,7 +330,7 @@ public partial class MapViewer
     private partial void MouseDownEvents(MouseEventArgs e)
     {
         if (Map == null) return;
-        if (Mode == MapMode.Events && Mouse.LeftMouseTriggered && MainContainer.Mouse.Inside)
+        if (Mode == MapMode.Events && (Mouse.LeftMouseTriggered || Mouse.RightMouseTriggered) && MainContainer.Mouse.Inside)
         {
             int rx = e.X - MapWidget.Viewport.X;
             int ry = e.Y - MapWidget.Viewport.Y;
@@ -295,10 +354,10 @@ public partial class MapViewer
             int PreY = MapTileY;
             EventBox box = SelectEventBoxCursorIsOver();
             MovedSinceLastClick = OldX != MapTileX || OldY != MapTileY;
-            if (box != null)
+            if (box != null && Mouse.LeftMouseTriggered)
             {
                 DraggingEvent = box;
-                OriginPoint = new Point(PreX - DraggingEvent.Event.X, PreY - DraggingEvent.Event.Y);
+                OriginPoint = new Point(PreX - (DraggingEvent.Event?.X ?? Data.System.StartX), PreY - (DraggingEvent.Event?.Y ?? Data.System.StartY));
                 Editor.CanUndo = false;
             }
             Cursor.SetVisible(true);
@@ -338,10 +397,14 @@ public partial class MapViewer
         if (Mouse.LeftMouseReleased && DraggingEvent != null)
         {
             Editor.CanUndo = true;
-            if (DraggingEvent.Event.X != MapTileX || DraggingEvent.Event.Y != MapTileY)
+            if (DraggingEvent.Event == null && DraggingEvent == StartEventBox)
+            {
+                Data.System.StartX = MapTileX;
+                Data.System.StartY = MapTileY;
+            }
+            else if (DraggingEvent.Event.X != MapTileX || DraggingEvent.Event.Y != MapTileY)
             {
                 // It actually moved from its original location
-                Point OldPosition = new Point(DraggingEvent.Event.X, DraggingEvent.Event.Y);
                 DraggingEvent.Event.X = MapTileX;
                 DraggingEvent.Event.Y = MapTileY;
             }

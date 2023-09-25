@@ -178,7 +178,17 @@ public partial class MapViewer : Widget
         CursorWidth = CursorHeight = 0;
         Cursor.SetVisible(false);
         Editor.MainWindow.MapWidget.SubmodePicker.SelectTab((int) Mode);
+        ClearMenus();
+        //RegisterMenuTiles();
+        RegisterMenuEvents();
     }
+
+    private void ClearMenus()
+    {
+        MapWidget.SetContextMenuList(new List<IMenuItem>());
+    }
+
+    private partial void RegisterMenuEvents();
 
     public virtual void SetZoomFactor(double factor, bool FromStatusBar = false)
     {
