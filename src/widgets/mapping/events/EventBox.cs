@@ -86,19 +86,12 @@ public class EventBox : Widget
         if (Event == null)
         {
             // Start Event; draw S icon
-            int ix = 8;
-            int iy = 8;
-            int iw = 16;
-            int ih = 16;
-            Sprites["box"].Bitmap.FillRect(ix + 1, iy, iw - 2, 2, Color.WHITE);
-            Sprites["box"].Bitmap.SetPixel(ix + iw - 1, iy + 1, Color.WHITE);
-            Sprites["box"].Bitmap.FillRect(ix, iy + 1, 3, 7, Color.WHITE);
-            Sprites["box"].Bitmap.DrawLine(ix + 2, iy + 3, ix + 2, iy + 5, bgColor);
-            Sprites["box"].Bitmap.FillRect(ix + 1, iy + 7, iw - 2, 2, Color.WHITE);
-            Sprites["box"].Bitmap.FillRect(ix + iw - 3, iy + 8, 3, 7, Color.WHITE);
-            Sprites["box"].Bitmap.DrawLine(ix + iw - 3, iy + 10, ix + iw - 3, iy + 12, bgColor);
-            Sprites["box"].Bitmap.FillRect(ix + 1, iy + ih - 2, iw - 2, 2, Color.WHITE);
-            Sprites["box"].Bitmap.SetPixel(ix, iy + ih - 2, Color.WHITE);
+            Bitmap startEventBitmap = new Bitmap("assets/img/start_event.png");
+            Sprites["box"].Bitmap.Build(
+                new Rect(0, 0, (int) Math.Round(32 * MapWidget.ZoomFactor), (int) Math.Round(32 * MapWidget.ZoomFactor)),
+                startEventBitmap,
+                new Rect(0, 0, startEventBitmap.Width, startEventBitmap.Height)
+            );
         }
         Sprites["box"].Bitmap.Lock();
         Sprites["box"].X = tx;
