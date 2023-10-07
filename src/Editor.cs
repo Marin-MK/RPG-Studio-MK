@@ -986,6 +986,7 @@ public static class Editor
                 Logger.Error("Failed to download new installer.", ex);
                 return;
             }
+            string installerParentPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath).Replace('\\', '/');
             string installerPath = Path.Combine(MKUtils.MKUtils.ProgramFilesPath, VersionMetadata.InstallerInstallPath, VersionMetadata.InstallerInstallFilename[ODL.Platform switch
             {
                 odl.Platform.Windows => "windows",
@@ -1000,12 +1001,12 @@ public static class Editor
                 adminBox.OnClosed += _ =>
                 {
                     Logger.WriteLine("Spawn new process to copy new installer to {0}...", installerPath);
-                    Process proc = new Process();
+                    tempFilename = tempFilename.Replace('/', '\\');
+                    installerPath = installerPath.Replace('/', '\\');
+                    installerParentPath = installerParentPath.Replace('/', '\\');
+					Process proc = new Process();
                     proc.StartInfo = new ProcessStartInfo("cmd");
-                    proc.StartInfo.ArgumentList.Add("/c");
-                    proc.StartInfo.ArgumentList.Add("move");
-                    proc.StartInfo.ArgumentList.Add(tempFilename.Replace('/', '\\'));
-                    proc.StartInfo.ArgumentList.Add(installerPath.Replace('/', '\\'));
+                    proc.StartInfo.Arguments = $"/c \"mkdir \"{installerParentPath}\" && move \"{tempFilename}\" \"{installerPath}\"\"";
                     proc.StartInfo.CreateNoWindow = true;
                     proc.StartInfo.Verb = "runas";
                     proc.StartInfo.UseShellExecute = true;
