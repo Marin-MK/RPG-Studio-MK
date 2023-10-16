@@ -29,7 +29,21 @@ public class Type : IGameData, ICloneable
     /// </summary>
     public Type() { }
 
-    public Type(string ID, Dictionary<string, string> hash)
+	public static Type Create()
+	{
+		Type tp = new Type();
+		tp.Name = "";
+        tp.SpecialType = false;
+        tp.PseudoType = false;
+        tp.Weaknesses = new List<TypeResolver>();
+        tp.Resistances = new List<TypeResolver>();
+        tp.Immunities = new List<TypeResolver>();
+		tp.Flags = new List<string>();
+        tp.IconPosition = Data.Types.Values.Select(x => x.IconPosition).Where(x => x is not null).Max() + 1;
+        return tp;
+	}
+
+	public Type(string ID, Dictionary<string, string> hash)
     {
         this.ID = ID;
         this.Name = hash["Name"];

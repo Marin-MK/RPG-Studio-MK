@@ -27,12 +27,14 @@ public class ProjectSettings : BaseSettings
         { "LAST_ABILITY_ID", "" },
         { "LAST_ITEM_ID", "" },
         { "LAST_TM_ID", "" },
+        { "LAST_TYPE_ID", "" },
         { "LAST_SPECIES_SCROLL", 0 },
         { "LAST_SPECIES_SUBMODE", 0 },
         { "LAST_MOVE_SCROLL", 0 },
         { "LAST_ABILITY_SCROLL", 0 },
         { "LAST_ITEM_SCROLL", 0 },
-        { "LAST_TM_SCROLL", 0 }
+        { "LAST_TM_SCROLL", 0 },
+        { "LAST_TYPE_SCROLL", 0 }
     };
 
     public ProjectSettings() : base() { }
@@ -217,6 +219,15 @@ public class ProjectSettings : BaseSettings
         set => Set("LAST_TM_ID", value);
     }
 
+    /// <summary>
+    /// The last Type that was opened.
+    /// </summary>
+    public string LastTypeID
+    {
+        get => Get<string>("LAST_TYPE_ID");
+        set => Set("LAST_TYPE_ID", value);
+    }
+
 	/// <summary>
 	/// The last scroll amount in the species section of the database.
 	/// </summary>
@@ -269,5 +280,14 @@ public class ProjectSettings : BaseSettings
     {
         get => Get<int>("LAST_TM_SCROLL");
         set => Set("LAST_TM_SCROLL", value);
+    }
+
+    /// <summary>
+    /// The last scroll amount in the Types section of the database.
+    /// </summary>
+    public int LastTypeScroll
+    {
+        get => Get<int>("LAST_TYPE_SCROLL");
+        set => Set("LAST_TYPE_SCROLL", value);
     }
 }

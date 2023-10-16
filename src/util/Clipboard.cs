@@ -69,5 +69,6 @@ public enum BinaryData
     MOVES,
     ABILITIES,
     ITEMS,
-    TMS
+    TMS,
+    TYPES
 }
