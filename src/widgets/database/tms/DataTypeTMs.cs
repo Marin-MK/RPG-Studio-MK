@@ -42,7 +42,11 @@ public partial class DataTypeTMs : GenericDataTypeBase<Item>
 		item.ID = "TM" + Utilities.Digits((int) GetFreeMachineNumber("TM", 0, 1), 2);
 		item.Name = item.ID;
 		item.Plural = item.Name + "s";
-        return item;
+		item.Pocket = Data.HardcodedData.ItemPockets.IndexOf("TMs") + 1;
+		item.FieldUse = Data.HardcodedData.ItemFieldUses.IndexOf("TM");
+		item.Consumable = false;
+		item.Description = item.Move.Valid ? item.Move.Move.Description : "";
+		return item;
 	}
 
 	protected override void NewData()

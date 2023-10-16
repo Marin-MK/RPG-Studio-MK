@@ -135,22 +135,39 @@ public partial class DataTypeTMs
 		sellPriceBox.SetValue(tm.SellPrice);
 		sellPriceBox.OnValueChanged += _ => tm.SellPrice = sellPriceBox.Value;
 
+		Label bpPriceLabel = new Label(parent);
+		bpPriceLabel.SetPosition(366, 234);
+		bpPriceLabel.SetSize(53, 18);
+		bpPriceLabel.SetText("BP Price");
+		bpPriceLabel.SetFont(Fonts.Paragraph);
+
+		NumericBox bpPriceBox = new NumericBox(parent);
+		bpPriceBox.SetPosition(431, 228);
+		bpPriceBox.SetSize(150, 30);
+		bpPriceBox.SetMinValue(0);
+		bpPriceBox.SetValue(tm.BPPrice);
+		bpPriceBox.OnValueChanged += _ => tm.BPPrice = bpPriceBox.Value;
+
 		CheckBox consumableBox = new CheckBox(parent);
-		consumableBox.SetPosition(340, 235);
+		consumableBox.SetPosition(340, 275);
 		consumableBox.SetText("Consumable     ");
 		consumableBox.SetFont(Fonts.Paragraph);
 		consumableBox.SetMirrored(true);
 		consumableBox.SetChecked(tm.Consumable);
-		consumableBox.OnCheckChanged += _ => tm.Consumable = consumableBox.Checked;
+		consumableBox.OnCheckChanged += _ =>
+		{
+			tm.Consumable = consumableBox.Checked;
+			tm.FieldUse = Data.HardcodedData.ItemFieldUses.IndexOf(typeBox.SelectedItem.Text == "HM" ? "HM" : tm.Consumable ? "TR" : "TM");
+		};
 
 		Label moveLabel = new Label(parent);
-		moveLabel.SetPosition(382, 274);
+		moveLabel.SetPosition(382, 314);
 		moveLabel.SetSize(33, 18);
 		moveLabel.SetText("Move");
 		moveLabel.SetFont(Fonts.Paragraph);
 
 		MoveDropdownBox moveBox = new MoveDropdownBox(parent);
-		moveBox.SetPosition(431, 271);
+		moveBox.SetPosition(431, 311);
 		moveBox.SetSize(150, 24);
 		moveBox.SetMove(tm.Move);
 		moveBox.OnMoveChanged += _ =>
@@ -159,12 +176,14 @@ public partial class DataTypeTMs
 			DataList.SelectedItem.SetText($"{tm.Name} - {(tm.Move.Valid ? tm.Move.Move.Name : tm.Move.ID)}");
 			DataList.RedrawNodeText(DataList.SelectedItem);
 			Data.Sources.InvalidateTMs();
+			tm.Description = tm.Move.Valid ? tm.Move.Move.Description : "";
 		};
 
 		typeBox.OnSelectionChanged += _ =>
 		{
 			Data.TMsHMs.Remove(tm.ID);
 			tm.ID = typeBox.SelectedItem.Text + "00";
+			tm.FieldUse = Data.HardcodedData.ItemFieldUses.IndexOf(typeBox.SelectedItem.Text == "HM" ? "HM" : tm.Consumable ? "TR" : "TM");
 			Data.TMsHMs.Add(tm.ID, tm);
 			numberBox.OnPlusClicked?.Invoke(new BaseEventArgs());
 		};
